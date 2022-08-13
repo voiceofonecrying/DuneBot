@@ -21,9 +21,13 @@ public class Game {
     @Column(name = "SHIELD_WALL_BROKEN")
     boolean shieldWallBroken;
 
-    public Game (List<Player> players) {
+    public Game(int gameId, String name, String prediction, int turn, boolean shieldWallBroken) {
+        this.gameId = gameId;
+        this.name = name;
+        this.prediction = prediction;
+        this.turn = turn;
+        this.shieldWallBroken = shieldWallBroken;
     }
-    protected Game () {}
-
+    public Game() {}
 
 }

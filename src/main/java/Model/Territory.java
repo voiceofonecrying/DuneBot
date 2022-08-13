@@ -1,5 +1,6 @@
 package Model;
 
+import Model.CompositeKeys.TerritoryId;
 import jakarta.persistence.*;
 
 @Entity

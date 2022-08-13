@@ -1,5 +1,7 @@
 package Model;
 
+import Model.CompositeKeys.TechTokenId;
+
 import javax.persistence.*;
 
 @Entity

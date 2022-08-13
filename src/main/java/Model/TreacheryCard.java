@@ -1,5 +1,7 @@
 package Model;
 
+import Model.CompositeKeys.TreacheryCardId;
+
 import javax.persistence.*;
 
 @Entity

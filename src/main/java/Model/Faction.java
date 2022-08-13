@@ -1,5 +1,7 @@
 package Model;
 
+import Model.CompositeKeys.FactionId;
+
 import javax.persistence.*;
 
 @Entity

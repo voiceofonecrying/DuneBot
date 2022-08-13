@@ -1,4 +1,4 @@
-package Model;
+package Model.CompositeKeys;
 
 import java.io.Serializable;
 import java.util.Objects;
