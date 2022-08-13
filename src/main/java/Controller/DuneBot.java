@@ -38,10 +38,10 @@ public class DuneBot extends ListenerAdapter {
             SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
             Session session = sessionFactory.openSession();
             channel.sendMessage("Dune is comprised of the following territories:").queue();
-            List<Territory> territories = session.createQuery("select Territory from Territory", Territory.class).list();
+            List<String> territories = session.createQuery("select distinct territoryName from Territory", String.class).list();
             session.close();
-            for (Territory territory : territories) {
-                channel.sendMessage(territory.getTerritoryName() + ", sector " + territory.getSector()).queue();
+            for (String territory : territories) {
+                channel.sendMessage(territory).queue();
             }
 
         }
