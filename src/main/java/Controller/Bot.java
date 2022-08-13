@@ -14,6 +14,8 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import javax.persistence.Query;
+import javax.persistence.Tuple;
 import javax.security.auth.login.LoginException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,6 +47,7 @@ public class Bot extends ListenerAdapter
     public void onMessageReceived(MessageReceivedEvent event)
     {
         if (event.getAuthor().equals(event.getJDA().getSelfUser())) return;
+        if (!event.getGuild().getCategoriesByName("Dune Game Instance", true).get(0).getChannels().contains(event.getChannel())) return;
         Message msg = event.getMessage();
         MessageChannel channel = event.getChannel();
         channel.sendMessage("The game is: " + gameName).queue();
@@ -60,9 +63,9 @@ public class Bot extends ListenerAdapter
             channel.sendMessage("you have " + spice + " spice left.").queue();
         } else if (msg.getContentRaw().equals("list territories")) {
             channel.sendMessage("Dune is comprised of the following territories:").queue();
-            List<String> territories = thisSession.createQuery("select distinct territoryName from Territory", String.class).list();
-            for (String territory : territories) {
-                channel.sendMessage(territory).queue();
+            List<Territory> territories = thisSession.createQuery("select Territory from Territory", Territory.class).list();
+            for (Territory territory : territories) {
+                channel.sendMessage(territory.getTerritoryName() + ", sector " + territory.getSector()).queue();
             }
 
         }

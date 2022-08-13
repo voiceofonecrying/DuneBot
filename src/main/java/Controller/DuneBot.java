@@ -6,7 +6,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.security.auth.login.LoginException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +32,7 @@ public class DuneBot {
         SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
         Session session = sessionFactory.openSession();
 
-        Bot.run("botkey", rs, session);
+        Bot.run("MTAwNTUzODI2NjQ0OTE5MDk0Mg.GvY98f.28Tl-Bzeaqy9_ssjFbci1hQWt849sqxlhWOPw4", rs, session);
         }
 }
 

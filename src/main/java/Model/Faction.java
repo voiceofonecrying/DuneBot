@@ -1,28 +1,70 @@
 package Model;
 
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
+@Table(name = "faction_info")
+@IdClass(FactionId.class)
 public class Faction {
     @Id
-    @GeneratedValue(generator = "incrementor")
-    @GenericGenerator(name="incrementor", strategy = "increment")
-    int id;
-    String player;
+    @Column(name = "GAME_ID")
+    int gameId;
+    @Id
+    @Column(name = "DISCORD_ID")
+    String discordId;
+    @Column(name = "FACTION_NAME")
     String name;
+    @Column(name = "SPICE")
     int spice;
+    @Column(name = "LOST_FORCES")
     int lostForces;
 
-    public Faction(String player, String name, int spice, int lostForces) {
-        this.player = player;
+    public Faction(String discordId, String name, int spice, int lostForces) {
+        this.discordId = discordId;
         this.name = name;
         this.spice = spice;
         this.lostForces = lostForces;
     }
 
     public Faction() {}
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
+
+    public String getDiscordId() {
+        return discordId;
+    }
+
+    public void setDiscordId(String discordId) {
+        this.discordId = discordId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getSpice() {
+        return spice;
+    }
+
+    public void setSpice(int spice) {
+        this.spice = spice;
+    }
+
+    public int getLostForces() {
+        return lostForces;
+    }
+
+    public void setLostForces(int lostForces) {
+        this.lostForces = lostForces;
+    }
 }
