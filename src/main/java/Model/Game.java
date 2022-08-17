@@ -1,24 +1,25 @@
 package Model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "game")
 public class Game {
     @Id
     @Column(name = "GAME_ID")
-    int gameId;
+    @GeneratedValue(generator = "incrementor")
+    @GenericGenerator(name = "incrementor", strategy = "increment")
+    private int gameId;
     @Column(name = "GAME_NAME")
-    String name;
+    private String name;
     @Column(name = "BG_PREDICTION")
-    String prediction;
+    private String prediction;
     @Column(name = "TURN")
-    int turn;
+    private int turn;
     @Column(name = "SHIELD_WALL_BROKEN")
-    boolean shieldWallBroken;
+    private boolean shieldWallBroken;
 
     public Game(int gameId, String name, String prediction, int turn, boolean shieldWallBroken) {
         this.gameId = gameId;
@@ -29,4 +30,43 @@ public class Game {
     }
     public Game() {}
 
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPrediction() {
+        return prediction;
+    }
+
+    public void setPrediction(String prediction) {
+        this.prediction = prediction;
+    }
+
+    public int getTurn() {
+        return turn;
+    }
+
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
+    public boolean isShieldWallBroken() {
+        return shieldWallBroken;
+    }
+
+    public void setShieldWallBroken(boolean shieldWallBroken) {
+        this.shieldWallBroken = shieldWallBroken;
+    }
 }

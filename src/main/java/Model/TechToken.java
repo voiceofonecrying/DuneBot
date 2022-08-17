@@ -2,7 +2,7 @@ package Model;
 
 import Model.CompositeKeys.TechTokenId;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tech_token")

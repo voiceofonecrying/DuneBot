@@ -2,7 +2,7 @@ package Model;
 
 import Model.CompositeKeys.FactionId;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "faction_info")

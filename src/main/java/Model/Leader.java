@@ -2,7 +2,7 @@ package Model;
 
 import Model.CompositeKeys.LeaderId;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @IdClass(LeaderId.class)

@@ -37,6 +37,12 @@
         Here we have declared the class which have entities
         -->
         <mapping class="Model.Territory"/>
+        <mapping class="Model.Faction"/>
+        <mapping class="Model.Game"/>
+        <mapping class="Model.Leader"/>
+        <mapping class="Model.SpiceCard"/>
+        <mapping class="Model.TechToken"/>
+        <mapping class="Model.TreacheryCard"/>
 
     </session-factory>
 

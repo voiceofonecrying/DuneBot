@@ -2,7 +2,7 @@ package Model;
 
 import Model.CompositeKeys.TreacheryCardId;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "treachery_card")

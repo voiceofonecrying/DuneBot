@@ -2,7 +2,7 @@ package Model;
 
 import Model.CompositeKeys.SpiceCardId;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @IdClass(SpiceCardId.class)

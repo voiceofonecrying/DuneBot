@@ -1,10 +1,9 @@
 package Controller;
 
-import Model.Territory;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -16,34 +15,40 @@ import javax.security.auth.login.LoginException;
 import java.util.List;
 
 public class DuneBot extends ListenerAdapter {
-
+    SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+    Session session = sessionFactory.openSession();
     public static void main(String[] args) throws LoginException {
         JDABuilder.createLight("MTAwNTUzODI2NjQ0OTE5MDk0Mg.GvY98f.28Tl-Bzeaqy9_ssjFbci1hQWt849sqxlhWOPw4", GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(new DuneBot())
-                .setActivity(Activity.playing("Type !ping"))
+                .setActivity(Activity.playing("Dune"))
                 .build();
         }
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event)
     {
-        if (event.getAuthor().equals(event.getJDA().getSelfUser())) return;
-        if (!event.getGuild().getCategoriesByName("Dune Game Instance", true).get(0).getChannels().contains(event.getChannel())) return;
         Message msg = event.getMessage();
-        MessageChannel channel = event.getChannel();
+        if (event.getAuthor().equals(event.getJDA().getSelfUser())) return;
+        if (msg.getContentRaw().contains("$new game$")) Commands.newGame(event, session);
+        List<Category> categories = event.getGuild().getCategories();
+        List<String> currentGames = session.createQuery("select name from Game", String.class).list();
+
+
+
+    }
+}
+
+/*
         if (msg.getContentRaw().equals("!ping"))
         {
             channel.sendMessage("Pong!").queue();
         } else if (msg.getContentRaw().equals("list territories")) {
-            SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
-            Session session = sessionFactory.openSession();
+
             channel.sendMessage("Dune is comprised of the following territories:").queue();
             List<String> territories = session.createQuery("select distinct territoryName from Territory", String.class).list();
-            session.close();
             for (String territory : territories) {
                 channel.sendMessage(territory).queue();
             }
 
         }
-    }
-}
+ */
