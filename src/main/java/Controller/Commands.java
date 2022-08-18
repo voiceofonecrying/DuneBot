@@ -1,7 +1,9 @@
 package Controller;
 
 import Model.Game;
+import Model.SpiceCard;
 import Model.Territory;
+import Model.TreacheryCard;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -35,6 +37,15 @@ public class Commands {
         for (Territory territory : territories) {
             session.persist(territory);
         }
+        List<SpiceCard> spiceDeck = Initializers.buildSpiceDeck(newGame.getGameId());
+        for (SpiceCard card : spiceDeck) {
+            session.persist(card);
+        }
+        List<TreacheryCard> treacheryDeck = Initializers.buildTreacheryDeck(newGame.getGameId());
+        for (TreacheryCard card : treacheryDeck) {
+            session.persist(card);
+        }
+
         session.getTransaction().commit();
         event.getGuild().createCategory(newGame.getName()).queue();
         try {
