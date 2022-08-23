@@ -1,19 +1,15 @@
 package Controller;
 
 import Model.Game;
-import Model.SpiceCard;
-import Model.Territory;
-import Model.TreacheryCard;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import org.hibernate.Session;
 
 import java.util.List;
 
 public class Commands {
 
-    public static void newGame(MessageReceivedEvent event, Session session) {
+    public static void newGame(MessageReceivedEvent event) {
         if (event.getMember() == null) {
             event.getChannel().sendMessage("You are not a Game Master").queue();
             return;
@@ -21,32 +17,16 @@ public class Commands {
         List<Role> roles = event.getMember().getRoles();
         for (Role role : roles) {
             if (role.getName().equals("Game Master")) {
-                Commands.newGame(event, session);
+                Commands.newGame(event);
                 event.getChannel().sendMessage("You are not a Game Master").queue();
                 return;
             }
         }
         Game newGame = new Game();
         newGame.setName(event.getMessage().getContentRaw().replace("$new game$", "").strip());
-        newGame.setPrediction("NUL00");
         newGame.setTurn(1);
         newGame.setShieldWallBroken(false);
-        session.beginTransaction();
-        session.persist(newGame);
-        List<Territory> territories = Initializers.buildBoard(newGame.getGameId());
-        for (Territory territory : territories) {
-            session.persist(territory);
-        }
-        List<SpiceCard> spiceDeck = Initializers.buildSpiceDeck(newGame.getGameId());
-        for (SpiceCard card : spiceDeck) {
-            session.persist(card);
-        }
-        List<TreacheryCard> treacheryDeck = Initializers.buildTreacheryDeck(newGame.getGameId());
-        for (TreacheryCard card : treacheryDeck) {
-            session.persist(card);
-        }
 
-        session.getTransaction().commit();
         event.getGuild().createCategory(newGame.getName()).queue();
         try {
             buildChannels(event, newGame);

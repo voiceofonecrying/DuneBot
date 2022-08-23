@@ -7,16 +7,11 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
 
 public class DuneBot extends ListenerAdapter {
-    SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
-    Session session = sessionFactory.openSession();
     public static void main(String[] args) throws LoginException {
         JDABuilder.createLight("MTAwNTUzODI2NjQ0OTE5MDk0Mg.GvY98f.28Tl-Bzeaqy9_ssjFbci1hQWt849sqxlhWOPw4", GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(new DuneBot())
@@ -29,12 +24,8 @@ public class DuneBot extends ListenerAdapter {
     {
         Message msg = event.getMessage();
         if (event.getAuthor().equals(event.getJDA().getSelfUser())) return;
-        if (msg.getContentRaw().contains("$new game$")) Commands.newGame(event, session);
+        if (msg.getContentRaw().contains("$new game$")) Commands.newGame(event);
         List<Category> categories = event.getGuild().getCategories();
-        List<String> currentGames = session.createQuery("select name from Game", String.class).list();
-
-
-
     }
 }
 
