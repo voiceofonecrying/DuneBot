@@ -1,35 +1,16 @@
 package Model;
 
-import Model.CompositeKeys.TerritoryId;
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "territory")
-@IdClass(TerritoryId.class)
 public class Territory {
 
-    @Id
-    @Column(name = "GAME_ID")
     private int gameId;
-    @Id
-    @Column(name = "TERRITORY_NAME")
     private String territoryName;
-    @Id
-    @Column(name = "SECTOR")
     private int sector;
-    @Column(name = "IS_ROCK")
     private boolean isRock;
-    @Column(name = "IS_STRONGHOLD")
     private boolean isStronghold;
-    @Column(name = "FREMEN_CAN_SHIP")
     private boolean fremenCanShip;
-    @Column(name = "FORCES")
     private int forces;
-    @Column(name = "CONTROLLING_FACTION")
     private String controllingFaction;
-    @Column(name = "ADVISORS")
     private int advisors;
-    @Column(name = "SPICE")
     private int spice;
 
 

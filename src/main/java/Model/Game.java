@@ -1,42 +1,17 @@
 package Model;
 
-import org.hibernate.annotations.GenericGenerator;
-
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "game")
 public class Game {
-    @Id
-    @Column(name = "GAME_ID")
-    @GeneratedValue(generator = "incrementor")
-    @GenericGenerator(name = "incrementor", strategy = "increment")
-    private int gameId;
-    @Column(name = "GAME_NAME")
+
     private String name;
-    @Column(name = "BG_PREDICTION")
-    private String prediction;
-    @Column(name = "TURN")
     private int turn;
-    @Column(name = "SHIELD_WALL_BROKEN")
     private boolean shieldWallBroken;
 
-    public Game(int gameId, String name, String prediction, int turn, boolean shieldWallBroken) {
-        this.gameId = gameId;
+    public Game(String name, int turn, boolean shieldWallBroken) {
         this.name = name;
-        this.prediction = prediction;
         this.turn = turn;
         this.shieldWallBroken = shieldWallBroken;
     }
     public Game() {}
-
-    public int getGameId() {
-        return gameId;
-    }
-
-    public void setGameId(int gameId) {
-        this.gameId = gameId;
-    }
 
     public String getName() {
         return name;
@@ -44,14 +19,6 @@ public class Game {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getPrediction() {
-        return prediction;
-    }
-
-    public void setPrediction(String prediction) {
-        this.prediction = prediction;
     }
 
     public int getTurn() {
