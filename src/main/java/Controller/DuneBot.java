@@ -13,7 +13,7 @@ import java.util.List;
 
 public class DuneBot extends ListenerAdapter {
     public static void main(String[] args) throws LoginException {
-        JDABuilder.createLight("MTAwNTUzODI2NjQ0OTE5MDk0Mg.GvY98f.28Tl-Bzeaqy9_ssjFbci1hQWt849sqxlhWOPw4", GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
+        JDABuilder.createLight("MTAwNTUzODI2NjQ0OTE5MDk0Mg.GFEkn0.Ybjmg2SJGJRZ8G8p8Tt57bGaSXhDtegOLzyab8", GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .addEventListeners(new DuneBot())
                 .setActivity(Activity.playing("Dune"))
                 .build();
