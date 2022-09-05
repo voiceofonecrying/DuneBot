@@ -1,14 +1,28 @@
 package Model;
 
-public class Resource {
-    private String name;
-    private String sValue;
-    private int iValue;
+public class Resource<V> {
 
-    public Resource(String name, Object value) {
+    private String name;
+    private V value;
+
+    public Resource(String name, V value) {
         this.name = name;
-        if (value instanceof String) this.sValue = (String) value;
-        else this.iValue = (int) value;
+        this.value = value;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public V getValue() {
+        return value;
+    }
+
+    public void setValue(V value) {
+        this.value = value;
+    }
 }
