@@ -1,8 +1,8 @@
-package Controller;
+package controller;
 
-import Model.SpiceCard;
-import Model.Territory;
-import Model.TreacheryCard;
+import model.SpiceCard;
+import model.Territory;
+import model.TreacheryCard;
 
 import java.util.ArrayList;
 import java.util.List;
