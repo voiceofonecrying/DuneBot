@@ -1,6 +1,5 @@
-package Controller;
+package controller;
 
-import Model.Game;
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
