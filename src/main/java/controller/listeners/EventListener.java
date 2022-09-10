@@ -15,6 +15,7 @@ public class EventListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
 
+        //Treachery Card Service
         if (message.matches(".*:treachery: .* :treachery:.*")) {
             URL file = getClass().getClassLoader().getResource("Treachery Cards/" + message.split(":treachery:")[1].strip().replace(" ", "_") + ".jpg");
             System.out.println("Treachery Cards/" + message.split(":treachery:")[1].strip().replace(" ", "_") + ".jpg");
@@ -25,7 +26,7 @@ public class EventListener extends ListenerAdapter {
             }
         }
 
-
+        //Add any other text based commands here
     }
 
 

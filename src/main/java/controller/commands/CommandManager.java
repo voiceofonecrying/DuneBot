@@ -1,18 +1,50 @@
-package controller;
+package controller.commands;
 
 import net.dv8tion.jda.api.entities.Category;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
-public class Commands {
+public class CommandManager extends ListenerAdapter {
 
-    public static void newGame(MessageReceivedEvent event) {
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        if (event.getName().equals("newgame")) {
+            event.reply("working...").queue();
+            newGame(event);
+            event.getChannel().sendMessage("done!").queue();
+        }
+        //implement new slash commands here
+
+    }
+
+    @Override
+    public void onGuildReady(@NotNull GuildReadyEvent event) {
+        List<CommandData> commandData = new ArrayList<>();
+
+        //add new slash command definitions to commandData list
+
+        OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
+        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName));
+        commandData.add(Commands.slash("testing", "test"));
+
+        event.getGuild().updateCommands().addCommands(commandData).queue();
+    }
+
+    public static void newGame(SlashCommandInteractionEvent event) {
         if (event.getMember() == null) {
             event.getChannel().sendMessage("You are not a Game Master").queue();
             return;
@@ -24,7 +56,7 @@ public class Commands {
                 return;
             }
         }
-        String name = event.getMessage().getContentRaw().replace("$new game$", "").strip();
+        String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).complete();
 
         try {
@@ -46,7 +78,7 @@ public class Commands {
         botData.sendMessage(Base64.getEncoder().encodeToString(object.toString().getBytes(StandardCharsets.UTF_8))).queue();
     }
 
-    public static void buildChannels(MessageReceivedEvent event, String name) throws InterruptedException {
+    public static void buildChannels(SlashCommandInteractionEvent event, String name) throws InterruptedException {
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
         category.createTextChannel("bot-data").complete();
         category.createTextChannel("out-of-game-chat").complete();
