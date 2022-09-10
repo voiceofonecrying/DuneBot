@@ -1,5 +1,6 @@
 package controller;
 
+import controller.commands.CommandManager;
 import controller.listeners.EventListener;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -24,7 +25,7 @@ public class DuneBot {
         builder.enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT);
         shardManager = builder.build();
 
-        shardManager.addEventListener(new EventListener());
+        shardManager.addEventListener(new EventListener(), new CommandManager());
     }
 
     public ShardManager getShardManager() {
