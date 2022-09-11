@@ -29,6 +29,9 @@ public class CommandManager extends ListenerAdapter {
         } else if (name.equals("addfaction")) {
             event.reply("adding faction...").setEphemeral(true).queue();
             addFaction(event);
+        } else if (name.equals("newfactionresource")) {
+            event.reply("adding new resource...").setEphemeral(true).queue();
+            newFactionResource(event);
         }
         //implement new slash commands here
 
@@ -42,7 +45,7 @@ public class CommandManager extends ListenerAdapter {
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName));
-        OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction to add", true)
+        OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
                 .addChoice("Emperor", "Emperor")
@@ -53,15 +56,20 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Tleilaxu", "BT")
                 .addChoice("CHOAM", "CHOAM")
                 .addChoice("Richese", "Rich");
-        OptionData user = new OptionData(OptionType.USER, "player", "The player to play the faction", true);
-        OptionData game = new OptionData(OptionType.CHANNEL, "game", "The game this faction is being registered to", true).setChannelTypes(ChannelType.CATEGORY);
+        OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
+        OptionData game = new OptionData(OptionType.CHANNEL, "game", "The game this action will be applied to", true).setChannelTypes(ChannelType.CATEGORY);
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
+        OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
+        OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise.", true);
+        OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
+        OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
+        commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
     public void newGame(SlashCommandInteractionEvent event) {
-        /*
+
         if (event.getMember() == null) {
             event.getChannel().sendMessage("You are not a Game Master").queue();
             return;
@@ -73,7 +81,7 @@ public class CommandManager extends ListenerAdapter {
                 return;
             }
         }
-         */
+
 
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).complete();
@@ -111,18 +119,8 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void addFaction(SlashCommandInteractionEvent event) {
-        //decode -> add faction -> encode
-        //create channelse for user
 
-        Category game = event.getOption("game").getAsChannel().asCategory();
-        MessageHistory h = game.getTextChannels().get(0).getHistory();
-        h.retrievePast(1).complete();
-        List<Message> ml = h.getRetrievedHistory();
-        String encoded = ml.get(0).getContentRaw();
-        byte[] decodedBytes = Base64.getDecoder().decode(encoded);
-        String decoded = new String(decodedBytes);
-
-        JSONObject gameState = new JSONObject(decoded);
+        JSONObject gameState = getGameState(event);
         String factionName = event.getOption("factionname").getAsString();
 
         Faction faction = new Faction(String.valueOf(factionName.charAt(0)),factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
@@ -139,8 +137,9 @@ public class CommandManager extends ListenerAdapter {
         startingSpice.put("Rich", 5);
         faction.addResource(new Resource<>("spice", startingSpice.get(factionName)));
 
-        gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getId(), faction);
+        gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
 
+        Category game = event.getOption("game").getAsChannel().asCategory();
         game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
 
         game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
@@ -150,6 +149,32 @@ public class CommandManager extends ListenerAdapter {
                 .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
 
+    }
+
+    public void newFactionResource(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+        if (gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()) == null) {
+            event.getChannel().sendMessage("That faction is not in this game!");
+            return;
+        }
+
+        Object value = event.getOption("isanumber").getAsBoolean() ? event.getOption("numbervalue").getAsInt() : event.getOption("othervalue").getAsString();
+
+        gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()).getJSONObject("resources").put(event.getOption("resource").getAsString(), value);
+        Category game = event.getOption("game").getAsChannel().asCategory();
+        game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
+    }
+
+    public JSONObject getGameState(SlashCommandInteractionEvent event) {
+        Category game = event.getOption("game").getAsChannel().asCategory();
+        MessageHistory h = game.getTextChannels().get(0).getHistory();
+        h.retrievePast(1).complete();
+        List<Message> ml = h.getRetrievedHistory();
+        String encoded = ml.get(0).getContentRaw();
+        byte[] decodedBytes = Base64.getDecoder().decode(encoded);
+        String decoded = new String(decodedBytes);
+
+        return new JSONObject(decoded);
     }
 
 }
