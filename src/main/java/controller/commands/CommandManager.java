@@ -75,13 +75,17 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         List<Role> roles = event.getMember().getRoles();
+        boolean isGameMaster = false;
         for (Role role : roles) {
-            if (!role.getName().equals("Game Master") && !role.getName().equals("Dungeon Master")) {
-                event.getChannel().sendMessage("You are not a Game Master").queue();
-                return;
+            if (role.getName().equals("Game Master") || role.getName().equals("Dungeon Master")) {
+                isGameMaster = true;
+                break;
             }
         }
-
+        if (!isGameMaster) {
+            event.getChannel().sendMessage("You are not a Game Master!").queue();
+            return;
+        }
 
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).complete();
