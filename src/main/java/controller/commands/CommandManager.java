@@ -2,6 +2,7 @@ package controller.commands;
 
 import model.Faction;
 import model.Resource;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -14,10 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -63,17 +61,19 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void newGame(SlashCommandInteractionEvent event) {
+        /*
         if (event.getMember() == null) {
             event.getChannel().sendMessage("You are not a Game Master").queue();
             return;
         }
         List<Role> roles = event.getMember().getRoles();
         for (Role role : roles) {
-            if (!role.getName().equals("Game Master")) {
+            if (!role.getName().equals("Game Master") && !role.getName().equals("Dungeon Master")) {
                 event.getChannel().sendMessage("You are not a Game Master").queue();
                 return;
             }
         }
+         */
 
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).complete();
@@ -142,7 +142,14 @@ public class CommandManager extends ListenerAdapter {
         gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getId(), faction);
 
         game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
-    }
 
+        game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
+                        .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                        .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
+        game.createTextChannel(factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
+
+    }
 
 }
