@@ -22,19 +22,23 @@ public class CommandManager extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String name = event.getName();
+        event.reply("processing...").setEphemeral(true).queue();
         switch (name) {
             case "newgame" -> {
-                event.reply("working...").queue();
                 newGame(event);
                 event.getChannel().sendMessage("done!").queue();
             }
             case "addfaction" -> {
-                event.reply("adding faction...").setEphemeral(true).queue();
                 addFaction(event);
             }
             case "newfactionresource" -> {
-                event.reply("adding new resource...").setEphemeral(true).queue();
                 newFactionResource(event);
+            }
+            case "resourceaddorsubtract" -> {
+                resourceAddOrSubtract(event);
+            }
+            case "removeresource" -> {
+                removeResource(event);
             }
         }
         //implement new slash commands here
@@ -43,13 +47,12 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
-        List<CommandData> commandData = new ArrayList<>();
 
-        //add new slash command definitions to commandData list
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
         OptionData role = new OptionData(OptionType.ROLE, "role", "The role you created for the players of this game", true);
-        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
+        OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
+        OptionData game = new OptionData(OptionType.CHANNEL, "game", "The game this action will be applied to", true).setChannelTypes(ChannelType.CATEGORY);
         OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
@@ -61,15 +64,19 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Tleilaxu", "BT")
                 .addChoice("CHOAM", "CHOAM")
                 .addChoice("Richese", "Rich");
-        OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
-        OptionData game = new OptionData(OptionType.CHANNEL, "game", "The game this action will be applied to", true).setChannelTypes(ChannelType.CATEGORY);
-        commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
         OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise.", true);
         OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
         OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
-        commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
+        OptionData amount = new OptionData(OptionType.INTEGER, "amount", "amount to be added or subtracted (e.g. -3, 4)", true);
 
+        //add new slash command definitions to commandData list
+        List<CommandData> commandData = new ArrayList<>();
+        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
+        commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
+        commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
+        commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
+        commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
@@ -151,9 +158,8 @@ public class CommandManager extends ListenerAdapter {
 
         gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
 
+        pushGameState(gameState, event);
         Category game = event.getOption("game").getAsChannel().asCategory();
-        game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
-
         game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
                         .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                         .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
@@ -173,8 +179,27 @@ public class CommandManager extends ListenerAdapter {
         Object value = event.getOption("isanumber").getAsBoolean() ? event.getOption("numbervalue").getAsInt() : event.getOption("othervalue").getAsString();
 
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()).getJSONObject("resources").put(event.getOption("resource").getAsString(), value);
-        Category game = event.getOption("game").getAsChannel().asCategory();
-        game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
+        pushGameState(gameState, event);
+    }
+
+    public void resourceAddOrSubtract(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+
+        int amount = event.getOption("amount").getAsInt();
+        int currentAmount = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
+                .getJSONObject("resources").getInt(event.getOption("resource").getAsString());
+        gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
+                .getJSONObject("resources").remove(event.getOption("resource").getAsString());
+        gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
+                .getJSONObject("resources").put(event.getOption("resource").getAsString(), amount + currentAmount);
+        pushGameState(gameState, event);
+    }
+
+    public void removeResource(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+        gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
+                .getJSONObject("resources").remove(event.getOption("resource").getAsString());
+        pushGameState(gameState, event);
     }
 
     public JSONObject getGameState(SlashCommandInteractionEvent event) {
@@ -187,6 +212,10 @@ public class CommandManager extends ListenerAdapter {
         String decoded = new String(decodedBytes);
 
         return new JSONObject(decoded);
+    }
+    public void pushGameState(JSONObject gameState, SlashCommandInteractionEvent event) {
+        Category game = event.getOption("game").getAsChannel().asCategory();
+        game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
     }
 
 }
