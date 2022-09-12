@@ -15,6 +15,8 @@ public class EventListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw().replaceAll("\\d", "");
 
+        System.out.println(event.getMessage().getContentRaw());
+
         //Treachery Card Service
         if (message.matches(".*<:treachery:> .* <:treachery:>.*")) {
             URL file = getClass().getClassLoader().getResource("Treachery Cards/" + message.split("<:treachery:>")[1].strip().replace(" ", "_") + ".jpg");
