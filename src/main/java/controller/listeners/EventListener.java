@@ -13,12 +13,13 @@ public class EventListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        String message = event.getMessage().getContentRaw();
+        String message = event.getMessage().getContentRaw().replaceAll("\\d", "");
+
+        System.out.println(event.getMessage().getContentRaw());
 
         //Treachery Card Service
-        if (message.matches(".*:treachery: .* :treachery:.*")) {
-            URL file = getClass().getClassLoader().getResource("Treachery Cards/" + message.split(":treachery:")[1].strip().replace(" ", "_") + ".jpg");
-            System.out.println("Treachery Cards/" + message.split(":treachery:")[1].strip().replace(" ", "_") + ".jpg");
+        if (message.matches(".*<:treachery:> .* <:treachery:>.*")) {
+            URL file = getClass().getClassLoader().getResource("Treachery Cards/" + message.split("<:treachery:>")[1].strip().replace(" ", "_") + ".jpg");
             try {
                 event.getChannel().sendFile(new File(file.toURI())).queue();
             } catch (URISyntaxException e) {

@@ -22,16 +22,20 @@ public class CommandManager extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String name = event.getName();
-        if (name.equals("newgame")) {
-            event.reply("working...").queue();
-            newGame(event);
-            event.getChannel().sendMessage("done!").queue();
-        } else if (name.equals("addfaction")) {
-            event.reply("adding faction...").setEphemeral(true).queue();
-            addFaction(event);
-        } else if (name.equals("newfactionresource")) {
-            event.reply("adding new resource...").setEphemeral(true).queue();
-            newFactionResource(event);
+        switch (name) {
+            case "newgame" -> {
+                event.reply("working...").queue();
+                newGame(event);
+                event.getChannel().sendMessage("done!").queue();
+            }
+            case "addfaction" -> {
+                event.reply("adding faction...").setEphemeral(true).queue();
+                addFaction(event);
+            }
+            case "newfactionresource" -> {
+                event.reply("adding new resource...").setEphemeral(true).queue();
+                newFactionResource(event);
+            }
         }
         //implement new slash commands here
 
@@ -44,7 +48,8 @@ public class CommandManager extends ListenerAdapter {
         //add new slash command definitions to commandData list
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
-        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName));
+        OptionData role = new OptionData(OptionType.ROLE, "role", "The role you created for the players of this game", true);
+        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
         OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
@@ -75,20 +80,27 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         List<Role> roles = event.getMember().getRoles();
+        boolean isGameMaster = false;
         for (Role role : roles) {
-            if (!role.getName().equals("Game Master") && !role.getName().equals("Dungeon Master")) {
-                event.getChannel().sendMessage("You are not a Game Master").queue();
-                return;
+            if (role.getName().equals("Game Master") || role.getName().equals("Dungeon Master")) {
+                isGameMaster = true;
+                break;
             }
         }
-
+        if (!isGameMaster) {
+            event.getChannel().sendMessage("You are not a Game Master!").queue();
+            return;
+        }
 
         String name = event.getOption("name").getAsString();
-        event.getGuild().createCategory(name).complete();
+        event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getGuild().getRolesByName("Bot Testers", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
-        category.createTextChannel("bot-data").complete();
+        category.createTextChannel("bot-data").addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getGuild().getBotRole(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
         category.createTextChannel("out-of-game-chat").complete();
         category.createTextChannel("in-game-chat").complete();
         category.createTextChannel("turn-summary").complete();
@@ -99,11 +111,11 @@ public class CommandManager extends ListenerAdapter {
         category.createTextChannel("pre-game-voting").complete();
 
         TextChannel rules = category.getTextChannels().get(7);
-        rules.sendMessage(":DuneRulebook01:  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf\n" +
-                ":weirding:  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf\n" +
-                ":ix: :bt:  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf\n" +
-                ":choam: :rich: CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf").queue();
-
+        rules.sendMessage("""
+            <:DuneRulebook01:991763013814198292>  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
+            <:weirding:991763071775297681>  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
+            <:ix:991763319406997514> <:bt:991763325576810546>  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
+            <:choam:991763324624703538> <:rich:991763318467465337> CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""").queue();
 
         TextChannel botData = category.getTextChannels().get(0);
 
@@ -154,7 +166,7 @@ public class CommandManager extends ListenerAdapter {
     public void newFactionResource(SlashCommandInteractionEvent event) {
         JSONObject gameState = getGameState(event);
         if (gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()) == null) {
-            event.getChannel().sendMessage("That faction is not in this game!");
+            event.getChannel().sendMessage("That faction is not in this game!").queue();
             return;
         }
 
