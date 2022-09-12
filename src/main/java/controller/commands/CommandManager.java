@@ -22,23 +22,23 @@ public class CommandManager extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String name = event.getName();
+        event.reply("processing...").setEphemeral(true).queue();
         switch (name) {
             case "newgame" -> {
-                event.reply("working...").queue();
                 newGame(event);
                 event.getChannel().sendMessage("done!").queue();
             }
             case "addfaction" -> {
-                event.reply("adding faction...").setEphemeral(true).queue();
                 addFaction(event);
             }
             case "newfactionresource" -> {
-                event.reply("adding new resource...").setEphemeral(true).queue();
                 newFactionResource(event);
             }
             case "resourceaddorsubtract" -> {
-                event.reply("processing...").setEphemeral(true).queue();
                 resourceAddOrSubtract(event);
+            }
+            case "removeresource" -> {
+                removeResource(event);
             }
         }
         //implement new slash commands here
@@ -76,6 +76,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
+        commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
@@ -191,6 +192,13 @@ public class CommandManager extends ListenerAdapter {
                 .getJSONObject("resources").remove(event.getOption("resource").getAsString());
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
                 .getJSONObject("resources").put(event.getOption("resource").getAsString(), amount + currentAmount);
+        pushGameState(gameState, event);
+    }
+
+    public void removeResource(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+        gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
+                .getJSONObject("resources").remove(event.getOption("resource").getAsString());
         pushGameState(gameState, event);
     }
 
