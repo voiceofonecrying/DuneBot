@@ -1,5 +1,6 @@
 package controller.commands;
 
+import controller.Initializers;
 import model.Faction;
 import model.Resource;
 import net.dv8tion.jda.api.Permission;
@@ -14,32 +15,39 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        List<Role> roles = event.getMember().getRoles();
+        boolean isGameMaster = false;
+        for (Role role : roles) {
+            if (role.getName().equals("Game Master") || role.getName().equals("Dungeon Master")) {
+                isGameMaster = true;
+                break;
+            }
+        }
+        if (!isGameMaster) {
+            event.reply("You are not a Game Master!").setEphemeral(true).queue();
+            return;
+        }
+
         String name = event.getName();
         event.reply("processing...").setEphemeral(true).queue();
         switch (name) {
-            case "newgame" -> {
-                newGame(event);
-                event.getChannel().sendMessage("done!").queue();
-            }
-            case "addfaction" -> {
-                addFaction(event);
-            }
-            case "newfactionresource" -> {
-                newFactionResource(event);
-            }
-            case "resourceaddorsubtract" -> {
-                resourceAddOrSubtract(event);
-            }
-            case "removeresource" -> {
-                removeResource(event);
-            }
+            case "newgame" -> newGame(event);
+            case "addfaction" -> addFaction(event);
+            case "newfactionresource" -> newFactionResource(event);
+            case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
+            case "removeresource" -> removeResource(event);
         }
         //implement new slash commands here
 
@@ -82,26 +90,9 @@ public class CommandManager extends ListenerAdapter {
 
     public void newGame(SlashCommandInteractionEvent event) {
 
-        if (event.getMember() == null) {
-            event.getChannel().sendMessage("You are not a Game Master").queue();
-            return;
-        }
-        List<Role> roles = event.getMember().getRoles();
-        boolean isGameMaster = false;
-        for (Role role : roles) {
-            if (role.getName().equals("Game Master") || role.getName().equals("Dungeon Master")) {
-                isGameMaster = true;
-                break;
-            }
-        }
-        if (!isGameMaster) {
-            event.getChannel().sendMessage("You are not a Game Master!").queue();
-            return;
-        }
-
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getGuild().getRolesByName("Bot Testers", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(event.getGuild().getRolesByName("Bot Tester", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
@@ -124,17 +115,36 @@ public class CommandManager extends ListenerAdapter {
             <:ix:991763319406997514> <:bt:991763325576810546>  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
             <:choam:991763324624703538> <:rich:991763318467465337> CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""").queue();
 
-        TextChannel botData = category.getTextChannels().get(0);
-
         JSONObject object = new JSONObject();
         JSONObject gameState = new JSONObject();
         JSONObject factions = new JSONObject();
         JSONObject gameResources = new JSONObject();
+        JSONObject gameBoard = Initializers.buildBoard();
+        JSONObject traitorDeck = new JSONObject();
+        JSONObject spiceDeck = Initializers.buildSpiceDeck();
+        JSONObject spiceDiscardA = new JSONObject();
+        JSONObject spiceDiscardB = new JSONObject();
+        JSONObject treacheryDeck = Initializers.buildTreacheryDeck();
+        JSONObject treacheryDiscard = new JSONObject();
+        JSONObject tanksForces = new JSONObject();
+        JSONObject tanksLeaders = new JSONObject();
+
+        gameResources.put("turn", 0);
+        gameResources.put("shieldwallbroken", false);
+        gameResources.put("traitor_deck", traitorDeck);
+        gameResources.put("spice_deck", spiceDeck);
+        gameResources.put("spice_discardA", spiceDiscardA);
+        gameResources.put("spice_discardB", spiceDiscardB);
+        gameResources.put("treachery_deck", treacheryDeck);
+        gameResources.put("treachery_discard", treacheryDiscard);
+        gameResources.put("tanks_forces", tanksForces);
+        gameResources.put("tanks_leaders", tanksLeaders);
         gameState.put("factions", factions);
         gameState.put("game_resources", gameResources);
+        gameState.put("game_board", gameBoard);
         object.put("game_state", gameState);
         object.put("version", 1);
-        botData.sendMessage(Base64.getEncoder().encodeToString(object.toString().getBytes(StandardCharsets.UTF_8))).queue();
+        pushGameState(object, event);
     }
 
     public void addFaction(SlashCommandInteractionEvent event) {
@@ -207,15 +217,30 @@ public class CommandManager extends ListenerAdapter {
         MessageHistory h = game.getTextChannels().get(0).getHistory();
         h.retrievePast(1).complete();
         List<Message> ml = h.getRetrievedHistory();
-        String encoded = ml.get(0).getContentRaw();
-        byte[] decodedBytes = Base64.getDecoder().decode(encoded);
-        String decoded = new String(decodedBytes);
-
+        Message.Attachment encoded = ml.get(0).getAttachments().get(0);
+        encoded.downloadToFile();
+        String decoded = "null";
+        try{
+            String encodedString = Files.readString(Path.of("gamestate.txt"));
+            byte[] decodedBytes = Base64.getMimeDecoder().decode(encodedString);
+            decoded = new String(decodedBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return new JSONObject(decoded);
     }
     public void pushGameState(JSONObject gameState, SlashCommandInteractionEvent event) {
         Category game = event.getOption("game").getAsChannel().asCategory();
-        game.getTextChannels().get(0).sendMessage(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8))).queue();
+        TextChannel botData = game.getTextChannels().get(0);
+        try {
+            File file = new File("gamestate.txt");
+            PrintWriter pw = new PrintWriter(file, StandardCharsets.UTF_8);
+            pw.println(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8)));
+            pw.close();
+            botData.sendFile(file).complete();
+            file.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 }
