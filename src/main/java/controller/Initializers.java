@@ -1,14 +1,205 @@
 package controller;
 
+import model.Faction;
+import model.Resource;
 import model.Territory;
 import model.TreacheryCard;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Initializers {
+
+
+
+    public static void newFaction(Faction faction, JSONObject gameState) {
+
+        gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
+        JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction.getName()).getJSONObject("resources");
+        JSONObject traitorDeck = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("traitor_deck");
+        switch (faction.getName()) {
+            case "Atreides" -> {
+                resources.put("spice", 10);
+                resources.put("reserves", 10);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("lady jessica", 5);
+                resources.getJSONObject("leaders").put("thufir hawat", 5);
+                resources.getJSONObject("leaders").put("gurney halleck", 4);
+                resources.getJSONObject("leaders").put("duncan idaho", 2);
+                resources.getJSONObject("leaders").put("dr wellington yueh", 1);
+                traitorDeck.put("lady jessica", 5);
+                traitorDeck.put("thufir hawat", 5);
+                traitorDeck.put("gurney halleck", 4);
+                traitorDeck.put("duncan idaho", 2);
+                traitorDeck.put("dr wellington yueh", 1);
+                resources.put("forces lost", 0);
+                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Arrakeen").getJSONObject("forces").put("Atreides", 10);
+            }
+            case "Harkonnen" -> {
+                resources.put("spice", 10);
+                resources.put("reserves", 10);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("feyd rautha", 6);
+                resources.getJSONObject("leaders").put("beast rabban", 4);
+                resources.getJSONObject("leaders").put("piter de vries", 3);
+                resources.getJSONObject("leaders").put("captian iakin nefud", 2);
+                resources.getJSONObject("leaders").put("umman kudu", 1);
+                traitorDeck.put("feyd rautha", 6);
+                traitorDeck.put("beast rabban", 4);
+                traitorDeck.put("piter de vries", 3);
+                traitorDeck.put("captian iakin nefud", 2);
+                traitorDeck.put("umman kudu", 1);
+                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Carthag").getJSONObject("forces").put("Harkonnen", 10);
+            }
+            case "Emperor" -> {
+                resources.put("spice", 10);
+                resources.put("reserves", 15);
+                resources.put("sardaukar reserves", 5);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("hasimir fenring", 6);
+                resources.getJSONObject("leaders").put("captain aramsham", 5);
+                resources.getJSONObject("leaders").put("caid", 3);
+                resources.getJSONObject("leaders").put("burseg", 3);
+                resources.getJSONObject("leaders").put("bashar", 2);
+                traitorDeck.put("hasimir fenring", 6);
+                traitorDeck.put("captain aramsham", 5);
+                traitorDeck.put("caid", 3);
+                traitorDeck.put("burseg", 3);
+                traitorDeck.put("bashar", 2);
+            }
+            case "Fremen" -> {
+                resources.put("spice", 3);
+                resources.put("reserves", 17);
+                resources.put("fedaykin reserves", 3);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("stilgar", 7);
+                resources.getJSONObject("leaders").put("chani", 6);
+                resources.getJSONObject("leaders").put("otheym", 5);
+                resources.getJSONObject("leaders").put("shadout mapes", 3);
+                resources.getJSONObject("leaders").put("jamis", 2);
+                traitorDeck.put("stilgar", 7);
+                traitorDeck.put("chani", 6);
+                traitorDeck.put("otheym", 5);
+                traitorDeck.put("shadout mapes", 3);
+                traitorDeck.put("jamis", 2);
+            }
+            case "BG" -> {
+                resources.put("spice", 5);
+                resources.put("reserves", 20);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("alia", 5);
+                resources.getJSONObject("leaders").put("margot lady fenring", 5);
+                resources.getJSONObject("leaders").put("princess irulan", 5);
+                resources.getJSONObject("leaders").put("mother ramallo", 5);
+                resources.getJSONObject("leaders").put("wanna yueh", 5);
+                traitorDeck.put("alia", 5);
+                traitorDeck.put("margot lady fenring", 5);
+                traitorDeck.put("princess irulan", 5);
+                traitorDeck.put("mother ramallo", 5);
+                traitorDeck.put("wanna yueh", 5);
+            }
+            case "Guild" -> {
+                resources.put("spice", 5);
+                resources.put("reserves", 15);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("staban tuek", 5);
+                resources.getJSONObject("leaders").put("master bewt", 3);
+                resources.getJSONObject("leaders").put("esmar tuek", 3);
+                resources.getJSONObject("leaders").put("soo soo sook", 2);
+                resources.getJSONObject("leaders").put("guild rep", 1);
+                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Tuek's Sietch").getJSONObject("forces").put("Guild", 10);
+                traitorDeck.put("staban tuek", 5);
+                traitorDeck.put("master bewt", 3);
+                traitorDeck.put("esmar tuek", 3);
+                traitorDeck.put("soo soo sook", 2);
+                traitorDeck.put("guild rep", 1);
+            }
+            case "Ix" -> {
+                resources.put("spice", 10);
+                resources.put("suboid reserves", 10);
+                resources.put("cyborg reserves", 4);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("ctair pilru", 5);
+                resources.getJSONObject("leaders").put("tessia vernius", 5);
+                resources.getJSONObject("leaders").put("dominic vernius", 4);
+                resources.getJSONObject("leaders").put("kailea vernius", 2);
+                resources.getJSONObject("leaders").put("cammar pilru", 1);
+                gameState.getJSONObject("game_state").getJSONObject("game_board").put("Hidden Mobile Stronghold", new Territory("Hidden Mobile Stronghold", -1, false, true));
+                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Hidden Mobile Stronghold").getJSONObject("forces").put("Ix suboid", 3);
+                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Hidden Mobile Stronghold").getJSONObject("forces").put("Ix cyborg", 3);
+                traitorDeck.put("ctair pilru", 5);
+                traitorDeck.put("tessia vernius", 5);
+                traitorDeck.put("dominic vernius", 4);
+                traitorDeck.put("kailea vernius", 2);
+                traitorDeck.put("cammar pilru", 1);
+            }
+            case "BT" -> {
+                resources.put("spice", 5);
+                resources.put("reserves", 20);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("zoal", -1);
+                resources.getJSONObject("leaders").put("hidar fen ajidica", 4);
+                resources.getJSONObject("leaders").put("master zaaf", 3);
+                resources.getJSONObject("leaders").put("wykk", 2);
+                resources.getJSONObject("leaders").put("blin", 1);
+                traitorDeck.put("zoal", -1);
+                traitorDeck.put("hidar fen ajidica", 4);
+                traitorDeck.put("master zaaf", 3);
+                traitorDeck.put("wykk", 2);
+                traitorDeck.put("blin", 1);
+            }
+            case "CHOAM" -> {
+                resources.put("spice", 2);
+                resources.put("reserves", 20);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("frankos aru", 4);
+                resources.getJSONObject("leaders").put("lady jalma", 4);
+                resources.getJSONObject("leaders").put("rajiv londine", 3);
+                resources.getJSONObject("leaders").put("duke verdun", 3);
+                resources.getJSONObject("leaders").put("viscount tull", 2);
+                resources.getJSONObject("leaders").put("auditor", 2);
+                resources.put("inflation token", "double");
+                traitorDeck.put("frankos aru", 4);
+                traitorDeck.put("lady jalma", 4);
+                traitorDeck.put("rajiv londine", 3);
+                traitorDeck.put("duke verdun", 3);
+                traitorDeck.put("viscount tull", 2);
+                traitorDeck.put("auditor", 2);
+            }
+            case "Rich" -> {
+                resources.put("spice", 5);
+                resources.put("reserves", 20);
+                resources.put("leaders", new JSONObject());
+                resources.getJSONObject("leaders").put("ein calimar", 5);
+                resources.getJSONObject("leaders").put("lady helena", 4);
+                resources.getJSONObject("leaders").put("flinto kinnis", 3);
+                resources.getJSONObject("leaders").put("haloa rund", 2);
+                resources.getJSONObject("leaders").put("talis balt", 2);
+                resources.put("no field 0", 0);
+                resources.put("no field 3", 3);
+                resources.put("no field 5", 5);
+                resources.put("cache", new JSONObject());
+                resources.getJSONObject("cache").put("Ornithoper", "Special - Movement");
+                resources.getJSONObject("cache").put("Residual Poison", "Special");
+                resources.getJSONObject("cache").put("Semuta Drug", "Special");
+                resources.getJSONObject("cache").put("Stone Burner", "Weapon - Special");
+                resources.getJSONObject("cache").put("Mirror Weapon", "Weapon - Special");
+                resources.getJSONObject("cache").put("Portable Snooper", "Defense - Poison");
+                resources.getJSONObject("cache").put("Distrans", "Special");
+                resources.getJSONObject("cache").put("Juice of Sapho", "Special");
+                resources.getJSONObject("cache").put("Karama", "Special");
+                resources.getJSONObject("cache").put("Nullentropy", "Special");
+                traitorDeck.put("ein calimar", 5);
+                traitorDeck.put("lady helena", 4);
+                traitorDeck.put("flinto kinnis", 3);
+                traitorDeck.put("haloa rund", 2);
+                traitorDeck.put("talis balt", 2);
+            }
+        }
+    }
 
 
 

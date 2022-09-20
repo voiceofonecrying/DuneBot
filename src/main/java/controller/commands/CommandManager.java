@@ -161,27 +161,14 @@ public class CommandManager extends ListenerAdapter {
         String factionName = event.getOption("factionname").getAsString();
 
         Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
-        HashMap<String, Integer> startingSpice = new HashMap<>();
-        startingSpice.put("Atreides", 10);
-        startingSpice.put("Harkonnen", 10);
-        startingSpice.put("Emperor", 10);
-        startingSpice.put("Fremen", 3);
-        startingSpice.put("BG", 5);
-        startingSpice.put("Guild", 5);
-        startingSpice.put("Ix", 10);
-        startingSpice.put("BT", 5);
-        startingSpice.put("CHOAM", 2);
-        startingSpice.put("Rich", 5);
-        faction.addResource(new Resource<>("spice", startingSpice.get(factionName)));
-
-        gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
+        Initializers.newFaction(faction, gameState);
 
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
         Category game = event.getOption("game").getAsChannel().asCategory();
-        game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
+        game.createTextChannel("test-" + factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
                         .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                         .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
-        game.createTextChannel(factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+        game.createTextChannel("test-" + factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
 
