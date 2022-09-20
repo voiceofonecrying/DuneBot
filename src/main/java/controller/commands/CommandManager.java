@@ -1,6 +1,7 @@
 package controller.commands;
 
 import controller.Initializers;
+import io.github.cdimascio.dotenv.Dotenv;
 import model.Faction;
 import model.Resource;
 import net.dv8tion.jda.api.Permission;
@@ -13,15 +14,17 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -42,20 +45,24 @@ public class CommandManager extends ListenerAdapter {
 
         String name = event.getName();
         event.reply("processing...").setEphemeral(true).queue();
-        switch (name) {
-            case "newgame" -> newGame(event);
-            case "addfaction" -> addFaction(event);
-            case "newfactionresource" -> newFactionResource(event);
-            case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
-            case "removeresource" -> removeResource(event);
+        try {
+            switch (name) {
+                case "newgame" -> newGame(event);
+                case "addfaction" -> addFaction(event);
+                case "newfactionresource" -> newFactionResource(event);
+                case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
+                case "removeresource" -> removeResource(event);
+                case "clean" -> clean(event);
+            }
+            //implement new slash commands here
+        } catch (IOException e) {
+            event.getChannel().sendMessage("sorry, something happened on the backend that caused your action to not go through. :(").queue();
         }
-        //implement new slash commands here
 
     }
 
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
-
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
         OptionData role = new OptionData(OptionType.ROLE, "role", "The role you created for the players of this game", true);
@@ -77,9 +84,10 @@ public class CommandManager extends ListenerAdapter {
         OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
         OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
         OptionData amount = new OptionData(OptionType.INTEGER, "amount", "amount to be added or subtracted (e.g. -3, 4)", true);
-
+        OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you.", true);
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
+        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
@@ -97,16 +105,16 @@ public class CommandManager extends ListenerAdapter {
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
-        category.createTextChannel("bot-data").addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+        category.createTextChannel("test-bot-data").addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getGuild().getBotRole(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
-        category.createTextChannel("out-of-game-chat").complete();
-        category.createTextChannel("in-game-chat").complete();
-        category.createTextChannel("turn-summary").complete();
-        category.createTextChannel("game-actions").complete();
-        category.createTextChannel("bribes").complete();
-        category.createTextChannel("bidding-phase").complete();
-        category.createTextChannel("rules").complete();
-        category.createTextChannel("pre-game-voting").complete();
+        category.createTextChannel("test-out-of-game-chat").complete();
+        category.createTextChannel("test-in-game-chat").complete();
+        category.createTextChannel("test-turn-summary").complete();
+        category.createTextChannel("test-game-actions").complete();
+        category.createTextChannel("test-bribes").complete();
+        category.createTextChannel("test-bidding-phase").complete();
+        category.createTextChannel("test-rules").complete();
+        category.createTextChannel("test-pre-game-voting").complete();
 
         TextChannel rules = category.getTextChannels().get(7);
         rules.sendMessage("""
@@ -144,15 +152,15 @@ public class CommandManager extends ListenerAdapter {
         gameState.put("game_board", gameBoard);
         object.put("game_state", gameState);
         object.put("version", 1);
-        pushGameState(object, event);
+        pushGameState(object, category);
     }
 
-    public void addFaction(SlashCommandInteractionEvent event) {
+    public void addFaction(SlashCommandInteractionEvent event) throws IOException {
 
         JSONObject gameState = getGameState(event);
         String factionName = event.getOption("factionname").getAsString();
 
-        Faction faction = new Faction(String.valueOf(factionName.charAt(0)),factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
+        Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
         HashMap<String, Integer> startingSpice = new HashMap<>();
         startingSpice.put("Atreides", 10);
         startingSpice.put("Harkonnen", 10);
@@ -168,7 +176,7 @@ public class CommandManager extends ListenerAdapter {
 
         gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
 
-        pushGameState(gameState, event);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
         Category game = event.getOption("game").getAsChannel().asCategory();
         game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
                         .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
@@ -179,7 +187,7 @@ public class CommandManager extends ListenerAdapter {
 
     }
 
-    public void newFactionResource(SlashCommandInteractionEvent event) {
+    public void newFactionResource(SlashCommandInteractionEvent event) throws IOException {
         JSONObject gameState = getGameState(event);
         if (gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()) == null) {
             event.getChannel().sendMessage("That faction is not in this game!").queue();
@@ -189,10 +197,10 @@ public class CommandManager extends ListenerAdapter {
         Object value = event.getOption("isanumber").getAsBoolean() ? event.getOption("numbervalue").getAsInt() : event.getOption("othervalue").getAsString();
 
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()).getJSONObject("resources").put(event.getOption("resource").getAsString(), value);
-        pushGameState(gameState, event);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void resourceAddOrSubtract(SlashCommandInteractionEvent event) {
+    public void resourceAddOrSubtract(SlashCommandInteractionEvent event) throws IOException {
         JSONObject gameState = getGameState(event);
 
         int amount = event.getOption("amount").getAsInt();
@@ -202,14 +210,14 @@ public class CommandManager extends ListenerAdapter {
                 .getJSONObject("resources").remove(event.getOption("resource").getAsString());
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
                 .getJSONObject("resources").put(event.getOption("resource").getAsString(), amount + currentAmount);
-        pushGameState(gameState, event);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void removeResource(SlashCommandInteractionEvent event) {
+    public void removeResource(SlashCommandInteractionEvent event) throws IOException {
         JSONObject gameState = getGameState(event);
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
                 .getJSONObject("resources").remove(event.getOption("resource").getAsString());
-        pushGameState(gameState, event);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
     public JSONObject getGameState(SlashCommandInteractionEvent event) {
@@ -218,19 +226,15 @@ public class CommandManager extends ListenerAdapter {
         h.retrievePast(1).complete();
         List<Message> ml = h.getRetrievedHistory();
         Message.Attachment encoded = ml.get(0).getAttachments().get(0);
-        encoded.downloadToFile();
-        String decoded = "null";
-        try{
-            String encodedString = Files.readString(Path.of("gamestate.txt"));
-            byte[] decodedBytes = Base64.getMimeDecoder().decode(encodedString);
-            decoded = new String(decodedBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
+        CompletableFuture<File> future = encoded.getProxy().downloadToFile(new File(Dotenv.configure().load().get("FILEPATH")));
+        try {
+            return new JSONObject(new String(Base64.getMimeDecoder().decode(new String(Files.readAllBytes(future.get().toPath())))));
+        } catch (IOException | InterruptedException | ExecutionException e) {
+            System.out.println("Didn't work...");
+            return new JSONObject();
         }
-        return new JSONObject(decoded);
     }
-    public void pushGameState(JSONObject gameState, SlashCommandInteractionEvent event) {
-        Category game = event.getOption("game").getAsChannel().asCategory();
+    public void pushGameState(JSONObject gameState, Category game) {
         TextChannel botData = game.getTextChannels().get(0);
         try {
             File file = new File("gamestate.txt");
@@ -241,6 +245,24 @@ public class CommandManager extends ListenerAdapter {
             file.delete();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void clean(SlashCommandInteractionEvent event) {
+        if (!event.getOption("password").getAsString().equals(Dotenv.configure().load().get("PASSWORD"))) {
+            event.getChannel().sendMessage("You have attempted the forbidden command.\n\n...Or you're Voiceofonecrying " +
+                    "and you fat-fingered the password").queue();
+            return;
+        }
+        List<Category> categories = event.getGuild().getCategories();
+        for (Category category : categories) {
+            if (!category.getName().startsWith("test")) continue;
+            category.delete().complete();
+        }
+        List<TextChannel> channels = event.getGuild().getTextChannels();
+        for (TextChannel channel : channels) {
+            if (!channel.getName().startsWith("test")) continue;
+            channel.delete().complete();
         }
     }
 }
