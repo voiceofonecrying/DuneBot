@@ -50,6 +50,7 @@ public class CommandManager extends ListenerAdapter {
             case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
             case "removeresource" -> removeResource(event);
             case "draw" -> drawCard(event);
+            case "start" -> startGame(event);
             case "clean" -> clean(event);
 
         }
@@ -96,6 +97,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
+        commandData.add(Commands.slash("start", "Begin startup sequence for a new game").addOptions(game));
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
@@ -103,7 +105,7 @@ public class CommandManager extends ListenerAdapter {
 
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getGuild().getRolesByName("Bot Tester", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(event.getGuild().getRolesByName("Bot Testers", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
@@ -128,29 +130,24 @@ public class CommandManager extends ListenerAdapter {
 
         JSONObject object = new JSONObject();
         JSONObject gameState = new JSONObject();
-        JSONObject factions = new JSONObject();
         JSONObject gameResources = new JSONObject();
         JSONObject gameBoard = Initializers.buildBoard();
-        JSONObject traitorDeck = new JSONObject();
         JSONObject spiceDeck = Initializers.buildSpiceDeck();
-        JSONObject spiceDiscardA = new JSONObject();
-        JSONObject spiceDiscardB = new JSONObject();
         JSONObject treacheryDeck = Initializers.buildTreacheryDeck();
-        JSONObject treacheryDiscard = new JSONObject();
-        JSONObject tanksForces = new JSONObject();
-        JSONObject tanksLeaders = new JSONObject();
 
         gameResources.put("turn", 0);
+        gameResources.put("storm", 1);
         gameResources.put("shieldwallbroken", false);
-        gameResources.put("traitor_deck", traitorDeck);
+        gameResources.put("traitor_deck", new JSONObject());
         gameResources.put("spice_deck", spiceDeck);
-        gameResources.put("spice_discardA", spiceDiscardA);
-        gameResources.put("spice_discardB", spiceDiscardB);
+        gameResources.put("spice_discardA", new JSONObject());
+        gameResources.put("spice_discardB", new JSONObject());
         gameResources.put("treachery_deck", treacheryDeck);
-        gameResources.put("treachery_discard", treacheryDiscard);
-        gameResources.put("tanks_forces", tanksForces);
-        gameResources.put("tanks_leaders", tanksLeaders);
-        gameState.put("factions", factions);
+        gameResources.put("treachery_discard", new JSONObject());
+        gameResources.put("tanks_forces", new JSONObject());
+        gameResources.put("tanks_leaders", new JSONObject());
+        gameResources.put("turn_order", new JSONObject());
+        gameState.put("factions", new JSONObject());
         gameState.put("game_resources", gameResources);
         gameState.put("game_board", gameBoard);
         object.put("game_state", gameState);
@@ -233,10 +230,8 @@ public class CommandManager extends ListenerAdapter {
                     event.getChannel().sendMessage("There is no such thing as a traitor discard pile!").queue();
                     return;
                 }
-                case "treachery_deck" -> {
-                    gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("treachery_discard")
-                            .put(drawn, deck.getString(drawn));
-                }
+                case "treachery_deck" -> gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("treachery_discard")
+                        .put(drawn, deck.getString(drawn));
                 case "spice_deck" -> {
                     if (event.getOption("destination").getAsString().equalsIgnoreCase("discarda")) {
                         gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("spice_discardA")
@@ -253,12 +248,8 @@ public class CommandManager extends ListenerAdapter {
             JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("destination").getAsString()).getJSONObject("resources");
 
             switch (event.getOption("deck").getAsString()) {
-                case "traitor_deck" -> {
-                    resources.getJSONObject("traitors").put(drawn, deck.getInt(drawn));
-                }
-                case "treachery_deck" -> {
-                    resources.getJSONObject("treachery_hand").put(drawn, deck.getString(drawn));
-                }
+                case "traitor_deck" -> resources.getJSONObject("traitors").put(drawn, deck.getInt(drawn));
+                case "treachery_deck" -> resources.getJSONObject("treachery_hand").put(drawn, deck.getString(drawn));
                 case "spice_deck" -> {
                     event.getChannel().sendMessage("You can't draw a spice card to someone's hand!").queue();
                     return;
@@ -269,6 +260,83 @@ public class CommandManager extends ListenerAdapter {
         deck.remove(drawn);
         pushGameState(gameState,event.getOption("game").getAsChannel().asCategory());
         if (drawn.startsWith("Shai-Hulud")) drawCard(event);
+    }
+
+    public void drawCard(JSONObject gameState, String deckName, String faction) {
+        JSONObject deck = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject(deckName);
+        int size = deck.keySet().size();
+        int toDraw = new Random().nextInt(size);
+        int i = 0;
+        String drawn = "";
+        for (String card : deck.keySet()) {
+            if (i == toDraw) {
+                drawn = card;
+                break;
+            }
+            i++;
+        }
+        System.out.println(drawn);
+        JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction).getJSONObject("resources");
+        switch (deckName) {
+            case "traitor_deck" -> resources.getJSONObject("traitors").put(drawn, deck.getInt(drawn));
+            case "treachery_deck" -> resources.getJSONObject("treachery_hand").put(drawn, deck.getString(drawn));
+        }
+        deck.remove(drawn);
+    }
+
+
+    public void startGame(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+        JSONObject turnOrder = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("turn_order");
+        Category game = event.getOption("game").getAsChannel().asCategory();
+        int i = 1;
+        for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+            turnOrder.put(faction, i);
+            i++;
+
+            drawCard(gameState, "treachery_deck", faction);
+            if (faction.equals("Harkonnen")) drawCard(gameState, "treachery_deck", faction);
+            if (!faction.equals("BT")) {
+                for (int j = 0; j < 4; j++) {
+                    drawCard(gameState, "traitor_deck", faction);
+                }
+            }
+
+            JSONObject factionObject = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction);
+            String emoji = factionObject.getString("emoji");
+            JSONObject traitors = factionObject.getJSONObject("resources").getJSONObject("traitors");
+            String[] traitorNames = new String[4];
+            int k = 0;
+            for (String traitor : traitors.keySet()) {
+                traitorNames[k] = traitor;
+                k++;
+            }
+            for (TextChannel channel : game.getTextChannels()) {
+                if (channel.getName().equals("test-" + faction.toLowerCase() + "-info")) {
+                    channel.sendMessage(emoji + "**Setup Info**" + emoji + "\n__Spice:__ " +
+                            factionObject.getJSONObject("resources").getInt("spice") +
+                            "\n__Traitors:__\n" + traitorNames[0] + "(" +traitors.getInt(traitorNames[0]) + ")\n" +
+                            traitorNames[1] + "(" +traitors.getInt(traitorNames[1]) + ")\n" +
+                            traitorNames[2] + "(" +traitors.getInt(traitorNames[2]) + ")\n" +
+                            traitorNames[3] + "(" +traitors.getInt(traitorNames[3]) + ")\n").queue();
+
+                    for (String treachery : factionObject.getJSONObject("resources").getJSONObject("treachery_hand").keySet()) {
+                        channel.sendMessage(":treachery: " + treachery + ":treachery:").queue();
+                    }
+                }
+                if (channel.getName().equals("test-" + faction.toLowerCase() + "-chat")) {
+                    switch (faction) {
+                        case "BG" -> channel.sendMessage("Please make your secret prediction and determine where your starting force will be shipped.").queue();
+                        case "Fremen" -> channel.sendMessage("Please determine how you will split your initial 10 forces.").queue();
+                        case "Ix" -> channel.sendMessage("Please indicate where you would like your Hidden Mobile Stronghold to start").queue();
+                    }
+                    if (!faction.equals("Harkonnen")) channel.sendMessage("Please select your traitor.").queue();
+                    if (turnOrder.getInt(faction) == 1 || turnOrder.getInt(faction) == 6) channel.sendMessage("Please submit your dial for initial storm position.").queue();
+                }
+            }
+        }
+        gameState.getJSONObject("game_state").getJSONObject("game_resources").put("turn", 1);
+        pushGameState(gameState, game);
     }
 
     public JSONObject getGameState(SlashCommandInteractionEvent event) {

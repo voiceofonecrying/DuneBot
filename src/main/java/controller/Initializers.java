@@ -1,5 +1,6 @@
 package controller;
 
+import controller.commands.CommandManager;
 import model.Faction;
 import model.Resource;
 import model.Territory;
@@ -12,8 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Initializers {
-
-
 
     public static void newFaction(Faction faction, JSONObject gameState) {
 
