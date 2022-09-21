@@ -3,7 +3,6 @@ package controller.commands;
 import controller.Initializers;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Faction;
-import model.Resource;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -14,14 +13,13 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -45,19 +43,17 @@ public class CommandManager extends ListenerAdapter {
 
         String name = event.getName();
         event.reply("processing...").setEphemeral(true).queue();
-        try {
-            switch (name) {
-                case "newgame" -> newGame(event);
-                case "addfaction" -> addFaction(event);
-                case "newfactionresource" -> newFactionResource(event);
-                case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
-                case "removeresource" -> removeResource(event);
-                case "clean" -> clean(event);
-            }
-            //implement new slash commands here
-        } catch (IOException e) {
-            event.getChannel().sendMessage("sorry, something happened on the backend that caused your action to not go through. :(").queue();
+        switch (name) {
+            case "newgame" -> newGame(event);
+            case "addfaction" -> addFaction(event);
+            case "newfactionresource" -> newFactionResource(event);
+            case "resourceaddorsubtract" -> resourceAddOrSubtract(event);
+            case "removeresource" -> removeResource(event);
+            case "draw" -> drawCard(event);
+            case "clean" -> clean(event);
+
         }
+        //implement new slash commands here
 
     }
 
@@ -80,11 +76,17 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("CHOAM", "CHOAM")
                 .addChoice("Richese", "Rich");
         OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
-        OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise.", true);
+        OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise", true);
         OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
         OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
         OptionData amount = new OptionData(OptionType.INTEGER, "amount", "amount to be added or subtracted (e.g. -3, 4)", true);
-        OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you.", true);
+        OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
+        OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck you are drawing from", true)
+                .addChoice("Spice Deck", "spice_deck")
+                .addChoice("Treachery Deck", "treachery_deck")
+                .addChoice("Traitor Deck", "traitor_deck");
+        OptionData destination = new OptionData(OptionType.STRING, "destination", "Where the card is being drawn to (name a faction to draw to hand, or 'discard')", true);
+
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
@@ -93,6 +95,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
+        commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
@@ -155,7 +158,7 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(object, category);
     }
 
-    public void addFaction(SlashCommandInteractionEvent event) throws IOException {
+    public void addFaction(SlashCommandInteractionEvent event) {
 
         JSONObject gameState = getGameState(event);
         String factionName = event.getOption("factionname").getAsString();
@@ -174,7 +177,7 @@ public class CommandManager extends ListenerAdapter {
 
     }
 
-    public void newFactionResource(SlashCommandInteractionEvent event) throws IOException {
+    public void newFactionResource(SlashCommandInteractionEvent event) {
         JSONObject gameState = getGameState(event);
         if (gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString()) == null) {
             event.getChannel().sendMessage("That faction is not in this game!").queue();
@@ -187,7 +190,7 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void resourceAddOrSubtract(SlashCommandInteractionEvent event) throws IOException {
+    public void resourceAddOrSubtract(SlashCommandInteractionEvent event) {
         JSONObject gameState = getGameState(event);
 
         int amount = event.getOption("amount").getAsInt();
@@ -200,11 +203,72 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void removeResource(SlashCommandInteractionEvent event) throws IOException {
+    public void removeResource(SlashCommandInteractionEvent event) {
         JSONObject gameState = getGameState(event);
         gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("factionname").getAsString())
                 .getJSONObject("resources").remove(event.getOption("resource").getAsString());
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
+    public void drawCard(SlashCommandInteractionEvent event) {
+        JSONObject gameState = getGameState(event);
+
+        JSONObject deck = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject(event.getOption("deck").getAsString());
+        int size = deck.keySet().size();
+        int toDraw = new Random().nextInt(size);
+        int i = 0;
+        String drawn = "";
+        for (String card : deck.keySet()) {
+            if (i == toDraw) {
+                drawn = card;
+                break;
+            }
+            i++;
+        }
+        System.out.println(drawn);
+
+        if (event.getOption("destination").getAsString().toLowerCase().startsWith("discard")) {
+            switch (event.getOption("deck").getAsString()) {
+                case "traitor_deck" -> {
+                    event.getChannel().sendMessage("There is no such thing as a traitor discard pile!").queue();
+                    return;
+                }
+                case "treachery_deck" -> {
+                    gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("treachery_discard")
+                            .put(drawn, deck.getString(drawn));
+                }
+                case "spice_deck" -> {
+                    if (event.getOption("destination").getAsString().equalsIgnoreCase("discarda")) {
+                        gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("spice_discardA")
+                                .put(drawn, deck.getJSONArray(drawn));
+                    }
+                    else {
+                        gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("spice_discardB")
+                                .put(drawn, deck.getJSONArray(drawn));
+                    }
+                }
+            }
+        }
+        else {
+            JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(event.getOption("destination").getAsString()).getJSONObject("resources");
+
+            switch (event.getOption("deck").getAsString()) {
+                case "traitor_deck" -> {
+                    resources.getJSONObject("traitors").put(drawn, deck.getInt(drawn));
+                }
+                case "treachery_deck" -> {
+                    resources.getJSONObject("treachery_hand").put(drawn, deck.getString(drawn));
+                }
+                case "spice_deck" -> {
+                    event.getChannel().sendMessage("You can't draw a spice card to someone's hand!").queue();
+                    return;
+                }
+            }
+        }
+
+        deck.remove(drawn);
+        pushGameState(gameState,event.getOption("game").getAsChannel().asCategory());
+        if (drawn.startsWith("Shai-Hulud")) drawCard(event);
     }
 
     public JSONObject getGameState(SlashCommandInteractionEvent event) {
