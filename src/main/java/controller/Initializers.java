@@ -1,5 +1,6 @@
 package controller;
 
+import controller.commands.CommandManager;
 import model.Faction;
 import model.Resource;
 import model.Territory;
@@ -13,18 +14,18 @@ import java.util.List;
 
 public class Initializers {
 
-
-
     public static void newFaction(Faction faction, JSONObject gameState) {
 
         gameState.getJSONObject("game_state").getJSONObject("factions").put(faction.getName(), faction);
         JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction.getName()).getJSONObject("resources");
         JSONObject traitorDeck = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("traitor_deck");
+        resources.put("leaders", new JSONObject());
+        resources.put("traitors", new JSONObject());
+        resources.put("treachery_hand", new JSONObject());
         switch (faction.getName()) {
             case "Atreides" -> {
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("lady jessica", 5);
                 resources.getJSONObject("leaders").put("thufir hawat", 5);
                 resources.getJSONObject("leaders").put("gurney halleck", 4);
@@ -41,7 +42,6 @@ public class Initializers {
             case "Harkonnen" -> {
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("feyd rautha", 6);
                 resources.getJSONObject("leaders").put("beast rabban", 4);
                 resources.getJSONObject("leaders").put("piter de vries", 3);
@@ -58,7 +58,6 @@ public class Initializers {
                 resources.put("spice", 10);
                 resources.put("reserves", 15);
                 resources.put("sardaukar reserves", 5);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("hasimir fenring", 6);
                 resources.getJSONObject("leaders").put("captain aramsham", 5);
                 resources.getJSONObject("leaders").put("caid", 3);
@@ -74,7 +73,6 @@ public class Initializers {
                 resources.put("spice", 3);
                 resources.put("reserves", 17);
                 resources.put("fedaykin reserves", 3);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("stilgar", 7);
                 resources.getJSONObject("leaders").put("chani", 6);
                 resources.getJSONObject("leaders").put("otheym", 5);
@@ -89,7 +87,6 @@ public class Initializers {
             case "BG" -> {
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("alia", 5);
                 resources.getJSONObject("leaders").put("margot lady fenring", 5);
                 resources.getJSONObject("leaders").put("princess irulan", 5);
@@ -104,7 +101,6 @@ public class Initializers {
             case "Guild" -> {
                 resources.put("spice", 5);
                 resources.put("reserves", 15);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("staban tuek", 5);
                 resources.getJSONObject("leaders").put("master bewt", 3);
                 resources.getJSONObject("leaders").put("esmar tuek", 3);
@@ -121,7 +117,6 @@ public class Initializers {
                 resources.put("spice", 10);
                 resources.put("suboid reserves", 10);
                 resources.put("cyborg reserves", 4);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("ctair pilru", 5);
                 resources.getJSONObject("leaders").put("tessia vernius", 5);
                 resources.getJSONObject("leaders").put("dominic vernius", 4);
@@ -139,7 +134,6 @@ public class Initializers {
             case "BT" -> {
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("zoal", -1);
                 resources.getJSONObject("leaders").put("hidar fen ajidica", 4);
                 resources.getJSONObject("leaders").put("master zaaf", 3);
@@ -154,7 +148,6 @@ public class Initializers {
             case "CHOAM" -> {
                 resources.put("spice", 2);
                 resources.put("reserves", 20);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("frankos aru", 4);
                 resources.getJSONObject("leaders").put("lady jalma", 4);
                 resources.getJSONObject("leaders").put("rajiv londine", 3);
@@ -172,7 +165,6 @@ public class Initializers {
             case "Rich" -> {
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
-                resources.put("leaders", new JSONObject());
                 resources.getJSONObject("leaders").put("ein calimar", 5);
                 resources.getJSONObject("leaders").put("lady helena", 4);
                 resources.getJSONObject("leaders").put("flinto kinnis", 3);
