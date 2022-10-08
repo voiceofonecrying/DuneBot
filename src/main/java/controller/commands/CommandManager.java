@@ -412,6 +412,8 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         giverHand.remove(i);
+        if (giver != null) writeFactionInfo(event, gameState, giver.getString("name"));
+        if (receiver != null) writeFactionInfo(event, gameState, receiver.getString("name"));
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
@@ -461,10 +463,6 @@ public class CommandManager extends ListenerAdapter {
                     drawCard(gameState, "traitor_deck", faction);
                 }
             }
-
-            JSONObject factionObject = gameState.getFaction(faction);
-            String emoji = factionObject.getString("emoji");
-            JSONArray traitors = factionObject.getJSONObject("resources").getJSONArray("traitors");
             for (TextChannel channel : game.getTextChannels()) {
                 writeFactionInfo(event, gameState, faction);
                 if (channel.getName().equals("test-" + faction.toLowerCase() + "-chat")) {
@@ -483,6 +481,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, String faction) {
+        if (gameState.getFaction(faction) == null) return;
         String emoji = gameState.getFaction(faction).getString("emoji");
         JSONObject factionObject = gameState.getFaction(faction);
         JSONArray traitors = factionObject.getJSONObject("resources").getJSONArray("traitors");
