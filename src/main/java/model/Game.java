@@ -1,39 +1,28 @@
 package model;
 
-public class Game {
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-    private String name;
-    private int turn;
-    private boolean shieldWallBroken;
+public class Game extends JSONObject {
 
-    public Game(String name, int turn, boolean shieldWallBroken) {
-        this.name = name;
-        this.turn = turn;
-        this.shieldWallBroken = shieldWallBroken;
-    }
-    public Game() {}
-
-    public String getName() {
-        return name;
+    public Game(String s) {
+        super(s);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public Game() {
+        super();
     }
 
-    public int getTurn() {
-        return turn;
+    public JSONObject getResources() {
+        return this.getJSONObject("game_state").getJSONObject("game_resources");
     }
 
-    public void setTurn(int turn) {
-        this.turn = turn;
+    public JSONArray getDeck(String deck) {
+        return this.getJSONObject("game_state").getJSONObject("game_resources").getJSONArray(deck);
     }
 
-    public boolean isShieldWallBroken() {
-        return shieldWallBroken;
+    public JSONObject getFaction(String name) {
+        return this.getJSONObject("game_state").getJSONObject("factions").getJSONObject(name);
     }
 
-    public void setShieldWallBroken(boolean shieldWallBroken) {
-        this.shieldWallBroken = shieldWallBroken;
-    }
 }
