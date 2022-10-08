@@ -11,6 +11,10 @@ public class Faction extends JSONObject {
         this.put("resources", new JSONObject());
     }
 
+    public Faction(JSONObject j) {
+        super(j.toString());
+    }
+
     public String getName() {
         return this.getString("name");
     }
