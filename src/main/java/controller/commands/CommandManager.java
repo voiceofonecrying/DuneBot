@@ -58,7 +58,9 @@ public class CommandManager extends ListenerAdapter {
             case "discard" -> discard(event);
             case "transfercard" -> transferCard(event);
             case "putback" -> putBack(event);
+            case "ixhandselection" -> ixHandSelection(event);
             case "start" -> startGame(event);
+            case "advancegame" -> advanceGame(event);
             case "clean" -> clean(event);
 
         }
@@ -147,6 +149,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(game, faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(game, sender, card, recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
+        commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round").addOptions(game));
+        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -184,10 +188,9 @@ public class CommandManager extends ListenerAdapter {
         JSONObject gameBoard = Initializers.buildBoard();
         JSONArray spiceDeck = Initializers.buildSpiceDeck();
         JSONArray treacheryDeck = Initializers.buildTreacheryDeck();
-        shuffle(spiceDeck);
-        shuffle(treacheryDeck);
 
         gameResources.put("turn", 0);
+        gameResources.put("phase", 0);
         gameResources.put("storm", 1);
         gameResources.put("shieldwallbroken", false);
         gameResources.put("traitor_deck", new JSONArray());
@@ -211,7 +214,19 @@ public class CommandManager extends ListenerAdapter {
     public void addFaction(SlashCommandInteractionEvent event) {
 
         Game gameState = getGameState(event);
+        if (gameState.getResources().getInt("turn") != 0) {
+            event.getChannel().sendMessage("The game has already started, you can't add more factions!").queue();
+            return;
+        }
+        if (gameState.getJSONObject("game_state").getJSONObject("factions").length() >= 6) {
+            event.getChannel().sendMessage("This game is already full!").queue();
+            return;
+        }
         String factionName = event.getOption("factionname").getAsString();
+        if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull(factionName)) {
+            event.getChannel().sendMessage("This faction has already been taken!").queue();
+            return;
+        }
 
         Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
         Initializers.newFaction(faction, gameState);
@@ -425,8 +440,8 @@ public class CommandManager extends ListenerAdapter {
         for (; i < market.length(); i++) {
             if (market.getString(i).contains(event.getOption("card").getAsString())) {
                 if (event.getOption("bottom").getAsBoolean()) gameState.getResources().getJSONArray("treachery_deck")
-                        .put(gameState.getResources().getJSONArray("treachery_deck").length());
-                else gameState.getResources().getJSONArray("treachery_deck").put(market.getString(i));
+                        .put(market.getString(i));
+                else gameState.getResources().getJSONArray("treachery_deck").put(0, market.getString(i));
                 found = true;
                 break;
             }
@@ -439,32 +454,49 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
+    public void ixHandSelection(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        JSONArray hand = gameState.getFaction("Ix").getJSONObject("resources").getJSONArray("treachery_hand");
+        shuffle(hand);
+        for (int i = 0; i < hand.length(); i++) {
+            if (hand.getString(i).contains(event.getOption("card").getAsString())) continue;
+            gameState.getResources().getJSONArray("treachery_deck").put(0, hand.getString(i));
+        }
+        int shift = 0;
+        for (int i = 0; i < hand.length() - 1; i++) {
+            if (hand.getString(i).contains(event.getOption("card").getAsString())) {
+                shift = 1;
+                continue;
+            }
+            hand.remove(shift);
+        }
+        writeFactionInfo(event, gameState, "Ix");
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
     public void startGame(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
-        JSONObject turnOrder = gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONObject("turn_order");
         Category game = event.getOption("game").getAsChannel().asCategory();
-        shuffle(gameState.getDeck("traitor_deck"));
         int i = 1;
         for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-            turnOrder.put(faction, i);
             i++;
 
-            drawCard(gameState, "treachery_deck", faction);
-            if (faction.equals("Harkonnen"))  {
-                try {
-                    TimeUnit.MILLISECONDS.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                drawCard(gameState, "treachery_deck", faction);
-            }
-            if (!faction.equals("BT")) {
-                for (int j = 0; j < 4; j++) {
-                    drawCard(gameState, "traitor_deck", faction);
-                }
-            }
+
             for (TextChannel channel : game.getTextChannels()) {
-                writeFactionInfo(event, gameState, faction);
+                String emoji = gameState.getFaction(faction).getString("emoji");
+                JSONObject factionObject = gameState.getFaction(faction);
+                JSONArray traitors = factionObject.getJSONObject("resources").getJSONArray("traitors");
+                if (channel.getName().equals("test-" + faction.toLowerCase() + "-info")) {
+                    channel.sendMessage(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
+                            factionObject.getJSONObject("resources").getInt("spice") +
+                            "\n__Traitors:__\n" + traitors.getString(0) + "\n" + traitors.getString(1) + "\n" +
+                            traitors.getString(2) + "\n" + traitors.getString(3)).queue();
+
+                    for (int j = factionObject.getJSONObject("resources").getJSONArray("treachery_hand").length() - 1; j >= 0; j--) {
+                        channel.sendMessage("<:treachery:> " + factionObject.getJSONObject("resources").getJSONArray("treachery_hand").getString(j).split("\\|")[0].strip() + " <:treachery:>").queue();
+                    }
+                }
+
                 if (channel.getName().equals("test-" + faction.toLowerCase() + "-chat")) {
                     switch (faction) {
                         case "BG" -> channel.sendMessage("Please make your secret prediction and determine where your starting force will be shipped.").queue();
@@ -472,12 +504,120 @@ public class CommandManager extends ListenerAdapter {
                         case "Ix" -> channel.sendMessage("Please indicate where you would like your Hidden Mobile Stronghold to start").queue();
                     }
                     if (!faction.equals("Harkonnen")) channel.sendMessage("Please select your traitor.").queue();
-                    if (turnOrder.getInt(faction) == 1 || turnOrder.getInt(faction) == 6) channel.sendMessage("Please submit your dial for initial storm position.").queue();
                 }
             }
         }
         gameState.getJSONObject("game_state").getJSONObject("game_resources").put("turn", 1);
         pushGameState(gameState, game);
+    }
+
+    public void advanceGame(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+
+        //Turn 0 is for the set-up for play section from the rules page 6.
+        if (gameState.getTurn() == 0) {
+            switch (gameState.getPhase()) {
+                //1. Positions
+                case 0 -> {
+                    shuffle(gameState.getDeck("spice_deck"));
+                    shuffle(gameState.getDeck("treachery_deck"));
+                    JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
+                    int i = 1;
+                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        turnOrder.put(faction, i);
+                        i++;
+                    }
+                    gameState.advancePhase();
+                    //If Bene Gesserit are present, time to make a prediction
+                    if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (channel.getName().equals("test-bg-chat")) {
+                                channel.sendMessage("Please make your secret prediction.").queue();
+                            }
+                        }
+                    }
+                }
+                //2. Traitors
+                case 1 -> {
+                    shuffle(gameState.getDeck("traitor_deck"));
+                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        if (!faction.equals("BT")) {
+                            for (int j = 0; j < 4; j++) {
+                                drawCard(gameState, "traitor_deck", faction);
+                            }
+                        }
+                        writeFactionInfo(event, gameState, faction);
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (!faction.equals("Harkonnen") && !faction.equals("BT")) channel.sendMessage("Please select your traitor.").queue();
+                        }
+                    }
+
+
+                        gameState.advancePhase();
+                    //If Bene Tleilax are not present, advance past the Face Dancers draw
+                    if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BT")) {
+                        gameState.advancePhase();
+                    }
+                }
+                //Bene Tleilax to draw Face Dancers
+                case 2 -> {
+                    shuffle(gameState.getDeck("traitor_deck"));
+                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor_deck", "BT");
+                    advanceGame(event);
+                }
+                //3. Spice, 4. Forces (prompts are sent out)
+                case 3 -> {
+                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                        switch (channel.getName()) {
+                            case "test-fremen-chat" -> channel.sendMessage("Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West").queue();
+                            case "test-bg-chat" -> channel.sendMessage("Please decide where to place your advisor").queue();
+                        }
+                    }
+                    gameState.advancePhase();
+                    //If Ix is not present, advance past the next step
+                    if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Ix")) {
+                        gameState.advancePhase();
+                    }
+                }
+                //Ix to select from starting treachery cards
+                case 4 -> {
+                    for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
+                        drawCard(gameState, "treachery_deck", "Ix");
+                    }
+                    writeFactionInfo(event, gameState, "Ix");
+                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                        if (channel.getName().equals("test-ix-chat")) channel.sendMessage("Please select one treachery card to keep in your hand.").queue();
+                    }
+                    gameState.advancePhase();
+                }
+                //5. Treachery
+                case 5 -> {
+                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        if (!faction.equals("Ix")) drawCard(gameState, "treachery_deck", faction);
+                        if (faction.equals("Harkonnen")) drawCard(gameState, "treachery_deck", faction);
+                        writeFactionInfo(event, gameState, faction);
+                    }
+                    gameState.advancePhase();
+                }
+                //6. Turn Marker (prompt for dial for First Storm)
+                case 6 -> {
+                    JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
+                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (turnOrder.getInt(faction) == 1 || turnOrder.getInt(faction) == 6) channel.sendMessage("Please submit your dial for initial storm position.").queue();
+                        }
+                    }
+                    gameState.advanceTurn();
+                }
+            }
+        }
+        else {
+
+        }
+
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
     public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, String faction) {
