@@ -13,9 +13,8 @@ public class EventListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        System.out.println(event.getMessage().getContentRaw());
         String message = event.getMessage().getContentRaw().replaceAll("\\d", "");
-
-        System.out.println(message);
 
         //Treachery Card Service
         if (message.matches(".*<:treachery:> .* <:treachery:>.*")) {

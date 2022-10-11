@@ -59,7 +59,8 @@ public class CommandManager extends ListenerAdapter {
             case "transfercard" -> transferCard(event);
             case "putback" -> putBack(event);
             case "ixhandselection" -> ixHandSelection(event);
-            case "start" -> startGame(event);
+            case "selecttraitor" -> selectTraitor(event);
+            case "shipforces" -> shipForces(event);
             case "advancegame" -> advanceGame(event);
             case "clean" -> clean(event);
 
@@ -135,6 +136,11 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Richese", "Rich")
                 .addChoice("Place up for bid", "market");
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
+        OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true);
+        OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true);
+        OptionData sector = new OptionData(OptionType.INTEGER, "sector", "The storm sector", true);
+        OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are these starred forces? (default=no)");
+
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
@@ -144,13 +150,14 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
-        commandData.add(Commands.slash("start", "Begin startup sequence for a new game").addOptions(game));
         commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(game, faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(game, sender, card, recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round").addOptions(game));
         commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
+        commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(game, faction, traitor));
+        commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, territory, sector, amount, starred));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -474,43 +481,6 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void startGame(SlashCommandInteractionEvent event) {
-        Game gameState = getGameState(event);
-        Category game = event.getOption("game").getAsChannel().asCategory();
-        int i = 1;
-        for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-            i++;
-
-
-            for (TextChannel channel : game.getTextChannels()) {
-                String emoji = gameState.getFaction(faction).getString("emoji");
-                JSONObject factionObject = gameState.getFaction(faction);
-                JSONArray traitors = factionObject.getJSONObject("resources").getJSONArray("traitors");
-                if (channel.getName().equals("test-" + faction.toLowerCase() + "-info")) {
-                    channel.sendMessage(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
-                            factionObject.getJSONObject("resources").getInt("spice") +
-                            "\n__Traitors:__\n" + traitors.getString(0) + "\n" + traitors.getString(1) + "\n" +
-                            traitors.getString(2) + "\n" + traitors.getString(3)).queue();
-
-                    for (int j = factionObject.getJSONObject("resources").getJSONArray("treachery_hand").length() - 1; j >= 0; j--) {
-                        channel.sendMessage("<:treachery:> " + factionObject.getJSONObject("resources").getJSONArray("treachery_hand").getString(j).split("\\|")[0].strip() + " <:treachery:>").queue();
-                    }
-                }
-
-                if (channel.getName().equals("test-" + faction.toLowerCase() + "-chat")) {
-                    switch (faction) {
-                        case "BG" -> channel.sendMessage("Please make your secret prediction and determine where your starting force will be shipped.").queue();
-                        case "Fremen" -> channel.sendMessage("Please determine how you will split your initial 10 forces.").queue();
-                        case "Ix" -> channel.sendMessage("Please indicate where you would like your Hidden Mobile Stronghold to start").queue();
-                    }
-                    if (!faction.equals("Harkonnen")) channel.sendMessage("Please select your traitor.").queue();
-                }
-            }
-        }
-        gameState.getJSONObject("game_state").getJSONObject("game_resources").put("turn", 1);
-        pushGameState(gameState, game);
-    }
-
     public void advanceGame(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
 
@@ -536,6 +506,7 @@ public class CommandManager extends ListenerAdapter {
                             }
                         }
                     }
+                    event.getChannel().sendMessage("1. Positions have been assigned.").queue();
                 }
                 //2. Traitors
                 case 1 -> {
@@ -545,12 +516,13 @@ public class CommandManager extends ListenerAdapter {
                             for (int j = 0; j < 4; j++) {
                                 drawCard(gameState, "traitor_deck", faction);
                             }
-                        }
-                        writeFactionInfo(event, gameState, faction);
-                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
-                            if (!faction.equals("Harkonnen") && !faction.equals("BT")) channel.sendMessage("Please select your traitor.").queue();
+                            writeFactionInfo(event, gameState, faction);
                         }
                     }
+                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (channel.getName().contains("-chat") && !channel.getName().contains("game") &&
+                                    !channel.getName().contains("harkonnen") && !channel.getName().contains("bt")) channel.sendMessage("Please select your traitor.").queue();
+                        }
 
 
                         gameState.advancePhase();
@@ -558,6 +530,7 @@ public class CommandManager extends ListenerAdapter {
                     if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BT")) {
                         gameState.advancePhase();
                     }
+                    event.getChannel().sendMessage("2. Traitors are being selected.").queue();
                 }
                 //Bene Tleilax to draw Face Dancers
                 case 2 -> {
@@ -565,7 +538,9 @@ public class CommandManager extends ListenerAdapter {
                     drawCard(gameState, "traitor_deck", "BT");
                     drawCard(gameState, "traitor_deck", "BT");
                     drawCard(gameState, "traitor_deck", "BT");
-                    advanceGame(event);
+                    writeFactionInfo(event, gameState, "BT");
+                    gameState.advancePhase();
+                    event.getChannel().sendMessage("2b. Bene Tleilax have drawn their Face Dancers.").queue();
                 }
                 //3. Spice, 4. Forces (prompts are sent out)
                 case 3 -> {
@@ -580,6 +555,7 @@ public class CommandManager extends ListenerAdapter {
                     if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Ix")) {
                         gameState.advancePhase();
                     }
+                    event.getChannel().sendMessage("3. Spice has been allocated.\n4. Forces are being placed on the board.").queue();
                 }
                 //Ix to select from starting treachery cards
                 case 4 -> {
@@ -591,6 +567,7 @@ public class CommandManager extends ListenerAdapter {
                         if (channel.getName().equals("test-ix-chat")) channel.sendMessage("Please select one treachery card to keep in your hand.").queue();
                     }
                     gameState.advancePhase();
+                    event.getChannel().sendMessage("Ix is selecting their starting treachery card.").queue();
                 }
                 //5. Treachery
                 case 5 -> {
@@ -600,6 +577,7 @@ public class CommandManager extends ListenerAdapter {
                         writeFactionInfo(event, gameState, faction);
                     }
                     gameState.advancePhase();
+                    event.getChannel().sendMessage("5. Treachery cards are being dealt.").queue();
                 }
                 //6. Turn Marker (prompt for dial for First Storm)
                 case 6 -> {
@@ -610,6 +588,7 @@ public class CommandManager extends ListenerAdapter {
                         }
                     }
                     gameState.advanceTurn();
+                    event.getChannel().sendMessage("6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...").queue();
                 }
             }
         }
@@ -620,18 +599,48 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
+    public void selectTraitor(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+
+        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        for (int i = 0; i < 4; i++) {
+            if (!faction.getJSONObject("resources").getJSONArray("traitors").getString(i).contains(event.getOption("traitor").getAsString())) {
+                gameState.getDeck("traitor_deck").put(faction.getJSONObject("resources").getJSONArray("traitors").get(i));
+                String traitor = faction.getJSONObject("resources").getJSONArray("traitors").getString(i);
+                faction.getJSONObject("resources").getJSONArray("traitors").put(i, "~~" + traitor + "~~");
+            }
+        }
+        writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
+    public void shipForces(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+
+
+
+
+
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
     public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, String faction) {
         if (gameState.getFaction(faction) == null) return;
         String emoji = gameState.getFaction(faction).getString("emoji");
         JSONObject factionObject = gameState.getFaction(faction);
         JSONArray traitors = factionObject.getJSONObject("resources").getJSONArray("traitors");
+        StringBuilder traitorString = new StringBuilder();
+        if (faction.equals("BT")) traitorString.append("\n__Face Dancers:__\n");
+        else traitorString.append("\n__Traitors:__\n");
+        for (Object traitor : traitors) {
+            traitorString.append(traitor);
+            traitorString.append("\n");
+        }
         for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
             if (channel.getName().equals("test-" + faction.toLowerCase() + "-info")) {
-                channel.deleteMessages(channel.getHistory().retrievePast(10).complete()).complete();
                 channel.sendMessage(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                         factionObject.getJSONObject("resources").getInt("spice") +
-                        "\n__Traitors:__\n" + traitors.getString(0) + "\n" + traitors.getString(1) + "\n" +
-                        traitors.getString(2) + "\n" + traitors.getString(3)).queue();
+                        traitorString).queue();
 
                 for (int j = factionObject.getJSONObject("resources").getJSONArray("treachery_hand").length() - 1; j >= 0; j--) {
                     channel.sendMessage("<:treachery:> " + factionObject.getJSONObject("resources").getJSONArray("treachery_hand").getString(j).split("\\|")[0].strip() + " <:treachery:>").queue();

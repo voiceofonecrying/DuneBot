@@ -18,6 +18,7 @@ public class Initializers {
         resources.put("treachery_hand", new JSONArray());
         switch (faction.getName()) {
             case "Atreides" -> {
+                faction.setEmoji("<:atreides:991763327996923997>");
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
                 resources.getJSONArray("leaders").put("lady jessica - 5");
@@ -34,6 +35,7 @@ public class Initializers {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Arrakeen").getJSONObject("forces").put("Atreides", 10);
             }
             case "Harkonnen" -> {
+                faction.setEmoji("<:harkonnen:991763320333926551>");
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
                 resources.getJSONArray("leaders").put("feyd rautha - 6");
@@ -49,6 +51,7 @@ public class Initializers {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Carthag").getJSONObject("forces").put("Harkonnen", 10);
             }
             case "Emperor" -> {
+                faction.setEmoji("<:emperor:991763323454500914>");
                 resources.put("spice", 10);
                 resources.put("reserves", 15);
                 resources.put("sardaukar reserves", 5);
@@ -64,6 +67,7 @@ public class Initializers {
                 traitorDeck.put("bashar - 2");
             }
             case "Fremen" -> {
+                faction.setEmoji("<:fremen:991763322225577984>");
                 resources.put("spice", 3);
                 resources.put("reserves", 17);
                 resources.put("fedaykin reserves", 3);
@@ -79,6 +83,7 @@ public class Initializers {
                 traitorDeck.put("jamis - 2");
             }
             case "BG" -> {
+                faction.setEmoji("<:bg:991763326830911519>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
                 resources.getJSONArray("leaders").put("alia - 5");
@@ -93,6 +98,7 @@ public class Initializers {
                 traitorDeck.put("wanna yueh - 5");
             }
             case "Guild" -> {
+                faction.setEmoji("<:guild:991763321290244096>");
                 resources.put("spice", 5);
                 resources.put("reserves", 15);
                 resources.getJSONArray("leaders").put("staban tuek - 5");
@@ -108,6 +114,7 @@ public class Initializers {
                 traitorDeck.put("guild rep - 1");
             }
             case "Ix" -> {
+                faction.setEmoji("<:ix:991763319406997514>");
                 resources.put("spice", 10);
                 resources.put("suboid reserves", 10);
                 resources.put("cyborg reserves", 4);
@@ -126,6 +133,7 @@ public class Initializers {
                 traitorDeck.put("cammar pilru - 1");
             }
             case "BT" -> {
+                faction.setEmoji("<:bt:991763325576810546>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
                 resources.getJSONArray("leaders").put("zoal - -1");
@@ -140,6 +148,7 @@ public class Initializers {
                 traitorDeck.put("blin - 1");
             }
             case "CHOAM" -> {
+                faction.setEmoji("<:choam:991763324624703538>");
                 resources.put("spice", 2);
                 resources.put("reserves", 20);
                 resources.getJSONArray("leaders").put("frankos aru - 4");
@@ -157,6 +166,7 @@ public class Initializers {
                 traitorDeck.put("auditor - 2");
             }
             case "Rich" -> {
+                faction.setEmoji("<:rich:991763318467465337>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
                 resources.getJSONArray("leaders").put("ein calimar - 5");
@@ -193,91 +203,91 @@ public class Initializers {
 
         JSONObject territories = new JSONObject();
 
-        territories.put("Cielago North", new Territory("Cielago North", 1, false, false));
-        territories.put("Cielago Depression", new Territory("Cielago Depression", 1, false, false));
-        territories.put("Meridian", new Territory("Meridian", 1, false, false));
-        territories.put("Cielago South", new Territory("Cielago South", 1, false, false));
-        territories.put("Cielago North", new Territory("Cielago North", 2, false, false));
-        territories.put("Cielago Depression", new Territory("Cielago Depression", 2, false, false));
-        territories.put("Cielago South", new Territory("Cielago South", 2, false, false));
-        territories.put("Cielago East", new Territory("Cielago East", 2, false, false));
-        territories.put("Harg Pass", new Territory("Harg Pass", 3, false, false));
-        territories.put("False Wall South", new Territory("False Wall South", 3, true, false));
-        territories.put("Cielago East", new Territory("Cielago East", 3, false, false));
-        territories.put("South Mesa", new Territory("South Mesa", 3, false, false));
-        territories.put("Harg Pass", new Territory("Harg Pass", 4, false, false));
-        territories.put("False Wall East", new Territory("False Wall East", 4, true, false));
-        territories.put("The Minor Erg", new Territory("The Minor Erg", 4, false, false));
-        territories.put("False Wall South", new Territory("False Wall South", 4, true, false));
-        territories.put("Pasty Mesa", new Territory("Pasty Mesa", 4, true, false));
-        territories.put("South Mesa", new Territory("South Mesa", 4, false, false));
+        territories.put("Cielago North(1)", new Territory("Cielago North", 1, false, false));
+        territories.put("Cielago Depression(1)", new Territory("Cielago Depression", 1, false, false));
+        territories.put("Meridian(1)", new Territory("Meridian", 1, false, false));
+        territories.put("Cielago South(1)", new Territory("Cielago South", 1, false, false));
+        territories.put("Cielago North(1)", new Territory("Cielago North", 2, false, false));
+        territories.put("Cielago Depression(2)", new Territory("Cielago Depression", 2, false, false));
+        territories.put("Cielago South(2)", new Territory("Cielago South", 2, false, false));
+        territories.put("Cielago East(2)", new Territory("Cielago East", 2, false, false));
+        territories.put("Harg Pass(3)", new Territory("Harg Pass", 3, false, false));
+        territories.put("False Wall South(3)", new Territory("False Wall South", 3, true, false));
+        territories.put("Cielago East(3)", new Territory("Cielago East", 3, false, false));
+        territories.put("South Mesa(3)", new Territory("South Mesa", 3, false, false));
+        territories.put("Harg Pass(4)", new Territory("Harg Pass", 4, false, false));
+        territories.put("False Wall East(4)", new Territory("False Wall East", 4, true, false));
+        territories.put("The Minor Erg(4)", new Territory("The Minor Erg", 4, false, false));
+        territories.put("False Wall South(4)", new Territory("False Wall South", 4, true, false));
+        territories.put("Pasty Mesa(4)", new Territory("Pasty Mesa", 4, true, false));
+        territories.put("South Mesa(4)", new Territory("South Mesa", 4, false, false));
         territories.put("Tuek's Sietch", new Territory("Tuek's Sietch", 4, true, true));
-        territories.put("False Wall East", new Territory("False Wall East", 5, true, false));
-        territories.put("The Minor Erg", new Territory("The Minor Erg", 5, false, false));
-        territories.put("Pasty Mesa", new Territory("Pasty Mesa", 5, true, false));
-        territories.put("South Mesa", new Territory("South Mesa", 5, false, false));
-        territories.put("False Wall East", new Territory("False Wall East", 6, true, false));
-        territories.put("The Minor Erg", new Territory("The Minor Erg", 6, false, false));
-        territories.put("Pasty Mesa", new Territory("Pasty Mesa", 6, true, false));
-        territories.put("Red Chasm", new Territory("Red Chasm", 6, false, false));
-        territories.put("False Wall East", new Territory("False Wall East", 7, true, false));
-        territories.put("The Minor Erg", new Territory("The Minor Erg", 7, false, false));
-        territories.put("Shield Wall", new Territory("Shield Wall", 7, true, false));
-        territories.put("Pasty Mesa", new Territory("Pasty Mesa", 7, true, false));
-        territories.put("Gara Kulon", new Territory("Gara Kulon", 7, false, false));
-        territories.put("False Wall East", new Territory("False Wall East", 8, true, false));
-        territories.put("Imperial Basin", new Territory("Imperial Basin", 8, true, false));
-        territories.put("Shield Wall", new Territory("Shield Wall", 8, true, false));
-        territories.put("Hole in the Rock", new Territory("Hole in the Rock", 8, false, false));
-        territories.put("Rim Wall West", new Territory("Rim Wall West", 8, true, false));
-        territories.put("Basin", new Territory("Basin", 8, false, false));
-        territories.put("Old Gap", new Territory("Old Gap", 8, false, false));
-        territories.put("Sihaya Ridge", new Territory("Sihaya Ridge", 8, false, false));
-        territories.put("Imperial Basin", new Territory("Imperial Basin", 9, true, false));
+        territories.put("False Wall East(5)", new Territory("False Wall East", 5, true, false));
+        territories.put("The Minor Erg(5)", new Territory("The Minor Erg", 5, false, false));
+        territories.put("Pasty Mesa(5)", new Territory("Pasty Mesa", 5, true, false));
+        territories.put("South Mesa(5)", new Territory("South Mesa", 5, false, false));
+        territories.put("False Wall East(6)", new Territory("False Wall East", 6, true, false));
+        territories.put("The Minor Erg(6)", new Territory("The Minor Erg", 6, false, false));
+        territories.put("Pasty Mesa(6)", new Territory("Pasty Mesa", 6, true, false));
+        territories.put("Red Chasm(6)", new Territory("Red Chasm", 6, false, false));
+        territories.put("False Wall East(7)", new Territory("False Wall East", 7, true, false));
+        territories.put("The Minor Erg(7)", new Territory("The Minor Erg", 7, false, false));
+        territories.put("Shield Wall(7)", new Territory("Shield Wall", 7, true, false));
+        territories.put("Pasty Mesa(7)", new Territory("Pasty Mesa", 7, true, false));
+        territories.put("Gara Kulon(7)", new Territory("Gara Kulon", 7, false, false));
+        territories.put("False Wall East(8)", new Territory("False Wall East", 8, true, false));
+        territories.put("Imperial Basin(8)", new Territory("Imperial Basin", 8, true, false));
+        territories.put("Shield Wall(8)", new Territory("Shield Wall", 8, true, false));
+        territories.put("Hole in the Rock(8)", new Territory("Hole in the Rock", 8, false, false));
+        territories.put("Rim Wall West(8)", new Territory("Rim Wall West", 8, true, false));
+        territories.put("Basin(8)", new Territory("Basin", 8, false, false));
+        territories.put("Old Gap(8)", new Territory("Old Gap", 8, false, false));
+        territories.put("Sihaya Ridge(8)", new Territory("Sihaya Ridge", 8, false, false));
+        territories.put("Imperial Basin(9)", new Territory("Imperial Basin", 9, true, false));
         territories.put("Arrakeen", new Territory("Arrakeen", 9, true, true));
-        territories.put("Old Gap", new Territory("Old Gap", 9, false, false));
-        territories.put("Imperial Basin", new Territory("Imperial Basin", 10, true, false));
-        territories.put("Arsunt", new Territory("Arsunt", 10, false, false));
+        territories.put("Old Gap(9)", new Territory("Old Gap", 9, false, false));
+        territories.put("Imperial Basin(10)", new Territory("Imperial Basin", 10, true, false));
+        territories.put("Arsunt(10)", new Territory("Arsunt", 10, false, false));
         territories.put("Carthag", new Territory("Carthag", 10, true, true));
-        territories.put("Tsimpo", new Territory("Tsimpo", 10, false, false));
-        territories.put("Broken Land", new Territory("Broken Land", 10, false, false));
-        territories.put("Old Gap", new Territory("Old Gap", 10, false, false));
-        territories.put("Arsunt", new Territory("Arsunt", 11, false, false));
-        territories.put("Hagga Basin",new Territory("Hagga Basin", 11, false, false));
-        territories.put("Tsimpo", new Territory("Tsimpo", 11, false, false));
-        territories.put("Plastic Basin", new Territory("Plastic Basin", 11, true, false));
-        territories.put("Broken Land", new Territory("Broken Land", 11, false, false));
-        territories.put("Hagga Basin", new Territory("Hagga Basin", 12, false, false));
-        territories.put("Plastic Basin", new Territory("Plastic Basin", 12, true, false));
-        territories.put("Tsimpo", new Territory("Tsimpo", 12, false, false));
-        territories.put("Rock Outcroppings", new Territory("Rock Outcroppings", 12, false, false));
-        territories.put("Wind Pass", new Territory("Wind Pass", 13, false, false));
-        territories.put("Plastic Basin", new Territory("Plastic Basin", 13, true, false));
-        territories.put("Bight of the Cliff", new Territory("Bight of the Cliff", 13, false, false));
+        territories.put("Tsimpo(10)", new Territory("Tsimpo", 10, false, false));
+        territories.put("Broken Land(10)", new Territory("Broken Land", 10, false, false));
+        territories.put("Old Gap(10)", new Territory("Old Gap", 10, false, false));
+        territories.put("Arsunt(11)", new Territory("Arsunt", 11, false, false));
+        territories.put("Hagga Basin(11)",new Territory("Hagga Basin", 11, false, false));
+        territories.put("Tsimpo(11)", new Territory("Tsimpo", 11, false, false));
+        territories.put("Plastic Basin(11)", new Territory("Plastic Basin", 11, true, false));
+        territories.put("Broken Land(11)", new Territory("Broken Land", 11, false, false));
+        territories.put("Hagga Basin(12)", new Territory("Hagga Basin", 12, false, false));
+        territories.put("Plastic Basin(12)", new Territory("Plastic Basin", 12, true, false));
+        territories.put("Tsimpo(12)", new Territory("Tsimpo", 12, false, false));
+        territories.put("Rock Outcroppings(12)", new Territory("Rock Outcroppings", 12, false, false));
+        territories.put("Wind Pass(13)", new Territory("Wind Pass", 13, false, false));
+        territories.put("Plastic Basin(13)", new Territory("Plastic Basin", 13, true, false));
+        territories.put("Bight of the Cliff(13)", new Territory("Bight of the Cliff", 13, false, false));
         territories.put("Sietch Tabr", new Territory("Sietch Tabr", 13, true, true));
-        territories.put("Rock Outcroppings", new Territory("Rock Outcroppings", 13, false, false));
-        territories.put("Wind Pass", new Territory("Wind Pass", 14, false, false));
-        territories.put("The Great Flat", new Territory("The Great Flat", 14, false, false));
-        territories.put("Funeral Plain", new Territory("Funeral Plain", 14, false, false));
-        territories.put("Bight of the Cliff", new Territory("Bight of the Cliff", 14, false, false));
-        territories.put("Wind Pass", new Territory("Wind Pass", 15, false, false));
-        territories.put("The Greater Flat", new Territory("The Greater Flat", 15, false, false));
-        territories.put("Habbanya Erg", new Territory("Habbanya Erg", 15, false, false));
-        territories.put("False Wall West", new Territory("False Wall West", 15, true, false));
-        territories.put("Wind Pass North", new Territory("Wind Pass North", 16, false, false));
-        territories.put("Wind Pass", new Territory("Wind Pass", 16, false, false));
-        territories.put("False Wall West", new Territory("False Wall West", 16, true, false));
-        territories.put("Habbanya Erg", new Territory("Habbanya Erg", 16, false, false));
-        territories.put("Habbanya Ridge Flat", new Territory("Habbanya Ridge Flat", 16, false, false));
+        territories.put("Rock Outcroppings(13)", new Territory("Rock Outcroppings", 13, false, false));
+        territories.put("Wind Pass(14)", new Territory("Wind Pass", 14, false, false));
+        territories.put("The Great Flat(14)", new Territory("The Great Flat", 14, false, false));
+        territories.put("Funeral Plain(14)", new Territory("Funeral Plain", 14, false, false));
+        territories.put("Bight of the Cliff(14)", new Territory("Bight of the Cliff", 14, false, false));
+        territories.put("Wind Pass(15)", new Territory("Wind Pass", 15, false, false));
+        territories.put("The Greater Flat(15)", new Territory("The Greater Flat", 15, false, false));
+        territories.put("Habbanya Erg(15)", new Territory("Habbanya Erg", 15, false, false));
+        territories.put("False Wall West(15)", new Territory("False Wall West", 15, true, false));
+        territories.put("Wind Pass North(16)", new Territory("Wind Pass North", 16, false, false));
+        territories.put("Wind Pass(16)", new Territory("Wind Pass", 16, false, false));
+        territories.put("False Wall West(16)", new Territory("False Wall West", 16, true, false));
+        territories.put("Habbanya Erg(16)", new Territory("Habbanya Erg", 16, false, false));
+        territories.put("Habbanya Ridge Flat(16)", new Territory("Habbanya Ridge Flat", 16, false, false));
         territories.put("Habbanya Sietch", new Territory("Habbanya Sietch", 16, true, true));
-        territories.put("Wind Pass North", new Territory("Wind Pass North", 17, false, false));
-        territories.put("Cielago West", new Territory("Cielago West", 17, false, false));
-        territories.put("False Wall West", new Territory("False Wall West", 17, true, false));
-        territories.put("Habbanya Ridge Flat", new Territory("Habbanya Ridge Flat", 17, false, false));
-        territories.put("Cielago North", new Territory("Cielago North", 18, false, false));
-        territories.put("Cielago Depression", new Territory("Cielago Depression", 18, false, false));
-        territories.put("Cielago West", new Territory("Cielago West", 18, false, false));
-        territories.put("Meridian", new Territory("Meridian", 18, false, false));
+        territories.put("Wind Pass North(17)", new Territory("Wind Pass North", 17, false, false));
+        territories.put("Cielago West(17)", new Territory("Cielago West", 17, false, false));
+        territories.put("False Wall West(17)", new Territory("False Wall West", 17, true, false));
+        territories.put("Habbanya Ridge Flat(17)", new Territory("Habbanya Ridge Flat", 17, false, false));
+        territories.put("Cielago North(18)", new Territory("Cielago North", 18, false, false));
+        territories.put("Cielago Depression(18)", new Territory("Cielago Depression", 18, false, false));
+        territories.put("Cielago West(18)", new Territory("Cielago West", 18, false, false));
+        territories.put("Meridian(18)", new Territory("Meridian", 18, false, false));
         territories.put("Polar Sink", new Territory("Polar Sink", -1, false, false));
         return territories;
     }
