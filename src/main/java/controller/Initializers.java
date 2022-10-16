@@ -136,12 +136,12 @@ public class Initializers {
                 faction.setEmoji("<:bt:991763325576810546>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
-                resources.getJSONArray("leaders").put("zoal - -1");
+                resources.getJSONArray("leaders").put("zoal - X");
                 resources.getJSONArray("leaders").put("hidar fen ajidica - 4");
                 resources.getJSONArray("leaders").put("master zaaf - 3");
                 resources.getJSONArray("leaders").put("wykk - 2");
                 resources.getJSONArray("leaders").put("blin - 1");
-                traitorDeck.put("zoal - -1");
+                traitorDeck.put("zoal - X");
                 traitorDeck.put("hidar fen ajidica - 4");
                 traitorDeck.put("master zaaf - 3");
                 traitorDeck.put("wykk - 2");
@@ -234,15 +234,15 @@ public class Initializers {
         territories.put("The Minor Erg(7)", new Territory("The Minor Erg", 7, false, false));
         territories.put("Shield Wall(7)", new Territory("Shield Wall", 7, true, false));
         territories.put("Pasty Mesa(7)", new Territory("Pasty Mesa", 7, true, false));
-        territories.put("Gara Kulon(7)", new Territory("Gara Kulon", 7, false, false));
+        territories.put("Gara Kulon", new Territory("Gara Kulon", 7, false, false));
         territories.put("False Wall East(8)", new Territory("False Wall East", 8, true, false));
         territories.put("Imperial Basin(8)", new Territory("Imperial Basin", 8, true, false));
         territories.put("Shield Wall(8)", new Territory("Shield Wall", 8, true, false));
-        territories.put("Hole in the Rock(8)", new Territory("Hole in the Rock", 8, false, false));
-        territories.put("Rim Wall West(8)", new Territory("Rim Wall West", 8, true, false));
-        territories.put("Basin(8)", new Territory("Basin", 8, false, false));
+        territories.put("Hole in the Rock", new Territory("Hole in the Rock", 8, false, false));
+        territories.put("Rim Wall West", new Territory("Rim Wall West", 8, true, false));
+        territories.put("Basin", new Territory("Basin", 8, false, false));
         territories.put("Old Gap(8)", new Territory("Old Gap", 8, false, false));
-        territories.put("Sihaya Ridge(8)", new Territory("Sihaya Ridge", 8, false, false));
+        territories.put("Sihaya Ridge", new Territory("Sihaya Ridge", 8, false, false));
         territories.put("Imperial Basin(9)", new Territory("Imperial Basin", 9, true, false));
         territories.put("Arrakeen", new Territory("Arrakeen", 9, true, true));
         territories.put("Old Gap(9)", new Territory("Old Gap", 9, false, false));
@@ -267,11 +267,11 @@ public class Initializers {
         territories.put("Sietch Tabr", new Territory("Sietch Tabr", 13, true, true));
         territories.put("Rock Outcroppings(13)", new Territory("Rock Outcroppings", 13, false, false));
         territories.put("Wind Pass(14)", new Territory("Wind Pass", 14, false, false));
-        territories.put("The Great Flat(14)", new Territory("The Great Flat", 14, false, false));
-        territories.put("Funeral Plain(14)", new Territory("Funeral Plain", 14, false, false));
+        territories.put("The Great Flat", new Territory("The Great Flat", 14, false, false));
+        territories.put("Funeral Plain", new Territory("Funeral Plain", 14, false, false));
         territories.put("Bight of the Cliff(14)", new Territory("Bight of the Cliff", 14, false, false));
         territories.put("Wind Pass(15)", new Territory("Wind Pass", 15, false, false));
-        territories.put("The Greater Flat(15)", new Territory("The Greater Flat", 15, false, false));
+        territories.put("The Greater Flat", new Territory("The Greater Flat", 15, false, false));
         territories.put("Habbanya Erg(15)", new Territory("Habbanya Erg", 15, false, false));
         territories.put("False Wall West(15)", new Territory("False Wall West", 15, true, false));
         territories.put("Wind Pass North(16)", new Territory("Wind Pass North", 16, false, false));
@@ -358,5 +358,16 @@ public class Initializers {
         treacheryDeck.put("Cheap Hero | Special");
 
         return treacheryDeck;
+    }
+
+    public static JSONArray buildStormDeck() {
+        JSONArray stormDeck = new JSONArray();
+        stormDeck.put(1);
+        stormDeck.put(2);
+        stormDeck.put(3);
+        stormDeck.put(4);
+        stormDeck.put(5);
+        stormDeck.put(6);
+        return stormDeck;
     }
 }
