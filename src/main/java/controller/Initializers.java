@@ -18,6 +18,7 @@ public class Initializers {
         resources.put("treachery_hand", new JSONArray());
         switch (faction.getName()) {
             case "Atreides" -> {
+                faction.put("free_revival", 2);
                 faction.setEmoji("<:atreides:991763327996923997>");
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
@@ -35,6 +36,7 @@ public class Initializers {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Arrakeen").getJSONObject("forces").put("Atreides", 10);
             }
             case "Harkonnen" -> {
+                faction.put("free_revival", 2);
                 faction.setEmoji("<:harkonnen:991763320333926551>");
                 resources.put("spice", 10);
                 resources.put("reserves", 10);
@@ -51,6 +53,7 @@ public class Initializers {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Carthag").getJSONObject("forces").put("Harkonnen", 10);
             }
             case "Emperor" -> {
+                faction.put("free_revival", 1);
                 faction.setEmoji("<:emperor:991763323454500914>");
                 resources.put("spice", 10);
                 resources.put("reserves", 15);
@@ -67,6 +70,7 @@ public class Initializers {
                 traitorDeck.put("bashar - 2");
             }
             case "Fremen" -> {
+                faction.put("free_revival", 3);
                 faction.setEmoji("<:fremen:991763322225577984>");
                 resources.put("spice", 3);
                 resources.put("reserves", 17);
@@ -83,6 +87,7 @@ public class Initializers {
                 traitorDeck.put("jamis - 2");
             }
             case "BG" -> {
+                faction.put("free_revival", 1);
                 faction.setEmoji("<:bg:991763326830911519>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
@@ -98,6 +103,7 @@ public class Initializers {
                 traitorDeck.put("wanna yueh - 5");
             }
             case "Guild" -> {
+                faction.put("free_revival", 1);
                 faction.setEmoji("<:guild:991763321290244096>");
                 resources.put("spice", 5);
                 resources.put("reserves", 15);
@@ -114,6 +120,7 @@ public class Initializers {
                 traitorDeck.put("guild rep - 1");
             }
             case "Ix" -> {
+                faction.put("free_revival", 1);
                 faction.setEmoji("<:ix:991763319406997514>");
                 resources.put("spice", 10);
                 resources.put("suboid reserves", 10);
@@ -133,6 +140,7 @@ public class Initializers {
                 traitorDeck.put("cammar pilru - 1");
             }
             case "BT" -> {
+                faction.put("free_revival", 2);
                 faction.setEmoji("<:bt:991763325576810546>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
@@ -148,6 +156,7 @@ public class Initializers {
                 traitorDeck.put("blin - 1");
             }
             case "CHOAM" -> {
+                faction.put("free_revival", 0);
                 faction.setEmoji("<:choam:991763324624703538>");
                 resources.put("spice", 2);
                 resources.put("reserves", 20);
@@ -166,6 +175,7 @@ public class Initializers {
                 traitorDeck.put("auditor - 2");
             }
             case "Rich" -> {
+                faction.put("free_revival", 2);
                 faction.setEmoji("<:rich:991763318467465337>");
                 resources.put("spice", 5);
                 resources.put("reserves", 20);
