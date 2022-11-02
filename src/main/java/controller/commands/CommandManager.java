@@ -197,24 +197,24 @@ public class CommandManager extends ListenerAdapter {
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        //commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
+        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
-        //commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
+        commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(game, faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(game, sender, card, recipient));
-        //commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
+        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round").addOptions(game));
-        //commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
+        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(game, faction, traitor));
-        //commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, starred, territory, otherTerritory, sector));
-        //commandData.add(Commands.slash("moveforces", "Move forces from one territory to another. (Does not check movement rules).").addOptions(game, faction, toTerritory, amount, starred, territory));
+        commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, starred, territory, otherTerritory, sector));
+        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another. (Does not check movement rules).").addOptions(game, faction, toTerritory, amount, starred, territory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(game, faction, spent));
-        //commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
+        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(game, data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(game, sector));
 
@@ -568,6 +568,14 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         gameState.getResources().getJSONArray("market").remove(0);
+
+        if (gameState.getFaction("Atreides") != null && gameState.getResources().getJSONArray("market").length() > 0) {
+            for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                if (channel.getName().contains("atreides-chat")) {
+                    channel.sendMessage("The next card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>").queue();
+                }
+            }
+        }
         if (event.getOption("factionname").getAsString().equals("Harkonnen") && gameState.getFaction("Harkonnen").getJSONObject("resources").getJSONArray("treachery_hand").length() < 8) {
             drawCard(gameState, "treachery_deck", "Harkonnen");
             event.getChannel().sendMessage(gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " draws another card from the <:treachery:991763073281040518> deck.").queue();
@@ -864,8 +872,11 @@ public class CommandManager extends ListenerAdapter {
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Bidding Phase:").queue();
                     int cardsUpForBid = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
+                    StringBuilder countMessage = new StringBuilder();
+                    countMessage.append("<:treachery:991763073281040518>Number of Treachery Cards<:treachery:991763073281040518>\n");
                     for (String faction : factions) {
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
+                        countMessage.append(gameState.getFaction(faction).getString("emoji")).append(": ").append(length).append("\n");
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
                                 !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) cardsUpForBid++;
                         if (faction.equals("Ix")) cardsUpForBid++;
@@ -877,6 +888,8 @@ public class CommandManager extends ListenerAdapter {
                             if (channel.getName().equals("ix-chat")) channel.sendMessage("Please select a card to put back to top or bottom.").queue();
                         }
                     }
+                    countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
+                    event.getChannel().sendMessage(countMessage.toString()).queue();
                     for (int i = 0; i < cardsUpForBid; i++) {
                         gameState.getResources().getJSONArray("market").put(deck.getString(deck.length() - 1));
                         deck.remove(deck.length() - 1);
@@ -885,6 +898,13 @@ public class CommandManager extends ListenerAdapter {
                                 if (channel.getName().equals("ix-chat"))
                                     channel.sendMessage("<:treachery:991763073281040518> " +
                                             deck.getString(deck.length() - i - 1) + " <:treachery:991763073281040518>").queue();
+                            }
+                        }
+                    }
+                    if (factions.contains("Atreides")) {
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (channel.getName().contains("atreides-chat")) {
+                                channel.sendMessage("The first card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>").queue();
                             }
                         }
                     }
@@ -898,8 +918,8 @@ public class CommandManager extends ListenerAdapter {
                         int free = gameState.getFaction(faction).getInt("free_revival");
                         boolean revivedStar = false;
                         for (int i = free; i > 0; i--) {
-                            if (gameState.getResources().getJSONObject("tanks_forces").isNull(faction) && gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*")) continue;
-                            if (!gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && !revivedStar) {
+                            if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) == 0 && !gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") == 0) continue;
+                            if (!gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") != 0 && !revivedStar) {
                                 int starred = gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*");
                                 gameState.getResources().getJSONObject("tanks_forces").remove(faction + "*");
                                 if (starred > 1) gameState.getResources().getJSONObject("tanks_forces").put(faction + "*", starred - 1);
@@ -907,7 +927,7 @@ public class CommandManager extends ListenerAdapter {
                                 int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves*");
                                 gameState.getFaction(faction).getJSONObject("resources").remove("reserves*");
                                 gameState.getFaction(faction).getJSONObject("resources").put("reserves*", reserves + 1);
-                            } else if (!gameState.getResources().getJSONObject("tanks_forces").isNull(faction)) {
+                            } else if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) != 0) {
                                 int forces = gameState.getResources().getJSONObject("tanks_forces").getInt(faction);
                                 gameState.getResources().getJSONObject("tanks_forces").remove(faction);
                                 gameState.getResources().getJSONObject("tanks_forces").put(faction, forces - 1);
@@ -933,6 +953,38 @@ public class CommandManager extends ListenerAdapter {
                 //TODO: 8. Spice Harvest
                 case 8 -> {
                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Spice Harvest Phase:").queue();
+                   JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
+
+                    for (String territoryName : territories.keySet()) {
+                        JSONObject territory = territories.getJSONObject(territoryName);
+                        if (territory.getInt("spice") == 0 || territory.getJSONObject("forces").length() == 0) continue;
+                        int spice = territory.getInt("spice");
+                        territory.remove("spice");
+                        Set<String> factions = territory.getJSONObject("forces").keySet();
+                        for (String faction : factions) {
+                            int forces = territory.getJSONObject("forces").getInt(faction);
+                            forces += territory.getJSONObject("forces").isNull(faction + "*") ? 0 : territory.getJSONObject("forces").getInt(faction + "*");
+                            int toCollect = 0;
+                            if (faction.equals("BG") && factions.size() > 1) continue;
+                            //If the faction has mining equipment, collect 3 spice per force.
+                            if ((!territories.getJSONObject("Arrakeen").getJSONObject("forces").isNull(faction) || !territories.getJSONObject("Carthag").getJSONObject("forces").isNull(faction) && !faction.equals("BG")) ||
+                                    (faction.equals("BG") && (territories.getJSONObject("Arrakeen").getJSONObject("forces").length() < 2 && !territories.getJSONObject("Arrakeen").getJSONObject("forces").isNull("BG")) ||
+                                            (territories.getJSONObject("Carthag").getJSONObject("forces").length() < 2 && !territories.getJSONObject("Carthag").getJSONObject("forces").isNull("BG")))) {
+                                toCollect += forces * 3;
+                            } else toCollect += forces * 2;
+                            if (spice < toCollect) {
+                                toCollect = spice;
+                                spice = 0;
+                            } else spice -= toCollect;
+                            territory.put("spice", spice);
+                            int factionSpice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
+                            gameState.getFaction(faction).getJSONObject("resources").remove("spice");
+                            gameState.getFaction(faction).getJSONObject("resources").put("spice", factionSpice + toCollect);
+                            event.getChannel().sendMessage(gameState.getFaction(faction).getString("emoji") + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName).queue();
+                            writeFactionInfo(event, gameState, faction);
+                        }
+
+                    }
                    gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause

@@ -21,7 +21,7 @@ public class EventListener extends ListenerAdapter {
             URL file = getClass().getClassLoader().getResource("Treachery Cards/" + message.split("<:treachery:>")[1].strip().replace(" ", "_") + ".jpg");
             try {
                 event.getChannel().sendFile(new File(file.toURI())).queue();
-            } catch (URISyntaxException e) {
+            } catch (URISyntaxException | NullPointerException e) {
                 System.out.println("No Treachery Card named " + message);
             }
         }
