@@ -197,24 +197,24 @@ public class CommandManager extends ListenerAdapter {
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
+        //commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
-        commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
+        //commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(game, faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(game, sender, card, recipient));
-        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
+        //commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round").addOptions(game));
-        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
+        //commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(game, faction, traitor));
-        commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, starred, territory, otherTerritory, sector));
-        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another. (Does not check movement rules).").addOptions(game, faction, toTerritory, amount, starred, territory));
+        //commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, starred, territory, otherTerritory, sector));
+        //commandData.add(Commands.slash("moveforces", "Move forces from one territory to another. (Does not check movement rules).").addOptions(game, faction, toTerritory, amount, starred, territory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(game, faction, spent));
-        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
+        //commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(game, data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(game, sector));
 
