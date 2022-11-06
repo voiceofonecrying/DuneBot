@@ -45,7 +45,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         String name = event.getName();
-        event.reply("processing...").setEphemeral(true).queue();
+        event.deferReply().queue();
         switch (name) {
             case "newgame" -> newGame(event);
             case "addfaction" -> addFaction(event);
@@ -70,6 +70,7 @@ public class CommandManager extends ListenerAdapter {
 
         }
         //implement new slash commands here
+        event.getHook().sendMessage("The command has been completed successfully.").setEphemeral(true).queue();
 
     }
 
