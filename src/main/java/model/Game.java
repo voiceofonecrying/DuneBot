@@ -17,6 +17,10 @@ public class Game extends JSONObject {
         return this.getJSONObject("game_state").getJSONObject("game_resources");
     }
 
+    public JSONObject getGameBoard() {return this.getJSONObject("game_state").getJSONObject("game_board");}
+
+    public JSONObject getTerritory(String name) {return this.getGameBoard().getJSONObject(name);}
+
     public int getTurn() {
         return this.getResources().getInt("turn");
     }

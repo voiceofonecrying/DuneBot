@@ -59,8 +59,8 @@ public class CommandManager extends ListenerAdapter {
             case "putback" -> putBack(event);
             case "ixhandselection" -> ixHandSelection(event);
             case "selecttraitor" -> selectTraitor(event);
-            case "shipforces" -> shipForces(event);
-            case "moveforces" -> moveForces(event);
+            case "placeforces" -> placeForces(event);
+            case "removeforces" -> removeForces(event);
             case "display" -> displayGameState(event);
             case "revival" -> revival(event);
             case "awardbid" -> awardBid(event);
@@ -188,33 +188,34 @@ public class CommandManager extends ListenerAdapter {
         OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
         OptionData spent = new OptionData(OptionType.INTEGER, "spent", "How much was spent on the card.", true);
         OptionData revived = new OptionData(OptionType.INTEGER, "revived", "How many are being revived.", true);
-        OptionData toTerritory = new OptionData(OptionType.STRING, "toterritory", "Where the forces are moving to.", true);
         OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
                 .addChoice("Territories", "territories")
                 .addChoice("Decks and Discards", "dnd")
                 .addChoice("Phase, Turn, and everything else", "etc")
                 .addChoice("Faction Info", "factions");
+        OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
+        OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        //commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
+        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(game, faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(game, deck, destination));
-        //commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
+        commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(game, deck, numberToPeek));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(game, faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(game, sender, card, recipient));
-        //commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
+        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(game, card, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round").addOptions(game));
-        //commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
+        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(game, card));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(game, faction, traitor));
-        //commandData.add(Commands.slash("shipforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, starred, territory, otherTerritory, sector));
-        //commandData.add(Commands.slash("moveforces", "Move forces from one territory to another. (Does not check movement rules).").addOptions(game, faction, toTerritory, amount, starred, territory));
+        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(game, faction, amount, isShipment, starred, territory, otherTerritory, sector));
+        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(game, faction, amount, toTanks, starred, territory, otherTerritory, sector));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(game, faction, spent));
-        //commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
+        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(game, data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(game, sector));
 
@@ -450,7 +451,7 @@ public class CommandManager extends ListenerAdapter {
 
         for (; i < hand.length(); i++) {
             String card = hand.getString(i);
-            if (card.toLowerCase().contains(event.getOption("card").getAsString())) {
+            if (card.toLowerCase().contains(event.getOption("card").getAsString().toLowerCase())) {
                 gameState.getResources().getJSONArray("treachery_discard").put(card);
                 break;
             }
@@ -575,8 +576,30 @@ public class CommandManager extends ListenerAdapter {
                     channel.sendMessage("The next card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>").queue();
                 }
             }
+
         }
-        if (event.getOption("factionname").getAsString().equals("Harkonnen") && gameState.getFaction("Harkonnen").getJSONObject("resources").getJSONArray("treachery_hand").length() < 8) {
+
+        if (gameState.getResources().getJSONArray("market").length() > 0) {
+            for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                if (channel.getName().equals("bidding-phase")) {
+                    StringBuilder message = new StringBuilder();
+                    int cardNumber = gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length();
+                    message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
+                    int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1 + cardNumber;
+                    for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
+                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                        String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
+                        int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
+                        if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
+                                !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4)
+                            message.append(gameState.getFaction(faction).getString("emoji")).append(":\n");
+                    }
+                    channel.sendMessage(message.toString()).queue();
+                    break;
+                }
+            }
+        }
+            if (event.getOption("factionname").getAsString().equals("Harkonnen") && gameState.getFaction("Harkonnen").getJSONObject("resources").getJSONArray("treachery_hand").length() < 8) {
             drawCard(gameState, "treachery_deck", "Harkonnen");
             event.getChannel().sendMessage(gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " draws another card from the <:treachery:991763073281040518> deck.").queue();
         }
@@ -607,25 +630,6 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void moveForces(SlashCommandInteractionEvent event) {
-        Game gameState = getGameState(event);
-        String faction = event.getOption("factionname").getAsString();
-        JSONObject originForces = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(event.getOption("territory").getAsString()).getJSONObject("forces");
-        JSONObject destinationForces = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(event.getOption("toterritory").getAsString()).getJSONObject("forces");
-        String star = event.getOption("starred").getAsBoolean() ? "*" : "";
-        int originForcesStrength = originForces.getInt(faction + star);
-        originForces.remove(faction + star);
-        if (originForcesStrength > event.getOption("amount").getAsInt()) {
-            originForces.put(faction + star, originForcesStrength - event.getOption("amount").getAsInt());
-        } else if (originForcesStrength < event.getOption("amount").getAsInt()) {
-            event.getChannel().sendMessage("There are not enough forces to perform the movement").queue();
-        }
-        int destinationForcesStrength = destinationForces.isNull(faction + star) ? 0 : destinationForces.getInt(faction + star);
-        destinationForces.remove(faction + star);
-        destinationForces.put(faction + star, destinationForcesStrength + event.getOption("amount").getAsInt());
-        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
-    }
-
     public void advanceGame(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
 
@@ -638,8 +642,13 @@ public class CommandManager extends ListenerAdapter {
                     shuffle(gameState.getDeck("treachery_deck"));
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     int i = 1;
+                    JSONArray shuffled = new JSONArray();
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-                        turnOrder.put(faction, i);
+                        shuffled.put(faction);
+                    }
+                    shuffle(shuffled);
+                    for (Object faction: shuffled) {
+                        turnOrder.put(String.valueOf(i), faction);
                         i++;
                     }
                     gameState.advancePhase();
@@ -730,7 +739,7 @@ public class CommandManager extends ListenerAdapter {
                 case 6 -> {
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-                        if (turnOrder.getInt(faction) == 1 || turnOrder.getInt(faction) == 6) {
+                        if (turnOrder.getString(String.valueOf(1)).equals(faction) || turnOrder.getString(String.valueOf(6)).equals(faction)) {
                             for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
                                 if (channel.getName().equals(faction.toLowerCase() + "-chat")) channel.sendMessage("Please submit your dial for initial storm position.").queue();
                             }
@@ -890,6 +899,7 @@ public class CommandManager extends ListenerAdapter {
                     }
                     countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
                     event.getChannel().sendMessage(countMessage.toString()).queue();
+                    gameState.getResources().put("market_size", cardsUpForBid);
                     for (int i = 0; i < cardsUpForBid; i++) {
                         gameState.getResources().getJSONArray("market").put(deck.getString(deck.length() - 1));
                         deck.remove(deck.length() - 1);
@@ -908,17 +918,47 @@ public class CommandManager extends ListenerAdapter {
                             }
                         }
                     }
+                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                        if (channel.getName().equals("bidding-phase")) {
+                            StringBuilder message = new StringBuilder();
+                            message.append("R").append(gameState.getResources().getInt("turn")).append(":C1\n");
+                            int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1;
+                            for (int i = 0; i < factions.size(); i++) {
+                                int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                                String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
+                                int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
+                                if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
+                                        !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) message.append(gameState.getFaction(faction).getString("emoji")).append(":\n");
+                            }
+                            channel.sendMessage(message.toString()).queue();
+                            break;
+                        }
+                    }
                     gameState.advancePhase();
                 }
                 //5. Revival
                 case 5 -> {
+                    if (gameState.getResources().getJSONArray("market").length() > 0) {
+                        event.getChannel().sendMessage("There were " + gameState.getResources().getJSONArray("market").length() + " cards not bid on this round that are placed back on top of the <:treachery:991763073281040518> deck.").queue();
+                        int marketLength = gameState.getResources().getJSONArray("market").length();
+                        for (int i = 0; i < marketLength; i++) {
+                            gameState.getDeck("treachery_deck").put(gameState.getResources().getJSONArray("market").getString(gameState.getResources().getJSONArray("market").length() - 1));
+                            gameState.getResources().getJSONArray("market").remove(gameState.getResources().getJSONArray("market").length() - 1);
+                        }
+                    }
+                    gameState.getResources().remove("market_size");
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Revival Phase:").queue();
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
+                    StringBuilder message = new StringBuilder();
+                    message.append("Free Revivals:\n");
                     for (String faction : factions) {
                         int free = gameState.getFaction(faction).getInt("free_revival");
+                        int revived = 0;
                         boolean revivedStar = false;
                         for (int i = free; i > 0; i--) {
-                            if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) == 0 && !gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") == 0) continue;
+                            if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) == 0
+                                    && (gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") || gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") == 0)) continue;
+                            revived++;
                             if (!gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") != 0 && !revivedStar) {
                                 int starred = gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*");
                                 gameState.getResources().getJSONObject("tanks_forces").remove(faction + "*");
@@ -936,12 +976,23 @@ public class CommandManager extends ListenerAdapter {
                                 gameState.getFaction(faction).getJSONObject("resources").put("reserves", reserves + 1);
                             }
                         }
+                        if (revived > 0) {
+                            message.append(gameState.getFaction(faction).getString("emoji")).append(": ").append(revived).append("\n");
+                        }
                     }
+                    event.getChannel().sendMessage(message.toString()).queue();
                     gameState.advancePhase();
                 }
                 //6. Shipment and Movement
                 case 6 -> {
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Shipment and Movement Phase:").queue();
+                    if(gameState.getFaction("Atreides") != null) {
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                            if (channel.getName().equals("atreides-info")) {
+                                channel.sendMessage("You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.").queue();
+                            }
+                        }
+                    }
                     gameState.advancePhase();
                 }
                 //TODO: 7. Battle
@@ -954,6 +1005,15 @@ public class CommandManager extends ListenerAdapter {
                 case 8 -> {
                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Spice Harvest Phase:").queue();
                    JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
+                   //This is hacky, but I add spice to Arrakeen, Carthag, and Tuek's, then if it is not collected by the following algorithm, it is removed.
+                    territories.getJSONObject("Arrakeen").remove("spice");
+                    territories.getJSONObject("Carthag").remove("spice");
+                    territories.getJSONObject("Tuek's Sietch").remove("spice");
+                    territories.getJSONObject("Arrakeen").put("spice", 2);
+                    territories.getJSONObject("Carthag").put("spice", 2);
+                    territories.getJSONObject("Tuek's Sietch").put("spice", 1);
+
+
 
                     for (String territoryName : territories.keySet()) {
                         JSONObject territory = territories.getJSONObject(territoryName);
@@ -981,15 +1041,20 @@ public class CommandManager extends ListenerAdapter {
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", factionSpice + toCollect);
                             event.getChannel().sendMessage(gameState.getFaction(faction).getString("emoji") + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName).queue();
-                            writeFactionInfo(event, gameState, faction);
                         }
 
                     }
+                    territories.getJSONObject("Arrakeen").remove("spice");
+                    territories.getJSONObject("Carthag").remove("spice");
+                    territories.getJSONObject("Tuek's Sietch").remove("spice");
                    gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause
                 case 9 -> {
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Mentat Pause Phase:").queue();
+                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        writeFactionInfo(event, gameState, faction);
+                    }
                     gameState.advanceTurn();
                 }
             }
@@ -1012,7 +1077,7 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
-    public void shipForces(SlashCommandInteractionEvent event) {
+    public void placeForces(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
         String sector = event.getOption("sector") == null ? "" : "(" + event.getOption("sector").getAsString() + ")";
         String territory = "";
@@ -1034,7 +1099,7 @@ public class CommandManager extends ListenerAdapter {
         }
         int reserves = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("reserves" + star);
         if (reserves < event.getOption("amount").getAsInt()) {
-            event.getChannel().sendMessage("This faction does not have enough forces in reserves for this shipment!").queue();
+            event.getChannel().sendMessage("This faction does not have enough forces in reserves!").queue();
             return;
         }
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("reserves" + star);
@@ -1046,7 +1111,65 @@ public class CommandManager extends ListenerAdapter {
             previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector).getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + star);
         }
 
+        if (event.getOption("isshipment").getAsBoolean()) {
+            int cost = gameState.getTerritory(territory).getBoolean("is_stronghold") ? 1 : 2;
+            cost *= event.getOption("factionname").getAsString().equals("Guild") ? event.getOption("amount").getAsInt() / 2 : event.getOption("amount").getAsInt();
+            int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
+            gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
+            if (spice < cost) {
+                event.getChannel().sendMessage("This faction doesn't have the resources to make this shipment!").queue();
+                return;
+            }
+            gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("spice", spice - cost);
+            if (gameState.getFaction("Guild") != null && !(event.getOption("factionname").getAsString().equals("Guild") || event.getOption("factionname").getAsString().equals("Fremen"))) {
+                spice = gameState.getFaction("Guild").getJSONObject("resources").getInt("spice");
+                gameState.getFaction("Guild").getJSONObject("resources").remove("spice");
+                gameState.getFaction("Guild").getJSONObject("resources").put("spice", spice + event.getOption("amount").getAsInt());
+                writeFactionInfo(event, gameState, "Guild");
+            }
+            writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
+        }
         gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
+    public void removeForces(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        String sector = event.getOption("sector") == null ? "" : "(" + event.getOption("sector").getAsString() + ")";
+        String territoryName = "";
+
+        if (event.getOption("mostlikelyterritories") == null && event.getOption("otherterritories") == null) {
+            event.getChannel().sendMessage("You have to select a territory.").queue();
+            return;
+        } else if (event.getOption("mostlikelyterritories") == null) {
+            territoryName = event.getOption("otherterritories").getAsString();
+        } else {
+            territoryName = event.getOption("mostlikelyterritories").getAsString();
+        }
+        if (gameState.getJSONObject("game_state").getJSONObject("game_board").isNull(territoryName + sector)) {
+            event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
+            return;
+        }
+        JSONObject territory = gameState.getTerritory(territoryName);
+        String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
+        int forces = territory.getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + starred);
+        territory.getJSONObject("forces").remove(event.getOption("factionname").getAsString() + starred);
+        if (forces > event.getOption("amount").getAsInt()) {
+            territory.getJSONObject("forces").put(event.getOption("factionname").getAsString() + starred, forces - event.getOption("amount").getAsInt());
+        } else if (forces < event.getOption("amount").getAsInt()) {
+            event.getChannel().sendMessage("You are trying to remove more forces than this faction has in this territory! Please check your info and try again.").queue();
+            return;
+        }
+
+        if (event.getOption("totanks").getAsBoolean()) {
+            int tanks = gameState.getResources().getJSONObject("tanks_forces").getInt(event.getOption("factionname").getAsString() + starred);
+            gameState.getResources().getJSONObject("tanks_forces").remove(event.getOption("factionname").getAsString() + starred);
+            gameState.getResources().getJSONObject("tanks_forces").put(event.getOption("factionname").getAsString() + starred, tanks + event.getOption("amount").getAsInt());
+        } else {
+            int reserves = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("reserves" + starred);
+            gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("reserves" + starred);
+            gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("reserves" + starred, reserves + event.getOption("amount").getAsInt());
+        }
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
