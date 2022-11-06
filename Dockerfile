@@ -20,4 +20,4 @@ COPY --from=build /app/target/DuneBot-*-SNAPSHOT.jar /
 
 COPY scripts/env-to-dotenv.sh /
 
-CMD /env-to-dotenv.sh && java -jar /DuneBot-*-SNAPSHOT.jar
+CMD sh /env-to-dotenv.sh && java -jar /DuneBot-*-SNAPSHOT.jar
