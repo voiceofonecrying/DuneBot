@@ -233,8 +233,7 @@ public class CommandManager extends ListenerAdapter {
 
         category.createTextChannel("bot-data").addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getGuild().getBotRole(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
-        category.createTextChannel("out-of-game-chat").complete();
-        category.createTextChannel("in-game-chat").complete();
+        category.createTextChannel("chat").complete();
         category.createTextChannel("turn-summary").complete();
         category.createTextChannel("game-actions").complete();
         category.createTextChannel("bribes").complete();
@@ -243,7 +242,7 @@ public class CommandManager extends ListenerAdapter {
         category.createTextChannel("pre-game-voting").complete();
         category.createTextChannel("mod-info").complete();
 
-        TextChannel rules = category.getTextChannels().get(7);
+        TextChannel rules = category.getTextChannels().get(6);
         rules.sendMessage("""
             <:DuneRulebook01:991763013814198292>  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
             <:weirding:991763071775297681>  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
@@ -755,12 +754,12 @@ public class CommandManager extends ListenerAdapter {
             switch (gameState.getPhase()) {
                 //1. Storm Phase
                 case 1 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Storm Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Storm Phase:").queue();
                     JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
                    if (gameState.getTurn() != 1) {
                        int stormMovement = gameState.getDeck("storm_deck").getInt(0);
                        shuffle(gameState.getDeck("storm_deck"));
-                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("The storm moves " + stormMovement + " sectors this turn.").queue();
+                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("The storm moves " + stormMovement + " sectors this turn.").queue();
                        for (int i = 0; i < stormMovement; i++) {
                            gameState.getResources().put("storm", (gameState.getResources().getInt("storm") + 1));
                            if (gameState.getResources().getInt("storm") == 19) gameState.getResources().put("storm", 1);
@@ -781,7 +780,7 @@ public class CommandManager extends ListenerAdapter {
                                            territories.getJSONObject(territory).getJSONObject("forces").remove("Fremen*");
                                            territories.getJSONObject(territory).getJSONObject("forces").put("Fremen*", lost - fremenForces);
                                        }
-                                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                                                gameState.getFaction("Fremen").getString("emoji") + " lost " + lost +
                                                        " forces to the storm in " + territory
                                        ).queue();
@@ -797,7 +796,7 @@ public class CommandManager extends ListenerAdapter {
                                            gameState.getResources().getJSONObject("tanks_forces").put(force,
                                                    gameState.getResources().getJSONObject("tanks_forces").getInt(force) + lost);
                                        }
-                                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                                       event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                                                gameState.getFaction(force.replace("*", "")).getString("emoji") + " lost " +
                                                        lost + " forces to the storm in " + territory
                                        ).queue();
@@ -820,17 +819,17 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //2. Spice Blow and Nexus
                 case 2 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Spice Blow Phase:").queue();
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(drawCard(gameState, "spice_deck", "a")).queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Spice Blow Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "a")).queue();
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
                 case 3 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " CHOAM Charity Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " CHOAM Charity Phase:").queue();
                     int multiplier = 1;
                     if (!gameState.getResources().isNull("inflation token")) {
                         if (gameState.getResources().getString("inflation token").equals("cancel")) {
-                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("CHOAM Charity is cancelled!").queue();
+                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("CHOAM Charity is cancelled!").queue();
                             gameState.advancePhase();
                             break;
                         } else {
@@ -840,7 +839,7 @@ public class CommandManager extends ListenerAdapter {
 
                     int choamGiven = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
-                    if (factions.contains("CHOAM")) event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                    if (factions.contains("CHOAM")) event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                             gameState.getFaction("CHOAM").getString("emoji") + " receives " + 10 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
                     ).queue();
                     for (String faction : factions) {
@@ -850,7 +849,7 @@ public class CommandManager extends ListenerAdapter {
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             choamGiven += 2 * multiplier;
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + (2 * multiplier));
-                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                                     gameState.getFaction(faction).getString("emoji") + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity."
                             ).queue();
                         }
@@ -859,7 +858,7 @@ public class CommandManager extends ListenerAdapter {
                             choamGiven += charity;
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + charity);
-                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                            event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                                     gameState.getFaction(faction).getString("emoji") + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
                             ).queue();
                         }
@@ -870,7 +869,7 @@ public class CommandManager extends ListenerAdapter {
                         int spice = gameState.getFaction("CHOAM").getJSONObject("resources").getInt("spice");
                         gameState.getFaction("CHOAM").getJSONObject("resources").remove("spice");
                         gameState.getFaction("CHOAM").getJSONObject("resources").put("spice", (10 * multiplier) + spice - choamGiven);
-                        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage(
+                        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(
                                 gameState.getFaction("CHOAM").getString("emoji") + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
                         ).queue();
                     }
@@ -878,7 +877,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //4. Bidding
                 case 4 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Bidding Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Bidding Phase:").queue();
                     int cardsUpForBid = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
                     StringBuilder countMessage = new StringBuilder();
@@ -947,7 +946,7 @@ public class CommandManager extends ListenerAdapter {
                         }
                     }
                     gameState.getResources().remove("market_size");
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Revival Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Revival Phase:").queue();
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
                     StringBuilder message = new StringBuilder();
                     message.append("Free Revivals:\n");
@@ -985,7 +984,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //6. Shipment and Movement
                 case 6 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Shipment and Movement Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Shipment and Movement Phase:").queue();
                     if(gameState.getFaction("Atreides") != null) {
                         for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
                             if (channel.getName().equals("atreides-info")) {
@@ -997,13 +996,13 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //TODO: 7. Battle
                 case 7 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Battle Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Battle Phase:").queue();
                     gameState.advancePhase();
 
                 }
                 //TODO: 8. Spice Harvest
                 case 8 -> {
-                   event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Spice Harvest Phase:").queue();
+                   event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Spice Harvest Phase:").queue();
                    JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
                    //This is hacky, but I add spice to Arrakeen, Carthag, and Tuek's, then if it is not collected by the following algorithm, it is removed.
                     territories.getJSONObject("Arrakeen").remove("spice");
@@ -1051,7 +1050,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //TODO: 9. Mentat Pause
                 case 9 -> {
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(3).sendMessage("Turn " + gameState.getTurn() + " Mentat Pause Phase:").queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Mentat Pause Phase:").queue();
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         writeFactionInfo(event, gameState, faction);
                     }
@@ -1242,7 +1241,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void displayGameState(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
-        TextChannel channel = event.getOption("game").getAsChannel().asCategory().getTextChannels().get(9);
+        TextChannel channel = event.getOption("game").getAsChannel().asCategory().getTextChannels().get(8);
         switch (event.getOption("data").getAsString()) {
             case "territories" -> {
                JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
