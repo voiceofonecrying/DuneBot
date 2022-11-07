@@ -653,14 +653,18 @@ public class CommandManager extends ListenerAdapter {
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     int i = 1;
                     JSONArray shuffled = new JSONArray();
+                    StringBuilder message = new StringBuilder();
+                    message.append("Positions have been assigned as follows starting from the seat to the right of storm start:\n");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         shuffled.put(faction);
                     }
                     shuffle(shuffled);
                     for (Object faction: shuffled) {
                         turnOrder.put(String.valueOf(i), faction);
+                        message.append(gameState.getFaction((String) faction).getString("emoji")).append(":").append(i).append("\n");
                         i++;
                     }
+                    event.getChannel().sendMessage(message.toString()).queue();
                     gameState.advancePhase();
                     //If Bene Gesserit are present, time to make a prediction
                     if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
@@ -670,7 +674,7 @@ public class CommandManager extends ListenerAdapter {
                             }
                         }
                     }
-                    event.getChannel().sendMessage("1. Positions have been assigned.").queue();
+
                 }
                 //2. Traitors
                 case 1 -> {
