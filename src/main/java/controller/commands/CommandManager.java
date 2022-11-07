@@ -227,21 +227,24 @@ public class CommandManager extends ListenerAdapter {
 
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getGuild().getRolesByName("Bot Testers", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
-        category.createTextChannel("bot-data").addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getGuild().getBotRole(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+        category.createTextChannel("bot-data")
+                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
         category.createTextChannel("chat").complete();
-        category.createTextChannel("turn-summary").complete();
+        category.createTextChannel("turn-summary")
+                .addPermissionOverride(event.getOption("role").getAsRole(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
         category.createTextChannel("game-actions").complete();
         category.createTextChannel("bribes").complete();
         category.createTextChannel("bidding-phase").complete();
         category.createTextChannel("rules").complete();
         category.createTextChannel("pre-game-voting").complete();
-        category.createTextChannel("mod-info").complete();
+        category.createTextChannel("mod-info")
+                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         TextChannel rules = category.getTextChannels().get(6);
         rules.sendMessage("""
@@ -278,6 +281,7 @@ public class CommandManager extends ListenerAdapter {
         gameState.put("game_board", gameBoard);
         game.put("game_state", gameState);
         game.put("version", 1);
+        game.put("role", event.getOption("role").getAsRole());
         pushGameState(game, category);
     }
 
@@ -304,10 +308,11 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
         Category game = event.getOption("game").getAsChannel().asCategory();
         game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
-                        .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                        .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
+                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("role").split(":")[1].split("\\(")[0], true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).queue();
+
         game.createTextChannel(factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(game.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("role").split(":")[1].split("\\(")[0], true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
 
     }
