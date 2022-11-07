@@ -234,12 +234,17 @@ public class CommandManager extends ListenerAdapter {
 
         category.createTextChannel("bot-data")
                 .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
-        category.createTextChannel("chat").complete();
+        category.createTextChannel("chat")
+                        .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
         category.createTextChannel("turn-summary")
-                .addPermissionOverride(event.getOption("role").getAsRole(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("game-actions").complete();
-        category.createTextChannel("bribes").complete();
-        category.createTextChannel("bidding-phase").complete();
+                .addPermissionOverride(event.getOption("role").getAsRole(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
+        category.createTextChannel("game-actions")
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
+        category.createTextChannel("bribes")
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
+        category.createTextChannel("bidding-phase")
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
         category.createTextChannel("rules").complete();
         category.createTextChannel("pre-game-voting").complete();
         category.createTextChannel("mod-info")
