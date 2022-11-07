@@ -287,6 +287,7 @@ public class CommandManager extends ListenerAdapter {
         game.put("game_state", gameState);
         game.put("version", 1);
         game.put("role", event.getOption("role").getAsRole());
+        game.put("moderator", event.getUser().getAsTag());
         pushGameState(game, category);
     }
 
@@ -1233,7 +1234,12 @@ public class CommandManager extends ListenerAdapter {
         Message.Attachment encoded = ml.get(0).getAttachments().get(0);
         CompletableFuture<File> future = encoded.getProxy().downloadToFile(new File(Dotenv.configure().load().get("FILEPATH")));
         try {
-            return new Game(new String(Base64.getMimeDecoder().decode(new String(Files.readAllBytes(future.get().toPath())))));
+            Game returnGame = new Game(new String(Base64.getMimeDecoder().decode(new String(Files.readAllBytes(future.get().toPath())))));
+            if (!returnGame.getString("moderator").equals(event.getUser().getAsTag())) {
+                event.getHook().sendMessage("Only the moderator can do that!").queue();
+                throw new IllegalArgumentException("ERROR: Moderator does not match command issuer.");
+            }
+            return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
             return new Game();
