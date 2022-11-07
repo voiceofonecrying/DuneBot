@@ -307,7 +307,7 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
 
-        Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag());
+        Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag(), event.getOption("player").getAsMember().getNickname());
         Initializers.newFaction(faction, gameState);
 
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
@@ -1286,7 +1286,7 @@ public class CommandManager extends ListenerAdapter {
                 for (String factionName : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                     JSONObject faction = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(factionName);
                     StringBuilder message = new StringBuilder();
-                    message.append("**" + faction.getString("name")).append(":**\nPlayer: ").append(faction.getString("player")).append("\n");
+                    message.append("**" + faction.getString("name")).append(":**\nPlayer: ").append(faction.getString("username")).append("\n");
                     for (String resourceName : faction.getJSONObject("resources").keySet()) {
                         Object resource = faction.getJSONObject("resources").get(resourceName);
                         message.append(resourceName).append(": ").append(resource.toString()).append("\n");
