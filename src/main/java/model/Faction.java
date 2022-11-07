@@ -4,12 +4,15 @@ import org.json.JSONObject;
 
 public class Faction extends JSONObject {
 
-    public Faction(String name, String emoji, String user) {
+    public Faction(String name, String emoji, String user, String userName) {
         this.put("name", name);
         this.put("emoji", emoji);
         this.put("player", user);
         this.put("resources", new JSONObject());
+        this.put("username", userName);
     }
+
+    public String getUserName() {return this.getString("username");}
 
     public Faction(JSONObject j) {
         super(j.toString());
