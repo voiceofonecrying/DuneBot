@@ -78,7 +78,8 @@ public class CommandManager extends ListenerAdapter {
     public void onGuildReady(@NotNull GuildReadyEvent event) {
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
-        OptionData role = new OptionData(OptionType.ROLE, "role", "The role you created for the players of this game", true);
+        OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
+        OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
         OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
         OptionData game = new OptionData(OptionType.CHANNEL, "game", "The game this action will be applied to", true).setChannelTypes(ChannelType.CATEGORY);
         OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
@@ -200,7 +201,7 @@ public class CommandManager extends ListenerAdapter {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
-        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, role));
+        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user, game));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, game, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(game, faction, resourceName, amount));
@@ -225,19 +226,22 @@ public class CommandManager extends ListenerAdapter {
 
     public void newGame(SlashCommandInteractionEvent event) {
 
+        Role gameRole = event.getOption("gamerole").getAsRole();
+        Role modRole = event.getOption("modrole").getAsRole();
         String name = event.getOption("name").getAsString();
         event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+                .addPermissionOverride(modRole, EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
         category.createTextChannel("bot-data")
-                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
+                .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
         category.createTextChannel("chat")
                         .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
         category.createTextChannel("turn-summary")
-                .addPermissionOverride(event.getOption("role").getAsRole(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
+                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
                 .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
         category.createTextChannel("game-actions")
                 .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
@@ -245,10 +249,12 @@ public class CommandManager extends ListenerAdapter {
                 .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
         category.createTextChannel("bidding-phase")
                 .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("rules").complete();
-        category.createTextChannel("pre-game-voting").complete();
+        category.createTextChannel("rules")
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
+        category.createTextChannel("pre-game-voting")
+                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
         category.createTextChannel("mod-info")
-                .addPermissionOverride(event.getGuild().getRolesByName(event.getOption("role").getAsRole().getName(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
         TextChannel rules = category.getTextChannels().get(6);
@@ -286,8 +292,8 @@ public class CommandManager extends ListenerAdapter {
         gameState.put("game_board", gameBoard);
         game.put("game_state", gameState);
         game.put("version", 1);
-        game.put("role", event.getOption("role").getAsRole());
-        game.put("moderator", event.getUser().getAsTag());
+        game.put("gamerole", gameRole.getName());
+        game.put("modrole", modRole.getName());
         pushGameState(game, category);
     }
 
@@ -315,10 +321,10 @@ public class CommandManager extends ListenerAdapter {
         Category game = event.getOption("game").getAsChannel().asCategory();
         game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("role").split(":")[1].split("\\(")[0], true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).queue();
+                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("gamerole"), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).queue();
 
         game.createTextChannel(factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("role").split(":")[1].split("\\(")[0], true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
+                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getString("gamerole"), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
 
     }
@@ -1235,9 +1241,14 @@ public class CommandManager extends ListenerAdapter {
         CompletableFuture<File> future = encoded.getProxy().downloadToFile(new File(Dotenv.configure().load().get("FILEPATH")));
         try {
             Game returnGame = new Game(new String(Base64.getMimeDecoder().decode(new String(Files.readAllBytes(future.get().toPath())))));
-            if (!returnGame.getString("moderator").equals(event.getUser().getAsTag())) {
+            List<Role> roles = event.getMember().getRoles();
+            List<String> roleNames = new ArrayList<>();
+            for (Role role : roles) {
+                roleNames.add(role.getName());
+            }
+            if (!roleNames.contains(returnGame.getString("modrole"))) {
                 event.getHook().sendMessage("Only the moderator can do that!").queue();
-                throw new IllegalArgumentException("ERROR: Moderator does not match command issuer.");
+                throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
