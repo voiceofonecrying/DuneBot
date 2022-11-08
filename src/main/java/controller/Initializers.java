@@ -400,7 +400,7 @@ public class Initializers {
                 return new Coordinates(865, 301);
             }
             case "sigil 4" -> {
-                return new Coordinates(475, 75);
+                return new Coordinates(475, 80);
             }
             case "sigil 5" -> {
                 return new Coordinates(85, 301);
@@ -437,6 +437,30 @@ public class Initializers {
             }
             case "turn 10" -> {
                 return new Coordinates(93,60);
+            }
+            case "phase 1" -> {
+                return new Coordinates(237, 45);
+            }
+            case "phase 2" -> {
+                return new Coordinates(297,45);
+            }
+            case "phase 3" -> {
+                return new Coordinates(357,45);
+            }
+            case "phase 4" -> {
+                return new Coordinates(417,45);
+            }
+            case "phase 5" -> {
+                return new Coordinates(533,45);
+            }
+            case "phase 6" -> {
+                return new Coordinates(593,45);
+            }
+            case "phase 7" -> {
+                return new Coordinates(653,45);
+            }
+            case "phase 8" -> {
+                return new Coordinates(713,45);
             }
         }
 

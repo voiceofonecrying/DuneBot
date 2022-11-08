@@ -853,7 +853,7 @@ public class CommandManager extends ListenerAdapter {
                            }
                        }
                    }
-                   if (gameState.getFaction("Fremen") != null) {
+                   if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Fremen")) {
                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
                            if (channel.getName().contains("fremen-info")) {
                                channel.sendMessage("The storm will move " + gameState.getDeck("storm_deck").getInt(0) + " sectors next turn.").queue();
@@ -1091,6 +1091,9 @@ public class CommandManager extends ListenerAdapter {
                     territories.getJSONObject("Arrakeen").remove("spice");
                     territories.getJSONObject("Carthag").remove("spice");
                     territories.getJSONObject("Tuek's Sietch").remove("spice");
+                    territories.getJSONObject("Arrakeen").put("spice", 0);
+                    territories.getJSONObject("Carthag").put("spice", 0);
+                    territories.getJSONObject("Tuek's Sietch").put("spice", 0);
                    gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause
@@ -1329,6 +1332,11 @@ public class CommandManager extends ListenerAdapter {
             turnMarker = rotateImageByDegrees(turnMarker, angle);
             Initializers.Coordinates coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
             overlay(board, turnMarker, coordinates);
+            board = ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+            BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
+            phaseMarker = resize(phaseMarker, 50, 50);
+            coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
+            overlay(board, phaseMarker, coordinates);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -1438,12 +1446,12 @@ public class CommandManager extends ListenerAdapter {
         }
         List<Category> categories = event.getGuild().getCategories();
         for (Category category : categories) {
-            if (!category.getName().startsWith("test")) continue;
+            //if (!category.getName().startsWith("test")) continue;
             category.delete().complete();
         }
         List<TextChannel> channels = event.getGuild().getTextChannels();
         for (TextChannel channel : channels) {
-            if (!channel.getName().startsWith("test") || channel.getName().equals("test")) continue;
+            //if (!channel.getName().startsWith("test") || channel.getName().equals("test")) continue;
             channel.delete().complete();
         }
     }
