@@ -18,12 +18,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -395,6 +402,22 @@ public class CommandManager extends ListenerAdapter {
 
     public String drawCard(Game gameState, String deckName, String faction) {
         JSONArray deck = gameState.getDeck(deckName);
+
+        if (deck.length() == 0) {
+            JSONArray discardA = gameState.getResources().getJSONArray("spice_discardA");
+            JSONArray discardB = gameState.getResources().getJSONArray("spice_discardB");
+
+            for (Object o : discardA) {
+                deck.put(o);
+            }
+            for (Object o : discardB) {
+                deck.put(o);
+            }
+            discardA.clear();
+            discardB.clear();
+            shuffle(deck);
+
+        }
         
         String drawn = deck.getString(deck.length() - 1);
         if (gameState.getResources().getInt("turn") == 1 && drawn.equals("Shai-Hulud")) {
@@ -1271,6 +1294,98 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
+    public void drawGameBoard(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+
+        //Load png resources into a hashmap.
+        HashMap<String, File> boardComponents = new HashMap<>();
+        URL dir = getClass().getClassLoader().getResource("Board Components");
+        try {
+            for (File file : new File(dir.toURI()).listFiles()) {
+                boardComponents.put(file.getName().replace(".png", ""), file);
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            BufferedImage board = ImageIO.read(boardComponents.get("Board"));
+
+            //Place sigils
+            for (int i = 1; i <= gameState.getResources().getJSONObject("turn_order").length(); i++) {
+                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(i)) + " Sigil"));
+                Initializers.Coordinates coordinates = Initializers.getDrawCoordinates("sigil " + i);
+                sigil = resize(sigil, 50, 50);
+                overlay(board, sigil, coordinates);
+                board = ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+            }
+
+            //Place turn, phase, and storm markers
+            BufferedImage turnMarker = ImageIO.read(boardComponents.get("Turn Marker"));
+            turnMarker = resize(turnMarker, 55, 55);
+            int turn = gameState.getResources().getInt("turn") == 0 ? 1 : gameState.getResources().getInt("turn");
+            float angle = (turn * 36) + 74f;
+            turnMarker = rotateImageByDegrees(turnMarker, angle);
+            Initializers.Coordinates coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
+            overlay(board, turnMarker, coordinates);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendFile(new File(Dotenv.load().get("IMAGEPATH"))).queue();
+    }
+
+    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Initializers.Coordinates coordinates) throws IOException {
+
+        BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = overlay.createGraphics();
+        g.drawImage(board, 0, 0, null);
+        g.drawImage(piece, coordinates.x() - (piece.getWidth()/2), coordinates.y() - (piece.getHeight()/2), null);
+        ImageIO.write(overlay, "png", new File(Dotenv.load().get("IMAGEPATH")));
+        g.dispose();
+
+        return ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+    }
+
+    public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
+        double rads = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+        int w = img.getWidth();
+        int h = img.getHeight();
+        int newWidth = (int) Math.floor(w * cos + h * sin);
+        int newHeight = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotated.createGraphics();
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
+
+        int x = w / 2;
+        int y = h / 2;
+
+        at.rotate(rads, x, y);
+        g2d.setTransform(at);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.setColor(Color.RED);
+        g2d.drawRect(0, 0, newWidth - 1, newHeight - 1);
+        g2d.dispose();
+
+        return rotated;
+    }
+
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
+
     public void displayGameState(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
         TextChannel channel = event.getOption("game").getAsChannel().asCategory().getTextChannels().get(8);
@@ -1312,6 +1427,7 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
+        drawGameBoard(event);
     }
 
     public void clean(SlashCommandInteractionEvent event) {

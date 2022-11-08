@@ -3,6 +3,7 @@ package controller;
 import model.Faction;
 import model.Game;
 import model.Territory;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -383,5 +384,62 @@ public class Initializers {
         stormDeck.put(5);
         stormDeck.put(6);
         return stormDeck;
+    }
+
+    public record Coordinates(int x, int y) {}
+
+    public static Coordinates getDrawCoordinates(String location) {
+        switch (location) {
+            case "sigil 1" -> {
+                return new Coordinates(475, 978);
+            }
+            case "sigil 2" -> {
+                return new Coordinates(865, 753);
+            }
+            case "sigil 3" -> {
+                return new Coordinates(865, 301);
+            }
+            case "sigil 4" -> {
+                return new Coordinates(475, 75);
+            }
+            case "sigil 5" -> {
+                return new Coordinates(85, 301);
+            }
+            case "sigil 6" -> {
+                return new Coordinates(85, 753);
+            }
+            case "turn 0", "turn 1" -> {
+                return new Coordinates(124, 60);
+            }
+            case "turn 2" -> {
+                return new Coordinates(148, 75);
+            }
+            case "turn 3" -> {
+                return new Coordinates(160, 105);
+            }
+            case "turn 4" -> {
+                return new Coordinates(148,135);
+            }
+            case "turn 5" -> {
+                return new Coordinates(124,155);
+            }
+            case "turn 6" -> {
+                return new Coordinates(95,150);
+            }
+            case "turn 7" -> {
+                return new Coordinates(67,135);
+            }
+            case "turn 8" -> {
+                return new Coordinates(60,108);
+            }
+            case "turn 9" -> {
+                return new Coordinates(65,80);
+            }
+            case "turn 10" -> {
+                return new Coordinates(93,60);
+            }
+        }
+
+        return new Coordinates(0, 0);
     }
 }
