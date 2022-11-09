@@ -1,9 +1,11 @@
 package controller.commands;
 
+import controller.BoardCoordinateHelpers;
 import controller.Initializers;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Faction;
 import model.Game;
+import model.Territory;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -13,6 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.internal.utils.Helpers;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -627,7 +630,7 @@ public class CommandManager extends ListenerAdapter {
                     message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
                     int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1 + cardNumber;
                     for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
-                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                        int playerPosition = (firstBid + i > 6 ? firstBid + i - 6 : firstBid + i) % 6;
                         String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
@@ -1272,10 +1275,13 @@ public class CommandManager extends ListenerAdapter {
             for (Role role : roles) {
                 roleNames.add(role.getName());
             }
+            /*
             if (!roleNames.contains(returnGame.getString("modrole"))) {
                 event.getHook().sendMessage("Only the moderator can do that!").queue();
                 throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
+
+             */
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
@@ -1318,10 +1324,9 @@ public class CommandManager extends ListenerAdapter {
             //Place sigils
             for (int i = 1; i <= gameState.getResources().getJSONObject("turn_order").length(); i++) {
                 BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(i)) + " Sigil"));
-                Initializers.Coordinates coordinates = Initializers.getDrawCoordinates("sigil " + i);
+                Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
-                overlay(board, sigil, coordinates);
-                board = ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+                board = overlay(board, sigil, coordinates);
             }
 
             //Place turn, phase, and storm markers
@@ -1330,13 +1335,46 @@ public class CommandManager extends ListenerAdapter {
             int turn = gameState.getResources().getInt("turn") == 0 ? 1 : gameState.getResources().getInt("turn");
             float angle = (turn * 36) + 74f;
             turnMarker = rotateImageByDegrees(turnMarker, angle);
-            Initializers.Coordinates coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
-            overlay(board, turnMarker, coordinates);
-            board = ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+            Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
+            board = overlay(board, turnMarker, coordinates);
             BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
             phaseMarker = resize(phaseMarker, 50, 50);
             coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
-            overlay(board, phaseMarker, coordinates);
+            board = overlay(board, phaseMarker, coordinates);
+
+
+            //Place forces
+            for (String territoryName : gameState.getGameBoard().keySet()) {
+                JSONObject territory = gameState.getTerritory(territoryName);
+                if (territory.getJSONObject("forces").length() == 0) continue;
+                int offset = 0;
+                for (String force : territory.getJSONObject("forces").keySet()) {
+                    BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
+                    forceImage = resize(forceImage, 47, 29);
+                    if (force.contains("*")) {
+                        BufferedImage star = ImageIO.read(boardComponents.get("star"));
+                        star = resize(star, 8, 8);
+                        forceImage = overlay(forceImage, star, new Point(20, 7));
+                    }
+                    if (territory.getJSONObject("forces").getInt(force) > 9) {
+                        BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
+                        BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force) - 10)));
+                        oneImage = resize(oneImage, 12, 12);
+                        digitImage = resize(digitImage, 12,12);
+                        forceImage = overlay(forceImage, oneImage, new Point(28, 14));
+                        forceImage = overlay(forceImage, digitImage, new Point(36, 14));
+                    } else {
+                        BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force))));
+                        numberImage = resize(numberImage, 12, 12);
+                        forceImage = overlay(forceImage, numberImage, new Point(30,14));
+
+                    }
+                    Point forcePlacement = Initializers.getDrawCoordinates(territoryName);
+                    Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                    board = overlay(board, forceImage, forcePlacementOffset);
+                    offset += 15;
+                }
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -1345,16 +1383,16 @@ public class CommandManager extends ListenerAdapter {
         event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendFile(new File(Dotenv.load().get("IMAGEPATH"))).queue();
     }
 
-    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Initializers.Coordinates coordinates) throws IOException {
+    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates) throws IOException {
 
         BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = overlay.createGraphics();
         g.drawImage(board, 0, 0, null);
-        g.drawImage(piece, coordinates.x() - (piece.getWidth()/2), coordinates.y() - (piece.getHeight()/2), null);
+        g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
         ImageIO.write(overlay, "png", new File(Dotenv.load().get("IMAGEPATH")));
         g.dispose();
 
-        return ImageIO.read(new File(Dotenv.load().get("IMAGEPATH")));
+        return overlay;
     }
 
     public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {

@@ -7,6 +7,10 @@ import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Initializers {
 
     public static void newFaction(Faction faction, Game gameState) {
@@ -386,84 +390,201 @@ public class Initializers {
         return stormDeck;
     }
 
-    public record Coordinates(int x, int y) {}
+    public static List<Point> getPoints(String territory) {
+        List<Point> points = new ArrayList<>();
 
-    public static Coordinates getDrawCoordinates(String location) {
+        switch (territory) {
+
+            case "Cielago North(1)" -> {}
+            case "Cielago Depression(1)" -> {}
+            case "Meridian(1)" -> {}
+            case "Cielago South(1)" -> {}
+            case "Cielago North(2)" -> {}
+            case "Cielago Depression(2)" -> {}
+            case "Cielago South(2)" -> {}
+            case "Cielago East(2)" -> {}
+            case "Harg Pass(3)" -> {}
+            case "False Wall South(3)" -> {}
+            case "Cielago East(3)" -> {}
+            case "South Mesa(3)" -> {}
+            case "Harg Pass(4)" -> {}
+            case "False Wall East(4)" -> {}
+            case "The Minor Erg(4)" -> {}
+            case "False Wall South(4)" -> {}
+            case "Pasty Mesa(4)" -> {}
+            case "South Mesa(4)" -> {}
+            case "Tuek's Sietch" -> {}
+            case "False Wall East(5)" -> {}
+            case "The Minor Erg(5)" -> {}
+            case "Pasty Mesa(5)" -> {}
+            case "South Mesa(5)" -> {}
+            case "False Wall East(6)" -> {}
+            case "The Minor Erg(6)" -> {}
+            case "Pasty Mesa(6)" -> {}
+            case "Red Chasm" -> {}
+            case "False Wall East(7)" -> {}
+            case "The Minor Erg(7)" -> {}
+            case "Shield Wall(7)" -> {}
+            case "Pasty Mesa(7)" -> {}
+            case "Gara Kulon" -> {}
+            case "False Wall East(8)" -> {}
+            case "Imperial Basin(8)" -> {}
+            case "Shield Wall(8)" -> {}
+            case "Hole in the Rock" -> {}
+            case "Rim Wall West" -> {}
+            case "Basin" -> {}
+            case "Old Gap(8)" -> {}
+            case "Sihaya Ridge" -> {}
+            case "Imperial Basin(9)" -> {}
+            case "Arrakeen" -> {}
+            case "Old Gap(9)" -> {}
+            case "Imperial Basin(10)" -> {}
+            case "Arsunt(10)" -> {}
+            case "Carthag" -> {
+                points.add(new Point(468,219));
+                points.add(new Point(426,235));
+                points.add(new Point(439,297));
+                points.add(new Point(455,308));
+                points.add(new Point(484,303));
+                points.add(new Point(500,270));
+                points.add(new Point(493,224));
+            }
+            case "Tsimpo(10)" -> {}
+            case "Broken Land(10)" -> {}
+            case "Old Gap(10)" -> {}
+            case "Arsunt(11)" -> {}
+            case "Hagga Basin(11)" -> {}
+            case "Tsimpo(11)" -> {}
+            case "Plastic Basin(11)" -> {}
+            case "Broken Land(11)" -> {}
+            case "Hagga Basin(12)" -> {}
+            case "Plastic Basin(12)" -> {}
+            case "Tsimpo(12)" -> {}
+            case "Rock Outcroppings(12)" -> {}
+            case "Wind Pass(13)" -> {}
+            case "Plastic Basin(13)" -> {}
+            case "Bight of the Cliff(13)" -> {}
+            case "Sietch Tabr" -> {}
+            case "Rock Outcroppings(13)" -> {}
+            case "Wind Pass(14)" -> {}
+            case "The Great Flat" -> {}
+            case "Funeral Plain" -> {}
+            case "Bight of the Cliff(14)" -> {}
+            case "Wind Pass(15)" -> {}
+            case "The Greater Flat" -> {}
+            case "Habbanya Erg(15)" -> {}
+            case "False Wall West(15)" -> {}
+            case "Wind Pass North(16)" -> {}
+            case "Wind Pass(16)" -> {}
+            case "False Wall West(16)" -> {}
+            case "Habbanya Erg(16)" -> {}
+            case "Habbanya Ridge Flat(16)" -> {}
+            case "Habbanya Sietch" -> {}
+            case "Wind Pass North(17)" -> {}
+            case "Cielago West(17)" -> {}
+            case "False Wall West(17)" -> {}
+            case "Habbanya Ridge Flat(17)" -> {}
+            case "Cielago North(18)" -> {}
+            case "Cielago Depression(18)" -> {}
+            case "Cielago West(18)" -> {}
+            case "Meridian(18)" -> {}
+            case "Polar Sink" -> {}
+        }
+
+        return points;
+    }
+
+    public static Point getDrawCoordinates(String location) {
         switch (location) {
             case "sigil 1" -> {
-                return new Coordinates(475, 978);
+                return new Point(475, 978);
             }
             case "sigil 2" -> {
-                return new Coordinates(865, 753);
+                return new Point(865, 753);
             }
             case "sigil 3" -> {
-                return new Coordinates(865, 301);
+                return new Point(865, 301);
             }
             case "sigil 4" -> {
-                return new Coordinates(475, 80);
+                return new Point(475, 80);
             }
             case "sigil 5" -> {
-                return new Coordinates(85, 301);
+                return new Point(85, 301);
             }
             case "sigil 6" -> {
-                return new Coordinates(85, 753);
+                return new Point(85, 753);
             }
             case "turn 0", "turn 1" -> {
-                return new Coordinates(124, 60);
+                return new Point(124, 60);
             }
             case "turn 2" -> {
-                return new Coordinates(148, 75);
+                return new Point(148, 75);
             }
             case "turn 3" -> {
-                return new Coordinates(160, 105);
+                return new Point(160, 105);
             }
             case "turn 4" -> {
-                return new Coordinates(148,135);
+                return new Point(148,135);
             }
             case "turn 5" -> {
-                return new Coordinates(124,155);
+                return new Point(124,155);
             }
             case "turn 6" -> {
-                return new Coordinates(95,150);
+                return new Point(95,150);
             }
             case "turn 7" -> {
-                return new Coordinates(67,135);
+                return new Point(67,135);
             }
             case "turn 8" -> {
-                return new Coordinates(60,108);
+                return new Point(60,108);
             }
             case "turn 9" -> {
-                return new Coordinates(65,80);
+                return new Point(65,80);
             }
             case "turn 10" -> {
-                return new Coordinates(93,60);
+                return new Point(93,60);
             }
             case "phase 1" -> {
-                return new Coordinates(237, 45);
+                return new Point(237, 45);
             }
             case "phase 2" -> {
-                return new Coordinates(297,45);
+                return new Point(297,45);
             }
             case "phase 3" -> {
-                return new Coordinates(357,45);
+                return new Point(357,45);
             }
             case "phase 4" -> {
-                return new Coordinates(417,45);
+                return new Point(417,45);
             }
             case "phase 5" -> {
-                return new Coordinates(533,45);
+                return new Point(533,45);
             }
             case "phase 6" -> {
-                return new Coordinates(593,45);
+                return new Point(593,45);
             }
             case "phase 7" -> {
-                return new Coordinates(653,45);
+                return new Point(653,45);
             }
             case "phase 8" -> {
-                return new Coordinates(713,45);
+                return new Point(713,45);
+            }
+            case "Carthag" -> {
+                return new Point(464,287);
+            }
+            case "Tuek's Sietch" -> {
+                return new Point(769, 676);
+            }
+            case "Arrakeen" -> {
+                return new Point(601, 255);
+            }
+            case "Sietch Tabr" -> {
+                return new Point(177,339);
+            }
+            case "Habbanya Sietch" -> {
+                return new Point(188, 702);
             }
         }
 
-        return new Coordinates(0, 0);
+        return new Point(0, 0);
     }
 }
