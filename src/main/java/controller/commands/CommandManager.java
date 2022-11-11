@@ -6,6 +6,9 @@ import model.Faction;
 import model.Game;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -13,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,7 +24,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
@@ -229,10 +233,13 @@ public class CommandManager extends ListenerAdapter {
         Role gameRole = event.getOption("gamerole").getAsRole();
         Role modRole = event.getOption("modrole").getAsRole();
         String name = event.getOption("name").getAsString();
-        event.getGuild().createCategory(name).addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
+        event.getGuild()
+                .createCategory(name)
+                .addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
                 .addPermissionOverride(modRole, EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
@@ -1238,9 +1245,10 @@ public class CommandManager extends ListenerAdapter {
         h.retrievePast(1).complete();
         List<Message> ml = h.getRetrievedHistory();
         Message.Attachment encoded = ml.get(0).getAttachments().get(0);
-        CompletableFuture<File> future = encoded.getProxy().downloadToFile(new File(Dotenv.configure().load().get("FILEPATH")));
+        CompletableFuture<InputStream> future = encoded.getProxy().download();
         try {
-            Game returnGame = new Game(new String(Base64.getMimeDecoder().decode(new String(Files.readAllBytes(future.get().toPath())))));
+            String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+            Game returnGame = new Game(gameStateString);
             List<Role> roles = event.getMember().getRoles();
             List<String> roleNames = new ArrayList<>();
             for (Role role : roles) {
@@ -1259,16 +1267,10 @@ public class CommandManager extends ListenerAdapter {
 
     public void pushGameState(Game gameState, Category game) {
         TextChannel botData = game.getTextChannels().get(0);
-        try {
-            File file = new File("gamestate.txt");
-            PrintWriter pw = new PrintWriter(file, StandardCharsets.UTF_8);
-            pw.println(Base64.getEncoder().encodeToString(gameState.toString().getBytes(StandardCharsets.UTF_8)));
-            pw.close();
-            botData.sendFile(file).complete();
-            file.delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUpload fileUpload = FileUpload.fromData(
+                gameState.toString().getBytes(StandardCharsets.UTF_8), "gamestate.txt"
+        );
+        botData.sendFiles(fileUpload).complete();
     }
 
     public void displayGameState(SlashCommandInteractionEvent event) {
