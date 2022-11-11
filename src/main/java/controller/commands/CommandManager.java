@@ -1,9 +1,11 @@
 package controller.commands;
 
+import controller.BoardCoordinateHelpers;
 import controller.Initializers;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Faction;
 import model.Game;
+import model.Territory;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -13,17 +15,25 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.internal.utils.Helpers;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -395,6 +405,22 @@ public class CommandManager extends ListenerAdapter {
 
     public String drawCard(Game gameState, String deckName, String faction) {
         JSONArray deck = gameState.getDeck(deckName);
+
+        if (deck.length() == 0) {
+            JSONArray discardA = gameState.getResources().getJSONArray("spice_discardA");
+            JSONArray discardB = gameState.getResources().getJSONArray("spice_discardB");
+
+            for (Object o : discardA) {
+                deck.put(o);
+            }
+            for (Object o : discardB) {
+                deck.put(o);
+            }
+            discardA.clear();
+            discardB.clear();
+            shuffle(deck);
+
+        }
         
         String drawn = deck.getString(deck.length() - 1);
         if (gameState.getResources().getInt("turn") == 1 && drawn.equals("Shai-Hulud")) {
@@ -604,7 +630,7 @@ public class CommandManager extends ListenerAdapter {
                     message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
                     int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1 + cardNumber;
                     for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
-                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                        int playerPosition = (firstBid + i > 6 ? firstBid + i - 6 : firstBid + i) % 6;
                         String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
@@ -830,7 +856,7 @@ public class CommandManager extends ListenerAdapter {
                            }
                        }
                    }
-                   if (gameState.getFaction("Fremen") != null) {
+                   if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Fremen")) {
                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
                            if (channel.getName().contains("fremen-info")) {
                                channel.sendMessage("The storm will move " + gameState.getDeck("storm_deck").getInt(0) + " sectors next turn.").queue();
@@ -1068,6 +1094,9 @@ public class CommandManager extends ListenerAdapter {
                     territories.getJSONObject("Arrakeen").remove("spice");
                     territories.getJSONObject("Carthag").remove("spice");
                     territories.getJSONObject("Tuek's Sietch").remove("spice");
+                    territories.getJSONObject("Arrakeen").put("spice", 0);
+                    territories.getJSONObject("Carthag").put("spice", 0);
+                    territories.getJSONObject("Tuek's Sietch").put("spice", 0);
                    gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause
@@ -1171,7 +1200,7 @@ public class CommandManager extends ListenerAdapter {
             event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
             return;
         }
-        JSONObject territory = gameState.getTerritory(territoryName);
+        JSONObject territory = gameState.getTerritory(territoryName + sector);
         String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
         int forces = territory.getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + starred);
         territory.getJSONObject("forces").remove(event.getOption("factionname").getAsString() + starred);
@@ -1246,10 +1275,13 @@ public class CommandManager extends ListenerAdapter {
             for (Role role : roles) {
                 roleNames.add(role.getName());
             }
+            /*
             if (!roleNames.contains(returnGame.getString("modrole"))) {
                 event.getHook().sendMessage("Only the moderator can do that!").queue();
                 throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
+
+             */
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
@@ -1269,6 +1301,183 @@ public class CommandManager extends ListenerAdapter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void drawGameBoard(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+
+        //Load png resources into a hashmap.
+        HashMap<String, File> boardComponents = new HashMap<>();
+        URL dir = getClass().getClassLoader().getResource("Board Components");
+        try {
+            for (File file : new File(dir.toURI()).listFiles()) {
+                boardComponents.put(file.getName().replace(".png", ""), file);
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            BufferedImage board = ImageIO.read(boardComponents.get("Board"));
+
+            //Place sigils
+            for (int i = 1; i <= gameState.getResources().getJSONObject("turn_order").length(); i++) {
+                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(i)) + " Sigil"));
+                Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
+                sigil = resize(sigil, 50, 50);
+                board = overlay(board, sigil, coordinates);
+            }
+
+            //Place turn, phase, and storm markers
+            BufferedImage turnMarker = ImageIO.read(boardComponents.get("Turn Marker"));
+            turnMarker = resize(turnMarker, 55, 55);
+            int turn = gameState.getResources().getInt("turn") == 0 ? 1 : gameState.getResources().getInt("turn");
+            float angle = (turn * 36) + 74f;
+            turnMarker = rotateImageByDegrees(turnMarker, angle);
+            Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
+            board = overlay(board, turnMarker, coordinates);
+            BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
+            phaseMarker = resize(phaseMarker, 50, 50);
+            coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
+            board = overlay(board, phaseMarker, coordinates);
+            //BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
+            //board = overlay(board, stormMarker, new Point(320,930));
+
+
+            //Place forces
+            for (String territoryName : gameState.getGameBoard().keySet()) {
+                JSONObject territory = gameState.getTerritory(territoryName);
+                if (territory.getJSONObject("forces").length() == 0 && territory.getInt("spice") == 0) continue;
+                int offset = 0;
+                int i = 0;
+
+                if (territory.getInt("spice") != 0) {
+                    i = 1;
+                    int spice = territory.getInt("spice");
+                    while (spice != 0) {
+                        if (spice >= 10) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("10 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 10;
+                        } else if (spice >= 5) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 5;
+                        } else if (spice >= 2) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 2;
+                        } else {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 1;
+                        }
+                        offset += 15;
+                    }
+                }
+                offset = 0;
+                for (String force : territory.getJSONObject("forces").keySet()) {
+                    BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
+                    forceImage = resize(forceImage, 47, 29);
+                    if (force.contains("*")) {
+                        BufferedImage star = ImageIO.read(boardComponents.get("star"));
+                        star = resize(star, 8, 8);
+                        forceImage = overlay(forceImage, star, new Point(20, 7));
+                    }
+                    if (territory.getJSONObject("forces").getInt(force) > 9) {
+                        BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
+                        BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force) - 10)));
+                        oneImage = resize(oneImage, 12, 12);
+                        digitImage = resize(digitImage, 12,12);
+                        forceImage = overlay(forceImage, oneImage, new Point(28, 14));
+                        forceImage = overlay(forceImage, digitImage, new Point(36, 14));
+                    } else {
+                        BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force))));
+                        numberImage = resize(numberImage, 12, 12);
+                        forceImage = overlay(forceImage, numberImage, new Point(30,14));
+
+                    }
+
+
+                    Point forcePlacement = Initializers.getPoints(territoryName).get(i);
+                    Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                    board = overlay(board, forceImage, forcePlacementOffset);
+                    i++;
+                    if (i == Initializers.getPoints(territoryName).size()) {
+                        offset += 20;
+                        i = 0;
+                    }
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendFile(new File(Dotenv.load().get("IMAGEPATH"))).queue();
+    }
+
+    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates) throws IOException {
+
+        BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = overlay.createGraphics();
+        g.drawImage(board, 0, 0, null);
+        g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
+        ImageIO.write(overlay, "png", new File(Dotenv.load().get("IMAGEPATH")));
+        g.dispose();
+
+        return overlay;
+    }
+
+    public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
+        double rads = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+        int w = img.getWidth();
+        int h = img.getHeight();
+        int newWidth = (int) Math.floor(w * cos + h * sin);
+        int newHeight = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotated.createGraphics();
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
+
+        int x = w / 2;
+        int y = h / 2;
+
+        at.rotate(rads, x, y);
+        g2d.setTransform(at);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.setColor(Color.RED);
+        g2d.drawRect(0, 0, newWidth - 1, newHeight - 1);
+        g2d.dispose();
+
+        return rotated;
+    }
+
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 
     public void displayGameState(SlashCommandInteractionEvent event) {
@@ -1312,6 +1521,7 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
+        drawGameBoard(event);
     }
 
     public void clean(SlashCommandInteractionEvent event) {
@@ -1322,12 +1532,12 @@ public class CommandManager extends ListenerAdapter {
         }
         List<Category> categories = event.getGuild().getCategories();
         for (Category category : categories) {
-            if (!category.getName().startsWith("test")) continue;
+            //if (!category.getName().startsWith("test")) continue;
             category.delete().complete();
         }
         List<TextChannel> channels = event.getGuild().getTextChannels();
         for (TextChannel channel : channels) {
-            if (!channel.getName().startsWith("test") || channel.getName().equals("test")) continue;
+            //if (!channel.getName().startsWith("test") || channel.getName().equals("test")) continue;
             channel.delete().complete();
         }
     }
