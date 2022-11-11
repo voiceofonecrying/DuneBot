@@ -1,11 +1,9 @@
 package controller.commands;
 
-import controller.BoardCoordinateHelpers;
 import controller.Initializers;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.Faction;
 import model.Game;
-import model.Territory;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -18,7 +16,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.internal.utils.Helpers;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -29,13 +26,13 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -1426,11 +1423,21 @@ public class CommandManager extends ListenerAdapter {
 
             }
 
+            ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(board, "png", boardOutputStream);
+
+            FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
+            event.getOption("game")
+                    .getAsChannel()
+                    .asCategory()
+                    .getTextChannels()
+                    .get(2)
+                    .sendFiles(boardFileUpload)
+                    .queue();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendFile(new File(Dotenv.load().get("IMAGEPATH"))).queue();
     }
 
     public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates) throws IOException {
@@ -1439,7 +1446,6 @@ public class CommandManager extends ListenerAdapter {
         Graphics2D g = overlay.createGraphics();
         g.drawImage(board, 0, 0, null);
         g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
-        ImageIO.write(overlay, "png", new File(Dotenv.load().get("IMAGEPATH")));
         g.dispose();
 
         return overlay;
