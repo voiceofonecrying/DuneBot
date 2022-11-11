@@ -395,102 +395,385 @@ public class Initializers {
 
         switch (territory) {
 
-            case "Cielago North(1)" -> {}
-            case "Cielago Depression(1)" -> {}
-            case "Meridian(1)" -> {}
-            case "Cielago South(1)" -> {}
-            case "Cielago North(2)" -> {}
-            case "Cielago Depression(2)" -> {}
-            case "Cielago South(2)" -> {}
-            case "Cielago East(2)" -> {}
-            case "Harg Pass(3)" -> {}
-            case "False Wall South(3)" -> {}
-            case "Cielago East(3)" -> {}
-            case "South Mesa(3)" -> {}
-            case "Harg Pass(4)" -> {}
-            case "False Wall East(4)" -> {}
-            case "The Minor Erg(4)" -> {}
-            case "False Wall South(4)" -> {}
-            case "Pasty Mesa(4)" -> {}
-            case "South Mesa(4)" -> {}
-            case "Tuek's Sietch" -> {}
-            case "False Wall East(5)" -> {}
-            case "The Minor Erg(5)" -> {}
-            case "Pasty Mesa(5)" -> {}
-            case "South Mesa(5)" -> {}
-            case "False Wall East(6)" -> {}
-            case "The Minor Erg(6)" -> {}
-            case "Pasty Mesa(6)" -> {}
-            case "Red Chasm" -> {}
-            case "False Wall East(7)" -> {}
-            case "The Minor Erg(7)" -> {}
-            case "Shield Wall(7)" -> {}
-            case "Pasty Mesa(7)" -> {}
-            case "Gara Kulon" -> {}
-            case "False Wall East(8)" -> {}
-            case "Imperial Basin(8)" -> {}
-            case "Shield Wall(8)" -> {}
-            case "Hole in the Rock" -> {}
-            case "Rim Wall West" -> {}
-            case "Basin" -> {}
-            case "Old Gap(8)" -> {}
-            case "Sihaya Ridge" -> {}
-            case "Imperial Basin(9)" -> {}
-            case "Arrakeen" -> {}
-            case "Old Gap(9)" -> {}
-            case "Imperial Basin(10)" -> {}
-            case "Arsunt(10)" -> {}
             case "Carthag" -> {
-                points.add(new Point(468,219));
-                points.add(new Point(426,235));
-                points.add(new Point(439,297));
-                points.add(new Point(455,308));
-                points.add(new Point(484,303));
-                points.add(new Point(500,270));
-                points.add(new Point(493,224));
+                points.add(new Point(464,287));
+                points.add(new Point(464,245));
+                points.add(new Point(442,264));
+                points.add(new Point(485,264));
             }
-            case "Tsimpo(10)" -> {}
-            case "Broken Land(10)" -> {}
-            case "Old Gap(10)" -> {}
-            case "Arsunt(11)" -> {}
-            case "Hagga Basin(11)" -> {}
-            case "Tsimpo(11)" -> {}
-            case "Plastic Basin(11)" -> {}
-            case "Broken Land(11)" -> {}
-            case "Hagga Basin(12)" -> {}
-            case "Plastic Basin(12)" -> {}
-            case "Tsimpo(12)" -> {}
-            case "Rock Outcroppings(12)" -> {}
-            case "Wind Pass(13)" -> {}
-            case "Plastic Basin(13)" -> {}
-            case "Bight of the Cliff(13)" -> {}
-            case "Sietch Tabr" -> {}
-            case "Rock Outcroppings(13)" -> {}
-            case "Wind Pass(14)" -> {}
-            case "The Great Flat" -> {}
-            case "Funeral Plain" -> {}
-            case "Bight of the Cliff(14)" -> {}
-            case "Wind Pass(15)" -> {}
-            case "The Greater Flat" -> {}
-            case "Habbanya Erg(15)" -> {}
-            case "False Wall West(15)" -> {}
-            case "Wind Pass North(16)" -> {}
-            case "Wind Pass(16)" -> {}
-            case "False Wall West(16)" -> {}
-            case "Habbanya Erg(16)" -> {}
-            case "Habbanya Ridge Flat(16)" -> {}
-            case "Habbanya Sietch" -> {}
-            case "Wind Pass North(17)" -> {}
-            case "Cielago West(17)" -> {}
-            case "False Wall West(17)" -> {}
-            case "Habbanya Ridge Flat(17)" -> {}
-            case "Cielago North(18)" -> {}
-            case "Cielago Depression(18)" -> {}
-            case "Cielago West(18)" -> {}
-            case "Meridian(18)" -> {}
-            case "Polar Sink" -> {}
-        }
+            case "Tuek's Sietch" -> {
+                points.add(new Point(769, 676));
+                points.add(new Point(761, 730));
+                points.add(new Point(795, 698));
+                points.add(new Point(748, 695));
+            }
+            case "Arrakeen" -> {
+                points.add(new Point(601, 255));
+                points.add(new Point(605, 214));
+                points.add(new Point(577, 229));
+                points.add(new Point(626, 229));
+            }
+            case "Sietch Tabr" -> {
+                points.add(new Point(177,339));
+                points.add(new Point(150,363));
+                points.add(new Point(198,372));
+            }
+            case "Habbanya Sietch" -> {
+                points.add(new Point(188, 702));
+                points.add(new Point(188, 738));
+                points.add(new Point(165, 710));
+            }
+            case "Cielago North(1)" -> {
+                points.add(new Point(474, 721));
+            }
+            case "Cielago Depression(1)" -> {
+                points.add(new Point(443, 805));
+                points.add(new Point(492,803));
 
+            }
+            case "Meridian(1)" -> {
+                points.add(new Point(420,913));
+            }
+            case "Cielago South(1)" -> {
+                points.add(new Point(468,898));
+                points.add(new Point(497,859));
+                points.add(new Point(508,898));
+            }
+            case "Cielago North(2)" -> {
+                points.add(new Point(521,719));
+                points.add(new Point(509,639));
+                points.add(new Point(543,700));
+            }
+            case "Cielago Depression(2)" -> {
+                points.add(new Point(544,797));
+            }
+            case "Cielago South(2)" -> {
+                points.add(new Point(551,858));
+
+            }
+            case "Cielago East(2)" -> {
+                points.add(new Point(601,892));
+                points.add(new Point(607,806));
+            }
+            case "Harg Pass(3)" -> {
+                points.add(new Point(535,616));
+                points.add(new Point(517,585));
+            }
+            case "False Wall South(3)" -> {
+                points.add(new Point(624,710));
+                points.add(new Point(662,731));
+                points.add(new Point(697,765));
+                points.add(new Point(583,669));
+            }
+            case "Cielago East(3)" -> {
+                points.add(new Point(581,859));
+                points.add(new Point(645,803));
+            }
+            case "South Mesa(3)" -> {
+                points.add(new Point(552,800));
+                points.add(new Point(731,832));
+
+            }
+            case "Harg Pass(4)" -> {
+                points.add(new Point(570, 600));
+                points.add(new Point(561,583));
+            }
+            case "False Wall East(4)" -> {
+                points.add(new Point(530,562));
+                points.add(new Point(545,565));
+            }
+            case "The Minor Erg(4)" -> {
+                points.add(new Point(621,607));
+                points.add(new Point(626,626));
+            }
+            case "False Wall South(4)" -> {
+                points.add(new Point(650,655));
+                points.add(new Point(681,669));
+                points.add(new Point(710,710));
+            }
+            case "Pasty Mesa(4)" -> {
+                points.add(new Point(663,611));
+                points.add(new Point(686,619));
+                points.add(new Point(722,634));
+            }
+            case "South Mesa(4)" -> {
+                points.add(new Point(785,766));
+                points.add(new Point(826,683));
+                points.add(new Point(805,748));
+                points.add(new Point(827,718));
+            }
+            case "False Wall East(5)" -> {
+                points.add(new Point(538,543));
+                points.add(new Point(561,539));
+            }
+            case "The Minor Erg(5)" -> {
+                points.add(new Point(610,550));
+                points.add(new Point(632,643));
+                points.add(new Point(580,560));
+            }
+            case "Pasty Mesa(5)" -> {
+                points.add(new Point(530,570));
+                points.add(new Point(675,570));
+                points.add(new Point(800,575));
+                points.add(new Point(750,610));
+            }
+            case "South Mesa(5)" -> {
+                points.add(new Point(845,645));
+                points.add(new Point(860,560));
+            }
+            case "False Wall East(6)" -> {
+                points.add(new Point(548,521));
+                points.add(new Point(565,505));
+            }
+            case "The Minor Erg(6)" -> {
+                points.add(new Point(615,500));
+                points.add(new Point(590,510));
+                points.add(new Point(645,495));
+            }
+            case "Pasty Mesa(6)" -> {
+                points.add(new Point(730,480));
+                points.add(new Point(760,470));
+                points.add(new Point(795,445));
+                points.add(new Point(680,510));
+            }
+            case "Red Chasm" -> {
+                points.add(new Point(840,495));
+                points.add(new Point(845,465));
+                points.add(new Point(865,515));
+            }
+            case "False Wall East(7)" -> {
+                points.add(new Point(535,485));
+                points.add(new Point(560,485));
+            }
+            case "The Minor Erg(7)" -> {
+                points.add(new Point(578,475));
+                points.add(new Point(595,472));
+                points.add(new Point(624,458));
+                points.add(new Point(626,443));
+            }
+            case "Shield Wall(7)" -> {
+                points.add(new Point(636,400));
+                points.add(new Point(620,415));
+                points.add(new Point(672,370));
+                points.add(new Point(590,440));
+            }
+            case "Pasty Mesa(7)" -> {
+                points.add(new Point(720,400));
+                points.add(new Point(780,390));
+                points.add(new Point(675,435));
+                points.add(new Point(825,385));
+            }
+            case "Gara Kulon" -> {
+                points.add(new Point(780,300));
+                points.add(new Point(755,342));
+            }
+            case "False Wall East(8)" -> {
+                points.add(new Point(521,476));
+                points.add(new Point(534,463));
+            }
+            case "Imperial Basin(8)" -> {
+                points.add(new Point(548,413));
+                points.add(new Point(716,366));
+            }
+            case "Shield Wall(8)" -> {
+                points.add(new Point(580,410));
+                points.add(new Point(607,392));
+                points.add(new Point(665,355));
+            }
+            case "Hole in the Rock" -> {
+                points.add(new Point(660,320));
+            }
+            case "Rim Wall West" -> {
+                points.add(new Point(630,290));
+            }
+            case "Basin" -> {
+                points.add(new Point(690,245));
+            }
+            case "Old Gap(8)" -> {
+                points.add(new Point(666,213));
+                points.add(new Point(685,190));
+            }
+            case "Sihaya Ridge" -> {
+                points.add(new Point(640,245));
+                points.add(new Point(727,273));
+                points.add(new Point(764,266));
+            }
+            case "Imperial Basin(9)" -> {
+                points.add(new Point(527,367));
+                points.add(new Point(513,403));
+                points.add(new Point(553,296));
+            }
+            case "Old Gap(9)" -> {
+                points.add(new Point(600,150));
+                points.add(new Point(560,150));
+                points.add(new Point(638,182));
+            }
+            case "Imperial Basin(10)" -> {
+                points.add(new Point(495,370));
+            }
+            case "Arsunt(10)" -> {
+                points.add(new Point(460,380));
+                points.add(new Point(455,340));
+            }
+            case "Tsimpo(10)" -> {
+                points.add(new Point(440,190));
+                points.add(new Point(480,185));
+            }
+            case "Broken Land(10)" -> {
+                points.add(new Point(455,135));
+                points.add(new Point(480,135));
+            }
+            case "Old Gap(10)" -> {
+                points.add(new Point(525,140));
+            }
+            case "Arsunt(11)" -> {
+                points.add(new Point(447,457));
+            }
+            case "Hagga Basin(11)" -> {
+                points.add(new Point(380,340));
+                points.add(new Point(410,325));
+            }
+            case "Tsimpo(11)" -> {
+                points.add(new Point(390,245));
+            }
+            case "Plastic Basin(11)" -> {
+                points.add(new Point(315,228));
+                points.add(new Point(343,213));
+            }
+            case "Broken Land(11)" -> {
+                points.add(new Point(295,177));
+                points.add(new Point(370,158));
+                points.add(new Point(330,176));
+            }
+            case "Hagga Basin(12)" -> {
+                points.add(new Point(387,436));
+                points.add(new Point(330,379));
+                points.add(new Point(339,345));
+            }
+            case "Plastic Basin(12)" -> {
+                points.add(new Point(245,290));
+                points.add(new Point(270,255));
+            }
+            case "Tsimpo(12)" -> {
+                points.add(new Point(320,305));
+            }
+            case "Rock Outcroppings(12)" -> {
+                points.add(new Point(195,274));
+                points.add(new Point(232,222));
+            }
+            case "Wind Pass(13)" -> {
+                points.add(new Point(390,490));
+            }
+            case "Plastic Basin(13)" -> {
+                points.add(new Point(250,410));
+                points.add(new Point(300,440));
+            }
+            case "Bight of the Cliff(13)" -> {
+                points.add(new Point(105,375));
+                points.add(new Point(170,405));
+            }
+            case "Rock Outcroppings(13)" -> {
+                points.add(new Point(145,315));
+                points.add(new Point(155,295));
+                points.add(new Point(160,275));
+            }
+            case "Wind Pass(14)" -> {
+                points.add(new Point(375,520));
+            }
+            case "The Great Flat" -> {
+                points.add(new Point(140,515));
+                points.add(new Point(290,515));
+                points.add(new Point(215,515));
+            }
+            case "Funeral Plain" -> {
+                points.add(new Point(160,470));
+                points.add(new Point(90,455));
+                points.add(new Point(225,460));
+            }
+            case "Bight of the Cliff(14)" -> {
+                points.add(new Point(105,420));
+            }
+            case "Wind Pass(15)" -> {
+                points.add(new Point(360,555));
+            }
+            case "The Greater Flat" -> {
+                points.add(new Point(115,575));
+                points.add(new Point(250,560));
+            }
+            case "Habbanya Erg(15)" -> {
+                points.add(new Point(140,630));
+                points.add(new Point(215,600));
+                points.add(new Point(90,625));
+            }
+            case "False Wall West(15)" -> {
+                points.add(new Point(300,580));
+                points.add(new Point(320,575));
+            }
+            case "Wind Pass North(16)" -> {
+                points.add(new Point(380,590));
+                points.add(new Point(373,601));
+                points.add(new Point(406,573));
+            }
+            case "Wind Pass(16)" -> {
+                points.add(new Point(350,615));
+            }
+            case "False Wall West(16)" -> {
+                points.add(new Point(305,615));
+                points.add(new Point(287,631));
+            }
+            case "Habbanya Erg(16)" -> {
+                points.add(new Point(230,640));
+            }
+            case "Habbanya Ridge Flat(16)" -> {
+                points.add(new Point(125,710));
+            }
+            case "Wind Pass North(17)" -> {
+                points.add(new Point(377,655));
+            }
+            case "Cielago West(17)" -> {
+                points.add(new Point(335,710));
+            }
+            case "False Wall West(17)" -> {
+                points.add(new Point(285,705));
+                points.add(new Point(274,733));
+            }
+            case "Habbanya Ridge Flat(17)" -> {
+                points.add(new Point(245,850));
+                points.add(new Point(265,795));
+                points.add(new Point(230,765));
+            }
+            case "Cielago North(18)" -> {
+                points.add(new Point(410,720));
+            }
+            case "Cielago Depression(18)" -> {
+                points.add(new Point(385,785));
+            }
+            case "Cielago West(18)" -> {
+                points.add(new Point(330,805));
+            }
+            case "Meridian(18)" -> {
+                points.add(new Point(360,890));
+            }
+            case "Polar Sink" -> {
+                points.add(new Point(460,545));
+                points.add(new Point(465,515));
+                points.add(new Point(415,550));
+                points.add(new Point(500,520));
+            }
+            case "Forces Tanks" -> {
+                points.add(new Point(35,990));
+                points.add(new Point(60,990));
+            }
+            case "Leaders Tanks" -> {
+                points.add(new Point(900,985));
+                points.add(new Point(860,985));
+                points.add(new Point(820,985));
+                points.add(new Point(780,985));
+                points.add(new Point(740,985));
+                points.add(new Point(700,985));
+                points.add(new Point(660,1010));
+            }
+        }
         return points;
     }
 
@@ -567,21 +850,6 @@ public class Initializers {
             }
             case "phase 8" -> {
                 return new Point(713,45);
-            }
-            case "Carthag" -> {
-                return new Point(464,287);
-            }
-            case "Tuek's Sietch" -> {
-                return new Point(769, 676);
-            }
-            case "Arrakeen" -> {
-                return new Point(601, 255);
-            }
-            case "Sietch Tabr" -> {
-                return new Point(177,339);
-            }
-            case "Habbanya Sietch" -> {
-                return new Point(188, 702);
             }
         }
 

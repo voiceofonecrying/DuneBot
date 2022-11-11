@@ -1200,7 +1200,7 @@ public class CommandManager extends ListenerAdapter {
             event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
             return;
         }
-        JSONObject territory = gameState.getTerritory(territoryName);
+        JSONObject territory = gameState.getTerritory(territoryName + sector);
         String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
         int forces = territory.getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + starred);
         territory.getJSONObject("forces").remove(event.getOption("factionname").getAsString() + starred);
@@ -1341,13 +1341,54 @@ public class CommandManager extends ListenerAdapter {
             phaseMarker = resize(phaseMarker, 50, 50);
             coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
             board = overlay(board, phaseMarker, coordinates);
+            //BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
+            //board = overlay(board, stormMarker, new Point(320,930));
 
 
             //Place forces
             for (String territoryName : gameState.getGameBoard().keySet()) {
                 JSONObject territory = gameState.getTerritory(territoryName);
-                if (territory.getJSONObject("forces").length() == 0) continue;
+                if (territory.getJSONObject("forces").length() == 0 && territory.getInt("spice") == 0) continue;
                 int offset = 0;
+                int i = 0;
+
+                if (territory.getInt("spice") != 0) {
+                    i = 1;
+                    int spice = territory.getInt("spice");
+                    while (spice != 0) {
+                        if (spice >= 10) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("10 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 10;
+                        } else if (spice >= 5) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 5;
+                        } else if (spice >= 2) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 2;
+                        } else {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            spice -= 1;
+                        }
+                        offset += 15;
+                    }
+                }
+                offset = 0;
                 for (String force : territory.getJSONObject("forces").keySet()) {
                     BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
                     forceImage = resize(forceImage, 47, 29);
@@ -1369,11 +1410,18 @@ public class CommandManager extends ListenerAdapter {
                         forceImage = overlay(forceImage, numberImage, new Point(30,14));
 
                     }
-                    Point forcePlacement = Initializers.getDrawCoordinates(territoryName);
+
+
+                    Point forcePlacement = Initializers.getPoints(territoryName).get(i);
                     Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
                     board = overlay(board, forceImage, forcePlacementOffset);
-                    offset += 15;
+                    i++;
+                    if (i == Initializers.getPoints(territoryName).size()) {
+                        offset += 20;
+                        i = 0;
+                    }
                 }
+
             }
 
         } catch (IOException e) {
