@@ -1231,7 +1231,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (event.getOption("isshipment").getAsBoolean()) {
             int cost = gameState.getTerritory(territory).getBoolean("is_stronghold") ? 1 : 2;
-            cost *= event.getOption("factionname").getAsString().equals("Guild") ? event.getOption("amount").getAsInt() / 2 : event.getOption("amount").getAsInt();
+            cost *= event.getOption("factionname").getAsString().equals("Guild") ? Math.ceilDiv(event.getOption("amount").getAsInt(), 2) : event.getOption("amount").getAsInt();
             int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
             if (spice < cost) {
