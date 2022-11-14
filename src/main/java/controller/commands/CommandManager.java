@@ -806,23 +806,32 @@ public class CommandManager extends ListenerAdapter {
                     gameState.advancePhase();
                     event.getChannel().sendMessage("2b. Bene Tleilax have drawn their Face Dancers.").queue();
                 }
-                //3. Spice, 4. Forces (prompts are sent out)
+                //3. Spice, 4. Forces
                 case 3 -> {
-                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
-                        switch (channel.getName()) {
-                            case "fremen-chat" -> channel.sendMessage("Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West").queue();
-                            case "bg-chat" -> channel.sendMessage("Please decide where to place your advisor").queue();
+                    if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Fremen")) {
+                        for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                                if (channel.getName().equals("fremen-chat")) channel.sendMessage("Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West").queue();
                         }
+                    }
+                    gameState.advancePhase();
+                    //If BG is not present, advance past the next step
+                    if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
+                        gameState.advancePhase();
+                    }
+                    event.getChannel().sendMessage("3. Spice has been allocated.\n4. Forces are being placed on the board.").queue();
+                }
+                case 4 -> {
+                    for (TextChannel channel : event.getOption("game").getAsChannel().asCategory().getTextChannels()) {
+                        if (channel.getName().equals("bg-chat")) channel.sendMessage("Please choose where to place your advisor.").queue();
                     }
                     gameState.advancePhase();
                     //If Ix is not present, advance past the next step
                     if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Ix")) {
                         gameState.advancePhase();
                     }
-                    event.getChannel().sendMessage("3. Spice has been allocated.\n4. Forces are being placed on the board.").queue();
                 }
                 //Ix to select from starting treachery cards
-                case 4 -> {
+                case 5 -> {
                     int toDraw = gameState.getJSONObject("game_state").getJSONObject("factions").length();
                     if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Harkonnen")) toDraw++;
                     for (int i = 0; i < toDraw; i++) {
@@ -836,7 +845,7 @@ public class CommandManager extends ListenerAdapter {
                     event.getChannel().sendMessage("Ix is selecting their starting treachery card.").queue();
                 }
                 //5. Treachery
-                case 5 -> {
+                case 6 -> {
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         if (!faction.equals("Ix")) drawCard(gameState, "treachery_deck", faction);
                         if (faction.equals("Harkonnen")) drawCard(gameState, "treachery_deck", faction);
@@ -846,7 +855,7 @@ public class CommandManager extends ListenerAdapter {
                     event.getChannel().sendMessage("5. Treachery cards are being dealt.").queue();
                 }
                 //6. Turn Marker (prompt for dial for First Storm)
-                case 6 -> {
+                case 7 -> {
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         if (turnOrder.getString(String.valueOf(1)).equals(faction) || turnOrder.getString(String.valueOf(6)).equals(faction)) {
@@ -860,6 +869,7 @@ public class CommandManager extends ListenerAdapter {
                     event.getChannel().sendMessage("6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...").queue();
                 }
             }
+            pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
         }
         else {
             switch (gameState.getPhase()) {
@@ -1172,9 +1182,9 @@ public class CommandManager extends ListenerAdapter {
                     gameState.advanceTurn();
                 }
             }
+            pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+            drawGameBoard(event);
         }
-        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
-        drawGameBoard(event);
     }
 
     public void selectTraitor(SlashCommandInteractionEvent event) {
