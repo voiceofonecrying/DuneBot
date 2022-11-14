@@ -73,7 +73,7 @@ public class CommandManager extends ListenerAdapter {
             case "placeforces" -> placeForces(event);
             case "removeforces" -> removeForces(event);
             case "display" -> displayGameState(event);
-            case "revival" -> revival(event);
+            case "reviveforces" -> revival(event);
             case "awardbid" -> awardBid(event);
             case "killleader" -> killLeader(event);
             case "reviveleader" -> reviveLeader(event);
@@ -613,6 +613,12 @@ public class CommandManager extends ListenerAdapter {
     public void awardBid(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
 
+        if (event.getOption("factionname").getAsString().equals("harkonnen")
+                && gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").length() > 7
+                || gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").length() > 3) {
+            event.getChannel().sendMessage("Player's hand is full, they cannot bid on this card!").queue();
+            return;
+        }
         try {
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").put(gameState.getResources().getJSONArray("market").getString(0));
             event.getChannel().sendMessage(gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " wins card up for bid for " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>").queue();
@@ -730,6 +736,12 @@ public class CommandManager extends ListenerAdapter {
         int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves" + star);
         gameState.getFaction(faction).getJSONObject("resources").remove("reserves" + star);
         gameState.getFaction(faction).getJSONObject("resources").put("reserves" + star, reserves + event.getOption("revived").getAsInt());
+        gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") - 2 * event.getOption("revived").getAsInt());
+        if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("bt")) {
+            gameState.getFaction("bt").getJSONObject("resources").put("spice", gameState.getFaction("bt").getJSONObject("resources").getInt("spice") + 2 * event.getOption("revived").getAsInt());
+            writeFactionInfo(event, gameState, "bt");
+        }
+        writeFactionInfo(event, gameState, faction);
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
@@ -892,7 +904,10 @@ public class CommandManager extends ListenerAdapter {
                                        if (force.contains("Fremen") && fremenSpecialCase) continue;
                                        int lost = territories.getJSONObject(territory).getJSONObject("forces").getInt(force);
                                        territories.getJSONObject(territory).getJSONObject("forces").remove(force);
-                                       if (force.contains("Fremen")) territories.getJSONObject(territory).getJSONObject("forces").put(force, lost / 2);
+                                       if (force.contains("Fremen") && lost > 1) {
+                                           lost /= 2;
+                                           territories.getJSONObject(territory).getJSONObject("forces").put(force, lost);
+                                       }
                                        if (gameState.getResources().getJSONObject("tanks_forces").isNull(force)) {
                                            gameState.getResources().getJSONObject("tanks_forces").put(force, lost);
                                        } else {
