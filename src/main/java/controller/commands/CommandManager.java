@@ -56,7 +56,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         String name = event.getName();
-        event.deferReply().queue();
+        event.reply("Processing...").setEphemeral(true);
         switch (name) {
             case "newgame" -> newGame(event);
             case "addfaction" -> addFaction(event);
@@ -83,7 +83,6 @@ public class CommandManager extends ListenerAdapter {
 
         }
         //implement new slash commands here
-        event.getHook().sendMessage("The command has been completed successfully.").setEphemeral(true).queue();
 
     }
 
@@ -408,14 +407,13 @@ public class CommandManager extends ListenerAdapter {
         }
 
         deck.remove(deck.length() - 1);
-        if (drawn.equals("Shai-Hulud")) drawCard(event);
         pushGameState(gameState,event.getOption("game").getAsChannel().asCategory());
     }
 
     public String drawCard(Game gameState, String deckName, String faction) {
         JSONArray deck = gameState.getDeck(deckName);
 
-        if (deck.length() == 0) {
+        if (deck.length() == 0 && deckName.equals("spice_deck")) {
             JSONArray discardA = gameState.getResources().getJSONArray("spice_discardA");
             JSONArray discardB = gameState.getResources().getJSONArray("spice_discardB");
 
@@ -438,7 +436,7 @@ public class CommandManager extends ListenerAdapter {
         }
         if (deckName.equals("spice_deck")) {
             //In this case, faction is used as a flag to determine if this is the first or second spice blow of the turn.
-            if (faction.equals("a")) {
+            if (faction.equals("A: ")) {
                 gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONArray("spice_discardA").put(drawn);
             }
             else {
@@ -450,8 +448,7 @@ public class CommandManager extends ListenerAdapter {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(drawn.split("-")[0].strip()).put("spice", spice + Integer.parseInt(drawn.split("-")[1].strip()));
             }
             if (drawn.equals("Shai-Hulud")) drawn += ", " + drawCard(gameState, deckName, faction);
-            else if (faction.equals("a")) drawn += "\nB: " + drawCard(gameState, deckName, "b");
-            return drawn;
+            return faction + drawn;
         }
         JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction).getJSONObject("resources");
         switch (deckName) {
@@ -460,7 +457,6 @@ public class CommandManager extends ListenerAdapter {
 
         }
         deck.remove(deck.length() - 1);
-        if (drawn.equals("Shai-Hulud")) drawn += ", " + drawCard(gameState, deckName, faction);
         return drawn;
     }
 
@@ -938,7 +934,8 @@ public class CommandManager extends ListenerAdapter {
                 //2. Spice Blow and Nexus
                 case 2 -> {
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Spice Blow Phase:").queue();
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "a")).queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "A: ")).queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "B: ")).queue();
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
