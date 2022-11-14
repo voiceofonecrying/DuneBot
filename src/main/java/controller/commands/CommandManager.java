@@ -56,7 +56,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         String name = event.getName();
-        event.reply("Processing...").setEphemeral(true);
+        event.reply("Processing...").setEphemeral(true).queue();
         switch (name) {
             case "newgame" -> newGame(event);
             case "addfaction" -> addFaction(event);
@@ -448,7 +448,7 @@ public class CommandManager extends ListenerAdapter {
                 gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(drawn.split("-")[0].strip()).put("spice", spice + Integer.parseInt(drawn.split("-")[1].strip()));
             }
             if (drawn.equals("Shai-Hulud")) drawn += ", " + drawCard(gameState, deckName, faction);
-            return faction + drawn;
+            return drawn.split("\\(")[0];
         }
         JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction).getJSONObject("resources");
         switch (deckName) {
@@ -934,8 +934,8 @@ public class CommandManager extends ListenerAdapter {
                 //2. Spice Blow and Nexus
                 case 2 -> {
                     event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Spice Blow Phase:").queue();
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "A: ")).queue();
-                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage(drawCard(gameState, "spice_deck", "B: ")).queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("A: " + drawCard(gameState, "spice_deck", "A")).queue();
+                    event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("B: " + drawCard(gameState, "spice_deck", "B")).queue();
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
