@@ -75,6 +75,8 @@ public class CommandManager extends ListenerAdapter {
             case "display" -> displayGameState(event);
             case "revival" -> revival(event);
             case "awardbid" -> awardBid(event);
+            case "killleader" -> killLeader(event);
+            case "reviveleader" -> reviveLeader(event);
             case "setstorm" -> setStorm(event);
             case "advancegame" -> advanceGame(event);
             case "clean" -> clean(event);
@@ -208,6 +210,7 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Faction Info", "factions");
         OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
         OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
+        OptionData leader = new OptionData(OptionType.STRING, "leader", "The leader.", true);
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
@@ -231,6 +234,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(game, faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(game, data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(game, sector));
+        commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(game, faction, leader));
+        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(game, faction, leader));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -299,7 +304,7 @@ public class CommandManager extends ListenerAdapter {
         gameResources.put("market", new JSONArray());
         gameResources.put("treachery_discard", new JSONArray());
         gameResources.put("tanks_forces", new JSONObject());
-        gameResources.put("tanks_leaders", new JSONObject());
+        gameResources.put("tanks_leaders", new JSONArray());
         gameResources.put("turn_order", new JSONObject());
         gameState.put("factions", new JSONObject());
         gameState.put("game_resources", gameResources);
@@ -634,7 +639,8 @@ public class CommandManager extends ListenerAdapter {
                     message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
                     int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1 + cardNumber;
                     for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
-                        int playerPosition = (firstBid + i > 6 ? firstBid + i - 6 : firstBid + i) % 6;
+                        int playerPosition = (firstBid + i) % 6;
+                        if (playerPosition == 0) playerPosition = 6;
                         String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
@@ -664,6 +670,56 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
     }
 
+    public void killLeader(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        JSONArray tanks = gameState.getResources().getJSONArray("tanks_leaders");
+        int remove = 0;
+        boolean found = false;
+        String leader = "";
+        for (int i = 0; i < faction.getJSONObject("resources").getJSONArray("leaders").length(); i++) {
+            String leaderName = faction.getJSONObject("resources").getJSONArray("leaders").getString(i);
+            if (leaderName.toLowerCase().contains(event.getOption("leader").getAsString().toLowerCase())) {
+                remove = i;
+                found = true;
+                leader = leaderName;
+                break;
+            }
+        }
+        if (found) faction.getJSONObject("resources").getJSONArray("leaders").remove(remove);
+        else {
+            event.getChannel().sendMessage("Leader not found.").queue();
+            return;
+        }
+        tanks.put(leader);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
+    public void reviveLeader(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        JSONArray tanks = gameState.getResources().getJSONArray("tanks_leaders");
+        int revive = 0;
+        boolean found = false;
+        String leader = "";
+        for (int i = 0; i < tanks.length(); i++) {
+            String leaderName = tanks.getString(i);
+            if (leaderName.toLowerCase().contains(event.getOption("leader").getAsString().toLowerCase())) {
+                revive = i;
+                found = true;
+                leader = leaderName;
+                break;
+            }
+        }
+        if (found) tanks.remove(revive);
+        else {
+            event.getChannel().sendMessage("Leader not found in the tanks.").queue();
+            return;
+        }
+        faction.getJSONObject("resources").getJSONArray("leaders").put(leader);
+        pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+    }
+
     public void revival(SlashCommandInteractionEvent event) {
         Game gameState = getGameState(event);
         String star = event.getOption("starred").getAsBoolean() ? "*" : "";
@@ -690,18 +746,14 @@ public class CommandManager extends ListenerAdapter {
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     int i = 1;
                     JSONArray shuffled = new JSONArray();
-                    StringBuilder message = new StringBuilder();
-                    message.append("Positions have been assigned as follows starting from the seat to the right of storm start:\n");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         shuffled.put(faction);
                     }
                     shuffle(shuffled);
                     for (Object faction: shuffled) {
                         turnOrder.put(String.valueOf(i), faction);
-                        message.append(gameState.getFaction((String) faction).getString("emoji")).append(":").append(i).append("\n");
                         i++;
                     }
-                    event.getChannel().sendMessage(message.toString()).queue();
                     gameState.advancePhase();
                     //If Bene Gesserit are present, time to make a prediction
                     if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
@@ -711,7 +763,6 @@ public class CommandManager extends ListenerAdapter {
                             }
                         }
                     }
-
                 }
                 //2. Traitors
                 case 1 -> {
@@ -867,7 +918,7 @@ public class CommandManager extends ListenerAdapter {
                            }
                        }
                    }
-                    gameState.advancePhase();
+                   gameState.advancePhase();
                 }
                 //2. Spice Blow and Nexus
                 case 2 -> {
@@ -1063,9 +1114,6 @@ public class CommandManager extends ListenerAdapter {
                     territories.getJSONObject("Arrakeen").put("spice", 2);
                     territories.getJSONObject("Carthag").put("spice", 2);
                     territories.getJSONObject("Tuek's Sietch").put("spice", 1);
-
-
-
                     for (String territoryName : territories.keySet()) {
                         JSONObject territory = territories.getJSONObject(territoryName);
                         if (territory.getInt("spice") == 0 || territory.getJSONObject("forces").length() == 0) continue;
@@ -1101,7 +1149,7 @@ public class CommandManager extends ListenerAdapter {
                     territories.getJSONObject("Arrakeen").put("spice", 0);
                     territories.getJSONObject("Carthag").put("spice", 0);
                     territories.getJSONObject("Tuek's Sietch").put("spice", 0);
-                   gameState.advancePhase();
+                    gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause
                 case 9 -> {
@@ -1114,6 +1162,7 @@ public class CommandManager extends ListenerAdapter {
             }
         }
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+        drawGameBoard(event);
     }
 
     public void selectTraitor(SlashCommandInteractionEvent event) {
@@ -1185,6 +1234,7 @@ public class CommandManager extends ListenerAdapter {
         }
         gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+        drawGameBoard(event);
     }
 
     public void removeForces(SlashCommandInteractionEvent event) {
@@ -1225,6 +1275,7 @@ public class CommandManager extends ListenerAdapter {
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("reserves" + starred, reserves + event.getOption("amount").getAsInt());
         }
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+        if (event.getOption("totanks").getAsBoolean()) drawGameBoard(event);
     }
 
     public void setStorm(SlashCommandInteractionEvent event) {
@@ -1236,7 +1287,9 @@ public class CommandManager extends ListenerAdapter {
             event.getChannel().sendMessage("No storm sector was selected.").queue();
             return;
         }
+        event.getOption("game").getAsChannel().asCategory().getTextChannels().get(2).sendMessage("The storm has been initialized to sector " + event.getOption("sector").getAsInt()).queue();
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
+        drawGameBoard(event);
     }
 
     public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, String faction) {
@@ -1280,13 +1333,10 @@ public class CommandManager extends ListenerAdapter {
             for (Role role : roles) {
                 roleNames.add(role.getName());
             }
-            /*
             if (!roleNames.contains(returnGame.getString("modrole"))) {
                 event.getHook().sendMessage("Only the moderator can do that!").queue();
                 throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
-
-             */
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
@@ -1325,7 +1375,7 @@ public class CommandManager extends ListenerAdapter {
                 BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(i)) + " Sigil"));
                 Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
-                board = overlay(board, sigil, coordinates);
+                board = overlay(board, sigil, coordinates, 1);
             }
 
             //Place turn, phase, and storm markers
@@ -1335,13 +1385,15 @@ public class CommandManager extends ListenerAdapter {
             float angle = (turn * 36) + 74f;
             turnMarker = rotateImageByDegrees(turnMarker, angle);
             Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
-            board = overlay(board, turnMarker, coordinates);
+            board = overlay(board, turnMarker, coordinates, 1);
             BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
             phaseMarker = resize(phaseMarker, 50, 50);
             coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
-            board = overlay(board, phaseMarker, coordinates);
-            //BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
-            //board = overlay(board, stormMarker, new Point(320,930));
+            board = overlay(board, phaseMarker, coordinates, 1);
+            BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
+            stormMarker = resize(stormMarker, 172, 96);
+            stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getResources().getInt("storm") * 20));
+            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getResources().getInt("storm")), 1);
 
 
             //Place forces
@@ -1360,28 +1412,28 @@ public class CommandManager extends ListenerAdapter {
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territoryName).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 10;
                         } else if (spice >= 5) {
                             BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territoryName).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 5;
                         } else if (spice >= 2) {
                             BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territoryName).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 2;
                         } else {
                             BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territoryName).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 1;
                         }
                         offset += 15;
@@ -1389,38 +1441,54 @@ public class CommandManager extends ListenerAdapter {
                 }
                 offset = 0;
                 for (String force : territory.getJSONObject("forces").keySet()) {
-                    BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
-                    forceImage = resize(forceImage, 47, 29);
-                    if (force.contains("*")) {
-                        BufferedImage star = ImageIO.read(boardComponents.get("star"));
-                        star = resize(star, 8, 8);
-                        forceImage = overlay(forceImage, star, new Point(20, 7));
-                    }
-                    if (territory.getJSONObject("forces").getInt(force) > 9) {
-                        BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
-                        BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force) - 10)));
-                        oneImage = resize(oneImage, 12, 12);
-                        digitImage = resize(digitImage, 12,12);
-                        forceImage = overlay(forceImage, oneImage, new Point(28, 14));
-                        forceImage = overlay(forceImage, digitImage, new Point(36, 14));
-                    } else {
-                        BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(territory.getJSONObject("forces").getInt(force))));
-                        numberImage = resize(numberImage, 12, 12);
-                        forceImage = overlay(forceImage, numberImage, new Point(30,14));
-
-                    }
-
-
+                    int strength = territory.getJSONObject("forces").getInt(force);
+                    BufferedImage forceImage = buildForceImage(boardComponents, force, strength);
                     Point forcePlacement = Initializers.getPoints(territoryName).get(i);
                     Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
-                    board = overlay(board, forceImage, forcePlacementOffset);
+                    board = overlay(board, forceImage, forcePlacementOffset, 1);
                     i++;
                     if (i == Initializers.getPoints(territoryName).size()) {
                         offset += 20;
                         i = 0;
                     }
                 }
+            }
 
+            //Place tanks forces
+            int i = 0;
+            int offset = 0;
+            for (String force : gameState.getResources().getJSONObject("tanks_forces").keySet()) {
+                JSONObject tanks = gameState.getResources().getJSONObject("tanks_forces");
+                if (tanks.getInt(force) == 0) continue;
+                int strength = tanks.getInt(force);
+                BufferedImage forceImage = buildForceImage(boardComponents, force, strength);
+
+                Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
+                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+
+                board = overlay(board, forceImage, tanksOffset, 1);
+                i++;
+                if (i > 1) {
+                    offset += 30;
+                    i = 0;
+                }
+            }
+
+            //Place tanks leaders
+            i = 0;
+            offset = 0;
+            for (Object leader : gameState.getResources().getJSONArray("tanks_leaders")) {
+                String leaderString = (String) leader;
+                BufferedImage leaderImage = ImageIO.read(boardComponents.get(leaderString.split("-")[0].strip()));
+                leaderImage = resize(leaderImage, 70,70);
+                Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
+                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+                board = overlay(board, leaderImage, tanksOffset, 1);
+                i++;
+                if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
+                    offset += 70;
+                    i = 0;
+                }
             }
 
             ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
@@ -1440,12 +1508,41 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates) throws IOException {
+    public BufferedImage buildForceImage(HashMap<String, File> boardComponents, String force, int strength) throws IOException {
+        BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
+        forceImage = resize(forceImage, 47, 29);
+        if (force.contains("*")) {
+            BufferedImage star = ImageIO.read(boardComponents.get("star"));
+            star = resize(star, 8, 8);
+            forceImage = overlay(forceImage, star, new Point(20, 7), 1);
+        }
+        if (strength > 9) {
+            BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
+            BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(strength - 10)));
+            oneImage = resize(oneImage, 12, 12);
+            digitImage = resize(digitImage, 12,12);
+            forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
+            forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
+        } else {
+            BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(strength)));
+            numberImage = resize(numberImage, 12, 12);
+            forceImage = overlay(forceImage, numberImage, new Point(30,14), 1);
 
+        }
+        return forceImage;
+    }
+
+    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates, float alpha) throws IOException {
+
+        int compositeRule = AlphaComposite.SRC_OVER;
+        AlphaComposite ac;
+        ac = AlphaComposite.getInstance(compositeRule, alpha);
         BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = overlay.createGraphics();
         g.drawImage(board, 0, 0, null);
+        g.setComposite(ac);
         g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
+        g.setComposite(ac);
         g.dispose();
 
         return overlay;
@@ -1545,7 +1642,8 @@ public class CommandManager extends ListenerAdapter {
         }
         List<TextChannel> channels = event.getGuild().getTextChannels();
         for (TextChannel channel : channels) {
-            //if (!channel.getName().startsWith("test") || channel.getName().equals("test")) continue;
+            if (//!channel.getName().startsWith("test") ||
+            channel.getName().equals("general")) continue;
             channel.delete().complete();
         }
     }

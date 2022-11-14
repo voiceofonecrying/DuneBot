@@ -761,8 +761,8 @@ public class Initializers {
                 points.add(new Point(500,520));
             }
             case "Forces Tanks" -> {
-                points.add(new Point(35,990));
-                points.add(new Point(60,990));
+                points.add(new Point(45,990));
+                points.add(new Point(100,990));
             }
             case "Leaders Tanks" -> {
                 points.add(new Point(900,985));
@@ -850,6 +850,60 @@ public class Initializers {
             }
             case "phase 8" -> {
                 return new Point(713,45);
+            }
+            case "storm 1" -> {
+                return new Point(487,958);
+            }
+            case "storm 2" -> {
+                return new Point(635,927);
+            }
+            case "storm 3" -> {
+                return new Point(760,850);
+            }
+            case "storm 4" -> {
+                return new Point(858,732);
+            }
+            case "storm 5" -> {
+                return new Point(899,589);
+            }
+            case "storm 6" -> {
+                return new Point(898,441);
+            }
+            case "storm 7" -> {
+                return new Point(843,300);
+            }
+            case "storm 8" -> {
+                return new Point(740,190);
+            }
+            case "storm 9" -> {
+                return new Point(610,120);
+            }
+            case "storm 10" -> {
+                return new Point(463,98);
+            }
+            case "storm 11" -> {
+                return new Point(318,129);
+            }
+            case "storm 12" -> {
+                return new Point(189,207);
+            }
+            case "storm 13" -> {
+                return new Point(96,323);
+            }
+            case "storm 14" -> {
+                return new Point(49,464);
+            }
+            case "storm 15" -> {
+                return new Point(53,614);
+            }
+            case "storm 16" -> {
+                return new Point(107,755);
+            }
+            case "storm 17" -> {
+                return new Point(210,865);
+            }
+            case "storm 18" -> {
+                return new Point(340,940);
             }
         }
 
