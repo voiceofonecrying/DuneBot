@@ -332,7 +332,8 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
 
-        Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsTag(), event.getOption("player").getAsMember().getNickname());
+        Faction faction = new Faction(factionName, ":" + factionName + ":", event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname());
+
         Initializers.newFaction(faction, gameState);
 
         pushGameState(gameState, event.getOption("game").getAsChannel().asCategory());
@@ -647,9 +648,12 @@ public class CommandManager extends ListenerAdapter {
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
                                 !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4)
-                            message.append(gameState.getFaction(faction).getString("emoji")).append(":\n");
+                            message.append(gameState.getFaction(faction).getString("emoji")).append(":");
+                            if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
+                            message.append("\n");
                     }
                     channel.sendMessage(message.toString()).queue();
+                    
                     break;
                 }
             }
@@ -1052,7 +1056,9 @@ public class CommandManager extends ListenerAdapter {
                                 String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
                                 int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                                 if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
-                                        !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) message.append(gameState.getFaction(faction).getString("emoji")).append(":\n");
+                                        !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) message.append(gameState.getFaction(faction).getString("emoji")).append(":");
+                                        if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
+                                        message.append("\n");
                             }
                             channel.sendMessage(message.toString()).queue();
                             break;
