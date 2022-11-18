@@ -78,6 +78,7 @@ public class CommandManager extends ListenerAdapter {
             case "killleader" -> killLeader(event);
             case "reviveleader" -> reviveLeader(event);
             case "setstorm" -> setStorm(event);
+            case "bgflip" -> bgFlip(event);
             case "advancegame" -> advanceGame(event);
             case "clean" -> clean(event);
 
@@ -235,6 +236,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(sector));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
+        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory, otherTerritory, sector));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -1144,12 +1146,19 @@ public class CommandManager extends ListenerAdapter {
                 //6. Shipment and Movement
                 case 6 -> {
                     game.getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Shipment and Movement Phase:").queue();
-                    if(gameState.getFaction("Atreides") != null) {
+                    if(!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("Atreides")) {
                         for (TextChannel channel : game.getTextChannels()) {
                             if (channel.getName().equals("atreides-info")) {
                                 channel.sendMessage("You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.").queue();
                             }
                         }
+                    }
+                    if(!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
+                       for (String territoryName : gameState.getGameBoard().keySet()) {
+                           JSONObject territory = gameState.getTerritory(territoryName);
+                           if (!territory.getJSONObject("forces").keySet().contains("Advisor")) continue;
+                           game.getTextChannels().get(2).sendMessage(gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their advisors in " + territory.getString("territory_name")).queue();
+                       }
                     }
                     gameState.advancePhase();
                 }
@@ -1236,13 +1245,12 @@ public class CommandManager extends ListenerAdapter {
         pushGameState(gameState, DiscordHelper.getGameCategory(event));
     }
 
-    public void placeForces(SlashCommandInteractionEvent event) {
-        Game gameState = getGameState(event);
+    public String getTerritoryString(SlashCommandInteractionEvent event, Game gameState) {
         String sector = event.getOption("sector") == null ? "" : "(" + event.getOption("sector").getAsString() + ")";
         String territory = "";
         if (event.getOption("mostlikelyterritories") == null && event.getOption("otherterritories") == null) {
             event.getChannel().sendMessage("You have to select a territory.").queue();
-            return;
+            return null;
         } else if (event.getOption("mostlikelyterritories") == null) {
             territory = event.getOption("otherterritories").getAsString();
         } else {
@@ -1250,9 +1258,15 @@ public class CommandManager extends ListenerAdapter {
         }
         if (gameState.getJSONObject("game_state").getJSONObject("game_board").isNull(territory + sector)) {
             event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
-            return;
+            return null;
         }
-            String star = "";
+        return territory + sector;
+    }
+
+    public void placeForces(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        String star = "";
+        String territory = getTerritoryString(event, gameState);
         if (event.getOption("starred") != null && event.getOption("starred").getAsBoolean()) {
             star = "*";
         }
@@ -1265,9 +1279,9 @@ public class CommandManager extends ListenerAdapter {
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("reserves" + star, reserves - event.getOption("amount").getAsInt());
         int previous = 0;
 
-        if (!gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector)
+        if (!gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory)
                 .getJSONObject("forces").isNull(event.getOption("factionname").getAsString() + star)) {
-            previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector).getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + star);
+            previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + star);
         }
 
         if (event.getOption("isshipment").getAsBoolean()) {
@@ -1290,7 +1304,10 @@ public class CommandManager extends ListenerAdapter {
             }
             writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
         }
-        gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory + sector).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
+        if (gameState.getTerritory(territory).getJSONObject("forces").keySet().contains("BG")) {
+            DiscordHelper.getGameCategory(event).getTextChannels().get(2).sendMessage(gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their forces in " + territory).queue();
+        }
+        gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
         pushGameState(gameState, DiscordHelper.getGameCategory(event));
         drawGameBoard(event);
     }
@@ -1374,6 +1391,25 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
+    }
+
+    public void bgFlip(SlashCommandInteractionEvent event) {
+        Game gameState = getGameState(event);
+        JSONObject territory = gameState.getTerritory(getTerritoryString(event, gameState));
+        if (territory.getJSONObject("forces").keySet().contains("BG")) {
+            int bg = territory.getJSONObject("forces").getInt("BG");
+            territory.getJSONObject("forces").remove("BG");
+            territory.getJSONObject("forces").put("Advisor", bg);
+        } else if (territory.getJSONObject("forces").keySet().contains("Advisor")) {
+            int advisor = territory.getJSONObject("forces").getInt("Advisor");
+            territory.getJSONObject("forces").remove("Advisor");
+            territory.getJSONObject("forces").put("BG", advisor);
+        } else {
+            event.getChannel().sendMessage("No Bene Gesserit were found in that territory.").queue();
+            return;
+        }
+        pushGameState(gameState, DiscordHelper.getGameCategory(event));
+        drawGameBoard(event);
     }
 
     public Game getGameState(SlashCommandInteractionEvent event) {
@@ -1565,7 +1601,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public BufferedImage buildForceImage(HashMap<String, File> boardComponents, String force, int strength) throws IOException {
-        BufferedImage forceImage = ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop"));
+        BufferedImage forceImage = !force.equals("Advisor") ? ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop")) : ImageIO.read(boardComponents.get("BG Advisor"));
         forceImage = resize(forceImage, 47, 29);
         if (force.contains("*")) {
             BufferedImage star = ImageIO.read(boardComponents.get("star"));
