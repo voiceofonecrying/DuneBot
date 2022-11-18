@@ -311,7 +311,7 @@ public class CommandManager extends ListenerAdapter {
         gameState.put("game_resources", gameResources);
         gameState.put("game_board", gameBoard);
         game.put("game_state", gameState);
-        game.put("version", 1);
+        game.put("version", "0.2.0");
         game.put("gamerole", gameRole.getName());
         game.put("modrole", modRole.getName());
         pushGameState(game, category);
