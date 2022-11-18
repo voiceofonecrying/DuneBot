@@ -108,7 +108,8 @@ public class CommandManager extends ListenerAdapter {
         OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise", true);
         OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
         OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
-        OptionData amount = new OptionData(OptionType.INTEGER, "amount", "amount to be added or subtracted (e.g. -3, 4)", true);
+        OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount to be added or subtracted (e.g. -3, 4)", true);
+        OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
         OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
         OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
                 .addChoice("Treachery Deck", "treachery_deck")
@@ -216,7 +217,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, resourceName, isNumber, resourceValNumber, resourceValString));
-        commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(faction, resourceName, amount));
+        commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(faction, resourceName, amount, message));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, destination));
         commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(deck, numberToPeek));
@@ -371,6 +372,10 @@ public class CommandManager extends ListenerAdapter {
                 .remove(event.getOption("resource").getAsString());
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources")
                 .put(event.getOption("resource").getAsString(), amount + currentAmount);
+        if (event.getOption("resource").getAsString().equals("spice")) {
+            String message = event.getOption("message") == null ? "custom transaction" : event.getOption("message").getAsString();
+            spiceMessage(event, Math.abs(amount), event.getOption("factionname").getAsString(), message, amount >= 0);
+        }
         writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
         pushGameState(gameState, DiscordHelper.getGameCategory(event));
     }
@@ -647,10 +652,11 @@ public class CommandManager extends ListenerAdapter {
                         String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
                         int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
                         if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
-                                !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4)
+                                !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) {
                             message.append(gameState.getFaction(faction).getString("emoji")).append(":");
                             if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
                             message.append("\n");
+                        }
                     }
                     channel.sendMessage(message.toString()).queue();
                     
@@ -665,6 +671,8 @@ public class CommandManager extends ListenerAdapter {
         int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("spice", spice - event.getOption("spent").getAsInt());
+        spiceMessage(event, event.getOption("spent").getAsInt(), event.getOption("factionname").getAsString(), "R" +
+                gameState.getResources().getInt("turn") + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), false);
         writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
         if (gameState.getJSONObject("game_state").getJSONObject("factions").keySet().contains("Emperor") && !event.getOption("factionname").getAsString().equals("Emperor")) {
             int spiceEmp = gameState.getFaction("Emperor").getJSONObject("resources").getInt("spice");
@@ -673,7 +681,19 @@ public class CommandManager extends ListenerAdapter {
             event.getChannel().sendMessage(gameState.getFaction("Emperor").getString("emoji") + " is paid " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>").queue();
             writeFactionInfo(event, gameState, "Emperor");
         }
+        spiceMessage(event, event.getOption("spent").getAsInt(), "emperor", "R" +
+                gameState.getResources().getInt("turn") + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), true);
         pushGameState(gameState, DiscordHelper.getGameCategory(event));
+    }
+
+    public void spiceMessage(SlashCommandInteractionEvent event, int amount, String faction, String message, boolean plus) {
+        String plusSign = plus ? "+" : "-";
+        for (TextChannel channel : DiscordHelper.getGameCategory(event).getTextChannels()) {
+            if (channel.getName().equals(faction.toLowerCase() + "-info")) {
+                channel.sendMessage(plusSign + amount + "<:spice4:991763531798167573> for " + message).queue();
+            }
+        }
+
     }
 
     public void killLeader(SlashCommandInteractionEvent event) {
@@ -737,8 +757,10 @@ public class CommandManager extends ListenerAdapter {
         gameState.getFaction(faction).getJSONObject("resources").remove("reserves" + star);
         gameState.getFaction(faction).getJSONObject("resources").put("reserves" + star, reserves + event.getOption("revived").getAsInt());
         gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") - 2 * event.getOption("revived").getAsInt());
+        spiceMessage(event, 2 * event.getOption("revived").getAsInt(), faction, "Revivals", false);
         if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("bt")) {
             gameState.getFaction("bt").getJSONObject("resources").put("spice", gameState.getFaction("bt").getJSONObject("resources").getInt("spice") + 2 * event.getOption("revived").getAsInt());
+            spiceMessage(event, 2 * event.getOption("revived").getAsInt(), "bt", gameState.getFaction(faction).getString("emoji") + " revivals", true);
             writeFactionInfo(event, gameState, "bt");
         }
         writeFactionInfo(event, gameState, faction);
@@ -970,7 +992,8 @@ public class CommandManager extends ListenerAdapter {
                     int choamGiven = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
                     if (factions.contains("CHOAM")) game.getTextChannels().get(2).sendMessage(
-                            gameState.getFaction("CHOAM").getString("emoji") + " receives " + 10 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
+                            gameState.getFaction("CHOAM").getString("emoji") + " receives " +
+                            gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
                     ).queue();
                     for (String faction : factions) {
                         if (faction.equals("CHOAM")) continue;
@@ -982,6 +1005,7 @@ public class CommandManager extends ListenerAdapter {
                             game.getTextChannels().get(2).sendMessage(
                                     gameState.getFaction(faction).getString("emoji") + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity."
                             ).queue();
+                            spiceMessage(event, 2 * multiplier, faction, "CHOAM Charity", true);
                         }
                         else if (spice < 2) {
                             int charity = (2 * multiplier) - (spice * multiplier);
@@ -991,6 +1015,7 @@ public class CommandManager extends ListenerAdapter {
                             game.getTextChannels().get(2).sendMessage(
                                     gameState.getFaction(faction).getString("emoji") + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
                             ).queue();
+                            spiceMessage(event, charity, faction, "CHOAM Charity", true);
                         }
                         else continue;
                         writeFactionInfo(event, gameState, faction);
@@ -998,10 +1023,12 @@ public class CommandManager extends ListenerAdapter {
                     if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("CHOAM")) {
                         int spice = gameState.getFaction("CHOAM").getJSONObject("resources").getInt("spice");
                         gameState.getFaction("CHOAM").getJSONObject("resources").remove("spice");
-                        gameState.getFaction("CHOAM").getJSONObject("resources").put("spice", (10 * multiplier) + spice - choamGiven);
+                        gameState.getFaction("CHOAM").getJSONObject("resources").put("spice", (gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier * multiplier) + spice - choamGiven);
+                        spiceMessage(event, gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier, "choam", "CHOAM Charity", true);
                         game.getTextChannels().get(2).sendMessage(
                                 gameState.getFaction("CHOAM").getString("emoji") + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
                         ).queue();
+                        spiceMessage(event, choamGiven, "choam", "CHOAM Charity given", false);
                     }
                     gameState.advancePhase();
                 }
@@ -1253,10 +1280,12 @@ public class CommandManager extends ListenerAdapter {
                 return;
             }
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("spice", spice - cost);
+            spiceMessage(event, cost, event.getOption("factionname").getAsString(), "shipment to " + territory, false);
             if (gameState.getFaction("Guild") != null && !(event.getOption("factionname").getAsString().equals("Guild") || event.getOption("factionname").getAsString().equals("Fremen"))) {
                 spice = gameState.getFaction("Guild").getJSONObject("resources").getInt("spice");
                 gameState.getFaction("Guild").getJSONObject("resources").remove("spice");
-                gameState.getFaction("Guild").getJSONObject("resources").put("spice", spice + event.getOption("amount").getAsInt());
+                gameState.getFaction("Guild").getJSONObject("resources").put("spice", spice + cost);
+                spiceMessage(event, cost, "guild", gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " shipment", true);
                 writeFactionInfo(event, gameState, "Guild");
             }
             writeFactionInfo(event, gameState, event.getOption("factionname").getAsString());
