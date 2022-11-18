@@ -594,7 +594,7 @@ public class Initializers {
                 points.add(new Point(685,190));
             }
             case "Sihaya Ridge" -> {
-                points.add(new Point(640,245));
+                points.add(new Point(740,245));
                 points.add(new Point(727,273));
                 points.add(new Point(764,266));
             }
