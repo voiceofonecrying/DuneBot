@@ -51,4 +51,8 @@ public class Game extends JSONObject {
         return this.getJSONObject("game_state").getJSONObject("factions").getJSONObject(name);
     }
 
+    public Boolean hasFaction(String name) {
+        return !this.getJSONObject("game_state").getJSONObject("factions").isNull(name);
+    }
+
 }
