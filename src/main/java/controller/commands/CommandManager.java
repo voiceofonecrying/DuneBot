@@ -52,7 +52,8 @@ public class CommandManager extends ListenerAdapter {
         }
 
         String name = event.getName();
-        event.reply("Processing...").setEphemeral(true).queue();
+        event.deferReply(true).queue();
+
         try {
             if (name.equals("newgame")) {
                 newGame(event);
@@ -85,10 +86,12 @@ public class CommandManager extends ListenerAdapter {
                     case "clean" -> clean(event);
                 }
             }
-
+            event.getHook().editOriginal("Command Done").queue();
         } catch (ChannelNotFoundException e) {
-            System.err.println("A channel was not found");
             e.printStackTrace();
+            event.getHook().editOriginal("Channel not found!").queue();
+        } catch (Exception e) {
+            event.getHook().editOriginal("An error occurred!").queue();
         }
     }
 
