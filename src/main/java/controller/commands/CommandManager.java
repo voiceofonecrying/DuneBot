@@ -94,6 +94,7 @@ public class CommandManager extends ListenerAdapter {
             event.getHook().editOriginal("Channel not found!").queue();
         } catch (Exception e) {
             event.getHook().editOriginal("An error occurred!").queue();
+            e.printStackTrace();
         }
     }
 
