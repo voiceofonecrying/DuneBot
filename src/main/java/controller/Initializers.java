@@ -21,6 +21,7 @@ public class Initializers {
         resources.put("leaders", new JSONArray());
         resources.put("traitors", new JSONArray());
         resources.put("treachery_hand", new JSONArray());
+        resources.put("front_of_shield", new JSONObject());
         gameState.getResources().getJSONObject("tanks_forces").put(faction.getName(), 0);
         switch (faction.getName()) {
             case "Atreides" -> {
