@@ -82,6 +82,7 @@ public class CommandManager extends ListenerAdapter {
                     case "reviveleader" -> reviveLeader(event, discordGame, gameState);
                     case "setstorm" -> setStorm(event, discordGame, gameState);
                     case "bgflip" -> bgFlip(event, discordGame, gameState);
+                    case "bribe" -> bribe(event, discordGame, gameState);
                     case "mute" -> mute(discordGame, gameState);
                     case "advancegame" -> advanceGame(event, discordGame, gameState);
                 }
@@ -149,7 +150,7 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("CHOAM", "CHOAM")
                 .addChoice("Richese", "Rich")
                 .addChoice("Add from discard", "discard");
-        OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The one receiving the card", true)
+        OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
                 .addChoice("Emperor", "Emperor")
@@ -246,6 +247,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory, otherTerritory, sector));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
+        commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -1169,6 +1171,14 @@ public class CommandManager extends ListenerAdapter {
                 case 9 -> {
                     discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
+                        if (!gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").isNull("spice")) {
+                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " collects " +
+                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice") + " <:spice4:991763531798167573> from front of shield.");
+                            spiceMessage(discordGame,  gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"), faction, "front of shield", true);
+                            gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") +
+                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"));
+                            gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").remove("spice");
+                        }
                         writeFactionInfo(event, gameState, discordGame, faction);
                     }
                     gameState.advanceTurn();
@@ -1391,7 +1401,7 @@ public class CommandManager extends ListenerAdapter {
             board = overlay(board, turnMarker, coordinates, 1);
             BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
             phaseMarker = resize(phaseMarker, 50, 50);
-            coordinates = Initializers.getDrawCoordinates("phase " + gameState.getResources().getInt("phase"));
+            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getResources().getInt("phase") - 1));
             board = overlay(board, phaseMarker, coordinates, 1);
             BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
             stormMarker = resize(stormMarker, 172, 96);
@@ -1583,6 +1593,22 @@ public class CommandManager extends ListenerAdapter {
 
         return dimg;
     }
+
+    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        JSONObject recipient = gameState.getFaction(event.getOption("recipient").getAsString());
+        int amount = event.getOption("amount").getAsInt();
+
+        if (faction.getJSONObject("resources").getInt("spice") < amount) {
+            discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
+        }
+        faction.getJSONObject("resources").put("spice", faction.getJSONObject("resources").getInt("spice") - amount);
+        spiceMessage(discordGame, amount, faction.getString("name"), "bribe to " + recipient.getString("emoji"), false);
+        if (recipient.getJSONObject("resources").getJSONObject("front_of_shield").isNull("spice")) recipient.getJSONObject("resources").getJSONObject("front_of_shield").put("spice", amount);
+        else recipient.getJSONObject("resources").getJSONObject("front_of_shield").put("spice", recipient.getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice") + amount);
+        discordGame.pushGameState(gameState);
+    }
+
 
     public void mute(DiscordGame discordGame, Game gameState) {
         gameState.put("mute", !gameState.getBoolean("mute"));
