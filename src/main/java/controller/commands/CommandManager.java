@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -96,13 +97,29 @@ public class CommandManager extends ListenerAdapter {
     }
 
     @Override
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        String optionName = event.getFocusedOption().getName();
+        String searchValue = event.getFocusedOption().getValue();
+        DiscordGame discordGame = new DiscordGame(event);
+
+        try {
+            Game gameState = discordGame.getGameState();
+            switch (optionName) {
+                case "factionname" -> event.replyChoices(CommandOptions.factions(gameState, searchValue)).queue();
+            }
+        } catch (ChannelNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
 
         OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
         OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
         OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
         OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
-        OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
+        OptionData allFactions = new OptionData(OptionType.STRING, "factionname", "The faction", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
                 .addChoice("Emperor", "Emperor")
@@ -113,6 +130,8 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Tleilaxu", "BT")
                 .addChoice("CHOAM", "CHOAM")
                 .addChoice("Richese", "Rich");
+        OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
+                .setAutoComplete(true);
         OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
         OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise", true);
         OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
@@ -224,7 +243,7 @@ public class CommandManager extends ListenerAdapter {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
-        commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(faction, user));
+        commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(allFactions, user));
         commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, resourceName, isNumber, resourceValNumber, resourceValString));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(faction, resourceName, amount, message));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(faction, resourceName));

@@ -2,6 +2,7 @@ package model;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.Iterator;
 
 public class Game extends JSONObject {
 
@@ -53,6 +54,10 @@ public class Game extends JSONObject {
 
     public Boolean hasFaction(String name) {
         return !this.getJSONObject("game_state").getJSONObject("factions").isNull(name);
+    }
+
+    public Iterator<String> getFactions() {
+        return this.getJSONObject("game_state").getJSONObject("factions").keys();
     }
 
 }

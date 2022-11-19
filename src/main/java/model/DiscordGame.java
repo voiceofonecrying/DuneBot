@@ -1,11 +1,12 @@
 package model;
 
 import exceptions.ChannelNotFoundException;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
@@ -20,17 +21,25 @@ import java.util.stream.Collectors;
 
 public class DiscordGame {
     private SlashCommandInteractionEvent event;
+    private Member member;
     private Category gameCategory;
     private List<TextChannel> textChannelList;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) {
         this.event = event;
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+        this.member = event.getMember();
     }
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event, @NotNull Category category) {
         this.event = event;
         this.gameCategory = category;
+        this.member = event.getMember();
+    }
+
+    public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
+        this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+        this.member = event.getMember();
     }
 
     public Category getGameCategory() {
@@ -59,7 +68,7 @@ public class DiscordGame {
     }
 
     public boolean isModRole(String modRoleName) {
-        return this.event.getMember()
+        return this.member
                 .getRoles()
                 .stream().map(role -> role.getName())
                 .collect(Collectors.toList())
@@ -80,7 +89,6 @@ public class DiscordGame {
             String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
             Game returnGame = new Game(gameStateString);
             if (!this.isModRole(returnGame.getString("modrole"))) {
-                event.getHook().sendMessage("Only the moderator can do that!").queue();
                 throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
             return returnGame;
