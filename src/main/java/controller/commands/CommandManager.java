@@ -54,9 +54,9 @@ public class CommandManager extends ListenerAdapter {
         String name = event.getName();
         event.reply("Processing...").setEphemeral(true).queue();
         try {
-            if (name.equals("newgame")) {
-                newGame(event);
-            } else {
+            if (name.equals("newgame")) newGame(event);
+            else if (name.equals("clean")) clean(event);
+            else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game gameState = discordGame.getGameState();
 
@@ -81,8 +81,8 @@ public class CommandManager extends ListenerAdapter {
                     case "reviveleader" -> reviveLeader(event, discordGame, gameState);
                     case "setstorm" -> setStorm(event, discordGame, gameState);
                     case "bgflip" -> bgFlip(event, discordGame, gameState);
+                    case "mute" -> mute(discordGame, gameState);
                     case "advancegame" -> advanceGame(event, discordGame, gameState);
-                    case "clean" -> clean(event);
                 }
             }
 
@@ -242,6 +242,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory, otherTerritory, sector));
+        commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -259,7 +260,6 @@ public class CommandManager extends ListenerAdapter {
                 .complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
-        DiscordGame discordGame = new DiscordGame(event, category);
 
         category.createTextChannel("bot-data")
                 .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
@@ -282,8 +282,8 @@ public class CommandManager extends ListenerAdapter {
                 .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL))
                 .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
 
-        TextChannel rules = discordGame.getTextChannel("rules");
-        rules.sendMessage("""
+        DiscordGame discordGame = new DiscordGame(event, category);
+        discordGame.getTextChannel("rules").sendMessage("""
             <:DuneRulebook01:991763013814198292>  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
             <:weirding:991763071775297681>  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
             <:ix:991763319406997514> <:bt:991763325576810546>  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
@@ -319,6 +319,7 @@ public class CommandManager extends ListenerAdapter {
         game.put("version", "0.2.0");
         game.put("gamerole", gameRole.getName());
         game.put("modrole", modRole.getName());
+        game.put("mute", false);
         discordGame.pushGameState(game);
     }
 
@@ -355,7 +356,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        if (gameState.getFaction(event.getOption("factionname").getAsString()) == null) {
+        if (!gameState.hasFaction(event.getOption("factionname").getAsString())) {
             event.getChannel().sendMessage("That faction is not in this game!").queue();
             return;
         }
@@ -577,7 +578,7 @@ public class CommandManager extends ListenerAdapter {
             }
         }
         if (!found) {
-            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?"));
+            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?").queue());
             return;
         }
         market.remove(i);
@@ -609,29 +610,26 @@ public class CommandManager extends ListenerAdapter {
         if (event.getOption("factionname").getAsString().equals("harkonnen")
                 && gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").length() > 7
                 || gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").length() > 3) {
-            event.getChannel().sendMessage("Player's hand is full, they cannot bid on this card!").queue();
+            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Player's hand is full, they cannot bid on this card!").queue());
             return;
         }
         try {
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getJSONArray("treachery_hand").put(gameState.getResources().getJSONArray("market").getString(0));
-            discordGame.getTextChannel("turn-summary").sendMessage(gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " wins card up for bid for " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>").queue();
+            discordGame.sendMessage("turn-summary", gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " wins card up for bid for " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>");
         } catch (JSONException e) {
-            discordGame.getTextChannel("mod-info").sendMessage("No more cards up for bid.  Please advance the game.").queue();
+            discordGame.sendMessage("mod-info", "No more cards up for bid.  Please advance the game.");
             return;
         }
         gameState.getResources().getJSONArray("market").remove(0);
 
         if (gameState.getFaction("Atreides") != null && gameState.getResources().getJSONArray("market").length() > 0) {
-            discordGame.getTextChannel("atreides-chat")
-                    .sendMessage("The next card up for bid is <:treachery:991763073281040518> "
+            discordGame.sendMessage("atreides-info", "The next card up for bid is <:treachery:991763073281040518> "
                             + gameState.getResources()
                             .getJSONArray("market")
-                            .getString(0).split("\\|")[0] + " <:treachery:991763073281040518>")
-                    .queue();
+                            .getString(0).split("\\|")[0] + " <:treachery:991763073281040518>");
         }
 
         if (gameState.getResources().getJSONArray("market").length() > 0) {
-            TextChannel channel = discordGame.getTextChannel("bidding-phase");
                 StringBuilder message = new StringBuilder();
                 int cardNumber = gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length();
                 message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
@@ -648,11 +646,11 @@ public class CommandManager extends ListenerAdapter {
                         message.append("\n");
                     }
                 }
-                channel.sendMessage(message.toString()).queue();
+                discordGame.sendMessage("bidding-phase", message.toString());
         }
         if (event.getOption("factionname").getAsString().equals("Harkonnen") && gameState.getFaction("Harkonnen").getJSONObject("resources").getJSONArray("treachery_hand").length() < 8) {
             drawCard(gameState, "treachery_deck", "Harkonnen");
-            event.getChannel().sendMessage(gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " draws another card from the <:treachery:991763073281040518> deck.").queue();
+            discordGame.sendMessage("turn-summary", gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " draws another card from the <:treachery:991763073281040518> deck.");
         }
         int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
@@ -664,7 +662,7 @@ public class CommandManager extends ListenerAdapter {
             int spiceEmp = gameState.getFaction("Emperor").getJSONObject("resources").getInt("spice");
             gameState.getFaction("Emperor").getJSONObject("resources").remove("spice");
             gameState.getFaction("Emperor").getJSONObject("resources").put("spice", spiceEmp + event.getOption("spent").getAsInt());
-            event.getChannel().sendMessage(gameState.getFaction("Emperor").getString("emoji") + " is paid " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>").queue();
+            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getString("emoji") + " is paid " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>");
             writeFactionInfo(event, gameState, discordGame, "Emperor");
         }
         spiceMessage(discordGame, event.getOption("spent").getAsInt(), "emperor", "R" +
@@ -672,11 +670,11 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState(gameState);
     }
 
-    public void spiceMessage(DiscordGame discordGame, int amount, String faction, String message, boolean plus) {
+    public void spiceMessage(DiscordGame discordGame, int amount, String faction, String message, boolean plus) throws ChannelNotFoundException {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                channel.sendMessage(plusSign + amount + "<:spice4:991763531798167573> for " + message).queue();
+                discordGame.sendMessage(channel.getName(), plusSign + amount + "<:spice4:991763531798167573> for " + message);
             }
         }
 
@@ -698,7 +696,7 @@ public class CommandManager extends ListenerAdapter {
         }
         if (found) faction.getJSONObject("resources").getJSONArray("leaders").remove(remove);
         else {
-            event.getChannel().sendMessage("Leader not found.").queue();
+            discordGame.getTextChannel("mod-info").sendMessage("Leader not found.").queue();
             return;
         }
         tanks.put(leader);
@@ -773,7 +771,7 @@ public class CommandManager extends ListenerAdapter {
                     gameState.advancePhase();
                     //If Bene Gesserit are present, time to make a prediction
                     if (gameState.hasFaction("BG")) {
-                        discordGame.getTextChannel("bg-chat").sendMessage("Please make your secret prediction.").queue();
+                        discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
                     }
                 }
                 //2. Traitors
@@ -789,7 +787,7 @@ public class CommandManager extends ListenerAdapter {
                     }
                     for (TextChannel channel : discordGame.getTextChannels()) {
                             if (channel.getName().contains("-chat") && !channel.getName().contains("game") &&
-                                    !channel.getName().contains("harkonnen") && !channel.getName().contains("bt")) channel.sendMessage("Please select your traitor.").queue();
+                                    !channel.getName().contains("harkonnen") && !channel.getName().contains("bt")) discordGame.sendMessage(channel.getName(), "Please select your traitor.");
                         }
 
 
@@ -798,7 +796,7 @@ public class CommandManager extends ListenerAdapter {
                     if (!gameState.hasFaction("BT")) {
                         gameState.advancePhase();
                     }
-                    event.getChannel().sendMessage("2. Traitors are being selected.").queue();
+                    discordGame.sendMessage("turn-summary", "2. Traitors are being selected.");
                 }
                 //Bene Tleilax to draw Face Dancers
                 case 2 -> {
@@ -808,27 +806,23 @@ public class CommandManager extends ListenerAdapter {
                     drawCard(gameState, "traitor_deck", "BT");
                     writeFactionInfo(event, gameState, discordGame, "BT");
                     gameState.advancePhase();
-                    event.getChannel().sendMessage("2b. Bene Tleilax have drawn their Face Dancers.").queue();
+                    discordGame.sendMessage("turn-summary", "2b. Bene Tleilax have drawn their Face Dancers.");
                 }
                 //3. Spice, 4. Forces
                 case 3 -> {
                     if (gameState.hasFaction("Fremen")) {
-                        discordGame.getTextChannel("fremen-chat")
-                                .sendMessage("Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West")
-                                .queue();
+                        discordGame.sendMessage("fremen-chat", "Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West");
                     }
                     gameState.advancePhase();
                     //If BG is not present, advance past the next step
                     if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
                         gameState.advancePhase();
                     }
-                    event.getChannel().sendMessage("3. Spice has been allocated.\n4. Forces are being placed on the board.").queue();
+                    discordGame.sendMessage("turn-summary", "3. Spice has been allocated.\n4. Forces are being placed on the board.");
                 }
                 case 4 -> {
                     if (gameState.hasFaction("BG")) {
-                        discordGame.getTextChannel("bg-chat")
-                                .sendMessage("Please choose where to place your advisor.")
-                                .queue();
+                        discordGame.sendMessage("bg-chat", "Please choose where to place your advisor.");
                     }
 
                     gameState.advancePhase();
@@ -846,10 +840,9 @@ public class CommandManager extends ListenerAdapter {
                             drawCard(gameState, "treachery_deck", "Ix");
                         }
                         writeFactionInfo(event, gameState, discordGame, "Ix");
-                        discordGame.getTextChannel("ix-chat")
-                                .sendMessage("Please select one treachery card to keep in your hand.").queue();
+                        discordGame.sendMessage("ix-chat", "Please select one treachery card to keep in your hand.");
 
-                        event.getChannel().sendMessage("Ix is selecting their starting treachery card.").queue();
+                        discordGame.sendMessage("turn-summary", "Ix is selecting their starting treachery card.");
                     }
                     gameState.advancePhase();
                 }
@@ -861,20 +854,19 @@ public class CommandManager extends ListenerAdapter {
                         writeFactionInfo(event, gameState, discordGame, faction);
                     }
                     gameState.advancePhase();
-                    event.getChannel().sendMessage("5. Treachery cards are being dealt.").queue();
+                    discordGame.sendMessage("turn-summary", "5. Treachery cards are being dealt.");
                 }
                 //6. Turn Marker (prompt for dial for First Storm)
                 case 7 -> {
                     JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         if (turnOrder.getString(String.valueOf(1)).equals(faction) || turnOrder.getString(String.valueOf(6)).equals(faction)) {
-                            discordGame.getTextChannel(faction.toLowerCase() + "-chat")
-                                    .sendMessage("Please submit your dial for initial storm position.").queue();
+                            discordGame.sendMessage(faction.toLowerCase() + "-chat", "Please submit your dial for initial storm position.");
                         }
                     }
                     shuffle(gameState.getDeck("storm_deck"));
                     gameState.advanceTurn();
-                    event.getChannel().sendMessage("6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...").queue();
+                    discordGame.sendMessage("turn-summary", "6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
                 }
             }
             discordGame.pushGameState(gameState);
@@ -883,12 +875,12 @@ public class CommandManager extends ListenerAdapter {
             switch (gameState.getPhase()) {
                 //1. Storm Phase
                 case 1 -> {
-                    game.getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Storm Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Storm Phase:");
                     JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
                    if (gameState.getTurn() != 1) {
                        int stormMovement = gameState.getDeck("storm_deck").getInt(0);
                        shuffle(gameState.getDeck("storm_deck"));
-                       discordGame.getTextChannel("turn-summary").sendMessage("The storm moves " + stormMovement + " sectors this turn.").queue();
+                       discordGame.sendMessage("turn-summary", "The storm moves " + stormMovement + " sectors this turn.");
                        for (int i = 0; i < stormMovement; i++) {
                            gameState.getResources().put("storm", (gameState.getResources().getInt("storm") + 1));
                            if (gameState.getResources().getInt("storm") == 19) gameState.getResources().put("storm", 1);
@@ -909,10 +901,8 @@ public class CommandManager extends ListenerAdapter {
                                            territories.getJSONObject(territory).getJSONObject("forces").remove("Fremen*");
                                            territories.getJSONObject(territory).getJSONObject("forces").put("Fremen*", lost - fremenForces);
                                        }
-                                       discordGame.getTextChannel("turn-summary").sendMessage(
-                                               gameState.getFaction("Fremen").getString("emoji") + " lost " + lost +
-                                                       " forces to the storm in " + territory
-                                       ).queue();
+                                       discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getString("emoji") + " lost " + lost +
+                                                       " forces to the storm in " + territory);
                                    }
                                    for (String force : forces) {
                                        if (force.contains("Fremen") && fremenSpecialCase) continue;
@@ -928,10 +918,9 @@ public class CommandManager extends ListenerAdapter {
                                            gameState.getResources().getJSONObject("tanks_forces").put(force,
                                                    gameState.getResources().getJSONObject("tanks_forces").getInt(force) + lost);
                                        }
-                                       discordGame.getTextChannel("turn-summary").sendMessage(
+                                       discordGame.sendMessage("turn-summary",
                                                gameState.getFaction(force.replace("*", "")).getString("emoji") + " lost " +
-                                                       lost + " forces to the storm in " + territory
-                                       ).queue();
+                                                       lost + " forces to the storm in " + territory);
                                    }
 
                                }
@@ -941,25 +930,25 @@ public class CommandManager extends ListenerAdapter {
                        }
                    }
                    if (gameState.hasFaction("Fremen")) {
-                       discordGame.getTextChannel("fremen-chat").sendMessage("The storm will move " + gameState.getDeck("storm_deck").getInt(0) + " sectors next turn.").queue();
+                       discordGame.sendMessage("fremen-chat", "The storm will move " + gameState.getDeck("storm_deck").getInt(0) + " sectors next turn.");
 
                    }
                    gameState.advancePhase();
                 }
                 //2. Spice Blow and Nexus
                 case 2 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Spice Blow Phase:").queue();
-                    discordGame.getTextChannel("turn-summary").sendMessage("A: " + drawCard(gameState, "spice_deck", "A")).queue();
-                    discordGame.getTextChannel("turn-summary").sendMessage("B: " + drawCard(gameState, "spice_deck", "B")).queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
+                    discordGame.sendMessage("turn-summary", "A: " + drawCard(gameState, "spice_deck", "A"));
+                    discordGame.sendMessage("turn-summary", "B: " + drawCard(gameState, "spice_deck", "B"));
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
                 case 3 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " CHOAM Charity Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " CHOAM Charity Phase:");
                     int multiplier = 1;
                     if (!gameState.getResources().isNull("inflation token")) {
                         if (gameState.getResources().getString("inflation token").equals("cancel")) {
-                            discordGame.getTextChannel("turn-summary").sendMessage("CHOAM Charity is cancelled!").queue();
+                            discordGame.sendMessage("turn-summary","CHOAM Charity is cancelled!");
                             gameState.advancePhase();
                             break;
                         } else {
@@ -969,10 +958,10 @@ public class CommandManager extends ListenerAdapter {
 
                     int choamGiven = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
-                    if (factions.contains("CHOAM")) game.getTextChannels().get(2).sendMessage(
+                    if (factions.contains("CHOAM")) discordGame.sendMessage("turn-summary",
                             gameState.getFaction("CHOAM").getString("emoji") + " receives " +
                             gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
-                    ).queue();
+                    );
                     for (String faction : factions) {
                         if (faction.equals("CHOAM")) continue;
                         int spice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
@@ -980,9 +969,7 @@ public class CommandManager extends ListenerAdapter {
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             choamGiven += 2 * multiplier;
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + (2 * multiplier));
-                            discordGame.getTextChannel("turn-summary").sendMessage(
-                                    gameState.getFaction(faction).getString("emoji") + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity."
-                            ).queue();
+                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity.");
                             spiceMessage(discordGame, 2 * multiplier, faction, "CHOAM Charity", true);
                         }
                         else if (spice < 2) {
@@ -990,9 +977,9 @@ public class CommandManager extends ListenerAdapter {
                             choamGiven += charity;
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + charity);
-                            discordGame.getTextChannel("turn-summary").sendMessage(
+                            discordGame.sendMessage("turn-summary",
                                     gameState.getFaction(faction).getString("emoji") + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
-                            ).queue();
+                            );
                             spiceMessage(discordGame, charity, faction, "CHOAM Charity", true);
                         }
                         else continue;
@@ -1003,16 +990,16 @@ public class CommandManager extends ListenerAdapter {
                         gameState.getFaction("CHOAM").getJSONObject("resources").remove("spice");
                         gameState.getFaction("CHOAM").getJSONObject("resources").put("spice", (10 * multiplier) + spice - choamGiven);
                         spiceMessage(discordGame, gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier, "choam", "CHOAM Charity", true);
-                        discordGame.getTextChannel("turn-summary").sendMessage(
+                        discordGame.sendMessage("turn-summary",
                                 gameState.getFaction("CHOAM").getString("emoji") + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
-                        ).queue();
+                        );
                         spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
                     }
                     gameState.advancePhase();
                 }
                 //4. Bidding
                 case 4 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Bidding Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Bidding Phase:");
                     int cardsUpForBid = 0;
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
                     StringBuilder countMessage = new StringBuilder();
@@ -1027,21 +1014,21 @@ public class CommandManager extends ListenerAdapter {
                     }
                     JSONArray deck = gameState.getDeck("treachery_deck");
                     if (factions.contains("Ix")) {
-                        discordGame.getTextChannel("ix-chat").sendMessage("Please select a card to put back to top or bottom.").queue();
+                        discordGame.sendMessage("ix-chat", "Please select a card to put back to top or bottom.");
                     }
                     countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
-                    event.getChannel().sendMessage(countMessage.toString()).queue();
+                    discordGame.sendMessage("turn-summary", countMessage.toString());
                     gameState.getResources().put("market_size", cardsUpForBid);
                     for (int i = 0; i < cardsUpForBid; i++) {
                         gameState.getResources().getJSONArray("market").put(deck.getString(deck.length() - 1));
                         deck.remove(deck.length() - 1);
                         if (factions.contains("Ix")) {
-                            discordGame.getTextChannel("ix-chat").sendMessage("<:treachery:991763073281040518> " +
-                                    deck.getString(deck.length() - i - 1) + " <:treachery:991763073281040518>").queue();
+                            discordGame.sendMessage("ix-chat", "<:treachery:991763073281040518> " +
+                                    deck.getString(deck.length() - i - 1) + " <:treachery:991763073281040518>");
                         }
                     }
                     if (factions.contains("Atreides")) {
-                        discordGame.getTextChannel("atreides-chat").sendMessage("The first card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>").queue();
+                        discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>");
                     }
                     StringBuilder message = new StringBuilder();
                     message.append("R").append(gameState.getResources().getInt("turn")).append(":C1\n");
@@ -1055,14 +1042,14 @@ public class CommandManager extends ListenerAdapter {
                                 if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
                                 message.append("\n");
                     }
-                    discordGame.getTextChannel("bidding-phase").sendMessage(message.toString()).queue();
+                    discordGame.sendMessage("bidding-phase", message.toString());
                     gameState.advancePhase();
                 }
                 //5. Revival
                 case 5 -> {
                     if (gameState.getResources().getJSONArray("market").length() > 0) {
-                        discordGame.getTextChannel("mod-info")
-                                .sendMessage("There were " + gameState.getResources().getJSONArray("market").length() + " cards not bid on this round that are placed back on top of the <:treachery:991763073281040518> deck.").queue();
+                        discordGame
+                                .sendMessage("turn-summary", "There were " + gameState.getResources().getJSONArray("market").length() + " cards not bid on this round that are placed back on top of the <:treachery:991763073281040518> deck.");
                         int marketLength = gameState.getResources().getJSONArray("market").length();
                         for (int i = 0; i < marketLength; i++) {
                             gameState.getDeck("treachery_deck").put(gameState.getResources().getJSONArray("market").getString(gameState.getResources().getJSONArray("market").length() - 1));
@@ -1070,7 +1057,7 @@ public class CommandManager extends ListenerAdapter {
                         }
                     }
                     gameState.getResources().remove("market_size");
-                    game.getTextChannels().get(2).sendMessage("Turn " + gameState.getTurn() + " Revival Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
                     Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
                     StringBuilder message = new StringBuilder();
                     message.append("Free Revivals:\n");
@@ -1103,33 +1090,33 @@ public class CommandManager extends ListenerAdapter {
                             message.append(gameState.getFaction(faction).getString("emoji")).append(": ").append(revived).append("\n");
                         }
                     }
-                    discordGame.getTextChannel("turn-summary").sendMessage(message.toString()).queue();
+                    discordGame.sendMessage("turn-summary", message.toString());
                     gameState.advancePhase();
                 }
                 //6. Shipment and Movement
                 case 6 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Shipment and Movement Phase:").queue();
+                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
                     if (gameState.hasFaction("Atreides")) {
-                        discordGame.getTextChannel("atreides-info").sendMessage("You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.").queue();
+                        discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.");
                     }
                     if(!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
                        for (String territoryName : gameState.getGameBoard().keySet()) {
                            JSONObject territory = gameState.getTerritory(territoryName);
                            if (!territory.getJSONObject("forces").keySet().contains("Advisor")) continue;
-                           game.getTextChannels().get(2).sendMessage(gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their advisors in " + territory.getString("territory_name")).queue();
+                           discordGame.sendMessage("turn-summary",gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their advisors in " + territory.getString("territory_name"));
                        }
                     }
                     gameState.advancePhase();
                 }
                 //TODO: 7. Battle
                 case 7 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Battle Phase:").queue();
+                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
                     gameState.advancePhase();
 
                 }
                 //TODO: 8. Spice Harvest
                 case 8 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Spice Harvest Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Harvest Phase:");
                    JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
                    //This is hacky, but I add spice to Arrakeen, Carthag, and Tuek's, then if it is not collected by the following algorithm, it is removed.
                     territories.getJSONObject("Arrakeen").remove("spice");
@@ -1163,7 +1150,7 @@ public class CommandManager extends ListenerAdapter {
                             int factionSpice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
                             gameState.getFaction(faction).getJSONObject("resources").remove("spice");
                             gameState.getFaction(faction).getJSONObject("resources").put("spice", factionSpice + toCollect);
-                            discordGame.getTextChannel("turn-summary").sendMessage(gameState.getFaction(faction).getString("emoji") + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName).queue();
+                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName);
                         }
 
                     }
@@ -1177,7 +1164,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 //TODO: 9. Mentat Pause
                 case 9 -> {
-                    discordGame.getTextChannel("turn-summary").sendMessage("Turn " + gameState.getTurn() + " Mentat Pause Phase:").queue();
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
                     for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
                         writeFactionInfo(event, gameState, discordGame, faction);
                     }
@@ -1185,7 +1172,7 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
             discordGame.pushGameState(gameState);
-            drawGameBoard(event, discordGame, gameState);
+            drawGameBoard(discordGame, gameState);
         }
     }
 
@@ -1229,7 +1216,7 @@ public class CommandManager extends ListenerAdapter {
         }
         int reserves = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("reserves" + star);
         if (reserves < event.getOption("amount").getAsInt()) {
-            event.getChannel().sendMessage("This faction does not have enough forces in reserves!").queue();
+            discordGame.sendMessage("mod-info", "This faction does not have enough forces in reserves!");
             return;
         }
         gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("reserves" + star);
@@ -1247,7 +1234,7 @@ public class CommandManager extends ListenerAdapter {
             int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
             if (spice < cost) {
-                event.getChannel().sendMessage("This faction doesn't have the resources to make this shipment!").queue();
+                discordGame.sendMessage("mod-info","This faction doesn't have the resources to make this shipment!");
                 return;
             }
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("spice", spice - cost);
@@ -1262,11 +1249,11 @@ public class CommandManager extends ListenerAdapter {
             writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
         }
         if (gameState.getTerritory(territory).getJSONObject("forces").keySet().contains("BG")) {
-            discordGame.getTextChannel("turn-summary").sendMessage(gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their forces in " + territory).queue();
+            discordGame.sendMessage("turn-summary", gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their forces in " + territory);
         }
         gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
         discordGame.pushGameState(gameState);
-        drawGameBoard(event, discordGame, gameState);
+        drawGameBoard(discordGame, gameState);
     }
 
     public void removeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1274,7 +1261,7 @@ public class CommandManager extends ListenerAdapter {
         String territoryName = "";
 
         if (event.getOption("mostlikelyterritories") == null && event.getOption("otherterritories") == null) {
-            event.getChannel().sendMessage("You have to select a territory.").queue();
+            discordGame.sendMessage("mod-info", "You have to select a territory.");
             return;
         } else if (event.getOption("mostlikelyterritories") == null) {
             territoryName = event.getOption("otherterritories").getAsString();
@@ -1282,7 +1269,7 @@ public class CommandManager extends ListenerAdapter {
             territoryName = event.getOption("mostlikelyterritories").getAsString();
         }
         if (gameState.getJSONObject("game_state").getJSONObject("game_board").isNull(territoryName + sector)) {
-            event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
+            discordGame.sendMessage("mod-info","Territory does not exist in that sector. Check your sector number and try again.");
             return;
         }
         JSONObject territory = gameState.getTerritory(territoryName + sector);
@@ -1292,7 +1279,7 @@ public class CommandManager extends ListenerAdapter {
         if (forces > event.getOption("amount").getAsInt()) {
             territory.getJSONObject("forces").put(event.getOption("factionname").getAsString() + starred, forces - event.getOption("amount").getAsInt());
         } else if (forces < event.getOption("amount").getAsInt()) {
-            event.getChannel().sendMessage("You are trying to remove more forces than this faction has in this territory! Please check your info and try again.").queue();
+            discordGame.sendMessage("mod-info","You are trying to remove more forces than this faction has in this territory! Please check your info and try again.");
             return;
         }
 
@@ -1306,7 +1293,7 @@ public class CommandManager extends ListenerAdapter {
             gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("reserves" + starred, reserves + event.getOption("amount").getAsInt());
         }
         discordGame.pushGameState(gameState);
-        if (event.getOption("totanks").getAsBoolean()) drawGameBoard(event, discordGame, gameState);
+        if (event.getOption("totanks").getAsBoolean()) drawGameBoard(discordGame, gameState);
     }
 
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1314,15 +1301,15 @@ public class CommandManager extends ListenerAdapter {
         try {
             gameState.getResources().put("storm", event.getOption("sector").getAsInt());
         } catch (NullPointerException e) {
-            event.getChannel().sendMessage("No storm sector was selected.").queue();
+            discordGame.sendMessage("mod-info", "No storm sector was selected.");
             return;
         }
-        discordGame.getTextChannel("turn-summary").sendMessage("The storm has been initialized to sector " + event.getOption("sector").getAsInt()).queue();
+        discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + event.getOption("sector").getAsInt());
         discordGame.pushGameState(gameState);
-        drawGameBoard(event, discordGame, gameState);
+        drawGameBoard(discordGame, gameState);
     }
 
-    public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, DiscordGame discordGame, String faction) {
+    public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, DiscordGame discordGame, String faction) throws ChannelNotFoundException {
         if (gameState.getFaction(faction) == null) return;
         String emoji = gameState.getFaction(faction).getString("emoji");
         JSONObject factionObject = gameState.getFaction(faction);
@@ -1336,12 +1323,12 @@ public class CommandManager extends ListenerAdapter {
         }
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                channel.sendMessage(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
+                discordGame.sendMessage(channel.getName(), emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                         factionObject.getJSONObject("resources").getInt("spice") +
-                        traitorString).queue();
+                        traitorString);
 
                 for (int j = factionObject.getJSONObject("resources").getJSONArray("treachery_hand").length() - 1; j >= 0; j--) {
-                    channel.sendMessage("<:treachery:991763073281040518> " + factionObject.getJSONObject("resources").getJSONArray("treachery_hand").getString(j).split("\\|")[0].strip() + " <:treachery:991763073281040518>").queue();
+                    discordGame.sendMessage(channel.getName(), "<:treachery:991763073281040518> " + factionObject.getJSONObject("resources").getJSONArray("treachery_hand").getString(j).split("\\|")[0].strip() + " <:treachery:991763073281040518>");
                 }
             }
         }
@@ -1359,14 +1346,15 @@ public class CommandManager extends ListenerAdapter {
             territory.getJSONObject("forces").remove("Advisor");
             territory.getJSONObject("forces").put("BG", advisor);
         } else {
-            event.getChannel().sendMessage("No Bene Gesserit were found in that territory.").queue();
+            discordGame.sendMessage("mod-info","No Bene Gesserit were found in that territory.");
             return;
         }
         discordGame.pushGameState(gameState);
-        drawGameBoard(event, discordGame, gameState);
+        drawGameBoard(discordGame, gameState);
     }
 
-    public void drawGameBoard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        if (gameState.getBoolean("mute")) return;
         //Load png resources into a hashmap.
         HashMap<String, File> boardComponents = new HashMap<>();
         URL dir = getClass().getClassLoader().getResource("Board Components");
@@ -1593,6 +1581,11 @@ public class CommandManager extends ListenerAdapter {
         return dimg;
     }
 
+    public void mute(DiscordGame discordGame, Game gameState) {
+        gameState.put("mute", !gameState.getBoolean("mute"));
+        discordGame.pushGameState(gameState);
+    }
+
     public void displayGameState(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         TextChannel channel = discordGame.getTextChannel("mod-info");
         switch (event.getOption("data").getAsString()) {
@@ -1601,14 +1594,14 @@ public class CommandManager extends ListenerAdapter {
                for (String territoryName : territories.keySet()) {
                    JSONObject territory = territories.getJSONObject(territoryName);
                    if (territory.getInt("spice") == 0 && !territory.getBoolean("is_stronghold") && territory.getJSONObject("forces").length() == 0) continue;
-                   channel.sendMessage("**" + territory.getString("territory_name") + "(" + territory.getInt("sector") + "):** \n" +
-                           "Spice: " + territory.getInt("spice") + "\nForces: " + territory.getJSONObject("forces").toString(4)).queue();
+                   discordGame.sendMessage(channel.getName(), "**" + territory.getString("territory_name") + "(" + territory.getInt("sector") + "):** \n" +
+                           "Spice: " + territory.getInt("spice") + "\nForces: " + territory.getJSONObject("forces").toString(4));
                }
             }
             case "dnd" -> {
                 for (String key : gameState.getResources().keySet()) {
                     if (key.contains("deck") || key.contains("discard")) {
-                        channel.sendMessage("**" + key + ":** " + gameState.getResources().getJSONArray(key).toString(4)).queue();
+                        discordGame.sendMessage(channel.getName(), "**" + key + ":** " + gameState.getResources().getJSONArray(key).toString(4));
                     }
                 }
 
@@ -1616,7 +1609,7 @@ public class CommandManager extends ListenerAdapter {
             case "etc" -> {
                 for (String key : gameState.getResources().keySet()) {
                     if (!key.contains("deck") && !key.contains("discard")) {
-                        channel.sendMessage("**" + key + ":** " + gameState.getResources().get(key).toString()).queue();
+                        discordGame.sendMessage(channel.getName(), "**" + key + ":** " + gameState.getResources().get(key).toString());
                     }
                 }
             }
@@ -1629,11 +1622,11 @@ public class CommandManager extends ListenerAdapter {
                         Object resource = faction.getJSONObject("resources").get(resourceName);
                         message.append(resourceName).append(": ").append(resource.toString()).append("\n");
                     }
-                    channel.sendMessage(message.toString()).queue();
+                    discordGame.sendMessage(channel.getName(), message.toString());
                 }
             }
         }
-        drawGameBoard(event, discordGame, gameState);
+        drawGameBoard(discordGame, gameState);
     }
 
     public void clean(SlashCommandInteractionEvent event) {
