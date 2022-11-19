@@ -24,10 +24,12 @@ public class DiscordGame {
     private Member member;
     private Category gameCategory;
     private List<TextChannel> textChannelList;
+    private Game gameState;
 
-    public DiscordGame(@NotNull SlashCommandInteractionEvent event) {
+    public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         this.event = event;
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+        this.gameState = this.getGameState();
         this.member = event.getMember();
     }
 
@@ -76,26 +78,28 @@ public class DiscordGame {
     }
 
     public Game getGameState() throws ChannelNotFoundException {
-        MessageHistory h = this.getBotDataChannel()
-                .getHistory();
+        if (this.gameState == null) {
+            MessageHistory h = this.getBotDataChannel()
+                    .getHistory();
 
-        h.retrievePast(1).complete();
+            h.retrievePast(1).complete();
 
-        List<Message> ml = h.getRetrievedHistory();
-        Message.Attachment encoded = ml.get(0).getAttachments().get(0);
-        CompletableFuture<InputStream> future = encoded.getProxy().download();
+            List<Message> ml = h.getRetrievedHistory();
+            Message.Attachment encoded = ml.get(0).getAttachments().get(0);
+            CompletableFuture<InputStream> future = encoded.getProxy().download();
 
-        try {
-            String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
-            Game returnGame = new Game(gameStateString);
-            if (!this.isModRole(returnGame.getString("modrole"))) {
-                throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
+            try {
+                String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+                Game returnGame = new Game(gameStateString);
+                if (!this.isModRole(returnGame.getString("modrole"))) {
+                    throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
-            return new Game();
+            return new Game();}
         }
+        return this.gameState;
     }
 
     public void pushGameState(Game gameState) {
@@ -108,5 +112,11 @@ public class DiscordGame {
         } catch (ChannelNotFoundException e) {
             System.out.println("Channel not found. State was not saved.");
         }
+    }
+
+    public void sendMessage(String name, String message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getBoolean("mute")) return;
+        channel.sendMessage(message).queue();
     }
 }
