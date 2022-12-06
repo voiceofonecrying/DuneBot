@@ -1,17 +1,9 @@
 package model;
 
-public class TreacheryCard {
-
-    private int gameId;
-    private String cardName;
-    private String location;
-
-    public TreacheryCard(int gameId, String cardName, String location) {
-        this.gameId = gameId;
-        this.cardName = cardName;
-        this.location = location;
+public class TreacheryCard extends Card {
+    private final String type;
+    public TreacheryCard(String name, String type) {
+        super(name);
+        this.type = type;
     }
-
-    public TreacheryCard() {}
-
 }

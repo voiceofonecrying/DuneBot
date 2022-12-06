@@ -1,0 +1,88 @@
+﻿name,sector,rock,stronghold
+Hidden Mobile Stronghold,-1,FALSE,TRUE
+Cielago North,1,FALSE,FALSE
+Cielago Depression,1,FALSE,FALSE
+Meridian,1,FALSE,FALSE
+Cielago South,1,FALSE,FALSE
+Cielago North,2,FALSE,FALSE
+Cielago Depression,2,FALSE,FALSE
+Cielago South,2,FALSE,FALSE
+Cielago East,2,FALSE,FALSE
+Harg Pass,3,FALSE,FALSE
+False Wall South,3,TRUE,FALSE
+Cielago East,3,FALSE,FALSE
+South Mesa,3,FALSE,FALSE
+Harg Pass,4,FALSE,FALSE
+False Wall East,4,TRUE,FALSE
+The Minor Erg,4,FALSE,FALSE
+False Wall South,4,TRUE,FALSE
+Pasty Mesa,4,TRUE,FALSE
+South Mesa,4,FALSE,FALSE
+Tuek's Sietch,4,TRUE,TRUE
+False Wall East,5,TRUE,FALSE
+The Minor Erg,5,FALSE,FALSE
+Pasty Mesa,5,TRUE,FALSE
+South Mesa,5,FALSE,FALSE
+False Wall East,6,TRUE,FALSE
+The Minor Erg,6,FALSE,FALSE
+Pasty Mesa,6,TRUE,FALSE
+Red Chasm,6,FALSE,FALSE
+False Wall East,7,TRUE,FALSE
+The Minor Erg,7,FALSE,FALSE
+Shield Wall,7,TRUE,FALSE
+Pasty Mesa,7,TRUE,FALSE
+Gara Kulon,7,FALSE,FALSE
+False Wall East,8,TRUE,FALSE
+Imperial Basin,8,TRUE,FALSE
+Shield Wall,8,TRUE,FALSE
+Hole in the Rock,8,FALSE,FALSE
+Rim Wall West,8,TRUE,FALSE
+Basin,8,FALSE,FALSE
+Old Gap,8,FALSE,FALSE
+Sihaya Ridge,8,FALSE,FALSE
+Imperial Basin,9,TRUE,FALSE
+Arrakeen,9,TRUE,TRUE
+Old Gap,9,FALSE,FALSE
+Imperial Basin,10,TRUE,FALSE
+Arsunt,10,FALSE,FALSE
+Carthag,10,TRUE,TRUE
+Tsimpo,10,FALSE,FALSE
+Broken Land,10,FALSE,FALSE
+Old Gap,10,FALSE,FALSE
+Arsunt,11,FALSE,FALSE
+Hagga Basin,11,FALSE,FALSE
+Tsimpo,11,FALSE,FALSE
+Plastic Basin,11,TRUE,FALSE
+Broken Land,11,FALSE,FALSE
+Hagga Basin,12,FALSE,FALSE
+Plastic Basin,12,TRUE,FALSE
+Tsimpo,12,FALSE,FALSE
+Rock Outcroppings,12,FALSE,FALSE
+Wind Pass,13,FALSE,FALSE
+Plastic Basin,13,TRUE,FALSE
+Bight of the Cliff,13,FALSE,FALSE
+Sietch Tabr,13,TRUE,TRUE
+Rock Outcroppings,13,FALSE,FALSE
+Wind Pass,14,FALSE,FALSE
+The Great Flat,14,FALSE,FALSE
+Funeral Plain,14,FALSE,FALSE
+Bight of the Cliff,14,FALSE,FALSE
+Wind Pass,15,FALSE,FALSE
+The Greater Flat,15,FALSE,FALSE
+Habbanya Erg,15,FALSE,FALSE
+False Wall West,15,TRUE,FALSE
+Wind Pass North,16,FALSE,FALSE
+Wind Pass,16,FALSE,FALSE
+False Wall West,16,TRUE,FALSE
+Habbanya Erg,16,FALSE,FALSE
+Habbanya Ridge Flat,16,FALSE,FALSE
+Habbanya Sietch,16,TRUE,TRUE
+Wind Pass North,17,FALSE,FALSE
+Cielago West,17,FALSE,FALSE
+False Wall West,17,TRUE,FALSE
+Habbanya Ridge Flat,17,FALSE,FALSE
+Cielago North,18,FALSE,FALSE
+Cielago Depression,18,FALSE,FALSE
+Cielago West,18,FALSE,FALSE
+Meridian,18,FALSE,FALSE
+Polar Sink,-1,FALSE,FALSE

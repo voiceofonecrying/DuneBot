@@ -1,63 +1,73 @@
 package model;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-public class Game extends JSONObject {
+public class Game extends GameFactionBase {
+    private String gameRole;
+    private String modRole;
+    private Boolean mute;
 
-    public Game(String s) {
-        super(s);
-    }
+    private final List<Faction> factions;
 
+    private final List<Territory> territories;
     public Game() {
         super();
+
+        factions = new ArrayList<>();
+        territories = new ArrayList<>();
     }
 
-    public JSONObject getResources() {
-        return this.getJSONObject("game_state").getJSONObject("game_resources");
+    public List<Faction> getFactions() {
+        return factions;
     }
 
-    public JSONObject getGameBoard() {return this.getJSONObject("game_state").getJSONObject("game_board");}
-
-    public JSONObject getTerritory(String name) {return this.getGameBoard().getJSONObject(name);}
-
-    public int getTurn() {
-        return this.getResources().getInt("turn");
+    public List<Territory> getTerritories() {
+        return territories;
+    }
+    public void addTerritories(List<Territory> territories) {
+        territories.addAll(territories);
     }
 
-    public int getPhase() {
-        return this.getResources().getInt("phase");
+    public String getGameRole() {
+        return gameRole;
     }
 
-    public void advancePhase() {
-        int i = this.getPhase();
-        this.getResources().remove("phase");
-        this.getResources().put("phase", ++i);
-    }
-    public void advanceTurn() {
-        int i = this.getTurn();
-        this.getResources().remove("turn");
-        this.getResources().remove("phase");
-        this.getResources().put("turn", ++i);
-        this.getResources().put("phase", 1);
+    public void setGameRole(String gameRole) {
+        this.gameRole = gameRole;
     }
 
-
-    public JSONArray getDeck(String deck) {
-        return this.getJSONObject("game_state").getJSONObject("game_resources").getJSONArray(deck);
+    public String getModRole() {
+        return modRole;
     }
 
-    public JSONObject getFaction(String name) {
-        return this.getJSONObject("game_state").getJSONObject("factions").getJSONObject(name);
+    public void setModRole(String modRole) {
+        this.modRole = modRole;
+    }
+
+    public Boolean getMute() {
+        return mute;
+    }
+
+    public void setMute(Boolean mute) {
+        this.mute = mute;
+    }
+
+    private Optional<Faction> findFaction(String name) {
+        return factions.stream()
+                .filter(f -> f.getName().equals(name))
+                .findFirst();
+    }
+    public Faction getFaction(String name) {
+        return findFaction(name).get();
     }
 
     public Boolean hasFaction(String name) {
-        return !this.getJSONObject("game_state").getJSONObject("factions").isNull(name);
+        return findFaction(name).isPresent();
     }
 
-    public Iterator<String> getFactions() {
-        return this.getJSONObject("game_state").getJSONObject("factions").keys();
+    public void addFaction(Faction faction) {
+        factions.add(faction);
     }
-
 }

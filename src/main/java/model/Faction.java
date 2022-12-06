@@ -1,50 +1,39 @@
 package model;
 
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Faction extends JSONObject {
+public class Faction extends GameFactionBase {
+    private final String name;
+    private String emoji;
+    private final String player;
+    private final String userName;
 
-    public Faction(String name, String emoji, String player, String userName) {
-        this.put("name", name);
-        this.put("emoji", emoji);
-        this.put("player", player);
-        this.put("resources", new JSONObject());
-        this.put("username", userName);
-    }
+    public Faction(String name, String player, String userName) {
+        super();
 
-    public String getUserName() {return this.getString("username");}
-
-    public Faction(JSONObject j) {
-        super(j.toString());
+        this.name = name;
+        this.player = player;
+        this.userName = userName;
     }
 
     public String getName() {
-        return this.getString("name");
-    }
-
-    public void setName(String name) {
-        this.put("name", name);
+        return name;
     }
 
     public String getEmoji() {
-        return this.getString("emoji");
+        return emoji;
     }
 
     public void setEmoji(String emoji) {
-        this.put("emoji", emoji);
+        this.emoji = emoji;
     }
 
-    public JSONObject getResources() {
-        return this.getJSONObject("resources");
+    public String getPlayer() {
+        return player;
     }
 
-    public void addResource(Resource resource) {
-        this.getResources().put(resource.getName(), resource.getValue());
-    }
-
-    public Resource getResource(String name) {
-        if (getResources().get(name) == null) return null;
-        Object value = getResources().get(name);
-        return new Resource<>(name, value);
+    public String getUserName() {
+        return userName;
     }
 }

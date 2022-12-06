@@ -11,11 +11,10 @@ import java.util.stream.StreamSupport;
 
 public class CommandOptions {
     public static List<Command.Choice> factions(@NotNull Game gameState, String search) {
-        return StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize(gameState.getFactions(), 0),
-                        false)
-                .filter(faction -> faction.toLowerCase().contains(search.toLowerCase()))
-                .map(faction -> new Command.Choice(faction, faction))
+        return gameState.getFactions().stream()
+                .map(faction -> faction.getName())
+                .filter(factionName -> factionName.toLowerCase().contains(search.toLowerCase()))
+                .map(factionName -> new Command.Choice(factionName, factionName))
                 .collect(Collectors.toList());
     }
 }
