@@ -22,17 +22,13 @@ public class Initializers {
     public static void newFaction(Faction faction, Game gameState) throws IOException {
         Resource<Integer> spiceResource = new Resource<>("spice", 0);
         Resource<Integer> freeRevival = new Resource<>("free_revival", 0);
-        Resource<Integer> reserves = new Resource<>("reserves", 0);
-        Resource<Integer> tanksForces = new Resource<>("tanks_forces", 0);
+        Force reserves = new Force(faction.getName(), 0);
         Resource<Integer> frontOfShieldSpice = new Resource<>("front_of_shield_spice", 0);
-        Resource<List<String>> leaders = new Resource<>("leaders", new ArrayList<>());
 
         faction.addResource(spiceResource);
         faction.addResource(freeRevival);
         faction.addResource(reserves);
         faction.addResource(frontOfShieldSpice);
-        faction.addResource(tanksForces);
-        faction.addResource(leaders);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Initializers.class.getResourceAsStream("Leaders.csv"))
@@ -48,7 +44,7 @@ public class Initializers {
                         csvRecord.get("faction"),
                         Integer.parseInt(csvRecord.get("strength"))
                 );
-                leaders.getValue().add(csvRecord.get("name"));
+                faction.addResource(new Leader(csvRecord.get("name"), Integer.parseInt(csvRecord.get("strength"))));
                 traitorDeck.addCard(traitorCard);
             }
         }
@@ -60,30 +56,28 @@ public class Initializers {
                 freeRevival.setValue(2);
                 reserves.setValue(10);
                 faction.setEmoji("<:atreides:991763327996923997>");
-                faction.addResource(new Resource<Integer>("forces_lost", 0));
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Arrakeen").getJSONObject("forces").put("Atreides", 10);
+                faction.addResource(new IntegerResource("forces_lost", 0, 0, 7));
+                gameState.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
             }
             case "Harkonnen" -> {
                 spiceResource.setValue(10);
                 freeRevival.setValue(2);
                 reserves.setValue(10);
                 faction.setEmoji("<:harkonnen:991763320333926551>");
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Carthag").getJSONObject("forces").put("Harkonnen", 10);
+                gameState.getTerritories().get("Carthag").getForces().add(new Force("Carthag", 10));
             }
             case "Emperor" -> {
                 spiceResource.setValue(10);
                 freeRevival.setValue(1);
                 reserves.setValue(15);
-                faction.addResource(new Resource<Integer>("reserves*", 5));
-                faction.addResource(new Resource<Integer>("tanks_forces*", 0));
+                faction.addResource(new Force("Sardaukar", 5));
                 faction.setEmoji("<:emperor:991763323454500914>");
             }
             case "Fremen" -> {
                 spiceResource.setValue(3);
                 freeRevival.setValue(3);
                 reserves.setValue(17);
-                faction.addResource(new Resource<Integer>("reserves*", 3));
-                faction.addResource(new Resource<Integer>("tanks_forces*", 0));
+                faction.addResource(new Force("Fedaykin", 3));
                 faction.setEmoji("<:fremen:991763322225577984>");
             }
             case "BG" -> {
@@ -97,18 +91,16 @@ public class Initializers {
                 freeRevival.setValue(1);
                 reserves.setValue(15);
                 faction.setEmoji("<:guild:991763321290244096>");
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Tuek's Sietch").getJSONObject("forces").put("Guild", 5);
+                gameState.getTerritories().get("Tuek's Sietch").getForces().add(new Force("Guild", 5));
             }
             case "Ix" -> {
                 spiceResource.setValue(10);
                 freeRevival.setValue(1);
                 reserves.setValue(10);
-                faction.addResource(new Resource<Integer>("reserves*", 4));
-                faction.addResource(new Resource<Integer>("tanks_forces*", 0));
+                faction.addResource(new Force("Cyborg", 4));
                 faction.setEmoji("<:ix:991763319406997514>");
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").put("Hidden Mobile Stronghold", new Territory("Hidden Mobile Stronghold", -1, false, true));
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Hidden Mobile Stronghold").getJSONObject("forces").put("Ix suboid", 3);
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject("Hidden Mobile Stronghold").getJSONObject("forces").put("Ix cyborg", 3);
+                gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
+                gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Cyborg", 3));
             }
             case "BT" -> {
                 spiceResource.setValue(5);
@@ -121,69 +113,46 @@ public class Initializers {
                 freeRevival.setValue(0);
                 reserves.setValue(20);
                 faction.setEmoji("<:choam:991763324624703538>");
-//                resources.put("inflation token", "double");
+                faction.addResource(new Resource("inflation", "behind shield"));
             }
             case "Rich" -> {
                 spiceResource.setValue(5);
                 freeRevival.setValue(2);
                 reserves.setValue(20);
                 faction.setEmoji("<:rich:991763318467465337>");
-//                resources.put("no field 0", 0);
-//                resources.put("no field 3", 3);
-//                resources.put("no field 5", 5);
-//                resources.put("cache", new JSONObject());
-//                resources.getJSONObject("cache").put("Ornithoper", "Special - Movement");
-//                resources.getJSONObject("cache").put("Residual Poison", "Special");
-//                resources.getJSONObject("cache").put("Semuta Drug", "Special");
-//                resources.getJSONObject("cache").put("Stone Burner", "Weapon - Special");
-//                resources.getJSONObject("cache").put("Mirror Weapon", "Weapon - Special");
-//                resources.getJSONObject("cache").put("Portable Snooper", "Defense - Poison");
-//                resources.getJSONObject("cache").put("Distrans", "Special");
-//                resources.getJSONObject("cache").put("Juice of Sapho", "Special");
-//                resources.getJSONObject("cache").put("Karama", "Special");
-//                resources.getJSONObject("cache").put("Nullentropy", "Special");
+                faction.addResource( new IntegerResource("no field", 0, 0, 0));
+                faction.addResource(new IntegerResource("no field", 3, 3, 3));
+                faction.addResource(new IntegerResource("no field", 5, 5, 5));
+                faction.addResource(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
+                List<TreacheryCard> cache = (List<TreacheryCard>) faction.getResource("cache");
+                cache.add(new TreacheryCard("Ornithoper", "Special - Movement"));
+                cache.add(new TreacheryCard("Residual Poison", "Special"));
+                cache.add(new TreacheryCard("Semuta Drug", "Special"));
+                cache.add(new TreacheryCard("Stone Burner", "Weapon - Special"));
+                cache.add(new TreacheryCard("Mirror Weapon", "Weapon - Special"));
+                cache.add(new TreacheryCard("Portable Snooper", "Defense - Poison"));
+                cache.add(new TreacheryCard("Distrans", "Special"));
+                cache.add(new TreacheryCard("Juice of Sapho", "Special"));
+                cache.add(new TreacheryCard("Karama", "Special"));
+                cache.add(new TreacheryCard("Nullentropy", "Special"));
             }
         }
     }
 
-
-
-    public static List<Territory> buildBoard() throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Initializers.class.getResourceAsStream("Territories.csv"))
-        ));
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
-
-        List<Territory> territories = new ArrayList<>();
-
-        for (CSVRecord csvRecord : csvParser) {
-            Territory territory = new Territory(
-                    csvRecord.get("name"),
-                    Integer.parseInt(csvRecord.get("sector")),
-                    Boolean.parseBoolean(csvRecord.get("rock")),
-                    Boolean.parseBoolean(csvRecord.get("stronghold"))
-            );
-
-            territories.add(territory);
-        }
-
-        return territories;
-    }
-
     public static Deck buildSpiceDeck() throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Initializers.class.getResourceAsStream("StormCards.csv"))
+                Objects.requireNonNull(Initializers.class.getClassLoader().getResourceAsStream("StormCards.csv"))
         ));
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
+        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
 
         Deck spiceDeck = new Deck("spice");
 
         for (CSVRecord csvRecord : csvParser) {
             SpiceCard spiceCard = new SpiceCard(
-                    csvRecord.get("name"),
-                    csvRecord.get("territory"),
-                    Integer.parseInt(csvRecord.get("sector")),
-                    Integer.parseInt(csvRecord.get("spice")),
+                    csvRecord.get(0),
+                    csvRecord.get(1),
+                    Integer.parseInt(csvRecord.get(2)),
+                    Integer.parseInt(csvRecord.get(3)),
                     false
             );
             spiceDeck.addCard(spiceCard);
@@ -196,16 +165,16 @@ public class Initializers {
 
     public static Deck buildTreacheryDeck() throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Initializers.class.getResourceAsStream("TreacheryCards.csv"))
+                Objects.requireNonNull(Initializers.class.getClassLoader().getResourceAsStream("TreacheryCards.csv"))
         ));
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
+        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
 
         Deck treacheryDeck = new Deck("treachery");
 
         for (CSVRecord csvRecord : csvParser) {
             TreacheryCard treacheryCard = new TreacheryCard(
-                    csvRecord.get("name"),
-                    csvRecord.get("type")
+                    csvRecord.get(0),
+                    csvRecord.get(1)
             );
             treacheryDeck.addCard(treacheryCard);
         }

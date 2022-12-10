@@ -1,11 +1,15 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Territory {
     private final String territoryName;
     private final int sector;
     private final boolean isRock;
     private final boolean isStronghold;
     private int spice;
+    private final List<Force> forces;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold) {
         this.territoryName = territoryName;
@@ -13,6 +17,7 @@ public class Territory {
         this.isRock = isRock;
         this.isStronghold = isStronghold;
         this.spice = 0;
+        this.forces = new ArrayList<>();
     }
 
     public String getTerritoryName() {
@@ -37,5 +42,13 @@ public class Territory {
 
     public void setSpice(int spice) {
         this.spice = spice;
+    }
+
+    public List<Force> getForces() {
+        return forces;
+    }
+
+    public void addSpice(Integer spice) {
+        this.spice += spice;
     }
 }

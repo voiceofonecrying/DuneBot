@@ -1,8 +1,14 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import controller.Initializers;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.*;
 
 public class Game extends GameFactionBase {
     private String gameRole;
@@ -11,23 +17,31 @@ public class Game extends GameFactionBase {
 
     private final List<Faction> factions;
 
-    private final List<Territory> territories;
+    private final Map<String, Territory> territories;
     public Game() {
         super();
 
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(this.getClass().getClassLoader().getResourceAsStream("Territories.csv"))
+        ));
         factions = new ArrayList<>();
-        territories = new ArrayList<>();
+        territories = new HashMap<>();
+        try {
+            CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
+            for (CSVRecord csvRecord : csvParser) {
+                territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3))));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public List<Faction> getFactions() {
         return factions;
     }
 
-    public List<Territory> getTerritories() {
+    public Map<String, Territory> getTerritories() {
         return territories;
-    }
-    public void addTerritories(List<Territory> territories) {
-        territories.addAll(territories);
     }
 
     public String getGameRole() {

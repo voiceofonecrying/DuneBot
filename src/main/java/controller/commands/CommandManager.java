@@ -17,21 +17,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 
@@ -57,7 +45,7 @@ public class CommandManager extends ListenerAdapter {
 
         try {
             if (name.equals("newgame")) newGame(event);
-//            else if (name.equals("clean")) clean(event);
+            else if (name.equals("clean")) clean(event);
             else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game gameState = discordGame.getGameState();
@@ -68,7 +56,7 @@ public class CommandManager extends ListenerAdapter {
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
-                    case "peek" -> peek(event, discordGame, gameState);
+                    case "peek" -> peek(event, gameState);
 //                    case "discard" -> discard(event, discordGame, gameState);
 //                    case "transfercard" -> transferCard(event, discordGame, gameState);
 //                    case "putback" -> putBack(event, discordGame, gameState);
@@ -315,7 +303,6 @@ public class CommandManager extends ListenerAdapter {
             <:choam:991763324624703538> <:rich:991763318467465337> CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""").queue();
 
         Game game = new Game();
-        game.addTerritories(Initializers.buildBoard());
         game.addDeck(Initializers.buildTreacheryDeck());
         game.addDeck(new Deck("treachery_discard"));
         game.addDeck(Initializers.buildStormDeck());
@@ -323,19 +310,14 @@ public class CommandManager extends ListenerAdapter {
         game.addDeck(Initializers.buildSpiceDeck());
         game.addDeck(new Deck("spice_discardA"));
         game.addDeck(new Deck("spice_discardB"));
-
-
+        game.addDeck(new Deck("market"));
 
         game.addResource(new IntegerResource("turn", 0, 0, 10));
         game.addResource(new IntegerResource("phase", 0, 0, 9));
         game.addResource(new IntegerResource("storm", 18, 1, 18));
         game.addResource(new BooleanResource("shieldwallbroken", false));
-
-//        gameResources.put("market", new JSONArray());
-//        gameResources.put("tanks_forces", new JSONObject());
-//        gameResources.put("tanks_leaders", new JSONArray());
-//        gameResources.put("turn_order", new JSONObject());
-
+        game.addResource(new Resource<>("tanks", new ArrayList<>()));
+        game.addResource(new Resource<List<Faction>>("turn_order", new ArrayList<>()));
         game.setGameRole(gameRole.getName());
         game.setModRole(modRole.getName());
         game.setMute(false);
@@ -458,57 +440,55 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-//    public String drawCard(Game gameState, String deckName, String faction) {
-//        JSONArray deck = gameState.getDeck(deckName);
-//
-//        if (deck.length() == 0 && deckName.equals("spice_deck")) {
-//            JSONArray discardA = gameState.getResources().getJSONArray("spice_discardA");
-//            JSONArray discardB = gameState.getResources().getJSONArray("spice_discardB");
-//
-//            for (Object o : discardA) {
-//                deck.put(o);
-//            }
-//            for (Object o : discardB) {
-//                deck.put(o);
-//            }
-//            discardA.clear();
-//            discardB.clear();
-//            shuffle(deck);
-//
-//        }
-//
-//        String drawn = deck.getString(deck.length() - 1);
-//        if (gameState.getResources().getInt("turn") == 1 && drawn.equals("Shai-Hulud")) {
-//            shuffle(deck);
-//            return drawCard(gameState, deckName, faction);
-//        }
-//        if (deckName.equals("spice_deck")) {
-//            //In this case, faction is used as a flag to determine if this is the first or second spice blow of the turn.
-//            if (faction.equals("A: ")) {
-//                gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONArray("spice_discardA").put(drawn);
-//            }
-//            else {
-//                gameState.getJSONObject("game_state").getJSONObject("game_resources").getJSONArray("spice_discardB").put(drawn);
-//            }
-//            deck.remove(deck.length() - 1);
-//            if (!drawn.equals("Shai-Hulud") && gameState.getResources().getInt("storm") != gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(drawn.split("-")[0].strip()).getInt("sector")) {
-//                int spice = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(drawn.split("-")[0].strip()).getInt("spice");
-//                gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(drawn.split("-")[0].strip()).put("spice", spice + Integer.parseInt(drawn.split("-")[1].strip()));
-//            }
-//            if (drawn.equals("Shai-Hulud")) drawn += ", " + drawCard(gameState, deckName, faction);
-//            return drawn.split("\\(")[0];
-//        }
-//        JSONObject resources = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(faction).getJSONObject("resources");
-//        switch (deckName) {
-//            case "traitor_deck" -> resources.getJSONArray("traitors").put(drawn);
-//            case "treachery_deck" -> resources.getJSONArray("treachery_hand").put(drawn);
-//
-//        }
-//        deck.remove(deck.length() - 1);
-//        return drawn;
-//    }
+    public String drawCard(Game gameState, String deckName, String faction) {
+        Deck deck = gameState.getDeck(deckName);
 
-    public void peek(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        if (deck.getAllCards().size() == 0 && deckName.equals("spice_deck")) {
+            Deck discardA = gameState.getDeck("spice_discardA");
+            Deck discardB = gameState.getDeck("spice_discardB");
+
+            while (discardA.getAllCards().size() > 0) {
+                deck.addCard(discardA.pop());
+            }
+            while (discardB.getAllCards().size() > 0) {
+                deck.addCard(discardB.pop());
+            }
+            deck.shuffle();
+        }
+
+        Card drawn = deck.pop();
+        if ((int) gameState.getResource("turn").getValue() == 1 && drawn.getName().equals("Shai-Hulud")) {
+            deck.shuffle();
+            return drawCard(gameState, deckName, faction);
+        }
+        if (deckName.equals("spice_deck")) {
+            SpiceCard spiceCard = (SpiceCard) drawn;
+            //In this case, faction is used as a flag to determine if this is the first or second spice blow of the turn.
+            if (faction.equals("A: ")) {
+                gameState.getDeck("spice_discardA").addCard(spiceCard);
+            }
+            else {
+                gameState.getDeck("spice_discardB").addCard(spiceCard);
+            }
+            if (!spiceCard.getName().equals("Shai-Hulud") && (int) gameState.getResource("storm").getValue() != gameState.getTerritories().get(spiceCard.getTerritory()).getSector()) {
+                gameState.getTerritories().get(spiceCard.getName()).addSpice(spiceCard.getSpice());
+            }
+            if (spiceCard.getName().equals("Shai-Hulud")) return drawn.getName() + ", " + drawCard(gameState, deckName, faction);
+            return drawn.getName();
+        }
+        switch (deckName) {
+            case "traitor_deck" -> {
+                List<TraitorCard> hand = (List<TraitorCard>) gameState.getFaction(faction).getResource("traitors");
+                gameState.getFaction(faction).getResource("traitors").put(drawn);
+            }
+            case "treachery_deck" -> resources.getJSONArray("treachery_hand").put(drawn);
+
+        }
+        deck.remove(deck.length() - 1);
+        return drawn;
+    }
+
+    public void peek(SlashCommandInteractionEvent event, Game gameState) throws ChannelNotFoundException {
         String deckName = event.getOption("deck").getAsString();
         String deckFaction = event.getOption("deck_faction").getAsString();
 
@@ -1689,23 +1669,23 @@ public class CommandManager extends ListenerAdapter {
 //        }
 //        drawGameBoard(discordGame, gameState);
 //    }
-//
-//    public void clean(SlashCommandInteractionEvent event) {
-//        if (!event.getOption("password").getAsString().equals(Dotenv.configure().load().get("PASSWORD"))) {
-//            event.getChannel().sendMessage("You have attempted the forbidden command.\n\n...Or you're Voiceofonecrying " +
-//                    "and you fat-fingered the password").queue();
-//            return;
-//        }
-//        List<Category> categories = event.getGuild().getCategories();
-//        for (Category category : categories) {
-//            //if (!category.getName().startsWith("test")) continue;
-//            category.delete().complete();
-//        }
-//        List<TextChannel> channels = event.getGuild().getTextChannels();
-//        for (TextChannel channel : channels) {
-//            if (//!channel.getName().startsWith("test") ||
-//            channel.getName().equals("general")) continue;
-//            channel.delete().complete();
-//        }
-//    }
+
+    public void clean(SlashCommandInteractionEvent event) {
+        if (!event.getOption("password").getAsString().equals(Dotenv.configure().load().get("PASSWORD"))) {
+            event.getChannel().sendMessage("You have attempted the forbidden command.\n\n...Or you're Voiceofonecrying " +
+                    "and you fat-fingered the password").queue();
+            return;
+        }
+        List<Category> categories = event.getGuild().getCategories();
+        for (Category category : categories) {
+            //if (!category.getName().startsWith("test")) continue;
+            category.delete().complete();
+        }
+        List<TextChannel> channels = event.getGuild().getTextChannels();
+        for (TextChannel channel : channels) {
+            if (//!channel.getName().startsWith("test") ||
+            channel.getName().equals("general")) continue;
+            channel.delete().complete();
+        }
+    }
 }
