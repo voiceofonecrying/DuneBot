@@ -10,6 +10,8 @@ public class Faction extends GameFactionBase {
     private final String userName;
     private final int handLimit;
 
+    private int spice;
+
     public Faction(String name, String player, String userName) {
         super();
 
@@ -19,6 +21,7 @@ public class Faction extends GameFactionBase {
         this.name = name;
         this.player = player;
         this.userName = userName;
+        this.spice = 0;
     }
 
     public String getName() {
@@ -43,5 +46,22 @@ public class Faction extends GameFactionBase {
 
     public int getHandLimit() {
         return handLimit;
+    }
+
+    public int getSpice() {
+        return spice;
+    }
+
+    public void setSpice(int spice) {
+        this.spice = spice;
+    }
+
+    public void addSpice(int spice) {
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        this.spice += spice;
+    }
+
+    public void subtractSpice(int spice) {
+        this.spice -= Math.abs(spice);
     }
 }

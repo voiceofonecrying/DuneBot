@@ -17,12 +17,10 @@ import java.util.stream.IntStream;
 public class Initializers {
 
     public static void newFaction(Faction faction, Game gameState) throws IOException {
-        Resource<Integer> spiceResource = new Resource<>("spice", 0);
         Resource<Integer> freeRevival = new Resource<>("free_revival", 0);
         Force reserves = new Force(faction.getName(), 0);
         Resource<Integer> frontOfShieldSpice = new Resource<>("front_of_shield_spice", 0);
 
-        faction.addResource(spiceResource);
         faction.addResource(freeRevival);
         faction.addResource(reserves);
         faction.addResource(frontOfShieldSpice);
@@ -51,7 +49,7 @@ public class Initializers {
         gameState.addFaction(faction);
         switch (faction.getName()) {
             case "Atreides" -> {
-                spiceResource.setValue(10);
+                faction.setSpice(10);
                 freeRevival.setValue(2);
                 reserves.setValue(10);
                 faction.setEmoji("<:atreides:991763327996923997>");
@@ -59,41 +57,41 @@ public class Initializers {
                 gameState.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
             }
             case "Harkonnen" -> {
-                spiceResource.setValue(10);
+                faction.setSpice(10);
                 freeRevival.setValue(2);
                 reserves.setValue(10);
                 faction.setEmoji("<:harkonnen:991763320333926551>");
                 gameState.getTerritories().get("Carthag").getForces().add(new Force("Carthag", 10));
             }
             case "Emperor" -> {
-                spiceResource.setValue(10);
+                faction.setSpice(10);
                 freeRevival.setValue(1);
                 reserves.setValue(15);
                 faction.addResource(new Force("Sardaukar", 5));
                 faction.setEmoji("<:emperor:991763323454500914>");
             }
             case "Fremen" -> {
-                spiceResource.setValue(3);
+                faction.setSpice(3);
                 freeRevival.setValue(3);
                 reserves.setValue(17);
                 faction.addResource(new Force("Fedaykin", 3));
                 faction.setEmoji("<:fremen:991763322225577984>");
             }
             case "BG" -> {
-                spiceResource.setValue(5);
+                faction.setSpice(5);
                 freeRevival.setValue(1);
                 reserves.setValue(20);
                 faction.setEmoji("<:bg:991763326830911519>");
             }
             case "Guild" -> {
-                spiceResource.setValue(5);
+                faction.setSpice(5);
                 freeRevival.setValue(1);
                 reserves.setValue(15);
                 faction.setEmoji("<:guild:991763321290244096>");
                 gameState.getTerritories().get("Tuek's Sietch").getForces().add(new Force("Guild", 5));
             }
             case "Ix" -> {
-                spiceResource.setValue(10);
+                faction.setSpice(10);
                 freeRevival.setValue(1);
                 reserves.setValue(10);
                 faction.addResource(new Force("Cyborg", 4));
@@ -102,20 +100,20 @@ public class Initializers {
                 gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Cyborg", 3));
             }
             case "BT" -> {
-                spiceResource.setValue(5);
+                faction.setSpice(5);
                 freeRevival.setValue(2);
                 reserves.setValue(20);
                 faction.setEmoji("<:bt:991763325576810546>");
             }
             case "CHOAM" -> {
-                spiceResource.setValue(2);
+                faction.setSpice(2);
                 freeRevival.setValue(0);
                 reserves.setValue(20);
                 faction.setEmoji("<:choam:991763324624703538>");
                 faction.addResource(new Resource("inflation", "behind shield"));
             }
             case "Rich" -> {
-                spiceResource.setValue(5);
+                faction.setSpice(5);
                 freeRevival.setValue(2);
                 reserves.setValue(20);
                 faction.setEmoji("<:rich:991763318467465337>");

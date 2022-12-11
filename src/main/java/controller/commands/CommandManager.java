@@ -619,6 +619,7 @@ public class CommandManager extends ListenerAdapter {
     public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
         List<TreacheryCard> winnerHand = (List<TreacheryCard>) winner.getResource("treachery_hand");
+        int spent = event.getOption("spent").getAsInt();
         Deck market = gameState.getDeck("market");
         if (winner.getHandLimit() == winnerHand.size()) {
             event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Player's hand is full, they cannot bid on this card!").queue());
@@ -627,7 +628,7 @@ public class CommandManager extends ListenerAdapter {
         if (market.getAllCards().size() > 0) {
             winnerHand.add((TreacheryCard) market.pop());
             discordGame.sendMessage("turn-summary", gameState.getFaction(event.getOption("factionname")
-                    .getAsString()).getEmoji() + " wins card up for bid for " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>");
+                    .getAsString()).getEmoji() + " wins card up for bid for " + spent + " <:spice4:991763531798167573>");
         } else {
             event.getMessageChannel().sendMessage("No more cards up for bid.").queue();
             return;
@@ -640,40 +641,38 @@ public class CommandManager extends ListenerAdapter {
         if (market.getAllCards().size() > 0) {
                 StringBuilder message = new StringBuilder();
                 int cardNumber = (int) gameState.getResource("market_size").getValue() - market.getAllCards().size();
-                message.append("R").append(gameState.getResources().getInt("turn")).append(":C").append(cardNumber + 1).append("\n");
-                int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1 + cardNumber;
-                for (int i = 0; i < gameState.getJSONObject("game_state").getJSONObject("factions").length(); i++) {
+                message.append("R").append(gameState.getResource("turn").getValue()).append(":C").append(cardNumber + 1).append("\n");
+                int firstBid = Math.ceilDiv((int) gameState.getResource("storm").getValue(), 3) + 1 + cardNumber;
+                for (int i = 0; i < gameState.getFactions().size(); i++) {
                     int playerPosition = (firstBid + i) % 6;
                     if (playerPosition == 0) playerPosition = 6;
-                    String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
-                    int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
-                    if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
-                            !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) {
-                        message.append(gameState.getFaction(faction).getString("emoji")).append(":");
-                        if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
+                    List<Faction> turnOrder = (List<Faction>) gameState.getResource("turn_order").getValue();
+                    Faction faction = turnOrder.get(playerPosition);
+                    List<TreacheryCard> hand = (List<TreacheryCard>) faction.getResource("treachery_hand").getValue();
+                    if (faction.getHandLimit() > hand.size()) {
+                        message.append(faction.getEmoji()).append(":");
+                        if (i == 0) message.append(" ").append(faction.getPlayer());
                         message.append("\n");
                     }
                 }
                 discordGame.sendMessage("bidding-phase", message.toString());
         }
-        if (event.getOption("factionname").getAsString().equals("Harkonnen") && gameState.getFaction("Harkonnen").getJSONObject("resources").getJSONArray("treachery_hand").length() < 8) {
+        if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
             drawCard(gameState, "treachery_deck", "Harkonnen");
-            discordGame.sendMessage("turn-summary", gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " draws another card from the <:treachery:991763073281040518> deck.");
+            discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
         }
-        int spice = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("spice");
-        gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("spice");
-        gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("spice", spice - event.getOption("spent").getAsInt());
-        spiceMessage(discordGame, event.getOption("spent").getAsInt(), event.getOption("factionname").getAsString(), "R" +
-                gameState.getResources().getInt("turn") + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), false);
-        writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
-        if (gameState.getJSONObject("game_state").getJSONObject("factions").keySet().contains("Emperor") && !event.getOption("factionname").getAsString().equals("Emperor")) {
+        winner.subtractSpice(spent);
+        spiceMessage(discordGame, spent, winner.getName(), "R" +
+                gameState.getResource("turn").getValue() + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), false);
+        writeFactionInfo(event, gameState, discordGame, winner.getName());
+        if (gameState.getJSONObject("game_state").getJSONObject("factions").keySet().contains("Emperor") && !winner.getName().equals("Emperor")) {
             int spiceEmp = gameState.getFaction("Emperor").getJSONObject("resources").getInt("spice");
             gameState.getFaction("Emperor").getJSONObject("resources").remove("spice");
-            gameState.getFaction("Emperor").getJSONObject("resources").put("spice", spiceEmp + event.getOption("spent").getAsInt());
-            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getString("emoji") + " is paid " + event.getOption("spent").getAsInt() + " <:spice4:991763531798167573>");
+            gameState.getFaction("Emperor").getJSONObject("resources").put("spice", spiceEmp + spent);
+            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getString("emoji") + " is paid " + spent + " <:spice4:991763531798167573>");
             writeFactionInfo(event, gameState, discordGame, "Emperor");
         }
-        spiceMessage(discordGame, event.getOption("spent").getAsInt(), "emperor", "R" +
+        spiceMessage(discordGame, spent, "emperor", "R" +
                 gameState.getResources().getInt("turn") + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), true);
         discordGame.pushGameState();
     }
