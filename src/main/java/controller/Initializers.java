@@ -4,8 +4,6 @@ import model.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -14,7 +12,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 public class Initializers {
@@ -29,6 +26,8 @@ public class Initializers {
         faction.addResource(freeRevival);
         faction.addResource(reserves);
         faction.addResource(frontOfShieldSpice);
+        faction.addResource(new Resource<List<TraitorCard>>("traitor_hand", new ArrayList<>()));
+        faction.addResource(new Resource<List<TreacheryCard>>("treachery_hand", new ArrayList<>()));
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Initializers.class.getResourceAsStream("Leaders.csv"))
@@ -45,7 +44,7 @@ public class Initializers {
                         Integer.parseInt(csvRecord.get("strength"))
                 );
                 faction.addResource(new Leader(csvRecord.get("name"), Integer.parseInt(csvRecord.get("strength"))));
-                traitorDeck.addCard(traitorCard);
+                traitorDeck.addCardToTop(traitorCard);
             }
         }
 
@@ -155,10 +154,10 @@ public class Initializers {
                     Integer.parseInt(csvRecord.get(3)),
                     false
             );
-            spiceDeck.addCard(spiceCard);
+            spiceDeck.addCardToTop(spiceCard);
         }
 
-        IntStream.range(0,6).forEach(i -> spiceDeck.addCard(new SpiceCard("Shai-Hulud")));
+        IntStream.range(0,6).forEach(i -> spiceDeck.addCardToTop(new SpiceCard("Shai-Hulud")));
 
         return spiceDeck;
     }
@@ -176,7 +175,7 @@ public class Initializers {
                     csvRecord.get(0),
                     csvRecord.get(1)
             );
-            treacheryDeck.addCard(treacheryCard);
+            treacheryDeck.addCardToTop(treacheryCard);
         }
 
         return treacheryDeck;
@@ -185,7 +184,7 @@ public class Initializers {
     public static Deck buildStormDeck() {
         Deck stormDeck = new Deck("storm");
 
-        IntStream.range(1,7).forEach(i -> stormDeck.addCard(new StormCard(i)));
+        IntStream.range(1,7).forEach(i -> stormDeck.addCardToTop(new StormCard(i)));
 
         return stormDeck;
     }

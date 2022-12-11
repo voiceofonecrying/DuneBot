@@ -448,10 +448,10 @@ public class CommandManager extends ListenerAdapter {
             Deck discardB = gameState.getDeck("spice_discardB");
 
             while (discardA.getAllCards().size() > 0) {
-                deck.addCard(discardA.pop());
+                deck.addCardToTop(discardA.pop());
             }
             while (discardB.getAllCards().size() > 0) {
-                deck.addCard(discardB.pop());
+                deck.addCardToTop(discardB.pop());
             }
             deck.shuffle();
         }
@@ -465,10 +465,10 @@ public class CommandManager extends ListenerAdapter {
             SpiceCard spiceCard = (SpiceCard) drawn;
             //In this case, faction is used as a flag to determine if this is the first or second spice blow of the turn.
             if (faction.equals("A: ")) {
-                gameState.getDeck("spice_discardA").addCard(spiceCard);
+                gameState.getDeck("spice_discardA").addCardToTop(spiceCard);
             }
             else {
-                gameState.getDeck("spice_discardB").addCard(spiceCard);
+                gameState.getDeck("spice_discardB").addCardToTop(spiceCard);
             }
             if (!spiceCard.getName().equals("Shai-Hulud") && (int) gameState.getResource("storm").getValue() != gameState.getTerritories().get(spiceCard.getTerritory()).getSector()) {
                 gameState.getTerritories().get(spiceCard.getName()).addSpice(spiceCard.getSpice());
@@ -478,14 +478,15 @@ public class CommandManager extends ListenerAdapter {
         }
         switch (deckName) {
             case "traitor_deck" -> {
-                List<TraitorCard> hand = (List<TraitorCard>) gameState.getFaction(faction).getResource("traitors");
-                gameState.getFaction(faction).getResource("traitors").put(drawn);
+                List<TraitorCard> hand = (List<TraitorCard>) gameState.getFaction(faction).getResource("traitor_hand");
+                hand.add((TraitorCard) drawn);
             }
-            case "treachery_deck" -> resources.getJSONArray("treachery_hand").put(drawn);
-
+            case "treachery_deck" -> {
+                List<TreacheryCard> hand = (List<TreacheryCard>) gameState.getFaction(faction).getResource("treachery_hand");
+                hand.add((TreacheryCard) drawn);
+            }
         }
-        deck.remove(deck.length() - 1);
-        return drawn;
+        return drawn.getName();
     }
 
     public void peek(SlashCommandInteractionEvent event, Game gameState) throws ChannelNotFoundException {
@@ -511,116 +512,109 @@ public class CommandManager extends ListenerAdapter {
         event.getUser().openPrivateChannel().queue((privateChannel -> privateChannel.sendMessage(message).queue()));
     }
 
-//    public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
-//
-//        JSONArray hand = faction.getJSONObject("resources").getJSONArray("treachery_hand");
-//        int i = 0;
-//
-//        for (; i < hand.length(); i++) {
-//            String card = hand.getString(i);
-//            if (card.toLowerCase().contains(event.getOption("card").getAsString().toLowerCase())) {
-//                gameState.getResources().getJSONArray("treachery_discard").put(card);
-//                break;
-//            }
-//        }
-//        hand.remove(i);
-//        writeFactionInfo(event, gameState, discordGame, faction.getString("name"));
-//        discordGame.pushGameState();
-//    }
+    public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
 
-//    public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONArray giverHand;
-//        JSONArray receiverHand;
-//        JSONObject giver = null;
-//        JSONObject receiver = null;
-//
-//        if (event.getOption("recipient").getAsString().equals("market")) {
-//            receiverHand = gameState.getResources().getJSONArray("market");
-//        }
-//        else {
-//            receiver = gameState.getFaction(event.getOption("recipient").getAsString());
-//            receiverHand = receiver.getJSONObject("resources").getJSONArray("treachery_hand");
-//        }
-//
-//        if (event.getOption("sender").getAsString().equals("discard")) giverHand = gameState.getResources().getJSONArray("treachery_discard");
-//        else {
-//            giver = gameState.getFaction(event.getOption("sender").getAsString());
-//            giverHand = giver.getJSONObject("resources").getJSONArray("treachery_hand");
-//        }
-//
-//        if ((giver == null && !event.getOption("sender").getAsString().equals("discard")) ||
-//                (receiver == null && !event.getOption("recipient").getAsString().equals("market"))) {
-//            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("At least one of the selected factions is not playing in this game!").queue());
-//            return;
-//        }
-//
-//        if ((receiver != null && receiver.getString("name").equals("Harkonnen") && receiverHand.length() >= 8) || receiverHand.length() >= 4) {
-//            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The recipient's hand is full!").queue());
-//            return;
-//        }
-//        int i = 0;
-//
-//        boolean cardFound = false;
-//        for (; i < giverHand.length(); i++) {
-//            String card = giverHand.getString(i);
-//            if (card.toLowerCase().contains(event.getOption("card").getAsString())) {
-//                cardFound = true;
-//                receiverHand.put(card);
-//                break;
-//            }
-//        }
-//        if (!cardFound) {
-//            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Could not find that card!").queue());
-//            return;
-//        }
-//        giverHand.remove(i);
-//        if (giver != null) writeFactionInfo(event, gameState, discordGame, giver.getString("name"));
-//        if (receiver != null) writeFactionInfo(event, gameState, discordGame, receiver.getString("name"));
-//        discordGame.pushGameState();
-//    }
+        List<TreacheryCard> hand = (List<TreacheryCard>) faction.getResource("treachery_hand");
+        int i = 0;
 
-//    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONArray market = gameState.getResources().getJSONArray("market");
-//        int i = 0;
-//        boolean found = false;
-//        for (; i < market.length(); i++) {
-//            if (market.getString(i).contains(event.getOption("card").getAsString())) {
-//                if (!event.getOption("bottom").getAsBoolean()) gameState.getResources().getJSONArray("treachery_deck")
-//                        .put(market.getString(i));
-//                else gameState.getResources().getJSONArray("treachery_deck").put(0, market.getString(i));
-//                found = true;
-//                break;
-//            }
-//        }
-//        if (!found) {
-//            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?").queue());
-//            return;
-//        }
-//        market.remove(i);
-//        shuffle(market);
-//        discordGame.pushGameState();
-//    }
+        for (; i < hand.size(); i++) {
+            String card = hand.get(i).getName();
+            if (card.toLowerCase().contains(event.getOption("card").getAsString().toLowerCase())) {
+                gameState.getDeck("treachery_discard").addCardToTop(hand.get(i));
+                break;
+            }
+        }
+        hand.remove(i);
+        writeFactionInfo(event, gameState, discordGame, faction.getName());
+        discordGame.pushGameState();
+    }
 
-//    public void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONArray hand = gameState.getFaction("Ix").getJSONObject("resources").getJSONArray("treachery_hand");
-//        shuffle(hand);
-//        for (int i = 0; i < hand.length(); i++) {
-//            if (hand.getString(i).toLowerCase().contains(event.getOption("card").getAsString())) continue;
-//            gameState.getResources().getJSONArray("treachery_deck").put(hand.getString(i));
-//        }
-//        int shift = 0;
-//        int length = hand.length() - 1;
-//        for (int i = 0; i < length; i++) {
-//            if (hand.getString(0).toLowerCase().contains(event.getOption("card").getAsString())) {
-//                shift = 1;
-//                continue;
-//            }
-//            hand.remove(shift);
-//        }
-//        writeFactionInfo(event, gameState, discordGame, "Ix");
-//        discordGame.pushGameState();
-//    }
+    public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        List<Card> giverHand;
+        List<Card> receiverHand;
+        Faction giver = null;
+        Faction receiver = null;
+
+        if (event.getOption("recipient").getAsString().equals("market")) {
+            receiverHand = gameState.getDeck("market").getAllCards();
+        }
+        else {
+            receiver = gameState.getFaction(event.getOption("recipient").getAsString());
+            receiverHand = (List<Card>)  receiver.getResource("treachery_hand");
+        }
+
+        if (event.getOption("sender").getAsString().equals("discard")) giverHand = gameState.getDeck("treachery_discard").getAllCards();
+        else {
+            giver = gameState.getFaction(event.getOption("sender").getAsString());
+            giverHand = (List<Card>) giver.getResource("treachery_hand");
+        }
+
+        if ((receiver.getHandLimit() == receiverHand.size())) {
+            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The recipient's hand is full!").queue());
+            return;
+        }
+        int i = 0;
+
+        boolean cardFound = false;
+        for (; i < giverHand.size(); i++) {
+            String card = giverHand.get(i).getName();
+            if (card.toLowerCase().contains(event.getOption("card").getAsString())) {
+                cardFound = true;
+                receiverHand.add(giverHand.get(i));
+                break;
+            }
+        }
+        if (!cardFound) {
+            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Could not find that card!").queue());
+            return;
+        }
+        giverHand.remove(i);
+        if (giver != null) writeFactionInfo(event, gameState, discordGame, giver.getName());
+        writeFactionInfo(event, gameState, discordGame, receiver.getName());
+        discordGame.pushGameState();
+    }
+
+    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        Deck market = gameState.getDeck("market");
+        int i = 0;
+        boolean found = false;
+        for (; i < market.getAllCards().size(); i++) {
+            if (market.getAllCards().get(i).getName().contains(event.getOption("card").getAsString())) {
+                if (!event.getOption("bottom").getAsBoolean()) gameState.getDeck("treachery_deck").addCardToTop(market.getAllCards().get(i));
+                else gameState.getDeck("treachery_deck").addCardToBottom(market.getAllCards().get(i));
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?").queue());
+            return;
+        }
+        market.getAllCards().remove(i);
+        market.shuffle();
+        discordGame.pushGameState();
+    }
+
+    public void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        List<TreacheryCard> hand = (List<TreacheryCard>) gameState.getFaction("Ix").getResource("treachery_hand").getValue();
+        Collections.shuffle(hand);
+        for (int i = 0; i < hand.size(); i++) {
+            if (hand.get(i).getName().toLowerCase().contains(event.getOption("card").getAsString())) continue;
+            gameState.getResources().getJSONArray("treachery_deck").put(hand.getString(i));
+        }
+        int shift = 0;
+        int length = hand.length() - 1;
+        for (int i = 0; i < length; i++) {
+            if (hand.getString(0).toLowerCase().contains(event.getOption("card").getAsString())) {
+                shift = 1;
+                continue;
+            }
+            hand.remove(shift);
+        }
+        writeFactionInfo(event, gameState, discordGame, "Ix");
+        discordGame.pushGameState();
+    }
 
 //    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
 //        if (event.getOption("factionname").getAsString().equals("harkonnen")

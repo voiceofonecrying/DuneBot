@@ -17,8 +17,12 @@ public class Deck {
         return name;
     }
 
-    public void addCard(Card card) {
+    public void addCardToTop(Card card) {
         cards.add(card);
+    }
+
+    public void addCardToBottom(Card card) {
+        cards.addLast(card);
     }
 
     public Card pop() { return cards.pop(); }
