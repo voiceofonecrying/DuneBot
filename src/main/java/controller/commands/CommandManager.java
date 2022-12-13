@@ -1,5 +1,6 @@
 package controller.commands;
 
+import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -16,9 +17,20 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -53,23 +65,23 @@ public class CommandManager extends ListenerAdapter {
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
-//                    case "discard" -> discard(event, discordGame, gameState);
-//                    case "transfercard" -> transferCard(event, discordGame, gameState);
-//                    case "putback" -> putBack(event, discordGame, gameState);
-//                    case "ixhandselection" -> ixHandSelection(event, discordGame, gameState);
-//                    case "selecttraitor" -> selectTraitor(event, discordGame, gameState);
-//                    case "placeforces" -> placeForces(event, discordGame, gameState);
-//                    case "removeforces" -> removeForces(event, discordGame, gameState);
-//                    case "display" -> displayGameState(event, discordGame, gameState);
-//                    case "reviveforces" -> revival(event, discordGame, gameState);
-//                    case "awardbid" -> awardBid(event, discordGame, gameState);
-//                    case "killleader" -> killLeader(event, discordGame, gameState);
-//                    case "reviveleader" -> reviveLeader(event, discordGame, gameState);
-//                    case "setstorm" -> setStorm(event, discordGame, gameState);
-//                    case "bgflip" -> bgFlip(event, discordGame, gameState);
-//                    case "bribe" -> bribe(event, discordGame, gameState);
-//                    case "mute" -> mute(discordGame, gameState);
-//                    case "advancegame" -> advanceGame(event, discordGame, gameState);
+                    case "discard" -> discard(event, discordGame, gameState);
+                    case "transfercard" -> transferCard(event, discordGame, gameState);
+                    case "putback" -> putBack(event, discordGame, gameState);
+                    case "ixhandselection" -> ixHandSelection(event, discordGame, gameState);
+                    //case "selecttraitor" -> selectTraitor(event, discordGame, gameState);
+                    //case "placeforces" -> placeForces(event, discordGame, gameState);
+                    //case "removeforces" -> removeForces(event, discordGame, gameState);
+                    case "display" -> displayGameState(event, discordGame, gameState);
+                    case "reviveforces" -> revival(event, discordGame, gameState);
+                    case "awardbid" -> awardBid(event, discordGame, gameState);
+                    case "killleader" -> killLeader(event, discordGame, gameState);
+                    case "reviveleader" -> reviveLeader(event, discordGame, gameState);
+                    //case "setstorm" -> setStorm(event, discordGame, gameState);
+                    case "bgflip" -> bgFlip(event, discordGame, gameState);
+                    case "bribe" -> bribe(event, discordGame, gameState);
+                    case "mute" -> mute(discordGame, gameState);
+                    //case "advancegame" -> advanceGame(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -566,7 +578,7 @@ public class CommandManager extends ListenerAdapter {
         writeFactionInfo(event, gameState, discordGame, faction.getName());
         discordGame.pushGameState();
     }
-//
+
 //    public void advanceGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
 //        Category game = discordGame.getGameCategory();
 //
@@ -702,41 +714,41 @@ public class CommandManager extends ListenerAdapter {
 //                       shuffle(gameState.getDeck("storm_deck"));
 //                       discordGame.sendMessage("turn-summary", "The storm moves " + stormMovement + " sectors this turn.");
 //                       for (int i = 0; i < stormMovement; i++) {
-//                           gameState.getResources().put("storm", (gameState.getResources().getInt("storm") + 1));
-//                           if (gameState.getResources().getInt("storm") == 19) gameState.getResources().put("storm", 1);
+//                           gameState.getResources().put("storm", (gameState.getStorm() + 1));
+//                           if (gameState.getStorm() == 19) gameState.getResources().put("storm", 1);
 //                           for (String territory : territories.keySet()) {
-//                               if (!territories.getJSONObject(territory).getBoolean("is_rock") && territories.getJSONObject(territory).getInt("sector") == gameState.getResources().getInt("storm")) {
-//                                   Set<String> forces = territories.getJSONObject(territory).getJSONObject("forces").keySet();
+//                               if (!territories.getJSONObject(territory).getBoolean("is_rock") && territories.getJSONObject(territory).getInt("sector") == gameState.getStorm()) {
+//                                   Set<String> forces = territories.getJSONObject(territory).getForces().keySet();
 //                                   boolean fremenSpecialCase = false;
 //                                   //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
 //                                   if (forces.contains("Fremen") && forces.contains("Fremen*")) {
 //                                       fremenSpecialCase = true;
-//                                       int fremenForces = territories.getJSONObject(territory).getJSONObject("forces").getInt("Fremen");
-//                                       int fremenFedaykin = territories.getJSONObject(territory).getJSONObject("forces").getInt("Fremen*");
+//                                       int fremenForces = territories.getJSONObject(territory).getForces().getInt("Fremen");
+//                                       int fremenFedaykin = territories.getJSONObject(territory).getForces().getInt("Fremen*");
 //                                       int lost = (fremenForces + fremenFedaykin) / 2;
-//                                       territories.getJSONObject(territory).getJSONObject("forces").remove("Fremen");
+//                                       territories.getJSONObject(territory).getForces().remove("Fremen");
 //                                       if (lost < fremenForces) {
-//                                           territories.getJSONObject(territory).getJSONObject("forces").put("Fremen", fremenForces - lost);
+//                                           territories.getJSONObject(territory).getForces().put("Fremen", fremenForces - lost);
 //                                       } else if (lost > fremenForces) {
-//                                           territories.getJSONObject(territory).getJSONObject("forces").remove("Fremen*");
-//                                           territories.getJSONObject(territory).getJSONObject("forces").put("Fremen*", lost - fremenForces);
+//                                           territories.getJSONObject(territory).getForces().remove("Fremen*");
+//                                           territories.getJSONObject(territory).getForces().put("Fremen*", lost - fremenForces);
 //                                       }
 //                                       discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getString("emoji") + " lost " + lost +
 //                                                       " forces to the storm in " + territory);
 //                                   }
 //                                   for (String force : forces) {
 //                                       if (force.contains("Fremen") && fremenSpecialCase) continue;
-//                                       int lost = territories.getJSONObject(territory).getJSONObject("forces").getInt(force);
-//                                       territories.getJSONObject(territory).getJSONObject("forces").remove(force);
+//                                       int lost = territories.getJSONObject(territory).getForces().getInt(force);
+//                                       territories.getJSONObject(territory).getForces().remove(force);
 //                                       if (force.contains("Fremen") && lost > 1) {
 //                                           lost /= 2;
-//                                           territories.getJSONObject(territory).getJSONObject("forces").put(force, lost);
+//                                           territories.getJSONObject(territory).getForces().put(force, lost);
 //                                       }
-//                                       if (gameState.getResources().getJSONObject("tanks_forces").isNull(force)) {
-//                                           gameState.getResources().getJSONObject("tanks_forces").put(force, lost);
+//                                       if (gameState.getTanks().isNull(force)) {
+//                                           gameState.getTanks().put(force, lost);
 //                                       } else {
-//                                           gameState.getResources().getJSONObject("tanks_forces").put(force,
-//                                                   gameState.getResources().getJSONObject("tanks_forces").getInt(force) + lost);
+//                                           gameState.getTanks().put(force,
+//                                                   gameState.getTanks().getInt(force) + lost);
 //                                       }
 //                                       discordGame.sendMessage("turn-summary",
 //                                               gameState.getFaction(force.replace("*", "")).getString("emoji") + " lost " +
@@ -851,8 +863,8 @@ public class CommandManager extends ListenerAdapter {
 //                        discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>");
 //                    }
 //                    StringBuilder message = new StringBuilder();
-//                    message.append("R").append(gameState.getResources().getInt("turn")).append(":C1\n");
-//                    int firstBid = Math.ceilDiv(gameState.getResources().getInt("storm"), 3) + 1;
+//                    message.append("R").append(gameState.getTurn()).append(":C1\n");
+//                    int firstBid = Math.ceilDiv(gameState.getStorm(), 3) + 1;
 //                    for (int i = 0; i < factions.size(); i++) {
 //                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
 //                        String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
@@ -886,21 +898,21 @@ public class CommandManager extends ListenerAdapter {
 //                        int revived = 0;
 //                        boolean revivedStar = false;
 //                        for (int i = free; i > 0; i--) {
-//                            if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) == 0
-//                                    && (gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") || gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") == 0)) continue;
+//                            if (gameState.getTanks().getInt(faction) == 0
+//                                    && (gameState.getTanks().isNull(faction + "*") || gameState.getTanks().getInt(faction + "*") == 0)) continue;
 //                            revived++;
-//                            if (!gameState.getResources().getJSONObject("tanks_forces").isNull(faction + "*") && gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*") != 0 && !revivedStar) {
-//                                int starred = gameState.getResources().getJSONObject("tanks_forces").getInt(faction + "*");
-//                                gameState.getResources().getJSONObject("tanks_forces").remove(faction + "*");
-//                                if (starred > 1) gameState.getResources().getJSONObject("tanks_forces").put(faction + "*", starred - 1);
+//                            if (!gameState.getTanks().isNull(faction + "*") && gameState.getTanks().getInt(faction + "*") != 0 && !revivedStar) {
+//                                int starred = gameState.getTanks().getInt(faction + "*");
+//                                gameState.getTanks().remove(faction + "*");
+//                                if (starred > 1) gameState.getTanks().put(faction + "*", starred - 1);
 //                                revivedStar = true;
 //                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves*");
 //                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves*");
 //                                gameState.getFaction(faction).getJSONObject("resources").put("reserves*", reserves + 1);
-//                            } else if (gameState.getResources().getJSONObject("tanks_forces").getInt(faction) != 0) {
-//                                int forces = gameState.getResources().getJSONObject("tanks_forces").getInt(faction);
-//                                gameState.getResources().getJSONObject("tanks_forces").remove(faction);
-//                                gameState.getResources().getJSONObject("tanks_forces").put(faction, forces - 1);
+//                            } else if (gameState.getTanks().getInt(faction) != 0) {
+//                                int forces = gameState.getTanks().getInt(faction);
+//                                gameState.getTanks().remove(faction);
+//                                gameState.getTanks().put(faction, forces - 1);
 //                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves");
 //                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves");
 //                                gameState.getFaction(faction).getJSONObject("resources").put("reserves", reserves + 1);
@@ -922,7 +934,7 @@ public class CommandManager extends ListenerAdapter {
 //                    if(!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
 //                       for (String territoryName : gameState.getGameBoard().keySet()) {
 //                           JSONObject territory = gameState.getTerritory(territoryName);
-//                           if (!territory.getJSONObject("forces").keySet().contains("Advisor")) continue;
+//                           if (!territory.getForces().keySet().contains("Advisor")) continue;
 //                           discordGame.sendMessage("turn-summary",gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their advisors in " + territory.getString("territory_name"));
 //                       }
 //                    }
@@ -947,19 +959,19 @@ public class CommandManager extends ListenerAdapter {
 //                    territories.getJSONObject("Tuek's Sietch").put("spice", 1);
 //                    for (String territoryName : territories.keySet()) {
 //                        JSONObject territory = territories.getJSONObject(territoryName);
-//                        if (territory.getInt("spice") == 0 || territory.getJSONObject("forces").length() == 0) continue;
+//                        if (territory.getInt("spice") == 0 || territory.getForces().length() == 0) continue;
 //                        int spice = territory.getInt("spice");
 //                        territory.remove("spice");
-//                        Set<String> factions = territory.getJSONObject("forces").keySet();
+//                        Set<String> factions = territory.getForces().keySet();
 //                        for (String faction : factions) {
-//                            int forces = territory.getJSONObject("forces").getInt(faction);
-//                            forces += territory.getJSONObject("forces").isNull(faction + "*") ? 0 : territory.getJSONObject("forces").getInt(faction + "*");
+//                            int forces = territory.getForces().getInt(faction);
+//                            forces += territory.getForces().isNull(faction + "*") ? 0 : territory.getForces().getInt(faction + "*");
 //                            int toCollect = 0;
 //                            if (faction.equals("BG") && factions.size() > 1) continue;
 //                            //If the faction has mining equipment, collect 3 spice per force.
-//                            if ((!territories.getJSONObject("Arrakeen").getJSONObject("forces").isNull(faction) || !territories.getJSONObject("Carthag").getJSONObject("forces").isNull(faction) && !faction.equals("BG")) ||
-//                                    (faction.equals("BG") && (territories.getJSONObject("Arrakeen").getJSONObject("forces").length() < 2 && !territories.getJSONObject("Arrakeen").getJSONObject("forces").isNull("BG")) ||
-//                                            (territories.getJSONObject("Carthag").getJSONObject("forces").length() < 2 && !territories.getJSONObject("Carthag").getJSONObject("forces").isNull("BG")))) {
+//                            if ((!territories.getJSONObject("Arrakeen").getForces().isNull(faction) || !territories.getJSONObject("Carthag").getForces().isNull(faction) && !faction.equals("BG")) ||
+//                                    (faction.equals("BG") && (territories.getJSONObject("Arrakeen").getForces().length() < 2 && !territories.getJSONObject("Arrakeen").getForces().isNull("BG")) ||
+//                                            (territories.getJSONObject("Carthag").getForces().length() < 2 && !territories.getJSONObject("Carthag").getForces().isNull("BG")))) {
 //                                toCollect += forces * 3;
 //                            } else toCollect += forces * 2;
 //                            if (spice < toCollect) {
@@ -1052,8 +1064,8 @@ public class CommandManager extends ListenerAdapter {
 //        int previous = 0;
 //
 //        if (!gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory)
-//                .getJSONObject("forces").isNull(event.getOption("factionname").getAsString() + star)) {
-//            previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + star);
+//                .getForces().isNull(event.getOption("factionname").getAsString() + star)) {
+//            previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getForces().getInt(event.getOption("factionname").getAsString() + star);
 //        }
 //
 //        if (event.getOption("isshipment").getAsBoolean()) {
@@ -1076,10 +1088,10 @@ public class CommandManager extends ListenerAdapter {
 //            }
 //            writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
 //        }
-//        if (gameState.getTerritory(territory).getJSONObject("forces").keySet().contains("BG")) {
+//        if (gameState.getTerritory(territory).getForces().keySet().contains("BG")) {
 //            discordGame.sendMessage("turn-summary", gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their forces in " + territory);
 //        }
-//        gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getJSONObject("forces").put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
+//        gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getForces().put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
 //        discordGame.pushGameState();
 //        drawGameBoard(discordGame, gameState);
 //    }
@@ -1102,19 +1114,19 @@ public class CommandManager extends ListenerAdapter {
 //        }
 //        JSONObject territory = gameState.getTerritory(territoryName + sector);
 //        String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
-//        int forces = territory.getJSONObject("forces").getInt(event.getOption("factionname").getAsString() + starred);
-//        territory.getJSONObject("forces").remove(event.getOption("factionname").getAsString() + starred);
+//        int forces = territory.getForces().getInt(event.getOption("factionname").getAsString() + starred);
+//        territory.getForces().remove(event.getOption("factionname").getAsString() + starred);
 //        if (forces > event.getOption("amount").getAsInt()) {
-//            territory.getJSONObject("forces").put(event.getOption("factionname").getAsString() + starred, forces - event.getOption("amount").getAsInt());
+//            territory.getForces().put(event.getOption("factionname").getAsString() + starred, forces - event.getOption("amount").getAsInt());
 //        } else if (forces < event.getOption("amount").getAsInt()) {
 //            discordGame.sendMessage("mod-info","You are trying to remove more forces than this faction has in this territory! Please check your info and try again.");
 //            return;
 //        }
 //
 //        if (event.getOption("totanks").getAsBoolean()) {
-//            int tanks = gameState.getResources().getJSONObject("tanks_forces").getInt(event.getOption("factionname").getAsString() + starred);
-//            gameState.getResources().getJSONObject("tanks_forces").remove(event.getOption("factionname").getAsString() + starred);
-//            gameState.getResources().getJSONObject("tanks_forces").put(event.getOption("factionname").getAsString() + starred, tanks + event.getOption("amount").getAsInt());
+//            int tanks = gameState.getTanks().getInt(event.getOption("factionname").getAsString() + starred);
+//            gameState.getTanks().remove(event.getOption("factionname").getAsString() + starred);
+//            gameState.getTanks().put(event.getOption("factionname").getAsString() + starred, tanks + event.getOption("amount").getAsInt());
 //        } else {
 //            int reserves = gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").getInt("reserves" + starred);
 //            gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").remove("reserves" + starred);
@@ -1163,316 +1175,317 @@ public class CommandManager extends ListenerAdapter {
         }
 
     }
-//
-//    public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONObject territory = gameState.getTerritory(getTerritoryString(event, gameState));
-//        if (territory.getJSONObject("forces").keySet().contains("BG")) {
-//            int bg = territory.getJSONObject("forces").getInt("BG");
-//            territory.getJSONObject("forces").remove("BG");
-//            territory.getJSONObject("forces").put("Advisor", bg);
-//        } else if (territory.getJSONObject("forces").keySet().contains("Advisor")) {
-//            int advisor = territory.getJSONObject("forces").getInt("Advisor");
-//            territory.getJSONObject("forces").remove("Advisor");
-//            territory.getJSONObject("forces").put("BG", advisor);
-//        } else {
-//            discordGame.sendMessage("mod-info","No Bene Gesserit were found in that territory.");
-//            return;
-//        }
-//        discordGame.pushGameState();
-//        drawGameBoard(discordGame, gameState);
-//    }
-//
-//    public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        if (gameState.getBoolean("mute")) return;
-//        //Load png resources into a hashmap.
-//        HashMap<String, File> boardComponents = new HashMap<>();
-//        URL dir = getClass().getClassLoader().getResource("Board Components");
-//        try {
-//            for (File file : new File(dir.toURI()).listFiles()) {
-//                boardComponents.put(file.getName().replace(".png", ""), file);
-//            }
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//        try {
-//            BufferedImage board = ImageIO.read(boardComponents.get("Board"));
-//
-//            //Place sigils
-//            for (int i = 1; i <= gameState.getResources().getJSONObject("turn_order").length(); i++) {
-//                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(i)) + " Sigil"));
-//                Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
-//                sigil = resize(sigil, 50, 50);
-//                board = overlay(board, sigil, coordinates, 1);
-//            }
-//
-//            //Place turn, phase, and storm markers
-//            BufferedImage turnMarker = ImageIO.read(boardComponents.get("Turn Marker"));
-//            turnMarker = resize(turnMarker, 55, 55);
-//            int turn = gameState.getResources().getInt("turn") == 0 ? 1 : gameState.getResources().getInt("turn");
-//            float angle = (turn * 36) + 74f;
-//            turnMarker = rotateImageByDegrees(turnMarker, angle);
-//            Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getResources().getInt("turn"));
-//            board = overlay(board, turnMarker, coordinates, 1);
-//            BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
-//            phaseMarker = resize(phaseMarker, 50, 50);
-//            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getResources().getInt("phase") - 1));
-//            board = overlay(board, phaseMarker, coordinates, 1);
-//            BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
-//            stormMarker = resize(stormMarker, 172, 96);
-//            stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getResources().getInt("storm") * 20));
-//            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getResources().getInt("storm")), 1);
-//
-//
-//            //Place forces
-//            for (String territoryName : gameState.getGameBoard().keySet()) {
-//                JSONObject territory = gameState.getTerritory(territoryName);
-//                if (territory.getJSONObject("forces").length() == 0 && territory.getInt("spice") == 0) continue;
-//                int offset = 0;
-//                int i = 0;
-//
-//                if (territory.getInt("spice") != 0) {
-//                    i = 1;
-//                    int spice = territory.getInt("spice");
-//                    while (spice != 0) {
-//                        if (spice >= 10) {
-//                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("10 Spice"));
-//                            spiceImage = resize(spiceImage, 25,25);
-//                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
-//                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-//                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-//                            spice -= 10;
-//                        } else if (spice >= 5) {
-//                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
-//                            spiceImage = resize(spiceImage, 25,25);
-//                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
-//                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-//                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-//                            spice -= 5;
-//                        } else if (spice >= 2) {
-//                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
-//                            spiceImage = resize(spiceImage, 25,25);
-//                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
-//                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-//                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-//                            spice -= 2;
-//                        } else {
-//                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
-//                            spiceImage = resize(spiceImage, 25,25);
-//                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
-//                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-//                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-//                            spice -= 1;
-//                        }
-//                        offset += 15;
-//                    }
-//                }
-//                offset = 0;
-//                for (String force : territory.getJSONObject("forces").keySet()) {
-//                    int strength = territory.getJSONObject("forces").getInt(force);
-//                    BufferedImage forceImage = buildForceImage(boardComponents, force, strength);
-//                    Point forcePlacement = Initializers.getPoints(territoryName).get(i);
-//                    Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
-//                    board = overlay(board, forceImage, forcePlacementOffset, 1);
-//                    i++;
-//                    if (i == Initializers.getPoints(territoryName).size()) {
-//                        offset += 20;
-//                        i = 0;
-//                    }
-//                }
-//            }
-//
-//            //Place tanks forces
-//            int i = 0;
-//            int offset = 0;
-//            for (String force : gameState.getResources().getJSONObject("tanks_forces").keySet()) {
-//                JSONObject tanks = gameState.getResources().getJSONObject("tanks_forces");
-//                if (tanks.getInt(force) == 0) continue;
-//                int strength = tanks.getInt(force);
-//                BufferedImage forceImage = buildForceImage(boardComponents, force, strength);
-//
-//                Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
-//                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
-//
-//                board = overlay(board, forceImage, tanksOffset, 1);
-//                i++;
-//                if (i > 1) {
-//                    offset += 30;
-//                    i = 0;
-//                }
-//            }
-//
-//            //Place tanks leaders
-//            i = 0;
-//            offset = 0;
-//            for (Object leader : gameState.getResources().getJSONArray("tanks_leaders")) {
-//                String leaderString = (String) leader;
-//                BufferedImage leaderImage = ImageIO.read(boardComponents.get(leaderString.split("-")[0].strip()));
-//                leaderImage = resize(leaderImage, 70,70);
-//                Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
-//                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
-//                board = overlay(board, leaderImage, tanksOffset, 1);
-//                i++;
-//                if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
-//                    offset += 70;
-//                    i = 0;
-//                }
-//            }
-//
-//            ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
-//            ImageIO.write(board, "png", boardOutputStream);
-//
-//            FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
-//            discordGame.getTextChannel("turn-summary")
-//                    .sendFiles(boardFileUpload)
-//                    .queue();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public BufferedImage buildForceImage(HashMap<String, File> boardComponents, String force, int strength) throws IOException {
-//        BufferedImage forceImage = !force.equals("Advisor") ? ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop")) : ImageIO.read(boardComponents.get("BG Advisor"));
-//        forceImage = resize(forceImage, 47, 29);
-//        if (force.contains("*")) {
-//            BufferedImage star = ImageIO.read(boardComponents.get("star"));
-//            star = resize(star, 8, 8);
-//            forceImage = overlay(forceImage, star, new Point(20, 7), 1);
-//        }
-//        if (strength > 9) {
-//            BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
-//            BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(strength - 10)));
-//            oneImage = resize(oneImage, 12, 12);
-//            digitImage = resize(digitImage, 12,12);
-//            forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
-//            forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
-//        } else {
-//            BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(strength)));
-//            numberImage = resize(numberImage, 12, 12);
-//            forceImage = overlay(forceImage, numberImage, new Point(30,14), 1);
-//
-//        }
-//        return forceImage;
-//    }
-//
-//    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates, float alpha) throws IOException {
-//
-//        int compositeRule = AlphaComposite.SRC_OVER;
-//        AlphaComposite ac;
-//        ac = AlphaComposite.getInstance(compositeRule, alpha);
-//        BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
-//        Graphics2D g = overlay.createGraphics();
-//        g.drawImage(board, 0, 0, null);
-//        g.setComposite(ac);
-//        g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
-//        g.setComposite(ac);
-//        g.dispose();
-//
-//        return overlay;
-//    }
-//
-//    public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
-//        double rads = Math.toRadians(angle);
-//        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
-//        int w = img.getWidth();
-//        int h = img.getHeight();
-//        int newWidth = (int) Math.floor(w * cos + h * sin);
-//        int newHeight = (int) Math.floor(h * cos + w * sin);
-//
-//        BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
-//        Graphics2D g2d = rotated.createGraphics();
-//        AffineTransform at = new AffineTransform();
-//        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
-//
-//        int x = w / 2;
-//        int y = h / 2;
-//
-//        at.rotate(rads, x, y);
-//        g2d.setTransform(at);
-//        g2d.drawImage(img, 0, 0, null);
-//        g2d.setColor(Color.RED);
-//        g2d.drawRect(0, 0, newWidth - 1, newHeight - 1);
-//        g2d.dispose();
-//
-//        return rotated;
-//    }
-//
-//    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
-//        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-//        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
-//
-//        Graphics2D g2d = dimg.createGraphics();
-//        g2d.drawImage(tmp, 0, 0, null);
-//        g2d.dispose();
-//
-//        return dimg;
-//    }
-//
-//    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
-//        JSONObject recipient = gameState.getFaction(event.getOption("recipient").getAsString());
-//        int amount = event.getOption("amount").getAsInt();
-//
-//        if (faction.getJSONObject("resources").getInt("spice") < amount) {
-//            discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
-//        }
-//        faction.getJSONObject("resources").put("spice", faction.getJSONObject("resources").getInt("spice") - amount);
-//        spiceMessage(discordGame, amount, faction.getString("name"), "bribe to " + recipient.getString("emoji"), false);
-//        if (recipient.getJSONObject("resources").getJSONObject("front_of_shield").isNull("spice")) recipient.getJSONObject("resources").getJSONObject("front_of_shield").put("spice", amount);
-//        else recipient.getJSONObject("resources").getJSONObject("front_of_shield").put("spice", recipient.getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice") + amount);
-//        discordGame.pushGameState();
-//    }
-//
-//
-//    public void mute(DiscordGame discordGame, Game gameState) {
-//        gameState.put("mute", !gameState.getBoolean("mute"));
-//        discordGame.pushGameState();
-//    }
-//
-//    public void displayGameState(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        TextChannel channel = discordGame.getTextChannel("mod-info");
-//        switch (event.getOption("data").getAsString()) {
-//            case "territories" -> {
-//               JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
-//               for (String territoryName : territories.keySet()) {
-//                   JSONObject territory = territories.getJSONObject(territoryName);
-//                   if (territory.getInt("spice") == 0 && !territory.getBoolean("is_stronghold") && territory.getJSONObject("forces").length() == 0) continue;
-//                   discordGame.sendMessage(channel.getName(), "**" + territory.getString("territory_name") + "(" + territory.getInt("sector") + "):** \n" +
-//                           "Spice: " + territory.getInt("spice") + "\nForces: " + territory.getJSONObject("forces").toString(4));
-//               }
-//            }
-//            case "dnd" -> {
-//                for (String key : gameState.getResources().keySet()) {
-//                    if (key.contains("deck") || key.contains("discard")) {
-//                        discordGame.sendMessage(channel.getName(), "**" + key + ":** " + gameState.getResources().getJSONArray(key).toString(4));
-//                    }
-//                }
-//
-//            }
-//            case "etc" -> {
-//                for (String key : gameState.getResources().keySet()) {
-//                    if (!key.contains("deck") && !key.contains("discard")) {
-//                        discordGame.sendMessage(channel.getName(), "**" + key + ":** " + gameState.getResources().get(key).toString());
-//                    }
-//                }
-//            }
-//            case "factions" -> {
-//                for (String factionName : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                    JSONObject faction = gameState.getJSONObject("game_state").getJSONObject("factions").getJSONObject(factionName);
-//                    StringBuilder message = new StringBuilder();
-//                    message.append("**" + faction.getString("name")).append(":**\nPlayer: ").append(faction.getString("username")).append("\n");
-//                    for (String resourceName : faction.getJSONObject("resources").keySet()) {
-//                        Object resource = faction.getJSONObject("resources").get(resourceName);
-//                        message.append(resourceName).append(": ").append(resource.toString()).append("\n");
-//                    }
-//                    discordGame.sendMessage(channel.getName(), message.toString());
-//                }
-//            }
-//        }
-//        drawGameBoard(discordGame, gameState);
-//    }
+
+    public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Territory territory = getTerritoryString(event, gameState);
+        int strength = 0;
+        String found = "";
+        for (Force force : territory.getForces()) {
+            if (force.getName().equals("BG") || force.getName().equals("Advisor")) {
+               strength = force.getStrength();
+               found = force.getName();
+            }
+        }
+        territory.getForces().removeIf(force -> force.getName().equals("BG") || force.getName().equals("Advisor"));
+        if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
+        else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
+        else {
+            discordGame.sendMessage("mod-info","No Bene Gesserit were found in that territory.");
+            return;
+        }
+        discordGame.pushGameState();
+        drawGameBoard(discordGame, gameState);
+    }
+
+    private Territory getTerritoryString(SlashCommandInteractionEvent event, Game gameState) {
+        if (event.getOption("mostlikelyterritories") != null) return gameState.getTerritories().get(event.getOption("mostlikelyterritories").getAsString());
+        else if (event.getOption("otherterritories") != null) return gameState.getTerritories().get(event.getOption("otherterritories").getAsString());
+        else throw new IllegalStateException("No territory was selected.");
+    }
+
+    public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        if (gameState.getMute()) return;
+        //Load png resources into a hashmap.
+        HashMap<String, File> boardComponents = new HashMap<>();
+        URL dir = getClass().getClassLoader().getResource("Board Components");
+        try {
+            for (File file : new File(dir.toURI()).listFiles()) {
+                boardComponents.put(file.getName().replace(".png", ""), file);
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            BufferedImage board = ImageIO.read(boardComponents.get("Board"));
+
+            //Place sigils
+            for (int i = 1; i <= gameState.getFactions().size(); i++) {
+                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i).getName() + " Sigil"));
+                Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
+                sigil = resize(sigil, 50, 50);
+                board = overlay(board, sigil, coordinates, 1);
+            }
+
+            //Place turn, phase, and storm markers
+            BufferedImage turnMarker = ImageIO.read(boardComponents.get("Turn Marker"));
+            turnMarker = resize(turnMarker, 55, 55);
+            int turn = gameState.getTurn() == 0 ? 1 : gameState.getTurn();
+            float angle = (turn * 36) + 74f;
+            turnMarker = rotateImageByDegrees(turnMarker, angle);
+            Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getTurn());
+            board = overlay(board, turnMarker, coordinates, 1);
+            BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
+            phaseMarker = resize(phaseMarker, 50, 50);
+            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getPhase() - 1));
+            board = overlay(board, phaseMarker, coordinates, 1);
+            BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
+            stormMarker = resize(stormMarker, 172, 96);
+            stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getStorm() * 20));
+            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getStorm()), 1);
+
+
+            //Place forces
+            for (String territoryName : gameState.getTerritories().keySet()) {
+                Territory territory = gameState.getTerritories().get(territoryName);
+                if (territory.getForces().size() == 0 && territory.getSpice() == 0) continue;
+                int offset = 0;
+                int i = 0;
+
+                if (territory.getSpice() != 0) {
+                    i = 1;
+                    int spice = territory.getSpice();
+                    while (spice != 0) {
+                        if (spice >= 10) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("10 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                            spice -= 10;
+                        } else if (spice >= 5) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                            spice -= 5;
+                        } else if (spice >= 2) {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                            spice -= 2;
+                        } else {
+                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
+                            spiceImage = resize(spiceImage, 25,25);
+                            Point spicePlacement = Initializers.getPoints(territoryName).get(0);
+                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                            spice -= 1;
+                        }
+                        offset += 15;
+                    }
+                }
+                offset = 0;
+                for (Force force : territory.getForces()) {
+                    BufferedImage forceImage = buildForceImage(boardComponents, force.getName(), force.getStrength());
+                    Point forcePlacement = Initializers.getPoints(territoryName).get(i);
+                    Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                    board = overlay(board, forceImage, forcePlacementOffset, 1);
+                    i++;
+                    if (i == Initializers.getPoints(territoryName).size()) {
+                        offset += 20;
+                        i = 0;
+                    }
+                }
+            }
+
+            //Place tanks forces
+            int i = 0;
+            int offset = 0;
+            for (Force force : gameState.getTanks()) {
+                if (force.getStrength() == 0) continue;
+                BufferedImage forceImage = buildForceImage(boardComponents, force.getName(), force.getStrength());
+
+                Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
+                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+
+                board = overlay(board, forceImage, tanksOffset, 1);
+                i++;
+                if (i > 1) {
+                    offset += 30;
+                    i = 0;
+                }
+            }
+
+            //Place tanks leaders
+            i = 0;
+            offset = 0;
+            for (Leader leader : gameState.getLeaderTanks()) {
+                BufferedImage leaderImage = ImageIO.read(boardComponents.get(leader.name()));
+                leaderImage = resize(leaderImage, 70,70);
+                Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
+                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+                board = overlay(board, leaderImage, tanksOffset, 1);
+                i++;
+                if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
+                    offset += 70;
+                    i = 0;
+                }
+            }
+
+            ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(board, "png", boardOutputStream);
+
+            FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
+            discordGame.getTextChannel("turn-summary")
+                    .sendFiles(boardFileUpload)
+                    .queue();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public BufferedImage buildForceImage(HashMap<String, File> boardComponents, String force, int strength) throws IOException {
+        BufferedImage forceImage = !force.equals("Advisor") ? ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop")) : ImageIO.read(boardComponents.get("BG Advisor"));
+        forceImage = resize(forceImage, 47, 29);
+        if (force.contains("*")) {
+            BufferedImage star = ImageIO.read(boardComponents.get("star"));
+            star = resize(star, 8, 8);
+            forceImage = overlay(forceImage, star, new Point(20, 7), 1);
+        }
+        if (strength > 9) {
+            BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
+            BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(strength - 10)));
+            oneImage = resize(oneImage, 12, 12);
+            digitImage = resize(digitImage, 12,12);
+            forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
+            forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
+        } else {
+            BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(strength)));
+            numberImage = resize(numberImage, 12, 12);
+            forceImage = overlay(forceImage, numberImage, new Point(30,14), 1);
+
+        }
+        return forceImage;
+    }
+
+    public BufferedImage overlay(BufferedImage board, BufferedImage piece, Point coordinates, float alpha) {
+
+        int compositeRule = AlphaComposite.SRC_OVER;
+        AlphaComposite ac;
+        ac = AlphaComposite.getInstance(compositeRule, alpha);
+        BufferedImage overlay = new BufferedImage(board.getWidth(), board.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = overlay.createGraphics();
+        g.drawImage(board, 0, 0, null);
+        g.setComposite(ac);
+        g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
+        g.setComposite(ac);
+        g.dispose();
+
+        return overlay;
+    }
+
+    public BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
+        double rads = Math.toRadians(angle);
+        double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
+        int w = img.getWidth();
+        int h = img.getHeight();
+        int newWidth = (int) Math.floor(w * cos + h * sin);
+        int newHeight = (int) Math.floor(h * cos + w * sin);
+
+        BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = rotated.createGraphics();
+        AffineTransform at = new AffineTransform();
+        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
+
+        int x = w / 2;
+        int y = h / 2;
+
+        at.rotate(rads, x, y);
+        g2d.setTransform(at);
+        g2d.drawImage(img, 0, 0, null);
+        g2d.setColor(Color.RED);
+        g2d.drawRect(0, 0, newWidth - 1, newHeight - 1);
+        g2d.dispose();
+
+        return rotated;
+    }
+
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
+
+    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        Faction recipient = gameState.getFaction(event.getOption("recipient").getAsString());
+        int amount = event.getOption("amount").getAsInt();
+
+        if (faction.getSpice() < amount) {
+            discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
+            return;
+        }
+        faction.subtractSpice(amount);
+        spiceMessage(discordGame, amount, faction.getName(), "bribe to " + recipient.getEmoji(), false);
+        recipient.addFrontOfShieldSpice(amount);
+        writeFactionInfo(event, gameState, discordGame, faction.getName());
+        writeFactionInfo(event, gameState, discordGame, recipient.getName());
+        discordGame.pushGameState();
+    }
+
+    public void mute(DiscordGame discordGame, Game gameState) {
+        gameState.setMute(!gameState.getMute());
+        discordGame.pushGameState();
+    }
+
+    public void displayGameState(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        TextChannel channel = discordGame.getTextChannel("mod-info");
+        switch (event.getOption("data").getAsString()) {
+            case "territories" -> {
+               Map<String, Territory> territories = gameState.getTerritories();
+               for (String territoryName : territories.keySet()) {
+                   Territory territory = territories.get(territoryName);
+                   if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty()) continue;
+                   discordGame.sendMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
+                           "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
+               }
+            }
+            case "dnd" -> {
+                discordGame.sendMessage("mod-info", gameState.getTreacheryDeck().toString());
+                discordGame.sendMessage("mod-info", gameState.getTreacheryDiscard().toString());
+                discordGame.sendMessage("mod-info", gameState.getSpiceDeck().toString());
+                discordGame.sendMessage("mod-info", gameState.getSpiceDiscardA().toString());
+                discordGame.sendMessage("mod-info", gameState.getSpiceDiscardB().toString());
+                discordGame.sendMessage("mod-info", gameState.getLeaderSkillDeck().toString());
+                discordGame.sendMessage("mod-info", gameState.getTraitorDeck().toString());
+                discordGame.sendMessage("mod-info", gameState.getMarket().toString());
+            }
+            case "factions" -> {
+                for (Faction faction: gameState.getFactions()) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("**" + faction.getName()).append(":**\nPlayer: ").append(faction.getUserName()).append("\n");
+                    message.append("spice: ").append(faction.getSpice()).append("\nTreachery Cards: ").append(faction.getTreacheryHand())
+                            .append("\nTraitors:").append(faction.getTraitorHand()).append("\nLeaders: ").append(faction.getLeaders()).append("\n");
+                    for (Resource resource : faction.getResources()) {
+                        message.append(resource.getName()).append(": ").append(resource.getValue()).append("\n");
+                    }
+                    discordGame.sendMessage(channel.getName(), message.toString());
+                }
+            }
+        }
+        drawGameBoard(discordGame, gameState);
+    }
 
     public void clean(SlashCommandInteractionEvent event) {
         if (!event.getOption("password").getAsString().equals(Dotenv.configure().load().get("PASSWORD"))) {

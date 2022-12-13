@@ -38,6 +38,7 @@ public Faction(FactionName name, String player, String userName, Game gameState)
         this.player = player;
         this.userName = userName;
         this.treacheryHand = new LinkedList<>();
+        this.frontOfShieldSpice = 0;
 
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
@@ -271,4 +272,11 @@ public Faction(FactionName name, String player, String userName, Game gameState)
         return resources;
     }
 
+    public void setFrontOfShieldSpice(int frontOfShieldSpice) {
+        this.frontOfShieldSpice = frontOfShieldSpice;
+    }
+
+    public void addFrontOfShieldSpice(int amount) {
+        this.frontOfShieldSpice += amount;
+    }
 }

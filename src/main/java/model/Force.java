@@ -31,6 +31,10 @@ public class Force {
         if (amount < 0) throw new IllegalArgumentException("You cannot add a negative strength value to a force.");
         this.strength += amount;
     }
+    @Override
+    public String toString() {
+        return name + " forces: " + strength;
+    }
 
     public void subtractStrength(int amount) {
         this.strength -= Math.abs(amount);
