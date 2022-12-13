@@ -6,7 +6,7 @@ import java.util.List;
 public class Territory {
     private final String territoryName;
     private final int sector;
-    private final boolean isRock;
+    private boolean isRock;
     private final boolean isStronghold;
     private int spice;
     private final List<Force> forces;
@@ -46,6 +46,10 @@ public class Territory {
 
     public List<Force> getForces() {
         return forces;
+    }
+
+    public void setRock(boolean rock) {
+        isRock = rock;
     }
 
     public void addSpice(Integer spice) {

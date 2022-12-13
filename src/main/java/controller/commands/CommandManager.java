@@ -1,12 +1,11 @@
 package controller.commands;
 
-import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.*;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
@@ -19,9 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -56,7 +53,6 @@ public class CommandManager extends ListenerAdapter {
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
-                    case "peek" -> peek(event, gameState);
 //                    case "discard" -> discard(event, discordGame, gameState);
 //                    case "transfercard" -> transferCard(event, discordGame, gameState);
 //                    case "putback" -> putBack(event, discordGame, gameState);
@@ -123,28 +119,13 @@ public class CommandManager extends ListenerAdapter {
         OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
                 .setAutoComplete(true);
         OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
-        OptionData isNumber = new OptionData(OptionType.BOOLEAN, "isanumber", "Set true if it is a numerical value, false otherwise", true);
-        OptionData resourceValNumber = new OptionData(OptionType.INTEGER, "numbervalue", "Set the initial value if the resource is a number (leave blank otherwise)");
-        OptionData resourceValString = new OptionData(OptionType.STRING, "othervalue", "Set the initial value if the resource is not a number (leave blank otherwise)");
+        OptionData value = new OptionData(OptionType.STRING, "value", "Set the initial value", true);
         OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount to be added or subtracted (e.g. -3, 4)", true);
         OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
         OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
         OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
                 .addChoice("Treachery Deck", "treachery_deck")
                 .addChoice("Traitor Deck", "traitor_deck");
-        OptionData destination = new OptionData(OptionType.STRING, "destination", "Where the card is being drawn to (name a faction to draw to hand, or 'discard')", true)
-                .addChoice("Atreides", "Atreides")
-                .addChoice("Harkonnen", "Harkonnen")
-                .addChoice("Emperor", "Emperor")
-                .addChoice("Fremen", "Fremen")
-                .addChoice("Spacing Guild", "Guild")
-                .addChoice("Bene Gesserit", "BG")
-                .addChoice("Ixian", "Ix")
-                .addChoice("Tleilaxu", "BT")
-                .addChoice("CHOAM", "CHOAM")
-                .addChoice("Richese", "Rich")
-                .addChoice("discard", "discard");
-        OptionData numberToPeek = new OptionData(OptionType.STRING, "number", "The number of cards you want to peek (default is 1).");
         OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true);
         OptionData sender = new OptionData(OptionType.STRING, "sender", "The one giving the card", true)
                 .addChoice("Atreides", "Atreides")
@@ -156,8 +137,7 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Ixian", "Ix")
                 .addChoice("Tleilaxu", "BT")
                 .addChoice("CHOAM", "CHOAM")
-                .addChoice("Richese", "Rich")
-                .addChoice("Add from discard", "discard");
+                .addChoice("Richese", "Rich");
         OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
@@ -168,8 +148,7 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Ixian", "Ix")
                 .addChoice("Tleilaxu", "BT")
                 .addChoice("CHOAM", "CHOAM")
-                .addChoice("Richese", "Rich")
-                .addChoice("Place up for bid", "market");
+                .addChoice("Richese", "Rich");
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
         OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true);
         OptionData territory = new OptionData(OptionType.STRING, "mostlikelyterritories", "The name of the territory (more 'important' territories).")
@@ -234,11 +213,10 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("addfaction", "Register a user to a faction in a game").addOptions(allFactions, user));
-        commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, resourceName, isNumber, resourceValNumber, resourceValString));
+        commandData.add(Commands.slash("newfactionresource", "Initialize a new resource for a faction").addOptions(faction, resourceName, value));
         commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(faction, resourceName, amount, message));
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(faction, resourceName));
-        commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, destination));
-        commandData.add(Commands.slash("peek", "Peek at the top n number of cards of a deck without moving them.").addOptions(deck, numberToPeek));
+        commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(sender, card, recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(card, bottom));
@@ -260,7 +238,7 @@ public class CommandManager extends ListenerAdapter {
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
 
-    public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
+    public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         Role gameRole = event.getOption("gamerole").getAsRole();
         Role modRole = event.getOption("modrole").getAsRole();
         String name = event.getOption("name").getAsString();
@@ -303,21 +281,6 @@ public class CommandManager extends ListenerAdapter {
             <:choam:991763324624703538> <:rich:991763318467465337> CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""").queue();
 
         Game game = new Game();
-        game.addDeck(Initializers.buildTreacheryDeck());
-        game.addDeck(new Deck("treachery_discard"));
-        game.addDeck(Initializers.buildStormDeck());
-        game.addDeck(new Deck("traitor"));
-        game.addDeck(Initializers.buildSpiceDeck());
-        game.addDeck(new Deck("spice_discardA"));
-        game.addDeck(new Deck("spice_discardB"));
-        game.addDeck(new Deck("market"));
-
-        game.addResource(new IntegerResource("turn", 0, 0, 10));
-        game.addResource(new IntegerResource("phase", 0, 0, 9));
-        game.addResource(new IntegerResource("storm", 18, 1, 18));
-        game.addResource(new BooleanResource("shieldwallbroken", false));
-        game.addResource(new Resource<>("tanks", new ArrayList<>()));
-        game.addResource(new Resource<List<Faction>>("turn_order", new ArrayList<>()));
         game.setGameRole(gameRole.getName());
         game.setModRole(modRole.getName());
         game.setMute(false);
@@ -325,7 +288,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
         if (!gameState.getResource("turn").getValue().equals(0)) {
             modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
@@ -341,9 +304,7 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
 
-        Faction faction = new Faction(factionName, event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname());
-
-        Initializers.newFaction(faction, gameState);
+        new Faction(FactionName.valueOf(factionName), event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname(), gameState);
 
         Category game = discordGame.getGameCategory();
         discordGame.pushGameState();
@@ -358,30 +319,9 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        String factionName = event.getOption("factionname").getAsString();
-        if (!gameState.hasFaction(factionName)) {
-            event.getChannel().sendMessage("That faction is not in this game!").queue();
-            return;
-        }
-
-        Faction faction = gameState.getFaction(factionName);
-
-        if (event.getOption("isanumber").getAsBoolean()) {
-            Resource<Integer> resource = new Resource<>(
-                    event.getOption("resource").getAsString(),
-                    event.getOption("numbervalue").getAsInt()
-            );
-
-            faction.addResource(resource);
-        } else {
-            Resource<String> resource = new Resource<>(
-                    event.getOption("resource").getAsString(),
-                    event.getOption("othervalue").getAsString()
-            );
-
-            faction.addResource(resource);
-        }
-
+        gameState.getFaction(event.getOption("factionname").getAsString())
+                .addResource(new Resource(event.getOption("resource").getAsString(),
+                event.getOption("value").getAsString()));
         discordGame.pushGameState();
     }
 
@@ -398,130 +338,61 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException("Resource is not numeric");
         }
 
-        if (resource.getName().equals("spice")) {
-            String message = event.getOption("message") == null ? "custom transaction" : event.getOption("message").getAsString();
-            spiceMessage(discordGame, Math.abs(amount), event.getOption("factionname").getAsString(), message, amount >= 0);
-
-        }
-
         writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
         discordGame.pushGameState();
     }
 
     public void removeResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
-        faction.removeResource(event.getOption("resource").getAsString());
+        gameState.getFaction(event.getOption("factionname").getAsString()).removeResource(event.getOption("resource").getAsString());
         discordGame.pushGameState();
     }
 
     public void drawCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        String sourceDeckName = event.getOption("deck").getAsString();
-        String sourceFactionName = event.getOption("deck_faction").getAsString();
-        String destinationDeckName = event.getOption("destination").getAsString();
-        String destinationFactionName = event.getOption("destination_faction").getAsString();
-
-        Deck sourceDeck = sourceFactionName.isEmpty() ? gameState.getDeck(sourceDeckName) :
-                gameState.getFaction(sourceFactionName).getDeck(sourceDeckName);
-
-        Deck destinationDeck = destinationFactionName.isEmpty() ? gameState.getDeck(destinationDeckName) :
-                gameState.getFaction(destinationFactionName).getDeck(destinationDeckName);
-
-        Card card = sourceDeck.pop();
-        destinationDeck.push(card);
-
-        if (!sourceFactionName.isEmpty()) {
-            writeFactionInfo(event, gameState, discordGame, sourceFactionName);
-        }
-
-        if (!destinationFactionName.isEmpty()) {
-            writeFactionInfo(event, gameState, discordGame, destinationFactionName);
-        }
-
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        faction.addTreacheryCard(gameState.getTreacheryDeck().pop());
         discordGame.pushGameState();
     }
 
     public String drawCard(Game gameState, String deckName, String faction) {
-        Deck deck = gameState.getDeck(deckName);
-
-        if (deck.getAllCards().size() == 0 && deckName.equals("spice_deck")) {
-            Deck discardA = gameState.getDeck("spice_discardA");
-            Deck discardB = gameState.getDeck("spice_discardB");
-
-            while (discardA.getAllCards().size() > 0) {
-                deck.addCardToTop(discardA.pop());
-            }
-            while (discardB.getAllCards().size() > 0) {
-                deck.addCardToTop(discardB.pop());
-            }
-            deck.shuffle();
-        }
-
-        Card drawn = deck.pop();
-        if ((int) gameState.getResource("turn").getValue() == 1 && drawn.getName().equals("Shai-Hulud")) {
-            deck.shuffle();
-            return drawCard(gameState, deckName, faction);
-        }
-        if (deckName.equals("spice_deck")) {
-            SpiceCard spiceCard = (SpiceCard) drawn;
-            //In this case, faction is used as a flag to determine if this is the first or second spice blow of the turn.
-            if (faction.equals("A: ")) {
-                gameState.getDeck("spice_discardA").addCardToTop(spiceCard);
-            }
-            else {
-                gameState.getDeck("spice_discardB").addCardToTop(spiceCard);
-            }
-            if (!spiceCard.getName().equals("Shai-Hulud") && (int) gameState.getResource("storm").getValue() != gameState.getTerritories().get(spiceCard.getTerritory()).getSector()) {
-                gameState.getTerritories().get(spiceCard.getName()).addSpice(spiceCard.getSpice());
-            }
-            if (spiceCard.getName().equals("Shai-Hulud")) return drawn.getName() + ", " + drawCard(gameState, deckName, faction);
-            return drawn.getName();
-        }
         switch (deckName) {
-            case "traitor_deck" -> {
-                List<TraitorCard> hand = (List<TraitorCard>) gameState.getFaction(faction).getResource("traitor_hand");
-                hand.add((TraitorCard) drawn);
+            case "spice_deck" -> {
+                LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
+                LinkedList<SpiceCard> a = gameState.getSpiceDiscardA();
+                LinkedList<SpiceCard> b = gameState.getSpiceDiscardB();
+                if (deck.isEmpty()) {
+                    deck.addAll(a);
+                    deck.addAll(b);
+                    a.clear();
+                    b.clear();
+                    Collections.shuffle(deck);
+                }
+                SpiceCard drawn = deck.pop();
+                if (gameState.getTurn() == 1 && drawn.name().equals("Shai-Hulud")) {
+                    deck.add(drawn);
+                    Collections.shuffle(deck);
+                    drawCard(gameState, deckName, faction);
+                }
+                if (faction.equals("A: ")) a.add(drawn);
+                else b.add(drawn);
+                if (!drawn.name().equals("Shai-Hulud") && gameState.getStorm() != drawn.sector()) {
+                   gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
+                }
+                if (drawn.name().equals("Shai-Hulud")) return drawn.name() + ", " + drawCard(gameState, deckName, faction);
             }
-            case "treachery_deck" -> {
-                List<TreacheryCard> hand = (List<TreacheryCard>) gameState.getFaction(faction).getResource("treachery_hand");
-                hand.add((TreacheryCard) drawn);
-            }
+            case "traitor_deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
+            case "treachery_deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
         }
-        return drawn.getName();
-    }
-
-    public void peek(SlashCommandInteractionEvent event, Game gameState) throws ChannelNotFoundException {
-        String deckName = event.getOption("deck").getAsString();
-        String deckFaction = event.getOption("deck_faction").getAsString();
-
-        Deck deck = deckFaction.isEmpty() ? gameState.getDeck(deckName) :
-                gameState.getFaction(deckFaction).getDeck(deckName);
-
-        StringBuilder message = new StringBuilder();
-        message.append("Top of deck: \n");
-        int number = 1;
-        if (event.getOption("number") != null) {
-            number = event.getOption("number").getAsInt();
-        }
-
-        List<Card> cards = deck.getTopCards(number);
-
-        for (int i = 0; i < number; i++) {
-            message.append(cards.get(i).getName());
-            message.append("\n");
-        }
-        event.getUser().openPrivateChannel().queue((privateChannel -> privateChannel.sendMessage(message).queue()));
+        return "";
     }
 
     public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
-
-        List<TreacheryCard> hand = (List<TreacheryCard>) faction.getResource("treachery_hand");
+        List<TreacheryCard> hand = faction.getTreacheryHand();
         int i = 0;
-
         for (; i < hand.size(); i++) {
-            String card = hand.get(i).getName();
+            String card = hand.get(i).name();
             if (card.toLowerCase().contains(event.getOption("card").getAsString().toLowerCase())) {
-                gameState.getDeck("treachery_discard").addCardToTop(hand.get(i));
+                gameState.getTreacheryDiscard().add(hand.get(i));
                 break;
             }
         }
@@ -531,24 +402,10 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        List<Card> giverHand;
-        List<Card> receiverHand;
-        Faction giver = null;
-        Faction receiver = null;
-
-        if (event.getOption("recipient").getAsString().equals("market")) {
-            receiverHand = gameState.getDeck("market").getAllCards();
-        }
-        else {
-            receiver = gameState.getFaction(event.getOption("recipient").getAsString());
-            receiverHand = (List<Card>)  receiver.getResource("treachery_hand");
-        }
-
-        if (event.getOption("sender").getAsString().equals("discard")) giverHand = gameState.getDeck("treachery_discard").getAllCards();
-        else {
-            giver = gameState.getFaction(event.getOption("sender").getAsString());
-            giverHand = (List<Card>) giver.getResource("treachery_hand");
-        }
+        Faction giver = gameState.getFaction(event.getOption("sender").getAsString());
+        Faction receiver = gameState.getFaction(event.getOption("recipient").getAsString());
+        List<TreacheryCard> giverHand = giver.getTreacheryHand();
+        List<TreacheryCard> receiverHand = receiver.getTreacheryHand();
 
         if ((receiver.getHandLimit() == receiverHand.size())) {
             event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The recipient's hand is full!").queue());
@@ -558,7 +415,7 @@ public class CommandManager extends ListenerAdapter {
 
         boolean cardFound = false;
         for (; i < giverHand.size(); i++) {
-            String card = giverHand.get(i).getName();
+            String card = giverHand.get(i).name();
             if (card.toLowerCase().contains(event.getOption("card").getAsString())) {
                 cardFound = true;
                 receiverHand.add(giverHand.get(i));
@@ -570,19 +427,19 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         giverHand.remove(i);
-        if (giver != null) writeFactionInfo(event, gameState, discordGame, giver.getName());
+        writeFactionInfo(event, gameState, discordGame, giver.getName());
         writeFactionInfo(event, gameState, discordGame, receiver.getName());
         discordGame.pushGameState();
     }
 
     public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
-        Deck market = gameState.getDeck("market");
+        LinkedList<TreacheryCard> market = gameState.getMarket();
         int i = 0;
         boolean found = false;
-        for (; i < market.getAllCards().size(); i++) {
-            if (market.getAllCards().get(i).getName().contains(event.getOption("card").getAsString())) {
-                if (!event.getOption("bottom").getAsBoolean()) gameState.getDeck("treachery_deck").addCardToTop(market.getAllCards().get(i));
-                else gameState.getDeck("treachery_deck").addCardToBottom(market.getAllCards().get(i));
+        for (; i < market.size(); i++) {
+            if (market.get(i).name().contains(event.getOption("card").getAsString())) {
+                if (!event.getOption("bottom").getAsBoolean()) gameState.getTreacheryDeck().addFirst(market.get(i));
+                else gameState.getTreacheryDeck().addLast(market.get(i));
                 found = true;
                 break;
             }
@@ -591,8 +448,8 @@ public class CommandManager extends ListenerAdapter {
             event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?").queue());
             return;
         }
-        market.getAllCards().remove(i);
-        market.shuffle();
+        market.remove(i);
+        Collections.shuffle(market);
         discordGame.pushGameState();
     }
 
@@ -600,13 +457,13 @@ public class CommandManager extends ListenerAdapter {
         List<TreacheryCard> hand = (List<TreacheryCard>) gameState.getFaction("Ix").getResource("treachery_hand").getValue();
         Collections.shuffle(hand);
         for (TreacheryCard treacheryCard : hand) {
-            if (treacheryCard.getName().toLowerCase().contains(event.getOption("card").getAsString())) continue;
-            gameState.getDeck("treachery_deck").addCardToTop(treacheryCard);
+            if (treacheryCard.name().toLowerCase().contains(event.getOption("card").getAsString())) continue;
+            gameState.getTreacheryDeck().addFirst(treacheryCard);
         }
         int shift = 0;
         int length = hand.size() - 1;
         for (int i = 0; i < length; i++) {
-            if (hand.get(0).getName().toLowerCase().contains(event.getOption("card").getAsString())) {
+            if (hand.get(0).name().toLowerCase().contains(event.getOption("card").getAsString())) {
                 shift = 1;
                 continue;
             }
@@ -620,35 +477,34 @@ public class CommandManager extends ListenerAdapter {
         Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
         List<TreacheryCard> winnerHand = (List<TreacheryCard>) winner.getResource("treachery_hand");
         int spent = event.getOption("spent").getAsInt();
-        Deck market = gameState.getDeck("market");
+        LinkedList<TreacheryCard> market = gameState.getMarket();
         if (winner.getHandLimit() == winnerHand.size()) {
             event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Player's hand is full, they cannot bid on this card!").queue());
             return;
         }
-        if (market.getAllCards().size() > 0) {
-            winnerHand.add((TreacheryCard) market.pop());
-            discordGame.sendMessage("turn-summary", gameState.getFaction(event.getOption("factionname")
-                    .getAsString()).getEmoji() + " wins card up for bid for " + spent + " <:spice4:991763531798167573>");
+        if (market.size() > 0) {
+            winnerHand.add(market.pop());
+            discordGame.sendMessage("turn-summary", winner.getEmoji() + " wins card up for bid for " + spent + " <:spice4:991763531798167573>");
         } else {
-            event.getMessageChannel().sendMessage("No more cards up for bid.").queue();
+            discordGame.sendMessage("mod-info", "No more cards up for bid.");
             return;
         }
-        if (gameState.hasFaction("Atreides") && market.getAllCards().size() > 0) {
+        if (gameState.hasFaction("Atreides") && market.size() > 0) {
             discordGame.sendMessage("atreides-info", "The next card up for bid is <:treachery:991763073281040518> "
-                            + market.getTopCards(1).get(0).getName() + " <:treachery:991763073281040518>");
+                            + market.get(0).name() + " <:treachery:991763073281040518>");
         }
 
-        if (market.getAllCards().size() > 0) {
+        if (market.size() > 0) {
                 StringBuilder message = new StringBuilder();
-                int cardNumber = (int) gameState.getResource("market_size").getValue() - market.getAllCards().size();
+                int cardNumber = (int) gameState.getResource("market_size").getValue() - market.size();
                 message.append("R").append(gameState.getResource("turn").getValue()).append(":C").append(cardNumber + 1).append("\n");
                 int firstBid = Math.ceilDiv((int) gameState.getResource("storm").getValue(), 3) + 1 + cardNumber;
                 for (int i = 0; i < gameState.getFactions().size(); i++) {
                     int playerPosition = (firstBid + i) % 6;
                     if (playerPosition == 0) playerPosition = 6;
-                    List<Faction> turnOrder = (List<Faction>) gameState.getResource("turn_order").getValue();
+                    List<Faction> turnOrder = gameState.getFactions();
                     Faction faction = turnOrder.get(playerPosition);
-                    List<TreacheryCard> hand = (List<TreacheryCard>) faction.getResource("treachery_hand").getValue();
+                    List<TreacheryCard> hand = faction.getTreacheryHand();
                     if (faction.getHandLimit() > hand.size()) {
                         message.append(faction.getEmoji()).append(":");
                         if (i == 0) message.append(" ").append(faction.getPlayer());
@@ -663,17 +519,15 @@ public class CommandManager extends ListenerAdapter {
         }
         winner.subtractSpice(spent);
         spiceMessage(discordGame, spent, winner.getName(), "R" +
-                gameState.getResource("turn").getValue() + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), false);
+                gameState.getResource("turn").getValue() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), false);
         writeFactionInfo(event, gameState, discordGame, winner.getName());
-        if (gameState.getJSONObject("game_state").getJSONObject("factions").keySet().contains("Emperor") && !winner.getName().equals("Emperor")) {
-            int spiceEmp = gameState.getFaction("Emperor").getJSONObject("resources").getInt("spice");
-            gameState.getFaction("Emperor").getJSONObject("resources").remove("spice");
-            gameState.getFaction("Emperor").getJSONObject("resources").put("spice", spiceEmp + spent);
-            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getString("emoji") + " is paid " + spent + " <:spice4:991763531798167573>");
+        if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
+            gameState.getFaction("Emperor").addSpice(spent);
+            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getEmoji() + " is paid " + spent + " <:spice4:991763531798167573>");
             writeFactionInfo(event, gameState, discordGame, "Emperor");
         }
         spiceMessage(discordGame, spent, "emperor", "R" +
-                gameState.getResources().getInt("turn") + ":C" + (gameState.getResources().getInt("market_size") - gameState.getResources().getJSONArray("market").length()), true);
+                gameState.getTurn() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), true);
         discordGame.pushGameState();
     }
 
@@ -686,73 +540,32 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-//    public void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
-//        JSONArray tanks = gameState.getResources().getJSONArray("tanks_leaders");
-//        int remove = 0;
-//        boolean found = false;
-//        String leader = "";
-//        for (int i = 0; i < faction.getJSONObject("resources").getJSONArray("leaders").length(); i++) {
-//            String leaderName = faction.getJSONObject("resources").getJSONArray("leaders").getString(i);
-//            if (leaderName.toLowerCase().contains(event.getOption("leader").getAsString().toLowerCase())) {
-//                remove = i;
-//                found = true;
-//                leader = leaderName;
-//                break;
-//            }
-//        }
-//        if (found) faction.getJSONObject("resources").getJSONArray("leaders").remove(remove);
-//        else {
-//            discordGame.getTextChannel("mod-info").sendMessage("Leader not found.").queue();
-//            return;
-//        }
-//        tanks.put(leader);
-//        discordGame.pushGameState();
-//    }
-//
-//    public void reviveLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
-//        JSONArray tanks = gameState.getResources().getJSONArray("tanks_leaders");
-//        int revive = 0;
-//        boolean found = false;
-//        String leader = "";
-//        for (int i = 0; i < tanks.length(); i++) {
-//            String leaderName = tanks.getString(i);
-//            if (leaderName.toLowerCase().contains(event.getOption("leader").getAsString().toLowerCase())) {
-//                revive = i;
-//                found = true;
-//                leader = leaderName;
-//                break;
-//            }
-//        }
-//        if (found) tanks.remove(revive);
-//        else {
-//            discordGame.getTextChannel("mod-info").sendMessage("Leader not found in the tanks.").queue();
-//            return;
-//        }
-//        faction.getJSONObject("resources").getJSONArray("leaders").put(leader);
-//        discordGame.pushGameState();
-//    }
-//
-//    public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        String star = event.getOption("starred").getAsBoolean() ? "*" : "";
-//        String faction = event.getOption("factionname").getAsString();
-//        int tanksForces = gameState.getResources().getJSONObject("tanks_forces").getInt(faction + star);
-//        gameState.getResources().getJSONObject("tanks_forces").remove(faction + star);
-//        gameState.getResources().getJSONObject("tanks_forces").put(faction + star, tanksForces - event.getOption("revived").getAsInt());
-//        int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves" + star);
-//        gameState.getFaction(faction).getJSONObject("resources").remove("reserves" + star);
-//        gameState.getFaction(faction).getJSONObject("resources").put("reserves" + star, reserves + event.getOption("revived").getAsInt());
-//        gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") - 2 * event.getOption("revived").getAsInt());
-//        spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction, "Revivals", false);
-//        if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("bt")) {
-//            gameState.getFaction("bt").getJSONObject("resources").put("spice", gameState.getFaction("bt").getJSONObject("resources").getInt("spice") + 2 * event.getOption("revived").getAsInt());
-//            spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), "bt", gameState.getFaction(faction).getString("emoji") + " revivals", true);
-//            writeFactionInfo(event, gameState, discordGame, "bt");
-//        }
-//        writeFactionInfo(event, gameState, discordGame, faction);
-//        discordGame.pushGameState();
-//    }
+    public void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        gameState.getLeaderTanks().add(faction.removeLeader(event.getOption("leader").getAsString().toLowerCase()));
+        discordGame.pushGameState();
+    }
+
+    public void reviveLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        faction.getLeaders().add(gameState.removeLeaderFromTanks(event.getOption("leader").getAsString().toLowerCase()));
+        discordGame.pushGameState();
+    }
+
+    public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        String star = event.getOption("starred").getAsBoolean() ? "*" : "";
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        if (star.equals("")) faction.getReserves().addStrength(event.getOption("revived").getAsInt());
+        else faction.getSpecialReserves().addStrength(event.getOption("revived").getAsInt());
+        spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction.getName(), "Revivals", false);
+        if (gameState.hasFaction("BT")) {
+            gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
+            spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), "bt", faction.getEmoji() + " revivals", true);
+            writeFactionInfo(event, gameState, discordGame, "BT");
+        }
+        writeFactionInfo(event, gameState, discordGame, faction.getName());
+        discordGame.pushGameState();
+    }
 //
 //    public void advanceGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
 //        Category game = discordGame.getGameCategory();
@@ -1329,12 +1142,12 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = gameState.getFaction(factionName);
 
         String emoji = faction.getEmoji();
-        Deck traitors = faction.getDeck("traitors");
+        List<TraitorCard> traitors = faction.getTraitorHand();
         StringBuilder traitorString = new StringBuilder();
-        if (faction.equals("BT")) traitorString.append("\n__Face Dancers:__\n");
+        if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
-        for (Card traitor : traitors.getAllCards()) {
-            traitorString.append(traitor.getName());
+        for (TraitorCard traitor : traitors) {
+            traitorString.append(traitor.name());
             traitorString.append("\n");
         }
         for (TextChannel channel : discordGame.getTextChannels()) {
@@ -1343,8 +1156,8 @@ public class CommandManager extends ListenerAdapter {
                         faction.getResource("spice").getValue() +
                         traitorString);
 
-                for (Card treachery : faction.getDeck("treachery").getAllCards()) {
-                    discordGame.sendMessage(channel.getName(), "<:treachery:991763073281040518> " + treachery.getName().split("\\|")[0].strip() + " <:treachery:991763073281040518>");
+                for (TreacheryCard treachery : faction.getTreacheryHand()) {
+                    discordGame.sendMessage(channel.getName(), "<:treachery:991763073281040518> " + treachery.name() + " <:treachery:991763073281040518>");
                 }
             }
         }
