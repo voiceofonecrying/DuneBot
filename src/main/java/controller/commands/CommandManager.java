@@ -69,19 +69,19 @@ public class CommandManager extends ListenerAdapter {
                     case "transfercard" -> transferCard(event, discordGame, gameState);
                     case "putback" -> putBack(event, discordGame, gameState);
                     case "ixhandselection" -> ixHandSelection(event, discordGame, gameState);
-                    //case "selecttraitor" -> selectTraitor(event, discordGame, gameState);
-                    //case "placeforces" -> placeForces(event, discordGame, gameState);
-                    //case "removeforces" -> removeForces(event, discordGame, gameState);
+                    case "selecttraitor" -> selectTraitor(event, discordGame, gameState);
+                    case "placeforces" -> placeForces(event, discordGame, gameState);
+                    case "removeforces" -> removeForces(event, discordGame, gameState);
                     case "display" -> displayGameState(event, discordGame, gameState);
                     case "reviveforces" -> revival(event, discordGame, gameState);
                     case "awardbid" -> awardBid(event, discordGame, gameState);
                     case "killleader" -> killLeader(event, discordGame, gameState);
                     case "reviveleader" -> reviveLeader(event, discordGame, gameState);
-                    //case "setstorm" -> setStorm(event, discordGame, gameState);
+                    case "setstorm" -> setStorm(event, discordGame, gameState);
                     case "bgflip" -> bgFlip(event, discordGame, gameState);
                     case "bribe" -> bribe(event, discordGame, gameState);
                     case "mute" -> mute(discordGame, gameState);
-                    //case "advancegame" -> advanceGame(event, discordGame, gameState);
+                    case "advancegame" -> advanceGame(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -350,7 +350,7 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException("Resource is not numeric");
         }
 
-        writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
+        writeFactionInfo(discordGame, gameState.getFaction(factionName));
         discordGame.pushGameState();
     }
 
@@ -367,7 +367,7 @@ public class CommandManager extends ListenerAdapter {
 
     public String drawCard(Game gameState, String deckName, String faction) {
         switch (deckName) {
-            case "spice_deck" -> {
+            case "spice deck" -> {
                 LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
                 LinkedList<SpiceCard> a = gameState.getSpiceDiscardA();
                 LinkedList<SpiceCard> b = gameState.getSpiceDiscardB();
@@ -391,8 +391,8 @@ public class CommandManager extends ListenerAdapter {
                 }
                 if (drawn.name().equals("Shai-Hulud")) return drawn.name() + ", " + drawCard(gameState, deckName, faction);
             }
-            case "traitor_deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
-            case "treachery_deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
+            case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
+            case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
         }
         return "";
     }
@@ -409,7 +409,7 @@ public class CommandManager extends ListenerAdapter {
             }
         }
         hand.remove(i);
-        writeFactionInfo(event, gameState, discordGame, faction.getName());
+        writeFactionInfo(discordGame, faction));
         discordGame.pushGameState();
     }
 
@@ -439,8 +439,8 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         giverHand.remove(i);
-        writeFactionInfo(event, gameState, discordGame, giver.getName());
-        writeFactionInfo(event, gameState, discordGame, receiver.getName());
+        writeFactionInfo(discordGame, giver);
+        writeFactionInfo(discordGame, receiver);
         discordGame.pushGameState();
     }
 
@@ -466,7 +466,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        List<TreacheryCard> hand = (List<TreacheryCard>) gameState.getFaction("Ix").getResource("treachery_hand").getValue();
+        List<TreacheryCard> hand = gameState.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
         for (TreacheryCard treacheryCard : hand) {
             if (treacheryCard.name().toLowerCase().contains(event.getOption("card").getAsString())) continue;
@@ -481,13 +481,13 @@ public class CommandManager extends ListenerAdapter {
             }
             hand.remove(shift);
         }
-        writeFactionInfo(event, gameState, discordGame, "Ix");
+        writeFactionInfo(discordGame, gameState.getFaction("Ix"));
         discordGame.pushGameState();
     }
 
     public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
-        List<TreacheryCard> winnerHand = (List<TreacheryCard>) winner.getResource("treachery_hand");
+        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
         int spent = event.getOption("spent").getAsInt();
         LinkedList<TreacheryCard> market = gameState.getMarket();
         if (winner.getHandLimit() == winnerHand.size()) {
@@ -532,11 +532,11 @@ public class CommandManager extends ListenerAdapter {
         winner.subtractSpice(spent);
         spiceMessage(discordGame, spent, winner.getName(), "R" +
                 gameState.getResource("turn").getValue() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), false);
-        writeFactionInfo(event, gameState, discordGame, winner.getName());
+        writeFactionInfo(discordGame, winner);
         if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
             gameState.getFaction("Emperor").addSpice(spent);
             discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getEmoji() + " is paid " + spent + " <:spice4:991763531798167573>");
-            writeFactionInfo(event, gameState, discordGame, "Emperor");
+            writeFactionInfo(discordGame, gameState.getFaction("Emperor"));
         }
         spiceMessage(discordGame, spent, "emperor", "R" +
                 gameState.getTurn() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), true);
@@ -573,449 +573,424 @@ public class CommandManager extends ListenerAdapter {
         if (gameState.hasFaction("BT")) {
             gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
             spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), "bt", faction.getEmoji() + " revivals", true);
-            writeFactionInfo(event, gameState, discordGame, "BT");
+            writeFactionInfo(discordGame, gameState.getFaction("BT"));
         }
-        writeFactionInfo(event, gameState, discordGame, faction.getName());
+        writeFactionInfo(discordGame, faction));
         discordGame.pushGameState();
     }
 
-//    public void advanceGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-//        Category game = discordGame.getGameCategory();
-//
-//        //Turn 0 is for the set-up for play section from the rules page 6.
-//        if (gameState.getTurn() == 0) {
-//            switch (gameState.getPhase()) {
-//                //1. Positions
-//                case 0 -> {
-//                    shuffle(gameState.getDeck("spice_deck"));
-//                    shuffle(gameState.getDeck("treachery_deck"));
-//                    JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
-//                    int i = 1;
-//                    JSONArray shuffled = new JSONArray();
-//                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                        shuffled.put(faction);
-//                    }
-//                    shuffle(shuffled);
-//                    for (Object faction: shuffled) {
-//                        turnOrder.put(String.valueOf(i), faction);
-//                        i++;
-//                    }
-//                    gameState.advancePhase();
-//                    //If Bene Gesserit are present, time to make a prediction
-//                    if (gameState.hasFaction("BG")) {
-//                        discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
-//                    }
-//                }
-//                //2. Traitors
-//                case 1 -> {
-//                    shuffle(gameState.getDeck("traitor_deck"));
-//                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                        if (!faction.equals("BT")) {
-//                            for (int j = 0; j < 4; j++) {
-//                                drawCard(gameState, "traitor_deck", faction);
-//                            }
-//                            writeFactionInfo(event, gameState, discordGame, faction);
-//                        }
-//                    }
-//                    for (TextChannel channel : discordGame.getTextChannels()) {
-//                            if (channel.getName().contains("-chat") && !channel.getName().contains("game") &&
-//                                    !channel.getName().contains("harkonnen") && !channel.getName().contains("bt")) discordGame.sendMessage(channel.getName(), "Please select your traitor.");
-//                        }
-//
-//
-//                        gameState.advancePhase();
-//                    //If Bene Tleilax are not present, advance past the Face Dancers draw
-//                    if (!gameState.hasFaction("BT")) {
-//                        gameState.advancePhase();
-//                    }
-//                    discordGame.sendMessage("turn-summary", "2. Traitors are being selected.");
-//                }
-//                //Bene Tleilax to draw Face Dancers
-//                case 2 -> {
-//                    shuffle(gameState.getDeck("traitor_deck"));
-//                    drawCard(gameState, "traitor_deck", "BT");
-//                    drawCard(gameState, "traitor_deck", "BT");
-//                    drawCard(gameState, "traitor_deck", "BT");
-//                    writeFactionInfo(event, gameState, discordGame, "BT");
-//                    gameState.advancePhase();
-//                    discordGame.sendMessage("turn-summary", "2b. Bene Tleilax have drawn their Face Dancers.");
-//                }
-//                //3. Spice, 4. Forces
-//                case 3 -> {
-//                    if (gameState.hasFaction("Fremen")) {
-//                        discordGame.sendMessage("fremen-chat", "Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West");
-//                    }
-//                    gameState.advancePhase();
-//                    //If BG is not present, advance past the next step
-//                    if (gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
-//                        gameState.advancePhase();
-//                    }
-//                    discordGame.sendMessage("turn-summary", "3. Spice has been allocated.\n4. Forces are being placed on the board.");
-//                }
-//                case 4 -> {
-//                    if (gameState.hasFaction("BG")) {
-//                        discordGame.sendMessage("bg-chat", "Please choose where to place your advisor.");
-//                    }
-//
-//                    gameState.advancePhase();
-//                    //If Ix is not present, advance past the next step
-//                    if (!gameState.hasFaction("Ix")) {
-//                        gameState.advancePhase();
-//                    }
-//                }
-//                //Ix to select from starting treachery cards
-//                case 5 -> {
-//                    if (gameState.hasFaction("Ix")) {
-//                        int toDraw = gameState.getJSONObject("game_state").getJSONObject("factions").length();
-//                        if (gameState.hasFaction("Harkonnen")) toDraw++;
-//                        for (int i = 0; i < toDraw; i++) {
-//                            drawCard(gameState, "treachery_deck", "Ix");
-//                        }
-//                        writeFactionInfo(event, gameState, discordGame, "Ix");
-//                        discordGame.sendMessage("ix-chat", "Please select one treachery card to keep in your hand.");
-//
-//                        discordGame.sendMessage("turn-summary", "Ix is selecting their starting treachery card.");
-//                    }
-//                    gameState.advancePhase();
-//                }
-//                //5. Treachery
-//                case 6 -> {
-//                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                        if (!faction.equals("Ix")) drawCard(gameState, "treachery_deck", faction);
-//                        if (faction.equals("Harkonnen")) drawCard(gameState, "treachery_deck", faction);
-//                        writeFactionInfo(event, gameState, discordGame, faction);
-//                    }
-//                    gameState.advancePhase();
-//                    discordGame.sendMessage("turn-summary", "5. Treachery cards are being dealt.");
-//                }
-//                //6. Turn Marker (prompt for dial for First Storm)
-//                case 7 -> {
-//                    JSONObject turnOrder = gameState.getResources().getJSONObject("turn_order");
-//                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                        if (turnOrder.getString(String.valueOf(1)).equals(faction) || turnOrder.getString(String.valueOf(6)).equals(faction)) {
-//                            discordGame.sendMessage(faction.toLowerCase() + "-chat", "Please submit your dial for initial storm position.");
-//                        }
-//                    }
-//                    shuffle(gameState.getDeck("storm_deck"));
-//                    gameState.advanceTurn();
-//                    discordGame.sendMessage("turn-summary", "6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
-//                }
-//            }
-//            discordGame.pushGameState();
-//        }
-//        else {
-//            switch (gameState.getPhase()) {
-//                //1. Storm Phase
-//                case 1 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Storm Phase:");
-//                    JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
-//                   if (gameState.getTurn() != 1) {
-//                       int stormMovement = gameState.getDeck("storm_deck").getInt(0);
-//                       shuffle(gameState.getDeck("storm_deck"));
-//                       discordGame.sendMessage("turn-summary", "The storm moves " + stormMovement + " sectors this turn.");
-//                       for (int i = 0; i < stormMovement; i++) {
-//                           gameState.getResources().put("storm", (gameState.getStorm() + 1));
-//                           if (gameState.getStorm() == 19) gameState.getResources().put("storm", 1);
-//                           for (String territory : territories.keySet()) {
-//                               if (!territories.getJSONObject(territory).getBoolean("is_rock") && territories.getJSONObject(territory).getInt("sector") == gameState.getStorm()) {
-//                                   Set<String> forces = territories.getJSONObject(territory).getForces().keySet();
-//                                   boolean fremenSpecialCase = false;
-//                                   //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
-//                                   if (forces.contains("Fremen") && forces.contains("Fremen*")) {
-//                                       fremenSpecialCase = true;
-//                                       int fremenForces = territories.getJSONObject(territory).getForces().getInt("Fremen");
-//                                       int fremenFedaykin = territories.getJSONObject(territory).getForces().getInt("Fremen*");
-//                                       int lost = (fremenForces + fremenFedaykin) / 2;
-//                                       territories.getJSONObject(territory).getForces().remove("Fremen");
-//                                       if (lost < fremenForces) {
-//                                           territories.getJSONObject(territory).getForces().put("Fremen", fremenForces - lost);
-//                                       } else if (lost > fremenForces) {
-//                                           territories.getJSONObject(territory).getForces().remove("Fremen*");
-//                                           territories.getJSONObject(territory).getForces().put("Fremen*", lost - fremenForces);
-//                                       }
-//                                       discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getString("emoji") + " lost " + lost +
-//                                                       " forces to the storm in " + territory);
-//                                   }
-//                                   for (String force : forces) {
-//                                       if (force.contains("Fremen") && fremenSpecialCase) continue;
-//                                       int lost = territories.getJSONObject(territory).getForces().getInt(force);
-//                                       territories.getJSONObject(territory).getForces().remove(force);
-//                                       if (force.contains("Fremen") && lost > 1) {
-//                                           lost /= 2;
-//                                           territories.getJSONObject(territory).getForces().put(force, lost);
-//                                       }
-//                                       if (gameState.getTanks().isNull(force)) {
-//                                           gameState.getTanks().put(force, lost);
-//                                       } else {
-//                                           gameState.getTanks().put(force,
-//                                                   gameState.getTanks().getInt(force) + lost);
-//                                       }
-//                                       discordGame.sendMessage("turn-summary",
-//                                               gameState.getFaction(force.replace("*", "")).getString("emoji") + " lost " +
-//                                                       lost + " forces to the storm in " + territory);
-//                                   }
-//
-//                               }
-//                               territories.getJSONObject(territory).remove("spice");
-//                               territories.getJSONObject(territory).put("spice", 0);
-//                           }
-//                       }
-//                   }
-//                   if (gameState.hasFaction("Fremen")) {
-//                       discordGame.sendMessage("fremen-chat", "The storm will move " + gameState.getDeck("storm_deck").getInt(0) + " sectors next turn.");
-//
-//                   }
-//                   gameState.advancePhase();
-//                }
-//                //2. Spice Blow and Nexus
-//                case 2 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
-//                    discordGame.sendMessage("turn-summary", "A: " + drawCard(gameState, "spice_deck", "A"));
-//                    discordGame.sendMessage("turn-summary", "B: " + drawCard(gameState, "spice_deck", "B"));
-//                    gameState.advancePhase();
-//                }
-//                //3. Choam Charity
-//                case 3 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " CHOAM Charity Phase:");
-//                    int multiplier = 1;
-//                    if (!gameState.getResources().isNull("inflation token")) {
-//                        if (gameState.getResources().getString("inflation token").equals("cancel")) {
-//                            discordGame.sendMessage("turn-summary","CHOAM Charity is cancelled!");
-//                            gameState.advancePhase();
-//                            break;
-//                        } else {
-//                            multiplier = 2;
-//                        }
-//                    }
-//
-//                    int choamGiven = 0;
-//                    Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
-//                    if (factions.contains("CHOAM")) discordGame.sendMessage("turn-summary",
-//                            gameState.getFaction("CHOAM").getString("emoji") + " receives " +
-//                            gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
-//                    );
-//                    for (String faction : factions) {
-//                        if (faction.equals("CHOAM")) continue;
-//                        int spice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
-//                        if (faction.equals("BG")) {
-//                            gameState.getFaction(faction).getJSONObject("resources").remove("spice");
-//                            choamGiven += 2 * multiplier;
-//                            gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + (2 * multiplier));
-//                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity.");
-//                            spiceMessage(discordGame, 2 * multiplier, faction, "CHOAM Charity", true);
-//                        }
-//                        else if (spice < 2) {
-//                            int charity = (2 * multiplier) - (spice * multiplier);
-//                            choamGiven += charity;
-//                            gameState.getFaction(faction).getJSONObject("resources").remove("spice");
-//                            gameState.getFaction(faction).getJSONObject("resources").put("spice", spice + charity);
-//                            discordGame.sendMessage("turn-summary",
-//                                    gameState.getFaction(faction).getString("emoji") + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
-//                            );
-//                            spiceMessage(discordGame, charity, faction, "CHOAM Charity", true);
-//                        }
-//                        else continue;
-//                        writeFactionInfo(event, gameState, discordGame, faction);
-//                    }
-//                    if (!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("CHOAM")) {
-//                        int spice = gameState.getFaction("CHOAM").getJSONObject("resources").getInt("spice");
-//                        gameState.getFaction("CHOAM").getJSONObject("resources").remove("spice");
-//                        gameState.getFaction("CHOAM").getJSONObject("resources").put("spice", (10 * multiplier) + spice - choamGiven);
-//                        spiceMessage(discordGame, gameState.getJSONObject("game_state").getJSONObject("factions").length() * 2 * multiplier, "choam", "CHOAM Charity", true);
-//                        discordGame.sendMessage("turn-summary",
-//                                gameState.getFaction("CHOAM").getString("emoji") + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
-//                        );
-//                        spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
-//                    }
-//                    gameState.advancePhase();
-//                }
-//                //4. Bidding
-//                case 4 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Bidding Phase:");
-//                    int cardsUpForBid = 0;
-//                    Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
-//                    StringBuilder countMessage = new StringBuilder();
-//                    countMessage.append("<:treachery:991763073281040518>Number of Treachery Cards<:treachery:991763073281040518>\n");
-//                    for (String faction : factions) {
-//                        int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
-//                        countMessage.append(gameState.getFaction(faction).getString("emoji")).append(": ").append(length).append("\n");
-//                        if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
-//                                !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) cardsUpForBid++;
-//                        if (faction.equals("Ix")) cardsUpForBid++;
-//                        if (faction.equals("Rich")) cardsUpForBid--;
-//                    }
-//                    JSONArray deck = gameState.getDeck("treachery_deck");
-//                    if (factions.contains("Ix")) {
-//                        discordGame.sendMessage("ix-chat", "Please select a card to put back to top or bottom.");
-//                    }
-//                    countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
-//                    discordGame.sendMessage("turn-summary", countMessage.toString());
-//                    gameState.getResources().put("market_size", cardsUpForBid);
-//                    for (int i = 0; i < cardsUpForBid; i++) {
-//                        gameState.getResources().getJSONArray("market").put(deck.getString(deck.length() - 1));
-//                        deck.remove(deck.length() - 1);
-//                        if (factions.contains("Ix")) {
-//                            discordGame.sendMessage("ix-chat", "<:treachery:991763073281040518> " +
-//                                    deck.getString(deck.length() - i - 1) + " <:treachery:991763073281040518>");
-//                        }
-//                    }
-//                    if (factions.contains("Atreides")) {
-//                        discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getResources().getJSONArray("market").getString(0).split("\\|")[0] + " <:treachery:991763073281040518>");
-//                    }
-//                    StringBuilder message = new StringBuilder();
-//                    message.append("R").append(gameState.getTurn()).append(":C1\n");
-//                    int firstBid = Math.ceilDiv(gameState.getStorm(), 3) + 1;
-//                    for (int i = 0; i < factions.size(); i++) {
-//                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
-//                        String faction = gameState.getResources().getJSONObject("turn_order").getString(String.valueOf(playerPosition));
-//                        int length = gameState.getFaction(faction).getJSONObject("resources").getJSONArray("treachery_hand").length();
-//                        if (faction.equals("Harkonnen") && length < 8 || faction.equals("CHOAM") && length < 5 ||
-//                                !(faction.equals("Harkonnen") || faction.equals("CHOAM")) && length < 4) message.append(gameState.getFaction(faction).getString("emoji")).append(":");
-//                                if (i == 0) message.append(" ").append(gameState.getFaction(faction).getString("player"));
-//                                message.append("\n");
-//                    }
-//                    discordGame.sendMessage("bidding-phase", message.toString());
-//                    gameState.advancePhase();
-//                }
-//                //5. Revival
-//                case 5 -> {
-//                    if (gameState.getResources().getJSONArray("market").length() > 0) {
-//                        discordGame
-//                                .sendMessage("turn-summary", "There were " + gameState.getResources().getJSONArray("market").length() + " cards not bid on this round that are placed back on top of the <:treachery:991763073281040518> deck.");
-//                        int marketLength = gameState.getResources().getJSONArray("market").length();
-//                        for (int i = 0; i < marketLength; i++) {
-//                            gameState.getDeck("treachery_deck").put(gameState.getResources().getJSONArray("market").getString(gameState.getResources().getJSONArray("market").length() - 1));
-//                            gameState.getResources().getJSONArray("market").remove(gameState.getResources().getJSONArray("market").length() - 1);
-//                        }
-//                    }
-//                    gameState.getResources().remove("market_size");
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
-//                    Set<String> factions = gameState.getJSONObject("game_state").getJSONObject("factions").keySet();
-//                    StringBuilder message = new StringBuilder();
-//                    message.append("Free Revivals:\n");
-//                    for (String faction : factions) {
-//                        int free = gameState.getFaction(faction).getInt("free_revival");
-//                        int revived = 0;
-//                        boolean revivedStar = false;
-//                        for (int i = free; i > 0; i--) {
-//                            if (gameState.getTanks().getInt(faction) == 0
-//                                    && (gameState.getTanks().isNull(faction + "*") || gameState.getTanks().getInt(faction + "*") == 0)) continue;
-//                            revived++;
-//                            if (!gameState.getTanks().isNull(faction + "*") && gameState.getTanks().getInt(faction + "*") != 0 && !revivedStar) {
-//                                int starred = gameState.getTanks().getInt(faction + "*");
-//                                gameState.getTanks().remove(faction + "*");
-//                                if (starred > 1) gameState.getTanks().put(faction + "*", starred - 1);
-//                                revivedStar = true;
-//                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves*");
-//                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves*");
-//                                gameState.getFaction(faction).getJSONObject("resources").put("reserves*", reserves + 1);
-//                            } else if (gameState.getTanks().getInt(faction) != 0) {
-//                                int forces = gameState.getTanks().getInt(faction);
-//                                gameState.getTanks().remove(faction);
-//                                gameState.getTanks().put(faction, forces - 1);
-//                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves");
-//                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves");
-//                                gameState.getFaction(faction).getJSONObject("resources").put("reserves", reserves + 1);
-//                            }
-//                        }
-//                        if (revived > 0) {
-//                            message.append(gameState.getFaction(faction).getString("emoji")).append(": ").append(revived).append("\n");
-//                        }
-//                    }
-//                    discordGame.sendMessage("turn-summary", message.toString());
-//                    gameState.advancePhase();
-//                }
-//                //6. Shipment and Movement
-//                case 6 -> {
-//                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
-//                    if (gameState.hasFaction("Atreides")) {
-//                        discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.");
-//                    }
-//                    if(!gameState.getJSONObject("game_state").getJSONObject("factions").isNull("BG")) {
-//                       for (String territoryName : gameState.getGameBoard().keySet()) {
-//                           JSONObject territory = gameState.getTerritory(territoryName);
-//                           if (!territory.getForces().keySet().contains("Advisor")) continue;
-//                           discordGame.sendMessage("turn-summary",gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their advisors in " + territory.getString("territory_name"));
-//                       }
-//                    }
-//                    gameState.advancePhase();
-//                }
-//                //TODO: 7. Battle
-//                case 7 -> {
-//                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
-//                    gameState.advancePhase();
-//
-//                }
-//                //TODO: 8. Spice Harvest
-//                case 8 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Harvest Phase:");
-//                   JSONObject territories = gameState.getJSONObject("game_state").getJSONObject("game_board");
-//                   //This is hacky, but I add spice to Arrakeen, Carthag, and Tuek's, then if it is not collected by the following algorithm, it is removed.
-//                    territories.getJSONObject("Arrakeen").remove("spice");
-//                    territories.getJSONObject("Carthag").remove("spice");
-//                    territories.getJSONObject("Tuek's Sietch").remove("spice");
-//                    territories.getJSONObject("Arrakeen").put("spice", 2);
-//                    territories.getJSONObject("Carthag").put("spice", 2);
-//                    territories.getJSONObject("Tuek's Sietch").put("spice", 1);
-//                    for (String territoryName : territories.keySet()) {
-//                        JSONObject territory = territories.getJSONObject(territoryName);
-//                        if (territory.getInt("spice") == 0 || territory.getForces().length() == 0) continue;
-//                        int spice = territory.getInt("spice");
-//                        territory.remove("spice");
-//                        Set<String> factions = territory.getForces().keySet();
-//                        for (String faction : factions) {
-//                            int forces = territory.getForces().getInt(faction);
-//                            forces += territory.getForces().isNull(faction + "*") ? 0 : territory.getForces().getInt(faction + "*");
-//                            int toCollect = 0;
-//                            if (faction.equals("BG") && factions.size() > 1) continue;
-//                            //If the faction has mining equipment, collect 3 spice per force.
-//                            if ((!territories.getJSONObject("Arrakeen").getForces().isNull(faction) || !territories.getJSONObject("Carthag").getForces().isNull(faction) && !faction.equals("BG")) ||
-//                                    (faction.equals("BG") && (territories.getJSONObject("Arrakeen").getForces().length() < 2 && !territories.getJSONObject("Arrakeen").getForces().isNull("BG")) ||
-//                                            (territories.getJSONObject("Carthag").getForces().length() < 2 && !territories.getJSONObject("Carthag").getForces().isNull("BG")))) {
-//                                toCollect += forces * 3;
-//                            } else toCollect += forces * 2;
-//                            if (spice < toCollect) {
-//                                toCollect = spice;
-//                                spice = 0;
-//                            } else spice -= toCollect;
-//                            territory.put("spice", spice);
-//                            int factionSpice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
-//                            gameState.getFaction(faction).getJSONObject("resources").remove("spice");
-//                            gameState.getFaction(faction).getJSONObject("resources").put("spice", factionSpice + toCollect);
-//                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName);
-//                        }
-//
-//                    }
-//                    territories.getJSONObject("Arrakeen").remove("spice");
-//                    territories.getJSONObject("Carthag").remove("spice");
-//                    territories.getJSONObject("Tuek's Sietch").remove("spice");
-//                    territories.getJSONObject("Arrakeen").put("spice", 0);
-//                    territories.getJSONObject("Carthag").put("spice", 0);
-//                    territories.getJSONObject("Tuek's Sietch").put("spice", 0);
-//                    gameState.advancePhase();
-//                }
-//                //TODO: 9. Mentat Pause
-//                case 9 -> {
-//                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
-//                    for (String faction : gameState.getJSONObject("game_state").getJSONObject("factions").keySet()) {
-//                        if (!gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").isNull("spice")) {
-//                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getString("emoji") + " collects " +
-//                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice") + " <:spice4:991763531798167573> from front of shield.");
-//                            spiceMessage(discordGame,  gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"), faction, "front of shield", true);
-//                            gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") +
-//                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"));
-//                            gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").remove("spice");
-//                        }
-//                        writeFactionInfo(event, gameState, discordGame, faction);
-//                    }
-//                    gameState.advanceTurn();
-//                }
-//            }
-//            discordGame.pushGameState();
-//            drawGameBoard(discordGame, gameState);
-//        }
-//    }
-//
+    public void advanceGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Category game = discordGame.getGameCategory();
+
+        //Turn 0 is for the set-up for play section from the rules page 6.
+        if (gameState.getTurn() == 0) {
+            switch (gameState.getPhase()) {
+                //1. Positions
+                case 0 -> {
+                    Collections.shuffle(gameState.getTreacheryDeck());
+                    Collections.shuffle(gameState.getSpiceDeck());
+                    Collections.shuffle(gameState.getFactions());
+                    gameState.advancePhase();
+                    //If Bene Gesserit are present, time to make a prediction
+                    if (gameState.hasFaction("BG")) {
+                        discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
+                    }
+                }
+                //2. Traitors
+                case 1 -> {
+                    Collections.shuffle(gameState.getTraitorDeck());
+                    for (Faction faction : gameState.getFactions()) {
+                        if (!faction.getName().equals("BT")) {
+                            for (int j = 0; j < 4; j++) {
+                                drawCard(gameState, "traitor deck", faction.getName());
+                            }
+                            writeFactionInfo(discordGame, faction);
+                        }
+                    }
+                    for (TextChannel channel : discordGame.getTextChannels()) {
+                            if (channel.getName().contains("-chat") && !channel.getName().contains("game") &&
+                                    !channel.getName().contains("harkonnen") && !channel.getName().contains("bt")) discordGame.sendMessage(channel.getName(), "Please select your traitor.");
+                        }
+
+
+                        gameState.advancePhase();
+                    //If Bene Tleilax are not present, advance past the Face Dancers draw
+                    if (!gameState.hasFaction("BT")) {
+                        gameState.advancePhase();
+                    }
+                    discordGame.sendMessage("turn-summary", "2. Traitors are being selected.");
+                }
+                //Bene Tleilax to draw Face Dancers
+                case 2 -> {
+                    Collections.shuffle(gameState.getTraitorDeck());
+                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor_deck", "BT");
+                    writeFactionInfo(discordGame, gameState.getFaction("BT"));
+                    gameState.advancePhase();
+                    discordGame.sendMessage("turn-summary", "2b. Bene Tleilax have drawn their Face Dancers.");
+                }
+                //3. Spice, 4. Forces
+                case 3 -> {
+                    if (gameState.hasFaction("Fremen")) {
+                        discordGame.sendMessage("fremen-chat", "Please distribute 10 forces between Sietch Tabr, False Wall South, and False Wall West");
+                    }
+                    gameState.advancePhase();
+                    //If BG is not present, advance past the next step
+                    if (!gameState.hasFaction("BG")) {
+                        gameState.advancePhase();
+                    }
+                    discordGame.sendMessage("turn-summary", "3. Spice has been allocated.\n4. Forces are being placed on the board.");
+                }
+                case 4 -> {
+                    if (gameState.hasFaction("BG")) {
+                        discordGame.sendMessage("bg-chat", "Please choose where to place your advisor.");
+                    }
+
+                    gameState.advancePhase();
+                    //If Ix is not present, advance past the next step
+                    if (!gameState.hasFaction("Ix")) {
+                        gameState.advancePhase();
+                    }
+                }
+                //Ix to select from starting treachery cards
+                case 5 -> {
+                    if (gameState.hasFaction("Ix")) {
+                        int toDraw = gameState.getFactions().size();
+                        if (gameState.hasFaction("Harkonnen")) toDraw++;
+                        for (int i = 0; i < toDraw; i++) {
+                            drawCard(gameState, "treachery_deck", "Ix");
+                        }
+                        writeFactionInfo(discordGame, gameState.getFaction("Ix"));
+                        discordGame.sendMessage("ix-chat", "Please select one treachery card to keep in your hand.");
+                        discordGame.sendMessage("turn-summary", "Ix is selecting their starting treachery card.");
+                    }
+                    gameState.advancePhase();
+                }
+                //5. Treachery
+                case 6 -> {
+                    for (Faction faction : gameState.getFactions()) {
+                        if (!faction.getName().equals("Ix")) drawCard(gameState, "treachery deck", faction.getName());
+                        if (faction.getName().equals("Harkonnen")) drawCard(gameState, "treachery deck", faction.getName());
+                        writeFactionInfo(discordGame, faction);
+                    }
+                    gameState.advancePhase();
+                    discordGame.sendMessage("turn-summary", "5. Treachery cards are being dealt.");
+                }
+                //6. Turn Marker (prompt for dial for First Storm)
+                case 7 -> {
+                    discordGame.sendMessage(gameState.getFactions().get(0).getName().toLowerCase() + "-chat", "Please submit your dial for initial storm position.");
+                    discordGame.sendMessage(gameState.getFactions().get(gameState.getFactions().size() - 1).getName().toLowerCase() + "-chat", "Please submit your dial for initial storm position.");
+                    gameState.setStormMovement(new Random().nextInt(6) + 1);
+                    gameState.advanceTurn();
+                    discordGame.sendMessage("turn-summary", "6. Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
+                }
+            }
+            discordGame.pushGameState();
+        }
+        else {
+            switch (gameState.getPhase()) {
+                //1. Storm Phase
+                case 1 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Storm Phase:");
+                    Map<String, Territory> territories = gameState.getTerritories();
+                   if (gameState.getTurn() != 1) {
+                       discordGame.sendMessage("turn-summary", "The storm moves " + gameState.getStormMovement() + " sectors this turn.");
+                       for (int i = 0; i < gameState.getStormMovement(); i++) {
+                           gameState.setStorm(gameState.getStorm() + 1); 
+                           if (gameState.getStorm() == 19) gameState.setStorm(1);
+                           for (String territoryName : territories.keySet()) {
+                               Territory territory = territories.get(territoryName); 
+                               if (!territory.isRock() && territory.getSector() == gameState.getStorm()) {
+                                   List<Force> forces = territory.getForces();
+                                   boolean fremenSpecialCase = false;
+                                   //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
+                                   if (forces.contains("Fremen") && forces.contains("Fremen*")) {
+                                       fremenSpecialCase = true;
+                                       int fremenForces = 0;
+                                       int fremenFedaykin = 0;
+                                       for (Force force : forces) {
+                                           if (force.getName().equals("Fremen")) fremenForces = force.getStrength();
+                                           if (force.getName().equals("Fremen*")) fremenFedaykin = force.getStrength();
+                                       }
+                                       int lost = (fremenForces + fremenFedaykin) / 2;
+                                       if (lost < fremenForces) {
+                                           for (Force force : forces) {
+                                               if (force.getName().equals("Fremen")) force.setStrength(force.getStrength() - lost);
+                                           }
+                                       } else if (lost > fremenForces) {
+                                           forces.removeIf(force -> force.getName().equals("Fremen"));
+                                           for (Force force : forces) {
+                                               if (force.getName().equals("Fremen*")) force.setStrength(fremenFedaykin - lost + fremenForces);
+                                           }
+                                       }
+                                       discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getEmoji() + " lost " + lost +
+                                                       " forces to the storm in " + territory.getTerritoryName());
+                                   }
+                                   for (Force force : forces) {
+                                       if (force.getName().contains("Fremen") && fremenSpecialCase) continue;
+                                       int lost = force.getStrength();
+                                       forces.remove(force);
+                                       if (force.getName().contains("Fremen") && lost > 1) {
+                                           lost /= 2;
+                                           force.setStrength(lost);
+                                           forces.add(force);
+                                       }
+                                       gameState.getTanks().stream().filter(force1 -> force1.getName().equals(force.getName())).findFirst().orElseThrow().addStrength(force.getStrength());
+                                       discordGame.sendMessage("turn-summary",
+                                               gameState.getFaction(force.getName().replace("*", "")).getEmoji() + " lost " +
+                                                       lost + " forces to the storm in " + territory);
+                                   }
+
+                               }
+                               territory.setSpice(0);
+                           }
+                       }
+                   }
+                   if (gameState.hasFaction("Fremen")) {
+                       gameState.setStormMovement(new Random().nextInt(6) + 1);
+                       discordGame.sendMessage("fremen-chat", "The storm will move " + gameState.getStormMovement() + " sectors next turn.");
+
+                   }
+                   gameState.advancePhase();
+                }
+                //2. Spice Blow and Nexus
+                case 2 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
+                    discordGame.sendMessage("turn-summary", "A: " + drawCard(gameState, "spice deck", "A"));
+                    discordGame.sendMessage("turn-summary", "B: " + drawCard(gameState, "spice deck", "B"));
+                    gameState.advancePhase();
+                }
+                //3. Choam Charity
+                case 3 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " CHOAM Charity Phase:");
+                    int multiplier = 1;
+                    if (gameState.getResources().stream().anyMatch(resource -> resource.getName().equals("inflation token"))) {
+                        if (gameState.getResources().stream().filter(resource -> resource.getName().equals("inflation token")).findFirst().orElseThrow().getValue().equals("cancel")) {
+                            discordGame.sendMessage("turn-summary","CHOAM Charity is cancelled!");
+                            gameState.advancePhase();
+                            break;
+                        } else {
+                            multiplier = 2;
+                        }
+                    }
+
+                    int choamGiven = 0;
+                    List<Faction> factions = gameState.getFactions();
+                    if (factions.stream().anyMatch(f -> f.getName().equals("CHOAM"))) discordGame.sendMessage("turn-summary",
+                            gameState.getFaction("CHOAM").getEmoji() + " receives " +
+                            gameState.getFactions().size() * 2 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
+                    );
+                    for (Faction faction : factions) {
+                        if (faction.getName().equals("CHOAM")) continue;
+                        int spice = faction.getSpice();
+                        if (faction.getName().equals("BG")) {
+                            choamGiven += 2 * multiplier;
+                            faction.addSpice(2 * multiplier);
+                            discordGame.sendMessage("turn-summary", faction.getEmoji() + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity.");
+                            spiceMessage(discordGame, 2 * multiplier, faction.getName(), "CHOAM Charity", true);
+                        }
+                        else if (spice < 2) {
+                            int charity = (2 * multiplier) - (spice * multiplier);
+                            choamGiven += charity;
+                            faction.addSpice(charity);
+                            discordGame.sendMessage("turn-summary",
+                                    faction.getEmoji() + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
+                            );
+                            spiceMessage(discordGame, charity, faction.getName(), "CHOAM Charity", true);
+                        }
+                        else continue;
+                        writeFactionInfo(discordGame, faction);
+                    }
+                    if (gameState.hasFaction("CHOAM")) {
+                        gameState.getFaction("CHOAM").addSpice((10 * multiplier) - choamGiven);
+                        spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
+                        discordGame.sendMessage("turn-summary",
+                                gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
+                        );
+                        spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
+                    }
+                    gameState.advancePhase();
+                }
+                //4. Bidding
+                case 4 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Bidding Phase:");
+                    int cardsUpForBid = 0;
+                    List<Faction> factions = gameState.getFactions();
+                    StringBuilder countMessage = new StringBuilder();
+                    countMessage.append("<:treachery:991763073281040518>Number of Treachery Cards<:treachery:991763073281040518>\n");
+                    for (Faction faction : factions) {
+                        int length = faction.getTreacheryHand().size();
+                        countMessage.append(faction.getEmoji()).append(": ").append(length).append("\n");
+                        if (faction.getHandLimit() > length) cardsUpForBid++;
+                        if (faction.getName().equals("Ix")) cardsUpForBid++;
+                        if (faction.getName().equals("Rich")) cardsUpForBid--;
+                    }
+                    if (gameState.hasFaction("Ix")) {
+                        discordGame.sendMessage("ix-chat", "Please select a card to put back to top or bottom.");
+                    }
+                    countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
+                    discordGame.sendMessage("turn-summary", countMessage.toString());
+                    gameState.setMarketSize(cardsUpForBid);
+                    for (int i = 0; i < cardsUpForBid; i++) {
+                        gameState.getMarket().add(gameState.getTreacheryDeck().pop());
+                        if (gameState.hasFaction("Ix")) {
+                            discordGame.sendMessage("ix-chat", "<:treachery:991763073281040518> " +
+                                    gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+                        }
+                    }
+                    if (gameState.hasFaction("Atreides")) {
+                        discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+                    }
+                    StringBuilder message = new StringBuilder();
+                    message.append("R").append(gameState.getTurn()).append(":C1\n");
+                    int firstBid = Math.ceilDiv(gameState.getStorm(), 3) + 1;
+                    for (int i = 0; i < factions.size(); i++) {
+                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                        Faction faction = gameState.getFactions().get(playerPosition);
+                        if (faction.getHandLimit() > faction.getTreacheryHand().size()) message.append(faction.getEmoji()).append(":");
+                                if (i == 0) message.append(" ").append(faction.getPlayer());
+                                message.append("\n");
+                    }
+                    discordGame.sendMessage("bidding-phase", message.toString());
+                    gameState.advancePhase();
+                }
+                //5. Revival
+                case 5 -> {
+                    if (gameState.getMarket().size() > 0) {
+                        int marketLength = gameState.getMarket().size();
+                        discordGame.sendMessage("turn-summary", "There were " + marketLength + " cards not bid on this round that are placed back on top of the <:treachery:991763073281040518> deck.");
+                        while (!gameState.getMarket().isEmpty()) {
+                            gameState.getTreacheryDeck().add(gameState.getMarket().pop());
+                        }
+                    }
+                    gameState.setMarketSize(0);
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
+                    List<Faction> factions = gameState.getFactions();
+                    StringBuilder message = new StringBuilder();
+                    message.append("Free Revivals:\n");
+                    for (Faction faction : factions) {
+                        int revived = 0;
+                        boolean revivedStar = false;
+                        for (int i = faction.getFreeRevival(); i > 0; i--) {
+                            if (gameState.getTanks().getInt(faction) == 0
+                                    && (gameState.getTanks().isNull(faction + "*") || gameState.getTanks().getInt(faction + "*") == 0)) continue;
+                            revived++;
+                            if (!gameState.getTanks().isNull(faction + "*") && gameState.getTanks().getInt(faction + "*") != 0 && !revivedStar) {
+                                int starred = gameState.getTanks().getInt(faction + "*");
+                                gameState.getTanks().remove(faction + "*");
+                                if (starred > 1) gameState.getTanks().put(faction + "*", starred - 1);
+                                revivedStar = true;
+                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves*");
+                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves*");
+                                gameState.getFaction(faction).getJSONObject("resources").put("reserves*", reserves + 1);
+                            } else if (gameState.getTanks().getInt(faction) != 0) {
+                                int forces = gameState.getTanks().getInt(faction);
+                                gameState.getTanks().remove(faction);
+                                gameState.getTanks().put(faction, forces - 1);
+                                int reserves = gameState.getFaction(faction).getJSONObject("resources").getInt("reserves");
+                                gameState.getFaction(faction).getJSONObject("resources").remove("reserves");
+                                gameState.getFaction(faction).getJSONObject("resources").put("reserves", reserves + 1);
+                            }
+                        }
+                        if (revived > 0) {
+                            message.append(gameState.getFaction(faction).getEmoji()).append(": ").append(revived).append("\n");
+                        }
+                    }
+                    discordGame.sendMessage("turn-summary", message.toString());
+                    gameState.advancePhase();
+                }
+                //6. Shipment and Movement
+                case 6 -> {
+                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
+                    if (gameState.hasFaction("Atreides")) {
+                        discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getDeck("spice_deck").getString(gameState.getDeck("spice_deck").length() - 1) + " in your future.");
+                    }
+                    if(!gameState.getFactions().isNull("BG")) {
+                       for (String territoryName : gameState.getGameBoard().keySet()) {
+                           JSONObject territory = gameState.getTerritory(territoryName);
+                           if (!territory.getForces().keySet().contains("Advisor")) continue;
+                           discordGame.sendMessage("turn-summary",gameState.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getString("territory_name"));
+                       }
+                    }
+                    gameState.advancePhase();
+                }
+                //TODO: 7. Battle
+                case 7 -> {
+                    discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
+                    gameState.advancePhase();
+
+                }
+                //TODO: 8. Spice Harvest
+                case 8 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Harvest Phase:");
+                   JSONObject territories = gameState.getTerritories();
+                   //This is hacky, but I add spice to Arrakeen, Carthag, and Tuek's, then if it is not collected by the following algorithm, it is removed.
+                    territories.getJSONObject("Arrakeen").remove("spice");
+                    territories.getJSONObject("Carthag").remove("spice");
+                    territories.getJSONObject("Tuek's Sietch").remove("spice");
+                    territories.getJSONObject("Arrakeen").put("spice", 2);
+                    territories.getJSONObject("Carthag").put("spice", 2);
+                    territories.getJSONObject("Tuek's Sietch").put("spice", 1);
+                    for (String territoryName : territories.keySet()) {
+                        JSONObject territory = territories.getJSONObject(territoryName);
+                        if (territory.getInt("spice") == 0 || territory.getForces().length() == 0) continue;
+                        int spice = territory.getInt("spice");
+                        territory.remove("spice");
+                        Set<String> factions = territory.getForces().keySet();
+                        for (Faction faction : factions) {
+                            int forces = territory.getForces().getInt(faction);
+                            forces += territory.getForces().isNull(faction + "*") ? 0 : territory.getForces().getInt(faction + "*");
+                            int toCollect = 0;
+                            if (faction.equals("BG") && factions.size() > 1) continue;
+                            //If the faction has mining equipment, collect 3 spice per force.
+                            if ((!territories.getJSONObject("Arrakeen").getForces().isNull(faction) || !territories.getJSONObject("Carthag").getForces().isNull(faction) && !faction.equals("BG")) ||
+                                    (faction.equals("BG") && (territories.getJSONObject("Arrakeen").getForces().length() < 2 && !territories.getJSONObject("Arrakeen").getForces().isNull("BG")) ||
+                                            (territories.getJSONObject("Carthag").getForces().length() < 2 && !territories.getJSONObject("Carthag").getForces().isNull("BG")))) {
+                                toCollect += forces * 3;
+                            } else toCollect += forces * 2;
+                            if (spice < toCollect) {
+                                toCollect = spice;
+                                spice = 0;
+                            } else spice -= toCollect;
+                            territory.put("spice", spice);
+                            int factionSpice = gameState.getFaction(faction).getJSONObject("resources").getInt("spice");
+                            gameState.getFaction(faction).getJSONObject("resources").remove("spice");
+                            gameState.getFaction(faction).getJSONObject("resources").put("spice", factionSpice + toCollect);
+                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getEmoji() + " collects " + toCollect + " <:spice4:991763531798167573> from " + territoryName);
+                        }
+
+                    }
+                    territories.getJSONObject("Arrakeen").remove("spice");
+                    territories.getJSONObject("Carthag").remove("spice");
+                    territories.getJSONObject("Tuek's Sietch").remove("spice");
+                    territories.getJSONObject("Arrakeen").put("spice", 0);
+                    territories.getJSONObject("Carthag").put("spice", 0);
+                    territories.getJSONObject("Tuek's Sietch").put("spice", 0);
+                    gameState.advancePhase();
+                }
+                //TODO: 9. Mentat Pause
+                case 9 -> {
+                    discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
+                    for (Faction faction : gameState.getFactions().keySet()) {
+                        if (!gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").isNull("spice")) {
+                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction).getEmoji() + " collects " +
+                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice") + " <:spice4:991763531798167573> from front of shield.");
+                            spiceMessage(discordGame,  gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"), faction, "front of shield", true);
+                            gameState.getFaction(faction).getJSONObject("resources").put("spice", gameState.getFaction(faction).getJSONObject("resources").getInt("spice") +
+                                    gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").getInt("spice"));
+                            gameState.getFaction(faction).getJSONObject("resources").getJSONObject("front_of_shield").remove("spice");
+                        }
+                        writeFactionInfo(event, gameState, discordGame, faction);
+                    }
+                    gameState.advanceTurn();
+                }
+            }
+            discordGame.pushGameState();
+            drawGameBoard(discordGame, gameState);
+        }
+    }
+
 //    public void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
 //        JSONObject faction = gameState.getFaction(event.getOption("factionname").getAsString());
 //        for (int i = 0; i < 4; i++) {
@@ -1040,7 +1015,7 @@ public class CommandManager extends ListenerAdapter {
 //        } else {
 //            territory = event.getOption("mostlikelyterritories").getAsString();
 //        }
-//        if (gameState.getJSONObject("game_state").getJSONObject("game_board").isNull(territory + sector)) {
+//        if (gameState.getTerritories().isNull(territory + sector)) {
 //            event.getChannel().sendMessage("Territory does not exist in that sector. Check your sector number and try again.").queue();
 //            return null;
 //        }
@@ -1063,9 +1038,9 @@ public class CommandManager extends ListenerAdapter {
 //        gameState.getFaction(event.getOption("factionname").getAsString()).getJSONObject("resources").put("reserves" + star, reserves - event.getOption("amount").getAsInt());
 //        int previous = 0;
 //
-//        if (!gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory)
+//        if (!gameState.getTerritories().getJSONObject(territory)
 //                .getForces().isNull(event.getOption("factionname").getAsString() + star)) {
-//            previous = gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getForces().getInt(event.getOption("factionname").getAsString() + star);
+//            previous = gameState.getTerritories().getJSONObject(territory).getForces().getInt(event.getOption("factionname").getAsString() + star);
 //        }
 //
 //        if (event.getOption("isshipment").getAsBoolean()) {
@@ -1083,15 +1058,15 @@ public class CommandManager extends ListenerAdapter {
 //                spice = gameState.getFaction("Guild").getJSONObject("resources").getInt("spice");
 //                gameState.getFaction("Guild").getJSONObject("resources").remove("spice");
 //                gameState.getFaction("Guild").getJSONObject("resources").put("spice", spice + event.getOption("amount").getAsInt());
-//                spiceMessage(discordGame, cost, "guild", gameState.getFaction(event.getOption("factionname").getAsString()).getString("emoji") + " shipment", true);
+//                spiceMessage(discordGame, cost, "guild", gameState.getFaction(event.getOption("factionname").getAsString()).getEmoji() + " shipment", true);
 //                writeFactionInfo(event, gameState, discordGame, "Guild");
 //            }
 //            writeFactionInfo(event, gameState, discordGame, event.getOption("factionname").getAsString());
 //        }
 //        if (gameState.getTerritory(territory).getForces().keySet().contains("BG")) {
-//            discordGame.sendMessage("turn-summary", gameState.getFaction("BG").getString("emoji") + " to decide whether to flip their forces in " + territory);
+//            discordGame.sendMessage("turn-summary", gameState.getFaction("BG").getEmoji() + " to decide whether to flip their forces in " + territory);
 //        }
-//        gameState.getJSONObject("game_state").getJSONObject("game_board").getJSONObject(territory).getForces().put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
+//        gameState.getTerritories().getJSONObject(territory).getForces().put(event.getOption("factionname").getAsString() + star, event.getOption("amount").getAsInt() + previous);
 //        discordGame.pushGameState();
 //        drawGameBoard(discordGame, gameState);
 //    }
@@ -1108,7 +1083,7 @@ public class CommandManager extends ListenerAdapter {
 //        } else {
 //            territoryName = event.getOption("mostlikelyterritories").getAsString();
 //        }
-//        if (gameState.getJSONObject("game_state").getJSONObject("game_board").isNull(territoryName + sector)) {
+//        if (gameState.getTerritories().isNull(territoryName + sector)) {
 //            discordGame.sendMessage("mod-info","Territory does not exist in that sector. Check your sector number and try again.");
 //            return;
 //        }
@@ -1148,10 +1123,8 @@ public class CommandManager extends ListenerAdapter {
 //        discordGame.pushGameState();
 //        drawGameBoard(discordGame, gameState);
 //    }
-//
-    public void writeFactionInfo(SlashCommandInteractionEvent event, Game gameState, DiscordGame discordGame, String factionName) throws ChannelNotFoundException {
-        if (gameState.getFaction(factionName) == null) return;
-        Faction faction = gameState.getFaction(factionName);
+
+    public void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
 
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
@@ -1439,8 +1412,8 @@ public class CommandManager extends ListenerAdapter {
         faction.subtractSpice(amount);
         spiceMessage(discordGame, amount, faction.getName(), "bribe to " + recipient.getEmoji(), false);
         recipient.addFrontOfShieldSpice(amount);
-        writeFactionInfo(event, gameState, discordGame, faction.getName());
-        writeFactionInfo(event, gameState, discordGame, recipient.getName());
+        writeFactionInfo(discordGame, faction);
+        writeFactionInfo(discordGame, recipient);
         discordGame.pushGameState();
     }
 

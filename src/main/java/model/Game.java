@@ -17,9 +17,12 @@ public class Game extends GameFactionBase {
     private int phase;
     private int storm;
 
+    private int stormMovement;
+
     private int marketSize;
 
     private final List<Faction> factions;
+
     private final Map<String, Territory> territories;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
@@ -55,6 +58,7 @@ public class Game extends GameFactionBase {
         this.turn = 0;
         this.phase = 0;
         this.storm = 18;
+        this.stormMovement = 0;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -69,7 +73,6 @@ public class Game extends GameFactionBase {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
         }
     }
-
 
     private CSVParser getCSVFile (String name) {
         try {
@@ -136,10 +139,10 @@ public class Game extends GameFactionBase {
     public LinkedList<TreacheryCard> getTreacheryDeck() {
         return treacheryDeck;
     }
+
     public LinkedList<SpiceCard> getSpiceDeck() {
         return spiceDeck;
     }
-
     public LinkedList<TraitorCard> getTraitorDeck() {
         return traitorDeck;
     }
@@ -230,5 +233,13 @@ public class Game extends GameFactionBase {
 
     public void setMarketSize(int marketSize) {
         this.marketSize = marketSize;
+    }
+
+    public int getStormMovement() {
+        return stormMovement;
+    }
+
+    public void setStormMovement(int stormMovement) {
+        this.stormMovement = stormMovement;
     }
 }
