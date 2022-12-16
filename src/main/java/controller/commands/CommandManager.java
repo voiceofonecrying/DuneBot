@@ -81,7 +81,7 @@ public class CommandManager extends ListenerAdapter {
                     case "bgflip" -> bgFlip(event, discordGame, gameState);
                     case "bribe" -> bribe(event, discordGame, gameState);
                     case "mute" -> mute(discordGame, gameState);
-                    case "advancegame" -> advanceGame(event, discordGame, gameState);
+                    case "advancegame" -> advanceGame(discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -103,7 +103,9 @@ public class CommandManager extends ListenerAdapter {
         try {
             Game gameState = discordGame.getGameState();
             switch (optionName) {
-                case "factionname" -> event.replyChoices(CommandOptions.factions(gameState, searchValue)).queue();
+                case "factionname", "sender", "recipient" -> event.replyChoices(CommandOptions.factions(gameState, searchValue)).queue();
+                case "territory" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
+                case "traitor" -> event.replyChoices(CommandOptions.traitors(event, gameState, searchValue)).queue();
             }
         } catch (ChannelNotFoundException e) {
             throw new RuntimeException(e);
@@ -117,7 +119,7 @@ public class CommandManager extends ListenerAdapter {
         OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
         OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
         OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
-        OptionData allFactions = new OptionData(OptionType.STRING, "factionname", "The faction", true)
+        OptionData allFactions = new OptionData(OptionType.STRING, "faction", "The faction", true)
                 .addChoice("Atreides", "Atreides")
                 .addChoice("Harkonnen", "Harkonnen")
                 .addChoice("Emperor", "Emperor")
@@ -139,74 +141,11 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Treachery Deck", "treachery_deck")
                 .addChoice("Traitor Deck", "traitor_deck");
         OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true);
-        OptionData sender = new OptionData(OptionType.STRING, "sender", "The one giving the card", true)
-                .addChoice("Atreides", "Atreides")
-                .addChoice("Harkonnen", "Harkonnen")
-                .addChoice("Emperor", "Emperor")
-                .addChoice("Fremen", "Fremen")
-                .addChoice("Spacing Guild", "Guild")
-                .addChoice("Bene Gesserit", "BG")
-                .addChoice("Ixian", "Ix")
-                .addChoice("Tleilaxu", "BT")
-                .addChoice("CHOAM", "CHOAM")
-                .addChoice("Richese", "Rich");
-        OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true)
-                .addChoice("Atreides", "Atreides")
-                .addChoice("Harkonnen", "Harkonnen")
-                .addChoice("Emperor", "Emperor")
-                .addChoice("Fremen", "Fremen")
-                .addChoice("Spacing Guild", "Guild")
-                .addChoice("Bene Gesserit", "BG")
-                .addChoice("Ixian", "Ix")
-                .addChoice("Tleilaxu", "BT")
-                .addChoice("CHOAM", "CHOAM")
-                .addChoice("Richese", "Rich");
+        OptionData sender = new OptionData(OptionType.STRING, "sender", "The one giving the card", true).setAutoComplete(true);
+        OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
-        OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true);
-        OptionData territory = new OptionData(OptionType.STRING, "mostlikelyterritories", "The name of the territory (more 'important' territories).")
-                .addChoice("Cielago North", "Cielago North")
-                .addChoice("Cielago South", "Cielago South")
-                .addChoice("False Wall South", "False Wall South")
-                .addChoice("South Mesa", "South Mesa")
-                .addChoice("False Wall East", "False Wall East")
-                .addChoice("The Minor Erg", "The Minor Erg")
-                .addChoice("Tuek's Sietch", "Tuek's Sietch")
-                .addChoice("Red Chasm", "Red Chasm")
-                .addChoice("Imperial Basin", "Imperial Basin")
-                .addChoice("Old Gap", "Old Gap")
-                .addChoice("Sihaya Ridge", "Sihaya Ridge")
-                .addChoice("Arrakeen", "Arrakeen")
-                .addChoice("Broken Land", "Broken Land")
-                .addChoice("Carthag", "Carthag")
-                .addChoice("Hagga Basin", "Hagga Basin")
-                .addChoice("Rock Outcroppings", "Rock Outcroppings")
-                .addChoice("Sietch Tabr", "Sietch Tabr")
-                .addChoice("Funeral Plain", "Funeral Plain")
-                .addChoice("The Great Flat", "The Great Flat")
-                .addChoice("False Wall West", "False Wall West")
-                .addChoice("Habbanya Erg", "Habbanya Erg")
-                .addChoice("Habbanya Ridge Flat", "Habbanya Ridge Flat")
-                .addChoice("Habbanya Sietch", "Habbanya Sietch")
-                .addChoice("Wind Pass North", "Wind Pass North")
-                .addChoice("Polar Sink", "Polar Sink");
-        OptionData otherTerritory = new OptionData(OptionType.STRING, "otherterritories", "Added for completeness, less likely to use.")
-                .addChoice("Cielago Depression","Cielago Depression")
-                .addChoice("Meridian", "Meridian")
-                .addChoice("Cielago East", "Cielago East")
-                .addChoice("Harg Pass", "Harg Pass")
-                .addChoice("Pasty Mesa", "Pasty Mesa")
-                .addChoice("Gara Kulon", "Gara Kulon")
-                .addChoice("Basin", "Basin")
-                .addChoice("Hole in the Rock", "Hole in the Rock")
-                .addChoice("Rim Wall West", "Rim Wall West")
-                .addChoice("Arsunt", "Arsunt")
-                .addChoice("Tsimpo", "Tsimpo")
-                .addChoice("Plastic Basin", "Plastic Basin")
-                .addChoice("Bight of the Cliff", "Bight of the Cliff")
-                .addChoice("Wind Pass", "Wind Pass")
-                .addChoice("The Greater Flat", "The Greater Flat")
-                .addChoice("Cielago West", "Cielago West")
-                .addChoice("Shield Wall", "Shield Wall");
+        OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
+        OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
         OptionData sector = new OptionData(OptionType.INTEGER, "sector", "The storm sector", true);
         OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
         OptionData spent = new OptionData(OptionType.INTEGER, "spent", "How much was spent on the card.", true);
@@ -235,15 +174,15 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
         commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(card));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(faction, traitor));
-        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory, otherTerritory));
-        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, toTanks, starred, territory, otherTerritory));
+        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory));
+        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, toTanks, starred, territory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(sector));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
-        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory, otherTerritory));
+        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
 
@@ -302,7 +241,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
-        if (!gameState.getResource("turn").getValue().equals(0)) {
+        if (gameState.getTurn() != 0) {
             modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
             return;
         }
@@ -310,13 +249,13 @@ public class CommandManager extends ListenerAdapter {
             modInfo.sendMessage("This game is already full!").queue();
             return;
         }
-        String factionName = event.getOption("factionname").getAsString();
+        String factionName = event.getOption("faction").getAsString();
         if (gameState.hasFaction(factionName)) {
             modInfo.sendMessage("This faction has already been taken!").queue();
             return;
         }
 
-        new Faction(FactionName.valueOf(factionName), event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname(), gameState);
+        gameState.addFaction(new Faction(factionName, event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname(), gameState));
 
         Category game = discordGame.getGameCategory();
         discordGame.pushGameState();
@@ -579,7 +518,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void advanceGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void advanceGame(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Category game = discordGame.getGameCategory();
 
         //Turn 0 is for the set-up for play section from the rules page 6.
@@ -591,6 +530,7 @@ public class CommandManager extends ListenerAdapter {
                     Collections.shuffle(gameState.getSpiceDeck());
                     Collections.shuffle(gameState.getFactions());
                     gameState.advancePhase();
+                    drawGameBoard(discordGame, gameState);
                     //If Bene Gesserit are present, time to make a prediction
                     if (gameState.hasFaction("BG")) {
                         discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
@@ -996,7 +936,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void placeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         boolean star = event.getOption("starred").getAsBoolean();
-        Territory territory = getTerritoryString(event, gameState);
+        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
 
@@ -1015,7 +955,7 @@ public class CommandManager extends ListenerAdapter {
             int cost = territory.isStronghold() ? 1 : 2;
             cost *= faction.getName().equals("Guild") ? Math.ceilDiv(amount, 2) : amount;
             faction.subtractSpice(cost);
-            spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory, false);
+            spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory.getTerritoryName(), false);
             if (gameState.hasFaction("Guild") && !(faction.getName().equals("Guild") || faction.getName().equals("Fremen"))) {
                 gameState.getFaction("Guild").addSpice(cost);
                 spiceMessage(discordGame, cost, "guild", faction.getEmoji() + " shipment", true);
@@ -1031,18 +971,9 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void removeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Territory territory;
+        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
-
-        if (event.getOption("mostlikelyterritories") == null && event.getOption("otherterritories") == null) {
-            discordGame.sendMessage("mod-info", "You have to select a territory.");
-            return;
-        } else if (event.getOption("mostlikelyterritories") == null) {
-            territory = gameState.getTerritories().get(event.getOption("otherterritories").getAsString());
-        } else {
-            territory = gameState.getTerritories().get(event.getOption("mostlikelyterritories").getAsString());
-        }
         String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
         Force force = territory.getForce(faction.getName() + starred);
         if (force.getStrength() > amount) {
@@ -1079,13 +1010,14 @@ public class CommandManager extends ListenerAdapter {
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
         for (TraitorCard traitor : traitors) {
-            traitorString.append(traitor.name());
+            String traitorEmoji = discordGame.getGameState().getFaction(traitor.factionName()).getEmoji();
+            traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
         }
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.getName().toLowerCase() + "-info")) {
                 discordGame.sendMessage(channel.getName(), emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
-                        faction.getResource("spice").getValue() +
+                        faction.getSpice() +
                         traitorString);
 
                 for (TreacheryCard treachery : faction.getTreacheryHand()) {
@@ -1097,7 +1029,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Territory territory = getTerritoryString(event, gameState);
+        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
         int strength = 0;
         String found = "";
         for (Force force : territory.getForces()) {
@@ -1115,12 +1047,6 @@ public class CommandManager extends ListenerAdapter {
         }
         discordGame.pushGameState();
         drawGameBoard(discordGame, gameState);
-    }
-
-    private Territory getTerritoryString(SlashCommandInteractionEvent event, Game gameState) {
-        if (event.getOption("mostlikelyterritories") != null) return gameState.getTerritories().get(event.getOption("mostlikelyterritories").getAsString());
-        else if (event.getOption("otherterritories") != null) return gameState.getTerritories().get(event.getOption("otherterritories").getAsString());
-        else throw new IllegalStateException("No territory was selected.");
     }
 
     public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1142,7 +1068,7 @@ public class CommandManager extends ListenerAdapter {
 
             //Place sigils
             for (int i = 1; i <= gameState.getFactions().size(); i++) {
-                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i).getName() + " Sigil"));
+                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i - 1).getName() + " Sigil"));
                 Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
