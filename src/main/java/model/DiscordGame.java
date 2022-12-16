@@ -1,9 +1,11 @@
 package model;
 
+import com.google.gson.Gson;
 import exceptions.ChannelNotFoundException;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -15,32 +17,29 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class DiscordGame {
-    private SlashCommandInteractionEvent event;
-    private Member member;
-    private Category gameCategory;
+    private final Member member;
+    private final Category gameCategory;
     private List<TextChannel> textChannelList;
     private Game gameState;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
-        this.event = event;
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
-        this.gameState = this.getGameState();
         this.member = event.getMember();
+        this.gameState = this.getGameState();
     }
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event, @NotNull Category category) {
-        this.event = event;
         this.gameCategory = category;
         this.member = event.getMember();
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
-        this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+        this.gameCategory = Objects.requireNonNull(event.getChannel()).asTextChannel().getParentCategory();
         this.member = event.getMember();
     }
 
@@ -72,9 +71,13 @@ public class DiscordGame {
     public boolean isModRole(String modRoleName) {
         return this.member
                 .getRoles()
-                .stream().map(role -> role.getName())
-                .collect(Collectors.toList())
+                .stream().map(Role::getName)
+                .toList()
                 .contains(modRoleName);
+    }
+
+    public void setGameState(Game gameState) {
+        this.gameState = gameState;
     }
 
     public Game getGameState() throws ChannelNotFoundException {
@@ -90,8 +93,9 @@ public class DiscordGame {
 
             try {
                 String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
-                Game returnGame = new Game(gameStateString);
-                if (!this.isModRole(returnGame.getString("modrole"))) {
+                Gson gson = new Gson();
+                Game returnGame = gson.fromJson(gameStateString, Game.class);
+                if (!this.isModRole(returnGame.getModRole())) {
                     throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
             return returnGame;
@@ -102,9 +106,10 @@ public class DiscordGame {
         return this.gameState;
     }
 
-    public void pushGameState(Game gameState) {
+    public void pushGameState() {
+        Gson gson = new Gson();
         FileUpload fileUpload = FileUpload.fromData(
-                gameState.toString().getBytes(StandardCharsets.UTF_8), "gamestate.txt"
+                gson.toJson(this.gameState).getBytes(StandardCharsets.UTF_8), "gamestate.txt"
         );
 
         try {
@@ -116,7 +121,7 @@ public class DiscordGame {
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
-        if (this.gameState.getBoolean("mute")) return;
+        if (this.gameState.getMute()) return;
         channel.sendMessage(message).queue();
     }
 }

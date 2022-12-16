@@ -1,0 +1,88 @@
+﻿name,sector,rock,stronghold
+Arrakeen,9,TRUE,TRUE
+Arsunt (East Sector),10,FALSE,FALSE
+Arsunt (West Sector),11,FALSE,FALSE
+Basin,8,FALSE,FALSE
+Bight Of The Cliff (North Sector),13,FALSE,FALSE
+Bight Of The Cliff (South Sector),14,FALSE,FALSE
+Broken Land (East Sector),10,FALSE,FALSE
+Broken Land (West Sector),11,FALSE,FALSE
+Carthag,10,TRUE,TRUE
+Cielago Depression (Center Sector),1,FALSE,FALSE
+Cielago Depression (East Sector),2,FALSE,FALSE
+Cielago Depression (West Sector),18,FALSE,FALSE
+Cielago East (East Sector),3,FALSE,FALSE
+Cielago East (West Sector),2,FALSE,FALSE
+Cielago North (Center Sector),1,FALSE,FALSE
+Cielago North (East Sector),2,FALSE,FALSE
+Cielago North (West Sector),18,FALSE,FALSE
+Cielago South (East Sector),2,FALSE,FALSE
+Cielago South (West Sector),1,FALSE,FALSE
+Cielago West (North Sector),17,FALSE,FALSE
+Cielago West (South Sector),18,FALSE,FALSE
+False Wall East (Far North Sector),8,TRUE,FALSE
+False Wall East (Far South Sector),4,TRUE,FALSE
+False Wall East (Middle Sector),6,TRUE,FALSE
+False Wall East (North Sector),7,TRUE,FALSE
+False Wall East (South Sector),5,TRUE,FALSE
+False Wall South (East Sector),4,TRUE,FALSE
+False Wall South (West Sector),3,TRUE,FALSE
+False Wall West (Middle Sector),16,TRUE,FALSE
+False Wall West (North Sector),15,TRUE,FALSE
+False Wall West (South Sector),17,TRUE,FALSE
+Funeral Plain,14,FALSE,FALSE
+Gara Kulon,7,FALSE,FALSE
+Habbanya Erg (East Sector),16,FALSE,FALSE
+Habbanya Erg (West Sector),15,FALSE,FALSE
+Habbanya Ridge Flat (East Sector),17,FALSE,FALSE
+Habbanya Ridge Flat (West Sector),16,FALSE,FALSE
+Habbanya Sietch,16,TRUE,TRUE
+Hagga Basin (East Sector),11,FALSE,FALSE
+Hagga Basin (West Sector),12,FALSE,FALSE
+Harg Pass (East Sector),4,FALSE,FALSE
+Harg Pass (West Sector),3,FALSE,FALSE
+Hidden Mobile Stronghold,-1,FALSE,TRUE
+Hole In The Rock,8,FALSE,FALSE
+Imperial Basin (Center Sector),9,TRUE,FALSE
+Imperial Basin (East Sector),8,TRUE,FALSE
+Imperial Basin (West Sector),10,TRUE,FALSE
+Meridian (East Sector),1,FALSE,FALSE
+Meridian (West Sector),18,FALSE,FALSE
+Old Gap (East Sector),8,FALSE,FALSE
+Old Gap (Middle Sector),9,FALSE,FALSE
+Old Gap (West Sector),10,FALSE,FALSE
+Pasty Mesa (Far North Sector),7,TRUE,FALSE
+Pasty Mesa (Far South Sector),4,TRUE,FALSE
+Pasty Mesa (North Sector),6,TRUE,FALSE
+Pasty Mesa (South Sector),5,TRUE,FALSE
+Plastic Basin (Middle Sector),12,TRUE,FALSE
+Plastic Basin (North Sector),11,TRUE,FALSE
+Plastic Basin (South Sector),13,TRUE,FALSE
+Polar Sink,-1,FALSE,FALSE
+Red Chasm,6,FALSE,FALSE
+Rim Wall West,8,TRUE,FALSE
+Rock Outcroppings (North Sector),12,FALSE,FALSE
+Rock Outcroppings (South Sector),13,FALSE,FALSE
+Shield Wall (North Sector),8,TRUE,FALSE
+Shield Wall (South Sector),7,TRUE,FALSE
+Sietch Tabr,13,TRUE,TRUE
+Sihaya Ridge,8,FALSE,FALSE
+South Mesa (Middle Sector),4,FALSE,FALSE
+South Mesa (North Sector),5,FALSE,FALSE
+South Mesa (South Sector),3,FALSE,FALSE
+The Great Flat,14,FALSE,FALSE
+The Greater Flat,15,FALSE,FALSE
+The Minor Erg (Far North Sector),7,FALSE,FALSE
+The Minor Erg (Far South Sector),4,FALSE,FALSE
+The Minor Erg (North Sector),6,FALSE,FALSE
+The Minor Erg (South Sector),5,FALSE,FALSE
+Tsimpo (East Sector),10,FALSE,FALSE
+Tsimpo (Middle Sector),11,FALSE,FALSE
+Tsimpo (West Sector),12,FALSE,FALSE
+Tuek's Sietch,4,TRUE,TRUE
+Wind Pass (Far North Sector),13,FALSE,FALSE
+Wind Pass (Far South Sector),16,FALSE,FALSE
+Wind Pass (North Sector),14,FALSE,FALSE
+Wind Pass (South Sector),15,FALSE,FALSE
+Wind Pass North (North Sector),16,FALSE,FALSE
+Wind Pass North (South Sector),15,FALSE,FALSE
