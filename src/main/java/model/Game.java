@@ -183,6 +183,10 @@ public class Game extends GameFactionBase {
         return tanks;
     }
 
+    public Force getForceFromTanks(String forceName) {
+        return this.tanks.stream().filter(force -> force.getName().equals(forceName)).findFirst().orElse(new Force(forceName, 0));
+    }
+
     public LinkedList<Leader> getLeaderTanks() {
         return leaderTanks;
     }

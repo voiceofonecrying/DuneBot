@@ -48,6 +48,10 @@ public class Territory {
         return forces;
     }
 
+    public Force getForce(String name) {
+        return forces.stream().filter(force -> force.getName().equals(name)).findFirst().orElse(new Force(name, 0));
+    }
+
     public void setRock(boolean rock) {
         isRock = rock;
     }
