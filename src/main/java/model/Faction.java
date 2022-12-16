@@ -1,6 +1,7 @@
 package model;
 
 import controller.Initializers;
+import exceptions.InvalidGameStateException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -24,6 +25,7 @@ public class Faction {
     private Force specialReserves;
     private int frontOfShieldSpice;
     private int freeRevival;
+    private boolean hasMiningEquipment;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<Leader> leaders;
@@ -39,6 +41,7 @@ public Faction(FactionName name, String player, String userName, Game gameState)
         this.userName = userName;
         this.treacheryHand = new LinkedList<>();
         this.frontOfShieldSpice = 0;
+        this.hasMiningEquipment = false;
 
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
@@ -73,6 +76,7 @@ public Faction(FactionName name, String player, String userName, Game gameState)
            case ATREIDES -> {
                this.spice = 10;
                this.freeRevival = 2;
+               this.hasMiningEquipment = true;
                this.reserves = new Force("Atreides", 10);
                this.emoji = "<:atreides:991763327996923997>";
                this.resources.add(new IntegerResource("forces_lost", 0, 0, 7));
@@ -81,6 +85,7 @@ public Faction(FactionName name, String player, String userName, Game gameState)
            case HARKONNEN -> {
                this.spice = 10;
                this.freeRevival = 2;
+               this.hasMiningEquipment = true;
                this.reserves = new Force("Harkonnen", 10);
                this.emoji = "<:harkonnen:991763320333926551>";
                gameState.getTerritories().get("Carthag").getForces().add(new Force("Carthag", 10));
@@ -226,6 +231,7 @@ public Faction(FactionName name, String player, String userName, Game gameState)
 
     public void subtractSpice(int spice) {
         this.spice -= Math.abs(spice);
+        if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
     }
 
     public void addResource(Resource resource) {
@@ -278,5 +284,13 @@ public Faction(FactionName name, String player, String userName, Game gameState)
 
     public void addFrontOfShieldSpice(int amount) {
         this.frontOfShieldSpice += amount;
+    }
+
+    public boolean hasMiningEquipment() {
+        return hasMiningEquipment;
+    }
+
+    public void setHasMiningEquipment(boolean hasMiningEquipment) {
+        this.hasMiningEquipment = hasMiningEquipment;
     }
 }
