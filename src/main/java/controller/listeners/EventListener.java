@@ -39,6 +39,7 @@ public class EventListener extends ListenerAdapter {
     }
 
     public void sendImage(String message, MessageReceivedEvent event,  String channelName, String cardName) {
+        if (event.getGuild().getCategoriesByName("Mod Area", true).size() == 0) return;
         Category modArea = event.getGuild().getCategoriesByName("Mod Area", true).get(0);
         for (TextChannel channel : modArea.getTextChannels()) {
             if (!channel.getName().equals(channelName)) continue;

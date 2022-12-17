@@ -205,12 +205,12 @@ public class Game extends GameFactionBase {
 
     public void advanceTurn() {
         this.turn += 1;
+        this.phase = 1;
     }
 
     public void advancePhase() {
         this.phase += 1;
         if (phase == 10) {
-            phase = 1;
             advanceTurn();
         }
     }

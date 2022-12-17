@@ -106,6 +106,10 @@ public class CommandManager extends ListenerAdapter {
                 case "factionname", "sender", "recipient" -> event.replyChoices(CommandOptions.factions(gameState, searchValue)).queue();
                 case "territory" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
                 case "traitor" -> event.replyChoices(CommandOptions.traitors(event, gameState, searchValue)).queue();
+                case "card" -> event.replyChoices(CommandOptions.cardsInHand(event, gameState, searchValue)).queue();
+                case "from" -> event.replyChoices(CommandOptions.fromTerritories(event, gameState, searchValue)).queue();
+                case "to" -> event.replyChoices(CommandOptions.toTerritories(event, gameState, searchValue)).queue();
+                case "bgterritories" -> event.replyChoices(CommandOptions.bgTerritories(gameState, searchValue)).queue();
             }
         } catch (ChannelNotFoundException e) {
             throw new RuntimeException(e);
@@ -134,14 +138,13 @@ public class CommandManager extends ListenerAdapter {
                 .setAutoComplete(true);
         OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
         OptionData value = new OptionData(OptionType.STRING, "value", "Set the initial value", true);
-        OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount to be added or subtracted (e.g. -3, 4)", true);
+        OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
         OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
         OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
         OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
                 .addChoice("Treachery Deck", "treachery_deck")
                 .addChoice("Traitor Deck", "traitor_deck");
-        OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true);
-        OptionData sender = new OptionData(OptionType.STRING, "sender", "The one giving the card", true).setAutoComplete(true);
+        OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
         OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
         OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
@@ -158,6 +161,10 @@ public class CommandManager extends ListenerAdapter {
         OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
         OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
         OptionData leader = new OptionData(OptionType.STRING, "leader", "The leader.", true);
+        OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
+        OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
+        OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount");
+        OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
@@ -169,12 +176,13 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
-        commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(sender, card, recipient));
+        commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(card, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
         commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(card));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(faction, traitor));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory));
+        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, toTanks, starred, territory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred));
@@ -182,7 +190,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(sector));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
-        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(territory));
+        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
 
@@ -298,42 +306,42 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
+    public String drawSpiceCard(Game gameState, boolean discardA) {
+        LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
+        LinkedList<SpiceCard> discard = discardA ? gameState.getSpiceDiscardA() : gameState.getSpiceDiscardB();
+        StringBuilder message = new StringBuilder();
+        if (deck.isEmpty()) {
+            deck.addAll(gameState.getSpiceDiscardA());
+            deck.addAll(gameState.getSpiceDiscardB());
+            Collections.shuffle(deck);
+            gameState.getSpiceDiscardA().clear();
+            gameState.getSpiceDiscardB().clear();
+        }
+        SpiceCard drawn = deck.pop();
+        if (gameState.getTurn() == 1 && drawn.name().equals("Shai-Hulud")) {
+            deck.add(drawn);
+            Collections.shuffle(deck);
+            drawSpiceCard(gameState, discardA);
+        }
+        discard.add(drawn);
+        message.append(drawn.name());
+        if (gameState.getStorm() == drawn.sector()) message.append(" (blown away by the storm!)");
+        else if (drawn.name().equals("Shai-Hulud")) message.append(", ").append(drawSpiceCard(gameState, discardA));
+        else gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
+        return message.toString();
+    }
+
     public void drawCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         faction.addTreacheryCard(gameState.getTreacheryDeck().pop());
         discordGame.pushGameState();
     }
 
-    public String drawCard(Game gameState, String deckName, String faction) {
+    public void drawCard(Game gameState, String deckName, String faction) {
         switch (deckName) {
-            case "spice deck" -> {
-                LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
-                LinkedList<SpiceCard> a = gameState.getSpiceDiscardA();
-                LinkedList<SpiceCard> b = gameState.getSpiceDiscardB();
-                if (deck.isEmpty()) {
-                    deck.addAll(a);
-                    deck.addAll(b);
-                    a.clear();
-                    b.clear();
-                    Collections.shuffle(deck);
-                }
-                SpiceCard drawn = deck.pop();
-                if (gameState.getTurn() == 1 && drawn.name().equals("Shai-Hulud")) {
-                    deck.add(drawn);
-                    Collections.shuffle(deck);
-                    drawCard(gameState, deckName, faction);
-                }
-                if (faction.equals("A: ")) a.add(drawn);
-                else b.add(drawn);
-                if (!drawn.name().equals("Shai-Hulud") && gameState.getStorm() != drawn.sector()) {
-                   gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
-                }
-                if (drawn.name().equals("Shai-Hulud")) return drawn.name() + ", " + drawCard(gameState, deckName, faction);
-            }
             case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
             case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
         }
-        return "";
     }
 
     public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -447,12 +455,12 @@ public class CommandManager extends ListenerAdapter {
 
         if (market.size() > 0) {
                 StringBuilder message = new StringBuilder();
-                int cardNumber = (int) gameState.getResource("market_size").getValue() - market.size();
-                message.append("R").append(gameState.getResource("turn").getValue()).append(":C").append(cardNumber + 1).append("\n");
-                int firstBid = Math.ceilDiv((int) gameState.getResource("storm").getValue(), 3) + 1 + cardNumber;
+                int cardNumber = gameState.getMarketSize() - market.size();
+                message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
+                int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
                 for (int i = 0; i < gameState.getFactions().size(); i++) {
-                    int playerPosition = (firstBid + i) % 6;
-                    if (playerPosition == 0) playerPosition = 6;
+                    int playerPosition = (firstBid + i) % gameState.getFactions().size();
+                    if (playerPosition == 0) playerPosition = gameState.getFactions().size() - 1;
                     List<Faction> turnOrder = gameState.getFactions();
                     Faction faction = turnOrder.get(playerPosition);
                     List<TreacheryCard> hand = faction.getTreacheryHand();
@@ -470,7 +478,7 @@ public class CommandManager extends ListenerAdapter {
         }
         winner.subtractSpice(spent);
         spiceMessage(discordGame, spent, winner.getName(), "R" +
-                gameState.getResource("turn").getValue() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), false);
+                gameState.getTurn() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), false);
         writeFactionInfo(discordGame, winner);
         if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
             gameState.getFaction("Emperor").addSpice(spent);
@@ -697,8 +705,8 @@ public class CommandManager extends ListenerAdapter {
                 //2. Spice Blow and Nexus
                 case 2 -> {
                     discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
-                    discordGame.sendMessage("turn-summary", "A: " + drawCard(gameState, "spice deck", "A"));
-                    discordGame.sendMessage("turn-summary", "B: " + drawCard(gameState, "spice deck", "B"));
+                    discordGame.sendMessage("turn-summary", "A: " + drawSpiceCard(gameState, true));
+                    discordGame.sendMessage("turn-summary", "B: " + drawSpiceCard(gameState, false));
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
@@ -784,9 +792,9 @@ public class CommandManager extends ListenerAdapter {
                     }
                     StringBuilder message = new StringBuilder();
                     message.append("R").append(gameState.getTurn()).append(":C1\n");
-                    int firstBid = Math.ceilDiv(gameState.getStorm(), 3) + 1;
+                    int firstBid = Math.ceilDiv(gameState.getStorm(), 3);
                     for (int i = 0; i < factions.size(); i++) {
-                        int playerPosition = firstBid + i > 6 ? firstBid + i - 6 : firstBid + i;
+                        int playerPosition = firstBid + i > factions.size() - 1 ? firstBid + i - factions.size() : firstBid + i;
                         Faction faction = gameState.getFactions().get(playerPosition);
                         if (faction.getHandLimit() > faction.getTreacheryHand().size()) message.append(faction.getEmoji()).append(":");
                                 if (i == 0) message.append(" ").append(faction.getPlayer());
@@ -1029,7 +1037,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
+        Territory territory = gameState.getTerritories().get(event.getOption("bgterritories").getAsString());
         int strength = 0;
         String found = "";
         for (Force force : territory.getForces()) {
