@@ -71,6 +71,7 @@ public class CommandManager extends ListenerAdapter {
                     case "ixhandselection" -> ixHandSelection(event, discordGame, gameState);
                     case "selecttraitor" -> selectTraitor(event, discordGame, gameState);
                     case "placeforces" -> placeForces(event, discordGame, gameState);
+                    case "moveforces" -> moveForces(event, discordGame, gameState);
                     case "removeforces" -> removeForces(event, discordGame, gameState);
                     case "display" -> displayGameState(event, discordGame, gameState);
                     case "reviveforces" -> revival(event, discordGame, gameState);
@@ -104,12 +105,13 @@ public class CommandManager extends ListenerAdapter {
             Game gameState = discordGame.getGameState();
             switch (optionName) {
                 case "factionname", "sender", "recipient" -> event.replyChoices(CommandOptions.factions(gameState, searchValue)).queue();
-                case "territory" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
+                case "territory", "to" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
                 case "traitor" -> event.replyChoices(CommandOptions.traitors(event, gameState, searchValue)).queue();
                 case "card" -> event.replyChoices(CommandOptions.cardsInHand(event, gameState, searchValue)).queue();
                 case "from" -> event.replyChoices(CommandOptions.fromTerritories(event, gameState, searchValue)).queue();
-                case "to" -> event.replyChoices(CommandOptions.toTerritories(event, gameState, searchValue)).queue();
                 case "bgterritories" -> event.replyChoices(CommandOptions.bgTerritories(gameState, searchValue)).queue();
+                case "leadertokill" -> event.replyChoices(CommandOptions.leaders(event, gameState, searchValue)).queue();
+                case "leadertorevive" -> event.replyChoices(CommandOptions.reviveLeaders(event, gameState, searchValue)).queue();
             }
         } catch (ChannelNotFoundException e) {
             throw new RuntimeException(e);
@@ -160,10 +162,11 @@ public class CommandManager extends ListenerAdapter {
                 .addChoice("Faction Info", "factions");
         OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
         OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
-        OptionData leader = new OptionData(OptionType.STRING, "leader", "The leader.", true);
+        OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
+        OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
         OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
         OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
-        OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount");
+        OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
         OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
 
         //add new slash command definitions to commandData list
@@ -183,13 +186,13 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(faction, traitor));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
-        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, toTanks, starred, territory));
+        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, toTanks, starred, fromTerritory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(sector));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
-        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, leader));
+        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
@@ -288,6 +291,13 @@ public class CommandManager extends ListenerAdapter {
         String factionName = event.getOption("factionname").getAsString();
         String resourceName = event.getOption("resource").getAsString();
         int amount = event.getOption("amount").getAsInt();
+
+        if (resourceName.toLowerCase().equals("spice")) {
+            gameState.getFaction(factionName).subtractSpice(amount);
+            writeFactionInfo(discordGame, gameState.getFaction(factionName));
+            discordGame.pushGameState();
+            return;
+        }
 
         Resource resource = gameState.getFaction(factionName).getResource(resourceName);
 
@@ -459,8 +469,7 @@ public class CommandManager extends ListenerAdapter {
                 message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
                 int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
                 for (int i = 0; i < gameState.getFactions().size(); i++) {
-                    int playerPosition = (firstBid + i) % gameState.getFactions().size();
-                    if (playerPosition == 0) playerPosition = gameState.getFactions().size() - 1;
+                    int playerPosition = (firstBid + i + 1) % gameState.getFactions().size();
                     List<Faction> turnOrder = gameState.getFactions();
                     Faction faction = turnOrder.get(playerPosition);
                     List<TreacheryCard> hand = faction.getTreacheryHand();
@@ -473,7 +482,7 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.sendMessage("bidding-phase", message.toString());
         }
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
-            drawCard(gameState, "treachery_deck", "Harkonnen");
+            drawCard(gameState, "treachery deck", "Harkonnen");
             discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
         }
         winner.subtractSpice(spent);
@@ -501,13 +510,13 @@ public class CommandManager extends ListenerAdapter {
 
     public void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
-        gameState.getLeaderTanks().add(faction.removeLeader(event.getOption("leader").getAsString().toLowerCase()));
+        gameState.getLeaderTanks().add(faction.removeLeader(event.getOption("leadertokill").getAsString()));
         discordGame.pushGameState();
     }
 
     public void reviveLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
-        faction.getLeaders().add(gameState.removeLeaderFromTanks(event.getOption("leader").getAsString().toLowerCase()));
+        faction.getLeaders().add(gameState.removeLeaderFromTanks(event.getOption("leadertorevive").getAsString()));
         discordGame.pushGameState();
     }
 
@@ -516,6 +525,7 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         if (star.equals("")) faction.getReserves().addStrength(event.getOption("revived").getAsInt());
         else faction.getSpecialReserves().addStrength(event.getOption("revived").getAsInt());
+        faction.subtractSpice(2 * event.getOption("revived").getAsInt());
         spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction.getName(), "Revivals", false);
         if (gameState.hasFaction("BT")) {
             gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
@@ -647,50 +657,48 @@ public class CommandManager extends ListenerAdapter {
                        for (int i = 0; i < gameState.getStormMovement(); i++) {
                            gameState.setStorm(gameState.getStorm() + 1); 
                            if (gameState.getStorm() == 19) gameState.setStorm(1);
-                           for (String territoryName : territories.keySet()) {
-                               Territory territory = territories.get(territoryName); 
-                               if (!territory.isRock() && territory.getSector() == gameState.getStorm()) {
-                                   List<Force> forces = territory.getForces();
-                                   boolean fremenSpecialCase = false;
-                                   //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
-                                   if (forces.contains("Fremen") && forces.contains("Fremen*")) {
-                                       fremenSpecialCase = true;
-                                       int fremenForces = 0;
-                                       int fremenFedaykin = 0;
-                                       for (Force force : forces) {
-                                           if (force.getName().equals("Fremen")) fremenForces = force.getStrength();
-                                           if (force.getName().equals("Fremen*")) fremenFedaykin = force.getStrength();
-                                       }
-                                       int lost = (fremenForces + fremenFedaykin) / 2;
-                                       if (lost < fremenForces) {
-                                           for (Force force : forces) {
-                                               if (force.getName().equals("Fremen")) force.setStrength(force.getStrength() - lost);
-                                           }
-                                       } else if (lost > fremenForces) {
-                                           forces.removeIf(force -> force.getName().equals("Fremen"));
-                                           for (Force force : forces) {
-                                               if (force.getName().equals("Fremen*")) force.setStrength(fremenFedaykin - lost + fremenForces);
-                                           }
-                                       }
-                                       discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getEmoji() + " lost " + lost +
-                                                       " forces to the storm in " + territory.getTerritoryName());
-                                   }
+                           for (Territory territory : territories.values()) {
+                               if (territory.isRock() || territory.getSector() != gameState.getStorm()) continue;
+                               List<Force> forces = territory.getForces();
+                               boolean fremenSpecialCase = false;
+                               //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
+                               if (forces.contains("Fremen") && forces.contains("Fremen*")) {
+                                   fremenSpecialCase = true;
+                                   int fremenForces = 0;
+                                   int fremenFedaykin = 0;
                                    for (Force force : forces) {
-                                       if (force.getName().contains("Fremen") && fremenSpecialCase) continue;
-                                       int lost = force.getStrength();
-                                       forces.remove(force);
-                                       if (force.getName().contains("Fremen") && lost > 1) {
-                                           lost /= 2;
-                                           force.setStrength(lost);
-                                           forces.add(force);
-                                       }
-                                       gameState.getTanks().stream().filter(force1 -> force1.getName().equals(force.getName())).findFirst().orElseThrow().addStrength(force.getStrength());
-                                       discordGame.sendMessage("turn-summary",
-                                               gameState.getFaction(force.getName().replace("*", "")).getEmoji() + " lost " +
-                                                       lost + " forces to the storm in " + territory);
+                                       if (force.getName().equals("Fremen")) fremenForces = force.getStrength();
+                                       if (force.getName().equals("Fremen*")) fremenFedaykin = force.getStrength();
                                    }
-
+                                   int lost = (fremenForces + fremenFedaykin) / 2;
+                                   if (lost < fremenForces) {
+                                       for (Force force : forces) {
+                                           if (force.getName().equals("Fremen")) force.setStrength(force.getStrength() - lost);
+                                       }
+                                   } else if (lost > fremenForces) {
+                                       forces.removeIf(force -> force.getName().equals("Fremen"));
+                                       for (Force force : forces) {
+                                           if (force.getName().equals("Fremen*")) force.setStrength(fremenFedaykin - lost + fremenForces);
+                                       }
+                                   }
+                                   discordGame.sendMessage("turn-summary",gameState.getFaction("Fremen").getEmoji() + " lost " + lost +
+                                                   " forces to the storm in " + territory.getTerritoryName());
                                }
+                               List<Force> toRemove = new LinkedList<>();
+                               for (Force force : forces) {
+                                   if (force.getName().contains("Fremen") && fremenSpecialCase) continue;
+                                   int lost = force.getStrength();
+                                   if (force.getName().contains("Fremen") && lost > 1) {
+                                       lost /= 2;
+                                       force.setStrength(lost);
+                                       forces.add(force);
+                                   } else toRemove.add(force);
+                                   gameState.getTanks().stream().filter(force1 -> force1.getName().equals(force.getName())).findFirst().orElseThrow().addStrength(force.getStrength());
+                                   discordGame.sendMessage("turn-summary",
+                                           gameState.getFaction(force.getName().replace("*", "")).getEmoji() + " lost " +
+                                                   lost + " forces to the storm in " + territory.getTerritoryName());
+                               }
+                               forces.removeAll(toRemove);
                                territory.setSpice(0);
                            }
                        }
@@ -846,13 +854,12 @@ public class CommandManager extends ListenerAdapter {
                 case 6 -> {
                     discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
                     if (gameState.hasFaction("Atreides")) {
-                        discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getSpiceDeck().peek() + " in your future.");
+                        discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getSpiceDeck().peek().name() + " in your future.");
                     }
                     if(gameState.hasFaction("BG")) {
                        for (Territory territory : gameState.getTerritories().values()) {
-                           if (territory.getForces().stream().filter(force -> force.getName().equals("Advisor")).findAny()
-                                   .orElse(new Force("Advisor", 0)).getStrength() > 0) continue;
-                           discordGame.sendMessage("turn-summary",gameState.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
+                           if (territory.getForce("Advisor").getStrength() > 0) discordGame.sendMessage("turn-summary",gameState
+                                   .getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
                        }
                     }
                     gameState.advancePhase();
@@ -860,6 +867,29 @@ public class CommandManager extends ListenerAdapter {
                 //TODO: 7. Battle
                 case 7 -> {
                     discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
+                    StringBuilder battleMessage = new StringBuilder();
+                    for (Territory territory : gameState.getTerritories().values()) {
+                        if (territory.getForces().size() < 2) continue;
+                        int fightingFactions = territory.getForces().size();
+                        if (territory.getForce("Advisor").getStrength() > 0) fightingFactions -= 1;
+                        for (Force force : territory.getForces()) {
+                            for (Force otherForce : territory.getForces()) {
+                                if (force.equals(otherForce)) continue;
+                                if (force.getName().equals(otherForce.getName().replace("*", ""))) fightingFactions -= 1;
+                            }
+                        }
+                        if (fightingFactions < 2) continue;
+                        if (battleMessage.isEmpty()) battleMessage.append("The following battles will take place this turn:\n");
+                        battleMessage.append("In ").append(territory.getTerritoryName()).append(": ");
+                        for (Force force : territory.getForces()) {
+                            if (force.getName().contains("*") || force.getName().equals("Advisor")) continue;
+                            battleMessage.append(gameState.getFaction(force.getName()).getEmoji());
+                        }
+                    }
+
+                    if (battleMessage.isEmpty()) discordGame.sendMessage("turn-summary", "There are no battles this turn.");
+                    else discordGame.sendMessage("turn-summary", battleMessage.toString());
+
                     gameState.advancePhase();
 
                 }
@@ -890,13 +920,13 @@ public class CommandManager extends ListenerAdapter {
                            faction.setHasMiningEquipment(true);
                        }
                        if (territories.get("Tuek's Sietch").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
-                           discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 2 <:spice4:991763531798167573> from Tuek's Sietch");
+                           discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 1 <:spice4:991763531798167573> from Tuek's Sietch");
                            faction.addSpice(1);
                        }
                    }
 
                     for (Territory territory: territories.values()) {
-                        if (territory.getSpice() == 0) continue;
+                        if (territory.getSpice() == 0 || territory.getForces().size() == 0) continue;
                         int totalStrength = 0;
                         Faction faction = gameState.getFaction(territory.getForces().stream().filter(force -> !force.getName().equals("Advisor")).findFirst().orElseThrow().getName().replace("*", ""));
                         for (Force force : territory.getForces()) {
@@ -978,8 +1008,25 @@ public class CommandManager extends ListenerAdapter {
         drawGameBoard(discordGame, gameState);
     }
 
+    public void moveForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        Territory from = gameState.getTerritories().get(event.getOption("from").getAsString());
+        Territory to = gameState.getTerritories().get(event.getOption("to").getAsString());
+        int amount = event.getOption("amount").getAsInt();
+        int starredAmount = event.getOption("starredamount").getAsInt();
+
+        from.setForceStrength(faction.getName(), from.getForce(faction.getName()).getStrength() - amount);
+        from.setForceStrength(faction.getName() + "*", from.getForce(faction.getName() + "*").getStrength() - starredAmount);
+
+        to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
+        to.setForceStrength(faction.getName() + "*", to.getForce(faction.getName() + "*").getStrength() + starredAmount);
+
+        drawGameBoard(discordGame, gameState);
+        discordGame.pushGameState();
+    }
+
     public void removeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
+        Territory territory = gameState.getTerritories().get(event.getOption("from").getAsString());
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
         String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
