@@ -83,6 +83,8 @@ public class CommandManager extends ListenerAdapter {
                     case "bribe" -> bribe(event, discordGame, gameState);
                     case "mute" -> mute(discordGame, gameState);
                     case "advancegame" -> advanceGame(discordGame, gameState);
+                    case "placehms" -> placeHMS(event, discordGame, gameState);
+                    case "movehms" -> moveHMS(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -196,6 +198,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
+        commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
+        commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(territory));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -1104,6 +1108,20 @@ public class CommandManager extends ListenerAdapter {
         drawGameBoard(discordGame, gameState);
     }
 
+    public void placeHMS(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
+        territory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
+        discordGame.pushGameState();
+        drawGameBoard(discordGame, gameState);
+    }
+
+    public void moveHMS(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        for (Territory territory : gameState.getTerritories().values()) {
+            territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
+        }
+        placeHMS(event, discordGame, gameState);
+    }
+
     public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.getMute()) return;
         //Load png resources into a hashmap.
@@ -1150,6 +1168,7 @@ public class CommandManager extends ListenerAdapter {
             //Place forces
             for (Territory territory : gameState.getTerritories().values()) {
                 if (territory.getForces().size() == 0 && territory.getSpice() == 0) continue;
+                if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
                 int offset = 0;
                 int i = 0;
 
@@ -1191,6 +1210,21 @@ public class CommandManager extends ListenerAdapter {
                 }
                 offset = 0;
                 for (Force force : territory.getForces()) {
+                    if (force.getName().equals("Hidden Mobile Stronghold")) {
+                        BufferedImage hms = ImageIO.read(boardComponents.get("Hidden Mobile Stronghold"));
+                        hms = resize(hms, 150,100);
+                        List<Force> hmsForces = gameState.getTerritories().get("Hidden Mobile Stronghold").getForces();
+                        int forceOffset = 0;
+                        for (Force f : hmsForces) {
+                            BufferedImage forceImage = buildForceImage(boardComponents, f.getName(), f.getStrength());
+                            hms = overlay(hms, forceImage, new Point(40,20 + forceOffset), 1);
+                            forceOffset += 30;
+                        }
+                        Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
+                        Point forcePlacementOffset = new Point(forcePlacement.x - 55, forcePlacement.y + offset + 5);
+                        board = overlay(board, hms, forcePlacementOffset, 1);
+                        continue;
+                    }
                     BufferedImage forceImage = buildForceImage(boardComponents, force.getName(), force.getStrength());
                     Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
                     Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
