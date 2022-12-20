@@ -18,6 +18,8 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
@@ -31,6 +33,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+
+import static controller.Initializers.getCSVFile;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -85,6 +89,7 @@ public class CommandManager extends ListenerAdapter {
                     case "advancegame" -> advanceGame(discordGame, gameState);
                     case "placehms" -> placeHMS(event, discordGame, gameState);
                     case "movehms" -> moveHMS(event, discordGame, gameState);
+                    case "expansionchoices" -> expansionChoices(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -170,6 +175,13 @@ public class CommandManager extends ListenerAdapter {
         OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
         OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
         OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
+        OptionData techTokens = new OptionData(OptionType.BOOLEAN, "techtokens", "Include Tech Tokens?", true);
+        OptionData sandTrout = new OptionData(OptionType.BOOLEAN, "sandtrout", "Include Sand Trout?", true);
+        OptionData cheapHeroTraitor = new OptionData(OptionType.BOOLEAN, "cheapherotraitor", "Include Cheap Hero Traitor card?", true);
+        OptionData expansionTreacheryCards = new OptionData(OptionType.BOOLEAN, "expansiontreacherycards", "Include expansion treachery cards?", true);
+        OptionData leaderSkills = new OptionData(OptionType.BOOLEAN, "leaderskills", "Include Leader skills?", true);
+        OptionData strongholdSkills = new OptionData(OptionType.BOOLEAN, "strongholdskills", "Include stronghold skills?", true);
+
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
@@ -198,6 +210,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
+        commandData.add(Commands.slash("expansionchoices", "Configure rules for a game before it starts.").addOptions(techTokens, sandTrout, cheapHeroTraitor, expansionTreacheryCards, leaderSkills, strongholdSkills));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(territory));
 
@@ -1057,6 +1070,25 @@ public class CommandManager extends ListenerAdapter {
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         gameState.setStorm(event.getOption("sector").getAsInt());
         discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + event.getOption("sector").getAsInt());
+        if (gameState.hasTechTokens()) {
+            List<TechToken> techTokens = new LinkedList<>();
+            if (gameState.hasFaction("BT")) {
+                gameState.getFaction("BT").getTechTokens().add(new TechToken("Axlotl Tanks"));
+            } else techTokens.add(new TechToken("Axlotl Tanks"));
+            if (gameState.hasFaction("Ix")) {
+                gameState.getFaction("Ix").getTechTokens().add(new TechToken("Heighliners"));
+            } else techTokens.add(new TechToken("Heighliners"));
+            if (gameState.hasFaction("Fremen")) {
+                gameState.getFaction("Fremen").getTechTokens().add(new TechToken("Spice Production"));
+            } else techTokens.add(new TechToken("Spice Production"));
+            if (!techTokens.isEmpty()) {
+                Collections.shuffle(techTokens);
+                for (int i = 0; i < techTokens.size(); i++) {
+                    Faction faction = gameState.getFactions().get((Math.ceilDiv(gameState.getStorm(), 3) - 1 + i) % 6);
+                    faction.getTechTokens().add(techTokens.get(i));
+                }
+            }
+        }
         discordGame.pushGameState();
         drawGameBoard(discordGame, gameState);
     }
@@ -1085,6 +1117,38 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
+    }
+
+    public void expansionChoices(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+
+        if (event.getOption("techtokens").getAsBoolean()) {
+            gameState.setTechTokens(true);
+        }
+
+        if (event.getOption("sandtrout").getAsBoolean()) {
+            gameState.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0));
+        }
+
+        if (event.getOption("cheapherotraitor").getAsBoolean()) {
+            gameState.getTraitorDeck().add(new TraitorCard("Cheap Hero", "Any", 0));
+        }
+
+        if (event.getOption("expansiontreacherycards").getAsBoolean()) {
+            CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+            for (CSVRecord csvRecord : csvParser) {
+                gameState.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+            }
+        }
+
+        if (event.getOption("leaderskills").getAsBoolean()) {
+            gameState.setLeaderSkills(true);
+        }
+
+        if (event.getOption("strongholdskills").getAsBoolean()) {
+            gameState.setStrongholdSkills(true);
+        }
+
+        discordGame.pushGameState();
     }
 
     public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1145,6 +1209,20 @@ public class CommandManager extends ListenerAdapter {
                 Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
+            }
+
+            //Place Tech Tokens
+            for (int i = 0; i < gameState.getFactions().size(); i++) {
+                Faction faction = gameState.getFactions().get(i);
+                int offset = 0;
+                for (TechToken token : faction.getTechTokens()) {
+                    BufferedImage tokenImage = ImageIO.read(boardComponents.get(token.getName()));
+                    tokenImage = resize(tokenImage, 50, 50);
+                    Point coordinates = Initializers.getDrawCoordinates("tech token " + i);
+                    Point coordinatesOffset = new Point(coordinates.x - offset, coordinates.y);
+                    board = overlay(board, tokenImage, coordinatesOffset, 1);
+                    offset += 50;
+                }
             }
 
             //Place turn, phase, and storm markers

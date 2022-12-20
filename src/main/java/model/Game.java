@@ -1,18 +1,19 @@
 package model;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
+
+import static controller.Initializers.getCSVFile;
 
 public class Game extends GameFactionBase {
     private String gameRole;
     private String modRole;
     private Boolean mute;
+    private boolean techTokens;
+    private boolean leaderSkills;
+    private boolean strongholdSkills;
     private int turn;
     private int phase;
     private int storm;
@@ -59,6 +60,9 @@ public class Game extends GameFactionBase {
         this.phase = 0;
         this.storm = 18;
         this.stormMovement = 0;
+        this.techTokens = false;
+        this.leaderSkills = false;
+        this.strongholdSkills = false;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -74,17 +78,6 @@ public class Game extends GameFactionBase {
         }
     }
 
-    private CSVParser getCSVFile (String name) {
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(this.getClass()
-                    .getClassLoader().getResourceAsStream(name))));
-            return CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     public List<Faction> getFactions() {
         return factions;
@@ -247,5 +240,29 @@ public class Game extends GameFactionBase {
 
     public void setStormMovement(int stormMovement) {
         this.stormMovement = stormMovement;
+    }
+
+    public boolean hasTechTokens() {
+        return techTokens;
+    }
+
+    public void setTechTokens(boolean techTokens) {
+        this.techTokens = techTokens;
+    }
+
+    public boolean isLeaderSkills() {
+        return leaderSkills;
+    }
+
+    public void setLeaderSkills(boolean leaderSkills) {
+        this.leaderSkills = leaderSkills;
+    }
+
+    public boolean isStrongholdSkills() {
+        return strongholdSkills;
+    }
+
+    public void setStrongholdSkills(boolean strongholdSkills) {
+        this.strongholdSkills = strongholdSkills;
     }
 }

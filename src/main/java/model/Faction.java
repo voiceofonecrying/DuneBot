@@ -19,6 +19,7 @@ public class Faction {
     private final String userName;
     private final int handLimit;
     private int spice;
+    private final List<TechToken> techTokens;
     private Force reserves;
     private Force specialReserves;
     private int frontOfShieldSpice;
@@ -44,6 +45,7 @@ public Faction(String name, String player, String userName, Game gameState) {
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
         this.resources = new LinkedList<>();
+        this.techTokens = new LinkedList<>();
         this.spice = 0;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
@@ -291,4 +293,9 @@ public Faction(String name, String player, String userName, Game gameState) {
     public void setHasMiningEquipment(boolean hasMiningEquipment) {
         this.hasMiningEquipment = hasMiningEquipment;
     }
+
+    public List<TechToken> getTechTokens() {
+        return techTokens;
+    }
+
 }
