@@ -90,6 +90,7 @@ public class CommandManager extends ListenerAdapter {
                     case "placehms" -> placeHMS(event, discordGame, gameState);
                     case "movehms" -> moveHMS(event, discordGame, gameState);
                     case "expansionchoices" -> expansionChoices(event, discordGame, gameState);
+                    case "assigntechtoken" -> assignTechToken(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -185,6 +186,10 @@ public class CommandManager extends ListenerAdapter {
         OptionData expansionTreacheryCards = new OptionData(OptionType.BOOLEAN, "expansiontreacherycards", "Include expansion treachery cards?", true);
         OptionData leaderSkills = new OptionData(OptionType.BOOLEAN, "leaderskills", "Include Leader skills?", true);
         OptionData strongholdSkills = new OptionData(OptionType.BOOLEAN, "strongholdskills", "Include stronghold skills?", true);
+        OptionData token = new OptionData(OptionType.STRING, "token", "The Tech Token", true)
+                .addChoice("Heighliners", "Heighliners")
+                .addChoice("Spice Production", "Spice Production")
+                .addChoice("Axlotl Tanks", "Axlotl Tanks");
 
 
         //add new slash command definitions to commandData list
@@ -217,6 +222,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("expansionchoices", "Configure rules for a game before it starts.").addOptions(techTokens, sandTrout, cheapHeroTraitor, expansionTreacheryCards, leaderSkills, strongholdSkills));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(territory));
+        commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -1196,6 +1202,16 @@ public class CommandManager extends ListenerAdapter {
         placeHMS(event, discordGame, gameState);
     }
 
+    public void assignTechToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        for (Faction faction : gameState.getFactions()) {
+            faction.getTechTokens().removeIf(techToken -> techToken.getName().equals(event.getOption("token").getAsString()));
+        }
+        gameState.getFaction(event.getOption("factionname").getAsString()).getTechTokens().add(new TechToken(event.getOption("token").getAsString()));
+        discordGame.sendMessage("turn-summary", event.getOption("token").getAsString() + " has been transferred to " + gameState.getFaction(event.getOption("factionname").getAsString()).getEmoji());
+        drawGameBoard(discordGame, gameState);
+        discordGame.pushGameState();
+    }
+
     public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.getMute()) return;
         //Load png resources into a hashmap.
@@ -1230,7 +1246,7 @@ public class CommandManager extends ListenerAdapter {
                     BufferedImage tokenImage = ImageIO.read(boardComponents.get(token.getName()));
                     tokenImage = resize(tokenImage, 50, 50);
                     Point coordinates = Initializers.getDrawCoordinates("tech token " + i);
-                    Point coordinatesOffset = new Point(coordinates.x - offset, coordinates.y);
+                    Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
                     board = overlay(board, tokenImage, coordinatesOffset, 1);
                     offset += 50;
                 }
