@@ -18,6 +18,8 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
@@ -31,6 +33,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+
+import static controller.Initializers.getCSVFile;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -85,6 +89,8 @@ public class CommandManager extends ListenerAdapter {
                     case "advancegame" -> advanceGame(discordGame, gameState);
                     case "placehms" -> placeHMS(event, discordGame, gameState);
                     case "movehms" -> moveHMS(event, discordGame, gameState);
+                    case "expansionchoices" -> expansionChoices(event, discordGame, gameState);
+                    case "assigntechtoken" -> assignTechToken(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -110,6 +116,8 @@ public class CommandManager extends ListenerAdapter {
                 case "territory", "to" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
                 case "traitor" -> event.replyChoices(CommandOptions.traitors(event, gameState, searchValue)).queue();
                 case "card" -> event.replyChoices(CommandOptions.cardsInHand(event, gameState, searchValue)).queue();
+                case "ixcard" -> event.replyChoices(CommandOptions.ixCardsInHand(event, gameState, searchValue)).queue();
+                case "putbackcard" -> event.replyChoices(CommandOptions.cardsInMarket(event, gameState, searchValue)).queue();
                 case "from" -> event.replyChoices(CommandOptions.fromTerritories(event, gameState, searchValue)).queue();
                 case "bgterritories" -> event.replyChoices(CommandOptions.bgTerritories(gameState, searchValue)).queue();
                 case "leadertokill" -> event.replyChoices(CommandOptions.leaders(event, gameState, searchValue)).queue();
@@ -146,9 +154,11 @@ public class CommandManager extends ListenerAdapter {
         OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
         OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
         OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
-                .addChoice("Treachery Deck", "treachery_deck")
-                .addChoice("Traitor Deck", "traitor_deck");
+                .addChoice("Treachery Deck", "treachery deck")
+                .addChoice("Traitor Deck", "traitor deck");
         OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
+        OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
+        OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
         OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
         OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
@@ -170,6 +180,17 @@ public class CommandManager extends ListenerAdapter {
         OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
         OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
         OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
+        OptionData techTokens = new OptionData(OptionType.BOOLEAN, "techtokens", "Include Tech Tokens?", true);
+        OptionData sandTrout = new OptionData(OptionType.BOOLEAN, "sandtrout", "Include Sand Trout?", true);
+        OptionData cheapHeroTraitor = new OptionData(OptionType.BOOLEAN, "cheapherotraitor", "Include Cheap Hero Traitor card?", true);
+        OptionData expansionTreacheryCards = new OptionData(OptionType.BOOLEAN, "expansiontreacherycards", "Include expansion treachery cards?", true);
+        OptionData leaderSkills = new OptionData(OptionType.BOOLEAN, "leaderskills", "Include Leader skills?", true);
+        OptionData strongholdSkills = new OptionData(OptionType.BOOLEAN, "strongholdskills", "Include stronghold skills?", true);
+        OptionData token = new OptionData(OptionType.STRING, "token", "The Tech Token", true)
+                .addChoice("Heighliners", "Heighliners")
+                .addChoice("Spice Production", "Spice Production")
+                .addChoice("Axlotl Tanks", "Axlotl Tanks");
+
 
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
@@ -182,9 +203,9 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
-        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(card, bottom));
+        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(putBackCard, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
-        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(card));
+        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(ixCard));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(faction, traitor));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
@@ -198,8 +219,10 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount));
+        commandData.add(Commands.slash("expansionchoices", "Configure rules for a game before it starts.").addOptions(techTokens, sandTrout, cheapHeroTraitor, expansionTreacheryCards, leaderSkills, strongholdSkills));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(territory));
+        commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -353,8 +376,8 @@ public class CommandManager extends ListenerAdapter {
 
     public void drawCard(Game gameState, String deckName, String faction) {
         switch (deckName) {
-            case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
-            case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
+            case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pollLast());
+            case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pollLast());
         }
     }
 
@@ -405,14 +428,14 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         LinkedList<TreacheryCard> market = gameState.getMarket();
         int i = 0;
         boolean found = false;
         for (; i < market.size(); i++) {
-            if (market.get(i).name().contains(event.getOption("card").getAsString())) {
-                if (!event.getOption("bottom").getAsBoolean()) gameState.getTreacheryDeck().addFirst(market.get(i));
-                else gameState.getTreacheryDeck().addLast(market.get(i));
+            if (market.get(i).name().contains(event.getOption("putbackcard").getAsString())) {
+                if (!event.getOption("bottom").getAsBoolean()) gameState.getTreacheryDeck().addLast(market.get(i));
+                else gameState.getTreacheryDeck().addFirst(market.get(i));
                 found = true;
                 break;
             }
@@ -423,25 +446,21 @@ public class CommandManager extends ListenerAdapter {
         }
         market.remove(i);
         Collections.shuffle(market);
+        if (gameState.hasFaction("Atreides")) {
+            discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+        }
         discordGame.pushGameState();
     }
 
     public void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         List<TreacheryCard> hand = gameState.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
+        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(event.getOption("ixcard").getAsString())).findFirst().orElseThrow();
         for (TreacheryCard treacheryCard : hand) {
-            if (treacheryCard.name().toLowerCase().contains(event.getOption("card").getAsString())) continue;
-            gameState.getTreacheryDeck().addFirst(treacheryCard);
+            if (treacheryCard.equals(card)) continue;
+            gameState.getTreacheryDeck().add(treacheryCard);
         }
-        int shift = 0;
-        int length = hand.size() - 1;
-        for (int i = 0; i < length; i++) {
-            if (hand.get(0).name().toLowerCase().contains(event.getOption("card").getAsString())) {
-                shift = 1;
-                continue;
-            }
-            hand.remove(shift);
-        }
+        hand.removeIf(treacheryCard -> !treacheryCard.equals(card));
         writeFactionInfo(discordGame, gameState.getFaction("Ix"));
         discordGame.pushGameState();
     }
@@ -585,9 +604,9 @@ public class CommandManager extends ListenerAdapter {
                 //Bene Tleilax to draw Face Dancers
                 case 2 -> {
                     Collections.shuffle(gameState.getTraitorDeck());
-                    drawCard(gameState, "traitor_deck", "BT");
-                    drawCard(gameState, "traitor_deck", "BT");
-                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
                     writeFactionInfo(discordGame, gameState.getFaction("BT"));
                     gameState.advancePhase();
                     discordGame.sendMessage("turn-summary", "2b. Bene Tleilax have drawn their Face Dancers.");
@@ -621,7 +640,7 @@ public class CommandManager extends ListenerAdapter {
                         int toDraw = gameState.getFactions().size();
                         if (gameState.hasFaction("Harkonnen")) toDraw++;
                         for (int i = 0; i < toDraw; i++) {
-                            drawCard(gameState, "treachery_deck", "Ix");
+                            drawCard(gameState, "treachery deck", "Ix");
                         }
                         writeFactionInfo(discordGame, gameState.getFaction("Ix"));
                         discordGame.sendMessage("ix-chat", "Please select one treachery card to keep in your hand.");
@@ -763,7 +782,7 @@ public class CommandManager extends ListenerAdapter {
                         writeFactionInfo(discordGame, faction);
                     }
                     if (gameState.hasFaction("CHOAM")) {
-                        gameState.getFaction("CHOAM").addSpice((10 * multiplier) - choamGiven);
+                        gameState.getFaction("CHOAM").addSpice((2 * factions.size() * multiplier) - choamGiven);
                         spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
                         discordGame.sendMessage("turn-summary",
                                 gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
@@ -783,7 +802,6 @@ public class CommandManager extends ListenerAdapter {
                         int length = faction.getTreacheryHand().size();
                         countMessage.append(faction.getEmoji()).append(": ").append(length).append("\n");
                         if (faction.getHandLimit() > length) cardsUpForBid++;
-                        if (faction.getName().equals("Ix")) cardsUpForBid++;
                         if (faction.getName().equals("Rich")) cardsUpForBid--;
                     }
                     if (gameState.hasFaction("Ix")) {
@@ -792,14 +810,18 @@ public class CommandManager extends ListenerAdapter {
                     countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
                     discordGame.sendMessage("turn-summary", countMessage.toString());
                     gameState.setMarketSize(cardsUpForBid);
+                    if (gameState.hasFaction("Ix")) {
+                        cardsUpForBid++;
+                        discordGame.sendMessage("turn-summary", gameState.getFaction("Ix").getEmoji() + " to place a card back on the top or bottom of the deck.");
+                    }
                     for (int i = 0; i < cardsUpForBid; i++) {
                         gameState.getMarket().add(gameState.getTreacheryDeck().pop());
                         if (gameState.hasFaction("Ix")) {
                             discordGame.sendMessage("ix-chat", "<:treachery:991763073281040518> " +
-                                    gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+                                    gameState.getMarket().get(i).name() + " <:treachery:991763073281040518>");
                         }
                     }
-                    if (gameState.hasFaction("Atreides")) {
+                    if (gameState.hasFaction("Atreides") && !gameState.hasFaction("Ix")) {
                         discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
                     }
                     StringBuilder message = new StringBuilder();
@@ -970,6 +992,9 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         TraitorCard traitor = faction.getTraitorHand().stream().filter(traitorCard -> traitorCard.name().toLowerCase()
                 .contains(event.getOption("traitor").getAsString().toLowerCase())).findFirst().orElseThrow();
+        for (TraitorCard card : faction.getTraitorHand()) {
+            if (!card.equals(traitor)) gameState.getTraitorDeck().add(card);
+        }
         faction.getTraitorHand().clear();
         faction.getTraitorHand().add(traitor);
         writeFactionInfo(discordGame, faction);
@@ -1057,6 +1082,25 @@ public class CommandManager extends ListenerAdapter {
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         gameState.setStorm(event.getOption("sector").getAsInt());
         discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + event.getOption("sector").getAsInt());
+        if (gameState.hasTechTokens()) {
+            List<TechToken> techTokens = new LinkedList<>();
+            if (gameState.hasFaction("BT")) {
+                gameState.getFaction("BT").getTechTokens().add(new TechToken("Axlotl Tanks"));
+            } else techTokens.add(new TechToken("Axlotl Tanks"));
+            if (gameState.hasFaction("Ix")) {
+                gameState.getFaction("Ix").getTechTokens().add(new TechToken("Heighliners"));
+            } else techTokens.add(new TechToken("Heighliners"));
+            if (gameState.hasFaction("Fremen")) {
+                gameState.getFaction("Fremen").getTechTokens().add(new TechToken("Spice Production"));
+            } else techTokens.add(new TechToken("Spice Production"));
+            if (!techTokens.isEmpty()) {
+                Collections.shuffle(techTokens);
+                for (int i = 0; i < techTokens.size(); i++) {
+                    Faction faction = gameState.getFactions().get((Math.ceilDiv(gameState.getStorm(), 3) - 1 + i) % 6);
+                    faction.getTechTokens().add(techTokens.get(i));
+                }
+            }
+        }
         discordGame.pushGameState();
         drawGameBoard(discordGame, gameState);
     }
@@ -1069,6 +1113,10 @@ public class CommandManager extends ListenerAdapter {
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
         for (TraitorCard traitor : traitors) {
+            if (traitor.name().equals("Cheap Hero")) {
+                traitorString.append("Cheap Hero (0)\n");
+                continue;
+            }
             String traitorEmoji = discordGame.getGameState().getFaction(traitor.factionName()).getEmoji();
             traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
@@ -1085,6 +1133,38 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
+    }
+
+    public void expansionChoices(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+
+        if (event.getOption("techtokens").getAsBoolean()) {
+            gameState.setTechTokens(true);
+        }
+
+        if (event.getOption("sandtrout").getAsBoolean()) {
+            gameState.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0));
+        }
+
+        if (event.getOption("cheapherotraitor").getAsBoolean()) {
+            gameState.getTraitorDeck().add(new TraitorCard("Cheap Hero", "Any", 0));
+        }
+
+        if (event.getOption("expansiontreacherycards").getAsBoolean()) {
+            CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+            for (CSVRecord csvRecord : csvParser) {
+                gameState.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+            }
+        }
+
+        if (event.getOption("leaderskills").getAsBoolean()) {
+            gameState.setLeaderSkills(true);
+        }
+
+        if (event.getOption("strongholdskills").getAsBoolean()) {
+            gameState.setStrongholdSkills(true);
+        }
+
+        discordGame.pushGameState();
     }
 
     public void bgFlip(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1122,6 +1202,16 @@ public class CommandManager extends ListenerAdapter {
         placeHMS(event, discordGame, gameState);
     }
 
+    public void assignTechToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        for (Faction faction : gameState.getFactions()) {
+            faction.getTechTokens().removeIf(techToken -> techToken.getName().equals(event.getOption("token").getAsString()));
+        }
+        gameState.getFaction(event.getOption("factionname").getAsString()).getTechTokens().add(new TechToken(event.getOption("token").getAsString()));
+        discordGame.sendMessage("turn-summary", event.getOption("token").getAsString() + " has been transferred to " + gameState.getFaction(event.getOption("factionname").getAsString()).getEmoji());
+        drawGameBoard(discordGame, gameState);
+        discordGame.pushGameState();
+    }
+
     public void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.getMute()) return;
         //Load png resources into a hashmap.
@@ -1145,6 +1235,21 @@ public class CommandManager extends ListenerAdapter {
                 Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
+            }
+
+            //Place Tech Tokens
+            for (int i = 0; i < gameState.getFactions().size(); i++) {
+                Faction faction = gameState.getFactions().get(i);
+                if (faction.getTechTokens().isEmpty()) continue;
+                int offset = 0;
+                for (TechToken token : faction.getTechTokens()) {
+                    BufferedImage tokenImage = ImageIO.read(boardComponents.get(token.getName()));
+                    tokenImage = resize(tokenImage, 50, 50);
+                    Point coordinates = Initializers.getDrawCoordinates("tech token " + i);
+                    Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
+                    board = overlay(board, tokenImage, coordinatesOffset, 1);
+                    offset += 50;
+                }
             }
 
             //Place turn, phase, and storm markers

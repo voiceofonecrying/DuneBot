@@ -17,6 +17,18 @@ import java.util.stream.IntStream;
 
 public class Initializers {
 
+    public static CSVParser getCSVFile (String name) {
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(Initializers.class
+                    .getClassLoader().getResourceAsStream(name))));
+            return CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static List<Point> getPoints(String territory) {
         List<Point> points = new ArrayList<>();
 
@@ -531,6 +543,24 @@ public class Initializers {
             }
             case "storm 18" -> {
                 return new Point(340,940);
+            }
+            case "tech token 0" -> {
+               return new Point(390, 1020);
+            }
+            case "tech token 1" -> {
+                return new Point(815, 820);
+            }
+            case "tech token 2" -> {
+                return new Point(805,205);
+            }
+            case "tech token 3" -> {
+                return new Point(535,80);
+            }
+            case "tech token 4" -> {
+                return new Point(20,240);
+            }
+            case "tech token 5" -> {
+                return new Point(20, 810);
             }
         }
 
