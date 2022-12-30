@@ -115,6 +115,8 @@ public class CommandManager extends ListenerAdapter {
                 case "territory", "to" -> event.replyChoices(CommandOptions.territories(gameState, searchValue)).queue();
                 case "traitor" -> event.replyChoices(CommandOptions.traitors(event, gameState, searchValue)).queue();
                 case "card" -> event.replyChoices(CommandOptions.cardsInHand(event, gameState, searchValue)).queue();
+                case "ixcard" -> event.replyChoices(CommandOptions.ixCardsInHand(event, gameState, searchValue)).queue();
+                case "putbackcard" -> event.replyChoices(CommandOptions.cardsInMarket(event, gameState, searchValue)).queue();
                 case "from" -> event.replyChoices(CommandOptions.fromTerritories(event, gameState, searchValue)).queue();
                 case "bgterritories" -> event.replyChoices(CommandOptions.bgTerritories(gameState, searchValue)).queue();
                 case "leadertokill" -> event.replyChoices(CommandOptions.leaders(event, gameState, searchValue)).queue();
@@ -151,9 +153,11 @@ public class CommandManager extends ListenerAdapter {
         OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
         OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
         OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
-                .addChoice("Treachery Deck", "treachery_deck")
-                .addChoice("Traitor Deck", "traitor_deck");
+                .addChoice("Treachery Deck", "treachery deck")
+                .addChoice("Traitor Deck", "traitor deck");
         OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
+        OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
+        OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
         OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
         OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
         OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
@@ -194,9 +198,9 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
-        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(card, bottom));
+        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(putBackCard, bottom));
         commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
-        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(card));
+        commandData.add(Commands.slash("ixhandselection", "Only use this command to select the Ix starting treachery card").addOptions(ixCard));
         commandData.add(Commands.slash("selecttraitor", "Select a starting traitor from hand.").addOptions(faction, traitor));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, isShipment, starred, territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
@@ -366,8 +370,8 @@ public class CommandManager extends ListenerAdapter {
 
     public void drawCard(Game gameState, String deckName, String faction) {
         switch (deckName) {
-            case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pop());
-            case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pop());
+            case "traitor deck" -> gameState.getFaction(faction).getTraitorHand().add(gameState.getTraitorDeck().pollLast());
+            case "treachery deck" -> gameState.getFaction(faction).getTreacheryHand().add(gameState.getTreacheryDeck().pollLast());
         }
     }
 
@@ -418,14 +422,14 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public void putBack(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         LinkedList<TreacheryCard> market = gameState.getMarket();
         int i = 0;
         boolean found = false;
         for (; i < market.size(); i++) {
-            if (market.get(i).name().contains(event.getOption("card").getAsString())) {
-                if (!event.getOption("bottom").getAsBoolean()) gameState.getTreacheryDeck().addFirst(market.get(i));
-                else gameState.getTreacheryDeck().addLast(market.get(i));
+            if (market.get(i).name().contains(event.getOption("putbackcard").getAsString())) {
+                if (!event.getOption("bottom").getAsBoolean()) gameState.getTreacheryDeck().addLast(market.get(i));
+                else gameState.getTreacheryDeck().addFirst(market.get(i));
                 found = true;
                 break;
             }
@@ -436,25 +440,21 @@ public class CommandManager extends ListenerAdapter {
         }
         market.remove(i);
         Collections.shuffle(market);
+        if (gameState.hasFaction("Atreides")) {
+            discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+        }
         discordGame.pushGameState();
     }
 
     public void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         List<TreacheryCard> hand = gameState.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
+        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(event.getOption("ixcard").getAsString())).findFirst().orElseThrow();
         for (TreacheryCard treacheryCard : hand) {
-            if (treacheryCard.name().toLowerCase().contains(event.getOption("card").getAsString())) continue;
-            gameState.getTreacheryDeck().addFirst(treacheryCard);
+            if (treacheryCard.equals(card)) continue;
+            gameState.getTreacheryDeck().add(treacheryCard);
         }
-        int shift = 0;
-        int length = hand.size() - 1;
-        for (int i = 0; i < length; i++) {
-            if (hand.get(0).name().toLowerCase().contains(event.getOption("card").getAsString())) {
-                shift = 1;
-                continue;
-            }
-            hand.remove(shift);
-        }
+        hand.removeIf(treacheryCard -> !treacheryCard.equals(card));
         writeFactionInfo(discordGame, gameState.getFaction("Ix"));
         discordGame.pushGameState();
     }
@@ -598,9 +598,9 @@ public class CommandManager extends ListenerAdapter {
                 //Bene Tleilax to draw Face Dancers
                 case 2 -> {
                     Collections.shuffle(gameState.getTraitorDeck());
-                    drawCard(gameState, "traitor_deck", "BT");
-                    drawCard(gameState, "traitor_deck", "BT");
-                    drawCard(gameState, "traitor_deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
+                    drawCard(gameState, "traitor deck", "BT");
                     writeFactionInfo(discordGame, gameState.getFaction("BT"));
                     gameState.advancePhase();
                     discordGame.sendMessage("turn-summary", "2b. Bene Tleilax have drawn their Face Dancers.");
@@ -634,7 +634,7 @@ public class CommandManager extends ListenerAdapter {
                         int toDraw = gameState.getFactions().size();
                         if (gameState.hasFaction("Harkonnen")) toDraw++;
                         for (int i = 0; i < toDraw; i++) {
-                            drawCard(gameState, "treachery_deck", "Ix");
+                            drawCard(gameState, "treachery deck", "Ix");
                         }
                         writeFactionInfo(discordGame, gameState.getFaction("Ix"));
                         discordGame.sendMessage("ix-chat", "Please select one treachery card to keep in your hand.");
@@ -776,7 +776,7 @@ public class CommandManager extends ListenerAdapter {
                         writeFactionInfo(discordGame, faction);
                     }
                     if (gameState.hasFaction("CHOAM")) {
-                        gameState.getFaction("CHOAM").addSpice((10 * multiplier) - choamGiven);
+                        gameState.getFaction("CHOAM").addSpice((2 * factions.size() * multiplier) - choamGiven);
                         spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
                         discordGame.sendMessage("turn-summary",
                                 gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
@@ -796,7 +796,6 @@ public class CommandManager extends ListenerAdapter {
                         int length = faction.getTreacheryHand().size();
                         countMessage.append(faction.getEmoji()).append(": ").append(length).append("\n");
                         if (faction.getHandLimit() > length) cardsUpForBid++;
-                        if (faction.getName().equals("Ix")) cardsUpForBid++;
                         if (faction.getName().equals("Rich")) cardsUpForBid--;
                     }
                     if (gameState.hasFaction("Ix")) {
@@ -805,14 +804,18 @@ public class CommandManager extends ListenerAdapter {
                     countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
                     discordGame.sendMessage("turn-summary", countMessage.toString());
                     gameState.setMarketSize(cardsUpForBid);
+                    if (gameState.hasFaction("Ix")) {
+                        cardsUpForBid++;
+                        discordGame.sendMessage("turn-summary", gameState.getFaction("Ix").getEmoji() + " to place a card back on the top or bottom of the deck.");
+                    }
                     for (int i = 0; i < cardsUpForBid; i++) {
                         gameState.getMarket().add(gameState.getTreacheryDeck().pop());
                         if (gameState.hasFaction("Ix")) {
                             discordGame.sendMessage("ix-chat", "<:treachery:991763073281040518> " +
-                                    gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+                                    gameState.getMarket().get(i).name() + " <:treachery:991763073281040518>");
                         }
                     }
-                    if (gameState.hasFaction("Atreides")) {
+                    if (gameState.hasFaction("Atreides") && !gameState.hasFaction("Ix")) {
                         discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
                     }
                     StringBuilder message = new StringBuilder();
@@ -983,6 +986,9 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         TraitorCard traitor = faction.getTraitorHand().stream().filter(traitorCard -> traitorCard.name().toLowerCase()
                 .contains(event.getOption("traitor").getAsString().toLowerCase())).findFirst().orElseThrow();
+        for (TraitorCard card : faction.getTraitorHand()) {
+            if (!card.equals(traitor)) gameState.getTraitorDeck().add(card);
+        }
         faction.getTraitorHand().clear();
         faction.getTraitorHand().add(traitor);
         writeFactionInfo(discordGame, faction);
@@ -1101,6 +1107,10 @@ public class CommandManager extends ListenerAdapter {
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
         for (TraitorCard traitor : traitors) {
+            if (traitor.name().equals("Cheap Hero")) {
+                traitorString.append("Cheap Hero (0)\n");
+                continue;
+            }
             String traitorEmoji = discordGame.getGameState().getFaction(traitor.factionName()).getEmoji();
             traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
@@ -1214,6 +1224,7 @@ public class CommandManager extends ListenerAdapter {
             //Place Tech Tokens
             for (int i = 0; i < gameState.getFactions().size(); i++) {
                 Faction faction = gameState.getFactions().get(i);
+                if (faction.getTechTokens().isEmpty()) continue;
                 int offset = 0;
                 for (TechToken token : faction.getTechTokens()) {
                     BufferedImage tokenImage = ImageIO.read(boardComponents.get(token.getName()));

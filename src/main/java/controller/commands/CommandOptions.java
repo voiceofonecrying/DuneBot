@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class CommandOptions {
@@ -96,5 +97,20 @@ public class CommandOptions {
             searchRegex.append(c).append(".*");
         }
         return searchRegex.toString();
+    }
+
+    public static List<Command.Choice> ixCardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+        Faction faction = gameState.getFaction("Ix");
+        return faction.getTreacheryHand().stream().map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
+    }
+
+    public static List<Command.Choice> cardsInMarket(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+        return gameState.getMarket().stream().map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
     }
 }
