@@ -1229,14 +1229,6 @@ public class CommandManager extends ListenerAdapter {
         try {
             BufferedImage board = ImageIO.read(boardComponents.get("Board"));
 
-            //Place sigils
-            for (int i = 1; i <= gameState.getFactions().size(); i++) {
-                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i - 1).getName() + " Sigil"));
-                Point coordinates = Initializers.getDrawCoordinates("sigil " + i);
-                sigil = resize(sigil, 50, 50);
-                board = overlay(board, sigil, coordinates, 1);
-            }
-
             //Place Tech Tokens
             for (int i = 0; i < gameState.getFactions().size(); i++) {
                 Faction faction = gameState.getFactions().get(i);
@@ -1269,6 +1261,13 @@ public class CommandManager extends ListenerAdapter {
             stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getStorm() * 20));
             board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getStorm()), 1);
 
+            //Place sigils
+            for (int i = 1; i <= gameState.getFactions().size(); i++) {
+                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i - 1).getName() + " Sigil"));
+                coordinates = Initializers.getDrawCoordinates("sigil " + i);
+                sigil = resize(sigil, 50, 50);
+                board = overlay(board, sigil, coordinates, 1);
+            }
 
             //Place forces
             for (Territory territory : gameState.getTerritories().values()) {
