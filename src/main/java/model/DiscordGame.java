@@ -109,7 +109,7 @@ public class DiscordGame {
     public void pushGameState() {
         Gson gson = new Gson();
         FileUpload fileUpload = FileUpload.fromData(
-                gson.toJson(this.gameState).getBytes(StandardCharsets.UTF_8), "gamestate.txt"
+                gson.toJson(this.gameState).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
         try {
