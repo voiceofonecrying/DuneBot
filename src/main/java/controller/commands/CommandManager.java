@@ -6,6 +6,7 @@ import exceptions.InvalidGameStateException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.*;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
+import templates.ChannelPermissions;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -230,37 +232,87 @@ public class CommandManager extends ListenerAdapter {
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         Role gameRole = event.getOption("gamerole").getAsRole();
         Role modRole = event.getOption("modrole").getAsRole();
+        Role observerRole = event.getGuild().getRolesByName("Observer", true).get(0);
+        Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).get(0);
         String name = event.getOption("name").getAsString();
+
+        // Create category and set base permissions to deny everything for everyone except the mod role.
+        // The channel permissions assume that this is set this way.
         event.getGuild()
                 .createCategory(name)
-                .addPermissionOverride(event.getGuild().getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(modRole, EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), null)
+                .addPermissionOverride(modRole, ChannelPermissions.all, null)
+                .addPermissionOverride(event.getGuild().getPublicRole(), null, ChannelPermissions.all)
+                .addPermissionOverride(gameRole, null, ChannelPermissions.all)
+                .addPermissionOverride(observerRole, null, ChannelPermissions.all)
                 .complete();
 
         Category category = event.getGuild().getCategoriesByName(name, true).get(0);
 
-        category.createTextChannel("bot-data")
-                .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL)).complete();
         category.createTextChannel("chat")
-                        .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
-        category.createTextChannel("turn-summary")
-                .addPermissionOverride(gameRole, EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("game-actions")
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("bribes")
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("bidding-phase")
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("rules")
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
+                .addPermissionOverride(
+                        observerRole,
+                        ChannelPermissions.readWriteAllow,
+                        ChannelPermissions.readWriteDeny
+                )
+                .addPermissionOverride(
+                        gameRole,
+                        ChannelPermissions.readWriteAllow,
+                        ChannelPermissions.readWriteDeny
+                )
+                .complete();
+
+        // Not including Observer in pre-game-voting because there's no way to stop someone from adding to an
+        // existing emoji reaction.
         category.createTextChannel("pre-game-voting")
-                .addPermissionOverride(event.getGuild().getRolesByName("Observer", true).get(0), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND)).complete();
-        category.createTextChannel("mod-info")
-                .addPermissionOverride(gameRole, null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).complete();
+                .addPermissionOverride(
+                        gameRole,
+                        ChannelPermissions.readAndReactAllow,
+                        ChannelPermissions.readAndReactDeny
+                )
+                .addPermissionOverride(
+                        pollBot,
+                        ChannelPermissions.pollBotAllow,
+                        ChannelPermissions.pollBotDeny
+                )
+                .complete();
+
+        String[] readAndReactChannels  = {"turn-summary", "rules"};
+
+        for (String channel : readAndReactChannels) {
+            category.createTextChannel(channel)
+                    .addPermissionOverride(
+                            observerRole,
+                            ChannelPermissions.readAndReactAllow,
+                            ChannelPermissions.readAndReactDeny
+                    )
+                    .addPermissionOverride(
+                            gameRole,
+                            ChannelPermissions.readAndReactAllow,
+                            ChannelPermissions.readAndReactDeny
+                    )
+                    .complete();
+        }
+
+        String[] readWriteChannels = {"game-actions", "bribes", "bidding-phase"};
+        for (String channel : readWriteChannels) {
+            category.createTextChannel(channel)
+                    .addPermissionOverride(
+                            observerRole,
+                            ChannelPermissions.readAndReactAllow,
+                            ChannelPermissions.readAndReactDeny
+                    )
+                    .addPermissionOverride(
+                            gameRole,
+                            ChannelPermissions.readWriteAllow,
+                            ChannelPermissions.readWriteDeny
+                    )
+                    .complete();
+        }
+
+        String[] modChannels  = {"bot-data", "mod-info"};
+        for (String channel : modChannels) {
+            category.createTextChannel(channel).complete();
+        }
 
         DiscordGame discordGame = new DiscordGame(event, category);
         discordGame.getTextChannel("rules").sendMessage("""
@@ -279,6 +331,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
+
         if (gameState.getTurn() != 0) {
             modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
             return;
@@ -297,14 +350,24 @@ public class CommandManager extends ListenerAdapter {
 
         Category game = discordGame.getGameCategory();
         discordGame.pushGameState();
-        game.createTextChannel(factionName.toLowerCase() + "-info").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), EnumSet.of(Permission.MESSAGE_SEND))
-                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getGameRole(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL)).queue();
 
-        game.createTextChannel(factionName.toLowerCase() + "-chat").addPermissionOverride(event.getOption("player").getAsMember(), EnumSet.of(Permission.VIEW_CHANNEL), null)
-                .addPermissionOverride(event.getGuild().getRolesByName(gameState.getGameRole(), true).get(0), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                .addPermissionOverride(event.getMember(), EnumSet.of(Permission.VIEW_CHANNEL), null).queue();
+        Member player = event.getOption("player").getAsMember();
 
+        game.createTextChannel(factionName.toLowerCase() + "-info")
+                .addPermissionOverride(
+                        player,
+                        ChannelPermissions.readAndReactAllow,
+                        ChannelPermissions.readAndReactDeny
+                )
+                .queue();
+
+        game.createTextChannel(factionName.toLowerCase() + "-chat")
+                .addPermissionOverride(
+                        player,
+                        ChannelPermissions.readWriteAllow,
+                        ChannelPermissions.readWriteDeny
+                )
+                .queue();
     }
 
     public void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
