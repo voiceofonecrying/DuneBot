@@ -5,7 +5,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.*;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -42,16 +41,14 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        List<Role> roles = event.getMember().getRoles();
-        boolean isGameMaster = false;
-        for (Role role : roles) {
-            if (role.getName().equals("Game Master") || role.getName().equals("Dungeon Master")) {
-                isGameMaster = true;
-                break;
-            }
-        }
-        if (!isGameMaster) {
-            event.reply("You are not a Game Master!").setEphemeral(true).queue();
+        Member member = event.getMember();
+
+        List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
+
+        if (roles.stream().noneMatch(role ->
+                role.getName().equals("Game Master") || role.getName().equals("Dungeon Master"))
+        ) {
+            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
             return;
         }
 
