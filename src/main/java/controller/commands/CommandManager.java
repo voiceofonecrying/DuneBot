@@ -379,9 +379,25 @@ public class CommandManager extends ListenerAdapter {
         String factionName = event.getOption("factionname").getAsString();
         String resourceName = event.getOption("resource").getAsString();
         int amount = event.getOption("amount").getAsInt();
+        String message = event.getOption("message").getAsString();
+        Faction faction = gameState.getFaction(factionName);
 
         if (resourceName.equalsIgnoreCase("spice")) {
-            gameState.getFaction(factionName).subtractSpice(amount);
+            if (amount < 0) {
+                faction.subtractSpice(-amount);
+            } else {
+                faction.addSpice(amount);
+            }
+            String gainsOrLoses = amount >= 0 ? " gains " : " loses ";
+            discordGame.sendMessage(
+                    "turn-summary",
+                    MessageFormat.format(
+                            "{0} {1} {2} <:spice4:991763531798167573> {3}",
+                            faction.getEmoji(), gainsOrLoses, amount, message
+                    )
+            );
+            spiceMessage(discordGame, Math.abs(amount), faction.getName(), message, amount >= 0);
+
             writeFactionInfo(discordGame, gameState.getFaction(factionName));
             discordGame.pushGameState();
             return;
@@ -587,7 +603,7 @@ public class CommandManager extends ListenerAdapter {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                discordGame.sendMessage(channel.getName(), plusSign + amount + "<:spice4:991763531798167573> for " + message);
+                discordGame.sendMessage(channel.getName(), plusSign + amount + "<:spice4:991763531798167573> " + message);
             }
         }
     }
