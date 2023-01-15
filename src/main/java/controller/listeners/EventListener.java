@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
 
 public class EventListener extends ListenerAdapter {
 
@@ -47,8 +48,13 @@ public class EventListener extends ListenerAdapter {
             MessageHistory history = MessageHistory.getHistoryFromBeginning(channel).complete();
             List<Message> messages = history.getRetrievedHistory();
 
+            Pattern cardPattern = Pattern.compile(
+                    ".*Name:\\s*" + Pattern.quote(cardName) + "\\s*\\R.*",
+                    Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+            );
+
             for (Message channelMessage : messages) {
-                if (channelMessage.getContentRaw().toLowerCase().contains(cardName.toLowerCase())) {
+                if (cardPattern.matcher(channelMessage.getContentRaw()).matches()) {
                     Message.Attachment attachment = channelMessage.getAttachments().get(0);
                     CompletableFuture<InputStream> future = attachment.getProxy().download();
                     try {
