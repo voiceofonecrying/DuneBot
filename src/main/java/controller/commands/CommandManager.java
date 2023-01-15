@@ -379,7 +379,7 @@ public class CommandManager extends ListenerAdapter {
         String resourceName = event.getOption("resource").getAsString();
         int amount = event.getOption("amount").getAsInt();
 
-        if (resourceName.toLowerCase().equals("spice")) {
+        if (resourceName.equalsIgnoreCase("spice")) {
             gameState.getFaction(factionName).subtractSpice(amount);
             writeFactionInfo(discordGame, gameState.getFaction(factionName));
             discordGame.pushGameState();
@@ -620,8 +620,6 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void advanceGame(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Category game = discordGame.getGameCategory();
-
         //Turn 0 is for the set-up for play section from the rules page 6.
         if (gameState.getTurn() == 0) {
             switch (gameState.getPhase()) {
@@ -743,10 +741,11 @@ public class CommandManager extends ListenerAdapter {
                            for (Territory territory : territories.values()) {
                                if (territory.isRock() || territory.getSector() != gameState.getStorm()) continue;
                                List<Force> forces = territory.getForces();
-                               boolean fremenSpecialCase = false;
+                               boolean fremenSpecialCase = forces.stream()
+                                       .filter(force -> force.getName().startsWith("Fremen"))
+                                       .count() == 2;
                                //Defaults to play "optimally", destorying Fremen regular forces over Fedaykin
-                               if (forces.contains("Fremen") && forces.contains("Fremen*")) {
-                                   fremenSpecialCase = true;
+                               if (fremenSpecialCase) {
                                    int fremenForces = 0;
                                    int fremenFedaykin = 0;
                                    for (Force force : forces) {
@@ -891,8 +890,8 @@ public class CommandManager extends ListenerAdapter {
                         int playerPosition = firstBid + i > factions.size() - 1 ? firstBid + i - factions.size() : firstBid + i;
                         Faction faction = gameState.getFactions().get(playerPosition);
                         if (faction.getHandLimit() > faction.getTreacheryHand().size()) message.append(faction.getEmoji()).append(":");
-                                if (i == 0) message.append(" ").append(faction.getPlayer());
-                                message.append("\n");
+                        if (i == 0) message.append(" ").append(faction.getPlayer());
+                        message.append("\n");
                     }
                     discordGame.sendMessage("bidding-phase", message.toString());
                     gameState.advancePhase();
@@ -1090,9 +1089,7 @@ public class CommandManager extends ListenerAdapter {
             }
             writeFactionInfo(discordGame, faction);
         }
-        if (territory.getForce("BG").getStrength() > 0) {
-            discordGame.sendMessage("turn-summary", gameState.getFaction("BG").getEmoji() + " to decide whether to flip their forces in " + territory.getTerritoryName());
-        }
+
         discordGame.pushGameState();
         drawGameBoard(discordGame, gameState);
     }
@@ -1499,7 +1496,7 @@ public class CommandManager extends ListenerAdapter {
         BufferedImage rotated = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = rotated.createGraphics();
         AffineTransform at = new AffineTransform();
-        at.translate((newWidth - w) / 2, (newHeight - h) / 2);
+        at.translate((double) (newWidth - w) / 2, (double) (newHeight - h) / 2);
 
         int x = w / 2;
         int y = h / 2;
@@ -1584,8 +1581,10 @@ public class CommandManager extends ListenerAdapter {
 
     public void clean(SlashCommandInteractionEvent event) {
         if (!event.getOption("password").getAsString().equals(Dotenv.configure().load().get("PASSWORD"))) {
-            event.getChannel().sendMessage("You have attempted the forbidden command.\n\n...Or you're Voiceofonecrying " +
-                    "and you fat-fingered the password").queue();
+            event.getChannel().sendMessage("""
+                    You have attempted the forbidden command.
+
+                    ...Or you're Voiceofonecrying and you fat-fingered the password""").queue();
             return;
         }
         List<Category> categories = event.getGuild().getCategories();
