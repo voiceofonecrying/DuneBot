@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 
@@ -1531,6 +1532,15 @@ public class CommandManager extends ListenerAdapter {
         }
         faction.subtractSpice(amount);
         spiceMessage(discordGame, amount, faction.getName(), "bribe to " + recipient.getEmoji(), false);
+
+        discordGame.sendMessage(
+                "turn-summary",
+                MessageFormat.format(
+                        "{0} places {1} <:spice4:991763531798167573> in front of {2} shield.",
+                        faction.getEmoji(), amount, recipient.getEmoji()
+                )
+        );
+
         recipient.addFrontOfShieldSpice(amount);
         writeFactionInfo(discordGame, faction);
         writeFactionInfo(discordGame, recipient);
