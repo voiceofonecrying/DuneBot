@@ -547,55 +547,95 @@ public class CommandManager extends ListenerAdapter {
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
         int spent = event.getOption("spent").getAsInt();
         LinkedList<TreacheryCard> market = gameState.getMarket();
+
+        // The name of the card to be awarded, for example, the second card in round 4 would be R4:C2.
+        String currentCard = MessageFormat.format(
+                "R{0}:C{1}",
+                gameState.getTurn(),
+                gameState.getMarketSize() - market.size() + 1
+        );
+
         if (winner.getHandLimit() == winnerHand.size()) {
-            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Player's hand is full, they cannot bid on this card!").queue());
+            discordGame.sendMessage("mod-info", "Player's hand is full, they cannot bid on this card!");
             return;
         }
-        if (market.size() > 0) {
-            winnerHand.add(market.pop());
-            discordGame.sendMessage("turn-summary", winner.getEmoji() + " wins card up for bid for " + spent + " <:spice4:991763531798167573>");
-        } else {
+
+        if (market.size() == 0) {
             discordGame.sendMessage("mod-info", "No more cards up for bid.");
             return;
         }
-        if (gameState.hasFaction("Atreides") && market.size() > 0) {
-            discordGame.sendMessage("atreides-info", "The next card up for bid is <:treachery:991763073281040518> "
-                            + market.get(0).name() + " <:treachery:991763073281040518>");
+
+        discordGame.sendMessage("turn-summary",
+                MessageFormat.format(
+                        "{0} wins {1} for {2} <:spice4:991763531798167573>",
+                        winner.getEmoji(),
+                        currentCard,
+                        spent
+                )
+        );
+
+        // Winner pays for the card
+        winner.subtractSpice(spent);
+        spiceMessage(discordGame, spent, winner.getName(), currentCard, false);
+
+        // Emperor receives payment if they are in the game
+        if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
+            spiceMessage(discordGame, spent, "emperor", currentCard, true);
+            gameState.getFaction("Emperor").addSpice(spent);
+            discordGame.sendMessage("turn-summary",
+                    MessageFormat.format(
+                            "{0} is paid {1} <:spice4:991763531798167573> for {2}",
+                            gameState.getFaction("Emperor").getEmoji(),
+                            spent,
+                            currentCard
+                    )
+            );
+            writeFactionInfo(discordGame, gameState.getFaction("Emperor"));
         }
 
-        if (market.size() > 0) {
-                StringBuilder message = new StringBuilder();
-                int cardNumber = gameState.getMarketSize() - market.size();
-                message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
-                int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
-                for (int i = 0; i < gameState.getFactions().size(); i++) {
-                    int playerPosition = (firstBid + i + 1) % gameState.getFactions().size();
-                    List<Faction> turnOrder = gameState.getFactions();
-                    Faction faction = turnOrder.get(playerPosition);
-                    List<TreacheryCard> hand = faction.getTreacheryHand();
-                    if (faction.getHandLimit() > hand.size()) {
-                        message.append(faction.getEmoji()).append(":");
-                        if (i == 0) message.append(" ").append(faction.getPlayer());
-                        message.append("\n");
-                    }
-                }
-                discordGame.sendMessage("bidding-phase", message.toString());
-        }
+        // Give the winner the card
+        winnerHand.add(market.pop());
+
+        // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
             drawCard(gameState, "treachery deck", "Harkonnen");
             discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
         }
-        winner.subtractSpice(spent);
-        spiceMessage(discordGame, spent, winner.getName(), "R" +
-                gameState.getTurn() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), false);
+
+        // Write the winner's information
         writeFactionInfo(discordGame, winner);
-        if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
-            gameState.getFaction("Emperor").addSpice(spent);
-            discordGame.sendMessage("turn-summary", gameState.getFaction("Emperor").getEmoji() + " is paid " + spent + " <:spice4:991763531798167573>");
-            writeFactionInfo(discordGame, gameState.getFaction("Emperor"));
+
+        // Get the next card up for bid
+        if (market.size() > 0) {
+            // Show Atreides the next card
+            if (gameState.hasFaction("Atreides")) {
+                discordGame.sendMessage("atreides-chat",
+                        MessageFormat.format(
+                                "The next card up for bid is <:treachery:991763073281040518> {0} <:treachery:991763073281040518>",
+                                market.peek().name()
+                        )
+                );
+            }
+
+            // Setup the bidding order
+            StringBuilder message = new StringBuilder();
+            int cardNumber = gameState.getMarketSize() - market.size();
+            message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
+            int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
+            for (int i = 0; i < gameState.getFactions().size(); i++) {
+                int playerPosition = (firstBid + i + 1) % gameState.getFactions().size();
+                List<Faction> turnOrder = gameState.getFactions();
+                Faction faction = turnOrder.get(playerPosition);
+                List<TreacheryCard> hand = faction.getTreacheryHand();
+                if (faction.getHandLimit() > hand.size()) {
+                    message.append(faction.getEmoji()).append(":");
+                    if (i == 0) message.append(" ").append(faction.getPlayer());
+                    message.append("\n");
+                }
+            }
+            discordGame.sendMessage("bidding-phase", message.toString());
         }
-        spiceMessage(discordGame, spent, "emperor", "R" +
-                gameState.getTurn() + ":C" + (gameState.getMarketSize() - gameState.getMarket().size()), true);
+
         discordGame.pushGameState();
     }
 
