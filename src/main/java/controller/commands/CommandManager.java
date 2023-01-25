@@ -1135,8 +1135,13 @@ public class CommandManager extends ListenerAdapter {
         force.addStrength(amount);
 
         if (event.getOption("isshipment").getAsBoolean()) {
-            int cost = territory.isStronghold() ? 1 : 2;
-            cost *= faction.getName().equals("Guild") ? Math.ceilDiv(amount, 2) : amount;
+            int costPerForce = territory.isStronghold() ? 1 : 2;
+            int cost = costPerForce * amount;
+
+            // Guild has half price shipping
+            if (faction.getName().equalsIgnoreCase("Guild"))
+                cost = Math.ceilDiv(cost, 2);
+
             faction.subtractSpice(cost);
             spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory.getTerritoryName(), false);
             if (gameState.hasFaction("Guild") && !(faction.getName().equals("Guild") || faction.getName().equals("Fremen"))) {
