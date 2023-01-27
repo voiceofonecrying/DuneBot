@@ -176,10 +176,26 @@ public class Game extends GameFactionBase {
         return tanks;
     }
 
+    public void removeZeroStrengthTanks() {
+        this.tanks.removeIf(f-> f.getStrength() == 0);
+    }
+
     public Force getForceFromTanks(String forceName) {
-        Force force = this.tanks.stream().filter(f-> f.getName().equals(forceName)).findFirst().orElse(new Force(forceName, 0));
-        if (force.getStrength() == 0) this.tanks.add(force);
-        return force;
+        // This is a temporary fix for duplicates in the tanks list.
+        removeZeroStrengthTanks();
+
+        List<Force> forces = this.tanks.stream().filter(f-> f.getName().equalsIgnoreCase(forceName)).toList();
+
+        Force force;
+        if (forces.size() > 1) {
+            throw new IllegalArgumentException("Duplicate forces found in tanks list.");
+        } else if (forces.size() == 1) {
+            return forces.get(0);
+        } else {
+            force = new Force(forceName, 0);
+            this.tanks.add(force);
+            return force;
+        }
     }
 
     public LinkedList<Leader> getLeaderTanks() {

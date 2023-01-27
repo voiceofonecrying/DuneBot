@@ -1178,7 +1178,8 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
         String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
-        Force force = territory.getForce(faction.getName() + starred);
+        String forceName = faction.getName() + starred;
+        Force force = territory.getForce(forceName);
         if (force.getStrength() > amount) {
             force.setStrength(force.getStrength() - amount);
         } else if (force.getStrength() < amount) {
@@ -1189,7 +1190,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         if (event.getOption("totanks").getAsBoolean()) {
-            gameState.getForceFromTanks(faction.getName()).addStrength(amount);
+            gameState.getForceFromTanks(forceName).addStrength(amount);
         } else {
             if (starred.equals("*")) faction.getSpecialReserves().addStrength(amount);
             else faction.getReserves().addStrength(amount);
