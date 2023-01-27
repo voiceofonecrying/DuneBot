@@ -1035,7 +1035,7 @@ public class CommandManager extends ListenerAdapter {
                     gameState.advancePhase();
 
                 }
-                //TODO: 8. Spice Harvest
+                // 8. Spice Harvest
                 case 8 -> {
                     discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Harvest Phase:");
                    Map<String, Territory> territories = gameState.getTerritories();
@@ -1049,21 +1049,29 @@ public class CommandManager extends ListenerAdapter {
                        }
                    }
 
+                   Set<Faction> factionsWithChanges = new HashSet<>();
+
                    for (Faction faction : gameState.getFactions()) {
                        faction.setHasMiningEquipment(false);
                        if (territories.get("Arrakeen").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                            faction.addSpice(2);
+                           spiceMessage(discordGame, 2, faction.getName(), "for Arrakeen", true);
                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 2 <:spice4:991763531798167573> from Arrakeen");
                            faction.setHasMiningEquipment(true);
+                           factionsWithChanges.add(faction);
                        }
                        if (territories.get("Carthag").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                            faction.addSpice(2);
+                           spiceMessage(discordGame, 2, faction.getName(), "for Carthag", true);
                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 2 <:spice4:991763531798167573> from Carthag");
                            faction.setHasMiningEquipment(true);
+                           factionsWithChanges.add(faction);
                        }
                        if (territories.get("Tuek's Sietch").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                            discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 1 <:spice4:991763531798167573> from Tuek's Sietch");
                            faction.addSpice(1);
+                           spiceMessage(discordGame, 1, faction.getName(), "for Tuek's Sietch", true);
+                           factionsWithChanges.add(faction);
                        }
                    }
 
@@ -1078,8 +1086,14 @@ public class CommandManager extends ListenerAdapter {
                         int multiplier = faction.hasMiningEquipment() ? 3 : 2;
                         int spice = Math.min(multiplier * totalStrength, territory.getSpice());
                         faction.addSpice(spice);
+                        spiceMessage(discordGame, spice, faction.getName(), "for Spice Blow", true);
+                        factionsWithChanges.add(faction);
                         territory.setSpice(territory.getSpice() - spice);
                         discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects " + spice + " <:spice4:991763531798167573> from " + territory.getTerritoryName());
+                    }
+
+                    for (Faction faction : factionsWithChanges) {
+                        writeFactionInfo(discordGame, faction);
                     }
                     gameState.advancePhase();
                 }
