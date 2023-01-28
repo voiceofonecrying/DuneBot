@@ -20,7 +20,6 @@ public class EventListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        //System.out.println(event.getMessage().getContentRaw());
         String message = event.getMessage().getContentRaw().replaceAll("\\d", "");
 
         //Treachery Card Service
@@ -49,7 +48,9 @@ public class EventListener extends ListenerAdapter {
             List<Message> messages = history.getRetrievedHistory();
 
             Pattern cardPattern = Pattern.compile(
-                    ".*Name:\\s*" + Pattern.quote(cardName) + "\\s*\\R.*",
+                    ".*Name:\\s*" +
+                            Pattern.quote(cardName) +
+                            "\\s*\\R.*(Expansion: Ixian and Tleilaxu|Expansion: CHOAM and Richese|Expansion: Base Game).*",
                     Pattern.DOTALL | Pattern.CASE_INSENSITIVE
             );
 
