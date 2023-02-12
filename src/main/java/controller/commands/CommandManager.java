@@ -91,6 +91,7 @@ public class CommandManager extends ListenerAdapter {
                     case "movehms" -> moveHMS(event, discordGame, gameState);
                     case "expansionchoices" -> expansionChoices(event, discordGame, gameState);
                     case "assigntechtoken" -> assignTechToken(event, discordGame, gameState);
+                    case "showmap" -> showMap(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -223,6 +224,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(territory));
         commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
+        commandData.add(Commands.slash("showmap", "Show the map in the turn summary"));
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -393,7 +395,7 @@ public class CommandManager extends ListenerAdapter {
                     "turn-summary",
                     MessageFormat.format(
                             "{0} {1} {2} <:spice4:991763531798167573> {3}",
-                            faction.getEmoji(), gainsOrLoses, amount, message
+                            faction.getEmoji(), gainsOrLoses, Math.abs(amount), message
                     )
             );
             spiceMessage(discordGame, Math.abs(amount), faction.getName(), message, amount >= 0);
@@ -1021,8 +1023,8 @@ public class CommandManager extends ListenerAdapter {
                             }
                         }
                         if (fightingFactions < 2) continue;
-                        if (battleMessage.isEmpty()) battleMessage.append("The following battles will take place this turn:\n");
-                        battleMessage.append("In ").append(territory.getTerritoryName()).append(": ");
+                        if (battleMessage.isEmpty()) battleMessage.append("The following battles will take place this turn:");
+                        battleMessage.append("\nIn ").append(territory.getTerritoryName()).append(": ");
                         for (Force force : territory.getForces()) {
                             if (force.getName().contains("*") || force.getName().equals("Advisor")) continue;
                             battleMessage.append(gameState.getFaction(force.getName()).getEmoji());
@@ -1211,6 +1213,10 @@ public class CommandManager extends ListenerAdapter {
         }
         discordGame.pushGameState();
         if (event.getOption("totanks").getAsBoolean()) drawGameBoard(discordGame, gameState);
+    }
+
+    public void showMap(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        drawGameBoard(discordGame, gameState);
     }
 
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
