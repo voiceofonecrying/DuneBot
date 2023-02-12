@@ -1169,7 +1169,6 @@ public class CommandManager extends ListenerAdapter {
         }
 
         discordGame.pushGameState();
-        drawGameBoard(discordGame, gameState);
     }
 
     public void moveForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1185,7 +1184,6 @@ public class CommandManager extends ListenerAdapter {
         to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
         to.setForceStrength(faction.getName() + "*", to.getForce(faction.getName() + "*").getStrength() + starredAmount);
 
-        drawGameBoard(discordGame, gameState);
         discordGame.pushGameState();
     }
 
@@ -1212,7 +1210,6 @@ public class CommandManager extends ListenerAdapter {
             else faction.getReserves().addStrength(amount);
         }
         discordGame.pushGameState();
-        if (event.getOption("totanks").getAsBoolean()) drawGameBoard(discordGame, gameState);
     }
 
     public void showMap(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -1625,7 +1622,6 @@ public class CommandManager extends ListenerAdapter {
 
         recipient.addFrontOfShieldSpice(amount);
         writeFactionInfo(discordGame, faction);
-        writeFactionInfo(discordGame, recipient);
         discordGame.pushGameState();
     }
 
