@@ -1109,8 +1109,8 @@ public class CommandManager extends ListenerAdapter {
                             spiceMessage(discordGame,  faction.getFrontOfShieldSpice(), faction.getName(), "front of shield", true);
                             faction.addSpice(faction.getFrontOfShieldSpice());
                             faction.setFrontOfShieldSpice(0);
+                            writeFactionInfo(discordGame, faction);
                         }
-                        writeFactionInfo(discordGame, faction);
                     }
                     gameState.advanceTurn();
                 }
