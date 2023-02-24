@@ -6,10 +6,18 @@ import java.util.Objects;
 //value = the strength of the force
 public class Force {
    private String name;
+   private String factionName;
    private int strength;
 
     public Force(String name, int strength) {
         this.name = name;
+        this.strength = strength;
+        this.factionName = name.replace("*", "");
+    }
+
+    public Force(String name, String factionName, int strength) {
+        this.name = name;
+        this.factionName = factionName;
         this.strength = strength;
     }
 
@@ -19,6 +27,17 @@ public class Force {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getFactionName() {
+        if (factionName == null) {
+            factionName = name.replace("*", "");
+        }
+        return factionName;
+    }
+
+    public void setFactionName(String factionName) {
+        this.factionName = factionName;
     }
 
     public int getStrength() {

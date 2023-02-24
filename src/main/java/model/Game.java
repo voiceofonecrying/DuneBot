@@ -117,6 +117,17 @@ public class Game extends GameFactionBase {
                 .findFirst();
     }
 
+    /**
+     * Returns the faction's turn index (0-5), accounting for the storm.
+     * @param name The faction's name.
+     * @return The faction's turn index.
+     */
+    public int getFactionTurnIndex(String name) {
+        int rawTurnIndex = factions.indexOf(findFaction(name).get());
+        int stormSection = Math.ceilDiv(getStorm(), 3);
+        return (rawTurnIndex - stormSection) % factions.size();
+    }
+
     public Faction getFaction(String name) {
         return findFaction(name).get();
     }

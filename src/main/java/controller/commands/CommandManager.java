@@ -20,6 +20,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -35,6 +37,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
 
@@ -1008,34 +1011,49 @@ public class CommandManager extends ListenerAdapter {
                     }
                     gameState.advancePhase();
                 }
-                //TODO: 7. Battle
+                //7. Battle
                 case 7 -> {
                     discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
-                    StringBuilder battleMessage = new StringBuilder();
+
+                    // Get list of territories with multiple factions
+                    List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
                     for (Territory territory : gameState.getTerritories().values()) {
-                        if (territory.getForces().size() < 2) continue;
-                        int fightingFactions = territory.getForces().size();
-                        if (territory.getForce("Advisor").getStrength() > 0) fightingFactions -= 1;
-                        for (Force force : territory.getForces()) {
-                            for (Force otherForce : territory.getForces()) {
-                                if (force.equals(otherForce)) continue;
-                                if (force.getName().equals(otherForce.getName().replace("*", ""))) fightingFactions -= 1;
-                            }
-                        }
-                        if (fightingFactions < 2) continue;
-                        if (battleMessage.isEmpty()) battleMessage.append("The following battles will take place this turn:");
-                        battleMessage.append("\nIn ").append(territory.getTerritoryName()).append(": ");
-                        for (Force force : territory.getForces()) {
-                            if (force.getName().contains("*") || force.getName().equals("Advisor")) continue;
-                            battleMessage.append(gameState.getFaction(force.getName()).getEmoji());
+                        List<Force> forces = territory.getForces();
+                        List<Faction> factions = forces.stream()
+                                .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                                .map(Force::getFactionName)
+                                .distinct()
+                                .sorted(Comparator.comparingInt(gameState::getFactionTurnIndex))
+                                .map(gameState::getFaction)
+                                .toList();
+                        ;
+
+                        if (factions.size() > 1) {
+                            battles.add(new ImmutablePair<>(territory, factions));
                         }
                     }
 
-                    if (battleMessage.isEmpty()) discordGame.sendMessage("turn-summary", "There are no battles this turn.");
-                    else discordGame.sendMessage("turn-summary", battleMessage.toString());
+                    if(battles.size() > 0) {
+                        String battleMessages = battles.stream()
+                            .sorted(Comparator
+                                    .comparingInt(o -> gameState.getFactionTurnIndex(o.getRight().get(0).getName()))
+                            ).map((battle) ->
+                                    MessageFormat.format("{0} in {1}",
+                                            battle.getRight().stream()
+                                                    .map(Faction::getEmoji)
+                                                    .collect(Collectors.joining(" vs ")),
+                                            battle.getLeft().getTerritoryName()
+                                    )
+                            ).collect(Collectors.joining("\n"));
+
+                        discordGame.sendMessage("turn-summary",
+                                "The following battles will take place this turn:\n" + battleMessages
+                                );
+                    } else {
+                        discordGame.sendMessage("turn-summary", "There are no battles this turn.");
+                    }
 
                     gameState.advancePhase();
-
                 }
                 // 8. Spice Harvest
                 case 8 -> {
