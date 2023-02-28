@@ -27,6 +27,7 @@ public class Faction {
     private boolean hasMiningEquipment;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
+    private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<Leader> leaders;
     private final List<Resource> resources;
 
@@ -46,6 +47,7 @@ public Faction(String name, String player, String userName, Game gameState) {
         this.leaders = new LinkedList<>();
         this.resources = new LinkedList<>();
         this.techTokens = new LinkedList<>();
+        this.leaderSkillsHand = new LinkedList<>();
         this.spice = 0;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
@@ -138,7 +140,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.reserves = new Force("CHOAM", 20);
                this.emoji = "<:choam:991763324624703538>";
            }
-           case "RICH" -> {
+           case "RICHESE" -> {
                this.spice = 5;
                this.freeRevival = 2;
                this.reserves = new Force("Rich", 20);
@@ -147,7 +149,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.resources.add(new IntegerResource("no field", 3, 3, 3));
                this.resources.add(new IntegerResource("no field", 5, 5, 5));
                this.resources.add(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
-               List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache");
+               List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache").getValue();
                cache.add(new TreacheryCard("Ornithoper", "Special - Movement"));
                cache.add(new TreacheryCard("Residual Poison", "Special"));
                cache.add(new TreacheryCard("Semuta Drug", "Special"));
@@ -214,6 +216,10 @@ public Faction(String name, String player, String userName, Game gameState) {
 
     public List<TraitorCard> getTraitorHand() {
         return traitorHand;
+    }
+
+    public List<LeaderSkillCard> getLeaderSkillsHand() {
+        return leaderSkillsHand;
     }
 
     public int getSpice() {

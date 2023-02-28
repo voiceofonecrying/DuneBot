@@ -3,16 +3,97 @@ package controller.commands;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommandOptions {
-    public static List<Command.Choice> factions(@NotNull Game gameState, String searchValue) {
+    public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
+    public static final OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
+    public static final OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
+    public static final OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
+    public static final OptionData allFactions = new OptionData(OptionType.STRING, "faction", "The faction", true)
+            .addChoice("Atreides", "Atreides")
+            .addChoice("Harkonnen", "Harkonnen")
+            .addChoice("Emperor", "Emperor")
+            .addChoice("Fremen", "Fremen")
+            .addChoice("Spacing Guild", "Guild")
+            .addChoice("Bene Gesserit", "BG")
+            .addChoice("Ixian", "Ix")
+            .addChoice("Tleilaxu", "BT")
+            .addChoice("CHOAM", "CHOAM")
+            .addChoice("Richese", "Richese");
+    public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
+            .setAutoComplete(true);
+    public static final OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
+    public static final OptionData value = new OptionData(OptionType.STRING, "value", "Set the initial value", true);
+    public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
+    public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
+    public static final OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
+    public static final OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
+            .addChoice("Treachery Deck", "treachery deck")
+            .addChoice("Traitor Deck", "traitor deck");
+    public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
+    public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
+    public static final OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
+    public static final OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
+    public static final OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
+    public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
+    public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData sector = new OptionData(OptionType.INTEGER, "sector", "The storm sector", true);
+    public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
+    public static final OptionData spent = new OptionData(OptionType.INTEGER, "spent", "How much was spent on the card.", true);
+    public static final OptionData revived = new OptionData(OptionType.INTEGER, "revived", "How many are being revived.", true);
+    public static final OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
+            .addChoice("Territories", "territories")
+            .addChoice("Decks and Discards", "dnd")
+            .addChoice("Phase, Turn, and everything else", "etc")
+            .addChoice("Faction Info", "factions");
+    public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
+    public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
+    public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
+    public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
+    public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
+    public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
+    public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
+    public static final OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
+    public static final OptionData techTokens = new OptionData(OptionType.BOOLEAN, "techtokens", "Include Tech Tokens?", true);
+    public static final OptionData sandTrout = new OptionData(OptionType.BOOLEAN, "sandtrout", "Include Sand Trout?", true);
+    public static final OptionData cheapHeroTraitor = new OptionData(OptionType.BOOLEAN, "cheapherotraitor", "Include Cheap Hero Traitor card?", true);
+    public static final OptionData expansionTreacheryCards = new OptionData(OptionType.BOOLEAN, "expansiontreacherycards", "Include expansion treachery cards?", true);
+    public static final OptionData leaderSkills = new OptionData(OptionType.BOOLEAN, "leaderskills", "Include Leader skills?", true);
+    public static final OptionData strongholdSkills = new OptionData(OptionType.BOOLEAN, "strongholdskills", "Include stronghold skills?", true);
+    public static final OptionData token = new OptionData(OptionType.STRING, "token", "The Tech Token", true)
+            .addChoice("Heighliners", "Heighliners")
+            .addChoice("Spice Production", "Spice Production")
+            .addChoice("Axlotl Tanks", "Axlotl Tanks");
+
+    public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
+        String optionName = event.getFocusedOption().getName();
+        String searchValue = event.getFocusedOption().getValue();
+
+        List<Command.Choice> choices = new ArrayList<>();
+
+        switch (optionName) {
+            case "factionname", "sender", "recipient" -> choices = factions(gameState, searchValue);
+            case "territory", "to" -> choices = territories(gameState, searchValue);
+            case "traitor" -> choices = traitors(event, gameState, searchValue);
+            case "card" -> choices = cardsInHand(event, gameState, searchValue);
+            case "ixcard" -> choices = ixCardsInHand(event, gameState, searchValue);
+            case "putbackcard" -> choices = cardsInMarket(event, gameState, searchValue);
+            case "from" -> choices = fromTerritories(event, gameState, searchValue);
+            case "bgterritories" -> choices = bgTerritories(gameState, searchValue);
+            case "leadertokill" -> choices = leaders(event, gameState, searchValue);
+            case "leadertorevive" -> choices = reviveLeaders(event, gameState, searchValue);
+        }
+
+        return choices;
+    }
+
+    private static List<Command.Choice> factions(@NotNull Game gameState, String searchValue) {
         return gameState.getFactions().stream()
                 .map(Faction::getName)
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -20,7 +101,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> territories(@NotNull Game gameState, String searchValue) {
+    private static List<Command.Choice> territories(@NotNull Game gameState, String searchValue) {
         return gameState.getTerritories().values().stream()
                 .map(Territory::getTerritoryName)
                 .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -29,7 +110,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getTraitorHand().stream().map(TraitorCard::name)
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -37,7 +118,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -45,7 +126,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : gameState.getTerritories().values()) {
@@ -61,7 +142,7 @@ public class CommandOptions {
     }
 
 
-    public static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getLeaders().stream().map(Leader::name)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
@@ -69,14 +150,14 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> reviveLeaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> reviveLeaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         return gameState.getLeaderTanks().stream().map(Leader::name)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> bgTerritories(Game gameState, String searchValue) {
+    private static List<Command.Choice> bgTerritories(Game gameState, String searchValue) {
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : gameState.getTerritories().values()) {
             if (territory.getForce("Advisor").getStrength() > 0 || territory.getForce("BG").getStrength() > 0) {
@@ -99,7 +180,7 @@ public class CommandOptions {
         return searchRegex.toString();
     }
 
-    public static List<Command.Choice> ixCardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> ixCardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         Faction faction = gameState.getFaction("Ix");
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -107,7 +188,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    public static List<Command.Choice> cardsInMarket(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> cardsInMarket(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
         return gameState.getMarket().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))

@@ -277,7 +277,7 @@ public class Game extends GameFactionBase {
         this.techTokens = techTokens;
     }
 
-    public boolean isLeaderSkills() {
+    public boolean hasLeaderSkills() {
         return leaderSkills;
     }
 
@@ -285,11 +285,19 @@ public class Game extends GameFactionBase {
         this.leaderSkills = leaderSkills;
     }
 
-    public boolean isStrongholdSkills() {
+    public boolean hasStrongholdSkills() {
         return strongholdSkills;
     }
 
     public void setStrongholdSkills(boolean strongholdSkills) {
         this.strongholdSkills = strongholdSkills;
+    }
+
+    public void drawCard(String deckName, String faction) {
+        switch (deckName) {
+            case "traitor deck" -> getFaction(faction).getTraitorHand().add(getTraitorDeck().pollLast());
+            case "treachery deck" -> getFaction(faction).getTreacheryHand().add(getTreacheryDeck().pollLast());
+            case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
+        }
     }
 }
