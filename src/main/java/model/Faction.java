@@ -7,15 +7,12 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Faction {
     private final String name;
     private String emoji;
-    private final String player;
+    private String player;
     private final String userName;
     private final int handLimit;
     private int spice;
@@ -69,7 +66,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                         csvRecord.get(0),
                         Integer.parseInt(csvRecord.get(2))
                 );
-                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2))));
+                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null));
                 traitorDeck.add(traitorCard);
             }
         }
@@ -187,6 +184,10 @@ public Faction(String name, String player, String userName, Game gameState) {
         return player;
     }
 
+    public void setPlayer(String player) {
+        this.player = player;
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -264,6 +265,12 @@ public Faction(String name, String player, String userName, Game gameState) {
         return freeRevival;
     }
 
+    public Optional<Leader> getLeader(String leaderName) {
+        return getLeaders().stream()
+                .filter(l -> l.name().equalsIgnoreCase(leaderName))
+                .findFirst();
+    }
+
     public List<Leader> getLeaders() {
         return leaders;
     }
@@ -278,6 +285,16 @@ public Faction(String name, String player, String userName, Game gameState) {
         if (remove == null) throw new IllegalArgumentException("Leader not found.");
         leaders.remove(remove);
         return remove;
+    }
+
+    public Leader removeLeader(Leader leader) {
+        getLeaders().remove(leader);
+
+        return leader;
+    }
+
+    public void addLeader(Leader leader) {
+        getLeaders().add(leader);
     }
 
     public List<Resource> getResources() {

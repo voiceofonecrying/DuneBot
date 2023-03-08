@@ -41,7 +41,7 @@ public class ShowCommands {
 
         switch (name) {
             case "board" -> showBoard(discordGame, gameState);
-            case "factioninfo" -> showFactionInfo(event, discordGame, gameState);
+            case "faction-info" -> showFactionInfo(event, discordGame, gameState);
         }
     }
 

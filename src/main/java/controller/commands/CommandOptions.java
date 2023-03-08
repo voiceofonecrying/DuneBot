@@ -1,5 +1,6 @@
 package controller.commands;
 
+import com.google.gson.internal.LinkedTreeMap;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -70,6 +71,24 @@ public class CommandOptions {
             .addChoice("Heighliners", "Heighliners")
             .addChoice("Spice Production", "Spice Production")
             .addChoice("Axlotl Tanks", "Axlotl Tanks");
+    public static final OptionData factionLeader = new OptionData(OptionType.STRING, "factionleader", "The leader.", true).setAutoComplete(true);
+    public static final OptionData factionLeaderSkill =
+            new OptionData(OptionType.STRING, "factionleaderskill", "Leader Skill available to the faction", true)
+                    .setAutoComplete(true);
+    public static final OptionData spiceBlowDeck = new OptionData(OptionType.STRING, "spice-blow-deck", "Which deck to discard spice blow to (A or B)", true)
+            .addChoice("A", "A")
+            .addChoice("B", "B");
+    public static final OptionData richeseCard =
+            new OptionData(OptionType.STRING, "richese-card", "Select Richese card to bid on.", true)
+                    .setAutoComplete(true);
+    public static final OptionData richeseBidType =
+            new OptionData(OptionType.STRING, "richese-bid-type", "Type of bidding for a Richese card.", true)
+                    .addChoice("OnceAroundCW", "OnceAroundCW")
+                    .addChoice("OnceAroundCCW", "OnceAroundCCW")
+                    .addChoice("Silent", "Silent");
+    public static final OptionData paidToFaction =
+            new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
+                    .setAutoComplete(true);
 
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
@@ -78,16 +97,19 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "sender", "recipient" -> choices = factions(gameState, searchValue);
+            case "factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(gameState, searchValue);
             case "territory", "to" -> choices = territories(gameState, searchValue);
             case "traitor" -> choices = traitors(event, gameState, searchValue);
             case "card" -> choices = cardsInHand(event, gameState, searchValue);
-            case "ixcard" -> choices = ixCardsInHand(event, gameState, searchValue);
-            case "putbackcard" -> choices = cardsInMarket(event, gameState, searchValue);
+            case "ixcard" -> choices = ixCardsInHand(gameState, searchValue);
+            case "putbackcard" -> choices = cardsInMarket(gameState, searchValue);
             case "from" -> choices = fromTerritories(event, gameState, searchValue);
             case "bgterritories" -> choices = bgTerritories(gameState, searchValue);
             case "leadertokill" -> choices = leaders(event, gameState, searchValue);
-            case "leadertorevive" -> choices = reviveLeaders(event, gameState, searchValue);
+            case "leadertorevive" -> choices = reviveLeaders(gameState, searchValue);
+            case "factionleader" -> choices = leaders(event, gameState, searchValue);
+            case "factionleaderskill" -> choices = factionLeaderSkill(event, gameState, searchValue);
+            case "richese-card" -> choices = richeseCard(gameState, searchValue);
         }
 
         return choices;
@@ -150,7 +172,15 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> reviveLeaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        return faction.getLeaderSkillsHand().stream().map(LeaderSkillCard::name)
+                .filter(leaderSkillCardName -> leaderSkillCardName.matches(searchRegex(searchValue)))
+                .map(leaderSkillCardName -> new Command.Choice(leaderSkillCardName, leaderSkillCardName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> reviveLeaders(Game gameState, String searchValue) {
         return gameState.getLeaderTanks().stream().map(Leader::name)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
@@ -180,7 +210,7 @@ public class CommandOptions {
         return searchRegex.toString();
     }
 
-    private static List<Command.Choice> ixCardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> ixCardsInHand(Game gameState, String searchValue) {
         Faction faction = gameState.getFaction("Ix");
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -188,10 +218,30 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> cardsInMarket(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
+    private static List<Command.Choice> cardsInMarket(Game gameState, String searchValue) {
         return gameState.getMarket().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> richeseCard(Game gameState, String searchValue) {
+        if (gameState.hasFaction("Richese")) {
+            Faction faction = gameState.getFaction("Richese");
+            List<TreacheryCard> cards = convertRicheseCards(faction.getResource("cache").getValue());
+
+            return cards.stream().map(TreacheryCard::name)
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    private static List<TreacheryCard> convertRicheseCards(Object rawList) {
+        return ((ArrayList<LinkedTreeMap>) rawList).stream()
+                .map(a -> new TreacheryCard((String)a.get("name"), (String)a.get("type")))
                 .collect(Collectors.toList());
     }
 }

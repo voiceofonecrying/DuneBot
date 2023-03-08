@@ -26,6 +26,7 @@ public class DiscordGame {
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
     private Game gameState;
+    private boolean disableModCheck = false;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
@@ -41,6 +42,12 @@ public class DiscordGame {
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
         this.gameCategory = Objects.requireNonNull(event.getChannel()).asTextChannel().getParentCategory();
         this.member = event.getMember();
+    }
+
+    public DiscordGame(Category category, boolean disableModCheck) {
+        this.gameCategory = category;
+        this.member = null;
+        this.disableModCheck = disableModCheck;
     }
 
     public Category getGameCategory() {
@@ -69,7 +76,7 @@ public class DiscordGame {
     }
 
     public boolean isModRole(String modRoleName) {
-        return this.member
+        return disableModCheck || this.member
                 .getRoles()
                 .stream().map(Role::getName)
                 .toList()
@@ -123,5 +130,11 @@ public class DiscordGame {
         TextChannel channel = getTextChannel(name);
         if (this.gameState.getMute()) return;
         channel.sendMessage(message).queue();
+    }
+
+    public void sendMessage(String name, String message, FileUpload fileUpload) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).addFiles(fileUpload).queue();
     }
 }

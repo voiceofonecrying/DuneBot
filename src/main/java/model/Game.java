@@ -16,11 +16,15 @@ public class Game extends GameFactionBase {
     private boolean strongholdSkills;
     private int turn;
     private int phase;
+    private int subPhase;
     private int storm;
 
     private int stormMovement;
+    private int bidCardNumber;
 
-    private int marketSize;
+    private int bidMarketSize;
+    private List<String> bidOrder;
+    private TreacheryCard bidCard;
 
     private final List<Faction> factions;
 
@@ -55,9 +59,10 @@ public class Game extends GameFactionBase {
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.market = new LinkedList<>();
-        this.marketSize = 0;
+        this.bidMarketSize = 0;
         this.turn = 0;
         this.phase = 0;
+        this.subPhase = 0;
         this.storm = 18;
         this.stormMovement = 0;
         this.techTokens = false;
@@ -76,8 +81,37 @@ public class Game extends GameFactionBase {
         for (CSVRecord csvRecord : csvParser) {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
         }
+
+        this.bidOrder = new ArrayList<>();
+        this.bidCardNumber = 0;
     }
 
+    public TreacheryCard getBidCard() {
+        return bidCard;
+    }
+
+    public void setBidCard(TreacheryCard bidCard) {
+        this.bidCard = bidCard;
+    }
+
+    public int getBidCardNumber() {
+        return bidCardNumber;
+    }
+
+    public void setBidCardNumber(int bidCardNumber) {
+        this.bidCardNumber = bidCardNumber;
+    }
+    public void incrementBidCardNumber() {
+        bidCardNumber++;
+    }
+
+    public List<String> getBidOrder() {
+        return bidOrder;
+    }
+
+    public void setBidOrder(List<String> bidOrder) {
+        this.bidOrder = bidOrder;
+    }
 
     public List<Faction> getFactions() {
         return factions;
@@ -179,6 +213,10 @@ public class Game extends GameFactionBase {
         return phase;
     }
 
+    public int getSubPhase() {
+        return subPhase;
+    }
+
     public int getStorm() {
         return storm;
     }
@@ -226,23 +264,30 @@ public class Game extends GameFactionBase {
     }
 
     public void advanceTurn() {
-        this.turn += 1;
-        this.phase = 1;
+        turn++;
+        phase = 1;
+        subPhase = 1;
     }
 
     public void advancePhase() {
-        this.phase += 1;
-        if (phase == 10) {
+        phase++;
+        subPhase = 1;
+
+        if (turn >= 1 && phase >= 10) {
             advanceTurn();
         }
     }
 
+    public void advanceSubPhase() {
+        subPhase++;
+    }
+
     public void setStorm(int storm) {
-        this.storm = storm;
+        this.storm = ((storm - 1) % 18) + 1;
     }
 
     public void advanceStorm(int movement) {
-        this.storm += movement;
+        setStorm(getStorm() + movement);
     }
 
     public void breakShieldWall() {
@@ -253,12 +298,12 @@ public class Game extends GameFactionBase {
         this.territories.get("Arrakeen").setRock(false);
     }
 
-    public int getMarketSize() {
-        return marketSize;
+    public int getBidMarketSize() {
+        return bidMarketSize;
     }
 
-    public void setMarketSize(int marketSize) {
-        this.marketSize = marketSize;
+    public void setBidMarketSize(int bidMarketSize) {
+        this.bidMarketSize = bidMarketSize;
     }
 
     public int getStormMovement() {

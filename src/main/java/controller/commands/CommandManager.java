@@ -12,10 +12,9 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -25,8 +24,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static controller.Initializers.getCSVFile;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -56,6 +53,7 @@ public class CommandManager extends ListenerAdapter {
                 switch (name) {
                     case "show" -> ShowCommands.runCommand(event, discordGame, gameState);
                     case "setup" -> SetupCommands.runCommand(event, discordGame, gameState);
+                    case "run" -> RunCommands.runCommand(event, discordGame, gameState);
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
@@ -78,6 +76,7 @@ public class CommandManager extends ListenerAdapter {
                     case "placehms" -> placeHMS(event, discordGame, gameState);
                     case "movehms" -> moveHMS(event, discordGame, gameState);
                     case "assigntechtoken" -> assignTechToken(event, discordGame, gameState);
+                    case "draw-spice-blow" -> drawSpiceBlow(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -114,11 +113,11 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(CommandOptions.faction, CommandOptions.card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(CommandOptions.faction, CommandOptions.card, CommandOptions.recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(CommandOptions.putBackCard, CommandOptions.bottom));
-        commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
+//        commandData.add(Commands.slash("advancegame", "Send the game to the next phase, turn, or card (in bidding round"));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.isShipment, CommandOptions.starred, CommandOptions.territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(CommandOptions.faction, CommandOptions.fromTerritory, CommandOptions.toTerritory, CommandOptions.amount, CommandOptions.starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.toTanks, CommandOptions.starred, CommandOptions.fromTerritory));
-        commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(CommandOptions.faction, CommandOptions.spent));
+        commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(CommandOptions.faction, CommandOptions.spent, CommandOptions.paidToFaction));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(CommandOptions.faction, CommandOptions.revived, CommandOptions.starred));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(CommandOptions.data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(CommandOptions.sector));
@@ -130,9 +129,11 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(CommandOptions.territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(CommandOptions.territory));
         commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(CommandOptions.faction, CommandOptions.token));
+        commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(CommandOptions.spiceBlowDeck));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
+        commandData.addAll(RunCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }
@@ -282,29 +283,42 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public String drawSpiceCard(Game gameState, boolean discardA) {
+    public void drawSpiceBlow(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        String spiceBlowDeck = event.getOption(CommandOptions.spiceBlowDeck.getName()).getAsString();
+
         LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
-        LinkedList<SpiceCard> discard = discardA ? gameState.getSpiceDiscardA() : gameState.getSpiceDiscardB();
+        LinkedList<SpiceCard> discard = spiceBlowDeck.equalsIgnoreCase("A") ? gameState.getSpiceDiscardA() : gameState.getSpiceDiscardB();
+
         StringBuilder message = new StringBuilder();
-        if (deck.isEmpty()) {
-            deck.addAll(gameState.getSpiceDiscardA());
-            deck.addAll(gameState.getSpiceDiscardB());
-            Collections.shuffle(deck);
-            gameState.getSpiceDiscardA().clear();
-            gameState.getSpiceDiscardB().clear();
-        }
-        SpiceCard drawn = deck.pop();
-        if (gameState.getTurn() == 1 && drawn.name().equals("Shai-Hulud")) {
-            deck.add(drawn);
-            Collections.shuffle(deck);
-            drawSpiceCard(gameState, discardA);
-        }
-        discard.add(drawn);
-        message.append(drawn.name());
-        if (gameState.getStorm() == drawn.sector()) message.append(" (blown away by the storm!)");
-        else if (drawn.name().equals("Shai-Hulud")) message.append(", ").append(drawSpiceCard(gameState, discardA));
-        else gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
-        return message.toString();
+
+        SpiceCard drawn;
+
+        message.append("**Spice Deck " + spiceBlowDeck + "**\n");
+
+        do {
+            if (deck.isEmpty()) {
+                deck.addAll(gameState.getSpiceDiscardA());
+                deck.addAll(gameState.getSpiceDiscardB());
+                Collections.shuffle(deck);
+                gameState.getSpiceDiscardA().clear();
+                gameState.getSpiceDiscardB().clear();
+            }
+
+            drawn = deck.pop();
+            discard.add(drawn);
+            message.append(drawn.name() + "\n");
+        } while (drawn.name().equalsIgnoreCase("Shai-Hulud"));
+
+        if (gameState.getStorm() == drawn.sector())
+            message.append(" (blown away by the storm!)");
+        else
+            gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
+
+        discordGame.pushGameState();
+
+        discordGame.sendMessage("turn-summary", message.toString());
+        ShowCommands.showBoard(discordGame, gameState);
+
     }
 
     public void drawCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -386,26 +400,15 @@ public class CommandManager extends ListenerAdapter {
 
     public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
+        String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
         int spent = event.getOption("spent").getAsInt();
-        LinkedList<TreacheryCard> market = gameState.getMarket();
 
-        // The name of the card to be awarded, for example, the second card in round 4 would be R4:C2.
         String currentCard = MessageFormat.format(
                 "R{0}:C{1}",
                 gameState.getTurn(),
-                gameState.getMarketSize() - market.size() + 1
+                gameState.getBidCardNumber()
         );
-
-        if (winner.getHandLimit() == winnerHand.size()) {
-            discordGame.sendMessage("mod-info", "Player's hand is full, they cannot bid on this card!");
-            return;
-        }
-
-        if (market.size() == 0) {
-            discordGame.sendMessage("mod-info", "No more cards up for bid.");
-            return;
-        }
 
         discordGame.sendMessage("turn-summary",
                 MessageFormat.format(
@@ -420,68 +423,140 @@ public class CommandManager extends ListenerAdapter {
         winner.subtractSpice(spent);
         spiceMessage(discordGame, spent, winner.getName(), currentCard, false);
 
-        // Emperor receives payment if they are in the game
-        if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
-            spiceMessage(discordGame, spent, "emperor", currentCard, true);
-            gameState.getFaction("Emperor").addSpice(spent);
+        if (gameState.hasFaction(paidToFactionName)) {
+            Faction paidToFaction = gameState.getFaction(paidToFactionName);
+            spiceMessage(discordGame, spent, paidToFaction.getName(), currentCard, true);
+            gameState.getFaction(paidToFaction.getName()).addSpice(spent);
             discordGame.sendMessage("turn-summary",
                     MessageFormat.format(
                             "{0} is paid {1} <:spice4:991763531798167573> for {2}",
-                            gameState.getFaction("Emperor").getEmoji(),
+                            paidToFaction.getEmoji(),
                             spent,
                             currentCard
                     )
             );
-            ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("Emperor"));
+            ShowCommands.writeFactionInfo(discordGame, paidToFaction);
         }
 
-        // Give the winner the card
-        winnerHand.add(market.pop());
+        winnerHand.add(gameState.getBidCard());
+        gameState.setBidCard(null);
 
         // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
+            if (gameState.getTreacheryDeck().isEmpty()) {
+                List<TreacheryCard> treacheryDiscard = gameState.getTreacheryDiscard();
+                discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                gameState.getTreacheryDeck().addAll(treacheryDiscard);
+                treacheryDiscard.clear();
+            }
+
             gameState.drawCard("treachery deck", "Harkonnen");
             discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
         }
 
-        // Write the winner's information
         ShowCommands.writeFactionInfo(discordGame, winner);
-
-        // Get the next card up for bid
-        if (market.size() > 0) {
-            // Show Atreides the next card
-            if (gameState.hasFaction("Atreides")) {
-                discordGame.sendMessage("atreides-chat",
-                        MessageFormat.format(
-                                "The next card up for bid is <:treachery:991763073281040518> {0} <:treachery:991763073281040518>",
-                                market.peek().name()
-                        )
-                );
-            }
-
-            // Setup the bidding order
-            StringBuilder message = new StringBuilder();
-            int cardNumber = gameState.getMarketSize() - market.size();
-            message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
-            int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
-            for (int i = 0; i < gameState.getFactions().size(); i++) {
-                int playerPosition = (firstBid + i + 1) % gameState.getFactions().size();
-                List<Faction> turnOrder = gameState.getFactions();
-                Faction faction = turnOrder.get(playerPosition);
-                List<TreacheryCard> hand = faction.getTreacheryHand();
-                if (faction.getHandLimit() > hand.size()) {
-                    message.append(faction.getEmoji()).append(":");
-                    if (i == 0) message.append(" ").append(faction.getPlayer());
-                    message.append("\n");
-                }
-            }
-            discordGame.sendMessage("bidding-phase", message.toString());
-        }
 
         discordGame.pushGameState();
     }
 
-    public void spiceMessage(DiscordGame discordGame, int amount, String faction, String message, boolean plus) throws ChannelNotFoundException {
+//    public void awardBid2(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+//        Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
+//        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
+//        int spent = event.getOption("spent").getAsInt();
+//        LinkedList<TreacheryCard> market = gameState.getMarket();
+//
+//        // The name of the card to be awarded, for example, the second card in round 4 would be R4:C2.
+//        String currentCard = MessageFormat.format(
+//                "R{0}:C{1}",
+//                gameState.getTurn(),
+//                gameState.getBidMarketSize() - market.size() + 1
+//        );
+//
+//        if (winner.getHandLimit() == winnerHand.size()) {
+//            discordGame.sendMessage("mod-info", "Player's hand is full, they cannot bid on this card!");
+//            return;
+//        }
+//
+//        if (market.size() == 0) {
+//            discordGame.sendMessage("mod-info", "No more cards up for bid.");
+//            return;
+//        }
+//
+//        discordGame.sendMessage("turn-summary",
+//                MessageFormat.format(
+//                        "{0} wins {1} for {2} <:spice4:991763531798167573>",
+//                        winner.getEmoji(),
+//                        currentCard,
+//                        spent
+//                )
+//        );
+//
+//        // Winner pays for the card
+//        winner.subtractSpice(spent);
+//        spiceMessage(discordGame, spent, winner.getName(), currentCard, false);
+//
+//        // Emperor receives payment if they are in the game
+//        if (gameState.hasFaction("Emperor") && !winner.getName().equals("Emperor")) {
+//            spiceMessage(discordGame, spent, "emperor", currentCard, true);
+//            gameState.getFaction("Emperor").addSpice(spent);
+//            discordGame.sendMessage("turn-summary",
+//                    MessageFormat.format(
+//                            "{0} is paid {1} <:spice4:991763531798167573> for {2}",
+//                            gameState.getFaction("Emperor").getEmoji(),
+//                            spent,
+//                            currentCard
+//                    )
+//            );
+//            ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("Emperor"));
+//        }
+//
+//        // Give the winner the card
+//        winnerHand.add(market.pop());
+//
+//        // Harkonnen draw an additional card
+//        if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
+//            gameState.drawCard("treachery deck", "Harkonnen");
+//            discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
+//        }
+//
+//        // Write the winner's information
+//        ShowCommands.writeFactionInfo(discordGame, winner);
+//
+//        // Get the next card up for bid
+//        if (market.size() > 0) {
+//            // Show Atreides the next card
+//            if (gameState.hasFaction("Atreides")) {
+//                discordGame.sendMessage("atreides-chat",
+//                        MessageFormat.format(
+//                                "The next card up for bid is <:treachery:991763073281040518> {0} <:treachery:991763073281040518>",
+//                                market.peek().name()
+//                        )
+//                );
+//            }
+//
+//            // Setup the bidding order
+//            StringBuilder message = new StringBuilder();
+//            int cardNumber = gameState.getBidMarketSize() - market.size();
+//            message.append("R").append(gameState.getTurn()).append(":C").append(cardNumber + 1).append("\n");
+//            int firstBid = Math.ceilDiv(gameState.getStormMovement(), 3) + cardNumber;
+//            for (int i = 0; i < gameState.getFactions().size(); i++) {
+//                int playerPosition = (firstBid + i + 1) % gameState.getFactions().size();
+//                List<Faction> turnOrder = gameState.getFactions();
+//                Faction faction = turnOrder.get(playerPosition);
+//                List<TreacheryCard> hand = faction.getTreacheryHand();
+//                if (faction.getHandLimit() > hand.size()) {
+//                    message.append(faction.getEmoji()).append(":");
+//                    if (i == 0) message.append(" ").append(faction.getPlayer());
+//                    message.append("\n");
+//                }
+//            }
+//            discordGame.sendMessage("bidding-phase", message.toString());
+//        }
+//
+//        discordGame.pushGameState();
+//    }
+
+    public static void spiceMessage(DiscordGame discordGame, int amount, String faction, String message, boolean plus) throws ChannelNotFoundException {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
@@ -689,13 +764,13 @@ public class CommandManager extends ListenerAdapter {
                        discordGame.sendMessage("fremen-chat", "The storm will move " + gameState.getStormMovement() + " sectors next turn.");
 
                    }
+                   ShowCommands.showBoard(discordGame, gameState);
+
                    gameState.advancePhase();
                 }
                 //2. Spice Blow and Nexus
                 case 2 -> {
                     discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
-                    discordGame.sendMessage("turn-summary", "A: " + drawSpiceCard(gameState, true));
-                    discordGame.sendMessage("turn-summary", "B: " + drawSpiceCard(gameState, false));
                     gameState.advancePhase();
                 }
                 //3. Choam Charity
@@ -767,7 +842,7 @@ public class CommandManager extends ListenerAdapter {
                     }
                     countMessage.append("There will be ").append(cardsUpForBid).append(" <:treachery:991763073281040518> cards up for bid this round.");
                     discordGame.sendMessage("turn-summary", countMessage.toString());
-                    gameState.setMarketSize(cardsUpForBid);
+                    gameState.setBidMarketSize(cardsUpForBid);
                     if (gameState.hasFaction("Ix")) {
                         cardsUpForBid++;
                         discordGame.sendMessage("turn-summary", gameState.getFaction("Ix").getEmoji() + " to place a card back on the top or bottom of the deck.");
@@ -804,7 +879,7 @@ public class CommandManager extends ListenerAdapter {
                             gameState.getTreacheryDeck().add(gameState.getMarket().pop());
                         }
                     }
-                    gameState.setMarketSize(0);
+                    gameState.setBidMarketSize(0);
                     discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
                     List<Faction> factions = gameState.getFactions();
                     StringBuilder message = new StringBuilder();
@@ -832,6 +907,7 @@ public class CommandManager extends ListenerAdapter {
                         }
                     }
                     discordGame.sendMessage("turn-summary", message.toString());
+                    ShowCommands.showBoard(discordGame, gameState);
                     gameState.advancePhase();
                 }
                 //6. Shipment and Movement
@@ -846,6 +922,7 @@ public class CommandManager extends ListenerAdapter {
                                    .getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
                        }
                     }
+                    ShowCommands.showBoard(discordGame, gameState);
                     gameState.advancePhase();
                 }
                 //7. Battle
@@ -889,7 +966,7 @@ public class CommandManager extends ListenerAdapter {
                     } else {
                         discordGame.sendMessage("turn-summary", "There are no battles this turn.");
                     }
-
+                    ShowCommands.showBoard(discordGame, gameState);
                     gameState.advancePhase();
                 }
                 // 8. Spice Harvest
@@ -952,6 +1029,7 @@ public class CommandManager extends ListenerAdapter {
                     for (Faction faction : factionsWithChanges) {
                         ShowCommands.writeFactionInfo(discordGame, faction);
                     }
+                    ShowCommands.showBoard(discordGame, gameState);
                     gameState.advancePhase();
                 }
                 //TODO: 9. Mentat Pause
@@ -971,7 +1049,6 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
             discordGame.pushGameState();
-            ShowCommands.showBoard(discordGame, gameState);
         }
     }
 
@@ -1056,7 +1133,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         gameState.setStorm(event.getOption("sector").getAsInt());
-        discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + event.getOption("sector").getAsInt());
+        discordGame.sendMessage("turn-summary","The storm has been initialized to " + event.getOption("sector").getAsInt() + " sectors");
         if (gameState.hasTechTokens()) {
             List<TechToken> techTokens = new LinkedList<>();
             if (gameState.hasFaction("BT")) {
@@ -1152,6 +1229,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void mute(DiscordGame discordGame, Game gameState) {
         gameState.setMute(!gameState.getMute());
+
         discordGame.pushGameState();
     }
 
