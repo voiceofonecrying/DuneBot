@@ -3,12 +3,17 @@ package controller.commands;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import utils.CardImages;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 
@@ -29,7 +35,8 @@ public class ShowCommands {
                 Commands.slash("show", "Show parts of the game.").addSubcommands(
                         new SubcommandData("board", "Show the map in the turn summary"),
                         new SubcommandData("faction-info", "Print Faction Information in their Private Channel")
-                                .addOptions(CommandOptions.faction)
+                                .addOptions(CommandOptions.faction),
+                        new SubcommandData("front-of-shields", "Refresh the #front-of-shield channel")
                 )
         );
 
@@ -42,6 +49,7 @@ public class ShowCommands {
         switch (name) {
             case "board" -> showBoard(discordGame, gameState);
             case "faction-info" -> showFactionInfo(event, discordGame, gameState);
+            case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, gameState);
         }
     }
 
@@ -97,7 +105,7 @@ public class ShowCommands {
             board = overlay(board, turnMarker, coordinates, 1);
             BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
             phaseMarker = resize(phaseMarker, 50, 50);
-            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getPhase() - 1));
+            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getPhase()));
             board = overlay(board, phaseMarker, coordinates, 1);
             BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
             stormMarker = resize(stormMarker, 172, 96);
@@ -106,11 +114,22 @@ public class ShowCommands {
 
             //Place sigils
             for (int i = 1; i <= gameState.getFactions().size(); i++) {
-                BufferedImage sigil = ImageIO.read(boardComponents.get(gameState.getFactions().get(i - 1).getName() + " Sigil"));
+                Faction faction = gameState.getFactions().get(i - 1);
+                BufferedImage sigil = ImageIO.read(boardComponents.get(faction.getName() + " Sigil"));
                 coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
+
+                // Check for alliances
+                if (faction.hasAlly()) {
+                    BufferedImage allySigil =
+                            ImageIO.read(boardComponents.get(faction.getAlly() + " Sigil"));
+                    coordinates = Initializers.getDrawCoordinates("ally " + i);
+                    allySigil = resize(allySigil, 40, 40);
+                    board = overlay(board, allySigil, coordinates, 1);
+                }
             }
+
 
             //Place forces
             for (Territory territory : gameState.getTerritories().values()) {
@@ -338,5 +357,73 @@ public class ShowCommands {
             }
         }
 
+    }
+
+    public static void refreshFrontOfShieldInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        MessageChannel frontOfShieldChannel = discordGame.getTextChannel("front-of-shield");
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(frontOfShieldChannel).complete();
+        List<Message> messages = messageHistory.getRetrievedHistory();
+
+        for (Message message : messages) {
+            message.delete().queue();
+        }
+
+        for (Faction faction : gameState.getFactions()) {
+            StringBuilder message = new StringBuilder();
+            List<FileUpload> uploads = new ArrayList<>();
+
+            message.append(
+                    MessageFormat.format(
+                            "{0}{1} Front of Shield{0}\n",
+                            faction.getEmoji(), faction.getName()
+                    )
+            );
+
+            if (faction.getFrontOfShieldSpice() > 0) {
+                message.append(faction.getFrontOfShieldSpice() + " <:spice4:991763531798167573>\n");
+            }
+
+            if (faction.getName().equalsIgnoreCase("Richese") && faction.hasResource("frontOfShieldNoField")) {
+                message.append(faction.getResource("frontOfShieldNoField").getValue().toString() + " No-Field Token\n");
+            }
+
+            if (gameState.hasLeaderSkills()) {
+                Optional<Leader> skilledLeader = faction.getSkilledLeader();
+
+                if (skilledLeader.isPresent()) {
+                    Leader leader = skilledLeader.get();
+
+                    message.append(
+                            MessageFormat.format(
+                                    "{0} is a {1}\n",
+                                    leader.name(), leader.skillCard().name()
+                            )
+                    );
+
+                    Optional<FileUpload> fileUpload = CardImages
+                            .getLeaderSkillImage(event.getGuild(), leader.skillCard().name());
+
+                    fileUpload.ifPresent(uploads::add);
+                }
+            }
+
+            if (gameState.hasStrongholdSkills()) {
+                for (Resource strongholdCard : faction.getResources("strongholdCard")) {
+                    String strongholdName = strongholdCard.getValue().toString();
+                    message.append(strongholdName + " Stronghold Skill\n");
+
+                    Optional<FileUpload> fileUpload = CardImages
+                            .getStrongholdImage(event.getGuild(), strongholdName);
+
+                    fileUpload.ifPresent(uploads::add);
+                }
+            }
+
+            if (uploads.isEmpty()) {
+                discordGame.sendMessage("front-of-shield", message.toString());
+            } else {
+                discordGame.sendMessage("front-of-shield", message.toString(), uploads);
+            }
+        }
     }
 }

@@ -23,7 +23,8 @@ public class RunCommands {
                         new SubcommandData("advance", "Continue to the next phase of the game."),
                         new SubcommandData("bidding", "Run a regular bidding for a card"),
                         new SubcommandData("richese-card-bidding", "Start bidding on a Richese Card")
-                                .addOptions(CommandOptions.richeseCard, CommandOptions.richeseBidType)
+                                .addOptions(CommandOptions.richeseCard, CommandOptions.richeseBidType),
+                        new SubcommandData("update-stronghold-skills", "Updates the Stronghold skill cards.")
                 )
         );
 
@@ -37,6 +38,7 @@ public class RunCommands {
             case "advance" -> advance(event, discordGame, gameState);
             case "bidding" -> bidding(event, discordGame, gameState);
             case "richese-card-bidding" -> richeseCardBidding(event, discordGame, gameState);
+            case "update-stronghold-skills" -> updateStrongholdSkills(event, discordGame, gameState);
         }
     }
 
@@ -87,6 +89,9 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Storm Phase:");
         Map<String, Territory> territories = gameState.getTerritories();
         if (gameState.getTurn() != 1) {
+            updateStrongholdSkills(event, discordGame, gameState);
+            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
+
             discordGame.sendMessage("turn-summary", "The storm moves " + gameState.getStormMovement() + " sectors this turn.");
             for (int i = 0; i < gameState.getStormMovement(); i++) {
                 gameState.advanceStorm(1);
@@ -396,7 +401,7 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
         List<Faction> factions = gameState.getFactions();
         StringBuilder message = new StringBuilder();
-        message.append("Free Revivals:\n");
+
         for (Faction faction : factions) {
             int revived = 0;
             boolean revivedStar = false;
@@ -416,10 +421,11 @@ public class RunCommands {
                 }
             }
             if (revived > 0) {
+                if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(gameState.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
             }
         }
-        discordGame.sendMessage("turn-summary", message.toString());
+        if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
         ShowCommands.showBoard(discordGame, gameState);
     }
 
@@ -553,6 +559,26 @@ public class RunCommands {
                 faction.setFrontOfShieldSpice(0);
                 ShowCommands.writeFactionInfo(discordGame, faction);
             }
+        }
+    }
+
+    public static void updateStrongholdSkills(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        if (gameState.hasStrongholdSkills()) {
+            for (Faction faction : gameState.getFactions()) {
+                faction.removeResource("strongholdCard");
+            }
+
+            List<Territory> strongholds = gameState.getTerritories().values().stream()
+                    .filter(Territory::isStronghold)
+                    .filter(t -> t.countActiveFactions(gameState) == 1)
+                    .toList();
+
+            for (Territory stronghold : strongholds) {
+                Faction faction = stronghold.getActiveFactions(gameState).get(0);
+                faction.addResource(new StringResource("strongholdCard", stronghold.getTerritoryName()));
+            }
+
+            discordGame.pushGameState();
         }
     }
 }

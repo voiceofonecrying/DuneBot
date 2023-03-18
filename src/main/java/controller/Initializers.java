@@ -419,20 +419,38 @@ public class Initializers {
             case "sigil 1" -> {
                 return new Point(475, 978);
             }
+            case "ally 1" -> {
+                return new Point(475, 1040);
+            }
             case "sigil 2" -> {
                 return new Point(865, 753);
+            }
+            case "ally 2" -> {
+                return new Point(915, 783);
             }
             case "sigil 3" -> {
                 return new Point(865, 301);
             }
+            case "ally 3" -> {
+                return new Point(915, 271);
+            }
             case "sigil 4" -> {
                 return new Point(475, 80);
+            }
+            case "ally 4" -> {
+                return new Point(475, 20);
             }
             case "sigil 5" -> {
                 return new Point(85, 301);
             }
+            case "ally 5" -> {
+                return new Point(35, 271);
+            }
             case "sigil 6" -> {
                 return new Point(85, 753);
+            }
+            case "ally 6" -> {
+                return new Point(35, 783);
             }
             case "turn 0", "turn 1" -> {
                 return new Point(124, 60);

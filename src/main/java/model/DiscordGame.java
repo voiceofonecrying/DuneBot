@@ -102,6 +102,7 @@ public class DiscordGame {
                 String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
                 Gson gson = new Gson();
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
+                future.get().close();
                 if (!this.isModRole(returnGame.getModRole())) {
                     throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
@@ -136,5 +137,11 @@ public class DiscordGame {
         TextChannel channel = getTextChannel(name);
         if (this.gameState.getMute()) return;
         channel.sendMessage(message).addFiles(fileUpload).queue();
+    }
+
+    public void sendMessage(String name, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).addFiles(fileUploads).queue();
     }
 }

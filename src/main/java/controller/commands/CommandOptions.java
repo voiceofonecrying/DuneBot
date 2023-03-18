@@ -29,6 +29,8 @@ public class CommandOptions {
             .addChoice("Richese", "Richese");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
+    public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
+            .setAutoComplete(true);
     public static final OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
     public static final OptionData value = new OptionData(OptionType.STRING, "value", "Set the initial value", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
@@ -89,6 +91,14 @@ public class CommandOptions {
     public static final OptionData paidToFaction =
             new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
                     .setAutoComplete(true);
+    public static final OptionData richeseNoFields =
+            new OptionData(OptionType.INTEGER, "richese-no-fields", "Value of Richese No-Fields token.", true)
+                    .addChoice("0 No-Field", 0)
+                    .addChoice("3 No-Field", 3)
+                    .addChoice("5 No-Field", 5);
+    public static final OptionData btFaceDancer =
+            new OptionData(OptionType.STRING, "bt-face-dancer", "Select BT Face Dancer", true)
+                    .setAutoComplete(true);
 
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
@@ -97,7 +107,7 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(gameState, searchValue);
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(gameState, searchValue);
             case "territory", "to" -> choices = territories(gameState, searchValue);
             case "traitor" -> choices = traitors(event, gameState, searchValue);
             case "card" -> choices = cardsInHand(event, gameState, searchValue);
@@ -110,6 +120,7 @@ public class CommandOptions {
             case "factionleader" -> choices = leaders(event, gameState, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, gameState, searchValue);
             case "richese-card" -> choices = richeseCard(gameState, searchValue);
+            case "bt-face-dancer" -> choices = btFaceDancers(gameState, searchValue);
         }
 
         return choices;
@@ -138,6 +149,17 @@ public class CommandOptions {
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(traitor -> new Command.Choice(traitor, traitor))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> btFaceDancers(Game gameState, String searchValue) {
+        if (!gameState.hasFaction("BT")) return new ArrayList<>();
+        else {
+            return gameState.getFaction("BT").getTraitorHand().stream()
+                    .map(TraitorCard::name)
+                    .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(traitor -> new Command.Choice(traitor, traitor))
+                    .collect(Collectors.toList());
+        }
     }
 
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {

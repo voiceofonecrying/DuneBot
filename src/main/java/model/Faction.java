@@ -22,6 +22,7 @@ public class Faction {
     private int frontOfShieldSpice;
     private int freeRevival;
     private boolean hasMiningEquipment;
+    private String ally;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
@@ -140,9 +141,9 @@ public Faction(String name, String player, String userName, Game gameState) {
            case "RICHESE" -> {
                this.spice = 5;
                this.freeRevival = 2;
-               this.reserves = new Force("Rich", 20);
+               this.reserves = new Force("Richese", 20);
                this.emoji = "<:rich:991763318467465337>";
-               this.resources.add( new IntegerResource("no field", 0, 0, 0));
+               this.resources.add(new IntegerResource("no field", 0, 0, 0));
                this.resources.add(new IntegerResource("no field", 3, 3, 3));
                this.resources.add(new IntegerResource("no field", 5, 5, 5));
                this.resources.add(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
@@ -168,6 +169,17 @@ public Faction(String name, String player, String userName, Game gameState) {
                 .get();
     }
 
+    public List<Resource> getResources(String name) {
+        return resources.stream()
+                .filter(r -> r.getName().equals(name))
+                .toList();
+    }
+
+    public boolean hasResource(String name) {
+        return resources.stream()
+                .anyMatch(r -> r.getName().equals(name));
+    }
+
     public String getName() {
         return this.name;
     }
@@ -190,6 +202,20 @@ public Faction(String name, String player, String userName, Game gameState) {
 
     public String getUserName() {
         return userName;
+    }
+
+    public String getAlly() {
+        return ally;
+    }
+
+    public void setAlly(String ally) {
+        this.ally = ally;
+    }
+    public void removeAlly() {
+        ally = null;
+    }
+    public boolean hasAlly() {
+        return ally != null;
     }
 
     public int getHandLimit() {
@@ -246,7 +272,7 @@ public Faction(String name, String player, String userName, Game gameState) {
     }
 
     public void removeResource(String resourceName) {
-        this.resources.remove(getResource(resourceName));
+        resources.removeAll(getResources(resourceName));
     }
 
     public Force getReserves() {
@@ -273,6 +299,10 @@ public Faction(String name, String player, String userName, Game gameState) {
 
     public List<Leader> getLeaders() {
         return leaders;
+    }
+
+    public Optional<Leader> getSkilledLeader() {
+        return getLeaders().stream().filter(l -> l.skillCard() != null).findFirst();
     }
 
     public Leader removeLeader(String name) {

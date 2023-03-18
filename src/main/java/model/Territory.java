@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Territory {
     private final String territoryName;
@@ -50,6 +51,20 @@ public class Territory {
 
     public Force getForce(String name) {
         return forces.stream().filter(force -> force.getName().equals(name)).findFirst().orElse(new Force(name, 0));
+    }
+
+    // Returns list of factions that have active forces in the territories (not Advisors)
+    public List<Faction> getActiveFactions(Game gameState) {
+        return forces.stream()
+                .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                .map(Force::getFactionName)
+                .distinct()
+                .map(gameState::getFaction)
+                .collect(Collectors.toList());
+    }
+
+    public int countActiveFactions(Game gameState) {
+        return getActiveFactions(gameState).size();
     }
 
     public void setForceStrength(String name, int strength) {
