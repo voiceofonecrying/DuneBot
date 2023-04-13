@@ -48,6 +48,8 @@ public class CommandOptions {
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData sector = new OptionData(OptionType.INTEGER, "sector", "The storm sector", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
+    public static final OptionData paid = new OptionData(OptionType.BOOLEAN, "paid", "Is the action paid for?", true);
+
     public static final OptionData spent = new OptionData(OptionType.INTEGER, "spent", "How much was spent on the card.", true);
     public static final OptionData revived = new OptionData(OptionType.INTEGER, "revived", "How many are being revived.", true);
     public static final OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
@@ -88,6 +90,16 @@ public class CommandOptions {
                     .addChoice("OnceAroundCW", "OnceAroundCW")
                     .addChoice("OnceAroundCCW", "OnceAroundCCW")
                     .addChoice("Silent", "Silent");
+    public static final OptionData richeseBlackMarketCard =
+            new OptionData(OptionType.STRING, "richese-black-market-card", "Select Richese Black Market card to bid on.", true)
+                    .setAutoComplete(true);
+    public static final OptionData richeseBlackMarketBidType =
+            new OptionData(OptionType.STRING, "richese-black-market-bid-type", "Type of bidding for a Richese Black Market card.", true)
+                    .addChoice("OnceAroundCW", "OnceAroundCW")
+                    .addChoice("OnceAroundCCW", "OnceAroundCCW")
+                    .addChoice("Silent", "Silent")
+                    .addChoice("Normal", "Normal");
+
     public static final OptionData paidToFaction =
             new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
                     .setAutoComplete(true);
@@ -115,12 +127,12 @@ public class CommandOptions {
             case "putbackcard" -> choices = cardsInMarket(gameState, searchValue);
             case "from" -> choices = fromTerritories(event, gameState, searchValue);
             case "bgterritories" -> choices = bgTerritories(gameState, searchValue);
-            case "leadertokill" -> choices = leaders(event, gameState, searchValue);
+            case "leadertokill", "factionleader"  -> choices = leaders(event, gameState, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(gameState, searchValue);
-            case "factionleader" -> choices = leaders(event, gameState, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, gameState, searchValue);
             case "richese-card" -> choices = richeseCard(gameState, searchValue);
             case "bt-face-dancer" -> choices = btFaceDancers(gameState, searchValue);
+            case "richese-black-market-card" -> choices = richeseBlackMarketCard(gameState, searchValue);
         }
 
         return choices;
@@ -251,6 +263,20 @@ public class CommandOptions {
         if (gameState.hasFaction("Richese")) {
             Faction faction = gameState.getFaction("Richese");
             List<TreacheryCard> cards = convertRicheseCards(faction.getResource("cache").getValue());
+
+            return cards.stream().map(TreacheryCard::name)
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    private static List<Command.Choice> richeseBlackMarketCard(Game gameState, String searchValue) {
+        if (gameState.hasFaction("Richese")) {
+            Faction faction = gameState.getFaction("Richese");
+            List<TreacheryCard> cards = faction.getTreacheryHand();
 
             return cards.stream().map(TreacheryCard::name)
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))

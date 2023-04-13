@@ -1,8 +1,6 @@
 package controller.commands;
 
-import com.google.gson.internal.LinkedTreeMap;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidGameStateException;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -22,8 +20,6 @@ public class RunCommands {
                 Commands.slash("run", "Commands related to playing through phases and turns.").addSubcommands(
                         new SubcommandData("advance", "Continue to the next phase of the game."),
                         new SubcommandData("bidding", "Run a regular bidding for a card"),
-                        new SubcommandData("richese-card-bidding", "Start bidding on a Richese Card")
-                                .addOptions(CommandOptions.richeseCard, CommandOptions.richeseBidType),
                         new SubcommandData("update-stronghold-skills", "Updates the Stronghold skill cards.")
                 )
         );
@@ -31,13 +27,12 @@ public class RunCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
 
         switch (name) {
             case "advance" -> advance(event, discordGame, gameState);
             case "bidding" -> bidding(event, discordGame, gameState);
-            case "richese-card-bidding" -> richeseCardBidding(event, discordGame, gameState);
             case "update-stronghold-skills" -> updateStrongholdSkills(event, discordGame, gameState);
         }
     }
@@ -63,6 +58,9 @@ public class RunCommands {
             gameState.advanceSubPhase();
         } else if (phase == 4 && subPhase == 2) {
             cardCountsInBiddingPhase(event, discordGame, gameState);
+            gameState.advanceSubPhase();
+        } else if (phase == 4 && subPhase == 3) {
+            finishBiddingPhase(event, discordGame, gameState);
             gameState.advancePhase();
         } else if (phase == 5) {
             startRevivalPhase(event, discordGame, gameState);
@@ -80,7 +78,6 @@ public class RunCommands {
             startMentatPause(event, discordGame, gameState);
             gameState.advanceTurn();
         }
-
 
         discordGame.pushGameState();
     }
@@ -245,6 +242,14 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
     }
 
+    public static void finishBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        if (gameState.getBidCard() != null) {
+            discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
+            gameState.getTreacheryDeck().addFirst(gameState.getBidCard());
+            gameState.setBidCard(null);
+        }
+    }
+
     public static void bidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         updateBidOrder(gameState);
         List<String> bidOrder = gameState.getBidOrder();
@@ -257,6 +262,7 @@ public class RunCommands {
             List<TreacheryCard> treacheryDiscard = gameState.getTreacheryDiscard();
             discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
             treacheryDeck.addAll(treacheryDiscard);
+            Collections.shuffle(treacheryDeck);
             treacheryDiscard.clear();
         }
 
@@ -264,15 +270,14 @@ public class RunCommands {
 
         gameState.setBidCard(bidCard);
 
-        if (gameState.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-chat",
-                    MessageFormat.format(
-                            "You predict <:treachery:991763073281040518> {0} <:treachery:991763073281040518> is up for bid.",
-                            bidCard.name().strip()
-                    )
-            );
-        }
+        AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
 
+        createBidMessage(discordGame, gameState, bidOrder);
+
+        discordGame.pushGameState();
+    }
+
+    public static void createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
 
         Faction firstBidFaction = gameState.getFaction(bidOrder.get(0));
@@ -291,85 +296,7 @@ public class RunCommands {
                         .collect(Collectors.joining())
         );
 
-        discordGame.pushGameState();
         discordGame.sendMessage("bidding-phase", message.toString());
-    }
-
-    public static void richeseCardBidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        String cardName = event.getOption(CommandOptions.richeseCard.getName()).getAsString();
-        String bidType = event.getOption(CommandOptions.richeseBidType.getName()).getAsString();
-
-        Faction faction = gameState.getFaction("Richese");
-
-        List<LinkedTreeMap> rawList = (ArrayList<LinkedTreeMap>) faction.getResource("cache").getValue();
-
-        for (int i = 0; i < rawList.size(); i++) {
-            if (((String)rawList.get(i).get("name")).equalsIgnoreCase(cardName)) {
-                gameState.setBidCard(new TreacheryCard(
-                        (String)rawList.get(i).get("name"), (String)rawList.get(i).get("type")
-                ));
-
-                rawList.remove(i);
-                break;
-            }
-        }
-
-        gameState.incrementBidCardNumber();
-
-        if (bidType.equalsIgnoreCase("Silent")) {
-            discordGame.sendMessage("bidding-phase",
-                    MessageFormat.format(
-                            "We will now silently auction a brand new Richese {0}!  Please place your bid in your private channels.",
-                            gameState.getBidCard().name()
-                    )
-            );
-        } else {
-            StringBuilder message = new StringBuilder();
-            message.append(
-                    MessageFormat.format("We are now bidding on a shiny, brand new Richese {0}!\n",
-                            gameState.getBidCard().name()
-                    )
-            );
-
-            List<Faction> factions = gameState.getFactions();
-
-            List<Faction> bidOrder = new ArrayList<>();
-
-            List<Faction> factionsInBidDirection;
-
-            if (bidType.equalsIgnoreCase("OnceAroundCW")) {
-                factionsInBidDirection = new ArrayList<>(factions);
-                Collections.reverse(factionsInBidDirection);
-            } else {
-                factionsInBidDirection = factions;
-            }
-
-            int richeseIndex = factionsInBidDirection.indexOf(gameState.getFaction("Richese"));
-            bidOrder.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
-            bidOrder.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
-
-            List<Faction> filteredBidOrder = bidOrder.stream()
-                    .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
-                    .toList();
-
-            message.append(
-                    MessageFormat.format(
-                            "R{0}:C{1} (Once Around)\n{2} - {3}\n",
-                            gameState.getTurn(), gameState.getBidCardNumber(),
-                            bidOrder.get(0).getEmoji(), bidOrder.get(0).getPlayer()
-                    )
-            );
-
-            message.append(
-                    bidOrder.subList(1, bidOrder.size()).stream()
-                            .map(f -> f.getEmoji() + " - \n")
-                            .collect(Collectors.joining())
-            );
-
-            discordGame.sendMessage("bidding-phase", message.toString());
-        }
-
-        discordGame.pushGameState();
     }
 
     public static void updateBidOrder(Game gameState) {
@@ -457,9 +384,8 @@ public class RunCommands {
                     .sorted(Comparator.comparingInt(gameState::getFactionTurnIndex))
                     .map(gameState::getFaction)
                     .toList();
-            ;
 
-            if (factions.size() > 1) {
+            if (factions.size() > 1 && !territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) {
                 battles.add(new ImmutablePair<>(territory, factions));
             }
         }

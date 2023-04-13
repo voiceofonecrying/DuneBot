@@ -149,10 +149,9 @@ public class Initializers {
                 points.add(new Point(580,560));
             }
             case "Pasty Mesa (South Sector)" -> {
-                points.add(new Point(530,570));
-                points.add(new Point(675,570));
+                points.add(new Point(690,570));
+                points.add(new Point(750,574));
                 points.add(new Point(800,575));
-                points.add(new Point(750,610));
             }
             case "South Mesa (North Sector)" -> {
                 points.add(new Point(845,645));
@@ -310,7 +309,7 @@ public class Initializers {
                 points.add(new Point(170,405));
             }
             case "Rock Outcroppings (South Sector)" -> {
-                points.add(new Point(145,315));
+                points.add(new Point(145,310));
                 points.add(new Point(155,295));
                 points.add(new Point(160,275));
             }
@@ -347,7 +346,7 @@ public class Initializers {
                 points.add(new Point(320,575));
             }
             case "Wind Pass North (North Sector)" -> {
-                points.add(new Point(380,590));
+                points.add(new Point(380,560));
                 points.add(new Point(373,601));
                 points.add(new Point(406,573));
             }
@@ -577,6 +576,9 @@ public class Initializers {
             }
             case "tech token 5" -> {
                 return new Point(20, 810);
+            }
+            case "shield wall" -> {
+                return new Point(652, 370);
             }
         }
 

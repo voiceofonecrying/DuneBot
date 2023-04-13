@@ -77,6 +77,8 @@ public class CommandManager extends ListenerAdapter {
                     case "draw-spice-blow" -> drawSpiceBlow(event, discordGame, gameState);
                     case "create-alliance" -> createAlliance(event, discordGame, gameState);
                     case "remove-alliance" -> removeAlliance(event, discordGame, gameState);
+                    case "set-spice-in-territory" -> setSpiceInTerritory(event, discordGame, gameState);
+                    case "destroy-shield-wall" -> destroyShieldWall(event, discordGame, gameState);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -117,7 +119,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(CommandOptions.faction, CommandOptions.fromTerritory, CommandOptions.toTerritory, CommandOptions.amount, CommandOptions.starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.toTanks, CommandOptions.starred, CommandOptions.fromTerritory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(CommandOptions.faction, CommandOptions.spent, CommandOptions.paidToFaction));
-        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(CommandOptions.faction, CommandOptions.revived, CommandOptions.starred));
+        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(CommandOptions.faction, CommandOptions.revived, CommandOptions.starred, CommandOptions.paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(CommandOptions.data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(CommandOptions.sector));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(CommandOptions.faction, CommandOptions.leader));
@@ -133,6 +135,9 @@ public class CommandManager extends ListenerAdapter {
                 .addOptions(CommandOptions.faction, CommandOptions.otherFaction));
         commandData.add(Commands.slash("remove-alliance", "Remove alliance (only on faction of the alliance needs to be selected)")
                 .addOptions(CommandOptions.faction));
+        commandData.add(Commands.slash("set-spice-in-territory", "Set the spice amount for a territory")
+                .addOptions(CommandOptions.territory, CommandOptions.amount));
+        commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -300,6 +305,8 @@ public class CommandManager extends ListenerAdapter {
 
         message.append("**Spice Deck " + spiceBlowDeck + "**\n");
 
+        boolean shaiHuludSpotted = false;
+
         do {
             if (deck.isEmpty()) {
                 deck.addAll(gameState.getSpiceDiscardA());
@@ -307,11 +314,28 @@ public class CommandManager extends ListenerAdapter {
                 Collections.shuffle(deck);
                 gameState.getSpiceDiscardA().clear();
                 gameState.getSpiceDiscardB().clear();
+                message.append("The Spice Deck is empty, and will be recreated from the Discard piles.\n");
             }
 
             drawn = deck.pop();
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud") && discard.size() > 0 && !shaiHuludSpotted) {
+                SpiceCard lastCard = discard.getLast();
+                message.append("Shai-Hulud has been spotted in " + lastCard.name() + "!\n");
+                shaiHuludSpotted = true;
+                int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
+                if (spice > 0) {
+                    message.append(spice);
+                    message.append("<:spice4:991763531798167573> is eaten by the worm!\n");
+                    gameState.getTerritories().get(lastCard.name()).setSpice(0);
+                }
+            } else if (drawn.name().equalsIgnoreCase("Shai-Hulud")) {
+                message.append("Shai-Hulud has been spotted!\n");
+            } else {
+                message.append("Spice has been spotted in ");
+                message.append(drawn.name());
+                message.append("!\n");
+            }
             discard.add(drawn);
-            message.append(drawn.name() + "\n");
         } while (drawn.name().equalsIgnoreCase("Shai-Hulud"));
 
         if (gameState.getStorm() == drawn.sector())
@@ -323,7 +347,6 @@ public class CommandManager extends ListenerAdapter {
 
         discordGame.sendMessage("turn-summary", message.toString());
         ShowCommands.showBoard(discordGame, gameState);
-
     }
 
     public void drawCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -488,16 +511,25 @@ public class CommandManager extends ListenerAdapter {
     public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         String star = event.getOption("starred").getAsBoolean() ? "*" : "";
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+        boolean paid = event.getOption("starred").getAsBoolean();
+
         if (star.equals("")) faction.getReserves().addStrength(event.getOption("revived").getAsInt());
         else faction.getSpecialReserves().addStrength(event.getOption("revived").getAsInt());
-        faction.subtractSpice(2 * event.getOption("revived").getAsInt());
-        spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction.getName(), "Revivals", false);
-        if (gameState.hasFaction("BT")) {
-            gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
-            spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), "bt", faction.getEmoji() + " revivals", true);
-            ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("BT"));
+
+        Force force = gameState.getForceFromTanks(faction.getName() + star);
+        force.setStrength(force.getStrength() - 1);
+
+        if (paid) {
+            faction.subtractSpice(2 * event.getOption("revived").getAsInt());
+            spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction.getName(), "Revivals", false);
+            if (gameState.hasFaction("BT")) {
+                gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
+                spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), "bt", faction.getEmoji() + " revivals", true);
+                ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("BT"));
+            }
+            ShowCommands.writeFactionInfo(discordGame, faction);
         }
-        ShowCommands.writeFactionInfo(discordGame, faction);
+
         discordGame.pushGameState();
     }
 
@@ -672,8 +704,9 @@ public class CommandManager extends ListenerAdapter {
         );
 
         recipient.addFrontOfShieldSpice(amount);
-        ShowCommands.writeFactionInfo(discordGame, faction);
         discordGame.pushGameState();
+        ShowCommands.writeFactionInfo(discordGame, faction);
+        ShowCommands.refreshFrontOfShieldInfo(event,discordGame,gameState);
     }
 
     public void mute(DiscordGame discordGame, Game gameState) {
@@ -756,6 +789,8 @@ public class CommandManager extends ListenerAdapter {
     public void removeAlliance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
         Faction faction = gameState.getFaction(event.getOption(CommandOptions.faction.getName()).getAsString());
         removeAlliance(gameState, faction);
+
+        discordGame.pushGameState();
     }
 
     private void removeAlliance(Game gameState, Faction faction) {
@@ -763,5 +798,19 @@ public class CommandManager extends ListenerAdapter {
             gameState.getFaction(faction.getAlly()).removeAlly();
         }
         faction.removeAlly();
+    }
+
+    public void setSpiceInTerritory(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        String territoryName = event.getOption(CommandOptions.territory.getName()).getAsString();
+        int amount = event.getOption(CommandOptions.amount.getName()).getAsInt();
+
+        gameState.getTerritories().get(territoryName).setSpice(amount);
+        discordGame.pushGameState();
+    }
+
+    public void destroyShieldWall(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        gameState.breakShieldWall();
+
+        discordGame.pushGameState();
     }
 }

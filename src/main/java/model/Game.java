@@ -39,6 +39,7 @@ public class Game extends GameFactionBase {
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
+    private boolean shieldWallDestroyed;
     public Game() {
         super();
 
@@ -68,6 +69,7 @@ public class Game extends GameFactionBase {
         this.techTokens = false;
         this.leaderSkills = false;
         this.strongholdSkills = false;
+        this.shieldWallDestroyed = false;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -159,7 +161,8 @@ public class Game extends GameFactionBase {
     public int getFactionTurnIndex(String name) {
         int rawTurnIndex = factions.indexOf(findFaction(name).get());
         int stormSection = Math.ceilDiv(getStorm(), 3);
-        return (rawTurnIndex - stormSection) % factions.size();
+
+        return Math.floorMod(rawTurnIndex - stormSection, factions.size());
     }
 
     public Faction getFaction(String name) {
@@ -291,11 +294,16 @@ public class Game extends GameFactionBase {
     }
 
     public void breakShieldWall() {
-        this.territories.get("Carthag").setRock(false);
-        this.territories.get("Imperial Basin (Center Sector)").setRock(false);
-        this.territories.get("Imperial Basin (East Sector)").setRock(false);
-        this.territories.get("Imperial Basin (West Sector)").setRock(false);
-        this.territories.get("Arrakeen").setRock(false);
+        shieldWallDestroyed = true;
+        territories.get("Carthag").setRock(false);
+        territories.get("Imperial Basin (Center Sector)").setRock(false);
+        territories.get("Imperial Basin (East Sector)").setRock(false);
+        territories.get("Imperial Basin (West Sector)").setRock(false);
+        territories.get("Arrakeen").setRock(false);
+    }
+
+    public boolean isShieldWallDestroyed() {
+        return shieldWallDestroyed;
     }
 
     public int getBidMarketSize() {

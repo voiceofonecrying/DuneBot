@@ -5,7 +5,6 @@ import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -79,6 +78,14 @@ public class ShowCommands {
 
         try {
             BufferedImage board = ImageIO.read(boardComponents.get("Board"));
+
+            //Place destroyed Shield Wall
+            if (gameState.isShieldWallDestroyed()) {
+                BufferedImage brokenShieldWallImage = ImageIO.read(boardComponents.get("Shield Wall Destroyed"));
+                brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
+                Point coordinates = Initializers.getDrawCoordinates("shield wall");
+                board = overlay(board, brokenShieldWallImage, coordinates, 1);
+            }
 
             //Place Tech Tokens
             for (int i = 0; i < gameState.getFactions().size(); i++) {
