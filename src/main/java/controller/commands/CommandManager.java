@@ -511,7 +511,7 @@ public class CommandManager extends ListenerAdapter {
     public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         String star = event.getOption("starred").getAsBoolean() ? "*" : "";
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
-        boolean paid = event.getOption("starred").getAsBoolean();
+        boolean paid = event.getOption("paid").getAsBoolean();
 
         if (star.equals("")) faction.getReserves().addStrength(event.getOption("revived").getAsInt());
         else faction.getSpecialReserves().addStrength(event.getOption("revived").getAsInt());
