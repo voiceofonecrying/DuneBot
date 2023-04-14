@@ -81,6 +81,15 @@ public class SetupCommands {
                 case 6 -> stormSelectionStep(event, discordGame, gameState);
                 case 7 -> startGameStep(event, discordGame, gameState);
             }
+        } else {
+            switch (phase) {
+                case 0 -> factionPositionsAndBGPredictionStep(event, discordGame, gameState);
+                case 1 -> traitorSelectionStep(event, discordGame, gameState);
+                case 2 -> shuffleTraitorsDrawFaceDancers(event, discordGame, gameState);
+                case 3 -> treacheryCardsStep(event, discordGame, gameState);
+                case 4 -> stormSelectionStep(event, discordGame, gameState);
+                case 5 -> startGameStep(event, discordGame, gameState);
+            }
         }
 
         if (gameState.getTurn() == 0) gameState.advancePhase();
