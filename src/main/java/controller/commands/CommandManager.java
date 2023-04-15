@@ -512,12 +512,13 @@ public class CommandManager extends ListenerAdapter {
         String star = event.getOption("starred").getAsBoolean() ? "*" : "";
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         boolean paid = event.getOption("paid").getAsBoolean();
+        int revived = event.getOption("revived").getAsInt();
 
-        if (star.equals("")) faction.getReserves().addStrength(event.getOption("revived").getAsInt());
-        else faction.getSpecialReserves().addStrength(event.getOption("revived").getAsInt());
+        if (star.equals("")) faction.getReserves().addStrength(revived);
+        else faction.getSpecialReserves().addStrength(revived);
 
         Force force = gameState.getForceFromTanks(faction.getName() + star);
-        force.setStrength(force.getStrength() - 1);
+        force.setStrength(force.getStrength() - revived);
 
         if (paid) {
             faction.subtractSpice(2 * event.getOption("revived").getAsInt());
