@@ -195,7 +195,7 @@ public class CommandManager extends ListenerAdapter {
                 )
                 .complete();
 
-        String[] readAndReactChannels  = {"turn-summary", "rules"};
+        String[] readAndReactChannels  = {"front-of-shield", "turn-summary", "rules"};
 
         for (String channel : readAndReactChannels) {
             category.createTextChannel(channel)
