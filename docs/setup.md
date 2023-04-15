@@ -50,3 +50,6 @@ If any need to be manually places (Fremen) use the `/placeforces` command, setti
 to `false` to avoid charging the player.
 
 After placing the forces you can then run `/show board` to show the board in the turn summary.
+
+### Storm Selection
+To select the storm location run `/setstorm`, with the total storm movement.
