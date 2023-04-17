@@ -61,27 +61,20 @@ public class ShowCommands {
         writeFactionInfo(discordGame, factionName);
     }
 
+    private static BufferedImage getResourceImage(String name) throws IOException {
+        URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
+        return ImageIO.read(file);
+    }
 
     private static void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.getMute()) return;
-        //Load png resources into a hashmap.
-        HashMap<String, File> boardComponents = new HashMap<>();
-        URL dir = ShowCommands.class.getClassLoader().getResource("Board Components");
-        try {
-            for (File file : new File(dir.toURI()).listFiles()) {
-                boardComponents.put(file.getName().replace(".png", ""), file);
-            }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
 
         try {
-            BufferedImage board = ImageIO.read(boardComponents.get("Board"));
+            BufferedImage board = getResourceImage("Board");
 
             //Place destroyed Shield Wall
             if (gameState.isShieldWallDestroyed()) {
-                BufferedImage brokenShieldWallImage = ImageIO.read(boardComponents.get("Shield Wall Destroyed"));
+                BufferedImage brokenShieldWallImage = getResourceImage("Shield Wall Destroyed");
                 brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
                 Point coordinates = Initializers.getDrawCoordinates("shield wall");
                 board = overlay(board, brokenShieldWallImage, coordinates, 1);
@@ -93,7 +86,7 @@ public class ShowCommands {
                 if (faction.getTechTokens().isEmpty()) continue;
                 int offset = 0;
                 for (TechToken token : faction.getTechTokens()) {
-                    BufferedImage tokenImage = ImageIO.read(boardComponents.get(token.getName()));
+                    BufferedImage tokenImage = getResourceImage(token.getName());
                     tokenImage = resize(tokenImage, 50, 50);
                     Point coordinates = Initializers.getDrawCoordinates("tech token " + i);
                     Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
@@ -103,18 +96,18 @@ public class ShowCommands {
             }
 
             //Place turn, phase, and storm markers
-            BufferedImage turnMarker = ImageIO.read(boardComponents.get("Turn Marker"));
+            BufferedImage turnMarker = getResourceImage("Turn Marker");
             turnMarker = resize(turnMarker, 55, 55);
             int turn = gameState.getTurn() == 0 ? 1 : gameState.getTurn();
             float angle = (turn * 36) + 74f;
             turnMarker = rotateImageByDegrees(turnMarker, angle);
             Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getTurn());
             board = overlay(board, turnMarker, coordinates, 1);
-            BufferedImage phaseMarker = ImageIO.read(boardComponents.get("Phase Marker"));
+            BufferedImage phaseMarker = getResourceImage("Phase Marker");
             phaseMarker = resize(phaseMarker, 50, 50);
             coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getPhase()));
             board = overlay(board, phaseMarker, coordinates, 1);
-            BufferedImage stormMarker = ImageIO.read(boardComponents.get("storm"));
+            BufferedImage stormMarker = getResourceImage("storm");
             stormMarker = resize(stormMarker, 172, 96);
             stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getStorm() * 20));
             board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getStorm()), 1);
@@ -122,7 +115,7 @@ public class ShowCommands {
             //Place sigils
             for (int i = 1; i <= gameState.getFactions().size(); i++) {
                 Faction faction = gameState.getFactions().get(i - 1);
-                BufferedImage sigil = ImageIO.read(boardComponents.get(faction.getName() + " Sigil"));
+                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
                 coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
@@ -130,7 +123,7 @@ public class ShowCommands {
                 // Check for alliances
                 if (faction.hasAlly()) {
                     BufferedImage allySigil =
-                            ImageIO.read(boardComponents.get(faction.getAlly() + " Sigil"));
+                            getResourceImage(faction.getAlly() + " Sigil");
                     coordinates = Initializers.getDrawCoordinates("ally " + i);
                     allySigil = resize(allySigil, 40, 40);
                     board = overlay(board, allySigil, coordinates, 1);
@@ -150,42 +143,42 @@ public class ShowCommands {
                     int spice = territory.getSpice();
                     while (spice != 0) {
                         if (spice >= 10) {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("10 Spice"));
+                            BufferedImage spiceImage = getResourceImage("10 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 10;
                         } else if (spice >= 8) {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("8 Spice"));
+                            BufferedImage spiceImage = getResourceImage("8 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 8;
                         } else if (spice >= 6) {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("6 Spice"));
+                            BufferedImage spiceImage = getResourceImage("6 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 6;
                         } else if (spice >= 5) {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("5 Spice"));
+                            BufferedImage spiceImage = getResourceImage("5 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 5;
                         } else if (spice >= 2) {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("2 Spice"));
+                            BufferedImage spiceImage = getResourceImage("2 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 2;
                         } else {
-                            BufferedImage spiceImage = ImageIO.read(boardComponents.get("1 Spice"));
+                            BufferedImage spiceImage = getResourceImage("1 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
@@ -198,12 +191,12 @@ public class ShowCommands {
                 offset = 0;
                 for (Force force : territory.getForces()) {
                     if (force.getName().equals("Hidden Mobile Stronghold")) {
-                        BufferedImage hms = ImageIO.read(boardComponents.get("Hidden Mobile Stronghold"));
+                        BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
                         hms = resize(hms, 150,100);
                         List<Force> hmsForces = gameState.getTerritories().get("Hidden Mobile Stronghold").getForces();
                         int forceOffset = 0;
                         for (Force f : hmsForces) {
-                            BufferedImage forceImage = buildForceImage(boardComponents, f.getName(), f.getStrength());
+                            BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
                             hms = overlay(hms, forceImage, new Point(40,20 + forceOffset), 1);
                             forceOffset += 30;
                         }
@@ -212,7 +205,7 @@ public class ShowCommands {
                         board = overlay(board, hms, forcePlacementOffset, 1);
                         continue;
                     }
-                    BufferedImage forceImage = buildForceImage(boardComponents, force.getName(), force.getStrength());
+                    BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                     Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
                     Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
                     board = overlay(board, forceImage, forcePlacementOffset, 1);
@@ -229,7 +222,7 @@ public class ShowCommands {
             int offset = 0;
             for (Force force : gameState.getTanks()) {
                 if (force.getStrength() == 0) continue;
-                BufferedImage forceImage = buildForceImage(boardComponents, force.getName(), force.getStrength());
+                BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
 
                 Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
                 Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
@@ -246,7 +239,7 @@ public class ShowCommands {
             i = 0;
             offset = 0;
             for (Leader leader : gameState.getLeaderTanks()) {
-                BufferedImage leaderImage = ImageIO.read(boardComponents.get(leader.name().replace(".", "")));
+                BufferedImage leaderImage = getResourceImage(leader.name().replace(".", ""));
                 leaderImage = resize(leaderImage, 70,70);
                 Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
                 Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
@@ -271,23 +264,23 @@ public class ShowCommands {
         }
     }
 
-    private static BufferedImage buildForceImage(HashMap<String, File> boardComponents, String force, int strength) throws IOException {
-        BufferedImage forceImage = !force.equals("Advisor") ? ImageIO.read(boardComponents.get(force.replace("*", "") + " Troop")) : ImageIO.read(boardComponents.get("BG Advisor"));
+    private static BufferedImage buildForceImage(String force, int strength) throws IOException {
+        BufferedImage forceImage = !force.equals("Advisor") ? getResourceImage(force.replace("*", "") + " Troop") : getResourceImage("BG Advisor");
         forceImage = resize(forceImage, 47, 29);
         if (force.contains("*")) {
-            BufferedImage star = ImageIO.read(boardComponents.get("star"));
+            BufferedImage star = getResourceImage("star");
             star = resize(star, 8, 8);
             forceImage = overlay(forceImage, star, new Point(20, 7), 1);
         }
         if (strength > 9) {
-            BufferedImage oneImage = ImageIO.read(boardComponents.get("1"));
-            BufferedImage digitImage = ImageIO.read(boardComponents.get(String.valueOf(strength - 10)));
+            BufferedImage oneImage = getResourceImage("1");
+            BufferedImage digitImage = getResourceImage(String.valueOf(strength - 10));
             oneImage = resize(oneImage, 12, 12);
             digitImage = resize(digitImage, 12,12);
             forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
             forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
         } else {
-            BufferedImage numberImage = ImageIO.read(boardComponents.get(String.valueOf(strength)));
+            BufferedImage numberImage = getResourceImage(String.valueOf(strength));
             numberImage = resize(numberImage, 12, 12);
             forceImage = overlay(forceImage, numberImage, new Point(30,14), 1);
 
