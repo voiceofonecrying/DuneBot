@@ -225,6 +225,13 @@ public class ShowCommands {
                         i = 0;
                     }
                 }
+
+                if (gameState.hasFaction("Richese") && territory.hasRicheseNoField()) {
+                    BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
+                    Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
+                            .get(i);
+                    board = overlay(board, noFieldImage, noFieldPlacement, 1);
+                }
             }
 
             //Place tanks forces
