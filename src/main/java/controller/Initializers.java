@@ -10,10 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 public class Initializers {
 
@@ -151,10 +149,9 @@ public class Initializers {
                 points.add(new Point(580,560));
             }
             case "Pasty Mesa (South Sector)" -> {
-                points.add(new Point(530,570));
-                points.add(new Point(675,570));
+                points.add(new Point(690,570));
+                points.add(new Point(750,574));
                 points.add(new Point(800,575));
-                points.add(new Point(750,610));
             }
             case "South Mesa (North Sector)" -> {
                 points.add(new Point(845,645));
@@ -312,7 +309,7 @@ public class Initializers {
                 points.add(new Point(170,405));
             }
             case "Rock Outcroppings (South Sector)" -> {
-                points.add(new Point(145,315));
+                points.add(new Point(145,310));
                 points.add(new Point(155,295));
                 points.add(new Point(160,275));
             }
@@ -349,7 +346,7 @@ public class Initializers {
                 points.add(new Point(320,575));
             }
             case "Wind Pass North (North Sector)" -> {
-                points.add(new Point(380,590));
+                points.add(new Point(380,560));
                 points.add(new Point(373,601));
                 points.add(new Point(406,573));
             }
@@ -421,20 +418,38 @@ public class Initializers {
             case "sigil 1" -> {
                 return new Point(475, 978);
             }
+            case "ally 1" -> {
+                return new Point(475, 1040);
+            }
             case "sigil 2" -> {
                 return new Point(865, 753);
+            }
+            case "ally 2" -> {
+                return new Point(915, 783);
             }
             case "sigil 3" -> {
                 return new Point(865, 301);
             }
+            case "ally 3" -> {
+                return new Point(915, 271);
+            }
             case "sigil 4" -> {
                 return new Point(475, 80);
+            }
+            case "ally 4" -> {
+                return new Point(475, 20);
             }
             case "sigil 5" -> {
                 return new Point(85, 301);
             }
+            case "ally 5" -> {
+                return new Point(35, 271);
+            }
             case "sigil 6" -> {
                 return new Point(85, 753);
+            }
+            case "ally 6" -> {
+                return new Point(35, 783);
             }
             case "turn 0", "turn 1" -> {
                 return new Point(124, 60);
@@ -561,6 +576,9 @@ public class Initializers {
             }
             case "tech token 5" -> {
                 return new Point(20, 810);
+            }
+            case "shield wall" -> {
+                return new Point(652, 370);
             }
         }
 

@@ -16,11 +16,15 @@ public class Game extends GameFactionBase {
     private boolean strongholdSkills;
     private int turn;
     private int phase;
+    private int subPhase;
     private int storm;
 
     private int stormMovement;
+    private int bidCardNumber;
 
-    private int marketSize;
+    private int bidMarketSize;
+    private List<String> bidOrder;
+    private TreacheryCard bidCard;
 
     private final List<Faction> factions;
 
@@ -35,6 +39,7 @@ public class Game extends GameFactionBase {
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
+    private boolean shieldWallDestroyed;
     public Game() {
         super();
 
@@ -55,14 +60,16 @@ public class Game extends GameFactionBase {
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.market = new LinkedList<>();
-        this.marketSize = 0;
+        this.bidMarketSize = 0;
         this.turn = 0;
         this.phase = 0;
+        this.subPhase = 0;
         this.storm = 18;
         this.stormMovement = 0;
         this.techTokens = false;
         this.leaderSkills = false;
         this.strongholdSkills = false;
+        this.shieldWallDestroyed = false;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -76,8 +83,37 @@ public class Game extends GameFactionBase {
         for (CSVRecord csvRecord : csvParser) {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
         }
+
+        this.bidOrder = new ArrayList<>();
+        this.bidCardNumber = 0;
     }
 
+    public TreacheryCard getBidCard() {
+        return bidCard;
+    }
+
+    public void setBidCard(TreacheryCard bidCard) {
+        this.bidCard = bidCard;
+    }
+
+    public int getBidCardNumber() {
+        return bidCardNumber;
+    }
+
+    public void setBidCardNumber(int bidCardNumber) {
+        this.bidCardNumber = bidCardNumber;
+    }
+    public void incrementBidCardNumber() {
+        bidCardNumber++;
+    }
+
+    public List<String> getBidOrder() {
+        return bidOrder;
+    }
+
+    public void setBidOrder(List<String> bidOrder) {
+        this.bidOrder = bidOrder;
+    }
 
     public List<Faction> getFactions() {
         return factions;
@@ -115,6 +151,18 @@ public class Game extends GameFactionBase {
         return factions.stream()
                 .filter(f -> f.getName().equals(name))
                 .findFirst();
+    }
+
+    /**
+     * Returns the faction's turn index (0-5), accounting for the storm.
+     * @param name The faction's name.
+     * @return The faction's turn index.
+     */
+    public int getFactionTurnIndex(String name) {
+        int rawTurnIndex = factions.indexOf(findFaction(name).get());
+        int stormSection = Math.ceilDiv(getStorm(), 3);
+
+        return Math.floorMod(rawTurnIndex - stormSection, factions.size());
     }
 
     public Faction getFaction(String name) {
@@ -168,6 +216,10 @@ public class Game extends GameFactionBase {
         return phase;
     }
 
+    public int getSubPhase() {
+        return subPhase;
+    }
+
     public int getStorm() {
         return storm;
     }
@@ -176,10 +228,26 @@ public class Game extends GameFactionBase {
         return tanks;
     }
 
+    public void removeZeroStrengthTanks() {
+        this.tanks.removeIf(f-> f.getStrength() == 0);
+    }
+
     public Force getForceFromTanks(String forceName) {
-        Force force = this.tanks.stream().filter(f-> f.getName().equals(forceName)).findFirst().orElse(new Force(forceName, 0));
-        if (force.getStrength() == 0) this.tanks.add(force);
-        return force;
+        // This is a temporary fix for duplicates in the tanks list.
+        removeZeroStrengthTanks();
+
+        List<Force> forces = this.tanks.stream().filter(f-> f.getName().equalsIgnoreCase(forceName)).toList();
+
+        Force force;
+        if (forces.size() > 1) {
+            throw new IllegalArgumentException("Duplicate forces found in tanks list.");
+        } else if (forces.size() == 1) {
+            return forces.get(0);
+        } else {
+            force = new Force(forceName, 0);
+            this.tanks.add(force);
+            return force;
+        }
     }
 
     public LinkedList<Leader> getLeaderTanks() {
@@ -199,39 +267,51 @@ public class Game extends GameFactionBase {
     }
 
     public void advanceTurn() {
-        this.turn += 1;
-        this.phase = 1;
+        turn++;
+        phase = 1;
+        subPhase = 1;
     }
 
     public void advancePhase() {
-        this.phase += 1;
-        if (phase == 10) {
+        phase++;
+        subPhase = 1;
+
+        if (turn >= 1 && phase >= 10) {
             advanceTurn();
         }
     }
 
+    public void advanceSubPhase() {
+        subPhase++;
+    }
+
     public void setStorm(int storm) {
-        this.storm = storm;
+        this.storm = ((storm - 1) % 18) + 1;
     }
 
     public void advanceStorm(int movement) {
-        this.storm += movement;
+        setStorm(getStorm() + movement);
     }
 
     public void breakShieldWall() {
-        this.territories.get("Carthag").setRock(false);
-        this.territories.get("Imperial Basin (Center Sector)").setRock(false);
-        this.territories.get("Imperial Basin (East Sector)").setRock(false);
-        this.territories.get("Imperial Basin (West Sector)").setRock(false);
-        this.territories.get("Arrakeen").setRock(false);
+        shieldWallDestroyed = true;
+        territories.get("Carthag").setRock(false);
+        territories.get("Imperial Basin (Center Sector)").setRock(false);
+        territories.get("Imperial Basin (East Sector)").setRock(false);
+        territories.get("Imperial Basin (West Sector)").setRock(false);
+        territories.get("Arrakeen").setRock(false);
     }
 
-    public int getMarketSize() {
-        return marketSize;
+    public boolean isShieldWallDestroyed() {
+        return shieldWallDestroyed;
     }
 
-    public void setMarketSize(int marketSize) {
-        this.marketSize = marketSize;
+    public int getBidMarketSize() {
+        return bidMarketSize;
+    }
+
+    public void setBidMarketSize(int bidMarketSize) {
+        this.bidMarketSize = bidMarketSize;
     }
 
     public int getStormMovement() {
@@ -250,7 +330,7 @@ public class Game extends GameFactionBase {
         this.techTokens = techTokens;
     }
 
-    public boolean isLeaderSkills() {
+    public boolean hasLeaderSkills() {
         return leaderSkills;
     }
 
@@ -258,11 +338,19 @@ public class Game extends GameFactionBase {
         this.leaderSkills = leaderSkills;
     }
 
-    public boolean isStrongholdSkills() {
+    public boolean hasStrongholdSkills() {
         return strongholdSkills;
     }
 
     public void setStrongholdSkills(boolean strongholdSkills) {
         this.strongholdSkills = strongholdSkills;
+    }
+
+    public void drawCard(String deckName, String faction) {
+        switch (deckName) {
+            case "traitor deck" -> getFaction(faction).getTraitorHand().add(getTraitorDeck().pollLast());
+            case "treachery deck" -> getFaction(faction).getTreacheryHand().add(getTreacheryDeck().pollLast());
+            case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
+        }
     }
 }

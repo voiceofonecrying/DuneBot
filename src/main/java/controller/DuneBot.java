@@ -9,10 +9,15 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import okhttp3.OkHttpClient;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DuneBot {
 
     public static void main(String[] args) {
+        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         try {
             String token = Dotenv.configure().load().get("TOKEN");
 

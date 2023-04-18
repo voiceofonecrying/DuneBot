@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class DiscordGame {
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
     private Game gameState;
+    private boolean disableModCheck = false;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
@@ -41,6 +43,12 @@ public class DiscordGame {
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
         this.gameCategory = Objects.requireNonNull(event.getChannel()).asTextChannel().getParentCategory();
         this.member = event.getMember();
+    }
+
+    public DiscordGame(Category category, boolean disableModCheck) {
+        this.gameCategory = category;
+        this.member = null;
+        this.disableModCheck = disableModCheck;
     }
 
     public Category getGameCategory() {
@@ -69,7 +77,7 @@ public class DiscordGame {
     }
 
     public boolean isModRole(String modRoleName) {
-        return this.member
+        return disableModCheck || this.member
                 .getRoles()
                 .stream().map(Role::getName)
                 .toList()
@@ -95,6 +103,7 @@ public class DiscordGame {
                 String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
                 Gson gson = new Gson();
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
+                future.get().close();
                 if (!this.isModRole(returnGame.getModRole())) {
                     throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
@@ -123,5 +132,23 @@ public class DiscordGame {
         TextChannel channel = getTextChannel(name);
         if (this.gameState.getMute()) return;
         channel.sendMessage(message).queue();
+    }
+
+    public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).queue();
+    }
+
+    public void sendMessage(String name, String message, FileUpload fileUpload) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).addFiles(fileUpload).queue();
+    }
+
+    public void sendMessage(String name, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).addFiles(fileUploads).queue();
     }
 }

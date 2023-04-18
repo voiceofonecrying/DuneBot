@@ -7,15 +7,12 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class Faction {
     private final String name;
     private String emoji;
-    private final String player;
+    private String player;
     private final String userName;
     private final int handLimit;
     private int spice;
@@ -25,8 +22,10 @@ public class Faction {
     private int frontOfShieldSpice;
     private int freeRevival;
     private boolean hasMiningEquipment;
+    private String ally;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
+    private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<Leader> leaders;
     private final List<Resource> resources;
 
@@ -46,6 +45,7 @@ public Faction(String name, String player, String userName, Game gameState) {
         this.leaders = new LinkedList<>();
         this.resources = new LinkedList<>();
         this.techTokens = new LinkedList<>();
+        this.leaderSkillsHand = new LinkedList<>();
         this.spice = 0;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
@@ -67,7 +67,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                         csvRecord.get(0),
                         Integer.parseInt(csvRecord.get(2))
                 );
-                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2))));
+                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null));
                 traitorDeck.add(traitorCard);
             }
         }
@@ -138,16 +138,16 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.reserves = new Force("CHOAM", 20);
                this.emoji = "<:choam:991763324624703538>";
            }
-           case "RICH" -> {
+           case "RICHESE" -> {
                this.spice = 5;
                this.freeRevival = 2;
-               this.reserves = new Force("Rich", 20);
+               this.reserves = new Force("Richese", 20);
                this.emoji = "<:rich:991763318467465337>";
-               this.resources.add( new IntegerResource("no field", 0, 0, 0));
+               this.resources.add(new IntegerResource("no field", 0, 0, 0));
                this.resources.add(new IntegerResource("no field", 3, 3, 3));
                this.resources.add(new IntegerResource("no field", 5, 5, 5));
                this.resources.add(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
-               List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache");
+               List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache").getValue();
                cache.add(new TreacheryCard("Ornithoper", "Special - Movement"));
                cache.add(new TreacheryCard("Residual Poison", "Special"));
                cache.add(new TreacheryCard("Semuta Drug", "Special"));
@@ -169,6 +169,17 @@ public Faction(String name, String player, String userName, Game gameState) {
                 .get();
     }
 
+    public List<Resource> getResources(String name) {
+        return resources.stream()
+                .filter(r -> r.getName().equals(name))
+                .toList();
+    }
+
+    public boolean hasResource(String name) {
+        return resources.stream()
+                .anyMatch(r -> r.getName().equals(name));
+    }
+
     public String getName() {
         return this.name;
     }
@@ -185,8 +196,26 @@ public Faction(String name, String player, String userName, Game gameState) {
         return player;
     }
 
+    public void setPlayer(String player) {
+        this.player = player;
+    }
+
     public String getUserName() {
         return userName;
+    }
+
+    public String getAlly() {
+        return ally;
+    }
+
+    public void setAlly(String ally) {
+        this.ally = ally;
+    }
+    public void removeAlly() {
+        ally = null;
+    }
+    public boolean hasAlly() {
+        return ally != null;
     }
 
     public int getHandLimit() {
@@ -216,6 +245,10 @@ public Faction(String name, String player, String userName, Game gameState) {
         return traitorHand;
     }
 
+    public List<LeaderSkillCard> getLeaderSkillsHand() {
+        return leaderSkillsHand;
+    }
+
     public int getSpice() {
         return spice;
     }
@@ -239,7 +272,7 @@ public Faction(String name, String player, String userName, Game gameState) {
     }
 
     public void removeResource(String resourceName) {
-        this.resources.remove(getResource(resourceName));
+        resources.removeAll(getResources(resourceName));
     }
 
     public Force getReserves() {
@@ -258,8 +291,18 @@ public Faction(String name, String player, String userName, Game gameState) {
         return freeRevival;
     }
 
+    public Optional<Leader> getLeader(String leaderName) {
+        return getLeaders().stream()
+                .filter(l -> l.name().equalsIgnoreCase(leaderName))
+                .findFirst();
+    }
+
     public List<Leader> getLeaders() {
         return leaders;
+    }
+
+    public Optional<Leader> getSkilledLeader() {
+        return getLeaders().stream().filter(l -> l.skillCard() != null).findFirst();
     }
 
     public Leader removeLeader(String name) {
@@ -272,6 +315,16 @@ public Faction(String name, String player, String userName, Game gameState) {
         if (remove == null) throw new IllegalArgumentException("Leader not found.");
         leaders.remove(remove);
         return remove;
+    }
+
+    public Leader removeLeader(Leader leader) {
+        getLeaders().remove(leader);
+
+        return leader;
+    }
+
+    public void addLeader(Leader leader) {
+        getLeaders().add(leader);
     }
 
     public List<Resource> getResources() {
