@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
@@ -248,7 +249,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void resourceAddOrSubtract(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException {
+    public void resourceAddOrSubtract(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String factionName = event.getOption("factionname").getAsString();
         String resourceName = event.getOption("resource").getAsString();
         int amount = event.getOption("amount").getAsInt();
@@ -355,7 +356,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void discard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         List<TreacheryCard> hand = faction.getTreacheryHand();
         int i = 0;
@@ -371,7 +372,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Faction giver = gameState.getFaction(event.getOption("sender").getAsString());
         Faction receiver = gameState.getFaction(event.getOption("recipient").getAsString());
         List<TreacheryCard> giverHand = giver.getTreacheryHand();
@@ -426,7 +427,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Faction winner = gameState.getFaction(event.getOption("factionname").getAsString());
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
@@ -508,7 +509,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void revival(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         String star = event.getOption("starred").getAsBoolean() ? "*" : "";
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         boolean paid = event.getOption("paid").getAsBoolean();
@@ -534,7 +535,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void placeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void placeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         boolean star = event.getOption("starred").getAsBoolean();
         Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
@@ -684,7 +685,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         Faction recipient = gameState.getFaction(event.getOption("recipient").getAsString());
         int amount = event.getOption("amount").getAsInt();

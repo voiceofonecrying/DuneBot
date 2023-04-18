@@ -18,6 +18,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import templates.ChannelPermissions;
 import utils.CardImages;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -49,7 +50,7 @@ public class SetupCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
@@ -63,7 +64,7 @@ public class SetupCommands {
         }
     }
 
-    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (gameState.getTurn() != 0) {
             return;
         }
@@ -176,7 +177,7 @@ public class SetupCommands {
         discordGame.pushGameState();
     }
 
-    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         List<TreacheryCard> hand = gameState.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
         TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(event.getOption("ixcard").getAsString())).findFirst().orElseThrow();
@@ -189,7 +190,7 @@ public class SetupCommands {
         discordGame.pushGameState();
     }
 
-    public static void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         TraitorCard traitor = faction.getTraitorHand().stream().filter(traitorCard -> traitorCard.name().toLowerCase()
                 .contains(event.getOption("traitor").getAsString().toLowerCase())).findFirst().orElseThrow();
@@ -224,7 +225,7 @@ public class SetupCommands {
         }
     }
 
-    public static void treacheryCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void treacheryCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         for (Faction faction : gameState.getFactions()) {
             if (!faction.getName().equals("Ix")) gameState.drawCard("treachery deck", faction.getName());
             if (faction.getName().equals("Harkonnen")) gameState.drawCard("treachery deck", faction.getName());
@@ -286,7 +287,7 @@ public class SetupCommands {
         }
     }
 
-    public static void traitorSelectionStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void traitorSelectionStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Collections.shuffle(gameState.getTraitorDeck());
         for (Faction faction : gameState.getFactions()) {
             if (!faction.getName().equals("BT")) {
@@ -321,7 +322,7 @@ public class SetupCommands {
         discordGame.sendMessage("mod-info", "The game has begun!");
     }
 
-    public static void shuffleTraitorsDrawFaceDancers(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void shuffleTraitorsDrawFaceDancers(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         Collections.shuffle(gameState.getTraitorDeck());
         if (gameState.hasFaction("BT")) {
             gameState.drawCard("traitor deck", "BT");

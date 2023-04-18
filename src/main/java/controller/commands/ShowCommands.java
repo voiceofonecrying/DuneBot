@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import utils.CardImages;
 
 import javax.imageio.ImageIO;
@@ -21,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -42,7 +45,7 @@ public class ShowCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
@@ -56,7 +59,7 @@ public class ShowCommands {
         drawGameBoard(discordGame, gameState);
     }
 
-    public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
         writeFactionInfo(discordGame, factionName);
     }
@@ -64,6 +67,13 @@ public class ShowCommands {
     private static BufferedImage getResourceImage(String name) throws IOException {
         URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
         return ImageIO.read(file);
+    }
+
+    private static FileUpload getResourceFile(String name) throws IOException {
+        InputStream inputStream = ShowCommands.class.getClassLoader()
+                .getResource("Board Components/" + name + ".png").openStream();
+        FileUpload fileUpload = FileUpload.fromData(inputStream, name + ".png");
+        return fileUpload;
     }
 
     private static void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -339,11 +349,11 @@ public class ShowCommands {
         return rotated;
     }
 
-    public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException {
+    public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException, IOException {
         writeFactionInfo(discordGame, discordGame.getGameState().getFaction(factionName));
     }
 
-    public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
+    public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
 
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
@@ -361,9 +371,17 @@ public class ShowCommands {
         }
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.getName().toLowerCase() + "-info")) {
-                discordGame.sendMessage(channel.getName(), emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
-                        faction.getSpice() +
-                        traitorString);
+                MessageCreateBuilder builder = new MessageCreateBuilder()
+                        .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
+                                faction.getSpice() +
+                                traitorString);
+                for (Leader leader : faction.getLeaders()) {
+                    builder = builder.addFiles(getResourceFile(leader.name()));
+                }
+
+                MessageCreateData data = builder.build();
+
+                discordGame.sendMessage(channel.getName(), data);
 
                 for (TreacheryCard treachery : faction.getTreacheryHand()) {
                     discordGame.sendMessage(channel.getName(), "<:treachery:991763073281040518> " + treachery.name() + " <:treachery:991763073281040518>");

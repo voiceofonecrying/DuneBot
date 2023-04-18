@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ public class RunCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
@@ -37,7 +38,7 @@ public class RunCommands {
         }
     }
 
-    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         int phase = gameState.getPhase();
         int subPhase = gameState.getSubPhase();
 
@@ -155,7 +156,7 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
     }
 
-    public static void choamCharity(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void choamCharity(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " CHOAM Charity Phase:");
         int multiplier = 1;
         if (gameState.getResources().stream().anyMatch(resource -> resource.getName().equals("inflation token"))) {
@@ -412,7 +413,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, gameState);
     }
 
-    public static void startSpiceHarvest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void startSpiceHarvest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Harvest Phase:");
         Map<String, Territory> territories = gameState.getTerritories();
         for (Territory territory : territories.values()) {
@@ -474,7 +475,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, gameState);
     }
 
-    public static void startMentatPause(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void startMentatPause(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : gameState.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {

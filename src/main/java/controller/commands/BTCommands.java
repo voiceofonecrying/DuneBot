@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -27,7 +28,7 @@ public class BTCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
@@ -35,7 +36,7 @@ public class BTCommands {
         }
     }
 
-    public static void swapBTFaceDancer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void swapBTFaceDancer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         if (gameState.hasFaction("BT")) {
             String faceDancer = event.getOption(CommandOptions.btFaceDancer.getName()).getAsString();
             Faction faction = gameState.getFaction("BT");

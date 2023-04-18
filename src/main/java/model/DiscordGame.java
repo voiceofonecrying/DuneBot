@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -128,6 +129,12 @@ public class DiscordGame {
     }
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        if (this.gameState.getMute()) return;
+        channel.sendMessage(message).queue();
+    }
+
+    public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
         if (this.gameState.getMute()) return;
         channel.sendMessage(message).queue();
