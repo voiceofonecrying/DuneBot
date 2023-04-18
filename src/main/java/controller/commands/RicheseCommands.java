@@ -12,6 +12,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class RicheseCommands {
@@ -23,6 +24,14 @@ public class RicheseCommands {
                                 "no-fields-to-front-of-shield",
                                 "Move the Richese No-Fields token to the Front of Shield."
                         ).addOptions(CommandOptions.richeseNoFields),
+                        new SubcommandData(
+                                "place-no-fields-token",
+                                "Place a No-Fields token on the map."
+                        ).addOptions(CommandOptions.richeseNoFields, CommandOptions.territory),
+                        new SubcommandData(
+                                "remove-no-field",
+                                "Remove the No-Field token from the board"
+                        ),
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
                                 .addOptions(CommandOptions.richeseCard, CommandOptions.richeseBidType),
                         new SubcommandData("black-market-bid", "Start bidding on a black market card")
@@ -40,6 +49,8 @@ public class RicheseCommands {
             case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(event, discordGame, gameState);
             case "card-bid" -> cardBid(event, discordGame, gameState);
             case "black-market-bid" -> blackMarketBid(event, discordGame, gameState);
+            case "place-no-fields-token" -> placeNoFieldToken(event, discordGame, gameState);
+            case "remove-no-field" -> removeNoFieldToken(event, discordGame, gameState);
         }
     }
 
@@ -112,6 +123,28 @@ public class RicheseCommands {
         }
 
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, card);
+
+        discordGame.pushGameState();
+    }
+
+    public static void placeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        Integer noField = event.getOption(CommandOptions.richeseNoFields.getName()).getAsInt();
+        String territoryName = event.getOption(CommandOptions.territory.getName()).getAsString();
+
+        Territory territory = gameState.getTerritories().get(territoryName);
+        territory.setRicheseNoField(noField);
+
+        discordGame.pushGameState();
+    }
+
+    public static void removeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+        Optional<Territory> territory = gameState.getTerritories().values().stream()
+                .filter(Territory::hasRicheseNoField)
+                .findFirst();
+
+        if (territory.isPresent()) {
+            territory.get().setRicheseNoField(null);
+        }
 
         discordGame.pushGameState();
     }

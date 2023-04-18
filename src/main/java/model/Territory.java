@@ -1,5 +1,7 @@
 package model;
 
+import org.apache.commons.lang3.ObjectUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +13,7 @@ public class Territory {
     private final boolean isStronghold;
     private int spice;
     private final List<Force> forces;
+    private Integer richeseNoField;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold) {
         this.territoryName = territoryName;
@@ -19,6 +22,7 @@ public class Territory {
         this.isStronghold = isStronghold;
         this.spice = 0;
         this.forces = new ArrayList<>();
+        this.richeseNoField = null;
     }
 
     public String getTerritoryName() {
@@ -79,5 +83,17 @@ public class Territory {
 
     public void addSpice(Integer spice) {
         this.spice += spice;
+    }
+
+    public void setRicheseNoField(Integer richeseNoField) {
+        this.richeseNoField = richeseNoField;
+    }
+
+    public Integer getRicheseNoField() {
+        return richeseNoField;
+    }
+
+    public boolean hasRicheseNoField() {
+        return getRicheseNoField() != null;
     }
 }
