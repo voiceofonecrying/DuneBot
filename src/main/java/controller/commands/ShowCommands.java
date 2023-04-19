@@ -256,7 +256,7 @@ public class ShowCommands {
             i = 0;
             offset = 0;
             for (Leader leader : gameState.getLeaderTanks()) {
-                BufferedImage leaderImage = getResourceImage(leader.name().replace(".", ""));
+                BufferedImage leaderImage = getResourceImage(leader.name());
                 leaderImage = resize(leaderImage, 70,70);
                 Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
                 Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
