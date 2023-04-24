@@ -1,5 +1,6 @@
 package controller.commands;
 
+import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RunCommands {
     public static List<CommandData> getCommands() {
@@ -91,61 +93,104 @@ public class RunCommands {
             ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
 
             discordGame.sendMessage("turn-summary", "The storm moves " + gameState.getStormMovement() + " sectors this turn.");
+
+            StringBuilder message = new StringBuilder();
             for (int i = 0; i < gameState.getStormMovement(); i++) {
                 gameState.advanceStorm(1);
-                for (Territory territory : territories.values()) {
-                    if (territory.isRock() || territory.getSector() != gameState.getStorm()) continue;
-                    List<Force> forces = territory.getForces();
-                    boolean fremenSpecialCase = forces.stream()
-                            .filter(force -> force.getName().startsWith("Fremen"))
-                            .count() == 2;
-                    //Defaults to play "optimally", destroying Fremen regular forces over Fedaykin
-                    if (fremenSpecialCase) {
-                        int fremenForces = 0;
-                        int fremenFedaykin = 0;
-                        for (Force force : forces) {
-                            if (force.getName().equals("Fremen")) fremenForces = force.getStrength();
-                            if (force.getName().equals("Fremen*")) fremenFedaykin = force.getStrength();
-                        }
-                        int lost = Math.ceilDiv(fremenForces + fremenFedaykin, 2);
-                        if (lost < fremenForces) {
-                            for (Force force : forces) {
-                                if (force.getName().equals("Fremen")) force.setStrength(force.getStrength() - lost);
-                            }
-                        } else if (lost > fremenForces) {
-                            forces.removeIf(force -> force.getName().equals("Fremen"));
-                            for (Force force : forces) {
-                                if (force.getName().equals("Fremen*"))
-                                    force.setStrength(fremenFedaykin - lost + fremenForces);
-                            }
-                        }
-                        discordGame.sendMessage("turn-summary", gameState.getFaction("Fremen").getEmoji() + " lost " + lost +
-                                " forces to the storm in " + territory.getTerritoryName());
-                    }
-                    List<Force> toRemove = new LinkedList<>();
-                    for (Force force : forces) {
-                        if (force.getName().contains("Fremen") && fremenSpecialCase) continue;
-                        int lost = force.getStrength();
-                        if (force.getName().contains("Fremen") && lost > 1) {
-                            lost /= 2;
-                            force.setStrength(lost);
-                            forces.add(force);
-                        } else toRemove.add(force);
-                        gameState.getTanks().stream().filter(force1 -> force1.getName().equals(force.getName())).findFirst().orElseThrow().addStrength(force.getStrength());
-                        discordGame.sendMessage("turn-summary",
-                                gameState.getFaction(force.getName().replace("*", "")).getEmoji() + " lost " +
-                                        lost + " forces to the storm in " + territory.getTerritoryName());
-                    }
-                    forces.removeAll(toRemove);
-                    territory.setSpice(0);
+
+                List<Territory> territoriesInStorm = territories.values().stream()
+                        .filter(t ->
+                                t.getSector() == gameState.getStorm() &&
+                                !t.isRock()
+                        ).toList();
+
+                List<Territory> territoriesWithTroops = territoriesInStorm.stream()
+                        .filter(t -> t.getForces().size() > 0).toList();
+
+                List<Territory> territoriesWithSpice = territoriesInStorm.stream()
+                        .filter(t -> t.getSpice() > 0).toList();
+
+                for (Territory territory : territoriesWithTroops) {
+                    message.append(stormTroops(territory, gameState));
+                }
+
+                for (Territory territory : territoriesWithSpice) {
+                    message.append(stormRemoveSpice(territory));
                 }
             }
+
+            if (!message.isEmpty())
+                discordGame.sendMessage("turn-summary", message.toString());
 
             ShowCommands.showBoard(discordGame, gameState);
         }
 
         gameState.setStormMovement(new Random().nextInt(6) + 1);
     }
+
+    public static String stormTroops(Territory territory, Game gameState) {
+        StringBuilder message = new StringBuilder();
+        List<Force> fremenForces = territory.getForces().stream()
+                .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
+                .toList();
+
+        List<Force> nonFremenForces = territory.getForces().stream()
+                .filter(f -> !fremenForces.contains(f))
+                .toList();
+
+        if (fremenForces.size() > 0)
+            message.append(stormTroopsFremen(territory, fremenForces, gameState));
+
+        for (Force force : nonFremenForces) {
+            message.append(stormRemoveTroops(territory, force, force.getStrength(), gameState));
+        }
+
+        return message.toString();
+    }
+
+    public static String stormTroopsFremen(Territory territory, List<Force> forces, Game gameState) {
+        StringBuilder message = new StringBuilder();
+
+        int totalTroops = forces.stream().mapToInt(f -> f.getStrength()).sum();
+        int totalLostTroops = Math.ceilDiv(totalTroops, 2);
+
+        Force regularForce = territory.getForce("Fremen");
+        Force fedaykin = territory.getForce("Fremen*");
+
+        int lostRegularForces = Math.min(regularForce.getStrength(), totalLostTroops);
+        totalLostTroops -= lostRegularForces;
+        int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
+
+        if (lostRegularForces > 0)
+            message.append(stormRemoveTroops(territory, regularForce, lostRegularForces, gameState));
+
+        if (lostFedaykin > 0)
+            message.append(stormRemoveTroops(territory, fedaykin, lostFedaykin, gameState));
+
+        return message.toString();
+    }
+
+    public static String stormRemoveTroops(Territory territory, Force force, int strength, Game gameState) {
+        territory.setForceStrength(force.getName(), force.getStrength() - strength);
+        gameState.addToTanks(force.getName(), strength);
+
+        return MessageFormat.format(
+                "{0} lose {1} {2} to the storm in {3}\n",
+                gameState.getFaction(force.getFactionName()).getEmoji(),
+                strength, Initializers.getForceEmoji(force.getName()),
+                territory.getTerritoryName()
+        );
+    }
+
+    public static String stormRemoveSpice(Territory territory) {
+        String message = MessageFormat.format(
+                "{0} <:spice4:991763531798167573> in {1} was blown away by the storm\n",
+                territory.getSpice(), territory.getTerritoryName()
+        );
+        territory.setSpice(0);
+        return message;
+    }
+
     public static void endStormPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.hasFaction("Fremen")) {
             discordGame.sendMessage("fremen-chat", "The storm will move " + gameState.getStormMovement() + " sectors next turn.");
