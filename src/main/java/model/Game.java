@@ -250,6 +250,11 @@ public class Game extends GameFactionBase {
         }
     }
 
+    public void addToTanks(String forceName, int amount) {
+        Force force = getForceFromTanks(forceName);
+        force.addStrength(amount);
+    }
+
     public LinkedList<Leader> getLeaderTanks() {
         return leaderTanks;
     }
