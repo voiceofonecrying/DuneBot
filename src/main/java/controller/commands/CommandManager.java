@@ -2,6 +2,7 @@ package controller.commands;
 
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import exceptions.InvalidOptionException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.*;
 import net.dv8tion.jda.api.entities.Member;
@@ -86,6 +87,11 @@ public class CommandManager extends ListenerAdapter {
         } catch (ChannelNotFoundException e) {
             e.printStackTrace();
             event.getHook().editOriginal("Channel not found!").queue();
+        } catch (InvalidOptionException e) {
+            e.printStackTrace();
+            event.getHook().editOriginal(e.getMessage()).queue();
+        } catch (InvalidGameStateException e) {
+            event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
             event.getHook().editOriginal("An error occurred!").queue();
             e.printStackTrace();
@@ -573,15 +579,22 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGameState();
     }
 
-    public void moveForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public void moveForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidOptionException {
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         Territory from = gameState.getTerritories().get(event.getOption("from").getAsString());
         Territory to = gameState.getTerritories().get(event.getOption("to").getAsString());
         int amount = event.getOption("amount").getAsInt();
         int starredAmount = event.getOption("starredamount").getAsInt();
 
-        from.setForceStrength(faction.getName(), from.getForce(faction.getName()).getStrength() - amount);
-        from.setForceStrength(faction.getName() + "*", from.getForce(faction.getName() + "*").getStrength() - starredAmount);
+        int fromForceStrength = from.getForce(faction.getName()).getStrength();
+        int fromStarredForceStrength = from.getForce(faction.getName() + "*").getStrength();
+
+        if (fromForceStrength < amount || fromStarredForceStrength < starredAmount) {
+            throw new InvalidOptionException("Not enough forces in territory.");
+        }
+
+        from.setForceStrength(faction.getName(), fromForceStrength - amount);
+        from.setForceStrength(faction.getName() + "*", fromStarredForceStrength - starredAmount);
 
         to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
         to.setForceStrength(faction.getName() + "*", to.getForce(faction.getName() + "*").getStrength() + starredAmount);
