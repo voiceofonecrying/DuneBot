@@ -393,7 +393,6 @@ public class ShowCommands {
                 }
             }
         }
-
     }
 
     public static void refreshFrontOfShieldInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
