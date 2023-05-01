@@ -21,10 +21,8 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
@@ -50,7 +48,7 @@ public class ShowCommands {
 
         switch (name) {
             case "board" -> showBoard(discordGame, gameState);
-            case "faction-info" -> showFactionInfo(event, discordGame, gameState);
+            case "faction-info" -> showFactionInfo(event, discordGame);
             case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, gameState);
         }
     }
@@ -59,21 +57,21 @@ public class ShowCommands {
         drawGameBoard(discordGame, gameState);
     }
 
-    public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
         writeFactionInfo(discordGame, factionName);
     }
 
     private static BufferedImage getResourceImage(String name) throws IOException {
         URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
+        assert file != null;
         return ImageIO.read(file);
     }
 
     private static FileUpload getResourceFile(String name) throws IOException {
         InputStream inputStream = ShowCommands.class.getClassLoader()
                 .getResource("Board Components/" + name + ".png").openStream();
-        FileUpload fileUpload = FileUpload.fromData(inputStream, name + ".png");
-        return fileUpload;
+        return FileUpload.fromData(inputStream, name + ".png");
     }
 
     private static void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -88,21 +86,6 @@ public class ShowCommands {
                 brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
                 Point coordinates = Initializers.getDrawCoordinates("shield wall");
                 board = overlay(board, brokenShieldWallImage, coordinates, 1);
-            }
-
-            //Place Tech Tokens
-            for (int i = 0; i < gameState.getFactions().size(); i++) {
-                Faction faction = gameState.getFactions().get(i);
-                if (faction.getTechTokens().isEmpty()) continue;
-                int offset = 0;
-                for (TechToken token : faction.getTechTokens()) {
-                    BufferedImage tokenImage = getResourceImage(token.getName());
-                    tokenImage = resize(tokenImage, 50, 50);
-                    Point coordinates = Initializers.getDrawCoordinates("tech token " + i);
-                    Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
-                    board = overlay(board, tokenImage, coordinatesOffset, 1);
-                    offset += 50;
-                }
             }
 
             //Place turn, phase, and storm markers
@@ -121,6 +104,21 @@ public class ShowCommands {
             stormMarker = resize(stormMarker, 172, 96);
             stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getStorm() * 20));
             board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getStorm()), 1);
+
+            //Place Tech Tokens
+            for (int i = 0; i < gameState.getFactions().size(); i++) {
+                Faction faction = gameState.getFactions().get(i);
+                if (faction.getTechTokens().isEmpty()) continue;
+                int offset = 0;
+                for (TechToken token : faction.getTechTokens()) {
+                    BufferedImage tokenImage = getResourceImage(token.getName());
+                    tokenImage = resize(tokenImage, 50, 50);
+                    coordinates = Initializers.getDrawCoordinates("tech token " + i);
+                    Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
+                    board = overlay(board, tokenImage, coordinatesOffset, 1);
+                    offset += 50;
+                }
+            }
 
             //Place sigils
             for (int i = 1; i <= gameState.getFactions().size(); i++) {
@@ -173,7 +171,7 @@ public class ShowCommands {
                             Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                             board = overlay(board, spiceImage, spicePlacementOffset, 1);
                             spice -= 6;
-                        } else if (spice >= 5) {
+                        } else if (spice == 5) {
                             BufferedImage spiceImage = getResourceImage("5 Spice");
                             spiceImage = resize(spiceImage, 25,25);
                             Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
@@ -419,11 +417,12 @@ public class ShowCommands {
             );
 
             if (faction.getFrontOfShieldSpice() > 0) {
-                message.append(faction.getFrontOfShieldSpice() + " <:spice4:991763531798167573>\n");
+                message.append(faction.getFrontOfShieldSpice()).append(" <:spice4:991763531798167573>\n");
             }
 
             if (faction.getName().equalsIgnoreCase("Richese") && faction.hasResource("frontOfShieldNoField")) {
-                message.append(faction.getResource("frontOfShieldNoField").getValue().toString() + " No-Field Token\n");
+                message.append(faction.getResource("frontOfShieldNoField").getValue().toString())
+                        .append(" No-Field Token\n");
             }
 
             if (gameState.hasLeaderSkills()) {
@@ -449,7 +448,7 @@ public class ShowCommands {
             if (gameState.hasStrongholdSkills()) {
                 for (Resource strongholdCard : faction.getResources("strongholdCard")) {
                     String strongholdName = strongholdCard.getValue().toString();
-                    message.append(strongholdName + " Stronghold Skill\n");
+                    message.append(strongholdName).append(" Stronghold Skill\n");
 
                     Optional<FileUpload> fileUpload = CardImages
                             .getStrongholdImage(event.getGuild(), strongholdName);
