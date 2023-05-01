@@ -226,7 +226,7 @@ public class Initializers {
             }
             case "The Minor Erg (Far North Sector)" -> {
                 points.add(new Point(578,475));
-                points.add(new Point(595,472));
+                points.add(new Point(610,472));
                 points.add(new Point(624,458));
                 points.add(new Point(626,443));
             }
