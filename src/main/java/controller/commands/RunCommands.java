@@ -423,10 +423,15 @@ public class RunCommands {
         List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
         for (Territory territory : gameState.getTerritories().values()) {
             List<Force> forces = territory.getForces();
-            List<Faction> factions = forces.stream()
+            Set<String> factionNames = forces.stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .map(Force::getFactionName)
-                    .distinct()
+                    .collect(Collectors.toSet());
+
+            if (gameState.hasFaction("Richese") && territory.hasRicheseNoField())
+                factionNames.add("Richese");
+
+            List<Faction> factions = factionNames.stream()
                     .sorted(Comparator.comparingInt(gameState::getFactionTurnIndex))
                     .map(gameState::getFaction)
                     .toList();
