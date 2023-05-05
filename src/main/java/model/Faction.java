@@ -148,7 +148,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.resources.add(new IntegerResource("no field", 5, 5, 5));
                this.resources.add(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
                List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache").getValue();
-               cache.add(new TreacheryCard("Ornithoper", "Special - Movement"));
+               cache.add(new TreacheryCard("Ornithopter", "Special - Movement"));
                cache.add(new TreacheryCard("Residual Poison", "Special"));
                cache.add(new TreacheryCard("Semuta Drug", "Special"));
                cache.add(new TreacheryCard("Stone Burner", "Weapon - Special"));
