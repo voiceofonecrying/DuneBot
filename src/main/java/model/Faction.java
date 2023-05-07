@@ -1,5 +1,6 @@
 package model;
 
+import constants.Emojis;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -78,7 +79,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.freeRevival = 2;
                this.hasMiningEquipment = true;
                this.reserves = new Force("Atreides", 10);
-               this.emoji = "<:atreides:991763327996923997>";
+               this.emoji = Emojis.ATREIDES;
                this.resources.add(new IntegerResource("forces_lost", 0, 0, 7));
                gameState.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
            }
@@ -87,7 +88,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.freeRevival = 2;
                this.hasMiningEquipment = true;
                this.reserves = new Force("Harkonnen", 10);
-               this.emoji = "<:harkonnen:991763320333926551>";
+               this.emoji = Emojis.HARKONNEN;
                gameState.getTerritories().get("Carthag").getForces().add(new Force("Harkonnen", 10));
            }
            case "EMPEROR" -> {
@@ -95,13 +96,13 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.freeRevival = 1;
                this.reserves = new Force("Emperor", 15);
                this.specialReserves = new Force("Emperor*", 5);
-               this.emoji = "<:emperor:991763323454500914>";
+               this.emoji = Emojis.EMPEROR;
            }
            case "GUILD" -> {
                this.spice = 5;
                this.freeRevival = 1;
                this.reserves = new Force("Guild", 15);
-               this.emoji = "<:guild:991763321290244096>";
+               this.emoji = Emojis.GUILD;
                gameState.getTerritories().get("Tuek's Sietch").getForces().add(new Force("Guild", 5));
            }
            case "FREMEN" -> {
@@ -109,26 +110,26 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.freeRevival = 3;
                this.reserves = new Force("Fremen", 17);
                this.specialReserves = new Force("Fremen*", 3);
-               this.emoji = "<:fremen:991763322225577984>";
+               this.emoji = Emojis.FREMEN;
            }
            case "BG" -> {
                this.spice = 5;
                this.freeRevival = 1;
                this.reserves = new Force("BG", 20);
-               this.emoji = "<:bg:991763326830911519>";
+               this.emoji = Emojis.BG;
            }
            case "BT" -> {
                this.spice = 5;
                this.freeRevival = 2;
                this.reserves = new Force("BT", 20);
-               this.emoji = "<:bt:991763325576810546>";
+               this.emoji = Emojis.BT;
            }
            case "IX" -> {
                this.spice = 10;
                this.freeRevival = 1;
                this.reserves = new Force("Ix", 10);
                this.specialReserves = new Force("Ix*", 4);
-               this.emoji = "<:ix:991763319406997514>";
+               this.emoji = Emojis.IX;
                gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
                gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix*", 3));
            }
@@ -136,13 +137,13 @@ public Faction(String name, String player, String userName, Game gameState) {
                this.spice = 2;
                this.freeRevival = 0;
                this.reserves = new Force("CHOAM", 20);
-               this.emoji = "<:choam:991763324624703538>";
+               this.emoji = Emojis.CHOAM;
            }
            case "RICHESE" -> {
                this.spice = 5;
                this.freeRevival = 2;
                this.reserves = new Force("Richese", 20);
-               this.emoji = "<:rich:991763318467465337>";
+               this.emoji = Emojis.RICHESE;
                this.resources.add(new IntegerResource("no field", 0, 0, 0));
                this.resources.add(new IntegerResource("no field", 3, 3, 3));
                this.resources.add(new IntegerResource("no field", 5, 5, 5));

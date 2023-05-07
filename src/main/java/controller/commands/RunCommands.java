@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -177,15 +178,15 @@ public class RunCommands {
         return MessageFormat.format(
                 "{0} lose {1} {2} to the storm in {3}\n",
                 gameState.getFaction(force.getFactionName()).getEmoji(),
-                strength, Initializers.getForceEmoji(force.getName()),
+                strength, Emojis.getForceEmoji(force.getName()),
                 territory.getTerritoryName()
         );
     }
 
     public static String stormRemoveSpice(Territory territory) {
         String message = MessageFormat.format(
-                "{0} <:spice4:991763531798167573> in {1} was blown away by the storm\n",
-                territory.getSpice(), territory.getTerritoryName()
+                "{0} {1} in {2} was blown away by the storm\n",
+                territory.getSpice(), Emojis.SPICE, territory.getTerritoryName()
         );
         territory.setSpice(0);
         return message;
@@ -218,7 +219,8 @@ public class RunCommands {
         if (gameState.hasFaction("CHOAM")) {
             discordGame.sendMessage("turn-summary",
                     gameState.getFaction("CHOAM").getEmoji() + " receives " +
-                            gameState.getFactions().size() * 2 * multiplier + " <:spice4:991763531798167573> in dividends from their many investments."
+                            gameState.getFactions().size() * 2 * multiplier +
+                            " " + Emojis.SPICE + " in dividends from their many investments."
             );
         }
         for (Faction faction : factions) {
@@ -227,7 +229,8 @@ public class RunCommands {
             if (faction.getName().equals("BG")) {
                 choamGiven += 2 * multiplier;
                 faction.addSpice(2 * multiplier);
-                discordGame.sendMessage("turn-summary", faction.getEmoji() + " have received " + 2 * multiplier + " <:spice4:991763531798167573> in CHOAM Charity.");
+                discordGame.sendMessage("turn-summary", faction.getEmoji() + " have received " +
+                        2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
                 CommandManager.spiceMessage(discordGame, 2 * multiplier, faction.getName(), "CHOAM Charity", true);
             }
             else if (spice < 2) {
@@ -235,7 +238,8 @@ public class RunCommands {
                 choamGiven += charity;
                 faction.addSpice(charity);
                 discordGame.sendMessage("turn-summary",
-                        faction.getEmoji() + " have received " + charity + " <:spice4:991763531798167573> in CHOAM Charity."
+                        faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
+                                " in CHOAM Charity."
                 );
                 CommandManager.spiceMessage(discordGame, charity, faction.getName(), "CHOAM Charity", true);
             }
@@ -246,7 +250,8 @@ public class RunCommands {
             gameState.getFaction("CHOAM").addSpice((2 * factions.size() * multiplier) - choamGiven);
             CommandManager.spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
             discordGame.sendMessage("turn-summary",
-                    gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven + " <:spice4:991763531798167573> to factions in need."
+                    gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven +
+                            " " + Emojis.SPICE + " to factions in need."
             );
             CommandManager.spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
         }
@@ -262,7 +267,12 @@ public class RunCommands {
 
     public static void cardCountsInBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
-        message.append("<:treachery:991763073281040518>Number of Treachery Cards<:treachery:991763073281040518>\n");
+
+        message.append(MessageFormat.format(
+                "{0}Number of Treachery Cards{0}\n",
+                Emojis.TREACHERY
+        ));
+
         List<Faction> factions = gameState.getFactions();
 
         message.append(
@@ -275,12 +285,12 @@ public class RunCommands {
 
         int numCardsForBid = factions.stream()
                 .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
-                .collect(Collectors.toList()).size();
+                .toList().size();
 
         message.append(
                 MessageFormat.format(
-                        "There will be {0}<:treachery:991763073281040518> up for bid this round.",
-                        numCardsForBid
+                        "There will be {0}{1} up for bid this round.",
+                        numCardsForBid, Emojis.TREACHERY
                 )
         );
 
@@ -483,19 +493,22 @@ public class RunCommands {
             if (territories.get("Arrakeen").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Arrakeen", true);
-                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 2 <:spice4:991763531798167573> from Arrakeen");
+                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() +
+                        " collects 2 " + Emojis.SPICE + " from Arrakeen");
                 faction.setHasMiningEquipment(true);
                 factionsWithChanges.add(faction);
             }
             if (territories.get("Carthag").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Carthag", true);
-                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 2 <:spice4:991763531798167573> from Carthag");
+                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() +
+                        " collects 2 " + Emojis.SPICE + " from Carthag");
                 faction.setHasMiningEquipment(true);
                 factionsWithChanges.add(faction);
             }
             if (territories.get("Tuek's Sietch").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
-                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects 1 <:spice4:991763531798167573> from Tuek's Sietch");
+                discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() +
+                        " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
                 faction.addSpice(1);
                 CommandManager.spiceMessage(discordGame, 1, faction.getName(), "for Tuek's Sietch", true);
                 factionsWithChanges.add(faction);
@@ -516,7 +529,8 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, spice, faction.getName(), "for Spice Blow", true);
             factionsWithChanges.add(faction);
             territory.setSpice(territory.getSpice() - spice);
-            discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() + " collects " + spice + " <:spice4:991763531798167573> from " + territory.getTerritoryName());
+            discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() +
+                    " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
         }
 
         for (Faction faction : factionsWithChanges) {
@@ -530,7 +544,7 @@ public class RunCommands {
         for (Faction faction : gameState.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {
                 discordGame.sendMessage("turn-summary", faction.getEmoji() + " collects " +
-                        faction.getFrontOfShieldSpice() + " <:spice4:991763531798167573> from front of shield.");
+                        faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
                 CommandManager.spiceMessage(discordGame,  faction.getFrontOfShieldSpice(), faction.getName(), "front of shield", true);
                 faction.addSpice(faction.getFrontOfShieldSpice());
                 faction.setFrontOfShieldSpice(0);

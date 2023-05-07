@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -389,7 +390,10 @@ public class ShowCommands {
                 discordGame.sendMessage(channel.getName(), data);
 
                 for (TreacheryCard treachery : faction.getTreacheryHand()) {
-                    discordGame.sendMessage(channel.getName(), "<:treachery:991763073281040518> " + treachery.name() + " <:treachery:991763073281040518>");
+                    discordGame.sendMessage(channel.getName(), MessageFormat.format(
+                            "{0} {1} {0}",
+                            Emojis.TREACHERY, treachery.name()
+                    ));
                 }
             }
         }
@@ -416,7 +420,8 @@ public class ShowCommands {
             );
 
             if (faction.getFrontOfShieldSpice() > 0) {
-                message.append(faction.getFrontOfShieldSpice()).append(" <:spice4:991763531798167573>\n");
+                message.append(faction.getFrontOfShieldSpice())
+                        .append(" " + Emojis.SPICE +"\n");
             }
 
             if (faction.getName().equalsIgnoreCase("Richese") && faction.hasResource("frontOfShieldNoField")) {
