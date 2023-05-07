@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -12,8 +13,8 @@ public class AtreidesCommands {
         if (gameState.hasFaction("Atreides")) {
             discordGame.sendMessage("atreides-chat",
                     MessageFormat.format(
-                            "You predict <:treachery:991763073281040518> {0} <:treachery:991763073281040518> is up for bid.",
-                            card.name().strip()
+                            "You predict {0} {1} {0} is up for bid.",
+                            Emojis.TREACHERY, card.name().strip()
                     )
             );
         }

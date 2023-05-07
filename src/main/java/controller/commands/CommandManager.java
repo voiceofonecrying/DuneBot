@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
@@ -241,11 +242,18 @@ public class CommandManager extends ListenerAdapter {
         }
 
         DiscordGame discordGame = new DiscordGame(event, category);
-        discordGame.getTextChannel("rules").sendMessage("""
-            <:DuneRulebook01:991763013814198292>  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
-            <:weirding:991763071775297681>  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
-            <:ix:991763319406997514> <:bt:991763325576810546>  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
-            <:choam:991763324624703538> <:rich:991763318467465337> CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""").queue();
+
+        discordGame.getTextChannel("rules").sendMessage(MessageFormat.format(
+                """
+            {0}  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
+            {1}  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
+            {2} {3}  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
+            {4} {5} CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf""",
+                Emojis.DUNE_RULEBOOK,
+                Emojis.WEIRDING,
+                Emojis.IX, Emojis.BT,
+                Emojis.CHOAM, Emojis.RICHESE
+        ));
 
         Game game = new Game();
         game.setGameRole(gameRole.getName());
@@ -272,8 +280,8 @@ public class CommandManager extends ListenerAdapter {
             discordGame.sendMessage(
                     "turn-summary",
                     MessageFormat.format(
-                            "{0} {1} {2} <:spice4:991763531798167573> {3}",
-                            faction.getEmoji(), gainsOrLoses, Math.abs(amount), message
+                            "{0} {1} {2} {3} {4}",
+                            faction.getEmoji(), gainsOrLoses, Math.abs(amount), Emojis.SPICE, message
                     )
             );
             spiceMessage(discordGame, Math.abs(amount), faction.getName(), message, amount >= 0);
@@ -332,7 +340,8 @@ public class CommandManager extends ListenerAdapter {
                 int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
                 if (spice > 0) {
                     message.append(spice);
-                    message.append("<:spice4:991763531798167573> is eaten by the worm!\n");
+                    message.append(Emojis.SPICE);
+                    message.append(" is eaten by the worm!\n");
                     gameState.getTerritories().get(lastCard.name()).setSpice(0);
                 }
             } else if (drawn.name().equalsIgnoreCase("Shai-Hulud")) {
@@ -428,7 +437,10 @@ public class CommandManager extends ListenerAdapter {
         market.remove(i);
         Collections.shuffle(market);
         if (gameState.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-chat","The first card up for bid is <:treachery:991763073281040518> " + gameState.getMarket().peek().name() + " <:treachery:991763073281040518>");
+            discordGame.sendMessage("atreides-chat", MessageFormat.format(
+                    "The first card up for bid is {0} {1} {0}",
+                    Emojis.TREACHERY, gameState.getMarket().peek().name()
+            ));
         }
         discordGame.pushGameState();
     }
@@ -447,10 +459,11 @@ public class CommandManager extends ListenerAdapter {
 
         discordGame.sendMessage("turn-summary",
                 MessageFormat.format(
-                        "{0} wins {1} for {2} <:spice4:991763531798167573>",
+                        "{0} wins {1} for {2} {3}",
                         winner.getEmoji(),
                         currentCard,
-                        spent
+                        spent,
+                        Emojis.SPICE
                 )
         );
 
@@ -464,9 +477,10 @@ public class CommandManager extends ListenerAdapter {
             gameState.getFaction(paidToFaction.getName()).addSpice(spent);
             discordGame.sendMessage("turn-summary",
                     MessageFormat.format(
-                            "{0} is paid {1} <:spice4:991763531798167573> for {2}",
+                            "{0} is paid {1} {2} for {3}",
                             paidToFaction.getEmoji(),
                             spent,
+                            Emojis.SPICE,
                             currentCard
                     )
             );
@@ -486,7 +500,10 @@ public class CommandManager extends ListenerAdapter {
             }
 
             gameState.drawCard("treachery deck", "Harkonnen");
-            discordGame.sendMessage("turn-summary", winner.getEmoji() + " draws another card from the <:treachery:991763073281040518> deck.");
+            discordGame.sendMessage("turn-summary", MessageFormat.format(
+                    "{0} draws another card from the {1} deck.",
+                    winner.getEmoji(), Emojis.TREACHERY
+            ));
         }
 
         ShowCommands.writeFactionInfo(discordGame, winner);
@@ -498,7 +515,14 @@ public class CommandManager extends ListenerAdapter {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                discordGame.sendMessage(channel.getName(), plusSign + amount + "<:spice4:991763531798167573> " + message);
+                discordGame.sendMessage(channel.getName(),
+                        MessageFormat.format(
+                                "{0}{1}{2} {3}",
+                                plusSign,
+                                amount,
+                                Emojis.SPICE,
+                                message
+                        ));
             }
         }
     }
@@ -713,8 +737,8 @@ public class CommandManager extends ListenerAdapter {
         discordGame.sendMessage(
                 "turn-summary",
                 MessageFormat.format(
-                        "{0} places {1} <:spice4:991763531798167573> in front of {2} shield.",
-                        faction.getEmoji(), amount, recipient.getEmoji()
+                        "{0} places {1} {2} in front of {3} shield.",
+                        faction.getEmoji(), amount, Emojis.SPICE, recipient.getEmoji()
                 )
         );
 

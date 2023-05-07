@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -243,9 +244,15 @@ public class SetupCommands {
 
             StringBuilder leaderSkillsMessage = new StringBuilder();
             leaderSkillsMessage.append("Please select your leader and their skill from the following two options:\n");
-            leaderSkillsMessage.append("<:weirding:991763073281040518>" + faction.getLeaderSkillsHand().get(0).name() + "<:weirding:991763073281040518>\n");
-            leaderSkillsMessage.append("<:weirding:991763073281040518>" + faction.getLeaderSkillsHand().get(1).name() + "<:weirding:991763073281040518>\n");
+            leaderSkillsMessage.append(MessageFormat.format(
+                    "{0}{1}{0}\n",
+                    Emojis.WEIRDING, faction.getLeaderSkillsHand().get(0).name()
+            ));
 
+            leaderSkillsMessage.append(MessageFormat.format(
+                    "{0}{1}{0}\n",
+                    Emojis.WEIRDING, faction.getLeaderSkillsHand().get(1).name()
+            ));
 
             discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage.toString());
         }

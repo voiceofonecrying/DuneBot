@@ -25,51 +25,6 @@ public class Initializers {
         return null;
     }
 
-    public static String getForceEmoji(String forceName) {
-        switch (forceName) {
-            case "Fremen" -> {
-                return ":fremen_troop:";
-            }
-            case "Fremen*" -> {
-                return ":fremen_fedaykin:";
-            }
-            case "Atreides" -> {
-                return ":atreides_troop:";
-            }
-            case "Harkonnen" -> {
-                return ":harkonnen_troop:";
-            }
-            case "BG" -> {
-                return ":bg_fighter:";
-            }
-            case "Guild" -> {
-                return ":guild_troop:";
-            }
-            case "Emperor" -> {
-                return ":emperor_troop:";
-            }
-            case "Emperor*" -> {
-                return ":emperor_sardaukar:";
-            }
-            case "CHOAM" -> {
-                return ":choam_troop:";
-            }
-            case "BT" -> {
-                return ":bt_troop:";
-            }
-            case "Richese" -> {
-                return ":richese_troop:";
-            }
-            case "Ix" -> {
-                return ":ixian_suboid:";
-            }
-            case "Ix*" -> {
-                return ":ixian_cyborg:";
-            }
-        }
-        return " force ";
-    }
-
     public static List<Point> getPoints(String territory) {
         List<Point> points = new ArrayList<>();
 
