@@ -56,6 +56,7 @@ public class CommandManager extends ListenerAdapter {
                     case "run" -> RunCommands.runCommand(event, discordGame, gameState);
                     case "richese" -> RicheseCommands.runCommand(event, discordGame, gameState);
                     case "bt" -> BTCommands.runCommand(event, discordGame, gameState);
+                    case "hark" -> HarkCommands.runCommand(event, discordGame, gameState);
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
@@ -152,6 +153,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(RunCommands.getCommands());
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
+        commandData.addAll(HarkCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }

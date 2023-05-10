@@ -68,7 +68,7 @@ public Faction(String name, String player, String userName, Game gameState) {
                         csvRecord.get(0),
                         Integer.parseInt(csvRecord.get(2))
                 );
-                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null));
+                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null, false));
                 traitorDeck.add(traitorCard);
             }
         }
@@ -302,8 +302,8 @@ public Faction(String name, String player, String userName, Game gameState) {
         return leaders;
     }
 
-    public Optional<Leader> getSkilledLeader() {
-        return getLeaders().stream().filter(l -> l.skillCard() != null).findFirst();
+    public List<Leader> getSkilledLeaders() {
+        return getLeaders().stream().filter(l -> l.skillCard() != null).toList();
     }
 
     public Leader removeLeader(String name) {
