@@ -353,7 +353,7 @@ public class SetupCommands {
                 .filter(l -> l.name().equalsIgnoreCase(leaderSkillName))
                 .findFirst().get();
 
-        Leader updatedLeader = new Leader(leader.name(), leader.value(), leaderSkillCard);
+        Leader updatedLeader = new Leader(leader.name(), leader.value(), leaderSkillCard, leader.faceDown());
 
         faction.removeLeader(leader);
         faction.addLeader(updatedLeader);

@@ -15,15 +15,16 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import utils.CardImages;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
@@ -77,6 +78,22 @@ public class ShowCommands {
 
     private static void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.getMute()) return;
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
+        ));
+        CSVParser csvParser = null;
+        try {
+            csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        HashMap<String, String> leaderToFaction = new HashMap<>();
+
+        for (CSVRecord csvRecord : csvParser) {
+            leaderToFaction.put(csvRecord.get(1), csvRecord.get(0));
+        }
 
         try {
             BufferedImage board = getResourceImage("Board");
@@ -255,7 +272,12 @@ public class ShowCommands {
             i = 0;
             offset = 0;
             for (Leader leader : gameState.getLeaderTanks()) {
-                BufferedImage leaderImage = getResourceImage(leader.name());
+                BufferedImage leaderImage;
+                if (leader.faceDown()) {
+                    leaderImage = getResourceImage(leaderToFaction.get(leader.name()) + " Sigil");
+                } else {
+                    leaderImage = getResourceImage(leader.name());
+                }
                 leaderImage = resize(leaderImage, 70,70);
                 Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
                 Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
@@ -430,11 +452,9 @@ public class ShowCommands {
             }
 
             if (gameState.hasLeaderSkills()) {
-                Optional<Leader> skilledLeader = faction.getSkilledLeader();
+                List<Leader> skilledLeaders = faction.getSkilledLeaders();
 
-                if (skilledLeader.isPresent()) {
-                    Leader leader = skilledLeader.get();
-
+                for (Leader leader : skilledLeaders) {
                     message.append(
                             MessageFormat.format(
                                     "{0} is a {1}\n",
