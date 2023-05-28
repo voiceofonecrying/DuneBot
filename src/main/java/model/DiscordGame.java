@@ -1,6 +1,7 @@
 package model;
 
 import com.google.gson.Gson;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -104,6 +106,7 @@ public class DiscordGame {
                 Gson gson = new Gson();
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
                 future.get().close();
+                migrateGameState(returnGame);
                 if (!this.isModRole(returnGame.getModRole())) {
                     throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
             }
@@ -113,6 +116,24 @@ public class DiscordGame {
             return new Game();}
         }
         return this.gameState;
+    }
+
+    public static void migrateGameState(Game game) {
+        if (game.getGameOptions() == null) {
+            game.setGameOptions(new HashSet<>());
+        }
+
+        if (game.hasTechTokens()) {
+            game.addGameOption(GameOption.TECH_TOKENS);
+        }
+
+        if (game.hasLeaderSkills()) {
+            game.addGameOption(GameOption.LEADER_SKILLS);
+        }
+
+        if (game.hasStrongholdSkills()) {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+        }
     }
 
     public void pushGameState() {

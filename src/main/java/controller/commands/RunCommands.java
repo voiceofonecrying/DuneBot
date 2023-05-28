@@ -42,6 +42,10 @@ public class RunCommands {
     }
 
     public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+        if (gameState.getTurn() == 0) {
+            discordGame.sendMessage("mod-info", "Please complete setup first.");
+            return;
+        }
         int phase = gameState.getPhase();
         int subPhase = gameState.getSubPhase();
 

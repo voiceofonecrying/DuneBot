@@ -1,6 +1,7 @@
 package controller.commands;
 
 import com.google.gson.internal.LinkedTreeMap;
+import enums.GameOption;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -112,6 +113,14 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "bt-face-dancer", "Select BT Face Dancer", true)
                     .setAutoComplete(true);
 
+    public static final OptionData addGameOption =
+            new OptionData(OptionType.STRING, "add-game-option", "Game option to add", true)
+                    .setAutoComplete(true);
+
+    public static final OptionData removeGameOption =
+            new OptionData(OptionType.STRING, "remove-game-option", "Game option to remove", true)
+                    .setAutoComplete(true);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
@@ -133,6 +142,8 @@ public class CommandOptions {
             case "richese-card" -> choices = richeseCard(gameState, searchValue);
             case "bt-face-dancer" -> choices = btFaceDancers(gameState, searchValue);
             case "richese-black-market-card" -> choices = richeseBlackMarketCard(gameState, searchValue);
+            case "add-game-option" -> choices = getAddGameOptions(gameState, searchValue);
+            case "remove-game-option" -> choices = getRemoveGameOptions(gameState, searchValue);
         }
 
         return choices;
@@ -291,5 +302,35 @@ public class CommandOptions {
         return ((ArrayList<LinkedTreeMap>) rawList).stream()
                 .map(a -> new TreacheryCard((String)a.get("name"), (String)a.get("type")))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> getAddGameOptions(Game gameState, String searchValue) {
+        Set<GameOption> selectedGameOptions = gameState.getGameOptions();
+        Set<GameOption> allGameOptions = new HashSet<>(Arrays.asList(GameOption.values()));
+
+        if (selectedGameOptions != null) {
+            for (GameOption selectedGameOption : selectedGameOptions) {
+                allGameOptions.remove(selectedGameOption);
+            }
+        }
+
+        return gameOptionsToChoices(allGameOptions.stream().toList(), searchValue);
+    }
+
+    private static List<Command.Choice> getRemoveGameOptions(Game gameState, String searchValue) {
+        Set<GameOption> gameOptions = gameState.getGameOptions();
+
+        if (gameOptions != null) {
+            return gameOptionsToChoices(gameOptions.stream().toList(), searchValue);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    private static List<Command.Choice> gameOptionsToChoices(List<GameOption> list, String searchValue) {
+        return list.stream().map(Enum::name)
+                .filter(e -> e.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(e -> new Command.Choice(e, e))
+                .toList();
     }
 }

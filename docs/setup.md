@@ -5,9 +5,13 @@ The `/newgame` command sets up a new channel category for the game.
 You should probably use a different player rold and mod role for each game.
 
 ## Expansion Choices
-Use the following command to select options for the game:
+Use the following commands to select options for the game:
 
-`/setup expansion-choices`
+`/setup show-game-options`
+`/setup add-game-option`
+`/setup remove-game-option`
+
+Game options need to be selected before your un `/setup advance` for the first time.
 
 ## Setup Factions
 Setup factions for users using the following command:
@@ -17,32 +21,16 @@ Setup factions for users using the following command:
 ## Start Game Setup
 Please make sure you've completed all previous steps (chosen expansions and setup factions) before continuing.
 
-For the game setup you will run `/setup advance` multiple times until setup is finished.
-This command will perform the following steps
-
-If Leader Skills are enabled:
-1. Setup faction positions and BG prediction
-2. Treachery Cards
-3. Select Leader Skill Cards
-4. Show Leader Skill Cards
-5. Traitor Selection
-6. Face Dancers (step will still run even if BT is not in the game, it just won't do anything).
-7. Storm Selection
-8. Finish Setup mode and start the game.
-
-If Leader Skills are not enabled:
-1. Setup faction positions and BG prediction
-2. Traitor Selection
-3. Face Dancers (step will still run even if BT is not in the game, it just won't do anything).
-4. Treachery Cards
-5. Storm Selection
-6. Finish Setup mode and start the game.
+For the game setup you will run `/setup advance` multiple times until setup is finished.  `/setup advance` will print
+out all the steps that will be done during setup.
 
 ### Traitor Selection
 To select the traitor cards you will need to run `/setup traitor`.
 
+If the Harkonnen can mulligan their traitors (and decide to do it) use the following command: `/setup harkonnen-mulligan`.
+
 ### Select Leader Skill Cards
-To select the leader skill cards you will need to run `/setup faction-leader-skill`.
+To select the leader skill cards you will need to run `/setup leader-skill`.
 
 ### Place forces
 Some forces will be placed automatically.
