@@ -1,5 +1,7 @@
 package model;
 
+import enums.GameOption;
+import enums.SetupStep;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -15,6 +17,11 @@ public class Game extends GameFactionBase {
     private boolean leaderSkills;
     private boolean strongholdSkills;
     private int turn;
+    private Set<GameOption> gameOptions;
+    private List<SetupStep> setupSteps;
+    private boolean setupStarted;
+    private boolean setupFinished;
+
     private int phase;
     private int subPhase;
     private int storm;
@@ -50,6 +57,7 @@ public class Game extends GameFactionBase {
             territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3))));
         }
 
+        this.gameOptions = new HashSet<>();
         this.treacheryDeck = new LinkedList<>();
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();
@@ -86,6 +94,61 @@ public class Game extends GameFactionBase {
 
         this.bidOrder = new ArrayList<>();
         this.bidCardNumber = 0;
+    }
+
+    public Set<GameOption> getGameOptions() {
+        return gameOptions;
+    }
+
+    public boolean hasGameOption(GameOption gameOption) {
+        return getGameOptions().contains(gameOption);
+    }
+
+    public void setGameOptions(Set<GameOption> gameOptions) {
+        this.gameOptions = gameOptions;
+    }
+
+    public void setGameOption(GameOption gameOption, boolean enabled) {
+        if (enabled) {
+            addGameOption(gameOption);
+        } else {
+            removeGameOption(gameOption);
+        }
+    }
+
+    public void addGameOption(GameOption gameOption) {
+        if (this.gameOptions == null) {
+            this.gameOptions = new HashSet<>();
+        }
+        this.gameOptions.add(gameOption);
+    }
+
+    public void removeGameOption(GameOption gameOption) {
+        this.gameOptions.remove(gameOption);
+    }
+
+    public List<SetupStep> getSetupSteps() {
+        return setupSteps;
+    }
+
+    public void setSetupSteps(List<SetupStep> setupSteps) {
+        this.setupSteps = setupSteps;
+    }
+
+    public boolean isSetupStarted() {
+        return setupStarted;
+    }
+
+    public void setSetupStarted(boolean setupStarted) {
+        this.setupStarted = setupStarted;
+    }
+
+    public boolean isSetupFinished() {
+        return setupFinished;
+    }
+
+    public void setSetupFinished(boolean setupFinished) {
+        this.setupFinished = setupFinished;
     }
 
     public TreacheryCard getBidCard() {
@@ -328,27 +391,30 @@ public class Game extends GameFactionBase {
     }
 
     public boolean hasTechTokens() {
-        return techTokens;
+        return hasGameOption(GameOption.TECH_TOKENS);
     }
 
-    public void setTechTokens(boolean techTokens) {
-        this.techTokens = techTokens;
+    public void setTechTokens(boolean enabled) {
+        this.techTokens = enabled;
+        setGameOption(GameOption.TECH_TOKENS, enabled);
     }
 
     public boolean hasLeaderSkills() {
-        return leaderSkills;
+        return hasGameOption(GameOption.LEADER_SKILLS);
     }
 
-    public void setLeaderSkills(boolean leaderSkills) {
-        this.leaderSkills = leaderSkills;
+    public void setLeaderSkills(boolean enabled) {
+        this.leaderSkills = enabled;
+        setGameOption(GameOption.LEADER_SKILLS, enabled);
     }
 
     public boolean hasStrongholdSkills() {
-        return strongholdSkills;
+        return hasGameOption(GameOption.STRONGHOLD_SKILLS);
     }
 
-    public void setStrongholdSkills(boolean strongholdSkills) {
-        this.strongholdSkills = strongholdSkills;
+    public void setStrongholdSkills(boolean enabled) {
+        this.strongholdSkills = enabled;
+        setGameOption(GameOption.STRONGHOLD_SKILLS, enabled);
     }
 
     public void drawCard(String deckName, String faction) {
