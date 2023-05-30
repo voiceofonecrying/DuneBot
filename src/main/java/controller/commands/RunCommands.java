@@ -330,6 +330,8 @@ public class RunCommands {
 
         gameState.setBidCard(bidCard);
 
+        gameState.setCurrentBid(0);
+
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
 
         createBidMessage(discordGame, gameState, bidOrder);
@@ -352,8 +354,8 @@ public class RunCommands {
 
         message.append(
                 bidOrder.subList(1, bidOrder.size()).stream()
-                        .map(f -> gameState.getFaction(f).getEmoji() + " - \n")
-                        .collect(Collectors.joining())
+                        .map(f -> gameState.getFaction(f).getEmoji() + " - " + gameState.getFaction(f).getBid() + "\n")
+                        .collect(Collectors.joining()).replace(" 0", "")
         );
 
         discordGame.sendMessage("bidding-phase", message.toString());

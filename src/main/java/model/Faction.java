@@ -24,13 +24,16 @@ public class Faction {
     private int freeRevival;
     private boolean hasMiningEquipment;
     private String ally;
+    private String bid;
+    private String useExactOrIncrement;
+    private boolean autoBid;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<Leader> leaders;
     private final List<Resource> resources;
 
-public Faction(String name, String player, String userName, Game gameState) {
+    public Faction(String name, String player, String userName, Game gameState) {
 
         if (name.equals("Harkonnen")) this.handLimit = 8;
         else if (name.equals("CHOAM")) this.handLimit = 5;
@@ -48,6 +51,9 @@ public Faction(String name, String player, String userName, Game gameState) {
         this.techTokens = new LinkedList<>();
         this.leaderSkillsHand = new LinkedList<>();
         this.spice = 0;
+        this.bid = "0";
+        this.autoBid = false;
+        this.useExactOrIncrement = "increment";
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -350,6 +356,30 @@ public Faction(String name, String player, String userName, Game gameState) {
 
     public List<TechToken> getTechTokens() {
         return techTokens;
+    }
+
+    public String getBid() {
+        return bid;
+    }
+
+    public void setBid(String bid) {
+        this.bid = bid;
+    }
+
+    public String isUseExactBid() {
+        return useExactOrIncrement;
+    }
+
+    public void setUseExactOrIncrement(String useExactOrIncrement) {
+        this.useExactOrIncrement = useExactOrIncrement;
+    }
+
+    public boolean isAutoBid() {
+        return autoBid;
+    }
+
+    public void setAutoBid(boolean autoBid) {
+        this.autoBid = autoBid;
     }
 
 }
