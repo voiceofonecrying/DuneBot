@@ -121,6 +121,14 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "remove-game-option", "Game option to remove", true)
                     .setAutoComplete(true);
 
+    public static final OptionData incrementOrExact =
+            new OptionData(OptionType.STRING, "setting", "Increment or exact.", true)
+                    .addChoice("increment", "increment")
+                    .addChoice("exact", "exact");
+
+    public static final OptionData autoPass =
+            new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.");
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
