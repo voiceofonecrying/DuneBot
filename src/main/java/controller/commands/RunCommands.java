@@ -1,7 +1,6 @@
 package controller.commands;
 
 import constants.Emojis;
-import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RunCommands {
     public static List<CommandData> getCommands() {
@@ -251,13 +249,15 @@ public class RunCommands {
             ShowCommands.writeFactionInfo(discordGame, faction);
         }
         if (gameState.hasFaction("CHOAM")) {
-            gameState.getFaction("CHOAM").addSpice((2 * factions.size() * multiplier) - choamGiven);
+            Faction choamFaction = gameState.getFaction("CHOAM");
+            choamFaction.addSpice((2 * factions.size() * multiplier) - choamGiven);
             CommandManager.spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
             discordGame.sendMessage("turn-summary",
-                    gameState.getFaction("CHOAM").getEmoji() + " has paid " + choamGiven +
+                    choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
             );
             CommandManager.spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
+            ShowCommands.writeFactionInfo(discordGame, choamFaction);
         }
     }
 
