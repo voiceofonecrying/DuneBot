@@ -266,6 +266,10 @@ public class RunCommands {
         gameState.setBidOrder(new ArrayList<>());
         gameState.setBidCardNumber(0);
         gameState.setBidCard(null);
+        gameState.getFactions().forEach(faction -> {
+            faction.setBid("");
+            faction.setMaxBid(0);
+        });
         discordGame.sendMessage("mod-info", "Run black market bid (if exists), then advance the game.");
     }
 
@@ -334,29 +338,37 @@ public class RunCommands {
 
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
 
-        createBidMessage(discordGame, gameState, bidOrder);
+        Faction firstBidFaction = gameState.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+
+        gameState.setCurrentBidder(firstBidFaction);
+
+        createBidMessage(discordGame, gameState, bidOrder, firstBidFaction);
 
         discordGame.pushGameState();
     }
 
-    public static void createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder) throws ChannelNotFoundException {
+    public static void createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
-
-        Faction firstBidFaction = gameState.getFaction(bidOrder.get(0));
 
         message.append(
                 MessageFormat.format(
-                        "R{0}:C{1}\n{2} - {3}\n",
-                        gameState.getTurn(), gameState.getBidCardNumber(),
-                        firstBidFaction.getEmoji(), firstBidFaction.getPlayer()
+                        "R{0}:C{1}\n",
+                        gameState.getTurn(), gameState.getBidCardNumber()
                 )
         );
 
-        message.append(
-                bidOrder.subList(1, bidOrder.size()).stream()
-                        .map(f -> gameState.getFaction(f).getEmoji() + " - " + gameState.getFaction(f).getBid() + "\n")
-                        .collect(Collectors.joining()).replace(" 0", "")
-        );
+        boolean tag = bidOrder.get(bidOrder.size() - 1).equals(currentBidder.getName());
+        for (String factionName : bidOrder) {
+            Faction f = gameState.getFaction(factionName);
+            if (tag) {
+                gameState.setCurrentBidder(currentBidder);
+                message.append(currentBidder.getEmoji() + " - " + currentBidder.getPlayer() + "\n");
+                tag = false;
+            } else {
+                message.append(f.getEmoji() + " - " + f.getBid());
+            }
+            if (currentBidder.getName().equals(f.getName())) tag = true;
+        }
 
         discordGame.sendMessage("bidding-phase", message.toString());
     }

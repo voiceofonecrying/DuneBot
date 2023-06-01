@@ -25,7 +25,9 @@ public class Faction {
     private boolean hasMiningEquipment;
     private String ally;
     private String bid;
-    private String useExactOrIncrement;
+
+    private int maxBid;
+    private boolean useExact;
     private boolean autoBid;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
@@ -53,7 +55,7 @@ public class Faction {
         this.spice = 0;
         this.bid = "0";
         this.autoBid = false;
-        this.useExactOrIncrement = "increment";
+        this.useExact = true;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -366,12 +368,20 @@ public class Faction {
         this.bid = bid;
     }
 
-    public String isUseExactBid() {
-        return useExactOrIncrement;
+    public int getMaxBid() {
+        return maxBid;
     }
 
-    public void setUseExactOrIncrement(String useExactOrIncrement) {
-        this.useExactOrIncrement = useExactOrIncrement;
+    public void setMaxBid(int maxBid) {
+        this.maxBid = maxBid;
+    }
+
+    public boolean isUseExactBid() {
+        return useExact;
+    }
+
+    public void setUseExact(boolean useExact) {
+        this.useExact = useExact;
     }
 
     public boolean isAutoBid() {
