@@ -48,12 +48,12 @@ public class PlayerCommands {
 
     private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
         gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
-                .findFirst().get().setAutoBid(event.getOption("setting").getAsBoolean());
+                .findFirst().get().setAutoBid(event.getOption("enabled").getAsBoolean());
     }
 
     private static void setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
         gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
-                .findFirst().get().setUseExact(event.getOption("setting").getAsBoolean());
+                .findFirst().get().setUseExact(event.getOption("use-exact").getAsBoolean());
     }
 
     private static void bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {

@@ -336,6 +336,12 @@ public class RunCommands {
 
         gameState.setCurrentBid(0);
 
+        for (Faction faction : gameState.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setAutoBid(false);
+            faction.setBid("");
+        }
+
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
 
         Faction firstBidFaction = gameState.getFaction(bidOrder.get(bidOrder.size() - 1 ));

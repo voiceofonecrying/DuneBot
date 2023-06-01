@@ -122,7 +122,7 @@ public class CommandOptions {
                     .setAutoComplete(true);
 
     public static final OptionData incrementOrExact =
-            new OptionData(OptionType.BOOLEAN, "setting", "Set true for exact, false for increment.", true);
+            new OptionData(OptionType.BOOLEAN, "use-exact", "Set true for exact, false for increment.", true);
 
     public static final OptionData autoPass =
             new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.", true);
