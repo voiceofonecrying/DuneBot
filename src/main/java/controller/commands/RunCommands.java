@@ -358,7 +358,7 @@ public class RunCommands {
 
 
 
-        if (!currentBidder.getBid().equals("pass")) {
+        if (!currentBidder.getBid().equals("pass") && !currentBidder.getBid().equals("")) {
             gameState.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
             gameState.setBidLeader(currentBidder);
         }

@@ -23,7 +23,8 @@ public class PlayerCommands {
                 new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(CommandOptions.amount),
                 new SubcommandData("set-auto-bid-policy", "Set policy to either increment or " +
                         "exact.").addOptions(CommandOptions.incrementOrExact),
-                new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(CommandOptions.autoPass)
+                new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(CommandOptions.autoPass),
+                new SubcommandData("pass", "Pass your turn during a bid.")
         ));
 
         return commandData;
@@ -40,10 +41,21 @@ public class PlayerCommands {
 
         switch (command) {
             case "bid" -> bid(event, discordGame, gameState);
+            case "pass" -> pass(event, discordGame, gameState);
             case "set-auto-bid-policy" -> setAutoBidPolicy(event, discordGame, gameState);
             case "set-auto-pass" -> setAutoPass(event, discordGame, gameState);
         }
         discordGame.pushGameState();
+    }
+
+    private static void pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
+                .findFirst().get();
+        player.setBid("pass");
+        player.setMaxBid(0);
+        player.setAutoBid(true);
+        tryBid(event, discordGame, gameState, player);
+        player.setAutoBid(false);
     }
 
     private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
