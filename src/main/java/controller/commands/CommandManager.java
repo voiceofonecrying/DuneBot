@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -57,6 +58,7 @@ public class CommandManager extends ListenerAdapter {
                     case "richese" -> RicheseCommands.runCommand(event, discordGame, gameState);
                     case "bt" -> BTCommands.runCommand(event, discordGame, gameState);
                     case "hark" -> HarkCommands.runCommand(event, discordGame, gameState);
+                    case "player" -> PlayerCommands.runCommand(event, discordGame, gameState);
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
                     case "draw" -> drawCard(event, discordGame, gameState);
@@ -154,6 +156,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
+        commandData.addAll(PlayerCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandData).queue();
     }

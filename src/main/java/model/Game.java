@@ -47,6 +47,11 @@ public class Game extends GameFactionBase {
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private boolean shieldWallDestroyed;
+    private Faction currentBidder;
+    private int currentBid;
+    private Faction bidLeader;
+
+
     public Game() {
         super();
 
@@ -424,4 +429,27 @@ public class Game extends GameFactionBase {
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
     }
+    public Faction getCurrentBidder() {
+        return currentBidder;
+    }
+
+    public void setCurrentBidder(Faction currentBidder) {
+        this.currentBidder = currentBidder;
+    }
+
+    public int getCurrentBid() {
+        return currentBid;
+    }
+
+    public void setCurrentBid(int currentBid) {
+        this.currentBid = currentBid;
+    }
+    public Faction getBidLeader() {
+        return bidLeader;
+    }
+
+    public void setBidLeader(Faction bidLeader) {
+        this.bidLeader = bidLeader;
+    }
+
 }
