@@ -347,8 +347,15 @@ public class RunCommands {
         discordGame.pushGameState();
     }
 
-    public static void createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException {
+    public static boolean createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
+
+
+
+        if (!currentBidder.getBid().equals("pass")) {
+            gameState.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
+            gameState.setBidLeader(currentBidder);
+        }
 
         message.append(
                 MessageFormat.format(
@@ -361,16 +368,22 @@ public class RunCommands {
         for (String factionName : bidOrder) {
             Faction f = gameState.getFaction(factionName);
             if (tag) {
-                gameState.setCurrentBidder(currentBidder);
-                message.append(currentBidder.getEmoji() + " - " + currentBidder.getPlayer() + "\n");
+                if (f == gameState.getBidLeader()) {
+                    discordGame.sendMessage("bidding-phase", message.toString());
+                    discordGame.sendMessage("bidding-phase", f.getEmoji() + " has the top bid.");
+                    return true;
+                }
+                gameState.setCurrentBidder(f);
+                message.append(f.getEmoji() + " - " + f.getPlayer() + "\n");
                 tag = false;
             } else {
-                message.append(f.getEmoji() + " - " + f.getBid());
+                message.append(f.getEmoji() + " - " + f.getBid() + "\n");
             }
             if (currentBidder.getName().equals(f.getName())) tag = true;
         }
 
         discordGame.sendMessage("bidding-phase", message.toString());
+        return false;
     }
 
     public static void updateBidOrder(Game gameState) {
