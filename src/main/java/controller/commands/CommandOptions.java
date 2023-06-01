@@ -122,10 +122,12 @@ public class CommandOptions {
                     .setAutoComplete(true);
 
     public static final OptionData incrementOrExact =
-            new OptionData(OptionType.BOOLEAN, "setting", "Set true for exact, false for increment.", true);
+            new OptionData(OptionType.STRING, "setting", "Increment or exact.", true)
+                    .addChoice("increment", "increment")
+                    .addChoice("exact", "exact");
 
     public static final OptionData autoPass =
-            new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.", true);
+            new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.");
 
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();

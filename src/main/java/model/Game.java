@@ -49,7 +49,6 @@ public class Game extends GameFactionBase {
     private boolean shieldWallDestroyed;
     private Faction currentBidder;
     private int currentBid;
-    private Faction bidLeader;
 
 
     public Game() {
@@ -444,12 +443,4 @@ public class Game extends GameFactionBase {
     public void setCurrentBid(int currentBid) {
         this.currentBid = currentBid;
     }
-    public Faction getBidLeader() {
-        return bidLeader;
-    }
-
-    public void setBidLeader(Faction bidLeader) {
-        this.bidLeader = bidLeader;
-    }
-
 }
