@@ -159,7 +159,7 @@ public class ShowCommands {
 
             //Place forces
             for (Territory territory : gameState.getTerritories().values()) {
-                if (territory.getForces().size() == 0 && territory.getSpice() == 0) continue;
+                if (territory.getForces().size() == 0 && territory.getSpice() == 0 && !territory.hasRicheseNoField()) continue;
                 if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
                 int offset = 0;
                 int i = 0;
