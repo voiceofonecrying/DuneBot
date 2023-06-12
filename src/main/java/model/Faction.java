@@ -166,7 +166,7 @@ public class Faction {
                cache.add(new TreacheryCard("Distrans", "Special"));
                cache.add(new TreacheryCard("Juice of Sapho", "Special"));
                cache.add(new TreacheryCard("Karama", "Special"));
-               cache.add(new TreacheryCard("Nullentropy", "Special"));
+               cache.add(new TreacheryCard("Nullentropy Box", "Special"));
            }
         }
     }
