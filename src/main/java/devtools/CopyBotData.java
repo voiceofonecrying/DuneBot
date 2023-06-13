@@ -3,7 +3,7 @@ package devtools;
 import exceptions.ChannelNotFoundException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.DiscordGame;
-import model.Faction;
+import model.factions.Faction;
 import model.Game;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

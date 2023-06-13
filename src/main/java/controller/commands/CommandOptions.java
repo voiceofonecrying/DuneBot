@@ -3,6 +3,7 @@ package controller.commands;
 import com.google.gson.internal.LinkedTreeMap;
 import enums.GameOption;
 import model.*;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;

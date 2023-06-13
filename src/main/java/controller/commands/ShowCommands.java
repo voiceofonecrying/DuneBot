@@ -4,6 +4,7 @@ import constants.Emojis;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
+import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;

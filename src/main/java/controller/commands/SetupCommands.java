@@ -7,6 +7,7 @@ import enums.StepStatus;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.factions.*;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -192,7 +193,25 @@ public class SetupCommands {
             return;
         }
 
-        gameState.addFaction(new Faction(factionName, event.getOption("player").getAsUser().getAsMention(), event.getOption("player").getAsMember().getNickname(), gameState));
+        String playerName = event.getOption("player").getAsUser().getAsMention();
+        String userName = event.getOption("player").getAsMember().getNickname();
+        Faction faction;
+
+        switch (factionName.toUpperCase()) {
+            case "ATREIDES"  -> faction = new AtreidesFaction(playerName, userName, gameState);
+            case "BG"        -> faction = new BGFaction(playerName, userName, gameState);
+            case "BT"        -> faction = new BTFaction(playerName, userName, gameState);
+            case "CHOAM"     -> faction = new ChoamFaction(playerName, userName, gameState);
+            case "EMPEROR"   -> faction = new EmperorFaction(playerName, userName, gameState);
+            case "FREMEN"    -> faction = new FremenFaction(playerName, userName, gameState);
+            case "GUILD"     -> faction = new GuildFaction(playerName, userName, gameState);
+            case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, gameState);
+            case "IX"        -> faction = new IxFaction(playerName, userName, gameState);
+            case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, gameState);
+            default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
+        }
+
+        gameState.addFaction(faction);
 
         Category game = discordGame.getGameCategory();
         discordGame.pushGameState();
