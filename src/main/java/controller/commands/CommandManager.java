@@ -318,6 +318,7 @@ public class CommandManager extends ListenerAdapter {
 
         LinkedList<SpiceCard> deck = gameState.getSpiceDeck();
         LinkedList<SpiceCard> discard = spiceBlowDeck.equalsIgnoreCase("A") ? gameState.getSpiceDiscardA() : gameState.getSpiceDiscardB();
+        LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
 
         StringBuilder message = new StringBuilder();
 
@@ -338,26 +339,44 @@ public class CommandManager extends ListenerAdapter {
             }
 
             drawn = deck.pop();
-            if (drawn.name().equalsIgnoreCase("Shai-Hulud") && discard.size() > 0 && !shaiHuludSpotted) {
-                SpiceCard lastCard = discard.getLast();
-                message.append("Shai-Hulud has been spotted in " + lastCard.name() + "!\n");
-                shaiHuludSpotted = true;
-                int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
-                if (spice > 0) {
-                    message.append(spice);
-                    message.append(Emojis.SPICE);
-                    message.append(" is eaten by the worm!\n");
-                    gameState.getTerritories().get(lastCard.name()).setSpice(0);
+            boolean saveWormForReshuffle = false;
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud")) {
+                if (gameState.getTurn() <= 1) {
+                    saveWormForReshuffle = true;
+                    message.append("Shai-Hulud will be reshuffled back into deck.\n");
+                } else if (discard.size() > 0 && !shaiHuludSpotted) {
+                    SpiceCard lastCard = discard.getLast();
+                    message.append("Shai-Hulud has been spotted in " + lastCard.name() + "!\n");
+                    shaiHuludSpotted = true;
+                    int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
+                    if (spice > 0) {
+                        message.append(spice);
+                        message.append(Emojis.SPICE);
+                        message.append(" is eaten by the worm!\n");
+                        gameState.getTerritories().get(lastCard.name()).setSpice(0);
+                    }
+                } else {
+                    shaiHuludSpotted = true;
+                    message.append("Shai-Hulud has been spotted!\n");
                 }
-            } else if (drawn.name().equalsIgnoreCase("Shai-Hulud")) {
-                message.append("Shai-Hulud has been spotted!\n");
             } else {
                 message.append("Spice has been spotted in ");
                 message.append(drawn.name());
                 message.append("!\n");
             }
-            discard.add(drawn);
+            if (saveWormForReshuffle) {
+                wormsToReshuffle.add(drawn);
+            } else {
+                discard.add(drawn);
+            }
         } while (drawn.name().equalsIgnoreCase("Shai-Hulud"));
+
+        while (wormsToReshuffle.size() > 0) {
+            deck.add(wormsToReshuffle.pop());
+            if (wormsToReshuffle.size() == 0) {
+                Collections.shuffle(deck);
+            }
+        }
 
         if (gameState.getStorm() == drawn.sector())
             message.append(" (blown away by the storm!)");
