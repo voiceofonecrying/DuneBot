@@ -3,6 +3,7 @@ package controller.commands;
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import model.*;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;

@@ -1,6 +1,6 @@
-package model;
+package model.factions;
 
-import constants.Emojis;
+import model.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -12,17 +12,17 @@ import java.util.*;
 
 public class Faction {
     private final String name;
-    private String emoji;
+    protected String emoji;
     private String player;
     private final String userName;
-    private final int handLimit;
-    private int spice;
+    protected int handLimit;
+    protected int spice;
     private final List<TechToken> techTokens;
-    private Force reserves;
-    private Force specialReserves;
+    protected Force reserves;
+    protected Force specialReserves;
     private int frontOfShieldSpice;
-    private int freeRevival;
-    private boolean hasMiningEquipment;
+    protected int freeRevival;
+    protected boolean hasMiningEquipment;
     private String ally;
     private String bid;
 
@@ -33,13 +33,10 @@ public class Faction {
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<Leader> leaders;
-    private final List<Resource> resources;
+    protected final List<Resource> resources;
 
-    public Faction(String name, String player, String userName, Game gameState) {
-
-        if (name.equals("Harkonnen")) this.handLimit = 8;
-        else if (name.equals("CHOAM")) this.handLimit = 5;
-        else this.handLimit = 4;
+    public Faction(String name, String player, String userName, Game game) {
+        this.handLimit = 4;
         this.name = name;
         this.player = player;
         this.userName = userName;
@@ -67,7 +64,7 @@ public class Faction {
             e.printStackTrace();
         }
 
-    LinkedList<TraitorCard> traitorDeck = gameState.getTraitorDeck();
+        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
 
         for (CSVRecord csvRecord : csvParser) {
             if (csvRecord.get(0).equals(this.getName())) {
@@ -79,95 +76,6 @@ public class Faction {
                 this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null, false));
                 traitorDeck.add(traitorCard);
             }
-        }
-
-       switch (name.toUpperCase()) {
-           case "ATREIDES" -> {
-               this.spice = 10;
-               this.freeRevival = 2;
-               this.hasMiningEquipment = true;
-               this.reserves = new Force("Atreides", 10);
-               this.emoji = Emojis.ATREIDES;
-               this.resources.add(new IntegerResource("forces_lost", 0, 0, 7));
-               gameState.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
-           }
-           case "HARKONNEN" -> {
-               this.spice = 10;
-               this.freeRevival = 2;
-               this.hasMiningEquipment = true;
-               this.reserves = new Force("Harkonnen", 10);
-               this.emoji = Emojis.HARKONNEN;
-               gameState.getTerritories().get("Carthag").getForces().add(new Force("Harkonnen", 10));
-           }
-           case "EMPEROR" -> {
-               this.spice = 10;
-               this.freeRevival = 1;
-               this.reserves = new Force("Emperor", 15);
-               this.specialReserves = new Force("Emperor*", 5);
-               this.emoji = Emojis.EMPEROR;
-           }
-           case "GUILD" -> {
-               this.spice = 5;
-               this.freeRevival = 1;
-               this.reserves = new Force("Guild", 15);
-               this.emoji = Emojis.GUILD;
-               gameState.getTerritories().get("Tuek's Sietch").getForces().add(new Force("Guild", 5));
-           }
-           case "FREMEN" -> {
-               this.spice = 3;
-               this.freeRevival = 3;
-               this.reserves = new Force("Fremen", 17);
-               this.specialReserves = new Force("Fremen*", 3);
-               this.emoji = Emojis.FREMEN;
-           }
-           case "BG" -> {
-               this.spice = 5;
-               this.freeRevival = 1;
-               this.reserves = new Force("BG", 20);
-               this.emoji = Emojis.BG;
-           }
-           case "BT" -> {
-               this.spice = 5;
-               this.freeRevival = 2;
-               this.reserves = new Force("BT", 20);
-               this.emoji = Emojis.BT;
-           }
-           case "IX" -> {
-               this.spice = 10;
-               this.freeRevival = 1;
-               this.reserves = new Force("Ix", 10);
-               this.specialReserves = new Force("Ix*", 4);
-               this.emoji = Emojis.IX;
-               gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
-               gameState.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix*", 3));
-           }
-           case "CHOAM" -> {
-               this.spice = 2;
-               this.freeRevival = 0;
-               this.reserves = new Force("CHOAM", 20);
-               this.emoji = Emojis.CHOAM;
-           }
-           case "RICHESE" -> {
-               this.spice = 5;
-               this.freeRevival = 2;
-               this.reserves = new Force("Richese", 20);
-               this.emoji = Emojis.RICHESE;
-               this.resources.add(new IntegerResource("no field", 0, 0, 0));
-               this.resources.add(new IntegerResource("no field", 3, 3, 3));
-               this.resources.add(new IntegerResource("no field", 5, 5, 5));
-               this.resources.add(new Resource<List<TreacheryCard>>("cache", new ArrayList<>()));
-               List<TreacheryCard> cache = (List<TreacheryCard>) this.getResource("cache").getValue();
-               cache.add(new TreacheryCard("Ornithopter", "Special - Movement"));
-               cache.add(new TreacheryCard("Residual Poison", "Special"));
-               cache.add(new TreacheryCard("Semuta Drug", "Special"));
-               cache.add(new TreacheryCard("Stone Burner", "Weapon - Special"));
-               cache.add(new TreacheryCard("Mirror Weapon", "Weapon - Special"));
-               cache.add(new TreacheryCard("Portable Snooper", "Defense - Poison"));
-               cache.add(new TreacheryCard("Distrans", "Special"));
-               cache.add(new TreacheryCard("Juice of Sapho", "Special"));
-               cache.add(new TreacheryCard("Karama", "Special"));
-               cache.add(new TreacheryCard("Nullentropy Box", "Special"));
-           }
         }
     }
 

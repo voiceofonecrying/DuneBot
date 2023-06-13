@@ -2,6 +2,7 @@ package model;
 
 import enums.GameOption;
 import enums.SetupStep;
+import model.factions.Faction;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
