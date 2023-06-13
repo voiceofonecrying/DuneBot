@@ -3,6 +3,8 @@ package model;
 import com.google.gson.Gson;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
+import io.gsonfire.GsonFireBuilder;
+import model.factions.*;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
@@ -103,7 +105,7 @@ public class DiscordGame {
 
             try {
                 String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
-                Gson gson = new Gson();
+                Gson gson = createGsonDeserializer();
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
                 future.get().close();
                 migrateGameState(returnGame);
@@ -116,6 +118,17 @@ public class DiscordGame {
             return new Game();}
         }
         return this.gameState;
+    }
+
+    /**
+     * Creates a Gson object that can deserialize the GameState object.
+     *
+     * @return Gson object that can deserialize the GameState object.
+     */
+    public static Gson createGsonDeserializer() {
+        GsonFireBuilder builder = new GsonFireBuilder()
+                .registerTypeSelector(Faction.class, new FactionTypeSelector());
+        return builder.createGson();
     }
 
     public static void migrateGameState(Game game) {
