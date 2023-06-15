@@ -29,6 +29,7 @@ public class Faction {
     private int maxBid;
     private boolean useExact;
     private boolean autoBid;
+    private boolean outbidAlly;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
@@ -53,6 +54,7 @@ public class Faction {
         this.bid = "0";
         this.autoBid = false;
         this.useExact = true;
+        this.outbidAlly = false;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -300,4 +302,11 @@ public class Faction {
         this.autoBid = autoBid;
     }
 
+    public boolean isOutbidAlly() {
+        return outbidAlly;
+    }
+
+    public void setOutbidAlly(boolean outbidAlly) {
+        this.outbidAlly = outbidAlly;
+    }
 }
