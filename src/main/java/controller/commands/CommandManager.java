@@ -258,7 +258,7 @@ public class CommandManager extends ListenerAdapter {
                 Emojis.WEIRDING,
                 Emojis.IX, Emojis.BT,
                 Emojis.CHOAM, Emojis.RICHESE
-        ));
+        )).queue();
 
         Game game = new Game();
         game.setGameRole(gameRole.getName());
