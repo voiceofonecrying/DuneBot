@@ -48,9 +48,9 @@ public class Game extends GameFactionBase {
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private boolean shieldWallDestroyed;
-    private Faction currentBidder;
+    private String currentBidder;
     private int currentBid;
-    private Faction bidLeader;
+    private String bidLeader;
 
 
     public Game() {
@@ -84,6 +84,8 @@ public class Game extends GameFactionBase {
         this.leaderSkills = false;
         this.strongholdSkills = false;
         this.shieldWallDestroyed = false;
+        this.bidLeader = "";
+        this.currentBidder = "";
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -430,11 +432,11 @@ public class Game extends GameFactionBase {
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
     }
-    public Faction getCurrentBidder() {
+    public String getCurrentBidder() {
         return currentBidder;
     }
 
-    public void setCurrentBidder(Faction currentBidder) {
+    public void setCurrentBidder(String currentBidder) {
         this.currentBidder = currentBidder;
     }
 
@@ -445,11 +447,11 @@ public class Game extends GameFactionBase {
     public void setCurrentBid(int currentBid) {
         this.currentBid = currentBid;
     }
-    public Faction getBidLeader() {
+    public String getBidLeader() {
         return bidLeader;
     }
 
-    public void setBidLeader(Faction bidLeader) {
+    public void setBidLeader(String bidLeader) {
         this.bidLeader = bidLeader;
     }
 

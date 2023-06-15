@@ -19,7 +19,7 @@ public class PlayerCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(CommandOptions.amount),
+                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(CommandOptions.amount, CommandOptions.outbidAlly),
                 new SubcommandData("set-auto-bid-policy", "Set policy to either increment or " +
                         "exact.").addOptions(CommandOptions.incrementOrExact),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(CommandOptions.autoPass),
@@ -71,19 +71,23 @@ public class PlayerCommands {
         Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setMaxBid(event.getOption("amount").getAsInt());
+        if (event.getOption("outbid-ally") != null){
+            player.setOutbidAlly(event.getOption("outbid-ally").getAsBoolean());
+        }
         tryBid(event, discordGame, gameState, player);
     }
 
     private static void tryBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState, Faction player) throws ChannelNotFoundException {
-        if (!gameState.getCurrentBidder().getName().equals(player.getName())) return;
+        if (!gameState.getCurrentBidder().equals(player.getName())) return;
 
         if (player.getMaxBid() <= gameState.getCurrentBid()) {
             if (!player.isAutoBid()) return;
             player.setBid("pass");
-        } else if (player.isUseExactBid()) player.setBid(String.valueOf(player.getMaxBid()));
+        } else if (!player.isOutbidAlly() && player.hasAlly() && player.getAlly().equals(gameState.getBidLeader())) player.setBid("pass");
+        else if (player.isUseExactBid()) player.setBid(String.valueOf(player.getMaxBid()));
         else player.setBid(String.valueOf(gameState.getCurrentBid() + 1));
         boolean r = RunCommands.createBidMessage(discordGame, gameState, discordGame.getGameState().getBidOrder(), player);
         if (r) return;
-        tryBid(event, discordGame, gameState, discordGame.getGameState().getCurrentBidder());
+        tryBid(event, discordGame, gameState, gameState.getFaction(gameState.getCurrentBidder()));
     }
 }

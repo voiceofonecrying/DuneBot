@@ -128,6 +128,9 @@ public class CommandOptions {
     public static final OptionData autoPass =
             new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.", true);
 
+    public static final OptionData outbidAlly =
+            new OptionData(OptionType.BOOLEAN, "outbid-ally", "You will pass if your ally is highest bidder unless set to true.");
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();

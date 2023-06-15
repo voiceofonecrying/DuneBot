@@ -347,7 +347,7 @@ public class RunCommands {
 
         Faction firstBidFaction = gameState.getFaction(bidOrder.get(bidOrder.size() - 1 ));
 
-        gameState.setCurrentBidder(firstBidFaction);
+        gameState.setCurrentBidder(firstBidFaction.getName());
 
         createBidMessage(discordGame, gameState, bidOrder, firstBidFaction);
 
@@ -361,7 +361,7 @@ public class RunCommands {
 
         if (!currentBidder.getBid().equals("pass") && !currentBidder.getBid().equals("")) {
             gameState.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
-            gameState.setBidLeader(currentBidder);
+            gameState.setBidLeader(currentBidder.getName());
         }
 
         message.append(
@@ -375,12 +375,12 @@ public class RunCommands {
         for (String factionName : bidOrder) {
             Faction f = gameState.getFaction(factionName);
             if (tag) {
-                if (f == gameState.getBidLeader()) {
+                if (f.getName().equals(gameState.getBidLeader())) {
                     discordGame.sendMessage("bidding-phase", message.toString());
                     discordGame.sendMessage("bidding-phase", f.getEmoji() + " has the top bid.");
                     return true;
                 }
-                gameState.setCurrentBidder(f);
+                gameState.setCurrentBidder(f.getName());
                 message.append(f.getEmoji() + " - " + f.getPlayer() + "\n");
                 tag = false;
             } else {

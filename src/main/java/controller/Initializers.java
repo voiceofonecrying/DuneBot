@@ -214,7 +214,7 @@ public class Initializers {
                 points.add(new Point(607,392));
                 points.add(new Point(665,355));
             }
-            case "Hole in the Rock" -> {
+            case "Hole In The Rock" -> {
                 points.add(new Point(660,320));
             }
             case "Rim Wall West" -> {
