@@ -847,7 +847,7 @@ public class CommandManager extends ListenerAdapter {
         otherFaction.setAlly(faction.getName());
 
         String threadName = MessageFormat.format(
-                "{0}-{1}-Alliance",
+                "{0} {1} Alliance",
                 faction.getName(),
                 otherFaction.getName()
         ).toString();
