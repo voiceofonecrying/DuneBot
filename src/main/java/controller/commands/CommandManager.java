@@ -836,15 +836,25 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public void createAlliance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
-        Faction faction = gameState.getFaction(event.getOption(CommandOptions.faction.getName()).getAsString());
-        Faction otherFaction = gameState.getFaction(event.getOption(CommandOptions.otherFaction.getName()).getAsString());
+    public void createAlliance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction faction = game.getFaction(event.getOption(CommandOptions.faction.getName()).getAsString());
+        Faction otherFaction = game.getFaction(event.getOption(CommandOptions.otherFaction.getName()).getAsString());
 
-        removeAlliance(gameState, faction);
-        removeAlliance(gameState, otherFaction);
+        removeAlliance(game, faction);
+        removeAlliance(game, otherFaction);
 
         faction.setAlly(otherFaction.getName());
         otherFaction.setAlly(faction.getName());
+
+        String threadName = MessageFormat.format(
+                "{0}-{1}-Alliance",
+                faction.getName(),
+                otherFaction.getName()
+        ).toString();
+
+        discordGame.createThread("chat", threadName, Arrays.asList(
+                faction.getPlayer(), otherFaction.getPlayer()
+        ));
 
         discordGame.pushGameState();
     }
