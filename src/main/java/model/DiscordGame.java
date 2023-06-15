@@ -5,12 +5,11 @@ import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import io.gsonfire.GsonFireBuilder;
 import model.factions.*;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -184,5 +183,38 @@ public class DiscordGame {
         TextChannel channel = getTextChannel(name);
         if (this.gameState.getMute()) return;
         channel.sendMessage(message).addFiles(fileUploads).queue();
+    }
+
+    /**
+     * Creates a thread in the parent channel with the given name and adds the given users to it.
+     * @param parentChannelName The name of the parent channel
+     * @param threadName The name of the thread to create
+     * @param userIds The ids of the users to add to the thread.  All non-numeeric characters will be removed.
+     * @throws ChannelNotFoundException
+     */
+    public void createThread(String parentChannelName, String threadName, List<String> userIds) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(parentChannelName);
+
+        channel.createThreadChannel(threadName, true)
+                .setInvitable(false)
+                .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_3_DAYS)
+                .queue(
+                        threadChannel -> addUsersToThread(threadChannel, userIds)
+                );
+    }
+
+    /**
+     * Adds the given users to the given thread.
+     * @param threadChannel The thread to add the users to
+     * @param userIds The ids of the users to add to the thread.  All non-numeeric characters will be removed.
+     */
+    private void addUsersToThread(ThreadChannel threadChannel, List<String> userIds) {
+        JDA jda = threadChannel.getJDA();
+
+        userIds.forEach(
+                userId -> jda.retrieveUserById(userId.replaceAll("\\D", "")).queue(
+                        user -> threadChannel.addThreadMember(user).queue()
+                )
+        );
     }
 }
