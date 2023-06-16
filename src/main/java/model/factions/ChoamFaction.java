@@ -8,7 +8,7 @@ public class ChoamFaction extends Faction {
     public ChoamFaction(String player, String userName, Game game) {
         super("CHOAM", player, userName, game);
 
-        this.spice = 2;
+        setSpice(2);
         this.freeRevival = 0;
         this.reserves = new Force("CHOAM", 20);
         this.emoji = Emojis.CHOAM;

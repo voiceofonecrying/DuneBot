@@ -8,7 +8,7 @@ public class IxFaction extends Faction {
     public IxFaction(String player, String userName, Game game) {
         super("Ix", player, userName, game);
 
-        this.spice = 10;
+        setSpice(10);
         this.freeRevival = 1;
         this.reserves = new Force("Ix", 10);
         this.specialReserves = new Force("Ix*", 4);
