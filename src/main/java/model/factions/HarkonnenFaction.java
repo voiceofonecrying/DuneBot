@@ -9,7 +9,7 @@ public class HarkonnenFaction extends Faction {
     public HarkonnenFaction(String player, String userName, Game game) {
         super("Harkonnen", player, userName, game);
 
-        this.spice = 10;
+        setSpice(10);
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
         this.reserves = new Force("Harkonnen", 10);

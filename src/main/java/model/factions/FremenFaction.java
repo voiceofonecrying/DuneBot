@@ -8,7 +8,7 @@ public class FremenFaction extends Faction {
     public FremenFaction(String player, String userName, Game game) {
         super("Fremen", player, userName, game);
 
-        this.spice = 3;
+        setSpice(3);
         this.freeRevival = 3;
         this.reserves = new Force("Fremen", 17);
         this.specialReserves = new Force("Fremen*", 3);

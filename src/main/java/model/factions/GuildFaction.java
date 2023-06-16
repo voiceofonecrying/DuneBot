@@ -8,7 +8,7 @@ public class GuildFaction extends Faction {
     public GuildFaction(String player, String userName, Game game) {
         super("Guild", player, userName, game);
 
-        this.spice = 5;
+        setSpice(5);
         this.freeRevival = 1;
         this.reserves = new Force("Guild", 15);
         this.emoji = Emojis.GUILD;

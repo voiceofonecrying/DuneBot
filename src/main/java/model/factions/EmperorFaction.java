@@ -8,7 +8,7 @@ public class EmperorFaction extends Faction {
     public EmperorFaction(String player, String userName, Game game) {
         super("Emperor", player, userName, game);
 
-        this.spice = 10;
+        setSpice(10);
         this.freeRevival = 1;
         this.reserves = new Force("Emperor", 15);
         this.specialReserves = new Force("Emperor*", 5);

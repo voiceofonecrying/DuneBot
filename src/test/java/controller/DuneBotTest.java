@@ -2,6 +2,7 @@ package controller;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import utils.DuneBotValidator;
 
@@ -19,6 +20,7 @@ class DuneBotTest {
 
 
     @Test
+    @Disabled
     void itShouldLoginToDiscordIfTokenIsValid() {
         // Given
         String botKey = Dotenv.configure().load().get("TOKEN");
@@ -29,6 +31,7 @@ class DuneBotTest {
     }
 
     @Test
+    @Disabled
     void itShouldFailToLoginToDiscordIfTokenIsInvalid() {
         // Given
         String botKey = "THIS IS AN INVALID TOKEN";

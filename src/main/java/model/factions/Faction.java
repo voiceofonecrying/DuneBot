@@ -206,6 +206,7 @@ public class Faction {
         return frontOfShieldSpice;
     }
 
+
     public int getFreeRevival() {
         return freeRevival;
     }
