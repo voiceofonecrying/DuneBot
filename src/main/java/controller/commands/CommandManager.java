@@ -692,8 +692,14 @@ public class CommandManager extends ListenerAdapter {
             if (!techTokens.isEmpty()) {
                 Collections.shuffle(techTokens);
                 for (int i = 0; i < techTokens.size(); i++) {
-                    Faction faction = gameState.getFactions().get((Math.ceilDiv(gameState.getStorm(), 3) - 1 + i) % 6);
-                    faction.getTechTokens().add(techTokens.get(i));
+                    int firstFactionIndex = (Math.ceilDiv(gameState.getStorm(), 3) + i) % 6;
+                    for (int j = 0; j < 6; j++) {
+                        Faction faction = gameState.getFactions().get((firstFactionIndex + j) % 6);
+                        if (faction.getTechTokens().isEmpty()) {
+                            faction.getTechTokens().add(techTokens.get(i));
+                            break;
+                        }
+                    }
                 }
             }
         }
