@@ -317,7 +317,10 @@ public class RunCommands {
 
     public static void bidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         updateBidOrder(gameState);
-        List<String> bidOrder = gameState.getBidOrder();
+        List<String> bidOrder = gameState.getBidOrder()
+                .stream()
+                .filter(f -> gameState.getFaction(f).getHandLimit() > gameState.getFaction(f).getTreacheryHand().size())
+                .collect(Collectors.toList());
 
         gameState.incrementBidCardNumber();
 
@@ -411,11 +414,7 @@ public class RunCommands {
             bidOrder.add(bidOrder.remove(0));
         }
 
-        gameState.setBidOrder(
-                bidOrder.stream()
-                        .filter(f -> gameState.getFaction(f).getHandLimit() > gameState.getFaction(f).getTreacheryHand().size())
-                        .collect(Collectors.toList())
-        );
+        gameState.setBidOrder(bidOrder);
     }
 
     public static void startRevivalPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
