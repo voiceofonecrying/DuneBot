@@ -126,6 +126,17 @@ public class SetupCommands {
                     setupSteps.indexOf(SetupStep.FACTION_POSITIONS) + 1,
                     SetupStep.BG_PREDICTION
             );
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.TRAITORS) + 1,
+                    SetupStep.BG_FORCE
+            );
+        }
+
+        if (game.hasFaction("Fremen")) {
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.TRAITORS) + 1,
+                    SetupStep.FREMEN_FORCES
+            );
         }
 
         if (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) &&
@@ -163,6 +174,8 @@ public class SetupCommands {
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
+            case FREMEN_FORCES -> stepStatus = fremenForcesStep(discordGame, game);
+            case BG_FORCE -> stepStatus = bgForceStep(discordGame, game);
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(discordGame, game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
             case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(event, discordGame, game);
@@ -337,6 +350,36 @@ public class SetupCommands {
 
     public static StepStatus bgPredictionStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
+
+        return StepStatus.STOP;
+    }
+
+    public static StepStatus fremenForcesStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction fremen = gameState.getFaction("Fremen");
+        discordGame.sendMessage("game-actions",
+                MessageFormat.format(
+                        "{0} Please provide the placement of your 10 starting {1} and {2} forces including sector. {3}",
+                        fremen.getEmoji(),
+                        Emojis.FREMEN_TROOP,
+                        Emojis.FREMEN_FEDAYKIN,
+                        fremen.getPlayer()
+                )
+        );
+
+        return StepStatus.STOP;
+    }
+
+    public static StepStatus bgForceStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+        Faction bg = gameState.getFaction("BG");
+        discordGame.sendMessage("game-actions",
+                MessageFormat.format(
+                        "{0} Please provide the placement of your starting {1} or {2}. {3}",
+                        bg.getEmoji(),
+                        Emojis.BG_ADVISOR,
+                        Emojis.BG_FIGHTER,
+                        bg.getPlayer()
+                )
+        );
 
         return StepStatus.STOP;
     }
