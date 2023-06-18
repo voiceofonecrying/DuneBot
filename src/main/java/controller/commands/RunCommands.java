@@ -414,6 +414,10 @@ public class RunCommands {
             bidOrder.add(bidOrder.remove(0));
         }
 
+        while (gameState.getFaction(bidOrder.get(0)).getHandLimit() <= gameState.getFaction(bidOrder.get(0)).getTreacheryHand().size()) {
+            bidOrder.add(bidOrder.remove(0));
+        }
+
         gameState.setBidOrder(bidOrder);
     }
 
