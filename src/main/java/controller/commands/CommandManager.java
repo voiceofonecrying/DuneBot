@@ -126,7 +126,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(CommandOptions.faction, CommandOptions.card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(CommandOptions.faction, CommandOptions.card, CommandOptions.recipient));
         commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(CommandOptions.putBackCard, CommandOptions.bottom));
-        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.isShipment, CommandOptions.starred, CommandOptions.territory));
+        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.starredAmount, CommandOptions.isShipment, CommandOptions.territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(CommandOptions.faction, CommandOptions.fromTerritory, CommandOptions.toTerritory, CommandOptions.amount, CommandOptions.starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(CommandOptions.faction, CommandOptions.amount, CommandOptions.toTanks, CommandOptions.starred, CommandOptions.fromTerritory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(CommandOptions.faction, CommandOptions.spent, CommandOptions.paidToFaction));
@@ -590,25 +590,31 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void placeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        boolean star = event.getOption("starred").getAsBoolean();
         Territory territory = gameState.getTerritories().get(event.getOption("territory").getAsString());
         Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
+        int starredAmount = event.getOption("starredamount").getAsInt();
 
-        Force reserves = star ? faction.getSpecialReserves() : faction.getReserves();
-        if (reserves.getStrength() < amount) {
+        Force reserves = faction.getReserves();
+        Force specialReserves = faction.getSpecialReserves();
+
+        if (reserves.getStrength() < amount || specialReserves.getStrength() < starredAmount) {
             discordGame.sendMessage("mod-info", "This faction does not have enough forces in reserves!");
             return;
         }
         reserves.setStrength(reserves.getStrength() - amount);
+        specialReserves.setStrength(reserves.getStrength() - starredAmount);
 
         Force force = territory.getForce(reserves.getName());
+        Force specialForce = territory.getForce(specialReserves.getName());
         if (force.getStrength() == 0) territory.getForces().add(force);
+        if (specialForce.getStrength() == 0) territory.getForces().add(specialForce);
         force.addStrength(amount);
+        specialForce.addStrength(starredAmount);
 
         if (event.getOption("isshipment").getAsBoolean()) {
             int costPerForce = territory.isStronghold() ? 1 : 2;
-            int cost = costPerForce * amount;
+            int cost = costPerForce * (amount + starredAmount);
 
             // Guild has half price shipping
             if (faction.getName().equalsIgnoreCase("Guild"))
