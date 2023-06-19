@@ -29,6 +29,9 @@ public final class Emojis {
     public static final String TREACHERY = "<:treachery:991763073281040518>";
     public static final String DUNE_RULEBOOK = "<:DuneRulebook01:991763013814198292>";
     public static final String WEIRDING = "<:weirding:991763071775297681>";
+    public static final String AXLOTLTANKS = "<:axlotltanks:991763497111269477>";
+    public static final String HEIGHLINERS = "<:heighliners:991763495567769640>";
+    public static final String SPICE_PRODUCTION = "<:spiceproduction:991763494267531304>";
 
     public static String getForceEmoji(String forceName) {
         switch (forceName) {
@@ -75,5 +78,19 @@ public final class Emojis {
         return " force ";
     }
 
+    public static String getTechTokenEmoji(String techToken) {
+        switch (techToken) {
+            case "Axlotl Tanks" -> {
+                return AXLOTLTANKS;
+            }
+            case "Heighliners" -> {
+                return HEIGHLINERS;
+            }
+            case "Spice Production" -> {
+                return SPICE_PRODUCTION;
+            }
+        }
+        return " tech token ";
+    }
     private Emojis() {}
 }
