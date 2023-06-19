@@ -413,13 +413,13 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void transferCard(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        Faction giver = gameState.getFaction(event.getOption("sender").getAsString());
+        Faction giver = gameState.getFaction(event.getOption("factionname").getAsString());
         Faction receiver = gameState.getFaction(event.getOption("recipient").getAsString());
         List<TreacheryCard> giverHand = giver.getTreacheryHand();
         List<TreacheryCard> receiverHand = receiver.getTreacheryHand();
 
         if ((receiver.getHandLimit() == receiverHand.size())) {
-            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("The recipient's hand is full!").queue());
+            discordGame.sendMessage("mod-info", "The recipient's hand is full!");
             return;
         }
         int i = 0;
@@ -427,14 +427,14 @@ public class CommandManager extends ListenerAdapter {
         boolean cardFound = false;
         for (; i < giverHand.size(); i++) {
             String card = giverHand.get(i).name();
-            if (card.toLowerCase().contains(event.getOption("card").getAsString())) {
+            if (card.equalsIgnoreCase(event.getOption("card").getAsString())) {
                 cardFound = true;
                 receiverHand.add(giverHand.get(i));
                 break;
             }
         }
         if (!cardFound) {
-            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Could not find that card!").queue());
+            discordGame.sendMessage("mod-info", "Could not find that card!");
             return;
         }
         giverHand.remove(i);
@@ -456,7 +456,7 @@ public class CommandManager extends ListenerAdapter {
             }
         }
         if (!found) {
-            event.getUser().openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage("Card not found, are you sure it's there?").queue());
+            discordGame.sendMessage("mod-info", "Card not found, are you sure it's there?");
             return;
         }
         market.remove(i);
