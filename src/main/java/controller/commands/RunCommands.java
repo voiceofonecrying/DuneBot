@@ -322,39 +322,44 @@ public class RunCommands {
                 .filter(f -> gameState.getFaction(f).getHandLimit() > gameState.getFaction(f).getTreacheryHand().size())
                 .collect(Collectors.toList());
 
-        gameState.incrementBidCardNumber();
+        if (bidOrder.size() == 0) {
+            discordGame.sendMessage("bidding-phase", "All hands are full.");
+            discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
+        } else {
+            gameState.incrementBidCardNumber();
 
-        List<TreacheryCard> treacheryDeck = gameState.getTreacheryDeck();
+            List<TreacheryCard> treacheryDeck = gameState.getTreacheryDeck();
 
-        if (treacheryDeck.isEmpty()) {
-            List<TreacheryCard> treacheryDiscard = gameState.getTreacheryDiscard();
-            discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
-            treacheryDeck.addAll(treacheryDiscard);
-            Collections.shuffle(treacheryDeck);
-            treacheryDiscard.clear();
+            if (treacheryDeck.isEmpty()) {
+                List<TreacheryCard> treacheryDiscard = gameState.getTreacheryDiscard();
+                discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                treacheryDeck.addAll(treacheryDiscard);
+                Collections.shuffle(treacheryDeck);
+                treacheryDiscard.clear();
+            }
+
+            TreacheryCard bidCard = treacheryDeck.remove(0);
+
+            gameState.setBidCard(bidCard);
+
+            gameState.setCurrentBid(0);
+
+            for (Faction faction : gameState.getFactions()) {
+                faction.setMaxBid(0);
+                faction.setAutoBid(false);
+                faction.setBid("");
+            }
+
+            AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
+
+            Faction firstBidFaction = gameState.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+
+            gameState.setCurrentBidder(firstBidFaction.getName());
+
+            createBidMessage(discordGame, gameState, bidOrder, firstBidFaction);
+
+            discordGame.pushGameState();
         }
-
-        TreacheryCard bidCard = treacheryDeck.remove(0);
-
-        gameState.setBidCard(bidCard);
-
-        gameState.setCurrentBid(0);
-
-        for (Faction faction : gameState.getFactions()) {
-            faction.setMaxBid(0);
-            faction.setAutoBid(false);
-            faction.setBid("");
-        }
-
-        AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, bidCard);
-
-        Faction firstBidFaction = gameState.getFaction(bidOrder.get(bidOrder.size() - 1 ));
-
-        gameState.setCurrentBidder(firstBidFaction.getName());
-
-        createBidMessage(discordGame, gameState, bidOrder, firstBidFaction);
-
-        discordGame.pushGameState();
     }
 
     public static boolean createBidMessage(DiscordGame discordGame, Game gameState, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException {
@@ -412,6 +417,17 @@ public class RunCommands {
         } else {
             bidOrder = gameState.getBidOrder();
             bidOrder.add(bidOrder.remove(0));
+        }
+
+        String firstFaction = bidOrder.get(0);
+        String faction = firstFaction;
+        while (gameState.getFaction(faction).getHandLimit() <= gameState.getFaction(faction).getTreacheryHand().size()) {
+            faction = bidOrder.remove(0);
+            bidOrder.add(faction);
+            if (faction.equalsIgnoreCase(firstFaction)) {
+                break;
+            }
+
         }
 
         gameState.setBidOrder(bidOrder);
