@@ -55,6 +55,7 @@ public class Faction {
         this.autoBid = false;
         this.useExact = true;
         this.outbidAlly = false;
+        this.specialReserves = new Force("", 0);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))

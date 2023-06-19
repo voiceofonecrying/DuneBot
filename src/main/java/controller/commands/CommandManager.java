@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
@@ -603,7 +604,7 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         reserves.setStrength(reserves.getStrength() - amount);
-        specialReserves.setStrength(reserves.getStrength() - starredAmount);
+        specialReserves.setStrength(specialReserves.getStrength() - starredAmount);
 
         Force force = territory.getForce(reserves.getName());
         Force specialForce = territory.getForce(specialReserves.getName());
@@ -611,14 +612,15 @@ public class CommandManager extends ListenerAdapter {
         if (specialForce.getStrength() == 0) territory.getForces().add(specialForce);
         force.addStrength(amount);
         specialForce.addStrength(starredAmount);
+        if (specialForce.getName().equals("")) territory.getForces().remove(territory.getForce(""));
 
         if (event.getOption("isshipment").getAsBoolean()) {
             int costPerForce = territory.isStronghold() ? 1 : 2;
             int cost = costPerForce * (amount + starredAmount);
 
             // Guild has half price shipping
-            if (faction.getName().equalsIgnoreCase("Guild"))
-                cost = Math.ceilDiv(cost, 2);
+            if (faction.getName().equalsIgnoreCase("Guild")) cost = Math.ceilDiv(cost, 2);
+            else if (gameState.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(gameState, discordGame, "Heighliners");
 
             faction.subtractSpice(cost);
             spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory.getTerritoryName(), false);

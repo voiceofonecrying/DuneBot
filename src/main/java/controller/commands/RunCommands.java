@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
@@ -244,6 +245,7 @@ public class RunCommands {
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
                                 " in CHOAM Charity."
                 );
+                if (gameState.hasGameOption(GameOption.TECH_TOKENS) && !gameState.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.addSpice(gameState, discordGame, "Spice Production");
                 CommandManager.spiceMessage(discordGame, charity, faction.getName(), "CHOAM Charity", true);
             }
             else continue;
@@ -260,6 +262,7 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
             ShowCommands.writeFactionInfo(discordGame, choamFaction);
         }
+        if (gameState.hasGameOption(GameOption.TECH_TOKENS) && !gameState.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(gameState, discordGame, "Spice Production");
     }
 
     public static void startBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
@@ -437,6 +440,7 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Revival Phase:");
         List<Faction> factions = gameState.getFactions();
         StringBuilder message = new StringBuilder();
+        boolean nonBTRevival = false;
 
         for (Faction faction : factions) {
             int revived = 0;
@@ -457,15 +461,21 @@ public class RunCommands {
                 }
             }
             if (revived > 0) {
+                if (!faction.getName().equals("BT")) nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(gameState.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
             }
         }
         if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
+        if (nonBTRevival && gameState.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(gameState, discordGame, "Axlotl Tanks");
+
         ShowCommands.showBoard(discordGame, gameState);
     }
 
-    public static void startShipmentPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void startShipmentPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+
+        if (gameState.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(gameState, discordGame, "Axlotl Tanks");
+
         discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
         if (gameState.hasFaction("Atreides")) {
             discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getSpiceDeck().peek().name() + " in your future.");
@@ -479,7 +489,10 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, gameState);
     }
 
-    public static void startBattlePhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void startBattlePhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+
+        if (gameState.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(gameState, discordGame, "Heighliners");
+
         discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Battle Phase:");
 
         // Get list of territories with multiple factions
@@ -568,6 +581,7 @@ public class RunCommands {
             }
         }
 
+        boolean altSpiceProductionTriggered = false;
         for (Territory territory: territories.values()) {
             if (territory.getSpice() == 0 || territory.getForces().size() == 0) continue;
             int totalStrength = 0;
@@ -581,14 +595,20 @@ public class RunCommands {
             faction.addSpice(spice);
             CommandManager.spiceMessage(discordGame, spice, faction.getName(), "for Spice Blow", true);
             factionsWithChanges.add(faction);
+            if (gameState.hasGameOption(GameOption.TECH_TOKENS) && gameState.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
+                    && (!faction.getName().equals("Fremen") || gameState.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION))) altSpiceProductionTriggered = true;
             territory.setSpice(territory.getSpice() - spice);
             discordGame.sendMessage("turn-summary", gameState.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
         }
 
-        for (Faction faction : factionsWithChanges) {
-            ShowCommands.writeFactionInfo(discordGame, faction);
+        for (Faction faction : factionsWithChanges) ShowCommands.writeFactionInfo(discordGame, faction);
+
+        if (altSpiceProductionTriggered) {
+            TechToken.addSpice(gameState, discordGame, "Spice Production");
+            TechToken.collectSpice(gameState, discordGame, "Spice Production");
         }
+
         ShowCommands.showBoard(discordGame, gameState);
     }
 

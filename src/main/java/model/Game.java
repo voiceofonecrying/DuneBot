@@ -14,9 +14,6 @@ public class Game extends GameFactionBase {
     private String gameRole;
     private String modRole;
     private Boolean mute;
-    private boolean techTokens;
-    private boolean leaderSkills;
-    private boolean strongholdSkills;
     private int turn;
     private Set<GameOption> gameOptions;
     private List<SetupStep> setupSteps;
@@ -80,9 +77,6 @@ public class Game extends GameFactionBase {
         this.subPhase = 0;
         this.storm = 18;
         this.stormMovement = 0;
-        this.techTokens = false;
-        this.leaderSkills = false;
-        this.strongholdSkills = false;
         this.shieldWallDestroyed = false;
         this.bidLeader = "";
         this.currentBidder = "";
@@ -403,7 +397,6 @@ public class Game extends GameFactionBase {
     }
 
     public void setTechTokens(boolean enabled) {
-        this.techTokens = enabled;
         setGameOption(GameOption.TECH_TOKENS, enabled);
     }
 
@@ -412,7 +405,6 @@ public class Game extends GameFactionBase {
     }
 
     public void setLeaderSkills(boolean enabled) {
-        this.leaderSkills = enabled;
         setGameOption(GameOption.LEADER_SKILLS, enabled);
     }
 
@@ -421,7 +413,6 @@ public class Game extends GameFactionBase {
     }
 
     public void setStrongholdSkills(boolean enabled) {
-        this.strongholdSkills = enabled;
         setGameOption(GameOption.STRONGHOLD_SKILLS, enabled);
     }
 
