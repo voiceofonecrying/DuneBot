@@ -478,7 +478,7 @@ public class RunCommands {
 
         discordGame.sendMessage("turn-summary","Turn " + gameState.getTurn() + " Shipment and Movement Phase:");
         if (gameState.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-info", "You see visions of " + gameState.getSpiceDeck().peek().name() + " in your future.");
+            discordGame.sendMessage("atreides-chat", "You see visions of " + gameState.getSpiceDeck().peek().name() + " in your future.");
         }
         if(gameState.hasFaction("BG")) {
             for (Territory territory : gameState.getTerritories().values()) {
