@@ -52,9 +52,10 @@ public class PlayerCommands {
                 .findFirst().get();
         player.setBid("pass");
         player.setMaxBid(0);
+        boolean wasAutoBidEnabledToBeginWith = player.isAutoBid();
         player.setAutoBid(true);
         tryBid(event, discordGame, gameState, player);
-        player.setAutoBid(false);
+        if (!wasAutoBidEnabledToBeginWith) player.setAutoBid(false);
     }
 
     private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
