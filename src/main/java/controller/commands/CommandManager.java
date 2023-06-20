@@ -599,20 +599,9 @@ public class CommandManager extends ListenerAdapter {
         Force reserves = faction.getReserves();
         Force specialReserves = faction.getSpecialReserves();
 
-        if (reserves.getStrength() < amount || specialReserves.getStrength() < starredAmount) {
-            discordGame.sendMessage("mod-info", "This faction does not have enough forces in reserves!");
-            return;
-        }
-        reserves.setStrength(reserves.getStrength() - amount);
-        specialReserves.setStrength(specialReserves.getStrength() - starredAmount);
+        if (amount > 0) placeForceInTerritory(territory, reserves, amount);
 
-        Force force = territory.getForce(reserves.getName());
-        Force specialForce = territory.getForce(specialReserves.getName());
-        if (force.getStrength() == 0) territory.getForces().add(force);
-        if (specialForce.getStrength() == 0) territory.getForces().add(specialForce);
-        force.addStrength(amount);
-        specialForce.addStrength(starredAmount);
-        if (specialForce.getName().equals("")) territory.getForces().remove(territory.getForce(""));
+        if (starredAmount > 0) placeForceInTerritory(territory, specialReserves, starredAmount);
 
         if (event.getOption("isshipment").getAsBoolean()) {
             int costPerForce = territory.isStronghold() ? 1 : 2;
@@ -633,6 +622,23 @@ public class CommandManager extends ListenerAdapter {
         }
 
         discordGame.pushGameState();
+    }
+
+    /**
+     * Places a force from the reserves into a territory.
+     * @param territory The territory to place the force in.
+     * @param reserveForce The force in the reserves to place.
+     * @param amount The number of forces to place.
+     */
+    public void placeForceInTerritory(Territory territory, Force reserveForce, int amount) {
+        if (reserveForce.getStrength() < amount) {
+            throw new IllegalArgumentException("Not enough strength in the reserves!");
+        }
+
+        reserveForce.setStrength(reserveForce.getStrength() - amount);
+        String forceName = reserveForce.getName();
+        Force territoryForce = territory.getForce(forceName);
+        territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
 
     public void moveForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidOptionException {
