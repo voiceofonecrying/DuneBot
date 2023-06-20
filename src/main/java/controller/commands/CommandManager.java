@@ -8,6 +8,7 @@ import exceptions.InvalidOptionException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.*;
 import model.factions.Faction;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -16,6 +17,7 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -31,26 +33,27 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+
+        String name = event.getName();
+        event.deferReply(true).queue();
         Member member = event.getMember();
 
         List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
 
-        if (roles.stream().noneMatch(role ->
-                role.getName().equals("Game Master") || role.getName().equals("Dungeon Master"))
-        ) {
-            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
-            return;
-        }
-
-        String name = event.getName();
-        event.deferReply(true).queue();
-
         try {
-            if (name.equals("newgame")) newGame(event);
-            else if (name.equals("clean")) clean(event);
+            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
+            //else if (name.equals("clean")) clean(event); Leaving this command commented so that the command is ignored in production
             else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game gameState = discordGame.getGameState();
+
+                if (roles.stream().noneMatch(role ->
+                        role.getName().equals(gameState.getModRole()) || (role.getName().equals(gameState.getGameRole()))
+                && name.startsWith("player"))
+                ) {
+                    event.getHook().editOriginal("You do not have permission to use this command.").queue();
+                    return;
+                }
 
                 switch (name) {
                     case "show" -> ShowCommands.runCommand(event, discordGame, gameState);
@@ -157,9 +160,13 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
-        commandData.addAll(PlayerCommands.getCommands());
 
-        event.getGuild().updateCommands().addCommands(commandData).queue();
+        for (CommandData commandDatum : PlayerCommands.getCommands()) {
+            event.getGuild().updateCommands().addCommands(commandDatum.setDefaultPermissions(DefaultMemberPermissions.ENABLED)).queue();
+        }
+        for (CommandData commandDatum : commandData) {
+            event.getGuild().updateCommands().addCommands(commandDatum.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL))).queue();
+        }
     }
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException {

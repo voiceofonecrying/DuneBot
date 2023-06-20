@@ -108,9 +108,6 @@ public class DiscordGame {
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
                 future.get().close();
                 migrateGameState(returnGame);
-                if (!this.isModRole(returnGame.getModRole())) {
-                    throw new IllegalArgumentException("ERROR: command issuer does not have specified moderator role");
-            }
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
