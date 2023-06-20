@@ -21,7 +21,7 @@ public class TechToken {
         for (Faction faction : gameState.getFactions()) {
             if (faction.getTechTokens().isEmpty()) continue;
             for (TechToken tt : faction.getTechTokens()) {
-                if (tt.getName().equals(techToken)) {
+                if (tt.getName().equals(techToken) && tt.spice == 0) {
                     tt.spice = faction.getTechTokens().size();
                     discordGame.sendMessage("turn-summary", tt.spice + " " + Emojis.SPICE + " is placed on " + Emojis.getTechTokenEmoji(techToken));
                 }
