@@ -618,18 +618,29 @@ public class CommandManager extends ListenerAdapter {
             int costPerForce = territory.isStronghold() ? 1 : 2;
             int cost = costPerForce * (amount + starredAmount);
 
-            // Guild has half price shipping
-            if (faction.getName().equalsIgnoreCase("Guild")) cost = Math.ceilDiv(cost, 2);
-            else if (gameState.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(gameState, discordGame, "Heighliners");
+            StringBuilder message = new StringBuilder();
+            message.append(MessageFormat.format("{0}: {1} {2} {3} {4} placed on {5}",
+                    faction.getEmoji(), amount, Emojis.getForceEmoji(reserves.getName()), (starredAmount == 0 ? "" : starredAmount),
+                    (Emojis.getForceEmoji(specialReserves.getName()).equals(" force ")?"":Emojis.getForceEmoji(specialReserves.getName())),
+                    territory.getTerritoryName()));
 
-            faction.subtractSpice(cost);
+            // Guild has half price shipping
+            if (faction.getName().equalsIgnoreCase("Guild")) {
+                cost = Math.ceilDiv(cost, 2);
+                message.append(MessageFormat.format(" for {0} {1} paid to the bank", cost, Emojis.SPICE));
+            }
+            else if (gameState.hasGameOption(GameOption.TECH_TOKENS) && !faction.getName().equalsIgnoreCase("Fremen")) TechToken.addSpice(gameState, discordGame, "Heighliners");
+
+            if (!faction.getName().equalsIgnoreCase("Fremen")) faction.subtractSpice(cost);
             spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory.getTerritoryName(), false);
             if (gameState.hasFaction("Guild") && !(faction.getName().equals("Guild") || faction.getName().equals("Fremen"))) {
                 gameState.getFaction("Guild").addSpice(cost);
+                message.append(MessageFormat.format(" for {0} {1} paid to {2}", cost, Emojis.SPICE, Emojis.GUILD));
                 spiceMessage(discordGame, cost, "guild", faction.getEmoji() + " shipment", true);
                 ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("Guild"));
             }
             ShowCommands.writeFactionInfo(discordGame, faction);
+            discordGame.sendMessage("turn-summary", message.toString());
         }
 
         discordGame.pushGameState();
@@ -671,6 +682,11 @@ public class CommandManager extends ListenerAdapter {
 
         to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
         to.setForceStrength(faction.getName() + "*", to.getForce(faction.getName() + "*").getStrength() + starredAmount);
+
+        discordGame.sendMessage("turn-summary", MessageFormat.format("{0}: {1} {2} {3} {4} moved from {5} to {6}",
+                faction.getEmoji(), amount, Emojis.getForceEmoji(from.getForce(faction.getName()).getName()), (starredAmount == 0 ? "" : starredAmount),
+                (Emojis.getForceEmoji(from.getForce(faction.getName() + "*").getName()).equals(" force ")?"":Emojis.getForceEmoji(from.getForce(faction.getName() + "*").getName())),
+                from.getTerritoryName(), to.getTerritoryName()));
 
         discordGame.pushGameState();
     }
