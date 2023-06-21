@@ -142,7 +142,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(CommandOptions.faction, CommandOptions.reviveLeader));
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(CommandOptions.bgTerritories));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
-        commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(CommandOptions.faction, CommandOptions.recipient, CommandOptions.amount));
+        commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(CommandOptions.faction, CommandOptions.recipient, CommandOptions.amount, CommandOptions.reason));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(CommandOptions.territory));
         commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(CommandOptions.territory));
         commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(CommandOptions.faction, CommandOptions.token));
@@ -168,7 +168,7 @@ public class CommandManager extends ListenerAdapter {
                 ))
                 .collect(Collectors.toList());
 
-        commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+        //commandDataWithPermissions.addAll(PlayerCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
     }
@@ -796,6 +796,10 @@ public class CommandManager extends ListenerAdapter {
                         faction.getEmoji(), amount, Emojis.SPICE, recipient.getEmoji()
                 )
         );
+
+        if (event.getOption("reason") != null) {
+            discordGame.sendMessage("bribes", MessageFormat.format("{0} {1}\n{2}", faction.getEmoji(), recipient.getEmoji(), event.getOption("reason").getAsString()));
+        }
 
         recipient.addFrontOfShieldSpice(amount);
         discordGame.pushGameState();
