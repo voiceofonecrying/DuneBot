@@ -590,7 +590,8 @@ public class CommandManager extends ListenerAdapter {
         force.setStrength(force.getStrength() - revived);
 
         if (paid) {
-            faction.subtractSpice(2 * event.getOption("revived").getAsInt());
+            if (!faction.getName().equalsIgnoreCase("CHOAM")) faction.subtractSpice(event.getOption("revived").getAsInt());
+            faction.subtractSpice(event.getOption("revived").getAsInt());
             spiceMessage(discordGame, 2 * event.getOption("revived").getAsInt(), faction.getName(), "Revivals", false);
             if (gameState.hasFaction("BT")) {
                 gameState.getFaction("BT").addSpice(2 * event.getOption("revived").getAsInt());
