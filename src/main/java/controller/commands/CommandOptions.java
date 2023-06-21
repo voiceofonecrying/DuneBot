@@ -132,6 +132,11 @@ public class CommandOptions {
     public static final OptionData outbidAlly =
             new OptionData(OptionType.BOOLEAN, "outbid-ally", "You will pass if your ally is highest bidder unless set to true.");
 
+    public static final OptionData choamInflationType =
+            new OptionData(OptionType.STRING, "choam-inflation-type", "Type of CHOAM inflation.", true)
+                    .addChoice("Double", "DOUBLE")
+                    .addChoice("Cancel", "CANCEL");
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();

@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import model.*;
+import model.factions.ChoamFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -206,24 +207,25 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Spice Blow Phase:");
     }
 
-    public static void choamCharity(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " CHOAM Charity Phase:");
+    public static void choamCharity(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " CHOAM Charity Phase:");
         int multiplier = 1;
-        if (gameState.getResources().stream().anyMatch(resource -> resource.getName().equals("inflation token"))) {
-            if (gameState.getResources().stream().filter(resource -> resource.getName().equals("inflation token")).findFirst().orElseThrow().getValue().equals("cancel")) {
-                discordGame.sendMessage("turn-summary","CHOAM Charity is cancelled!");
+
+        if (game.hasFaction("CHOAM")) {
+            multiplier = ((ChoamFaction) game.getFaction("CHOAM")).getChoamMultiplier(game.getTurn());
+
+            if (multiplier == 0) {
+                discordGame.sendMessage("turn-summary", "CHOAM Charity is cancelled!");
                 return;
-            } else {
-                multiplier = 2;
             }
         }
 
         int choamGiven = 0;
-        List<Faction> factions = gameState.getFactions();
-        if (gameState.hasFaction("CHOAM")) {
+        List<Faction> factions = game.getFactions();
+        if (game.hasFaction("CHOAM")) {
             discordGame.sendMessage("turn-summary",
-                    gameState.getFaction("CHOAM").getEmoji() + " receives " +
-                            gameState.getFactions().size() * 2 * multiplier +
+                    game.getFaction("CHOAM").getEmoji() + " receives " +
+                            game.getFactions().size() * 2 * multiplier +
                             " " + Emojis.SPICE + " in dividends from their many investments."
             );
         }
@@ -238,23 +240,23 @@ public class RunCommands {
                 CommandManager.spiceMessage(discordGame, 2 * multiplier, faction.getName(), "CHOAM Charity", true);
             }
             else if (spice < 2) {
-                int charity = (2 * multiplier) - (spice * multiplier);
+                int charity = multiplier * (2 - spice);
                 choamGiven += charity;
                 faction.addSpice(charity);
                 discordGame.sendMessage("turn-summary",
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
                                 " in CHOAM Charity."
                 );
-                if (gameState.hasGameOption(GameOption.TECH_TOKENS) && !gameState.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.addSpice(gameState, discordGame, "Spice Production");
+                if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.addSpice(game, discordGame, "Spice Production");
                 CommandManager.spiceMessage(discordGame, charity, faction.getName(), "CHOAM Charity", true);
             }
             else continue;
             ShowCommands.writeFactionInfo(discordGame, faction);
         }
-        if (gameState.hasFaction("CHOAM")) {
-            Faction choamFaction = gameState.getFaction("CHOAM");
+        if (game.hasFaction("CHOAM")) {
+            Faction choamFaction = game.getFaction("CHOAM");
             choamFaction.addSpice((2 * factions.size() * multiplier) - choamGiven);
-            CommandManager.spiceMessage(discordGame, gameState.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
+            CommandManager.spiceMessage(discordGame, game.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
             discordGame.sendMessage("turn-summary",
                     choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
@@ -262,7 +264,7 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
             ShowCommands.writeFactionInfo(discordGame, choamFaction);
         }
-        if (gameState.hasGameOption(GameOption.TECH_TOKENS) && !gameState.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(gameState, discordGame, "Spice Production");
+        if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
     public static void startBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
