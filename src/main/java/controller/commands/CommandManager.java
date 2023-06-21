@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -161,12 +162,15 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
 
-        for (CommandData commandDatum : PlayerCommands.getCommands()) {
-            event.getGuild().updateCommands().addCommands(commandDatum.setDefaultPermissions(DefaultMemberPermissions.ENABLED)).queue();
-        }
-        for (CommandData commandDatum : commandData) {
-            event.getGuild().updateCommands().addCommands(commandDatum.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL))).queue();
-        }
+        List<CommandData> commandDataWithPermissions = commandData.stream()
+                .map(command -> command.setDefaultPermissions(
+                        DefaultMemberPermissions.enabledFor(Permission.MANAGE_CHANNEL)
+                ))
+                .collect(Collectors.toList());
+
+        commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+
+        event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
     }
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException {
