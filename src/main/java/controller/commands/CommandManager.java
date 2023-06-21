@@ -170,7 +170,7 @@ public class CommandManager extends ListenerAdapter {
                 ))
                 .collect(Collectors.toList());
 
-        //commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+        commandDataWithPermissions.addAll(PlayerCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
     }
