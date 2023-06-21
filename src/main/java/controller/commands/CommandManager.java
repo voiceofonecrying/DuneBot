@@ -63,6 +63,7 @@ public class CommandManager extends ListenerAdapter {
                     case "richese" -> RicheseCommands.runCommand(event, discordGame, gameState);
                     case "bt" -> BTCommands.runCommand(event, discordGame, gameState);
                     case "hark" -> HarkCommands.runCommand(event, discordGame, gameState);
+                    case "choam" -> ChoamCommands.runCommand(event, discordGame, gameState);
                     case "player" -> PlayerCommands.runCommand(event, discordGame, gameState);
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(event, discordGame, gameState);
                     case "removeresource" -> removeResource(event, discordGame, gameState);
@@ -161,6 +162,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
+        commandData.addAll(ChoamCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
