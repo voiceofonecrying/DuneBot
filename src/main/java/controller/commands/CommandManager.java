@@ -138,7 +138,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(CommandOptions.faction, CommandOptions.spent, CommandOptions.paidToFaction));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(CommandOptions.faction, CommandOptions.revived, CommandOptions.starred, CommandOptions.paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(CommandOptions.data));
-        commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(CommandOptions.sector));
+        commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(CommandOptions.dialOne, CommandOptions.dialTwo));
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(CommandOptions.faction, CommandOptions.leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(CommandOptions.faction, CommandOptions.reviveLeader));
         commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(CommandOptions.bgTerritories));
@@ -170,7 +170,7 @@ public class CommandManager extends ListenerAdapter {
                 ))
                 .collect(Collectors.toList());
 
-        commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+        //commandDataWithPermissions.addAll(PlayerCommands.getCommands());
 
         event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
     }
@@ -719,8 +719,10 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void setStorm(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        gameState.setStorm(event.getOption("sector").getAsInt());
-        discordGame.sendMessage("turn-summary","The storm has been initialized to " + event.getOption("sector").getAsInt() + " sectors");
+        int dialOne = event.getOption("dial-one").getAsInt();
+        int dialTwo = event.getOption("dial-two").getAsInt();
+        gameState.advanceStorm(dialOne + dialTwo);
+        discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + gameState.getStorm() + " (" + dialOne + " + " + dialTwo + ")");
         if (gameState.hasTechTokens()) {
             List<TechToken> techTokens = new LinkedList<>();
             if (gameState.hasFaction("BT")) {

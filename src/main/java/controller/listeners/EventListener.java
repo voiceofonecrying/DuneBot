@@ -22,8 +22,8 @@ public class EventListener extends ListenerAdapter {
         } else if (message.matches(".*<:weirding:>.*<:weirding:>.*")) {
             String cardName = message.split("<:weirding:>")[1].strip();
             sendLeaderSkillImage(event, cardName);
-        } else if (message.matches(".*<:worm:>.*<:worm:>.*")) {
-            String cardName = message.split("<:worm:>")[1].strip();
+        } else if (message.matches(".*:worm:.*:worm:.*")) {
+            String cardName = message.split(":worm:")[1].strip();
             sendStrongholdImage(event, cardName);
         }
 

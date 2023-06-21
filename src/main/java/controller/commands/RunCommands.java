@@ -483,10 +483,13 @@ public class RunCommands {
             discordGame.sendMessage("atreides-chat", "You see visions of " + gameState.getSpiceDeck().peek().name() + " in your future.");
         }
         if(gameState.hasFaction("BG")) {
+            StringBuilder message = new StringBuilder();
             for (Territory territory : gameState.getTerritories().values()) {
-                if (territory.getForce("Advisor").getStrength() > 0) discordGame.sendMessage("turn-summary",gameState
-                        .getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
+                if (territory.getForce("Advisor").getStrength() > 0) {
+                    message.append(gameState.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n");
+                }
             }
+            if (!message.isEmpty()) discordGame.sendMessage("game-actions", message.append(gameState.getFaction("BG").getPlayer()).toString());
         }
         ShowCommands.showBoard(discordGame, gameState);
     }
@@ -617,6 +620,7 @@ public class RunCommands {
     public static void startMentatPause(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : gameState.getFactions()) {
+            faction.getStrongholdCards().clear();
             if (faction.getFrontOfShieldSpice() > 0) {
                 discordGame.sendMessage("turn-summary", faction.getEmoji() + " collects " +
                         faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
@@ -626,6 +630,21 @@ public class RunCommands {
                 ShowCommands.writeFactionInfo(discordGame, faction);
             }
         }
+        List<Territory> strongholds = new ArrayList<>();
+        strongholds.add(gameState.getTerritories().get("Arrakeen"));
+        strongholds.add(gameState.getTerritories().get("Carthag"));
+        strongholds.add(gameState.getTerritories().get("Habbanya Sietch"));
+        strongholds.add(gameState.getTerritories().get("Sietch Tabr"));
+        strongholds.add(gameState.getTerritories().get("Tuek's Sietch"));
+        strongholds.add(gameState.getTerritories().get("Hidden Mobile Stronghold"));
+        for (Territory stronghold : strongholds) {
+            if (stronghold.getActiveFactions(gameState).size() > 0) {
+                stronghold.getActiveFactions(gameState).get(0).getStrongholdCards().add(new StrongholdCard(stronghold.getTerritoryName()));
+                discordGame.sendMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
+                        stronghold.getActiveFactions(gameState).get(0).getEmoji(), Emojis.WORM, stronghold.getTerritoryName()));
+            }
+        }
+        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
     }
 
     public static void updateStrongholdSkills(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {

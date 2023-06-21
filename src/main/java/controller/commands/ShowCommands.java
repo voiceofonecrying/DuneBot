@@ -471,8 +471,8 @@ public class ShowCommands {
             }
 
             if (gameState.hasStrongholdSkills()) {
-                for (Resource strongholdCard : faction.getResources("strongholdCard")) {
-                    String strongholdName = strongholdCard.getValue().toString();
+                for (StrongholdCard strongholdCard : faction.getStrongholdCards()) {
+                    String strongholdName = strongholdCard.name();
                     message.append(strongholdName).append(" Stronghold Skill\n");
 
                     Optional<FileUpload> fileUpload = CardImages
