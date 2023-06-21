@@ -33,6 +33,7 @@ public class Faction {
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
+    private final List<StrongholdCard> strongholdCards;
     private final List<Leader> leaders;
     protected final List<Resource> resources;
 
@@ -50,6 +51,7 @@ public class Faction {
         this.resources = new LinkedList<>();
         this.techTokens = new LinkedList<>();
         this.leaderSkillsHand = new LinkedList<>();
+        this.strongholdCards = new LinkedList<>();
         this.spice = 0;
         this.bid = "0";
         this.autoBid = false;
@@ -169,6 +171,8 @@ public class Faction {
         return leaderSkillsHand;
     }
 
+    public List<StrongholdCard> getStrongholdCards() {return strongholdCards;}
+
     public int getSpice() {
         return spice;
     }
@@ -200,7 +204,7 @@ public class Faction {
     }
 
     public Force getSpecialReserves() {
-        return specialReserves;
+        return specialReserves == null ? new Force("", 0): specialReserves;
     }
 
     public int getFrontOfShieldSpice() {

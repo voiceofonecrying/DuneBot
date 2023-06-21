@@ -49,7 +49,8 @@ public class CommandOptions {
     public static final OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
     public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
-    public static final OptionData sector = new OptionData(OptionType.INTEGER, "sector", "The storm sector", true);
+    public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
+    public static final OptionData dialTwo = new OptionData(OptionType.INTEGER, "dial-two", "The dial of the second player", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
     public static final OptionData paid = new OptionData(OptionType.BOOLEAN, "paid", "Is the action paid for?", true);
 

@@ -72,7 +72,7 @@ public class PlayerCommands {
         boolean useExact = event.getOption("use-exact").getAsBoolean();
         Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
-        player.setAutoBid(useExact);
+        player.setUseExact(useExact);
         discordGame.sendMessage("mod-info", player.getEmoji() + " set auto-bid-policy to " + (useExact ? "exact" : "increment"));
     }
 
