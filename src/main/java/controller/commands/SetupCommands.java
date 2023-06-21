@@ -349,7 +349,7 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        discordGame.sendMessage("bg-chat", "Please make your secret prediction.");
+        discordGame.sendMessage("bg-chat", gameState.getFaction("BG").getPlayer() + " Please make your secret prediction.");
 
         return StepStatus.STOP;
     }
@@ -415,6 +415,7 @@ public class SetupCommands {
                     "{0}{1}{0}\n",
                     Emojis.WEIRDING, faction.getLeaderSkillsHand().get(1).name()
             ));
+            leaderSkillsMessage.append(faction.getPlayer());
 
             discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage.toString());
         }
@@ -477,7 +478,7 @@ public class SetupCommands {
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             discordGame.sendMessage("mod-info", "Harkonnen can mulligan");
-            discordGame.sendMessage("harkonnen-chat", "Please decide if you will mulligan your Traitor cards.");
+            discordGame.sendMessage("harkonnen-chat",faction.getName() + " Please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
             discordGame.sendMessage("mod-info", "Harkonnen can not mulligan");
@@ -512,7 +513,7 @@ public class SetupCommands {
                 }
                 ShowCommands.writeFactionInfo(discordGame, faction);
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", "Please select your traitor.");
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getName() + " Please select your traitor.");
                 }
             }
         }
