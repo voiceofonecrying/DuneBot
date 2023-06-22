@@ -341,6 +341,7 @@ public class CommandManager extends ListenerAdapter {
         message.append("**Spice Deck " + spiceBlowDeck + "**\n");
 
         boolean shaiHuludSpotted = false;
+        int spiceMultiplier = 1;
 
         do {
             if (deck.isEmpty()) {
@@ -359,20 +360,34 @@ public class CommandManager extends ListenerAdapter {
                     saveWormForReshuffle = true;
                     message.append("Shai-Hulud will be reshuffled back into deck.\n");
                 } else if (discard.size() > 0 && !shaiHuludSpotted) {
-                    SpiceCard lastCard = discard.getLast();
-                    message.append("Shai-Hulud has been spotted in " + lastCard.name() + "!\n");
                     shaiHuludSpotted = true;
-                    int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
-                    if (spice > 0) {
-                        message.append(spice);
-                        message.append(Emojis.SPICE);
-                        message.append(" is eaten by the worm!\n");
-                        gameState.getTerritories().get(lastCard.name()).setSpice(0);
+
+                    if (gameState.isSandtroutInPlay() == true) {
+                        spiceMultiplier = 2;
+                        gameState.setSandtroutInPlay(false);
+                        message.append("Shai-Hulud has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                    } else {
+                        SpiceCard lastCard = discard.getLast();
+                        message.append("Shai-Hulud has been spotted in " + lastCard.name() + "!\n");
+                        int spice = gameState.getTerritories().get(lastCard.name()).getSpice();
+                        if (spice > 0) {
+                            message.append(spice);
+                            message.append(Emojis.SPICE);
+                            message.append(" is eaten by the worm!\n");
+                            gameState.getTerritories().get(lastCard.name()).setSpice(0);
+                        }
                     }
+
                 } else {
                     shaiHuludSpotted = true;
+                    spiceMultiplier = 1;
                     message.append("Shai-Hulud has been spotted!\n");
                 }
+            } else if (drawn.name().equalsIgnoreCase("Sandtrout")){
+                shaiHuludSpotted = true;
+                message.append("Sandtrout has been spotted, and all aliances have ended!\n");
+                gameState.getFactions().forEach(Faction::removeAlly);
+                gameState.setSandtroutInPlay(true);
             } else {
                 message.append("Spice has been spotted in ");
                 message.append(drawn.name());
@@ -380,10 +395,11 @@ public class CommandManager extends ListenerAdapter {
             }
             if (saveWormForReshuffle) {
                 wormsToReshuffle.add(drawn);
-            } else {
+            } else if (!drawn.name().equalsIgnoreCase("Sandtrout")) {
                 discard.add(drawn);
             }
-        } while (drawn.name().equalsIgnoreCase("Shai-Hulud"));
+        } while (drawn.name().equalsIgnoreCase("Shai-Hulud") ||
+                drawn.name().equalsIgnoreCase("Sandtrout"));
 
         while (wormsToReshuffle.size() > 0) {
             deck.add(wormsToReshuffle.pop());
@@ -395,7 +411,7 @@ public class CommandManager extends ListenerAdapter {
         if (gameState.getStorm() == drawn.sector())
             message.append(" (blown away by the storm!)");
         else
-            gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice());
+            gameState.getTerritories().get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
 
         discordGame.pushGameState();
 
