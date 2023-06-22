@@ -84,9 +84,4 @@ class AtreidesFactionTest {
         assertEquals(faction.getForcesLost(), 7);
         assertTrue(faction.isHasKH());
     }
-
-    @Test
-    public void testFail() {
-        assertTrue(false);
-    }
 }
