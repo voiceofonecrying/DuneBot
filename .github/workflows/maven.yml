@@ -24,7 +24,7 @@ jobs:
 
       - name: Where are the reports
         if: success() || failure()
-        run: ls
+        run: ls target/surefire-reports
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v3
