@@ -48,7 +48,7 @@ public class Game extends GameFactionBase {
     private String currentBidder;
     private int currentBid;
     private String bidLeader;
-
+    private boolean sandtroutInPlay;
 
     public Game() {
         super();
@@ -96,6 +96,7 @@ public class Game extends GameFactionBase {
 
         this.bidOrder = new ArrayList<>();
         this.bidCardNumber = 0;
+        this.sandtroutInPlay = false;
     }
 
     public Set<GameOption> getGameOptions() {
@@ -446,4 +447,17 @@ public class Game extends GameFactionBase {
         this.bidLeader = bidLeader;
     }
 
+    /**
+     * @return true if a Sandtrout was drawn and not canceled by a worm
+     */
+    public boolean isSandtroutInPlay() {
+        return sandtroutInPlay;
+    }
+
+    /**
+     * @param sandtroutInPlay true if a Sandtrout was drawn and not canceled by a worm
+     */
+    public void setSandtroutInPlay(boolean sandtroutInPlay) {
+        this.sandtroutInPlay = sandtroutInPlay;
+    }
 }
