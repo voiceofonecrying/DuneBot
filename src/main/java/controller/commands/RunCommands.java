@@ -95,9 +95,6 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Storm Phase:");
         Map<String, Territory> territories = gameState.getTerritories();
         if (gameState.getTurn() != 1) {
-            updateStrongholdSkills(event, discordGame, gameState);
-            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
-
             discordGame.sendMessage("turn-summary", "The storm moves " + gameState.getStormMovement() + " sectors this turn.");
 
             StringBuilder message = new StringBuilder();
@@ -157,7 +154,7 @@ public class RunCommands {
     public static String stormTroopsFremen(Territory territory, List<Force> forces, Game gameState) {
         StringBuilder message = new StringBuilder();
 
-        int totalTroops = forces.stream().mapToInt(f -> f.getStrength()).sum();
+        int totalTroops = forces.stream().mapToInt(Force::getStrength).sum();
         int totalLostTroops = Math.ceilDiv(totalTroops, 2);
 
         Force regularForce = territory.getForce("Fremen");
@@ -620,7 +617,6 @@ public class RunCommands {
     public static void startMentatPause(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + gameState.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : gameState.getFactions()) {
-            faction.getStrongholdCards().clear();
             if (faction.getFrontOfShieldSpice() > 0) {
                 discordGame.sendMessage("turn-summary", faction.getEmoji() + " collects " +
                         faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
@@ -630,24 +626,13 @@ public class RunCommands {
                 ShowCommands.writeFactionInfo(discordGame, faction);
             }
         }
-        List<Territory> strongholds = new ArrayList<>();
-        strongholds.add(gameState.getTerritories().get("Arrakeen"));
-        strongholds.add(gameState.getTerritories().get("Carthag"));
-        strongholds.add(gameState.getTerritories().get("Habbanya Sietch"));
-        strongholds.add(gameState.getTerritories().get("Sietch Tabr"));
-        strongholds.add(gameState.getTerritories().get("Tuek's Sietch"));
-        strongholds.add(gameState.getTerritories().get("Hidden Mobile Stronghold"));
-        for (Territory stronghold : strongholds) {
-            if (stronghold.getActiveFactions(gameState).size() > 0) {
-                stronghold.getActiveFactions(gameState).get(0).getStrongholdCards().add(new StrongholdCard(stronghold.getTerritoryName()));
-                discordGame.sendMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
-                        stronghold.getActiveFactions(gameState).get(0).getEmoji(), Emojis.WORM, stronghold.getTerritoryName()));
-            }
-        }
+
+        updateStrongholdSkills(event, discordGame, gameState);
+
         ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
     }
 
-    public static void updateStrongholdSkills(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public static void updateStrongholdSkills(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         if (gameState.hasStrongholdSkills()) {
             for (Faction faction : gameState.getFactions()) {
                 faction.removeResource("strongholdCard");
@@ -661,6 +646,9 @@ public class RunCommands {
             for (Territory stronghold : strongholds) {
                 Faction faction = stronghold.getActiveFactions(gameState).get(0);
                 faction.addResource(new StringResource("strongholdCard", stronghold.getTerritoryName()));
+                discordGame.sendMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
+                        stronghold.getActiveFactions(gameState).get(0).getEmoji(), Emojis.WORM,
+                        stronghold.getTerritoryName()));
             }
 
             discordGame.pushGameState();
