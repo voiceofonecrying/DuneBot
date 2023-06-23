@@ -2,10 +2,7 @@ name: Build the Application and Deploy to Registry
 
 on:
   push:
-    branches:
-      - 'master'
-    tags:
-      - 'v*'
+    tags: ['v[0-9].[0-9]+.[0-9]+']
 
 env:
   REGISTRY: ghcr.io
