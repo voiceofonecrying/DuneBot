@@ -1,4 +1,4 @@
-FROM eclipse-temurin:18-jdk-focal as build
+FROM maven:3.9.2-amazoncorretto-17 as build
 
 # Installing Maven
 ENV MAVEN_VERSION=3.9.1
@@ -14,7 +14,7 @@ WORKDIR /app
 RUN mvn package -Dmaven.test.skip=true
 
 # Setup smaller Image to run the application
-FROM eclipse-temurin:18-jre-alpine as runtime
+FROM maven:3.9.2-amazoncorretto-17 as runtime
 
 COPY --from=build /app/target/DuneBot-*-SNAPSHOT.jar /
 
