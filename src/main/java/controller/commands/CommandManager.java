@@ -94,16 +94,8 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
-        } catch (ChannelNotFoundException e) {
-            e.printStackTrace();
-            event.getHook().editOriginal("Channel not found!").queue();
-        } catch (InvalidOptionException e) {
-            e.printStackTrace();
-            event.getHook().editOriginal(e.getMessage()).queue();
-        } catch (InvalidGameStateException e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
-            event.getHook().editOriginal("An error occurred!").queue();
+            event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
         }
     }
