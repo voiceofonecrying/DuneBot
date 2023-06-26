@@ -343,7 +343,7 @@ public class RunCommands {
             TreacheryCard bidCard = treacheryDeck.remove(0);
 
             gameState.setBidCard(bidCard);
-
+            gameState.setBidLeader("");
             gameState.setCurrentBid(0);
 
             for (Faction faction : gameState.getFactions()) {
