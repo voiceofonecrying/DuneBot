@@ -319,8 +319,6 @@ public class RunCommands {
 
     public static void bidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         updateBidOrder(gameState);
-        discordGame.sendMessage("mod-info", "Hark hand limit = " + gameState.getFaction("Harkonnen").getHandLimit());
-        discordGame.sendMessage("mod-info", "Hark hand size = " + gameState.getFaction("Harkonnen").getTreacheryHand().size());
         List<String> bidOrder = gameState.getBidOrder()
                 .stream()
                 .filter(f -> gameState.getFaction(f).getHandLimit() > gameState.getFaction(f).getTreacheryHand().size())
