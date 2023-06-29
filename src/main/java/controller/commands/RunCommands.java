@@ -319,6 +319,8 @@ public class RunCommands {
 
     public static void bidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         updateBidOrder(gameState);
+        discordGame.sendMessage("mod-info", "Hark hand limit = " + gameState.getFaction("Harkonnen").getHandLimit());
+        discordGame.sendMessage("mod-info", "Hark hand size = " + gameState.getFaction("Harkonnen").getTreacheryHand().size());
         List<String> bidOrder = gameState.getBidOrder()
                 .stream()
                 .filter(f -> gameState.getFaction(f).getHandLimit() > gameState.getFaction(f).getTreacheryHand().size())
@@ -384,6 +386,9 @@ public class RunCommands {
         boolean tag = bidOrder.get(bidOrder.size() - 1).equals(currentBidder.getName());
         for (String factionName : bidOrder) {
             Faction f = gameState.getFaction(factionName);
+            if (gameState.getFaction(factionName).getHandLimit() <= gameState.getFaction(factionName).getTreacheryHand().size()) {
+                continue;
+            }
             if (tag) {
                 if (f.getName().equals(gameState.getBidLeader())) {
                     discordGame.sendMessage("bidding-phase", message.toString());
