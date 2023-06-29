@@ -50,13 +50,9 @@ public class PlayerCommands {
     private static void pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
         Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
-        player.setBid("pass");
-        player.setMaxBid(0);
-        boolean wasAutoBidEnabledToBeginWith = player.isAutoBid();
-        player.setAutoBid(true);
+        player.setMaxBid(-1);
         tryBid(event, discordGame, gameState, player);
-        if (!wasAutoBidEnabledToBeginWith) player.setAutoBid(false);
-        discordGame.sendMessage("mod-info", player.getName() + " passed their bid.");
+        discordGame.sendMessage("mod-info", player.getEmoji() + " passed their bid.");
 
     }
 
@@ -80,10 +76,10 @@ public class PlayerCommands {
         Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setMaxBid(event.getOption("amount").getAsInt());
-        discordGame.sendMessage("mod-info", player.getEmoji() + "set their bid to " + event.getOption("amount").getAsInt());
+        discordGame.sendMessage("mod-info", player.getEmoji() + " set their bid to " + event.getOption("amount").getAsInt());
         if (event.getOption("outbid-ally") != null){
             player.setOutbidAlly(event.getOption("outbid-ally").getAsBoolean());
-            discordGame.sendMessage("mod-info", player.getEmoji() + "set their outbid ally policy to " + event.getOption("outbid-ally").getAsBoolean());
+            discordGame.sendMessage("mod-info", player.getEmoji() + " set their outbid ally policy to " + event.getOption("outbid-ally").getAsBoolean());
         }
         tryBid(event, discordGame, gameState, player);
     }
@@ -91,7 +87,10 @@ public class PlayerCommands {
     private static void tryBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState, Faction player) throws ChannelNotFoundException {
         if (!gameState.getCurrentBidder().equals(player.getName())) return;
 
-        if (player.getMaxBid() <= gameState.getCurrentBid()) {
+        if (player.getMaxBid() == -1) {
+            player.setBid("pass");
+            player.setMaxBid(0);
+        } else if (player.getMaxBid() <= gameState.getCurrentBid()) {
             if (!player.isAutoBid()) return;
             player.setBid("pass");
         } else if (!player.isOutbidAlly() && player.hasAlly() && player.getAlly().equals(gameState.getBidLeader())) player.setBid("pass");
