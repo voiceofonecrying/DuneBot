@@ -398,11 +398,17 @@ public class ShowCommands {
             traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
         }
+        StringBuilder reservesString = new StringBuilder();
+        reservesString.append("\n__Reserves:__ ").append(faction.getReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Fremen")) reservesString.append("\n__Fedayken Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Emperor")) reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Ix")) reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.getName().toLowerCase() + "-info")) {
                 MessageCreateBuilder builder = new MessageCreateBuilder()
                         .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                                 faction.getSpice() +
+                                reservesString +
                                 traitorString);
                 for (Leader leader : faction.getLeaders()) {
                     builder = builder.addFiles(getResourceFile(leader.name()));
