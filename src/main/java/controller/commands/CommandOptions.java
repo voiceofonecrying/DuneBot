@@ -138,44 +138,44 @@ public class CommandOptions {
                     .addChoice("Double", "DOUBLE")
                     .addChoice("Cancel", "CANCEL");
 
-    public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game gameState) {
+    public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game game) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
 
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(gameState, searchValue);
-            case "territory", "to" -> choices = territories(gameState, searchValue);
-            case "traitor" -> choices = traitors(event, gameState, searchValue);
-            case "card" -> choices = cardsInHand(event, gameState, searchValue);
-            case "ixcard" -> choices = ixCardsInHand(gameState, searchValue);
-            case "putbackcard" -> choices = cardsInMarket(gameState, searchValue);
-            case "from" -> choices = fromTerritories(event, gameState, searchValue);
-            case "bgterritories" -> choices = bgTerritories(gameState, searchValue);
-            case "leadertokill", "factionleader"  -> choices = leaders(event, gameState, searchValue);
-            case "leadertorevive" -> choices = reviveLeaders(gameState, searchValue);
-            case "factionleaderskill" -> choices = factionLeaderSkill(event, gameState, searchValue);
-            case "richese-card" -> choices = richeseCard(gameState, searchValue);
-            case "bt-face-dancer" -> choices = btFaceDancers(gameState, searchValue);
-            case "richese-black-market-card" -> choices = richeseBlackMarketCard(gameState, searchValue);
-            case "add-game-option" -> choices = getAddGameOptions(gameState, searchValue);
-            case "remove-game-option" -> choices = getRemoveGameOptions(gameState, searchValue);
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(game, searchValue);
+            case "territory", "to" -> choices = territories(game, searchValue);
+            case "traitor" -> choices = traitors(event, game, searchValue);
+            case "card" -> choices = cardsInHand(event, game, searchValue);
+            case "ixcard" -> choices = ixCardsInHand(game, searchValue);
+            case "putbackcard" -> choices = cardsInMarket(game, searchValue);
+            case "from" -> choices = fromTerritories(event, game, searchValue);
+            case "bgterritories" -> choices = bgTerritories(game, searchValue);
+            case "leadertokill", "factionleader"  -> choices = leaders(event, game, searchValue);
+            case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
+            case "factionleaderskill" -> choices = factionLeaderSkill(event, game, searchValue);
+            case "richese-card" -> choices = richeseCard(game, searchValue);
+            case "bt-face-dancer" -> choices = btFaceDancers(game, searchValue);
+            case "richese-black-market-card" -> choices = richeseBlackMarketCard(game, searchValue);
+            case "add-game-option" -> choices = getAddGameOptions(game, searchValue);
+            case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
         }
 
         return choices;
     }
 
-    private static List<Command.Choice> factions(@NotNull Game gameState, String searchValue) {
-        return gameState.getFactions().stream()
+    private static List<Command.Choice> factions(@NotNull Game game, String searchValue) {
+        return game.getFactions().stream()
                 .map(Faction::getName)
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(factionName -> new Command.Choice(factionName, factionName))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> territories(@NotNull Game gameState, String searchValue) {
-        return gameState.getTerritories().values().stream()
+    private static List<Command.Choice> territories(@NotNull Game game, String searchValue) {
+        return game.getTerritories().values().stream()
                 .map(Territory::getTerritoryName)
                 .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(territoryName -> new Command.Choice(territoryName, territoryName))
@@ -183,18 +183,18 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+    private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getTraitorHand().stream().map(TraitorCard::name)
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(traitor -> new Command.Choice(traitor, traitor))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> btFaceDancers(Game gameState, String searchValue) {
-        if (!gameState.hasFaction("BT")) return new ArrayList<>();
+    private static List<Command.Choice> btFaceDancers(Game game, String searchValue) {
+        if (!game.hasFaction("BT")) return new ArrayList<>();
         else {
-            return gameState.getFaction("BT").getTraitorHand().stream()
+            return game.getFaction("BT").getTraitorHand().stream()
                     .map(TraitorCard::name)
                     .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(traitor -> new Command.Choice(traitor, traitor))
@@ -202,18 +202,18 @@ public class CommandOptions {
         }
     }
 
-    private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+    private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+    private static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         List<Territory> territories = new LinkedList<>();
-        for (Territory territory : gameState.getTerritories().values()) {
+        for (Territory territory : game.getTerritories().values()) {
             if (territory.getForce(faction.getName()).getStrength() > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
             || (faction.getName().equals("BG") && territory.getForce("Advisor").getStrength() > 0)) {
                 territories.add(territory);
@@ -226,32 +226,32 @@ public class CommandOptions {
     }
 
 
-    private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+    private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getLeaders().stream().map(Leader::name)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+    private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getLeaderSkillsHand().stream().map(LeaderSkillCard::name)
                 .filter(leaderSkillCardName -> leaderSkillCardName.matches(searchRegex(searchValue)))
                 .map(leaderSkillCardName -> new Command.Choice(leaderSkillCardName, leaderSkillCardName))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> reviveLeaders(Game gameState, String searchValue) {
-        return gameState.getLeaderTanks().stream().map(Leader::name)
+    private static List<Command.Choice> reviveLeaders(Game game, String searchValue) {
+        return game.getLeaderTanks().stream().map(Leader::name)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> bgTerritories(Game gameState, String searchValue) {
+    private static List<Command.Choice> bgTerritories(Game game, String searchValue) {
         List<Territory> territories = new LinkedList<>();
-        for (Territory territory : gameState.getTerritories().values()) {
+        for (Territory territory : game.getTerritories().values()) {
             if (territory.getForce("Advisor").getStrength() > 0 || territory.getForce("BG").getStrength() > 0) {
                 territories.add(territory);
             }
@@ -272,24 +272,24 @@ public class CommandOptions {
         return searchRegex.toString();
     }
 
-    private static List<Command.Choice> ixCardsInHand(Game gameState, String searchValue) {
-        Faction faction = gameState.getFaction("Ix");
+    private static List<Command.Choice> ixCardsInHand(Game game, String searchValue) {
+        Faction faction = game.getFaction("Ix");
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> cardsInMarket(Game gameState, String searchValue) {
-        return gameState.getMarket().stream().map(TreacheryCard::name)
+    private static List<Command.Choice> cardsInMarket(Game game, String searchValue) {
+        return game.getMarket().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> richeseCard(Game gameState, String searchValue) {
-        if (gameState.hasFaction("Richese")) {
-            Faction faction = gameState.getFaction("Richese");
+    private static List<Command.Choice> richeseCard(Game game, String searchValue) {
+        if (game.hasFaction("Richese")) {
+            Faction faction = game.getFaction("Richese");
             List<TreacheryCard> cards = convertRicheseCards(faction.getResource("cache").getValue());
 
             return cards.stream().map(TreacheryCard::name)
@@ -301,9 +301,9 @@ public class CommandOptions {
         }
     }
 
-    private static List<Command.Choice> richeseBlackMarketCard(Game gameState, String searchValue) {
-        if (gameState.hasFaction("Richese")) {
-            Faction faction = gameState.getFaction("Richese");
+    private static List<Command.Choice> richeseBlackMarketCard(Game game, String searchValue) {
+        if (game.hasFaction("Richese")) {
+            Faction faction = game.getFaction("Richese");
             List<TreacheryCard> cards = faction.getTreacheryHand();
 
             return cards.stream().map(TreacheryCard::name)
@@ -321,8 +321,8 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> getAddGameOptions(Game gameState, String searchValue) {
-        Set<GameOption> selectedGameOptions = gameState.getGameOptions();
+    private static List<Command.Choice> getAddGameOptions(Game game, String searchValue) {
+        Set<GameOption> selectedGameOptions = game.getGameOptions();
         Set<GameOption> allGameOptions = new HashSet<>(Arrays.asList(GameOption.values()));
 
         if (selectedGameOptions != null) {
@@ -334,8 +334,8 @@ public class CommandOptions {
         return gameOptionsToChoices(allGameOptions.stream().toList(), searchValue);
     }
 
-    private static List<Command.Choice> getRemoveGameOptions(Game gameState, String searchValue) {
-        Set<GameOption> gameOptions = gameState.getGameOptions();
+    private static List<Command.Choice> getRemoveGameOptions(Game game, String searchValue) {
+        Set<GameOption> gameOptions = game.getGameOptions();
 
         if (gameOptions != null) {
             return gameOptionsToChoices(gameOptions.stream().toList(), searchValue);

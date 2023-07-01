@@ -32,25 +32,25 @@ public class HarkCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
-        if (!gameState.hasFaction("Harkonnen")) return;
+        if (!game.hasFaction("Harkonnen")) return;
 
         switch (name) {
-            case "capture-leader" -> captureLeader(event, discordGame, gameState);
-            case "kill-leader" -> killLeader(event, discordGame, gameState);
+            case "capture-leader" -> captureLeader(event, discordGame, game);
+            case "kill-leader" -> killLeader(event, discordGame, game);
         }
     }
 
-    public static void captureLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void captureLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
         String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
 
-        Faction faction = gameState.getFaction(factionName);
+        Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
 
-        Faction harkonnenFaction = gameState.getFaction("Harkonnen");
+        Faction harkonnenFaction = game.getFaction("Harkonnen");
         List<Leader> harkonnenLeaders = harkonnenFaction.getLeaders();
 
         harkonnenLeaders.add(leader);
@@ -60,7 +60,7 @@ public class HarkCommands {
         ShowCommands.writeFactionInfo(discordGame, harkonnenFaction);
 
         if (leader.skillCard() != null) {
-            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
+            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
             discordGame.sendMessage("turn-summary", MessageFormat.format(
                     "{0} have captured a {1} skilled leader: {2} the {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(),
@@ -73,25 +73,25 @@ public class HarkCommands {
             ));
         }
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
         String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
 
-        Faction faction = gameState.getFaction(factionName);
+        Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
 
         if (leader.skillCard() != null) {
-            gameState.getLeaderSkillDeck().add(leader.skillCard());
+            game.getLeaderSkillDeck().add(leader.skillCard());
         }
 
 
 
         faction.getLeaders().remove(leader);
 
-        Faction harkonnenFaction = gameState.getFaction("Harkonnen");
+        Faction harkonnenFaction = game.getFaction("Harkonnen");
 
         harkonnenFaction.addSpice(2);
 
@@ -110,17 +110,17 @@ public class HarkCommands {
 
         Leader killedLeader = new Leader(leader.name(), leader.value(), null, true);
 
-        gameState.getLeaderTanks().add(killedLeader);
+        game.getLeaderTanks().add(killedLeader);
 
         CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
 
         ShowCommands.writeFactionInfo(discordGame, faction);
         ShowCommands.writeFactionInfo(discordGame, harkonnenFaction);
 
-        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
+        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
 
-        ShowCommands.showBoard(discordGame, gameState);
+        ShowCommands.showBoard(discordGame, game);
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 }

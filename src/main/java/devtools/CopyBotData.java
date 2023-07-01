@@ -28,7 +28,7 @@ public class CopyBotData {
         DiscordGame mainDiscordGame = getDiscordGame(mainToken, mainGuildId, category);
         DiscordGame testDiscordGame = getDiscordGame(testToken, testGuildId, category);
 
-        Game mainGame = mainDiscordGame.getGameState();
+        Game mainGame = mainDiscordGame.getGame();
 
         mainGame.setGameRole(gameRole);
         mainGame.setModRole(modRole);
@@ -37,9 +37,9 @@ public class CopyBotData {
             faction.setPlayer(player);
         }
 
-        testDiscordGame.setGameState(mainGame);
+        testDiscordGame.setGame(mainGame);
 
-        testDiscordGame.pushGameState();
+        testDiscordGame.pushGame();
     }
 
     private static DiscordGame getDiscordGame(String token, String guildId, String category) throws InterruptedException {

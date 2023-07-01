@@ -46,18 +46,18 @@ public class ShowCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
-            case "board" -> showBoard(discordGame, gameState);
+            case "board" -> showBoard(discordGame, game);
             case "faction-info" -> showFactionInfo(event, discordGame);
-            case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, gameState);
+            case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, game);
         }
     }
 
-    public static void showBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        drawGameBoard(discordGame, gameState);
+    public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        drawGameBoard(discordGame, game);
     }
 
     public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -77,8 +77,8 @@ public class ShowCommands {
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
-    private static void drawGameBoard(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        if (gameState.getMute()) return;
+    private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        if (game.getMute()) return;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -100,7 +100,7 @@ public class ShowCommands {
             BufferedImage board = getResourceImage("Board");
 
             //Place destroyed Shield Wall
-            if (gameState.isShieldWallDestroyed()) {
+            if (game.isShieldWallDestroyed()) {
                 BufferedImage brokenShieldWallImage = getResourceImage("Shield Wall Destroyed");
                 brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
                 Point coordinates = Initializers.getDrawCoordinates("shield wall");
@@ -110,23 +110,23 @@ public class ShowCommands {
             //Place turn, phase, and storm markers
             BufferedImage turnMarker = getResourceImage("Turn Marker");
             turnMarker = resize(turnMarker, 55, 55);
-            int turn = gameState.getTurn() == 0 ? 1 : gameState.getTurn();
+            int turn = game.getTurn() == 0 ? 1 : game.getTurn();
             float angle = (turn * 36) + 74f;
             turnMarker = rotateImageByDegrees(turnMarker, angle);
-            Point coordinates = Initializers.getDrawCoordinates("turn " + gameState.getTurn());
+            Point coordinates = Initializers.getDrawCoordinates("turn " + game.getTurn());
             board = overlay(board, turnMarker, coordinates, 1);
             BufferedImage phaseMarker = getResourceImage("Phase Marker");
             phaseMarker = resize(phaseMarker, 50, 50);
-            coordinates = Initializers.getDrawCoordinates("phase " + (gameState.getPhase()));
+            coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhase()));
             board = overlay(board, phaseMarker, coordinates, 1);
             BufferedImage stormMarker = getResourceImage("storm");
             stormMarker = resize(stormMarker, 172, 96);
-            stormMarker = rotateImageByDegrees(stormMarker, -(gameState.getStorm() * 20));
-            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + gameState.getStorm()), 1);
+            stormMarker = rotateImageByDegrees(stormMarker, -(game.getStorm() * 20));
+            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + game.getStorm()), 1);
 
             //Place Tech Tokens
-            for (int i = 0; i < gameState.getFactions().size(); i++) {
-                Faction faction = gameState.getFactions().get(i);
+            for (int i = 0; i < game.getFactions().size(); i++) {
+                Faction faction = game.getFactions().get(i);
                 if (faction.getTechTokens().isEmpty()) continue;
                 int offset = 0;
                 for (TechToken token : faction.getTechTokens()) {
@@ -140,8 +140,8 @@ public class ShowCommands {
             }
 
             //Place sigils
-            for (int i = 1; i <= gameState.getFactions().size(); i++) {
-                Faction faction = gameState.getFactions().get(i - 1);
+            for (int i = 1; i <= game.getFactions().size(); i++) {
+                Faction faction = game.getFactions().get(i - 1);
                 BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
                 coordinates = Initializers.getDrawCoordinates("sigil " + i);
                 sigil = resize(sigil, 50, 50);
@@ -159,7 +159,7 @@ public class ShowCommands {
 
 
             //Place forces
-            for (Territory territory : gameState.getTerritories().values()) {
+            for (Territory territory : game.getTerritories().values()) {
                 if (territory.getForces().size() == 0 && territory.getSpice() == 0 && !territory.hasRicheseNoField()) continue;
                 if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
                 int offset = 0;
@@ -220,7 +220,7 @@ public class ShowCommands {
                     if (force.getName().equals("Hidden Mobile Stronghold")) {
                         BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
                         hms = resize(hms, 150,100);
-                        List<Force> hmsForces = gameState.getTerritories().get("Hidden Mobile Stronghold").getForces();
+                        List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
                         int forceOffset = 0;
                         for (Force f : hmsForces) {
                             BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
@@ -243,7 +243,7 @@ public class ShowCommands {
                     }
                 }
 
-                if (gameState.hasFaction("Richese") && territory.hasRicheseNoField()) {
+                if (game.hasFaction("Richese") && territory.hasRicheseNoField()) {
                     BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
                     Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
                             .get(i);
@@ -254,7 +254,7 @@ public class ShowCommands {
             //Place tanks forces
             int i = 0;
             int offset = 0;
-            for (Force force : gameState.getTanks()) {
+            for (Force force : game.getTanks()) {
                 if (force.getStrength() == 0) continue;
                 BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
 
@@ -272,7 +272,7 @@ public class ShowCommands {
             //Place tanks leaders
             i = 0;
             offset = 0;
-            for (Leader leader : gameState.getLeaderTanks()) {
+            for (Leader leader : game.getLeaderTanks()) {
                 BufferedImage leaderImage;
                 if (leader.faceDown()) {
                     leaderImage = getResourceImage(leaderToFaction.get(leader.name()) + " Sigil");
@@ -379,7 +379,7 @@ public class ShowCommands {
     }
 
     public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException, IOException {
-        writeFactionInfo(discordGame, discordGame.getGameState().getFaction(factionName));
+        writeFactionInfo(discordGame, discordGame.getGame().getFaction(factionName));
     }
 
     public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
@@ -394,7 +394,7 @@ public class ShowCommands {
                 traitorString.append("Cheap Hero (0)\n");
                 continue;
             }
-            String traitorEmoji = discordGame.getGameState().getFaction(traitor.factionName()).getEmoji();
+            String traitorEmoji = discordGame.getGame().getFaction(traitor.factionName()).getEmoji();
             traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
         }
@@ -428,7 +428,7 @@ public class ShowCommands {
         }
     }
 
-    public static void refreshFrontOfShieldInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void refreshFrontOfShieldInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         MessageChannel frontOfShieldChannel = discordGame.getTextChannel("front-of-shield");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(frontOfShieldChannel).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
@@ -437,7 +437,7 @@ public class ShowCommands {
             message.delete().queue();
         }
 
-        for (Faction faction : gameState.getFactions()) {
+        for (Faction faction : game.getFactions()) {
             StringBuilder message = new StringBuilder();
             List<FileUpload> uploads = new ArrayList<>();
 
@@ -458,7 +458,7 @@ public class ShowCommands {
                         .append(" No-Field Token\n");
             }
 
-            if (gameState.hasLeaderSkills()) {
+            if (game.hasLeaderSkills()) {
                 List<Leader> skilledLeaders = faction.getSkilledLeaders();
 
                 for (Leader leader : skilledLeaders) {
@@ -476,7 +476,7 @@ public class ShowCommands {
                 }
             }
 
-            if (gameState.hasStrongholdSkills()) {
+            if (game.hasStrongholdSkills()) {
                 for (StrongholdCard strongholdCard : faction.getStrongholdCards()) {
                     String strongholdName = strongholdCard.name();
                     message.append(strongholdName).append(" Stronghold Skill\n");

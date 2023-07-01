@@ -58,17 +58,17 @@ public class Territory {
     }
 
     // Returns list of factions that have active forces in the territories (not Advisors)
-    public List<Faction> getActiveFactions(Game gameState) {
+    public List<Faction> getActiveFactions(Game game) {
         return forces.stream()
                 .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                 .map(Force::getFactionName)
                 .distinct()
-                .map(gameState::getFaction)
+                .map(game::getFaction)
                 .collect(Collectors.toList());
     }
 
-    public int countActiveFactions(Game gameState) {
-        return getActiveFactions(gameState).size();
+    public int countActiveFactions(Game game) {
+        return getActiveFactions(game).size();
     }
 
     public void setForceStrength(String name, int strength) {

@@ -9,12 +9,12 @@ import model.TreacheryCard;
 import java.text.MessageFormat;
 
 public class AtreidesCommands {
-    public static void sendAtreidesCardPrescience(DiscordGame discordGame, Game gameState, TreacheryCard card) throws ChannelNotFoundException {
-        if (gameState.hasFaction("Atreides")) {
+    public static void sendAtreidesCardPrescience(DiscordGame discordGame, Game game, TreacheryCard card) throws ChannelNotFoundException {
+        if (game.hasFaction("Atreides")) {
             discordGame.sendMessage("atreides-chat",
                     MessageFormat.format(
                             "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
-                            Emojis.TREACHERY, card.name().strip(), gameState.getTurn(), gameState.getBidCardNumber()
+                            Emojis.TREACHERY, card.name().strip(), game.getTurn(), game.getBidCardNumber()
                     )
             );
         }

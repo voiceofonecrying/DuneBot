@@ -43,23 +43,23 @@ public class RicheseCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
 
         switch (name) {
-            case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(event, discordGame, gameState);
-            case "card-bid" -> cardBid(event, discordGame, gameState);
-            case "black-market-bid" -> blackMarketBid(event, discordGame, gameState);
-            case "place-no-fields-token" -> placeNoFieldToken(event, discordGame, gameState);
-            case "remove-no-field" -> removeNoFieldToken(event, discordGame, gameState);
+            case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(event, discordGame, game);
+            case "card-bid" -> cardBid(event, discordGame, game);
+            case "black-market-bid" -> blackMarketBid(event, discordGame, game);
+            case "place-no-fields-token" -> placeNoFieldToken(event, discordGame, game);
+            case "remove-no-field" -> removeNoFieldToken(event, discordGame, game);
         }
     }
 
-    public static void moveNoFieldsToFrontOfShield(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void moveNoFieldsToFrontOfShield(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int noFieldValue = event.getOption(CommandOptions.richeseNoFields.getName()).getAsInt();
 
-        if (gameState.hasFaction("Richese")) {
-            Faction faction = gameState.getFaction("Richese");
+        if (game.hasFaction("Richese")) {
+            Faction faction = game.getFaction("Richese");
 
             if (!faction.hasResource("frontOfShieldNoField")) {
                 faction.addResource(new IntegerResource("frontOfShieldNoField", noFieldValue, 0, 5));
@@ -67,22 +67,22 @@ public class RicheseCommands {
                 ((Resource<Integer>)faction.getResource("frontOfShieldNoField")).setValue(noFieldValue);
             }
 
-            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, gameState);
-            discordGame.pushGameState();
+            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
+            discordGame.pushGame();
         }
     }
 
-    public static void cardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void cardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String cardName = event.getOption(CommandOptions.richeseCard.getName()).getAsString();
         String bidType = event.getOption(CommandOptions.richeseBidType.getName()).getAsString();
 
-        Faction faction = gameState.getFaction("Richese");
+        Faction faction = game.getFaction("Richese");
 
         List<LinkedTreeMap> rawList = (ArrayList<LinkedTreeMap>) faction.getResource("cache").getValue();
 
         for (int i = 0; i < rawList.size(); i++) {
             if (((String)rawList.get(i).get("name")).equalsIgnoreCase(cardName)) {
-                gameState.setBidCard(new TreacheryCard(
+                game.setBidCard(new TreacheryCard(
                         (String)rawList.get(i).get("name"), (String)rawList.get(i).get("type")
                 ));
 
@@ -91,18 +91,18 @@ public class RicheseCommands {
             }
         }
 
-        gameState.incrementBidCardNumber();
+        game.incrementBidCardNumber();
 
-        runRicheseBid(discordGame, gameState, bidType, false);
+        runRicheseBid(discordGame, game, bidType, false);
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void blackMarketBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void blackMarketBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String cardName = event.getOption(CommandOptions.richeseBlackMarketCard.getName()).getAsString();
         String bidType = event.getOption(CommandOptions.richeseBlackMarketBidType.getName()).getAsString();
 
-        Faction faction = gameState.getFaction("Richese");
+        Faction faction = game.getFaction("Richese");
         List<TreacheryCard> cards = faction.getTreacheryHand();
 
         TreacheryCard card = cards.stream()
@@ -111,35 +111,35 @@ public class RicheseCommands {
                 .orElseThrow();
 
         cards.remove(card);
-        gameState.setBidCard(card);
-        gameState.incrementBidCardNumber();
+        game.setBidCard(card);
+        game.incrementBidCardNumber();
 
         if (bidType.equalsIgnoreCase("Normal")) {
-            RunCommands.updateBidOrder(gameState);
-            List<String> bidOrder = gameState.getBidOrder();
+            RunCommands.updateBidOrder(game);
+            List<String> bidOrder = game.getBidOrder();
 
-            RunCommands.createBidMessage(discordGame, gameState, bidOrder, gameState.getFaction(bidOrder.get(bidOrder.size() - 1)));
+            RunCommands.createBidMessage(discordGame, game, bidOrder, game.getFaction(bidOrder.get(bidOrder.size() - 1)));
         } else {
-            runRicheseBid(discordGame, gameState, bidType, true);
+            runRicheseBid(discordGame, game, bidType, true);
         }
 
-        AtreidesCommands.sendAtreidesCardPrescience(discordGame, gameState, card);
+        AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, card);
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void placeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public static void placeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
         Integer noField = event.getOption(CommandOptions.richeseNoFields.getName()).getAsInt();
         String territoryName = event.getOption(CommandOptions.territory.getName()).getAsString();
 
-        Territory territory = gameState.getTerritories().get(territoryName);
+        Territory territory = game.getTerritories().get(territoryName);
         territory.setRicheseNoField(noField);
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void removeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
-        Optional<Territory> territory = gameState.getTerritories().values().stream()
+    public static void removeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        Optional<Territory> territory = game.getTerritories().values().stream()
                 .filter(Territory::hasRicheseNoField)
                 .findFirst();
 
@@ -147,10 +147,10 @@ public class RicheseCommands {
             territory.get().setRicheseNoField(null);
         }
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void runRicheseBid(DiscordGame discordGame, Game gameState, String bidType, boolean blackMarket) throws ChannelNotFoundException {
+    public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException {
         if (bidType.equalsIgnoreCase("Silent")) {
             if (blackMarket) {
                 discordGame.sendMessage("bidding-phase", "We will now silently auction a card from Richese's " +
@@ -159,7 +159,7 @@ public class RicheseCommands {
                 discordGame.sendMessage("bidding-phase",
                         MessageFormat.format(
                                 "We will now silently auction a brand new Richese {0}!  Please place your bid in your private channels.",
-                                gameState.getBidCard().name()
+                                game.getBidCard().name()
                         )
                 );
             }
@@ -170,12 +170,12 @@ public class RicheseCommands {
             } else {
                 message.append(
                         MessageFormat.format("We are now bidding on a shiny, brand new Richese {0}!\n",
-                                gameState.getBidCard().name()
+                                game.getBidCard().name()
                         )
                 );
             }
 
-            List<Faction> factions = gameState.getFactions();
+            List<Faction> factions = game.getFactions();
 
             List<Faction> bidOrder = new ArrayList<>();
 
@@ -188,7 +188,7 @@ public class RicheseCommands {
                 factionsInBidDirection = factions;
             }
 
-            int richeseIndex = factionsInBidDirection.indexOf(gameState.getFaction("Richese"));
+            int richeseIndex = factionsInBidDirection.indexOf(game.getFaction("Richese"));
             bidOrder.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
             bidOrder.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
 
@@ -199,7 +199,7 @@ public class RicheseCommands {
             message.append(
                     MessageFormat.format(
                             "R{0}:C{1} (Once Around)\n{2} - {3}\n",
-                            gameState.getTurn(), gameState.getBidCardNumber(),
+                            game.getTurn(), game.getBidCardNumber(),
                             filteredBidOrder.get(0).getEmoji(), filteredBidOrder.get(0).getPlayer()
                     )
             );

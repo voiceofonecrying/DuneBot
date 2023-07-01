@@ -29,21 +29,21 @@ public class BTCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
-            case "swap-face-dancer" -> swapBTFaceDancer(event, discordGame, gameState);
+            case "swap-face-dancer" -> swapBTFaceDancer(event, discordGame, game);
         }
     }
 
-    public static void swapBTFaceDancer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        if (gameState.hasFaction("BT")) {
+    public static void swapBTFaceDancer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        if (game.hasFaction("BT")) {
             String faceDancer = event.getOption(CommandOptions.btFaceDancer.getName()).getAsString();
-            Faction faction = gameState.getFaction("BT");
+            Faction faction = game.getFaction("BT");
 
             List<TraitorCard> btFaceDancerHand = faction.getTraitorHand();
-            LinkedList<TraitorCard> traitorDeck = gameState.getTraitorDeck();
+            LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
 
             TraitorCard traitorCard = btFaceDancerHand.stream()
                     .filter(t -> t.name().equalsIgnoreCase(faceDancer))
@@ -56,7 +56,7 @@ public class BTCommands {
             Collections.shuffle(traitorDeck);
             btFaceDancerHand.add(traitorDeck.pollLast());
 
-            discordGame.pushGameState();
+            discordGame.pushGame();
             discordGame.sendMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
             ShowCommands.writeFactionInfo(discordGame, faction);
         }
