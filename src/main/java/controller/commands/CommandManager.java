@@ -703,27 +703,14 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void removeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Territory territory = game.getTerritories().get(event.getOption("from").getAsString());
+        String territoryName = event.getOption("from").getAsString();
         Faction faction = game.getFaction(event.getOption("factionname").getAsString());
         int amount = event.getOption("amount").getAsInt();
-        String starred = event.getOption("starred").getAsBoolean() ? "*" : "";
-        String forceName = faction.getName() + starred;
-        Force force = territory.getForce(forceName);
-        if (force.getStrength() > amount) {
-            force.setStrength(force.getStrength() - amount);
-        } else if (force.getStrength() < amount) {
-            discordGame.sendMessage("mod-info","You are trying to remove more forces than this faction has in this territory! Please check your info and try again.");
-            return;
-        } else {
-            territory.getForces().remove(force);
-        }
+        boolean isSpecial = event.getOption("starred").getAsBoolean();
+        boolean toTanks = event.getOption("totanks").getAsBoolean();
 
-        if (event.getOption("totanks").getAsBoolean()) {
-            game.getForceFromTanks(forceName).addStrength(amount);
-        } else {
-            if (starred.equals("*")) faction.getSpecialReserves().addStrength(amount);
-            else faction.getReserves().addStrength(amount);
-        }
+        faction.removeForces(territoryName, amount, isSpecial, toTanks);
+
         discordGame.pushGame();
     }
 

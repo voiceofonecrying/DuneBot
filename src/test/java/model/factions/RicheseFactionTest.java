@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class RicheseFactionTest {
+class RicheseFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private RicheseFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new RicheseFaction("player", "player", game);
     }
 

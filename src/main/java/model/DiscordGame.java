@@ -91,6 +91,12 @@ public class DiscordGame {
         this.game = game;
     }
 
+    /**
+     * Loads the game state from the bot data channel, or returns an already loaded game state.
+     *
+     * @return Game object representing the game state.
+     * @throws ChannelNotFoundException If the bot data channel is not found.
+     */
     public Game getGame() throws ChannelNotFoundException {
         if (this.game == null) {
             MessageHistory h = this.getBotDataChannel()
@@ -107,6 +113,7 @@ public class DiscordGame {
                 Gson gson = createGsonDeserializer();
                 Game returnGame = gson.fromJson(gameStateString, Game.class);
                 future.get().close();
+                addGameReferenceToFactions(returnGame);
                 migrateGameState(returnGame);
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
@@ -114,6 +121,26 @@ public class DiscordGame {
             return new Game();}
         }
         return this.game;
+    }
+
+    /**
+     * Adds a reference to the game object to all factions in the game.
+     * @param game Game object to add references to.
+     */
+    public static void addGameReferenceToFactions(Game game) {
+        for (Faction faction : game.getFactions()) {
+            faction.setGame(game);
+        }
+    }
+
+    /**
+     * Removes the reference to the game object from all factions in the game.
+     * @param game Game object to remove references from.
+     */
+    public static void removeGameReferenceFromFactions(Game game) {
+        for (Faction faction : game.getFactions()) {
+            faction.setGame(null);
+        }
     }
 
     /**
@@ -146,6 +173,7 @@ public class DiscordGame {
     }
 
     public void pushGame() {
+        removeGameReferenceFromFactions(this.game);
         Gson gson = new Gson();
         FileUpload fileUpload = FileUpload.fromData(
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"

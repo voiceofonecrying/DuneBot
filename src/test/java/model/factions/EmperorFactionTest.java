@@ -5,18 +5,27 @@ import model.Game;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.provider.Arguments;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class EmperorFactionTest {
+class EmperorFactionTest extends FactionTestTemplate {
+    Stream<Arguments> provideForceTypes() {
+        return Stream.of(
+                Arguments.of("Emperor", false),
+                Arguments.of("Emperor*", true)
+        );
+    }
 
-    private Game game;
     private EmperorFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new EmperorFaction("player", "player", game);
     }
 

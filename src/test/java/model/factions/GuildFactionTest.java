@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class GuildFactionTest {
+class GuildFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private GuildFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new GuildFaction("player", "player", game);
     }
 

@@ -57,6 +57,14 @@ public class Territory {
         return forces.stream().filter(force -> force.getName().equals(name)).findFirst().orElse(new Force(name, 0));
     }
 
+    public boolean hasForce(String name) {
+        return forces.stream().anyMatch(force -> force.getName().equals(name));
+    }
+
+    public void removeForce(String name) {
+        forces.remove(getForce(name));
+    }
+
     // Returns list of factions that have active forces in the territories (not Advisors)
     public List<Faction> getActiveFactions(Game game) {
         return forces.stream()

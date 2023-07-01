@@ -10,14 +10,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class IxFactionTest {
+class IxFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private IxFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new IxFaction("player", "player", game);
     }
 

@@ -10,14 +10,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class HarkonnenFactionTest {
+class HarkonnenFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private HarkonnenFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new HarkonnenFaction("player", "player", game);
     }
 

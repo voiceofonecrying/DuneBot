@@ -10,14 +10,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BGFactionTest {
+class BGFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private BGFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new BGFaction("player", "player", game);
     }
 
