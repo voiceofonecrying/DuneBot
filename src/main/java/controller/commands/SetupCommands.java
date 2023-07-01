@@ -57,20 +57,20 @@ public class SetupCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String name = event.getSubcommandName();
 
         switch (name) {
-            case "faction" -> addFaction(event, discordGame, gameState);
-            case "new-faction-resource" -> newFactionResource(event, discordGame, gameState);
-            case "show-game-options" -> showGameOptions(discordGame, gameState);
-            case "add-game-option" -> addGameOption(event, discordGame, gameState);
-            case "remove-game-option" -> removeGameOption(event, discordGame, gameState);
-            case "ix-hand-selection" -> ixHandSelection(event, discordGame, gameState);
-            case "traitor" -> selectTraitor(event, discordGame, gameState);
-            case "advance" -> advance(event, discordGame, gameState);
-            case "leader-skill" -> factionLeaderSkill(event, discordGame, gameState);
-            case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, gameState);
+            case "faction" -> addFaction(event, discordGame, game);
+            case "new-faction-resource" -> newFactionResource(event, discordGame, game);
+            case "show-game-options" -> showGameOptions(discordGame, game);
+            case "add-game-option" -> addGameOption(event, discordGame, game);
+            case "remove-game-option" -> removeGameOption(event, discordGame, game);
+            case "ix-hand-selection" -> ixHandSelection(event, discordGame, game);
+            case "traitor" -> selectTraitor(event, discordGame, game);
+            case "advance" -> advance(event, discordGame, game);
+            case "leader-skill" -> factionLeaderSkill(event, discordGame, game);
+            case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
         }
     }
 
@@ -93,7 +93,7 @@ public class SetupCommands {
 
         } while (stepStatus == StepStatus.CONTINUE);
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
     public static void createSetupSteps(Game game) {
@@ -189,19 +189,19 @@ public class SetupCommands {
         return stepStatus;
     }
 
-    public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
 
-        if (gameState.getTurn() != 0) {
+        if (game.getTurn() != 0) {
             modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
             return;
         }
-        if (gameState.getFactions().size() >= 6) {
+        if (game.getFactions().size() >= 6) {
             modInfo.sendMessage("This game is already full!").queue();
             return;
         }
         String factionName = event.getOption("faction").getAsString();
-        if (gameState.hasFaction(factionName)) {
+        if (game.hasFaction(factionName)) {
             modInfo.sendMessage("This faction has already been taken!").queue();
             return;
         }
@@ -211,27 +211,27 @@ public class SetupCommands {
         Faction faction;
 
         switch (factionName.toUpperCase()) {
-            case "ATREIDES"  -> faction = new AtreidesFaction(playerName, userName, gameState);
-            case "BG"        -> faction = new BGFaction(playerName, userName, gameState);
-            case "BT"        -> faction = new BTFaction(playerName, userName, gameState);
-            case "CHOAM"     -> faction = new ChoamFaction(playerName, userName, gameState);
-            case "EMPEROR"   -> faction = new EmperorFaction(playerName, userName, gameState);
-            case "FREMEN"    -> faction = new FremenFaction(playerName, userName, gameState);
-            case "GUILD"     -> faction = new GuildFaction(playerName, userName, gameState);
-            case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, gameState);
-            case "IX"        -> faction = new IxFaction(playerName, userName, gameState);
-            case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, gameState);
+            case "ATREIDES"  -> faction = new AtreidesFaction(playerName, userName, game);
+            case "BG"        -> faction = new BGFaction(playerName, userName, game);
+            case "BT"        -> faction = new BTFaction(playerName, userName, game);
+            case "CHOAM"     -> faction = new ChoamFaction(playerName, userName, game);
+            case "EMPEROR"   -> faction = new EmperorFaction(playerName, userName, game);
+            case "FREMEN"    -> faction = new FremenFaction(playerName, userName, game);
+            case "GUILD"     -> faction = new GuildFaction(playerName, userName, game);
+            case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, game);
+            case "IX"        -> faction = new IxFaction(playerName, userName, game);
+            case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, game);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 
-        gameState.addFaction(faction);
+        game.addFaction(faction);
 
-        Category game = discordGame.getGameCategory();
-        discordGame.pushGameState();
+        Category gameCategory = discordGame.getGameCategory();
+        discordGame.pushGame();
 
         Member player = event.getOption("player").getAsMember();
 
-        game.createTextChannel(factionName.toLowerCase() + "-info")
+        gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
                 .addPermissionOverride(
                         player,
                         ChannelPermissions.readAndReactAllow,
@@ -239,7 +239,7 @@ public class SetupCommands {
                 )
                 .queue();
 
-        game.createTextChannel(factionName.toLowerCase() + "-chat")
+        gameCategory.createTextChannel(factionName.toLowerCase() + "-chat")
                 .addPermissionOverride(
                         player,
                         ChannelPermissions.readWriteAllow,
@@ -248,56 +248,56 @@ public class SetupCommands {
                 .queue();
     }
 
-    public static void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
-        gameState.getFaction(event.getOption("factionname").getAsString())
+    public static void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        game.getFaction(event.getOption("factionname").getAsString())
                 .addResource(new Resource(event.getOption("resource").getAsString(),
                         event.getOption("value").getAsString()));
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static void showGameOptions(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String stringBuilder = "The following options are selected:\n" +
-                gameState.getGameOptions().stream().map(GameOption::name)
+                game.getGameOptions().stream().map(GameOption::name)
                         .collect(Collectors.joining("\n"));
 
         discordGame.sendMessage("mod-info", stringBuilder);
     }
 
-    public static void addGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public static void addGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
         String gameOptionName = event.getOption("add-game-option").getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
-        gameState.addGameOption(gameOption);
-        discordGame.pushGameState();
+        game.addGameOption(gameOption);
+        discordGame.pushGame();
     }
 
-    public static void removeGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) {
+    public static void removeGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
         String gameOptionName = event.getOption("remove-game-option").getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
-        gameState.removeGameOption(gameOption);
-        discordGame.pushGameState();
+        game.removeGameOption(gameOption);
+        discordGame.pushGame();
     }
 
-    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        List<TreacheryCard> hand = gameState.getFaction("Ix").getTreacheryHand();
+    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
         TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(event.getOption("ixcard").getAsString())).findFirst().orElseThrow();
         for (TreacheryCard treacheryCard : hand) {
             if (treacheryCard.equals(card)) continue;
-            gameState.getTreacheryDeck().add(treacheryCard);
+            game.getTreacheryDeck().add(treacheryCard);
         }
         hand.removeIf(treacheryCard -> !treacheryCard.equals(card));
-        ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("Ix"));
-        discordGame.pushGameState();
+        ShowCommands.writeFactionInfo(discordGame, game.getFaction("Ix"));
+        discordGame.pushGame();
     }
 
-    public static void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        Faction faction = gameState.getFaction(event.getOption("factionname").getAsString());
+    public static void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        Faction faction = game.getFaction(event.getOption("factionname").getAsString());
         TraitorCard traitor = faction.getTraitorHand().stream().filter(traitorCard -> traitorCard.name().toLowerCase()
                 .contains(event.getOption("traitor").getAsString().toLowerCase())).findFirst().orElseThrow();
         for (TraitorCard card : faction.getTraitorHand()) {
-            if (!card.equals(traitor)) gameState.getTraitorDeck().add(card);
+            if (!card.equals(traitor)) game.getTraitorDeck().add(card);
         }
 
         Collections.shuffle(faction.getTraitorHand());
@@ -312,7 +312,7 @@ public class SetupCommands {
                         traitor.name()
                 ));
 
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
     public static StepStatus createDecks(Game game) {
@@ -338,24 +338,24 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus factionPositions(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Collections.shuffle(gameState.getFactions());
+    public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Collections.shuffle(game.getFactions());
 
         discordGame.sendMessage("turn-summary", "__**Game Setup**__");
 
-        ShowCommands.showBoard(discordGame, gameState);
+        ShowCommands.showBoard(discordGame, game);
 
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus bgPredictionStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        discordGame.sendMessage("bg-chat", gameState.getFaction("BG").getPlayer() + " Please make your secret prediction.");
+    public static StepStatus bgPredictionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        discordGame.sendMessage("bg-chat", game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
 
         return StepStatus.STOP;
     }
 
-    public static StepStatus fremenForcesStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction fremen = gameState.getFaction("Fremen");
+    public static StepStatus fremenForcesStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction fremen = game.getFaction("Fremen");
         discordGame.sendMessage("game-actions",
                 MessageFormat.format(
                         "{0} Please provide the placement of your 10 starting {1} and {2} forces including sector. {3}",
@@ -369,8 +369,8 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus bgForceStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction bg = gameState.getFaction("BG");
+    public static StepStatus bgForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction bg = game.getFaction("BG");
         discordGame.sendMessage("game-actions",
                 MessageFormat.format(
                         "{0} Please provide the placement of your starting {1} or {2}. {3}",
@@ -384,11 +384,11 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus treacheryCardsStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        for (Faction faction : gameState.getFactions()) {
+    public static StepStatus treacheryCardsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        for (Faction faction : game.getFactions()) {
             if (faction.getTreacheryHand().size() == 0) {
-                gameState.drawCard("treachery deck", faction.getName());
-                if (faction.getName().equals("Harkonnen")) gameState.drawCard("treachery deck", faction.getName());
+                game.drawCard("treachery deck", faction.getName());
+                if (faction.getName().equals("Harkonnen")) game.drawCard("treachery deck", faction.getName());
                 ShowCommands.writeFactionInfo(discordGame, faction);
             }
         }
@@ -396,13 +396,13 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus leaderSkillCardsStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Collections.shuffle(gameState.getLeaderSkillDeck());
-        for (Faction faction : gameState.getFactions()) {
+    public static StepStatus leaderSkillCardsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Collections.shuffle(game.getLeaderSkillDeck());
+        for (Faction faction : game.getFactions()) {
 
             // Drawing two Leader Skill Cards for user to choose from
-            gameState.drawCard("leader skills deck", faction.getName());
-            gameState.drawCard("leader skills deck", faction.getName());
+            game.drawCard("leader skills deck", faction.getName());
+            game.drawCard("leader skills deck", faction.getName());
 
             StringBuilder leaderSkillsMessage = new StringBuilder();
             leaderSkillsMessage.append("Please select your leader and their skill from the following two options:\n");
@@ -423,11 +423,11 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus showLeaderSkillCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, InvalidGameStateException {
+    public static StepStatus showLeaderSkillCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String channelName = "turn-summary";
         List<Triple<String, String, String>> leaderSkillInfos = new ArrayList<>();
 
-        for (Faction faction : gameState.getFactions()) {
+        for (Faction faction : game.getFactions()) {
             Optional<Leader> leader = faction.getLeaders().stream().filter(l -> l.skillCard() != null).findFirst();
 
             if (leader.isEmpty()) {
@@ -502,14 +502,14 @@ public class SetupCommands {
         }
 
         ShowCommands.writeFactionInfo(discordGame, harkonnen);
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        for (Faction faction : gameState.getFactions()) {
+    public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        for (Faction faction : game.getFactions()) {
             if (!faction.getName().equals("BT") && faction.getTraitorHand().size() == 0) {
                 for (int j = 0; j < 4; j++) {
-                    gameState.drawCard("traitor deck", faction.getName());
+                    game.drawCard("traitor deck", faction.getName());
                 }
                 ShowCommands.writeFactionInfo(discordGame, faction);
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
@@ -523,26 +523,26 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus btDrawFaceDancersStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException, IOException {
-        gameState.drawCard("traitor deck", "BT");
-        gameState.drawCard("traitor deck", "BT");
-        gameState.drawCard("traitor deck", "BT");
-        ShowCommands.writeFactionInfo(discordGame, gameState.getFaction("BT"));
+    public static StepStatus btDrawFaceDancersStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        game.drawCard("traitor deck", "BT");
+        game.drawCard("traitor deck", "BT");
+        game.drawCard("traitor deck", "BT");
+        ShowCommands.writeFactionInfo(discordGame, game.getFaction("BT"));
 
         discordGame.sendMessage("turn-summary", "Bene Tleilax have drawn their Face Dancers.");
 
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus stormSelectionStep(DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction faction1 = gameState.getFactions().get(0);
-        Faction faction2 = gameState.getFactions().get(gameState.getFactions().size() - 1);
+    public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction faction1 = game.getFactions().get(0);
+        Faction faction2 = game.getFactions().get(game.getFactions().size() - 1);
         discordGame.sendMessage(faction1.getName().toLowerCase() + "-chat",
                 faction1.getPlayer() + " Please submit your dial for initial storm position (0-20)."
         );
         discordGame.sendMessage(faction2.getName().toLowerCase() + "-chat",
                 faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
-        gameState.setStormMovement(new Random().nextInt(6) + 1);
+        game.setStormMovement(new Random().nextInt(6) + 1);
         discordGame.sendMessage("turn-summary", "Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
 
         return StepStatus.STOP;
@@ -557,13 +557,13 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static void factionLeaderSkill(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void factionLeaderSkill(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
         String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
         String leaderSkillName = event.getOption(CommandOptions.factionLeaderSkill.getName()).getAsString();
 
 
-        Faction faction = gameState.getFaction(factionName);
+        Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).get();
         LeaderSkillCard leaderSkillCard = faction.getLeaderSkillsHand().stream()
                 .filter(l -> l.name().equalsIgnoreCase(leaderSkillName))
@@ -582,6 +582,6 @@ public class SetupCommands {
                         updatedLeader.name(), leaderSkillCard.name()
                 )
         );
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 }

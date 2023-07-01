@@ -30,50 +30,50 @@ public class PlayerCommands {
     }
 
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
 
-        if (gameState.getFactions().stream().noneMatch(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))) {
+        if (game.getFactions().stream().noneMatch(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))) {
             return;
         }
 
         String command = event.getSubcommandName();
 
         switch (command) {
-            case "bid" -> bid(event, discordGame, gameState);
-            case "pass" -> pass(event, discordGame, gameState);
-            case "set-auto-bid-policy" -> setAutoBidPolicy(event, discordGame, gameState);
-            case "set-auto-pass" -> setAutoPass(event, discordGame, gameState);
+            case "bid" -> bid(event, discordGame, game);
+            case "pass" -> pass(event, discordGame, game);
+            case "set-auto-bid-policy" -> setAutoBidPolicy(event, discordGame, game);
+            case "set-auto-pass" -> setAutoPass(event, discordGame, game);
         }
-        discordGame.pushGameState();
+        discordGame.pushGame();
     }
 
-    private static void pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
+    private static void pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setMaxBid(-1);
-        tryBid(event, discordGame, gameState, player);
+        tryBid(event, discordGame, game, player);
         discordGame.sendMessage("mod-info", player.getEmoji() + " passed their bid.");
 
     }
 
-    private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean enabled = event.getOption("enabled").getAsBoolean();
-        Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
+        Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setAutoBid(enabled);
         discordGame.sendMessage("mod-info", player.getEmoji() + " set auto-pass to " + enabled);
     }
 
-    private static void setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
+    private static void setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean useExact = event.getOption("use-exact").getAsBoolean();
-        Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
+        Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setUseExact(useExact);
         discordGame.sendMessage("mod-info", player.getEmoji() + " set auto-bid-policy to " + (useExact ? "exact" : "increment"));
     }
 
-    private static void bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState) throws ChannelNotFoundException {
-        Faction player = gameState.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
+    private static void bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setMaxBid(event.getOption("amount").getAsInt());
         discordGame.sendMessage("mod-info", player.getEmoji() + " set their bid to " + event.getOption("amount").getAsInt());
@@ -81,23 +81,23 @@ public class PlayerCommands {
             player.setOutbidAlly(event.getOption("outbid-ally").getAsBoolean());
             discordGame.sendMessage("mod-info", player.getEmoji() + " set their outbid ally policy to " + event.getOption("outbid-ally").getAsBoolean());
         }
-        tryBid(event, discordGame, gameState, player);
+        tryBid(event, discordGame, game, player);
     }
 
-    private static void tryBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game gameState, Faction player) throws ChannelNotFoundException {
-        if (!gameState.getCurrentBidder().equals(player.getName())) return;
+    private static void tryBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, Faction player) throws ChannelNotFoundException {
+        if (!game.getCurrentBidder().equals(player.getName())) return;
 
         if (player.getMaxBid() == -1) {
             player.setBid("pass");
             player.setMaxBid(0);
-        } else if (player.getMaxBid() <= gameState.getCurrentBid()) {
+        } else if (player.getMaxBid() <= game.getCurrentBid()) {
             if (!player.isAutoBid()) return;
             player.setBid("pass");
-        } else if (!player.isOutbidAlly() && player.hasAlly() && player.getAlly().equals(gameState.getBidLeader())) player.setBid("pass");
+        } else if (!player.isOutbidAlly() && player.hasAlly() && player.getAlly().equals(game.getBidLeader())) player.setBid("pass");
         else if (player.isUseExactBid()) player.setBid(String.valueOf(player.getMaxBid()));
-        else player.setBid(String.valueOf(gameState.getCurrentBid() + 1));
-        boolean r = RunCommands.createBidMessage(discordGame, gameState, discordGame.getGameState().getBidOrder(), player);
+        else player.setBid(String.valueOf(game.getCurrentBid() + 1));
+        boolean r = RunCommands.createBidMessage(discordGame, game, discordGame.getGame().getBidOrder(), player);
         if (r) return;
-        tryBid(event, discordGame, gameState, gameState.getFaction(gameState.getCurrentBidder()));
+        tryBid(event, discordGame, game, game.getFaction(game.getCurrentBidder()));
     }
 }

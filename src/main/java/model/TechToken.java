@@ -17,8 +17,8 @@ public class TechToken {
         this.spice = 0;
     }
 
-    public static void addSpice (Game gameState, DiscordGame discordGame, String techToken) throws ChannelNotFoundException {
-        for (Faction faction : gameState.getFactions()) {
+    public static void addSpice (Game game, DiscordGame discordGame, String techToken) throws ChannelNotFoundException {
+        for (Faction faction : game.getFactions()) {
             if (faction.getTechTokens().isEmpty()) continue;
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice == 0) {
@@ -29,8 +29,8 @@ public class TechToken {
         }
     }
 
-    public static void collectSpice(Game gameState, DiscordGame discordGame, String techToken) throws ChannelNotFoundException, IOException {
-        for (Faction faction : gameState.getFactions()) {
+    public static void collectSpice(Game game, DiscordGame discordGame, String techToken) throws ChannelNotFoundException, IOException {
+        for (Faction faction : game.getFactions()) {
             if (faction.getTechTokens().isEmpty()) continue;
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice > 0) {

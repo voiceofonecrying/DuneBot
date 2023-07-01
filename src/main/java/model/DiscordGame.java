@@ -29,13 +29,13 @@ public class DiscordGame {
     private final Member member;
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
-    private Game gameState;
+    private Game game;
     private boolean disableModCheck = false;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
         this.member = event.getMember();
-        this.gameState = this.getGameState();
+        this.game = this.getGame();
     }
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event, @NotNull Category category) {
@@ -87,12 +87,12 @@ public class DiscordGame {
                 .contains(modRoleName);
     }
 
-    public void setGameState(Game gameState) {
-        this.gameState = gameState;
+    public void setGame(Game game) {
+        this.game = game;
     }
 
-    public Game getGameState() throws ChannelNotFoundException {
-        if (this.gameState == null) {
+    public Game getGame() throws ChannelNotFoundException {
+        if (this.game == null) {
             MessageHistory h = this.getBotDataChannel()
                     .getHistory();
 
@@ -113,7 +113,7 @@ public class DiscordGame {
             System.out.println("Didn't work...");
             return new Game();}
         }
-        return this.gameState;
+        return this.game;
     }
 
     /**
@@ -145,10 +145,10 @@ public class DiscordGame {
         }
     }
 
-    public void pushGameState() {
+    public void pushGame() {
         Gson gson = new Gson();
         FileUpload fileUpload = FileUpload.fromData(
-                gson.toJson(this.gameState).getBytes(StandardCharsets.UTF_8), "gamestate.json"
+                gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
         try {
@@ -160,25 +160,25 @@ public class DiscordGame {
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
-        if (this.gameState.getMute()) return;
+        if (this.game.getMute()) return;
         channel.sendMessage(message).queue();
     }
 
     public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
-        if (this.gameState.getMute()) return;
+        if (this.game.getMute()) return;
         channel.sendMessage(message).queue();
     }
 
     public void sendMessage(String name, String message, FileUpload fileUpload) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
-        if (this.gameState.getMute()) return;
+        if (this.game.getMute()) return;
         channel.sendMessage(message).addFiles(fileUpload).queue();
     }
 
     public void sendMessage(String name, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
-        if (this.gameState.getMute()) return;
+        if (this.game.getMute()) return;
         channel.sendMessage(message).addFiles(fileUploads).queue();
     }
 
