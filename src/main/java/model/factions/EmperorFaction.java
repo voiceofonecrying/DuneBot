@@ -14,4 +14,17 @@ public class EmperorFaction extends Faction {
         this.specialReserves = new Force("Emperor*", 5);
         this.emoji = Emojis.EMPEROR;
     }
+
+    /**
+     * Adds forces from a Territory to the reserves or tanks
+     * @param territoryName The name of the Territory.
+     * @param amount The amount of the force.
+     * @param isSpecial Whether the force is special or not.
+     * @param toTanks Whether the force is going to the tanks or not.
+     */
+    @Override
+    public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
+        String forceName = getName() + (isSpecial ? "*" : "");
+        removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+    }
 }

@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Game;
 import model.Territory;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;
@@ -10,14 +9,15 @@ import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AtreidesFactionTest {
+class AtreidesFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private AtreidesFaction faction;
+
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new AtreidesFaction("player", "player", game);
     }
 

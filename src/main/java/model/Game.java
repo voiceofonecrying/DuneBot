@@ -189,6 +189,19 @@ public class Game extends GameFactionBase {
         return territories;
     }
 
+    /**
+     * Returns the territory with the given name.
+     * @param name The territory's name.
+     * @return The territory with the given name.
+     */
+    public Territory getTerritory(String name) {
+        Territory territory = territories.get(name);
+        if (territory == null) {
+            throw new IllegalArgumentException("No territory with name " + name);
+        }
+        return territory;
+    }
+
     public String getGameRole() {
         return gameRole;
     }

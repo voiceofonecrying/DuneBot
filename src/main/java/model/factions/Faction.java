@@ -37,6 +37,8 @@ public class Faction {
     private final List<Leader> leaders;
     protected final List<Resource> resources;
 
+    private Game game;
+
     public Faction(String name, String player, String userName, Game game) {
         this.handLimit = 4;
         this.name = name;
@@ -82,6 +84,16 @@ public class Faction {
                 traitorDeck.add(traitorCard);
             }
         }
+
+        this.game = game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public Game getGame() {
+        return game;
     }
 
     public Resource getResource(String name) {
@@ -314,5 +326,57 @@ public class Faction {
 
     public void setOutbidAlly(boolean outbidAlly) {
         this.outbidAlly = outbidAlly;
+    }
+
+
+    /**
+     * Adds forces from a Territory to the reserves or tanks
+     * @param territoryName The name of the Territory.
+     * @param amount The amount of the force.
+     * @param isSpecial Whether the force is special or not.
+     * @param toTanks Whether the force is going to the tanks or not.
+     */
+    public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
+        if (isSpecial) {
+            throw new IllegalArgumentException("Faction does not have special forces.");
+        }
+
+        String forceName = getName();
+        removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+    }
+
+    /**
+     * Removes forces from a Territory and adds them to the reserves or tanks
+     * @param territoryName The name of the Territory.
+     * @param forceName The name of the force.
+     * @param amount The amount of the force.
+     * @param toTanks Weather the force is going to the tanks or not.
+     * @param isSpecial Whether the force is special or not.
+     */
+    public void removeForces(String territoryName, String forceName, int amount, boolean toTanks, boolean isSpecial,
+                             String targetForceName) {
+        Territory territory = game.getTerritory(territoryName);
+
+        Force force = territory.getForce(forceName);
+        int forceStrength = force.getStrength();
+
+        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in territory.");
+
+        if (forceStrength == amount) {
+            territory.removeForce(forceName);
+        } else {
+            force.setStrength(forceStrength - amount);
+        }
+
+        if (toTanks) {
+            game.getForceFromTanks(targetForceName).addStrength(amount);
+        } else {
+            if (isSpecial) {
+                specialReserves.addStrength(amount);
+            } else {
+                reserves.addStrength(amount);
+            }
+        }
+
     }
 }

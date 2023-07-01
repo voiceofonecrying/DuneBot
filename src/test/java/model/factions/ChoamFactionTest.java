@@ -11,14 +11,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ChoamFactionTest {
+class ChoamFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private ChoamFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new ChoamFaction("player", "player", game);
     }
 

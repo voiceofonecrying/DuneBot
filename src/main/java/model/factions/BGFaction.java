@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 public class BGFaction extends Faction {
     private String predictionFactionName;
@@ -48,5 +49,27 @@ public class BGFaction extends Faction {
             throw new IllegalArgumentException("Prediction round must be between 1 and 10");
         }
         this.predictionRound = predictionRound;
+    }
+
+    /**
+     * Adds forces from a Territory to the reserves or tanks
+     * @param territoryName The name of the Territory.
+     * @param amount The amount of the force.
+     * @param isSpecial Whether the force is special or not.
+     * @param toTanks Whether the force is going to the tanks or not.
+     */
+    @Override
+    public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
+        Territory territory = getGame().getTerritory(territoryName);
+
+        if (isSpecial) {
+            throw new IllegalArgumentException("Faction does not have special forces");
+        }
+
+        if (territory.hasForce("BG")) {
+            removeForces(territoryName, "BG", amount, toTanks, isSpecial, "BG");
+        } else {
+            removeForces(territoryName, "Advisor", amount, toTanks, isSpecial, "BG");
+        }
     }
 }

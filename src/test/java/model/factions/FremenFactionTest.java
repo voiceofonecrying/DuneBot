@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class FremenFactionTest {
+class FremenFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private FremenFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new FremenFaction("player", "player", game);
     }
 

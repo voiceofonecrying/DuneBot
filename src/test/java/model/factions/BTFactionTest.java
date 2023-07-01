@@ -9,14 +9,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BTFactionTest {
+class BTFactionTest extends FactionTestTemplate {
 
-    private Game game;
     private BTFaction faction;
+    @Override
+    Faction getFaction() { return faction; }
 
     @BeforeEach
     void setUp() {
-        game = new Game();
         faction = new BTFaction("player", "player", game);
     }
 
