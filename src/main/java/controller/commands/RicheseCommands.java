@@ -116,7 +116,7 @@ public class RicheseCommands {
 
         if (bidType.equalsIgnoreCase("Normal")) {
             RunCommands.updateBidOrder(game);
-            List<String> bidOrder = game.getBidOrder();
+            List<String> bidOrder = game.getEligibleBidOrder();
 
             RunCommands.createBidMessage(discordGame, game, bidOrder, game.getFaction(bidOrder.get(bidOrder.size() - 1)));
         } else {
