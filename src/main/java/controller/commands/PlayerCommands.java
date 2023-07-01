@@ -61,6 +61,7 @@ public class PlayerCommands {
         Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setAutoBid(enabled);
+        tryBid(event, discordGame, gameState, player);
         discordGame.sendMessage("mod-info", player.getEmoji() + " set auto-pass to " + enabled);
     }
 
@@ -96,7 +97,7 @@ public class PlayerCommands {
         } else if (!player.isOutbidAlly() && player.hasAlly() && player.getAlly().equals(game.getBidLeader())) player.setBid("pass");
         else if (player.isUseExactBid()) player.setBid(String.valueOf(player.getMaxBid()));
         else player.setBid(String.valueOf(game.getCurrentBid() + 1));
-        boolean r = RunCommands.createBidMessage(discordGame, game, discordGame.getGame().getBidOrder(), player);
+        boolean r = RunCommands.createBidMessage(discordGame, game, discordGame.getGame().getEligibleBidOrder(), player);
         if (r) return;
         tryBid(event, discordGame, game, game.getFaction(game.getCurrentBidder()));
     }
