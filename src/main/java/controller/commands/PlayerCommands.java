@@ -61,6 +61,7 @@ public class PlayerCommands {
         Faction player = game.getFactions().stream().filter(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))
                 .findFirst().get();
         player.setAutoBid(enabled);
+        tryBid(event, discordGame, gameState, player);
         discordGame.sendMessage("mod-info", player.getEmoji() + " set auto-pass to " + enabled);
     }
 
