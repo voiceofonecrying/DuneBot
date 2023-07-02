@@ -1,10 +1,11 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Game;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -16,7 +17,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     Faction getFaction() { return faction; }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         faction = new RicheseFaction("player", "player", game);
     }
 

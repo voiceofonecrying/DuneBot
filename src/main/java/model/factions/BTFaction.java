@@ -5,6 +5,7 @@ import model.Force;
 import model.Game;
 import model.TraitorCard;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -12,7 +13,7 @@ import java.util.Set;
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
 
-    public BTFaction(String player, String userName, Game game) {
+    public BTFaction(String player, String userName, Game game) throws IOException {
         super("BT", player, userName, game);
 
         setSpice(5);

@@ -4,10 +4,12 @@ import constants.Emojis;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class AtreidesFaction extends Faction {
     private int forcesLost;
 
-    public AtreidesFaction(String player, String userName, Game game) {
+    public AtreidesFaction(String player, String userName, Game game) throws IOException {
         super("Atreides", player, userName, game);
 
         setSpice(10);

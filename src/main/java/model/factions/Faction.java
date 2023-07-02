@@ -39,7 +39,7 @@ public class Faction {
 
     private Game game;
 
-    public Faction(String name, String player, String userName, Game game) {
+    public Faction(String name, String player, String userName, Game game) throws IOException {
         this.handLimit = 4;
         this.name = name;
         this.player = player;
@@ -64,12 +64,7 @@ public class Faction {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
         ));
-        CSVParser csvParser = null;
-        try {
-            csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
 
         LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
 
@@ -100,7 +95,7 @@ public class Faction {
         return resources.stream()
                 .filter(r -> r.getName().equals(name))
                 .findFirst()
-                .get();
+                .orElseThrow(() -> new IllegalArgumentException("Resource not found"));
     }
 
     public List<Resource> getResources(String name) {
@@ -120,10 +115,6 @@ public class Faction {
 
     public String getEmoji() {
         return emoji;
-    }
-
-    public void setEmoji(String emoji) {
-        this.emoji = emoji;
     }
 
     public String getPlayer() {
@@ -162,17 +153,6 @@ public class Faction {
 
     public void addTreacheryCard(TreacheryCard card) {
         treacheryHand.add(card);
-    }
-
-    public void removeTreacheryCard(String cardName) {
-        TreacheryCard remove = null;
-        for (TreacheryCard card : treacheryHand) {
-            if (card.name().equals(cardName)) {
-               remove = card;
-            }
-        }
-        if (remove != null) treacheryHand.remove(remove);
-        else throw new IllegalArgumentException("Card not found");
     }
 
     public List<TraitorCard> getTraitorHand() {
@@ -243,21 +223,17 @@ public class Faction {
     }
 
     public Leader removeLeader(String name) {
-        Leader remove = null;
-        for (Leader leader : leaders) {
-            if (leader.name().equals(name)) {
-                remove = leader;
-            }
-        }
-        if (remove == null) throw new IllegalArgumentException("Leader not found.");
+        Leader remove = leaders.stream()
+                .filter(l -> l.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
+
         leaders.remove(remove);
         return remove;
     }
 
-    public Leader removeLeader(Leader leader) {
+    public void removeLeader(Leader leader) {
         getLeaders().remove(leader);
-
-        return leader;
     }
 
     public void addLeader(Leader leader) {
@@ -342,7 +318,7 @@ public class Faction {
         }
 
         String forceName = getName();
-        removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+        removeForces(territoryName, forceName, amount, toTanks, false, forceName);
     }
 
     /**

@@ -6,12 +6,13 @@ import model.factions.Faction;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
 
-public class Game extends GameFactionBase {
+public class Game {
     private String gameRole;
     private String modRole;
     private Boolean mute;
@@ -28,7 +29,6 @@ public class Game extends GameFactionBase {
     private int stormMovement;
     private int bidCardNumber;
 
-    private int bidMarketSize;
     private List<String> bidOrder;
     private TreacheryCard bidCard;
 
@@ -51,7 +51,7 @@ public class Game extends GameFactionBase {
     private String bidLeader;
     private boolean sandtroutInPlay;
 
-    public Game() {
+    public Game() throws IOException {
         super();
 
         factions = new LinkedList<>();
@@ -72,7 +72,6 @@ public class Game extends GameFactionBase {
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.market = new LinkedList<>();
-        this.bidMarketSize = 0;
         this.turn = 0;
         this.phase = 0;
         this.subPhase = 0;
@@ -110,14 +109,6 @@ public class Game extends GameFactionBase {
 
     public void setGameOptions(Set<GameOption> gameOptions) {
         this.gameOptions = gameOptions;
-    }
-
-    public void setGameOption(GameOption gameOption, boolean enabled) {
-        if (enabled) {
-            addGameOption(gameOption);
-        } else {
-            removeGameOption(gameOption);
-        }
     }
 
     public void addGameOption(GameOption gameOption) {
@@ -246,14 +237,14 @@ public class Game extends GameFactionBase {
      * @return The faction's turn index.
      */
     public int getFactionTurnIndex(String name) {
-        int rawTurnIndex = factions.indexOf(findFaction(name).get());
+        int rawTurnIndex = factions.indexOf(getFaction(name));
         int stormSection = Math.ceilDiv(getStorm(), 3);
 
         return Math.floorMod(rawTurnIndex - stormSection, factions.size());
     }
 
     public Faction getFaction(String name) {
-        return findFaction(name).get();
+        return findFaction(name).orElseThrow(() -> new IllegalArgumentException("No faction with name " + name));
     }
 
     public Boolean hasFaction(String name) {
@@ -347,13 +338,11 @@ public class Game extends GameFactionBase {
     }
 
     public Leader removeLeaderFromTanks(String name) {
-        Leader remove = null;
-        for (Leader leader : leaderTanks) {
-            if (leader.name().equals(name)) {
-                remove = leader;
-            }
-        }
-        if (remove == null) throw new IllegalArgumentException("Leader not found.");
+        Leader remove = leaderTanks.stream()
+                .filter(l -> l.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
+
         leaderTanks.remove(remove);
         return remove;
     }
@@ -398,14 +387,6 @@ public class Game extends GameFactionBase {
         return shieldWallDestroyed;
     }
 
-    public int getBidMarketSize() {
-        return bidMarketSize;
-    }
-
-    public void setBidMarketSize(int bidMarketSize) {
-        this.bidMarketSize = bidMarketSize;
-    }
-
     public int getStormMovement() {
         return stormMovement;
     }
@@ -418,24 +399,12 @@ public class Game extends GameFactionBase {
         return hasGameOption(GameOption.TECH_TOKENS);
     }
 
-    public void setTechTokens(boolean enabled) {
-        setGameOption(GameOption.TECH_TOKENS, enabled);
-    }
-
     public boolean hasLeaderSkills() {
         return hasGameOption(GameOption.LEADER_SKILLS);
     }
 
-    public void setLeaderSkills(boolean enabled) {
-        setGameOption(GameOption.LEADER_SKILLS, enabled);
-    }
-
     public boolean hasStrongholdSkills() {
         return hasGameOption(GameOption.STRONGHOLD_SKILLS);
-    }
-
-    public void setStrongholdSkills(boolean enabled) {
-        setGameOption(GameOption.STRONGHOLD_SKILLS, enabled);
     }
 
     public void drawCard(String deckName, String faction) {

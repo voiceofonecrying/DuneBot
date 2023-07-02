@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
@@ -26,32 +28,24 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class DiscordGame {
-    private final Member member;
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
     private Game game;
-    private boolean disableModCheck = false;
 
-    public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException {
+    private SlashCommandInteractionEvent event;
+
+    public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
-        this.member = event.getMember();
         this.game = this.getGame();
-    }
-
-    public DiscordGame(@NotNull SlashCommandInteractionEvent event, @NotNull Category category) {
-        this.gameCategory = category;
-        this.member = event.getMember();
+        this.event = event;
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
         this.gameCategory = Objects.requireNonNull(event.getChannel()).asTextChannel().getParentCategory();
-        this.member = event.getMember();
     }
 
-    public DiscordGame(Category category, boolean disableModCheck) {
+    public DiscordGame(Category category) {
         this.gameCategory = category;
-        this.member = null;
-        this.disableModCheck = disableModCheck;
     }
 
     public Category getGameCategory() {
@@ -79,14 +73,6 @@ public class DiscordGame {
         return this.getTextChannel("bot-data");
     }
 
-    public boolean isModRole(String modRoleName) {
-        return disableModCheck || this.member
-                .getRoles()
-                .stream().map(Role::getName)
-                .toList()
-                .contains(modRoleName);
-    }
-
     public void setGame(Game game) {
         this.game = game;
     }
@@ -97,7 +83,7 @@ public class DiscordGame {
      * @return Game object representing the game state.
      * @throws ChannelNotFoundException If the bot data channel is not found.
      */
-    public Game getGame() throws ChannelNotFoundException {
+    public Game getGame() throws ChannelNotFoundException, IOException {
         if (this.game == null) {
             MessageHistory h = this.getBotDataChannel()
                     .getHistory();
@@ -215,7 +201,7 @@ public class DiscordGame {
      * @param parentChannelName The name of the parent channel
      * @param threadName The name of the thread to create
      * @param userIds The ids of the users to add to the thread.  All non-numeeric characters will be removed.
-     * @throws ChannelNotFoundException
+     * @throws ChannelNotFoundException Thrown if the parent channel is not found.
      */
     public void createThread(String parentChannelName, String threadName, List<String> userIds) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(parentChannelName);
@@ -241,5 +227,35 @@ public class DiscordGame {
                         user -> threadChannel.addThreadMember(user).queue()
                 )
         );
+    }
+
+    public Faction getFactionByPlayer(String user) throws ChannelNotFoundException, IOException {
+        return getGame().getFactions().stream()
+                .filter(f ->
+                        f.getPlayer()
+                                .substring(2)
+                                .replace(">", "")
+                                .equals(user
+                                        .split("=")[1]
+                                        .replace(")", "")
+                                )
+                )
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Player not found"));
+    }
+
+    public OptionMapping required(OptionData optionData) {
+        OptionMapping optionMapping = optional(optionData);
+
+        if (optionMapping == null) {
+            throw new IllegalArgumentException("Required option is missing: " + optionData.getName());
+        }
+
+        return optionMapping;
+    }
+
+    public OptionMapping optional(OptionData optionData) {
+        String optionName = optionData.getName();
+        return event.getOption(optionName);
     }
 }

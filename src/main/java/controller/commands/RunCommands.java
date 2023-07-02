@@ -34,11 +34,12 @@ public class RunCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
             case "advance" -> advance(event, discordGame, game);
-            case "bidding" -> bidding(event, discordGame, game);
-            case "update-stronghold-skills" -> updateStrongholdSkills(event, discordGame, game);
+            case "bidding" -> bidding(discordGame, game);
+            case "update-stronghold-skills" -> updateStrongholdSkills(discordGame, game);
         }
     }
 
@@ -51,37 +52,37 @@ public class RunCommands {
         int subPhase = game.getSubPhase();
 
         if (phase == 1 && subPhase == 1) {
-            startStormPhase(event, discordGame, game);
+            startStormPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
-            endStormPhase(event, discordGame, game);
+            endStormPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 2) {
-            spiceBlow(event, discordGame, game);
+            spiceBlow(discordGame, game);
             game.advancePhase();
         } else if (phase == 3) {
-            choamCharity(event, discordGame, game);
+            choamCharity(discordGame, game);
             game.advancePhase();
         } else if (phase == 4 && subPhase == 1) {
-            startBiddingPhase(event, discordGame, game);
+            startBiddingPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 2) {
-            cardCountsInBiddingPhase(event, discordGame, game);
+            cardCountsInBiddingPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 3) {
-            finishBiddingPhase(event, discordGame, game);
+            finishBiddingPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 5) {
-            startRevivalPhase(event, discordGame, game);
+            startRevivalPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 6) {
-            startShipmentPhase(event, discordGame, game);
+            startShipmentPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 7) {
-            startBattlePhase(event, discordGame, game);
+            startBattlePhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 8) {
-            startSpiceHarvest(event, discordGame, game);
+            startSpiceHarvest(discordGame, game);
             game.advancePhase();
         } else if (phase == 9) {
             startMentatPause(event, discordGame, game);
@@ -91,7 +92,7 @@ public class RunCommands {
         discordGame.pushGame();
     }
 
-    public static void startStormPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
         Map<String, Territory> territories = game.getTerritories();
         if (game.getTurn() != 1) {
@@ -194,17 +195,17 @@ public class RunCommands {
         return message;
     }
 
-    public static void endStormPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasFaction("Fremen")) {
             discordGame.sendMessage("fremen-chat", "The storm will move " + game.getStormMovement() + " sectors next turn.");
         }
     }
 
-    public static void spiceBlow(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Spice Blow Phase:");
     }
 
-    public static void choamCharity(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " CHOAM Charity Phase:");
         int multiplier = 1;
 
@@ -264,7 +265,7 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
-    public static void startBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.setBidOrder(new ArrayList<>());
         game.setBidCardNumber(0);
@@ -276,7 +277,7 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Run black market bid (if exists), then advance the game.");
     }
 
-    public static void cardCountsInBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
 
         message.append(MessageFormat.format(
@@ -309,7 +310,7 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
     }
 
-    public static void finishBiddingPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.getBidCard() != null) {
             discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
             game.getTreacheryDeck().addFirst(game.getBidCard());
@@ -317,7 +318,7 @@ public class RunCommands {
         }
     }
 
-    public static void bidding(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         updateBidOrder(game);
         List<String> bidOrder = game.getEligibleBidOrder();
 
@@ -388,10 +389,10 @@ public class RunCommands {
                     return true;
                 }
                 game.setCurrentBidder(f.getName());
-                message.append(f.getEmoji() + " - " + f.getPlayer() + "\n");
+                message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
                 tag = false;
             } else {
-                message.append(f.getEmoji() + " - " + f.getBid() + "\n");
+                message.append(f.getEmoji()).append(" - ").append(f.getBid()).append("\n");
             }
             if (currentBidder.getName().equals(f.getName())) tag = true;
         }
@@ -436,7 +437,7 @@ public class RunCommands {
         game.setBidOrder(bidOrder);
     }
 
-    public static void startRevivalPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Revival Phase:");
         List<Faction> factions = game.getFactions();
         StringBuilder message = new StringBuilder();
@@ -472,7 +473,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startShipmentPhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Axlotl Tanks");
 
@@ -492,7 +493,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startBattlePhase(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startBattlePhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Heighliners");
 
@@ -542,7 +543,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startSpiceHarvest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Spice Harvest Phase:");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
@@ -628,12 +629,12 @@ public class RunCommands {
             }
         }
 
-        updateStrongholdSkills(event, discordGame, game);
+        updateStrongholdSkills(discordGame, game);
 
         ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
     }
 
-    public static void updateStrongholdSkills(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void updateStrongholdSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasStrongholdSkills()) {
             for (Faction faction : game.getFactions()) {
                 faction.removeResource("strongholdCard");

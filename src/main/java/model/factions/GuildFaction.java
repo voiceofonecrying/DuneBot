@@ -4,8 +4,10 @@ import constants.Emojis;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class GuildFaction extends Faction {
-    public GuildFaction(String player, String userName, Game game) {
+    public GuildFaction(String player, String userName, Game game) throws IOException {
         super("Guild", player, userName, game);
 
         setSpice(5);

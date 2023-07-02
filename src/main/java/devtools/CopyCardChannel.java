@@ -2,13 +2,11 @@ package devtools;
 
 import exceptions.ChannelNotFoundException;
 import io.github.cdimascio.dotenv.Dotenv;
-import model.DiscordGame;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -56,7 +54,10 @@ public class CopyCardChannel {
                 .build();
         jda.awaitReady();
         Guild guild = jda.getGuildById(guildId);
-        Category category = guild.getCategoriesByName("Mod area", true).get(0);
+        if (guild == null) throw new ChannelNotFoundException("Guild not found");
+        List<Category> categories = guild.getCategoriesByName("Mod area", true);
+        if (categories.size() == 0) throw new ChannelNotFoundException("Category Mod area not found");
+        Category category = categories.get(0);
         List<TextChannel> channels = category.getTextChannels();
         Optional<TextChannel> channel = channels.stream().filter(c -> c.getName().equalsIgnoreCase(channelName))
                 .findFirst();

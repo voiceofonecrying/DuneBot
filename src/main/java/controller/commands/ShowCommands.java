@@ -31,6 +31,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 
+import static controller.commands.CommandOptions.faction;
+
 public class ShowCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
@@ -38,7 +40,7 @@ public class ShowCommands {
                 Commands.slash("show", "Show parts of the game.").addSubcommands(
                         new SubcommandData("board", "Show the map in the turn summary"),
                         new SubcommandData("faction-info", "Print Faction Information in their Private Channel")
-                                .addOptions(CommandOptions.faction),
+                                .addOptions(faction),
                         new SubcommandData("front-of-shields", "Refresh the #front-of-shield channel")
                 )
         );
@@ -48,20 +50,21 @@ public class ShowCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
             case "board" -> showBoard(discordGame, game);
-            case "faction-info" -> showFactionInfo(event, discordGame);
+            case "faction-info" -> showFactionInfo(discordGame);
             case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, game);
         }
     }
 
-    public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         drawGameBoard(discordGame, game);
     }
 
-    public static void showFactionInfo(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
+    public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+        String factionName = discordGame.required(faction).getAsString();
         writeFactionInfo(discordGame, factionName);
     }
 
@@ -72,23 +75,22 @@ public class ShowCommands {
     }
 
     private static FileUpload getResourceFile(String name) throws IOException {
-        InputStream inputStream = ShowCommands.class.getClassLoader()
-                .getResource("Board Components/" + name + ".png").openStream();
+        URL resourceURL = ShowCommands.class.getClassLoader()
+                .getResource("Board Components/" + name + ".png");
+
+        if (resourceURL == null) throw new FileNotFoundException("File not found: " + name);
+
+        InputStream inputStream = resourceURL.openStream();
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
-    private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
         ));
-        CSVParser csvParser = null;
-        try {
-            csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
 
         HashMap<String, String> leaderToFaction = new HashMap<>();
 

@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.stream.Collectors;
 
 public class ChannelPermissions {
-    public static EnumSet<Permission> all = EnumSet.of(
+    public static final EnumSet<Permission> all = EnumSet.of(
             Permission.VIEW_CHANNEL,
             Permission.MANAGE_CHANNEL,
             Permission.MESSAGE_SEND,
@@ -25,27 +25,18 @@ public class ChannelPermissions {
             Permission.USE_APPLICATION_COMMANDS
     );
 
-    public static EnumSet<Permission> readAndReactAllow = EnumSet.of(
+    public static final EnumSet<Permission> readAndReactAllow = EnumSet.of(
             Permission.VIEW_CHANNEL,
             Permission.MESSAGE_HISTORY,
             Permission.MESSAGE_ADD_REACTION,
             Permission.MESSAGE_EXT_EMOJI
     );
 
-    public static EnumSet<Permission> readAndReactDeny = all.stream()
+    public static final EnumSet<Permission> readAndReactDeny = all.stream()
             .filter(permission -> !readAndReactAllow.contains(permission))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
-    public static EnumSet<Permission> readOnlyAllow = EnumSet.of(
-            Permission.VIEW_CHANNEL,
-            Permission.MESSAGE_HISTORY
-    );
-
-    public static EnumSet<Permission> readOnlyDeny = all.stream()
-            .filter(permission -> !readOnlyAllow.contains(permission))
-            .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
-
-    public static EnumSet<Permission> readWriteAllow = EnumSet.of(
+    public static final EnumSet<Permission> readWriteAllow = EnumSet.of(
             Permission.VIEW_CHANNEL,
             Permission.MESSAGE_SEND,
             Permission.MESSAGE_SEND_IN_THREADS,
@@ -59,11 +50,11 @@ public class ChannelPermissions {
             Permission.MESSAGE_HISTORY
     );
 
-    public static EnumSet<Permission> readWriteDeny = all.stream()
+    public static final EnumSet<Permission> readWriteDeny = all.stream()
             .filter(permission -> !readWriteAllow.contains(permission))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
-    public static EnumSet<Permission> pollBotAllow = EnumSet.of(
+    public static final EnumSet<Permission> pollBotAllow = EnumSet.of(
             Permission.VIEW_CHANNEL,
             Permission.MESSAGE_SEND,
             Permission.MESSAGE_EMBED_LINKS,
@@ -73,7 +64,7 @@ public class ChannelPermissions {
             Permission.MESSAGE_HISTORY
     );
 
-    public static EnumSet<Permission> pollBotDeny = all.stream()
+    public static final EnumSet<Permission> pollBotDeny = all.stream()
             .filter(permission -> !pollBotAllow.contains(permission))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 }

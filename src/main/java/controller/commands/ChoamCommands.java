@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import java.util.ArrayList;
 import java.util.List;
 
+import static controller.commands.CommandOptions.choamInflationType;
+
 public class ChoamCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
@@ -21,7 +23,7 @@ public class ChoamCommands {
                         new SubcommandData(
                                 "set-inflation",
                                 "Set CHOAM Inflation for next round."
-                        ).addOptions(CommandOptions.choamInflationType)
+                        ).addOptions(choamInflationType)
                 )
         );
 
@@ -30,15 +32,18 @@ public class ChoamCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
-        switch (name) {
-            case "set-inflation" -> setInflation(event, discordGame, game);
+        if (name.equals("set-inflation")) {
+            setInflation(discordGame, game);
+        } else {
+            throw new IllegalArgumentException("Invalid command name: " + name);
         }
     }
 
-    public static void setInflation(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void setInflation(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasFaction("CHOAM")) {
-            String inflationType = event.getOption(CommandOptions.choamInflationType.getName()).getAsString();
+            String inflationType = discordGame.required(choamInflationType).getAsString();
             ChoamInflationType choamInflationType = ChoamInflationType.valueOf(inflationType);
 
             ChoamFaction faction = (ChoamFaction) game.getFaction("CHOAM");

@@ -4,8 +4,10 @@ import constants.Emojis;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class FremenFaction extends Faction {
-    public FremenFaction(String player, String userName, Game game) {
+    public FremenFaction(String player, String userName, Game game) throws IOException {
         super("Fremen", player, userName, game);
 
         setSpice(3);

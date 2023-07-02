@@ -5,11 +5,13 @@ import model.Force;
 import model.Game;
 import model.Territory;
 
+import java.io.IOException;
+
 public class BGFaction extends Faction {
     private String predictionFactionName;
     private int predictionRound;
 
-    public BGFaction(String player, String userName, Game game) {
+    public BGFaction(String player, String userName, Game game) throws IOException {
         super("BG", player, userName, game);
 
         setSpice(5);
@@ -67,9 +69,9 @@ public class BGFaction extends Faction {
         }
 
         if (territory.hasForce("BG")) {
-            removeForces(territoryName, "BG", amount, toTanks, isSpecial, "BG");
+            removeForces(territoryName, "BG", amount, toTanks, false, "BG");
         } else {
-            removeForces(territoryName, "Advisor", amount, toTanks, isSpecial, "BG");
+            removeForces(territoryName, "Advisor", amount, toTanks, false, "BG");
         }
     }
 }

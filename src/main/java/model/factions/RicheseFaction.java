@@ -3,11 +3,12 @@ package model.factions;
 import constants.Emojis;
 import model.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RicheseFaction extends Faction {
-    public RicheseFaction(String player, String userName, Game game) {
+    public RicheseFaction(String player, String userName, Game game) throws IOException {
         super("Richese", player, userName, game);
 
         setSpice(5);

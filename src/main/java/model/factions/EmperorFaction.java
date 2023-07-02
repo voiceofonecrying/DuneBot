@@ -4,8 +4,10 @@ import constants.Emojis;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class EmperorFaction extends Faction {
-    public EmperorFaction(String player, String userName, Game game) {
+    public EmperorFaction(String player, String userName, Game game) throws IOException {
         super("Emperor", player, userName, game);
 
         setSpice(10);

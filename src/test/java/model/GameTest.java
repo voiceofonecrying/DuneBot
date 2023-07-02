@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
@@ -12,7 +14,7 @@ class GameTest {
     private Game game;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         game = new Game();
     }
 

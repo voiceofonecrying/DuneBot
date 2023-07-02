@@ -13,6 +13,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import static controller.commands.CommandOptions.faction;
+import static controller.commands.CommandOptions.factionLeader;
+
 public class HarkCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
@@ -21,11 +24,11 @@ public class HarkCommands {
                         new SubcommandData(
                                 "capture-leader",
                                 "Capture a faction's leader after winning a battle."
-                        ).addOptions(CommandOptions.faction, CommandOptions.factionLeader),
+                        ).addOptions(faction, factionLeader),
                         new SubcommandData(
                                 "kill-leader",
                                 "Kill a faction's leader after winning a battle."
-                        ).addOptions(CommandOptions.faction, CommandOptions.factionLeader)
+                        ).addOptions(faction, factionLeader)
                 )
         );
 
@@ -34,6 +37,7 @@ public class HarkCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         if (!game.hasFaction("Harkonnen")) return;
 
@@ -44,8 +48,8 @@ public class HarkCommands {
     }
 
     public static void captureLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
-        String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
+        String factionName = discordGame.required(faction).getAsString();
+        String leaderName = discordGame.required(factionLeader).getAsString();
 
         Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
@@ -77,8 +81,8 @@ public class HarkCommands {
     }
 
     public static void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
-        String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
+        String factionName = discordGame.required(faction).getAsString();
+        String leaderName = discordGame.required(factionLeader).getAsString();
 
         Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();

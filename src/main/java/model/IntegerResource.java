@@ -15,7 +15,7 @@ public class IntegerResource extends Resource<Integer> {
         this.maxValue = maxValue == null ? Integer.MAX_VALUE : maxValue;
     }
 
-    public int addValue(int value) throws InvalidGameStateException {
+    public void addValue(int value) throws InvalidGameStateException {
         int newValue = getValue() + value;
         if ((newValue < minValue) || (newValue > maxValue)) {
             throw new InvalidGameStateException(
@@ -24,6 +24,5 @@ public class IntegerResource extends Resource<Integer> {
         }
 
         setValue(newValue);
-        return newValue;
     }
 }

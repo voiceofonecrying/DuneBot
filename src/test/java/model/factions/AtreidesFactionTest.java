@@ -7,6 +7,8 @@ import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AtreidesFactionTest extends FactionTestTemplate {
@@ -17,7 +19,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     Faction getFaction() { return faction; }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         faction = new AtreidesFaction("player", "player", game);
     }
 

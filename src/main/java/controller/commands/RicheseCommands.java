@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static controller.commands.CommandOptions.*;
+
 public class RicheseCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
@@ -24,17 +26,17 @@ public class RicheseCommands {
                         new SubcommandData(
                                 "no-fields-to-front-of-shield",
                                 "Move the Richese No-Fields token to the Front of Shield."
-                        ).addOptions(CommandOptions.richeseNoFields),
+                        ).addOptions(richeseNoFields),
                         new SubcommandData(
                                 "place-no-fields-token",
                                 "Place a No-Fields token on the map."
-                        ).addOptions(CommandOptions.richeseNoFields, CommandOptions.territory),
+                        ).addOptions(richeseNoFields, CommandOptions.territory),
                         new SubcommandData(
                                 "remove-no-field",
                                 "Remove the No-Field token from the board"
                         ),
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
-                                .addOptions(CommandOptions.richeseCard, CommandOptions.richeseBidType),
+                                .addOptions(richeseCard, richeseBidType),
                         new SubcommandData("black-market-bid", "Start bidding on a black market card")
                                 .addOptions(CommandOptions.richeseBlackMarketCard, CommandOptions.richeseBlackMarketBidType)
                 )
@@ -45,18 +47,19 @@ public class RicheseCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
             case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(event, discordGame, game);
-            case "card-bid" -> cardBid(event, discordGame, game);
-            case "black-market-bid" -> blackMarketBid(event, discordGame, game);
-            case "place-no-fields-token" -> placeNoFieldToken(event, discordGame, game);
-            case "remove-no-field" -> removeNoFieldToken(event, discordGame, game);
+            case "card-bid" -> cardBid(discordGame, game);
+            case "black-market-bid" -> blackMarketBid(discordGame, game);
+            case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
+            case "remove-no-field" -> removeNoFieldToken(discordGame, game);
         }
     }
 
     public static void moveNoFieldsToFrontOfShield(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        int noFieldValue = event.getOption(CommandOptions.richeseNoFields.getName()).getAsInt();
+        int noFieldValue = discordGame.required(richeseNoFields).getAsInt();
 
         if (game.hasFaction("Richese")) {
             Faction faction = game.getFaction("Richese");
@@ -72,9 +75,9 @@ public class RicheseCommands {
         }
     }
 
-    public static void cardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String cardName = event.getOption(CommandOptions.richeseCard.getName()).getAsString();
-        String bidType = event.getOption(CommandOptions.richeseBidType.getName()).getAsString();
+    public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String cardName = discordGame.required(richeseCard).getAsString();
+        String bidType = discordGame.required(richeseBidType).getAsString();
 
         Faction faction = game.getFaction("Richese");
 
@@ -98,9 +101,9 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void blackMarketBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String cardName = event.getOption(CommandOptions.richeseBlackMarketCard.getName()).getAsString();
-        String bidType = event.getOption(CommandOptions.richeseBlackMarketBidType.getName()).getAsString();
+    public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
+        String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
 
         Faction faction = game.getFaction("Richese");
         List<TreacheryCard> cards = faction.getTreacheryHand();
@@ -128,9 +131,9 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void placeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
-        Integer noField = event.getOption(CommandOptions.richeseNoFields.getName()).getAsInt();
-        String territoryName = event.getOption(CommandOptions.territory.getName()).getAsString();
+    public static void placeNoFieldToken(DiscordGame discordGame, Game game) {
+        Integer noField = discordGame.required(richeseNoFields).getAsInt();
+        String territoryName = discordGame.required(territory).getAsString();
 
         Territory territory = game.getTerritories().get(territoryName);
         territory.setRicheseNoField(noField);
@@ -138,14 +141,12 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void removeNoFieldToken(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+    public static void removeNoFieldToken(DiscordGame discordGame, Game game) {
         Optional<Territory> territory = game.getTerritories().values().stream()
                 .filter(Territory::hasRicheseNoField)
                 .findFirst();
 
-        if (territory.isPresent()) {
-            territory.get().setRicheseNoField(null);
-        }
+        territory.ifPresent(value -> value.setRicheseNoField(null));
 
         discordGame.pushGame();
     }

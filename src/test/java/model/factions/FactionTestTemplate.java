@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -16,7 +18,7 @@ abstract class FactionTestTemplate {
     abstract Faction getFaction();
 
     @BeforeEach
-    void baseSetUp() {
+    void baseSetUp() throws IOException {
         game = new Game();
     }
 

@@ -4,8 +4,10 @@ import constants.Emojis;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class IxFaction extends Faction {
-    public IxFaction(String player, String userName, Game game) {
+    public IxFaction(String player, String userName, Game game) throws IOException {
         super("Ix", player, userName, game);
 
         setSpice(10);
