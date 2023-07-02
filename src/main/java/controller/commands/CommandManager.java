@@ -579,9 +579,10 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void reviveLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void reviveLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFaction(event.getOption("factionname").getAsString());
         faction.getLeaders().add(game.removeLeaderFromTanks(event.getOption("leadertorevive").getAsString()));
+        ShowCommands.writeFactionInfo(discordGame, faction);
         discordGame.pushGame();
     }
 
