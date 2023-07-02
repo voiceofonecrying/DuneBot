@@ -613,6 +613,13 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    /**
+     * Place forces in a territory
+     *
+     * @param event        the event that triggered this command
+     * @param discordGame  the discord game
+     * @param game         the game
+     */
     public void placeForces(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritories().get(event.getOption("territory").getAsString());
         Faction faction = game.getFaction(event.getOption("factionname").getAsString());
@@ -628,29 +635,65 @@ public class CommandManager extends ListenerAdapter {
 
         if (event.getOption("isshipment").getAsBoolean()) {
             int costPerForce = territory.isStronghold() ? 1 : 2;
-            int cost = costPerForce * (amount + starredAmount);
+            int baseCost = costPerForce * (amount + starredAmount);
+            int cost;
+
+            if (faction.getName().equalsIgnoreCase("Guild")) {
+                cost = Math.ceilDiv(baseCost, 2);
+            } else if (faction.getName().equalsIgnoreCase("Fremen")) {
+                cost = 0;
+            } else {
+                cost = baseCost;
+            }
 
             StringBuilder message = new StringBuilder();
-            message.append(MessageFormat.format("{0}: {1} {2} {3} {4} placed on {5}",
-                    faction.getEmoji(), amount, Emojis.getForceEmoji(reserves.getName()), (starredAmount == 0 ? "" : starredAmount),
-                    (Emojis.getForceEmoji(specialReserves.getName()).equals(" force ")?"":Emojis.getForceEmoji(specialReserves.getName())),
-                    territory.getTerritoryName()));
 
-            // Guild has half price shipping
-            if (faction.getName().equalsIgnoreCase("Guild")) {
-                cost = Math.ceilDiv(cost, 2);
-                message.append(MessageFormat.format(" for {0} {1} paid to the bank", cost, Emojis.SPICE));
-            }
-            else if (game.hasGameOption(GameOption.TECH_TOKENS) && !faction.getName().equalsIgnoreCase("Fremen")) TechToken.addSpice(game, discordGame, "Heighliners");
+            message.append(faction.getEmoji())
+                            .append(": ");
 
-            if (!faction.getName().equalsIgnoreCase("Fremen")) faction.subtractSpice(cost);
-            spiceMessage(discordGame, cost, faction.getName(), "shipment to " + territory.getTerritoryName(), false);
-            if (game.hasFaction("Guild") && !(faction.getName().equals("Guild") || faction.getName().equals("Fremen"))) {
-                game.getFaction("Guild").addSpice(cost);
-                message.append(MessageFormat.format(" for {0} {1} paid to {2}", cost, Emojis.SPICE, Emojis.GUILD));
-                spiceMessage(discordGame, cost, "guild", faction.getEmoji() + " shipment", true);
-                ShowCommands.writeFactionInfo(discordGame, game.getFaction("Guild"));
+            if (amount > 0) {
+                message.append(MessageFormat.format("{0} {1} ", amount, Emojis.getForceEmoji(reserves.getName())));
             }
+
+            if (starredAmount > 0) {
+                message.append(MessageFormat.format("{0} {1} ", starredAmount, Emojis.getForceEmoji(specialReserves.getName())));
+            }
+
+            message.append(
+                    MessageFormat.format("placed on {0}",
+                            territory.getTerritoryName()
+                    )
+            );
+
+            if (cost > 0) {
+                message.append(
+                        MessageFormat.format(" for {0} {1}",
+                                cost, Emojis.SPICE
+                        )
+                );
+
+                faction.subtractSpice(cost);
+                spiceMessage(discordGame, cost, faction.getName(),
+                        "shipment to " + territory.getTerritoryName(), false);
+
+                if (game.hasFaction("Guild") && !faction.getName().equals("Guild")) {
+                    game.getFaction("Guild").addSpice(cost);
+                    message.append(" paid to ")
+                            .append(game.getFaction("Guild").getEmoji());
+                    spiceMessage(discordGame, cost, "guild", faction.getEmoji() + " shipment", true);
+                    ShowCommands.writeFactionInfo(discordGame, game.getFaction("Guild"));
+                }
+
+            }
+
+            if (
+                    !faction.getName().equalsIgnoreCase("Guild") &&
+                            !faction.getName().equalsIgnoreCase("Fremen") &&
+                            game.hasGameOption(GameOption.TECH_TOKENS)
+            ) {
+                TechToken.addSpice(game, discordGame, "Heighliners");
+            }
+
             ShowCommands.writeFactionInfo(discordGame, faction);
             discordGame.sendMessage("turn-summary", message.toString());
         }
@@ -689,16 +732,42 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidOptionException("Not enough forces in territory.");
         }
 
-        from.setForceStrength(faction.getName(), fromForceStrength - amount);
-        from.setForceStrength(faction.getName() + "*", fromStarredForceStrength - starredAmount);
+        StringBuilder message = new StringBuilder();
 
-        to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
-        to.setForceStrength(faction.getName() + "*", to.getForce(faction.getName() + "*").getStrength() + starredAmount);
+        message.append(faction.getEmoji())
+                .append(": ");
 
-        discordGame.sendMessage("turn-summary", MessageFormat.format("{0}: {1} {2} {3} {4} moved from {5} to {6}",
-                faction.getEmoji(), amount, Emojis.getForceEmoji(from.getForce(faction.getName()).getName()), (starredAmount == 0 ? "" : starredAmount),
-                (Emojis.getForceEmoji(from.getForce(faction.getName() + "*").getName()).equals(" force ")?"":Emojis.getForceEmoji(from.getForce(faction.getName() + "*").getName())),
-                from.getTerritoryName(), to.getTerritoryName()));
+        if (amount > 0) {
+            from.setForceStrength(faction.getName(), fromForceStrength - amount);
+            to.setForceStrength(faction.getName(), to.getForce(faction.getName()).getStrength() + amount);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            amount, Emojis.getForceEmoji(from.getForce(faction.getName()).getName())
+                    )
+            );
+        }
+
+        if (starredAmount > 0) {
+            from.setForceStrength(faction.getName() + "*", fromStarredForceStrength - starredAmount);
+            to.setForceStrength(faction.getName() + "*",
+                    to.getForce(faction.getName() + "*").getStrength() + starredAmount);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            starredAmount, Emojis.getForceEmoji(from.getForce(faction.getName() + "*").getName())
+                    )
+            );
+
+        }
+
+        message.append(
+                MessageFormat.format("moved from {0} to {1}",
+                        from.getTerritoryName(), to.getTerritoryName()
+                )
+        );
+
+        discordGame.sendMessage("turn-summary", message.toString());
 
         discordGame.pushGame();
     }
