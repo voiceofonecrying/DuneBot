@@ -3,10 +3,11 @@ package model.factions;
 import constants.Emojis;
 import model.Force;
 import model.Game;
-import model.IntegerResource;
+
+import java.io.IOException;
 
 public class HarkonnenFaction extends Faction {
-    public HarkonnenFaction(String player, String userName, Game game) {
+    public HarkonnenFaction(String player, String userName, Game game) throws IOException {
         super("Harkonnen", player, userName, game);
 
         setSpice(10);

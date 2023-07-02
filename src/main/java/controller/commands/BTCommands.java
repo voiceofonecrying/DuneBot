@@ -9,10 +9,9 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static controller.commands.CommandOptions.btFaceDancer;
 
 public class BTCommands {
     public static List<CommandData> getCommands() {
@@ -22,7 +21,7 @@ public class BTCommands {
                         new SubcommandData(
                                 "swap-face-dancer",
                                 "Swaps a BT Face Dancer."
-                        ).addOptions(CommandOptions.btFaceDancer)
+                        ).addOptions(btFaceDancer)
                 )
         );
 
@@ -31,15 +30,18 @@ public class BTCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
-        switch (name) {
-            case "swap-face-dancer" -> swapBTFaceDancer(event, discordGame, game);
+        if (name.equals("swap-face-dancer")) {
+            swapBTFaceDancer(discordGame, game);
+        } else {
+            throw new IllegalArgumentException("Invalid command name: " + name);
         }
     }
 
-    public static void swapBTFaceDancer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void swapBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.hasFaction("BT")) {
-            String faceDancer = event.getOption(CommandOptions.btFaceDancer.getName()).getAsString();
+            String faceDancer = discordGame.required(btFaceDancer).getAsString();
             Faction faction = game.getFaction("BT");
 
             List<TraitorCard> btFaceDancerHand = faction.getTraitorHand();
@@ -48,7 +50,7 @@ public class BTCommands {
             TraitorCard traitorCard = btFaceDancerHand.stream()
                     .filter(t -> t.name().equalsIgnoreCase(faceDancer))
                     .findFirst()
-                    .get();
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
 
             btFaceDancerHand.remove(traitorCard);
 

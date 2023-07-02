@@ -5,7 +5,7 @@ import java.util.Objects;
 //Name = the faction name, or the special troop type (Sardaukar, Advisor, etc)
 //value = the strength of the force
 public class Force {
-   private String name;
+   private final String name;
    private String factionName;
    private int strength;
 
@@ -15,18 +15,8 @@ public class Force {
         this.factionName = name.replace("*", "");
     }
 
-    public Force(String name, String factionName, int strength) {
-        this.name = name;
-        this.factionName = factionName;
-        this.strength = strength;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getFactionName() {
@@ -34,10 +24,6 @@ public class Force {
             factionName = name.replace("*", "");
         }
         return factionName;
-    }
-
-    public void setFactionName(String factionName) {
-        this.factionName = factionName;
     }
 
     public int getStrength() {
@@ -70,9 +56,5 @@ public class Force {
     @Override
     public String toString() {
         return name + " forces: " + strength;
-    }
-
-    public void subtractStrength(int amount) {
-        this.strength -= Math.abs(amount);
     }
 }

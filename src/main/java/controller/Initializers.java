@@ -13,16 +13,11 @@ import java.util.Objects;
 
 public class Initializers {
 
-    public static CSVParser getCSVFile (String name) {
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(Initializers.class
-                    .getClassLoader().getResourceAsStream(name))));
-            return CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
+    public static CSVParser getCSVFile (String name) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(Initializers.class
+                .getClassLoader().getResourceAsStream(name))));
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
     }
 
     public static List<Point> getPoints(String territory) {
@@ -58,17 +53,15 @@ public class Initializers {
                 points.add(new Point(188, 738));
                 points.add(new Point(165, 710));
             }
-            case "Cielago North (Center Sector)" -> {
+            case "Cielago North (Center Sector)" ->
                 points.add(new Point(474, 721));
-            }
             case "Cielago Depression (Center Sector)" -> {
                 points.add(new Point(443, 805));
                 points.add(new Point(492,803));
 
             }
-            case "Meridian (East Sector)" -> {
+            case "Meridian (East Sector)" ->
                 points.add(new Point(420,913));
-            }
             case "Cielago South (West Sector)" -> {
                 points.add(new Point(468,898));
                 points.add(new Point(497,859));
@@ -79,13 +72,10 @@ public class Initializers {
                 points.add(new Point(509,639));
                 points.add(new Point(543,700));
             }
-            case "Cielago Depression (East Sector)" -> {
+            case "Cielago Depression (East Sector)" ->
                 points.add(new Point(544,797));
-            }
-            case "Cielago South (East Sector)" -> {
+            case "Cielago South (East Sector)" ->
                 points.add(new Point(551,858));
-
-            }
             case "Cielago East (West Sector)" -> {
                 points.add(new Point(601,892));
                 points.add(new Point(607,806));
@@ -214,15 +204,12 @@ public class Initializers {
                 points.add(new Point(607,392));
                 points.add(new Point(665,355));
             }
-            case "Hole In The Rock" -> {
+            case "Hole In The Rock" ->
                 points.add(new Point(660,320));
-            }
-            case "Rim Wall West" -> {
+            case "Rim Wall West" ->
                 points.add(new Point(630,290));
-            }
-            case "Basin" -> {
+            case "Basin" ->
                 points.add(new Point(690,245));
-            }
             case "Old Gap (East Sector)" -> {
                 points.add(new Point(666,213));
                 points.add(new Point(685,190));
@@ -242,9 +229,8 @@ public class Initializers {
                 points.add(new Point(560,150));
                 points.add(new Point(638,182));
             }
-            case "Imperial Basin (West Sector)" -> {
+            case "Imperial Basin (West Sector)" ->
                 points.add(new Point(495,370));
-            }
             case "Arsunt (East Sector)" -> {
                 points.add(new Point(460,380));
                 points.add(new Point(455,340));
@@ -257,19 +243,16 @@ public class Initializers {
                 points.add(new Point(455,135));
                 points.add(new Point(480,135));
             }
-            case "Old Gap (West Sector)" -> {
+            case "Old Gap (West Sector)" ->
                 points.add(new Point(525,140));
-            }
-            case "Arsunt (West Sector)" -> {
+            case "Arsunt (West Sector)" ->
                 points.add(new Point(447,457));
-            }
             case "Hagga Basin (East Sector)" -> {
                 points.add(new Point(380,340));
                 points.add(new Point(410,325));
             }
-            case "Tsimpo (Middle Sector)" -> {
+            case "Tsimpo (Middle Sector)" ->
                 points.add(new Point(390,245));
-            }
             case "Plastic Basin (North Sector)" -> {
                 points.add(new Point(315,228));
                 points.add(new Point(343,213));
@@ -288,16 +271,14 @@ public class Initializers {
                 points.add(new Point(245,290));
                 points.add(new Point(270,255));
             }
-            case "Tsimpo (West Sector)" -> {
+            case "Tsimpo (West Sector)" ->
                 points.add(new Point(320,305));
-            }
             case "Rock Outcroppings (North Sector)" -> {
                 points.add(new Point(195,274));
                 points.add(new Point(232,222));
             }
-            case "Wind Pass (Far North Sector)" -> {
+            case "Wind Pass (Far North Sector)" ->
                 points.add(new Point(390,490));
-            }
             case "Plastic Basin (South Sector)" -> {
                 points.add(new Point(250,410));
                 points.add(new Point(300,440));
@@ -311,9 +292,8 @@ public class Initializers {
                 points.add(new Point(155,295));
                 points.add(new Point(160,275));
             }
-            case "Wind Pass (North Sector)" -> {
+            case "Wind Pass (North Sector)" ->
                 points.add(new Point(375,520));
-            }
             case "The Great Flat" -> {
                 points.add(new Point(140,515));
                 points.add(new Point(290,515));
@@ -324,12 +304,10 @@ public class Initializers {
                 points.add(new Point(90,455));
                 points.add(new Point(225,460));
             }
-            case "Bight of the Cliff (South Sector)" -> {
+            case "Bight of the Cliff (South Sector)" ->
                 points.add(new Point(105,420));
-            }
-            case "Wind Pass (South Sector)" -> {
+            case "Wind Pass (South Sector)" ->
                 points.add(new Point(360,555));
-            }
             case "The Greater Flat" -> {
                 points.add(new Point(115,575));
                 points.add(new Point(250,560));
@@ -348,25 +326,20 @@ public class Initializers {
                 points.add(new Point(373,601));
                 points.add(new Point(406,573));
             }
-            case "Wind Pass (Far South Sector)" -> {
+            case "Wind Pass (Far South Sector)" ->
                 points.add(new Point(350,615));
-            }
             case "False Wall West (Middle Sector)" -> {
                 points.add(new Point(305,615));
                 points.add(new Point(287,631));
             }
-            case "Habbanya Erg (East Sector)" -> {
+            case "Habbanya Erg (East Sector)" ->
                 points.add(new Point(230,640));
-            }
-            case "Habbanya Ridge Flat (West Sector)" -> {
+            case "Habbanya Ridge Flat (West Sector)" ->
                 points.add(new Point(125,710));
-            }
-            case "Wind Pass North (South Sector)" -> {
+            case "Wind Pass North (South Sector)" ->
                 points.add(new Point(377,655));
-            }
-            case "Cielago West (North Sector)" -> {
+            case "Cielago West (North Sector)" ->
                 points.add(new Point(335,710));
-            }
             case "False Wall West (South Sector)" -> {
                 points.add(new Point(285,705));
                 points.add(new Point(274,733));
@@ -376,18 +349,14 @@ public class Initializers {
                 points.add(new Point(265,795));
                 points.add(new Point(230,765));
             }
-            case "Cielago North (West Sector)" -> {
+            case "Cielago North (West Sector)" ->
                 points.add(new Point(410,720));
-            }
-            case "Cielago Depression (West Sector)" -> {
+            case "Cielago Depression (West Sector)" ->
                 points.add(new Point(385,785));
-            }
-            case "Cielago West (South Sector)" -> {
+            case "Cielago West (South Sector)" ->
                 points.add(new Point(330,805));
-            }
-            case "Meridian (West Sector)" -> {
+            case "Meridian (West Sector)" ->
                 points.add(new Point(360,890));
-            }
             case "Polar Sink" -> {
                 points.add(new Point(460,545));
                 points.add(new Point(465,515));

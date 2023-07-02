@@ -2,7 +2,7 @@ package model;
 
 public class Resource<V> {
 
-    private String name;
+    private final String name;
     private V value;
 
     public Resource(String name, V value) {
@@ -12,10 +12,6 @@ public class Resource<V> {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public V getValue() {

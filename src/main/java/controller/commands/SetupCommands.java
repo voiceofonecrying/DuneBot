@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
+import static controller.commands.CommandOptions.*;
 
 public class SetupCommands {
     public static List<CommandData> getCommands() {
@@ -36,9 +37,9 @@ public class SetupCommands {
         commandData.add(
                 Commands.slash("setup", "Commands related to game setup.").addSubcommands(
                         new SubcommandData("faction", "Register a user to a faction in a game")
-                                .addOptions(CommandOptions.allFactions, CommandOptions.user),
+                                .addOptions(allFactions, user),
                         new SubcommandData("new-faction-resource", "Initialize a new resource for a faction")
-                                .addOptions(CommandOptions.faction, CommandOptions.resourceName, CommandOptions.value),
+                                .addOptions(faction, CommandOptions.resourceName, CommandOptions.value),
                         new SubcommandData("show-game-options", "Show the selected game options"),
                         new SubcommandData("add-game-option", "Add a game option")
                                 .addOptions(CommandOptions.addGameOption),
@@ -46,10 +47,10 @@ public class SetupCommands {
                                 .addOptions(CommandOptions.removeGameOption),
                         new SubcommandData("ix-hand-selection", "Only use this command to select the Ix starting treachery card").addOptions(CommandOptions.ixCard),
                         new SubcommandData("traitor", "Select a starting traitor from hand.")
-                                .addOptions(CommandOptions.faction, CommandOptions.traitor),
+                                .addOptions(faction, CommandOptions.traitor),
                         new SubcommandData("advance", "Advance the setup of the game."),
                         new SubcommandData("leader-skill", "Add leader skill to faction")
-                                .addOptions(CommandOptions.faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
+                                .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand")
                 )
         );
@@ -59,17 +60,18 @@ public class SetupCommands {
 
     public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
-            case "faction" -> addFaction(event, discordGame, game);
-            case "new-faction-resource" -> newFactionResource(event, discordGame, game);
+            case "faction" -> addFaction(discordGame, game);
+            case "new-faction-resource" -> newFactionResource(discordGame, game);
             case "show-game-options" -> showGameOptions(discordGame, game);
-            case "add-game-option" -> addGameOption(event, discordGame, game);
-            case "remove-game-option" -> removeGameOption(event, discordGame, game);
-            case "ix-hand-selection" -> ixHandSelection(event, discordGame, game);
-            case "traitor" -> selectTraitor(event, discordGame, game);
+            case "add-game-option" -> addGameOption(discordGame, game);
+            case "remove-game-option" -> removeGameOption(discordGame, game);
+            case "ix-hand-selection" -> ixHandSelection(discordGame, game);
+            case "traitor" -> selectTraitor(discordGame, game);
             case "advance" -> advance(event, discordGame, game);
-            case "leader-skill" -> factionLeaderSkill(event, discordGame, game);
+            case "leader-skill" -> factionLeaderSkill(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
         }
     }
@@ -189,8 +191,15 @@ public class SetupCommands {
         return stepStatus;
     }
 
-    public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
+        String factionName = discordGame.required(allFactions).getAsString();
+        String playerName = discordGame.required(user).getAsUser().getAsMention();
+        Member player = discordGame.required(user).getAsMember();
+
+        if (player == null) throw new IllegalArgumentException("Not a valid user");
+
+        String userName = player.getNickname();
 
         if (game.getTurn() != 0) {
             modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
@@ -200,14 +209,10 @@ public class SetupCommands {
             modInfo.sendMessage("This game is already full!").queue();
             return;
         }
-        String factionName = event.getOption("faction").getAsString();
         if (game.hasFaction(factionName)) {
             modInfo.sendMessage("This faction has already been taken!").queue();
             return;
         }
-
-        String playerName = event.getOption("player").getAsUser().getAsMention();
-        String userName = event.getOption("player").getAsMember().getNickname();
         Faction faction;
 
         switch (factionName.toUpperCase()) {
@@ -229,8 +234,6 @@ public class SetupCommands {
         Category gameCategory = discordGame.getGameCategory();
         discordGame.pushGame();
 
-        Member player = event.getOption("player").getAsMember();
-
         gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
                 .addPermissionOverride(
                         player,
@@ -248,10 +251,12 @@ public class SetupCommands {
                 .queue();
     }
 
-    public static void newFactionResource(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
-        game.getFaction(event.getOption("factionname").getAsString())
-                .addResource(new Resource(event.getOption("resource").getAsString(),
-                        event.getOption("value").getAsString()));
+    public static void newFactionResource(DiscordGame discordGame, Game game) {
+        String factionName = discordGame.required(faction).getAsString();
+        String resource = discordGame.required(resourceName).getAsString();
+        String resourceValue = discordGame.required(value).getAsString();
+        game.getFaction(factionName)
+                .addResource(new Resource(resource, resourceValue));
         discordGame.pushGame();
     }
 
@@ -263,26 +268,29 @@ public class SetupCommands {
         discordGame.sendMessage("mod-info", stringBuilder);
     }
 
-    public static void addGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
-        String gameOptionName = event.getOption("add-game-option").getAsString();
+    public static void addGameOption(DiscordGame discordGame, Game game) {
+        String gameOptionName = discordGame.required(addGameOption).getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
         game.addGameOption(gameOption);
         discordGame.pushGame();
     }
 
-    public static void removeGameOption(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
-        String gameOptionName = event.getOption("remove-game-option").getAsString();
+    public static void removeGameOption(DiscordGame discordGame, Game game) {
+        String gameOptionName = discordGame.required(removeGameOption).getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
         game.removeGameOption(gameOption);
         discordGame.pushGame();
     }
 
-    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void ixHandSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        String ixCardName = discordGame.required(ixCard).getAsString();
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
-        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(event.getOption("ixcard").getAsString())).findFirst().orElseThrow();
+        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
         for (TreacheryCard treacheryCard : hand) {
             if (treacheryCard.equals(card)) continue;
             game.getTreacheryDeck().add(treacheryCard);
@@ -292,10 +300,16 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void selectTraitor(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        Faction faction = game.getFaction(event.getOption("factionname").getAsString());
-        TraitorCard traitor = faction.getTraitorHand().stream().filter(traitorCard -> traitorCard.name().toLowerCase()
-                .contains(event.getOption("traitor").getAsString().toLowerCase())).findFirst().orElseThrow();
+    public static void selectTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        String factionName = discordGame.required(faction).getAsString();
+        String traitorName = discordGame.required(traitor).getAsString();
+        Faction faction = game.getFaction(factionName);
+        TraitorCard traitor = faction
+                .getTraitorHand().stream().filter(
+                        traitorCard -> traitorCard.name().toLowerCase()
+                                .contains(traitorName.toLowerCase())
+                ).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         for (TraitorCard card : faction.getTraitorHand()) {
             if (!card.equals(traitor)) game.getTraitorDeck().add(card);
         }
@@ -315,7 +329,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static StepStatus createDecks(Game game) {
+    public static StepStatus createDecks(Game game) throws IOException {
         if (game.hasGameOption(GameOption.SANDTROUT)) {
             game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0));
         }
@@ -338,7 +352,7 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Collections.shuffle(game.getFactions());
 
         discordGame.sendMessage("turn-summary", "__**Game Setup**__");
@@ -404,20 +418,18 @@ public class SetupCommands {
             game.drawCard("leader skills deck", faction.getName());
             game.drawCard("leader skills deck", faction.getName());
 
-            StringBuilder leaderSkillsMessage = new StringBuilder();
-            leaderSkillsMessage.append("Please select your leader and their skill from the following two options:\n");
-            leaderSkillsMessage.append(MessageFormat.format(
-                    "{0}{1}{0}\n",
-                    Emojis.WEIRDING, faction.getLeaderSkillsHand().get(0).name()
-            ));
+            String leaderSkillsMessage = "Please select your leader and their skill from the following two options:\n" +
+                    MessageFormat.format(
+                            "{0}{1}{0}\n",
+                            Emojis.WEIRDING, faction.getLeaderSkillsHand().get(0).name()
+                    ) +
+                    MessageFormat.format(
+                            "{0}{1}{0}\n",
+                            Emojis.WEIRDING, faction.getLeaderSkillsHand().get(1).name()
+                    ) +
+                    faction.getPlayer();
 
-            leaderSkillsMessage.append(MessageFormat.format(
-                    "{0}{1}{0}\n",
-                    Emojis.WEIRDING, faction.getLeaderSkillsHand().get(1).name()
-            ));
-            leaderSkillsMessage.append(faction.getPlayer());
-
-            discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage.toString());
+            discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage);
         }
 
         return StepStatus.STOP;
@@ -557,17 +569,19 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static void factionLeaderSkill(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String factionName = event.getOption(CommandOptions.faction.getName()).getAsString();
-        String leaderName = event.getOption(CommandOptions.factionLeader.getName()).getAsString();
-        String leaderSkillName = event.getOption(CommandOptions.factionLeaderSkill.getName()).getAsString();
-
+    public static void factionLeaderSkill(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        String leaderName = discordGame.required(factionLeader).getAsString();
+        String leaderSkillName = discordGame.required(factionLeaderSkill).getAsString();
 
         Faction faction = game.getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName).get();
+        Leader leader = faction.getLeader(leaderName)
+                .orElseThrow(() -> new IllegalArgumentException("Leader not found"));
+
         LeaderSkillCard leaderSkillCard = faction.getLeaderSkillsHand().stream()
                 .filter(l -> l.name().equalsIgnoreCase(leaderSkillName))
-                .findFirst().get();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
 
         Leader updatedLeader = new Leader(leader.name(), leader.value(), leaderSkillCard, leader.faceDown());
 

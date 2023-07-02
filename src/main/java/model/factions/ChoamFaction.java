@@ -5,11 +5,13 @@ import enums.ChoamInflationType;
 import model.Force;
 import model.Game;
 
+import java.io.IOException;
+
 public class ChoamFaction extends Faction {
     private int firstInflationRound;
     private ChoamInflationType firstInflationType;
 
-    public ChoamFaction(String player, String userName, Game game) {
+    public ChoamFaction(String player, String userName, Game game) throws IOException {
         super("CHOAM", player, userName, game);
 
         setSpice(2);
