@@ -91,6 +91,7 @@ public class CommandManager extends ListenerAdapter {
                     case "remove-alliance" -> removeAlliance(discordGame, game);
                     case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
                     case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
+                    case "weather-control-storm" -> weatherControlStorm(discordGame, game);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -147,6 +148,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-spice-in-territory", "Set the spice amount for a territory")
                 .addOptions(CommandOptions.territory, amount));
         commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
+        commandData.add(Commands.slash("weather-control-storm", "Override the storm movement").addOptions(sectors));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -1010,6 +1012,13 @@ public class CommandManager extends ListenerAdapter {
 
     public void destroyShieldWall(DiscordGame discordGame, Game game) {
         game.breakShieldWall();
+
+        discordGame.pushGame();
+    }
+
+    public void weatherControlStorm(DiscordGame discordGame, Game game) {
+        int wcStormMovement = discordGame.required(sectors).getAsInt();
+        game.setStormMovement(wcStormMovement);
 
         discordGame.pushGame();
     }
