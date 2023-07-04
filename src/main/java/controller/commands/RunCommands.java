@@ -316,6 +316,7 @@ public class RunCommands {
             game.getTreacheryDeck().addFirst(game.getBidCard());
             game.setBidCard(null);
         }
+        discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
