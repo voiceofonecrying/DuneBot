@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
+import static controller.commands.ShowCommands.refreshFrontOfShieldInfo;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -92,6 +93,8 @@ public class CommandManager extends ListenerAdapter {
                     case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
                     case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
                     case "weather-control-storm" -> weatherControlStorm(discordGame, game);
+                    case "add-spice" -> addSpice(event, discordGame, game);
+                    case "remove-spice" -> removeSpice(event, discordGame, game);
                 }
             }
             event.getHook().editOriginal("Command Done").queue();
@@ -149,6 +152,9 @@ public class CommandManager extends ListenerAdapter {
                 .addOptions(CommandOptions.territory, amount));
         commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
         commandData.add(Commands.slash("weather-control-storm", "Override the storm movement").addOptions(sectors));
+
+        commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
+        commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -273,6 +279,87 @@ public class CommandManager extends ListenerAdapter {
         game.setModRole(modRoleValue.getName());
         game.setMute(false);
         discordGame.setGame(game);
+        discordGame.pushGame();
+    }
+
+    /**
+     * Add Spice to a player.  Spice can be added behind the shield or in front, with an optional message.
+     *
+     * @param event The slash command event.
+     * @param discordGame The discord game object.
+     * @param game The game object.
+     * @throws ChannelNotFoundException If the channel is not found.
+     * @throws IOException If the game assets can not be loaded.
+     */
+    public void addSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        addOrRemoveSpice(event, discordGame, game, true);
+    }
+
+    /**
+     * Remove Spice from a player.  Spice can be removed from behind the shield or in front, with an optional message.
+     *
+     * @param event The slash command event.
+     * @param discordGame The discord game object.
+     * @param game The game object.
+     * @throws ChannelNotFoundException If the channel is not found.
+     * @throws IOException If the game assets can not be loaded.
+     */
+    public void removeSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        addOrRemoveSpice(event, discordGame, game, false);
+    }
+
+    /**
+     * Add or Remove Spice from a player.  This can be behind the shield or in front, with an optional message.
+     *
+     * @param event The slash command event.
+     * @param discordGame The discord game object.
+     * @param game The game object.
+     * @param add True to add spice, false to remove spice.
+     * @throws ChannelNotFoundException If the channel is not found.
+     * @throws IOException If the game assets can not be loaded.
+     */
+    public void addOrRemoveSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, boolean add) throws ChannelNotFoundException, IOException {
+        String factionName = discordGame.required(faction).getAsString();
+        int amountValue = discordGame.required(amount).getAsInt();
+        String messageValue = discordGame.required(message).getAsString();
+        boolean toFrontOfShield = discordGame.optional(frontOfShield) != null && discordGame.required(frontOfShield).getAsBoolean();
+
+        Faction faction = game.getFaction(factionName);
+        if (toFrontOfShield) {
+            if (add) {
+                faction.addFrontOfShieldSpice(amountValue);
+            } else {
+                faction.subtractFrontOfShieldSpice(amountValue);
+            }
+        } else {
+            if (add) {
+                faction.addSpice(amountValue);
+            } else {
+                faction.subtractSpice(amountValue);
+            }
+        }
+
+        String frontOfShieldMessage = add ? "to front of shield" : "from front of shield";
+
+        discordGame.sendMessage(
+                "turn-summary",
+                MessageFormat.format(
+                        "{0} {1} {2} {3} {4} {5}",
+                        faction.getEmoji(),
+                        add ? "gains" : "loses",
+                        amountValue, Emojis.SPICE,
+                        toFrontOfShield ? frontOfShieldMessage : "",
+                        messageValue
+                )
+        );
+
+        if (toFrontOfShield) {
+            refreshFrontOfShieldInfo(event, discordGame, game);
+        } else {
+            spiceMessage(discordGame, amountValue, faction.getName(), messageValue, add);
+            ShowCommands.writeFactionInfo(discordGame, faction);
+        }
+
         discordGame.pushGame();
     }
 
@@ -919,7 +1006,7 @@ public class CommandManager extends ListenerAdapter {
         recipientFaction.addFrontOfShieldSpice(amountValue);
         discordGame.pushGame();
         ShowCommands.writeFactionInfo(discordGame, fromFaction);
-        ShowCommands.refreshFrontOfShieldInfo(event,discordGame,game);
+        refreshFrontOfShieldInfo(event,discordGame,game);
     }
 
     public void mute(DiscordGame discordGame, Game game) {

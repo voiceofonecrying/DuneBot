@@ -53,7 +53,7 @@ abstract class FactionTestTemplate {
 
     @Nested
     @DisplayName("#subtractSpice")
-    class RemoveSpice {
+    class SubtractSpice {
         Faction faction;
 
         @BeforeEach
@@ -76,13 +76,75 @@ abstract class FactionTestTemplate {
 
         @Test
         void negative() {
-            faction.subtractSpice(-2);
-            assertEquals(faction.getSpice(), 8);
+            assertThrows(IllegalArgumentException.class, () -> faction.subtractSpice(-2));
         }
 
         @Test
         void tooMuch() {
             assertThrows(IllegalStateException.class, () -> faction.subtractSpice(11));
+        }
+    }
+
+    @Nested
+    @DisplayName("#addFrontOfShieldSpice")
+    class AddFrontOfShieldSpice {
+        Faction faction;
+
+        @BeforeEach
+        void setUpAddSpice() {
+            faction = getFaction();
+            faction.setFrontOfShieldSpice(10);
+        }
+
+        @Test
+        void validPositive() {
+            faction.addFrontOfShieldSpice(2);
+            assertEquals(faction.getFrontOfShieldSpice(), 12);
+        }
+
+        @Test
+        void zero() {
+            faction.addFrontOfShieldSpice(0);
+            assertEquals(faction.getFrontOfShieldSpice(), 10);
+        }
+
+        @Test
+        void negative() {
+            assertThrows(IllegalArgumentException.class, () -> faction.addFrontOfShieldSpice(-1));
+        }
+    }
+
+    @Nested
+    @DisplayName("#subtractFrontOfShieldSpice")
+    class SubtractFrontOfShieldSpice {
+        Faction faction;
+
+        @BeforeEach
+        void setUpRemoveSpice() {
+            faction = getFaction();
+            faction.setFrontOfShieldSpice(10);
+        }
+
+        @Test
+        void validPositive() {
+            faction.subtractFrontOfShieldSpice(2);
+            assertEquals(faction.getFrontOfShieldSpice(), 8);
+        }
+
+        @Test
+        void zero() {
+            faction.subtractFrontOfShieldSpice(0);
+            assertEquals(faction.getFrontOfShieldSpice(), 10);
+        }
+
+        @Test
+        void negative() {
+            assertThrows(IllegalArgumentException.class, () -> faction.subtractFrontOfShieldSpice(-2));
+        }
+
+        @Test
+        void tooMuch() {
+            assertThrows(IllegalStateException.class, () -> faction.subtractFrontOfShieldSpice(11));
         }
     }
 

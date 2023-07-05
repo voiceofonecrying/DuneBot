@@ -179,7 +179,8 @@ public class Faction {
     }
 
     public void subtractSpice(int spice) {
-        this.spice -= Math.abs(spice);
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
     }
 
@@ -248,8 +249,15 @@ public class Faction {
         this.frontOfShieldSpice = frontOfShieldSpice;
     }
 
-    public void addFrontOfShieldSpice(int amount) {
-        this.frontOfShieldSpice += amount;
+    public void addFrontOfShieldSpice(int spice) {
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        this.frontOfShieldSpice += spice;
+    }
+
+    public void subtractFrontOfShieldSpice(int spice) {
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        this.frontOfShieldSpice -= spice;
+        if (this.frontOfShieldSpice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
     }
 
     public boolean hasMiningEquipment() {
