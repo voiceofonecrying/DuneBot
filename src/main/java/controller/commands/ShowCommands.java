@@ -402,7 +402,7 @@ public class ShowCommands {
         }
         StringBuilder reservesString = new StringBuilder();
         reservesString.append("\n__Reserves:__ ").append(faction.getReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Fremen")) reservesString.append("\n__Fedayken Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Fremen")) reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         if (faction.getName().equalsIgnoreCase("Emperor")) reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         if (faction.getName().equalsIgnoreCase("Ix")) reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         for (TextChannel channel : discordGame.getTextChannels()) {

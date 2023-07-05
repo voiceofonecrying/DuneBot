@@ -92,44 +92,25 @@ public class RunCommands {
         discordGame.pushGame();
     }
 
-    public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
-        Map<String, Territory> territories = game.getTerritories();
         if (game.getTurn() != 1) {
-            discordGame.sendMessage("turn-summary", "The storm moves " + game.getStormMovement() + " sectors this turn.");
-
-            StringBuilder message = new StringBuilder();
-            for (int i = 0; i < game.getStormMovement(); i++) {
-                game.advanceStorm(1);
-
-                List<Territory> territoriesInStorm = territories.values().stream()
-                        .filter(t ->
-                                t.getSector() == game.getStorm() &&
-                                !t.isRock()
-                        ).toList();
-
-                List<Territory> territoriesWithTroops = territoriesInStorm.stream()
-                        .filter(t -> t.getForces().size() > 0).toList();
-
-                List<Territory> territoriesWithSpice = territoriesInStorm.stream()
-                        .filter(t -> t.getSpice() > 0).toList();
-
-                for (Territory territory : territoriesWithTroops) {
-                    message.append(stormTroops(territory, game));
-                }
-
-                for (Territory territory : territoriesWithSpice) {
-                    message.append(stormRemoveSpice(territory));
+            discordGame.sendMessage("turn-summary",
+                    "The storm would move " +
+                    game.getStormMovement() +
+                    " sectors this turn. Weather Control and Family Atomics may be played at this time.");
+        } else {
+            discordGame.sendMessage("mod-info", "Run advance to complete turn 1 storm phase.");
+        }
+        for (Faction faction : game.getFactions()) {
+            for (TreacheryCard card : faction.getTreacheryHand()) {
+                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", "" + faction.getPlayer().toString() + " will you play Weather Control?");
+                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", "" + faction.getPlayer().toString() + " will you play Family Atomics?");
                 }
             }
-
-            if (!message.isEmpty())
-                discordGame.sendMessage("turn-summary", message.toString());
-
-            ShowCommands.showBoard(discordGame, game);
         }
-
-        game.setStormMovement(new Random().nextInt(6) + 1);
     }
 
     public static String stormTroops(Territory territory, Game game) {
@@ -195,7 +176,43 @@ public class RunCommands {
         return message;
     }
 
-    public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        Map<String, Territory> territories = game.getTerritories();
+        if (game.getTurn() != 1) {
+            discordGame.sendMessage("turn-summary", "The storm moves " + game.getStormMovement() + " sectors this turn.");
+
+            StringBuilder message = new StringBuilder();
+            for (int i = 0; i < game.getStormMovement(); i++) {
+                game.advanceStorm(1);
+
+                List<Territory> territoriesInStorm = territories.values().stream()
+                        .filter(t ->
+                                t.getSector() == game.getStorm() &&
+                                !t.isRock()
+                        ).toList();
+
+                List<Territory> territoriesWithTroops = territoriesInStorm.stream()
+                        .filter(t -> t.getForces().size() > 0).toList();
+
+                List<Territory> territoriesWithSpice = territoriesInStorm.stream()
+                        .filter(t -> t.getSpice() > 0).toList();
+
+                for (Territory territory : territoriesWithTroops) {
+                    message.append(stormTroops(territory, game));
+                }
+
+                for (Territory territory : territoriesWithSpice) {
+                    message.append(stormRemoveSpice(territory));
+                }
+            }
+
+            if (!message.isEmpty())
+                discordGame.sendMessage("turn-summary", message.toString());
+
+            ShowCommands.showBoard(discordGame, game);
+        }
+
+        game.setStormMovement(new Random().nextInt(6) + 1);
         if (game.hasFaction("Fremen")) {
             discordGame.sendMessage("fremen-chat", "The storm will move " + game.getStormMovement() + " sectors next turn.");
         }
@@ -627,6 +644,13 @@ public class RunCommands {
                 faction.addSpice(faction.getFrontOfShieldSpice());
                 faction.setFrontOfShieldSpice(0);
                 ShowCommands.writeFactionInfo(discordGame, faction);
+            }
+            for (TreacheryCard card : faction.getTreacheryHand()) {
+                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
+                    discordGame.sendMessage("mod-info", "" + faction.getEmoji() + " has Weather Control.");
+                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    discordGame.sendMessage("mod-info", "" + faction.getEmoji() + " has Family Atomics.");
+                }
             }
         }
 
