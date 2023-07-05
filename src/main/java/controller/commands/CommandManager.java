@@ -730,7 +730,7 @@ public class CommandManager extends ListenerAdapter {
     public void placeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
-        int amountValue = discordGame.required(value).getAsInt();
+        int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
         Force reserves = targetFaction.getReserves();
