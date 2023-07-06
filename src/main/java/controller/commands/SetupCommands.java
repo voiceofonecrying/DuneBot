@@ -178,14 +178,14 @@ public class SetupCommands {
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
             case FREMEN_FORCES -> stepStatus = fremenForcesStep(discordGame, game);
             case BG_FORCE -> stepStatus = bgForceStep(discordGame, game);
-            case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(discordGame, game);
+            case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
             case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(event, discordGame, game);
             case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(discordGame, game);
             case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
             case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(discordGame, game);
             case STORM_SELECTION -> stepStatus = stormSelectionStep(discordGame, game);
-            case START_GAME -> stepStatus = startGameStep(event, discordGame, game);
+            case START_GAME -> stepStatus = startGameStep(discordGame, game);
         }
 
         return stepStatus;
@@ -284,23 +284,26 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void ixHandSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void ixHandSelection(DiscordGame discordGame, Game game) {
         String ixCardName = discordGame.required(ixCard).getAsString();
+        Faction faction = game.getFaction("Ix");
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
         TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
+
         for (TreacheryCard treacheryCard : hand) {
             if (treacheryCard.equals(card)) continue;
-            game.getTreacheryDeck().add(treacheryCard);
+            game.getTreacheryDeck().add(
+                    faction.removeTreacheryCard(treacheryCard)
+            );
         }
-        hand.removeIf(treacheryCard -> !treacheryCard.equals(card));
-        ShowCommands.writeFactionInfo(discordGame, game.getFaction("Ix"));
+
         discordGame.pushGame();
     }
 
-    public static void selectTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void selectTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String traitorName = discordGame.required(traitor).getAsString();
         Faction faction = game.getFaction(factionName);
@@ -311,14 +314,10 @@ public class SetupCommands {
                 ).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         for (TraitorCard card : faction.getTraitorHand()) {
-            if (!card.equals(traitor)) game.getTraitorDeck().add(card);
+            if (!card.equals(traitor)) game.getTraitorDeck().add(faction.removeTraitorCard(card));
         }
 
-        Collections.shuffle(faction.getTraitorHand());
-
-        faction.getTraitorHand().clear();
-        faction.getTraitorHand().add(traitor);
-        ShowCommands.writeFactionInfo(discordGame, faction);
+        Collections.shuffle(game.getTraitorDeck());
 
         discordGame.sendMessage(faction.getName().toLowerCase() + "-chat",
                 MessageFormat.format(
@@ -398,12 +397,11 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus treacheryCardsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static StepStatus treacheryCardsStep(Game game) {
         for (Faction faction : game.getFactions()) {
             if (faction.getTreacheryHand().size() == 0) {
                 game.drawCard("treachery deck", faction.getName());
                 if (faction.getName().equals("Harkonnen")) game.drawCard("treachery deck", faction.getName());
-                ShowCommands.writeFactionInfo(discordGame, faction);
             }
         }
 
@@ -473,7 +471,7 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus harkonnenTraitorsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static StepStatus harkonnenTraitorsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction = game.getFaction("Harkonnen");
 
         for (int j = 0; j < 4; j++) {
@@ -484,8 +482,6 @@ public class SetupCommands {
                 .map(TraitorCard::factionName)
                 .filter(f -> f.equalsIgnoreCase("Harkonnen"))
                 .count();
-
-        ShowCommands.writeFactionInfo(discordGame, faction);
 
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
@@ -498,7 +494,7 @@ public class SetupCommands {
         }
     }
 
-    public static void harkonnenMulligan(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void harkonnenMulligan(DiscordGame discordGame, Game game) {
         if (!game.hasFaction("Harkonnen"))
             return;
 
@@ -513,17 +509,15 @@ public class SetupCommands {
             game.drawCard("traitor deck", "Harkonnen");
         }
 
-        ShowCommands.writeFactionInfo(discordGame, harkonnen);
         discordGame.pushGame();
     }
 
-    public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
             if (!faction.getName().equals("BT") && faction.getTraitorHand().size() == 0) {
                 for (int j = 0; j < 4; j++) {
                     game.drawCard("traitor deck", faction.getName());
                 }
-                ShowCommands.writeFactionInfo(discordGame, faction);
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
                     discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getName() + " Please select your traitor.");
                 }
@@ -535,11 +529,10 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus btDrawFaceDancersStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static StepStatus btDrawFaceDancersStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.drawCard("traitor deck", "BT");
         game.drawCard("traitor deck", "BT");
         game.drawCard("traitor deck", "BT");
-        ShowCommands.writeFactionInfo(discordGame, game.getFaction("BT"));
 
         discordGame.sendMessage("turn-summary", "Bene Tleilax have drawn their Face Dancers.");
 
@@ -560,10 +553,9 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus startGameStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus startGameStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.advanceTurn();
         game.setSetupFinished(true);
-        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
         discordGame.sendMessage("mod-info", "The game has begun!");
 
         return StepStatus.STOP;

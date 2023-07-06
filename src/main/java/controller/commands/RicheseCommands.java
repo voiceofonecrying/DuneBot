@@ -4,6 +4,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -50,7 +51,7 @@ public class RicheseCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
-            case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(event, discordGame, game);
+            case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(discordGame, game);
             case "card-bid" -> cardBid(discordGame, game);
             case "black-market-bid" -> blackMarketBid(discordGame, game);
             case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
@@ -58,19 +59,14 @@ public class RicheseCommands {
         }
     }
 
-    public static void moveNoFieldsToFrontOfShield(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void moveNoFieldsToFrontOfShield(DiscordGame discordGame, Game game) {
         int noFieldValue = discordGame.required(richeseNoFields).getAsInt();
 
         if (game.hasFaction("Richese")) {
-            Faction faction = game.getFaction("Richese");
+            RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
 
-            if (!faction.hasResource("frontOfShieldNoField")) {
-                faction.addResource(new IntegerResource("frontOfShieldNoField", noFieldValue, 0, 5));
-            } else {
-                ((Resource<Integer>)faction.getResource("frontOfShieldNoField")).setValue(noFieldValue);
-            }
+            faction.moveNoFieldsToFrontOfShield(noFieldValue);
 
-            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
             discordGame.pushGame();
         }
     }

@@ -42,12 +42,12 @@ public class HarkCommands {
         if (!game.hasFaction("Harkonnen")) return;
 
         switch (name) {
-            case "capture-leader" -> captureLeader(event, discordGame, game);
-            case "kill-leader" -> killLeader(event, discordGame, game);
+            case "capture-leader" -> captureLeader(discordGame, game);
+            case "kill-leader" -> killLeader(discordGame, game);
         }
     }
 
-    public static void captureLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void captureLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
 
@@ -55,16 +55,11 @@ public class HarkCommands {
         Leader leader = faction.getLeader(leaderName).orElseThrow();
 
         Faction harkonnenFaction = game.getFaction("Harkonnen");
-        List<Leader> harkonnenLeaders = harkonnenFaction.getLeaders();
 
-        harkonnenLeaders.add(leader);
-        faction.getLeaders().remove(leader);
-
-        ShowCommands.writeFactionInfo(discordGame, faction);
-        ShowCommands.writeFactionInfo(discordGame, harkonnenFaction);
+        harkonnenFaction.addLeader(leader);
+        faction.removeLeader(leader);
 
         if (leader.skillCard() != null) {
-            ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
             discordGame.sendMessage("turn-summary", MessageFormat.format(
                     "{0} have captured a {1} skilled leader: {2} the {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(),
@@ -80,7 +75,7 @@ public class HarkCommands {
         discordGame.pushGame();
     }
 
-    public static void killLeader(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
 
@@ -91,9 +86,7 @@ public class HarkCommands {
             game.getLeaderSkillDeck().add(leader.skillCard());
         }
 
-
-
-        faction.getLeaders().remove(leader);
+        faction.removeLeader(leader);
 
         Faction harkonnenFaction = game.getFaction("Harkonnen");
 
@@ -117,11 +110,6 @@ public class HarkCommands {
         game.getLeaderTanks().add(killedLeader);
 
         CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
-
-        ShowCommands.writeFactionInfo(discordGame, faction);
-        ShowCommands.writeFactionInfo(discordGame, harkonnenFaction);
-
-        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
 
         ShowCommands.showBoard(discordGame, game);
 

@@ -41,5 +41,6 @@ public class BTFaction extends Faction {
             revealedFaceDancers = new HashSet<>();
         }
         revealedFaceDancers.add(revealedFaceDancer);
+        setBackOfShieldModified();
     }
 }

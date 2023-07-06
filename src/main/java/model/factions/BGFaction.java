@@ -33,6 +33,7 @@ public class BGFaction extends Faction {
      */
     public void setPredictionFactionName(String predictionFactionName) {
         this.predictionFactionName = predictionFactionName;
+        setBackOfShieldModified();
     }
 
     /**
@@ -51,6 +52,7 @@ public class BGFaction extends Faction {
             throw new IllegalArgumentException("Prediction round must be between 1 and 10");
         }
         this.predictionRound = predictionRound;
+        setBackOfShieldModified();
     }
 
     /**

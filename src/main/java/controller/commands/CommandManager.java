@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
-import static controller.commands.ShowCommands.refreshFrontOfShieldInfo;
+import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -83,7 +83,7 @@ public class CommandManager extends ListenerAdapter {
                     case "reviveleader" -> reviveLeader(discordGame, game);
                     case "setstorm" -> setStorm(discordGame, game);
                     case "bgflip" -> bgFlip(discordGame, game);
-                    case "bribe" -> bribe(event, discordGame, game);
+                    case "bribe" -> bribe(discordGame, game);
                     case "mute" -> mute(discordGame, game);
                     case "placehms" -> placeHMS(discordGame, game);
                     case "movehms" -> moveHMS(discordGame, game);
@@ -94,10 +94,13 @@ public class CommandManager extends ListenerAdapter {
                     case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
                     case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
                     case "weather-control-storm" -> weatherControlStorm(discordGame, game);
-                    case "add-spice" -> addSpice(event, discordGame, game);
-                    case "remove-spice" -> removeSpice(event, discordGame, game);
+                    case "add-spice" -> addSpice(discordGame, game);
+                    case "remove-spice" -> removeSpice(discordGame, game);
                 }
+
+                refreshChangedInfo(discordGame);
             }
+
             event.getHook().editOriginal("Command Done. " + responseMessage).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
@@ -286,40 +289,34 @@ public class CommandManager extends ListenerAdapter {
     /**
      * Add Spice to a player.  Spice can be added behind the shield or in front, with an optional message.
      *
-     * @param event The slash command event.
      * @param discordGame The discord game object.
      * @param game The game object.
      * @throws ChannelNotFoundException If the channel is not found.
-     * @throws IOException If the game assets can not be loaded.
      */
-    public void addSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        addOrRemoveSpice(event, discordGame, game, true);
+    public void addSpice(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        addOrRemoveSpice(discordGame, game, true);
     }
 
     /**
      * Remove Spice from a player.  Spice can be removed from behind the shield or in front, with an optional message.
      *
-     * @param event The slash command event.
      * @param discordGame The discord game object.
      * @param game The game object.
      * @throws ChannelNotFoundException If the channel is not found.
-     * @throws IOException If the game assets can not be loaded.
      */
-    public void removeSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        addOrRemoveSpice(event, discordGame, game, false);
+    public void removeSpice(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        addOrRemoveSpice(discordGame, game, false);
     }
 
     /**
      * Add or Remove Spice from a player.  This can be behind the shield or in front, with an optional message.
      *
-     * @param event The slash command event.
      * @param discordGame The discord game object.
      * @param game The game object.
      * @param add True to add spice, false to remove spice.
      * @throws ChannelNotFoundException If the channel is not found.
-     * @throws IOException If the game assets can not be loaded.
      */
-    public void addOrRemoveSpice(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, boolean add) throws ChannelNotFoundException, IOException {
+    public void addOrRemoveSpice(DiscordGame discordGame, Game game, boolean add) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         int amountValue = discordGame.required(amount).getAsInt();
         String messageValue = discordGame.required(message).getAsString();
@@ -354,17 +351,13 @@ public class CommandManager extends ListenerAdapter {
                 )
         );
 
-        if (toFrontOfShield) {
-            refreshFrontOfShieldInfo(event, discordGame, game);
-        } else {
+        if (!toFrontOfShield)
             spiceMessage(discordGame, amountValue, faction.getName(), messageValue, add);
-            ShowCommands.writeFactionInfo(discordGame, faction);
-        }
 
         discordGame.pushGame();
     }
 
-    public void resourceAddOrSubtract(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    public void resourceAddOrSubtract(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String factionName = discordGame.required(faction).getAsString();
         String resourceNameValue = discordGame.required(resourceName).getAsString();
         int amountValue = discordGame.required(amount).getAsInt();
@@ -387,7 +380,6 @@ public class CommandManager extends ListenerAdapter {
             );
             spiceMessage(discordGame, Math.abs(amountValue), faction.getName(), messageValue, amountValue >= 0);
 
-            ShowCommands.writeFactionInfo(discordGame, game.getFaction(factionName));
             discordGame.pushGame();
             return;
         }
@@ -400,7 +392,6 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException("Resource is not numeric");
         }
 
-        ShowCommands.writeFactionInfo(discordGame, game.getFaction(factionName));
         discordGame.pushGame();
     }
 
@@ -511,55 +502,25 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void discard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void discard(DiscordGame discordGame, Game game) {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
-        List<TreacheryCard> hand = faction.getTreacheryHand();
 
-        String cardName = discordGame.required(card).getAsString().toLowerCase();
+        String cardName = discordGame.required(card).getAsString();
 
-        int i = 0;
-        for (; i < hand.size(); i++) {
-            String card = hand.get(i).name();
-            if (card.toLowerCase().contains(cardName)) {
-                game.getTreacheryDiscard().add(hand.get(i));
-                break;
-            }
-        }
-        hand.remove(i);
-        ShowCommands.writeFactionInfo(discordGame, faction);
+        game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
         discordGame.pushGame();
     }
 
-    public void transferCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void transferCard(DiscordGame discordGame, Game game) {
         Faction giver = game.getFaction(discordGame.required(faction).getAsString());
         Faction receiver = game.getFaction(discordGame.required(recipient).getAsString());
         String cardName = discordGame.required(card).getAsString();
-        List<TreacheryCard> giverHand = giver.getTreacheryHand();
-        List<TreacheryCard> receiverHand = receiver.getTreacheryHand();
 
-        if ((receiver.getHandLimit() == receiverHand.size())) {
-            discordGame.sendMessage("mod-info", "The recipient's hand is full!");
-            return;
-        }
-        int i = 0;
+        receiver.addTreacheryCard(
+                giver.removeTreacheryCard(cardName)
+        );
 
-        boolean cardFound = false;
-        for (; i < giverHand.size(); i++) {
-            String card = giverHand.get(i).name();
-            if (card.equalsIgnoreCase(cardName)) {
-                cardFound = true;
-                receiverHand.add(giverHand.get(i));
-                break;
-            }
-        }
-        if (!cardFound) {
-            discordGame.sendMessage("mod-info", "Could not find that card!");
-            return;
-        }
-        giverHand.remove(i);
-        ShowCommands.writeFactionInfo(discordGame, giver);
-        ShowCommands.writeFactionInfo(discordGame, receiver);
         discordGame.pushGame();
     }
 
@@ -593,7 +554,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction winner = game.getFaction(discordGame.required(faction).getAsString());
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
@@ -632,10 +593,10 @@ public class CommandManager extends ListenerAdapter {
                             currentCard
                     )
             );
-            ShowCommands.writeFactionInfo(discordGame, paidToFaction);
         }
 
-        winnerHand.add(game.getBidCard());
+        winner.addTreacheryCard(game.getBidCard());
+
         game.setBidCard(null);
 
         // Harkonnen draw an additional card
@@ -653,8 +614,6 @@ public class CommandManager extends ListenerAdapter {
                     winner.getEmoji(), Emojis.TREACHERY
             ));
         }
-
-        ShowCommands.writeFactionInfo(discordGame, winner);
 
         discordGame.pushGame();
     }
@@ -681,16 +640,16 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void reviveLeader(DiscordGame discordGame, Game game) {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
-        targetFaction.getLeaders().add(
+        targetFaction.addLeader(
                 game.removeLeaderFromTanks(discordGame.required(reviveLeader).getAsString())
         );
-        ShowCommands.writeFactionInfo(discordGame, targetFaction);
+
         discordGame.pushGame();
     }
 
-    public void revival(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void revival(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String star = discordGame.required(starred).getAsBoolean() ? "*" : "";
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         boolean isPaid = discordGame.required(paid).getAsBoolean();
@@ -702,8 +661,8 @@ public class CommandManager extends ListenerAdapter {
         else if (targetFaction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
         else revivalCost = revivedValue * 2;
 
-        if (star.equals("")) targetFaction.getReserves().addStrength(revivedValue);
-        else targetFaction.getSpecialReserves().addStrength(revivedValue);
+        if (star.equals("")) targetFaction.addReserves(revivedValue);
+        else targetFaction.addSpecialReserves(revivedValue);
 
         Force force = game.getForceFromTanks(targetFaction.getName() + star);
         force.setStrength(force.getStrength() - revivedValue);
@@ -714,9 +673,7 @@ public class CommandManager extends ListenerAdapter {
             if (game.hasFaction("BT") && !targetFaction.getName().equalsIgnoreCase("BT")) {
                 game.getFaction("BT").addSpice(revivalCost);
                 spiceMessage(discordGame, revivalCost, "bt", targetFaction.getEmoji() + " revivals", true);
-                ShowCommands.writeFactionInfo(discordGame, game.getFaction("BT"));
             }
-            ShowCommands.writeFactionInfo(discordGame, targetFaction);
         }
 
         discordGame.pushGame();
@@ -728,7 +685,7 @@ public class CommandManager extends ListenerAdapter {
      * @param discordGame  the discord game
      * @param game         the game
      */
-    public void placeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void placeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
@@ -737,9 +694,9 @@ public class CommandManager extends ListenerAdapter {
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
 
-        if (amountValue > 0) placeForceInTerritory(targetTerritory, reserves, amountValue);
+        if (amountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
 
-        if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, specialReserves, starredAmountValue);
+        if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
 
         if (discordGame.required(isShipment).getAsBoolean()) {
             int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
@@ -789,7 +746,6 @@ public class CommandManager extends ListenerAdapter {
                     message.append(" paid to ")
                             .append(game.getFaction("Guild").getEmoji());
                     spiceMessage(discordGame, cost, "guild", targetFaction.getEmoji() + " shipment", true);
-                    ShowCommands.writeFactionInfo(discordGame, game.getFaction("Guild"));
                 }
 
             }
@@ -802,7 +758,6 @@ public class CommandManager extends ListenerAdapter {
                 TechToken.addSpice(game, discordGame, "Heighliners");
             }
 
-            ShowCommands.writeFactionInfo(discordGame, targetFaction);
             discordGame.sendMessage("turn-summary", message.toString());
         }
 
@@ -812,16 +767,21 @@ public class CommandManager extends ListenerAdapter {
     /**
      * Places a force from the reserves into a territory.
      * @param territory The territory to place the force in.
-     * @param reserveForce The force in the reserves to place.
+     * @param faction The faction that owns the force.
      * @param amount The number of forces to place.
+     * @param special Whether the force is a special reserve.
      */
-    public void placeForceInTerritory(Territory territory, Force reserveForce, int amount) {
-        if (reserveForce.getStrength() < amount) {
-            throw new IllegalArgumentException("Not enough strength in the reserves!");
+    public void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
+        String forceName;
+
+        if (special) {
+            faction.removeSpecialReserves(amount);
+            forceName = faction.getSpecialReserves().getName();
+        } else {
+            faction.removeReserves(amount);
+            forceName = faction.getReserves().getName();
         }
 
-        reserveForce.setStrength(reserveForce.getStrength() - amount);
-        String forceName = reserveForce.getName();
         Force territoryForce = territory.getForce(forceName);
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
@@ -975,7 +935,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void bribe(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void bribe(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction fromFaction = game.getFaction(discordGame.required(faction).getAsString());
         Faction recipientFaction = game.getFaction(discordGame.required(recipient).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
@@ -1006,8 +966,6 @@ public class CommandManager extends ListenerAdapter {
 
         recipientFaction.addFrontOfShieldSpice(amountValue);
         discordGame.pushGame();
-        ShowCommands.writeFactionInfo(discordGame, fromFaction);
-        refreshFrontOfShieldInfo(event,discordGame,game);
     }
 
     public void mute(DiscordGame discordGame, Game game) {

@@ -55,7 +55,7 @@ public class ShowCommands {
         switch (name) {
             case "board" -> showBoard(discordGame, game);
             case "faction-info" -> showFactionInfo(discordGame);
-            case "front-of-shields" -> refreshFrontOfShieldInfo(event, discordGame, game);
+            case "front-of-shields" -> refreshFrontOfShieldInfo(discordGame, game);
         }
     }
 
@@ -430,7 +430,7 @@ public class ShowCommands {
         }
     }
 
-    public static void refreshFrontOfShieldInfo(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         MessageChannel frontOfShieldChannel = discordGame.getTextChannel("front-of-shield");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(frontOfShieldChannel).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
@@ -472,7 +472,7 @@ public class ShowCommands {
                     );
 
                     Optional<FileUpload> fileUpload = CardImages
-                            .getLeaderSkillImage(event.getGuild(), leader.skillCard().name());
+                            .getLeaderSkillImage(discordGame.getEvent().getGuild(), leader.skillCard().name());
 
                     fileUpload.ifPresent(uploads::add);
                 }
@@ -484,7 +484,7 @@ public class ShowCommands {
                     message.append(strongholdName).append(" Stronghold Skill\n");
 
                     Optional<FileUpload> fileUpload = CardImages
-                            .getStrongholdImage(event.getGuild(), strongholdName);
+                            .getStrongholdImage(discordGame.getEvent().getGuild(), strongholdName);
 
                     fileUpload.ifPresent(uploads::add);
                 }
@@ -495,6 +495,23 @@ public class ShowCommands {
             } else {
                 discordGame.sendMessage("front-of-shield", message.toString(), uploads);
             }
+        }
+    }
+
+    public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+        Game game = discordGame.getGame();
+        boolean frontOfShieldModified = false;
+        for (Faction faction : game.getFactions()) {
+            if (faction.isBackOfShieldModified()) {
+                writeFactionInfo(discordGame, faction);
+            }
+            if (faction.isFrontOfShieldModified()) {
+                frontOfShieldModified = true;
+            }
+        }
+
+        if (frontOfShieldModified) {
+            refreshFrontOfShieldInfo(discordGame, game);
         }
     }
 }

@@ -33,5 +33,13 @@ public class RicheseFaction extends Faction {
         cache.add(new TreacheryCard("Nullentropy Box", "Special"));
     }
 
+    public void moveNoFieldsToFrontOfShield(int noFieldValue) {
+        if (!hasResource("frontOfShieldNoField")) {
+            addResource(new IntegerResource("frontOfShieldNoField", noFieldValue, 0, 5));
+        } else {
+            ((Resource<Integer>)getResource("frontOfShieldNoField")).setValue(noFieldValue);
+        }
 
+        setFrontOfShieldModified();
+    }
 }

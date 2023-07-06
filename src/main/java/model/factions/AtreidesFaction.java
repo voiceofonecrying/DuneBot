@@ -34,6 +34,7 @@ public class AtreidesFaction extends Faction {
      */
     public void setForcesLost(int forcesLost) {
         this.forcesLost = forcesLost;
+        setBackOfShieldModified();
     }
 
     /**
@@ -41,6 +42,7 @@ public class AtreidesFaction extends Faction {
      */
     public void addForceLost(int forceLost) {
         setForcesLost(this.forcesLost + forceLost);
+        setBackOfShieldModified();
     }
 
     /**

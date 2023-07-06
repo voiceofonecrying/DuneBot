@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import controller.commands.CommandManager;
-import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
 
@@ -29,7 +28,7 @@ public class TechToken {
         }
     }
 
-    public static void collectSpice(Game game, DiscordGame discordGame, String techToken) throws ChannelNotFoundException, IOException {
+    public static void collectSpice(Game game, DiscordGame discordGame, String techToken) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
             if (faction.getTechTokens().isEmpty()) continue;
             for (TechToken tt : faction.getTechTokens()) {
@@ -37,7 +36,6 @@ public class TechToken {
                     faction.addSpice(tt.spice);
                     discordGame.sendMessage("turn-summary", faction.getEmoji() +  " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
                     CommandManager.spiceMessage(discordGame, tt.spice, faction.getName(), "for " + Emojis.getTechTokenEmoji(techToken), true);
-                    ShowCommands.writeFactionInfo(discordGame, faction);
                     tt.spice = 0;
                     break;
                 }

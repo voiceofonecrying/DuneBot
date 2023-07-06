@@ -1,8 +1,12 @@
 package model;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
+import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
 import model.factions.*;
 import net.dv8tion.jda.api.JDA;
@@ -71,6 +75,10 @@ public class DiscordGame {
 
     public TextChannel getBotDataChannel() throws ChannelNotFoundException {
         return this.getTextChannel("bot-data");
+    }
+
+    public SlashCommandInteractionEvent getEvent() {
+        return this.event;
     }
 
     public void setGame(Game game) {
@@ -160,7 +168,23 @@ public class DiscordGame {
 
     public void pushGame() {
         removeGameReferenceFromFactions(this.game);
-        Gson gson = new Gson();
+
+        ExclusionStrategy strategy = new ExclusionStrategy() {
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldSkipField(FieldAttributes field) {
+                return field.getAnnotation(Exclude.class) != null;
+            }
+        };
+
+        Gson gson = new GsonBuilder()
+                .addSerializationExclusionStrategy(strategy)
+                .create();
+
         FileUpload fileUpload = FileUpload.fromData(
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );

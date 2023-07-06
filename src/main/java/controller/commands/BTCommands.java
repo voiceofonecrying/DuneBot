@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-import java.io.IOException;
 import java.util.*;
 
 import static controller.commands.CommandOptions.btFaceDancer;
@@ -28,7 +27,7 @@ public class BTCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -39,7 +38,7 @@ public class BTCommands {
         }
     }
 
-    public static void swapBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void swapBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasFaction("BT")) {
             String faceDancer = discordGame.required(btFaceDancer).getAsString();
             Faction faction = game.getFaction("BT");
@@ -60,7 +59,6 @@ public class BTCommands {
 
             discordGame.pushGame();
             discordGame.sendMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
-            ShowCommands.writeFactionInfo(discordGame, faction);
         }
     }
 }

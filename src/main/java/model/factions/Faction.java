@@ -1,5 +1,6 @@
 package model.factions;
 
+import helpers.Exclude;
 import model.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -11,6 +12,10 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Faction {
+    @Exclude
+    private boolean backOfShieldModified;
+    @Exclude
+    private boolean frontOfShieldModified;
     private final String name;
     protected String emoji;
     private String player;
@@ -83,6 +88,22 @@ public class Faction {
         this.game = game;
     }
 
+    public void setFrontOfShieldModified() {
+        this.frontOfShieldModified = true;
+    }
+
+    public boolean isFrontOfShieldModified() {
+        return this.frontOfShieldModified;
+    }
+
+    public void setBackOfShieldModified() {
+        this.backOfShieldModified = true;
+    }
+
+    public boolean isBackOfShieldModified() {
+        return this.backOfShieldModified;
+    }
+
     public void setGame(Game game) {
         this.game = game;
     }
@@ -151,8 +172,41 @@ public class Faction {
         return treacheryHand;
     }
 
+    public TreacheryCard getTreacheryCard(String name) {
+        return treacheryHand.stream()
+                .filter(t -> t.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Treachery card not found"));
+    }
+
     public void addTreacheryCard(TreacheryCard card) {
+        if (treacheryHand.size() + 1 >= handLimit) {
+            throw new IllegalStateException("Hand limit reached");
+        }
+
         treacheryHand.add(card);
+        setBackOfShieldModified();
+    }
+
+    public TreacheryCard removeTreacheryCard(String name) {
+        return removeTreacheryCard(getTreacheryCard(name));
+    }
+
+    public TreacheryCard removeTreacheryCard(TreacheryCard card) {
+        treacheryHand.remove(card);
+        setBackOfShieldModified();
+        return card;
+    }
+
+    public void addTraitorCard(TraitorCard card) {
+        traitorHand.add(card);
+        setBackOfShieldModified();
+    }
+
+    public TraitorCard removeTraitorCard(TraitorCard card) {
+        traitorHand.remove(card);
+        setBackOfShieldModified();
+        return card;
     }
 
     public List<TraitorCard> getTraitorHand() {
@@ -171,17 +225,20 @@ public class Faction {
 
     public void setSpice(int spice) {
         this.spice = spice;
+        setBackOfShieldModified();
     }
 
     public void addSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.spice += spice;
+        setBackOfShieldModified();
     }
 
     public void subtractSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
+        setBackOfShieldModified();
     }
 
     public void addResource(Resource resource) {
@@ -190,14 +247,34 @@ public class Faction {
 
     public void removeResource(String resourceName) {
         resources.removeAll(getResources(resourceName));
+        setFrontOfShieldModified();
     }
 
     public Force getReserves() {
         return reserves;
     }
+    public void addReserves(int amount) {
+        getReserves().addStrength(amount);
+        setBackOfShieldModified();
+    }
+
+    public void removeReserves(int amount) {
+        getReserves().removeStrength(amount);
+        setBackOfShieldModified();
+    }
 
     public Force getSpecialReserves() {
         return specialReserves == null ? new Force("", 0): specialReserves;
+    }
+
+    public void addSpecialReserves(int amount) {
+        getSpecialReserves().addStrength(amount);
+        setBackOfShieldModified();
+    }
+
+    public void removeSpecialReserves(int amount) {
+        getSpecialReserves().removeStrength(amount);
+        setBackOfShieldModified();
     }
 
     public int getFrontOfShieldSpice() {
@@ -230,15 +307,21 @@ public class Faction {
                 .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
 
         leaders.remove(remove);
+        setBackOfShieldModified();
         return remove;
     }
 
     public void removeLeader(Leader leader) {
         getLeaders().remove(leader);
+        setBackOfShieldModified();
+        if (leader.skillCard() != null) {
+            setFrontOfShieldModified();
+        }
     }
 
     public void addLeader(Leader leader) {
         getLeaders().add(leader);
+        setBackOfShieldModified();
     }
 
     public List<Resource> getResources() {
@@ -247,17 +330,20 @@ public class Faction {
 
     public void setFrontOfShieldSpice(int frontOfShieldSpice) {
         this.frontOfShieldSpice = frontOfShieldSpice;
+        setFrontOfShieldModified();
     }
 
     public void addFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice += spice;
+        setFrontOfShieldModified();
     }
 
     public void subtractFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice -= spice;
         if (this.frontOfShieldSpice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
+        setFrontOfShieldModified();
     }
 
     public boolean hasMiningEquipment() {
@@ -360,7 +446,9 @@ public class Faction {
             } else {
                 reserves.addStrength(amount);
             }
+            setBackOfShieldModified();
         }
 
     }
+
 }

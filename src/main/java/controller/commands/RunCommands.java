@@ -37,13 +37,13 @@ public class RunCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
-            case "advance" -> advance(event, discordGame, game);
+            case "advance" -> advance(discordGame, game);
             case "bidding" -> bidding(discordGame, game);
             case "update-stronghold-skills" -> updateStrongholdSkills(discordGame, game);
         }
     }
 
-    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getTurn() == 0) {
             discordGame.sendMessage("mod-info", "Please complete setup first.");
             return;
@@ -85,7 +85,7 @@ public class RunCommands {
             startSpiceHarvest(discordGame, game);
             game.advancePhase();
         } else if (phase == 9) {
-            startMentatPause(event, discordGame, game);
+            startMentatPause(discordGame, game);
             game.advanceTurn();
         }
 
@@ -105,9 +105,9 @@ public class RunCommands {
         for (Faction faction : game.getFactions()) {
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", "" + faction.getPlayer().toString() + " will you play Weather Control?");
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", "" + faction.getPlayer().toString() + " will you play Family Atomics?");
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
                 }
             }
         }
@@ -222,7 +222,7 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Spice Blow Phase:");
     }
 
-    public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " CHOAM Charity Phase:");
         int multiplier = 1;
 
@@ -265,8 +265,6 @@ public class RunCommands {
                 if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.addSpice(game, discordGame, "Spice Production");
                 CommandManager.spiceMessage(discordGame, charity, faction.getName(), "CHOAM Charity", true);
             }
-            else continue;
-            ShowCommands.writeFactionInfo(discordGame, faction);
         }
         if (game.hasFaction("CHOAM")) {
             Faction choamFaction = game.getFaction("CHOAM");
@@ -277,7 +275,6 @@ public class RunCommands {
                             " " + Emojis.SPICE + " to factions in need."
             );
             CommandManager.spiceMessage(discordGame, choamGiven, "choam", "CHOAM Charity given", false);
-            ShowCommands.writeFactionInfo(discordGame, choamFaction);
         }
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
@@ -472,11 +469,11 @@ public class RunCommands {
                     Force force = game.getForceFromTanks(faction.getName() + "*");
                     force.setStrength(force.getStrength() - 1);
                     revivedStar = true;
-                    faction.getSpecialReserves().setStrength(faction.getSpecialReserves().getStrength() + 1);
+                    faction.addSpecialReserves(1);
                 } else if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
                     Force force = game.getForceFromTanks(faction.getName());
                     force.setStrength(force.getStrength() - 1);
-                    faction.getReserves().setStrength(faction.getReserves().getStrength() + 1);
+                    faction.addReserves(1);
                 }
             }
             if (revived > 0) {
@@ -497,7 +494,9 @@ public class RunCommands {
 
         discordGame.sendMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
         if (game.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-chat", "You see visions of " + game.getSpiceDeck().peek().name() + " in your future.");
+            SpiceCard nextCard = game.getSpiceDeck().peek();
+            if (nextCard != null)
+                discordGame.sendMessage("atreides-chat", "You see visions of " + nextCard.name() + " in your future.");
         }
         if(game.hasFaction("BG")) {
             StringBuilder message = new StringBuilder();
@@ -574,8 +573,6 @@ public class RunCommands {
             }
         }
 
-        Set<Faction> factionsWithChanges = new HashSet<>();
-
         for (Faction faction : game.getFactions()) {
             faction.setHasMiningEquipment(false);
             if (territories.get("Arrakeen").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
@@ -584,7 +581,6 @@ public class RunCommands {
                 discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Arrakeen");
                 faction.setHasMiningEquipment(true);
-                factionsWithChanges.add(faction);
             }
             if (territories.get("Carthag").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                 faction.addSpice(2);
@@ -592,14 +588,12 @@ public class RunCommands {
                 discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Carthag");
                 faction.setHasMiningEquipment(true);
-                factionsWithChanges.add(faction);
             }
             if (territories.get("Tuek's Sietch").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
                 discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                         " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
                 faction.addSpice(1);
                 CommandManager.spiceMessage(discordGame, 1, faction.getName(), "for Tuek's Sietch", true);
-                factionsWithChanges.add(faction);
             }
         }
 
@@ -616,15 +610,12 @@ public class RunCommands {
             int spice = Math.min(multiplier * totalStrength, territory.getSpice());
             faction.addSpice(spice);
             CommandManager.spiceMessage(discordGame, spice, faction.getName(), "for Spice Blow", true);
-            factionsWithChanges.add(faction);
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
                     && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION))) altSpiceProductionTriggered = true;
             territory.setSpice(territory.getSpice() - spice);
             discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
         }
-
-        for (Faction faction : factionsWithChanges) ShowCommands.writeFactionInfo(discordGame, faction);
 
         if (altSpiceProductionTriggered) {
             TechToken.addSpice(game, discordGame, "Spice Production");
@@ -634,7 +625,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startMentatPause(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : game.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {
@@ -643,20 +634,17 @@ public class RunCommands {
                 CommandManager.spiceMessage(discordGame,  faction.getFrontOfShieldSpice(), faction.getName(), "front of shield", true);
                 faction.addSpice(faction.getFrontOfShieldSpice());
                 faction.setFrontOfShieldSpice(0);
-                ShowCommands.writeFactionInfo(discordGame, faction);
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.sendMessage("mod-info", "" + faction.getEmoji() + " has Weather Control.");
+                    discordGame.sendMessage("mod-info", faction.getEmoji() + " has Weather Control.");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.sendMessage("mod-info", "" + faction.getEmoji() + " has Family Atomics.");
+                    discordGame.sendMessage("mod-info", faction.getEmoji() + " has Family Atomics.");
                 }
             }
         }
 
         updateStrongholdSkills(discordGame, game);
-
-        ShowCommands.refreshFrontOfShieldInfo(event, discordGame, game);
     }
 
     public static void updateStrongholdSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
