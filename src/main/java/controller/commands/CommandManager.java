@@ -711,7 +711,7 @@ public class CommandManager extends ListenerAdapter {
         if (isPaid) {
             targetFaction.subtractSpice(revivalCost);
             spiceMessage(discordGame, revivalCost, targetFaction.getName(), "Revivals", false);
-            if (game.hasFaction("BT") || !targetFaction.getName().equalsIgnoreCase("BT")) {
+            if (game.hasFaction("BT") && !targetFaction.getName().equalsIgnoreCase("BT")) {
                 game.getFaction("BT").addSpice(revivalCost);
                 spiceMessage(discordGame, revivalCost, "bt", targetFaction.getEmoji() + " revivals", true);
                 ShowCommands.writeFactionInfo(discordGame, game.getFaction("BT"));
