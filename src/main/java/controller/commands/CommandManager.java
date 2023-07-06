@@ -43,6 +43,7 @@ public class CommandManager extends ListenerAdapter {
         List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
 
         try {
+            String responseMessage = "";
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
             //else if (name.equals("clean")) clean(event); Leaving this command commented so that the command is ignored in production
             else {
@@ -65,7 +66,7 @@ public class CommandManager extends ListenerAdapter {
                     case "bt" -> BTCommands.runCommand(event, discordGame, game);
                     case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                     case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
-                    case "player" -> PlayerCommands.runCommand(event, discordGame, game);
+                    case "player" -> responseMessage = PlayerCommands.runCommand(event, discordGame, game);
                     case "resourceaddorsubtract" -> resourceAddOrSubtract(discordGame, game);
                     case "removeresource" -> removeResource(discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
@@ -97,7 +98,7 @@ public class CommandManager extends ListenerAdapter {
                     case "remove-spice" -> removeSpice(event, discordGame, game);
                 }
             }
-            event.getHook().editOriginal("Command Done").queue();
+            event.getHook().editOriginal("Command Done. " + responseMessage).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();

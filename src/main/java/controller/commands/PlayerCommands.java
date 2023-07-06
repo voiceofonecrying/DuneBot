@@ -33,60 +33,72 @@ public class PlayerCommands {
     }
 
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static String runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
 
         if (game.getFactions().stream().noneMatch(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))) {
-            return;
+            return "";
         }
 
         String command = event.getSubcommandName();
         if (command == null) throw new IllegalArgumentException("Invalid command name: null");
 
+        String responseMessage = "";
         switch (command) {
-            case "bid" -> bid(event, discordGame, game);
-            case "pass" -> pass(event, discordGame, game);
-            case "set-auto-bid-policy" -> setAutoBidPolicy(event, discordGame);
-            case "set-auto-pass" -> setAutoPass(event, discordGame, game);
+            case "bid" -> responseMessage = bid(event, discordGame, game);
+            case "pass" -> responseMessage = pass(event, discordGame, game);
+            case "set-auto-bid-policy" -> responseMessage = setAutoBidPolicy(event, discordGame);
+            case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
         }
         discordGame.pushGame();
+        return responseMessage;
     }
 
-    private static void pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
         tryBid(discordGame, game, faction);
-        discordGame.sendMessage("mod-info", faction.getEmoji() + " passed their bid.");
-
+        String responseMessage = faction.getEmoji() + " passed their bid.";
+        discordGame.sendMessage("mod-info", responseMessage);
+        return responseMessage;
     }
 
-    private static void setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setAutoBid(enabled);
         tryBid(discordGame, game, faction);
-        discordGame.sendMessage("mod-info", faction.getEmoji() + " set auto-pass to " + enabled);
+        String responseMessage = faction.getEmoji() + " set auto-pass to " + enabled;
+        discordGame.sendMessage("mod-info", responseMessage);
+        return responseMessage;
     }
 
-    private static void setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static String setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setUseExact(useExact);
-        discordGame.sendMessage("mod-info", faction.getEmoji() + " set auto-bid-policy to " + (useExact ? "exact" : "increment"));
+        String responseMessage = faction.getEmoji() + " set their auto-bid policy to " + (useExact ? "exact" : "increment");
+        discordGame.sendMessage("mod-info", responseMessage);
+        discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage);
+        return responseMessage;
     }
 
-    private static void bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         int bidAmount = discordGame.required(amount).getAsInt();
         faction.setMaxBid(bidAmount);
-        discordGame.sendMessage("mod-info",
-                faction.getEmoji() + " set their bid to " + bidAmount);
+        String responseMessage = faction.getEmoji() + " set their bid to " + bidAmount;
+        discordGame.sendMessage("mod-info", responseMessage);
+        String responseMessage2 = "";
         if (discordGame.optional(outbidAlly) != null){
             boolean outbidAllyValue = discordGame.optional(outbidAlly).getAsBoolean();
             faction.setOutbidAlly(outbidAllyValue);
-            discordGame.sendMessage("mod-info",
-                    faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue);
+            responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
+            discordGame.sendMessage("mod-info", responseMessage2);
+            discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
+            responseMessage2 = ". " + responseMessage2;
         }
         tryBid(discordGame, game, faction);
+        return responseMessage + responseMessage2;
     }
 
     private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
