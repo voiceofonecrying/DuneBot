@@ -180,7 +180,7 @@ public class Faction {
     }
 
     public void addTreacheryCard(TreacheryCard card) {
-        if (treacheryHand.size() + 1 >= handLimit) {
+        if (treacheryHand.size() >= handLimit) {
             throw new IllegalStateException("Hand limit reached");
         }
 
