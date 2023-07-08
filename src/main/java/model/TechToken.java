@@ -5,8 +5,6 @@ import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
 
-import java.io.IOException;
-
 public class TechToken {
     private final String name;
     private int spice;

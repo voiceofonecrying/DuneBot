@@ -35,7 +35,6 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-
         String name = event.getName();
         event.deferReply(true).queue();
         Member member = event.getMember();
@@ -395,7 +394,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void removeResource(DiscordGame discordGame, Game game) {
+    public void removeResource(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String resource = discordGame.required(resourceName).getAsString();
         game.getFaction(factionName).removeResource(resource);
@@ -495,14 +494,14 @@ public class CommandManager extends ListenerAdapter {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public void drawCard(DiscordGame discordGame, Game game) {
+    public void drawCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
         faction.addTreacheryCard(game.getTreacheryDeck().pop());
         discordGame.pushGame();
     }
 
-    public void discard(DiscordGame discordGame, Game game) {
+    public void discard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
 
@@ -512,7 +511,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void transferCard(DiscordGame discordGame, Game game) {
+    public void transferCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction giver = game.getFaction(discordGame.required(faction).getAsString());
         Faction receiver = game.getFaction(discordGame.required(recipient).getAsString());
         String cardName = discordGame.required(card).getAsString();
@@ -634,13 +633,13 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public void killLeader(DiscordGame discordGame, Game game) {
+    public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         game.getLeaderTanks().add(targetFaction.removeLeader(discordGame.required(leader).getAsString()));
         discordGame.pushGame();
     }
 
-    public void reviveLeader(DiscordGame discordGame, Game game) {
+    public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         targetFaction.addLeader(
                 game.removeLeaderFromTanks(discordGame.required(reviveLeader).getAsString())
@@ -840,7 +839,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void removeForces(DiscordGame discordGame, Game game) {
+    public void removeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(fromTerritory).getAsString();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
@@ -968,7 +967,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void mute(DiscordGame discordGame, Game game) {
+    public void mute(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.setMute(!game.getMute());
 
         discordGame.pushGame();
@@ -1034,7 +1033,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void removeAlliance(DiscordGame discordGame, Game game) {
+    public void removeAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         removeAlliance(game, targetFaction);
 
@@ -1048,7 +1047,7 @@ public class CommandManager extends ListenerAdapter {
         faction.removeAlly();
     }
 
-    public void setSpiceInTerritory(DiscordGame discordGame, Game game) {
+    public void setSpiceInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(territory).getAsString();
         int amountValue = discordGame.required(amount).getAsInt();
 
@@ -1056,13 +1055,13 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void destroyShieldWall(DiscordGame discordGame, Game game) {
+    public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.breakShieldWall();
 
         discordGame.pushGame();
     }
 
-    public void weatherControlStorm(DiscordGame discordGame, Game game) {
+    public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int wcStormMovement = discordGame.required(sectors).getAsInt();
         game.setStormMovement(wcStormMovement);
 

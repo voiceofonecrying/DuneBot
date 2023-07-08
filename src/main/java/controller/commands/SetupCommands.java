@@ -251,7 +251,7 @@ public class SetupCommands {
                 .queue();
     }
 
-    public static void newFactionResource(DiscordGame discordGame, Game game) {
+    public static void newFactionResource(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String resource = discordGame.required(resourceName).getAsString();
         String resourceValue = discordGame.required(value).getAsString();
@@ -268,7 +268,7 @@ public class SetupCommands {
         discordGame.sendMessage("mod-info", stringBuilder);
     }
 
-    public static void addGameOption(DiscordGame discordGame, Game game) {
+    public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String gameOptionName = discordGame.required(addGameOption).getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
@@ -276,7 +276,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void removeGameOption(DiscordGame discordGame, Game game) {
+    public static void removeGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String gameOptionName = discordGame.required(removeGameOption).getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 
@@ -284,7 +284,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void ixHandSelection(DiscordGame discordGame, Game game) {
+    public static void ixHandSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String ixCardName = discordGame.required(ixCard).getAsString();
         Faction faction = game.getFaction("Ix");
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
@@ -494,7 +494,7 @@ public class SetupCommands {
         }
     }
 
-    public static void harkonnenMulligan(DiscordGame discordGame, Game game) {
+    public static void harkonnenMulligan(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (!game.hasFaction("Harkonnen"))
             return;
 

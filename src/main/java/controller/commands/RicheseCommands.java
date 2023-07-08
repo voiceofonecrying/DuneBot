@@ -59,7 +59,7 @@ public class RicheseCommands {
         }
     }
 
-    public static void moveNoFieldsToFrontOfShield(DiscordGame discordGame, Game game) {
+    public static void moveNoFieldsToFrontOfShield(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int noFieldValue = discordGame.required(richeseNoFields).getAsInt();
 
         if (game.hasFaction("Richese")) {
@@ -127,7 +127,7 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void placeNoFieldToken(DiscordGame discordGame, Game game) {
+    public static void placeNoFieldToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Integer noField = discordGame.required(richeseNoFields).getAsInt();
         String territoryName = discordGame.required(territory).getAsString();
 
@@ -137,7 +137,7 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void removeNoFieldToken(DiscordGame discordGame, Game game) {
+    public static void removeNoFieldToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Optional<Territory> territory = game.getTerritories().values().stream()
                 .filter(Territory::hasRicheseNoField)
                 .findFirst();

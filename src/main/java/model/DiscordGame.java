@@ -166,7 +166,7 @@ public class DiscordGame {
         }
     }
 
-    public void pushGame() {
+    public void pushGame() throws ChannelNotFoundException {
         removeGameReferenceFromFactions(this.game);
 
         ExclusionStrategy strategy = new ExclusionStrategy() {
@@ -189,11 +189,7 @@ public class DiscordGame {
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
-        try {
-            this.getBotDataChannel().sendFiles(fileUpload).complete();
-        } catch (ChannelNotFoundException e) {
-            System.out.println("Channel not found. State was not saved.");
-        }
+        sendMessage("bot-data", "Command: `" + getEvent().getCommandString() + "`", fileUpload);
     }
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
