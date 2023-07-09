@@ -1,6 +1,5 @@
 package controller.commands;
 
-import com.google.gson.internal.LinkedTreeMap;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
@@ -65,7 +64,7 @@ public class RicheseCommands {
         if (game.hasFaction("Richese")) {
             RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
 
-            faction.moveNoFieldsToFrontOfShield(noFieldValue);
+            faction.setFrontOfShieldNoField(noFieldValue);
 
             discordGame.pushGame();
         }
@@ -75,20 +74,14 @@ public class RicheseCommands {
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
 
-        Faction faction = game.getFaction("Richese");
+        RicheseFaction faction = (RicheseFaction)game.getFaction("Richese");
 
-        List<LinkedTreeMap> rawList = (ArrayList<LinkedTreeMap>) faction.getResource("cache").getValue();
 
-        for (int i = 0; i < rawList.size(); i++) {
-            if (((String)rawList.get(i).get("name")).equalsIgnoreCase(cardName)) {
-                game.setBidCard(new TreacheryCard(
-                        (String)rawList.get(i).get("name"), (String)rawList.get(i).get("type")
-                ));
-
-                rawList.remove(i);
-                break;
-            }
-        }
+        game.setBidCard(
+                faction.removeTreacheryCardFromCache(
+                        faction.getTreacheryCardFromCache(cardName)
+                )
+        );
 
         game.incrementBidCardNumber();
 

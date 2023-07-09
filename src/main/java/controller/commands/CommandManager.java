@@ -3,7 +3,6 @@ package controller.commands;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.Faction;
@@ -66,8 +65,6 @@ public class CommandManager extends ListenerAdapter {
                     case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                     case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
                     case "player" -> responseMessage = PlayerCommands.runCommand(event, discordGame, game);
-                    case "resourceaddorsubtract" -> resourceAddOrSubtract(discordGame, game);
-                    case "removeresource" -> removeResource(discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
                     case "transfercard" -> transferCard(discordGame, game);
@@ -125,8 +122,6 @@ public class CommandManager extends ListenerAdapter {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(CommandOptions.password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(CommandOptions.gameName, CommandOptions.gameRole, CommandOptions.modRole));
-        commandData.add(Commands.slash("resourceaddorsubtract", "Performs basic addition and subtraction of numerical resources for factions").addOptions(faction, resourceName, amount, CommandOptions.message));
-        commandData.add(Commands.slash("removeresource", "Removes a resource category entirely (Like if you want to remove a Tech Token from a player)").addOptions(faction, resourceName));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(CommandOptions.deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, CommandOptions.card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, CommandOptions.card, CommandOptions.recipient));
@@ -353,51 +348,6 @@ public class CommandManager extends ListenerAdapter {
         if (!toFrontOfShield)
             spiceMessage(discordGame, amountValue, faction.getName(), messageValue, add);
 
-        discordGame.pushGame();
-    }
-
-    public void resourceAddOrSubtract(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        String factionName = discordGame.required(faction).getAsString();
-        String resourceNameValue = discordGame.required(resourceName).getAsString();
-        int amountValue = discordGame.required(amount).getAsInt();
-        String messageValue = discordGame.required(message).getAsString();
-        Faction faction = game.getFaction(factionName);
-
-        if (resourceNameValue.equalsIgnoreCase("spice")) {
-            if (amountValue < 0) {
-                faction.subtractSpice(-amountValue);
-            } else {
-                faction.addSpice(amountValue);
-            }
-            String gainsOrLoses = amountValue >= 0 ? " gains " : " loses ";
-            discordGame.sendMessage(
-                    "turn-summary",
-                    MessageFormat.format(
-                            "{0} {1} {2} {3} {4}",
-                            faction.getEmoji(), gainsOrLoses, Math.abs(amountValue), Emojis.SPICE, messageValue
-                    )
-            );
-            spiceMessage(discordGame, Math.abs(amountValue), faction.getName(), messageValue, amountValue >= 0);
-
-            discordGame.pushGame();
-            return;
-        }
-
-        Resource resource = game.getFaction(factionName).getResource(resourceNameValue);
-
-        if (resource instanceof IntegerResource) {
-            ((IntegerResource) resource).addValue(amountValue);
-        } else {
-            throw new InvalidGameStateException("Resource is not numeric");
-        }
-
-        discordGame.pushGame();
-    }
-
-    public void removeResource(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String factionName = discordGame.required(faction).getAsString();
-        String resource = discordGame.required(resourceName).getAsString();
-        game.getFaction(factionName).removeResource(resource);
         discordGame.pushGame();
     }
 
@@ -996,14 +946,10 @@ public class CommandManager extends ListenerAdapter {
             }
             case "factions" -> {
                 for (Faction faction: game.getFactions()) {
-                    StringBuilder message = new StringBuilder();
-                    message.append("**").append(faction.getName()).append(":**\nPlayer: ").append(faction.getUserName()).append("\n");
-                    message.append("spice: ").append(faction.getSpice()).append("\nTreachery Cards: ").append(faction.getTreacheryHand())
-                            .append("\nTraitors:").append(faction.getTraitorHand()).append("\nLeaders: ").append(faction.getLeaders()).append("\n");
-                    for (Resource resource : faction.getResources()) {
-                        message.append(resource.getName()).append(": ").append(resource.getValue()).append("\n");
-                    }
-                    discordGame.sendMessage(channel.getName(), message.toString());
+                    String message = "**" + faction.getName() + ":**\nPlayer: " + faction.getUserName() + "\n" +
+                            "spice: " + faction.getSpice() + "\nTreachery Cards: " + faction.getTreacheryHand() +
+                            "\nTraitors:" + faction.getTraitorHand() + "\nLeaders: " + faction.getLeaders() + "\n";
+                    discordGame.sendMessage(channel.getName(), message);
                 }
             }
         }

@@ -1,9 +1,9 @@
 package controller.commands;
 
-import com.google.gson.internal.LinkedTreeMap;
 import enums.GameOption;
 import model.*;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -33,8 +33,6 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
             .setAutoComplete(true);
-    public static final OptionData resourceName = new OptionData(OptionType.STRING, "resource", "The name of the resource", true);
-    public static final OptionData value = new OptionData(OptionType.STRING, "value", "Set the initial value", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
@@ -286,8 +284,8 @@ public class CommandOptions {
 
     private static List<Command.Choice> richeseCard(Game game, String searchValue) {
         if (game.hasFaction("Richese")) {
-            Faction faction = game.getFaction("Richese");
-            List<TreacheryCard> cards = convertRicheseCards(faction.getResource("cache").getValue());
+            RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+            List<TreacheryCard> cards = faction.getTreacheryCardCache();
 
             return cards.stream().map(TreacheryCard::name)
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
@@ -310,12 +308,6 @@ public class CommandOptions {
         } else {
             return new ArrayList<>();
         }
-    }
-
-    private static List<TreacheryCard> convertRicheseCards(Object rawList) {
-        return ((ArrayList<LinkedTreeMap>) rawList).stream()
-                .map(a -> new TreacheryCard((String)a.get("name"), (String)a.get("type")))
-                .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> getAddGameOptions(Game game, String searchValue) {

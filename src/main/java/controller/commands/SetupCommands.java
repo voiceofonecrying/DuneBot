@@ -18,8 +18,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
 import templates.ChannelPermissions;
 import utils.CardImages;
 
@@ -38,8 +36,6 @@ public class SetupCommands {
                 Commands.slash("setup", "Commands related to game setup.").addSubcommands(
                         new SubcommandData("faction", "Register a user to a faction in a game")
                                 .addOptions(allFactions, user),
-                        new SubcommandData("new-faction-resource", "Initialize a new resource for a faction")
-                                .addOptions(faction, CommandOptions.resourceName, CommandOptions.value),
                         new SubcommandData("show-game-options", "Show the selected game options"),
                         new SubcommandData("add-game-option", "Add a game option")
                                 .addOptions(CommandOptions.addGameOption),
@@ -64,7 +60,6 @@ public class SetupCommands {
 
         switch (name) {
             case "faction" -> addFaction(discordGame, game);
-            case "new-faction-resource" -> newFactionResource(discordGame, game);
             case "show-game-options" -> showGameOptions(discordGame, game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
@@ -251,15 +246,6 @@ public class SetupCommands {
                 .queue();
     }
 
-    public static void newFactionResource(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String factionName = discordGame.required(faction).getAsString();
-        String resource = discordGame.required(resourceName).getAsString();
-        String resourceValue = discordGame.required(value).getAsString();
-        game.getFaction(factionName)
-                .addResource(new Resource(resource, resourceValue));
-        discordGame.pushGame();
-    }
-
     public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String stringBuilder = "The following options are selected:\n" +
                 game.getGameOptions().stream().map(GameOption::name)
@@ -435,31 +421,33 @@ public class SetupCommands {
 
     public static StepStatus showLeaderSkillCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String channelName = "turn-summary";
-        List<Triple<String, String, String>> leaderSkillInfos = new ArrayList<>();
+        List<Map<String, String>> leaderSkills = new ArrayList<>();
 
         for (Faction faction : game.getFactions()) {
-            Optional<Leader> leader = faction.getLeaders().stream().filter(l -> l.skillCard() != null).findFirst();
+            Leader leader = faction.getLeaders().stream().filter(l -> l.skillCard() != null)
+                    .findFirst().orElseThrow(() -> new InvalidGameStateException(
+                            MessageFormat.format("Faction {0} do not have a skilled leader", faction.getName())
+                    ));
 
-            if (leader.isEmpty()) {
-                throw new InvalidGameStateException(MessageFormat.format("Faction {0} do not have a skilled leader", faction.getName()));
-            } else {
-                leaderSkillInfos.add(
-                        new ImmutableTriple(faction.getEmoji(), leader.get().name(), leader.get().skillCard().name())
-                );
-            }
+            Map<String, String> leaderSkillInfo = Map.of(
+                    "emoji", faction.getEmoji(),
+                    "leader", leader.name(),
+                    "skill", leader.skillCard().name()
+            );
+            leaderSkills.add(leaderSkillInfo);
         }
 
         discordGame.sendMessage(channelName, "__**Setup: Leader Skills**__");
 
-        for (Triple<String, String, String> leaderSkillInfo : leaderSkillInfos) {
+        for (Map<String, String> leaderSkill : leaderSkills) {
             String message = MessageFormat.format(
                     "{0} - {1} is a {2}",
-                    leaderSkillInfo.getLeft(),
-                    leaderSkillInfo.getMiddle(),
-                    leaderSkillInfo.getRight()
+                    leaderSkill.get("emoji"),
+                    leaderSkill.get("leader"),
+                    leaderSkill.get("skill")
             );
 
-            Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(event.getGuild(), leaderSkillInfo.getRight());
+            Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(event.getGuild(), leaderSkill.get("skill"));
 
             if (fileUpload.isEmpty()) {
                 discordGame.sendMessage(channelName, message);

@@ -5,6 +5,7 @@ import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -433,6 +434,7 @@ public class ShowCommands {
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         MessageChannel frontOfShieldChannel = discordGame.getTextChannel("front-of-shield");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(frontOfShieldChannel).complete();
+
         List<Message> messages = messageHistory.getRetrievedHistory();
 
         for (Message message : messages) {
@@ -455,8 +457,8 @@ public class ShowCommands {
                         .append(" " + Emojis.SPICE +"\n");
             }
 
-            if (faction.getName().equalsIgnoreCase("Richese") && faction.hasResource("frontOfShieldNoField")) {
-                message.append(faction.getResource("frontOfShieldNoField").getValue().toString())
+            if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction)faction).hasFrontOfShieldNoField()) {
+                message.append(((RicheseFaction)faction).getFrontOfShieldNoField())
                         .append(" No-Field Token\n");
             }
 

@@ -3,7 +3,7 @@ package model;
 public class Resource<V> {
 
     private final String name;
-    private V value;
+    private final V value;
 
     public Resource(String name, V value) {
         this.name = name;
@@ -16,9 +16,5 @@ public class Resource<V> {
 
     public V getValue() {
         return value;
-    }
-
-    public void setValue(V value) {
-        this.value = value;
     }
 }

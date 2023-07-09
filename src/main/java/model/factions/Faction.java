@@ -89,7 +89,11 @@ public class Faction {
     }
 
     public void setFrontOfShieldModified() {
-        this.frontOfShieldModified = true;
+        setFrontOfShieldModified(true);
+    }
+
+    public void setFrontOfShieldModified(boolean frontOfShieldModified) {
+        this.frontOfShieldModified = frontOfShieldModified;
     }
 
     public boolean isFrontOfShieldModified() {
@@ -97,7 +101,11 @@ public class Faction {
     }
 
     public void setBackOfShieldModified() {
-        this.backOfShieldModified = true;
+        setBackOfShieldModified(true);
+    }
+
+    public void setBackOfShieldModified(boolean backOfShieldModified) {
+        this.backOfShieldModified = backOfShieldModified;
     }
 
     public boolean isBackOfShieldModified() {
@@ -322,10 +330,6 @@ public class Faction {
     public void addLeader(Leader leader) {
         getLeaders().add(leader);
         setBackOfShieldModified();
-    }
-
-    public List<Resource> getResources() {
-        return resources;
     }
 
     public void setFrontOfShieldSpice(int frontOfShieldSpice) {

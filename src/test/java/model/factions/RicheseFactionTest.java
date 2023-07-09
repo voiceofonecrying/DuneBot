@@ -3,12 +3,14 @@ package model.factions;
 import constants.Emojis;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RicheseFactionTest extends FactionTestTemplate {
 
@@ -50,4 +52,21 @@ class RicheseFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
+
+    @Test
+    public void setFrontOfShieldNoFieldSetsModified() {
+        faction.setFrontOfShieldNoField(0);
+        assertTrue(faction.isFrontOfShieldModified());
+    }
+
+    @RepeatedTest(20)
+    public void setFrontOfShieldNoFieldValidAndInvalid(RepetitionInfo repetitionInfo) {
+        int frontOfShieldNoField = repetitionInfo.getCurrentRepetition() - 1;
+        if (List.of(0, 3, 5).contains(frontOfShieldNoField)) {
+            faction.setFrontOfShieldNoField(frontOfShieldNoField);
+            assertEquals(faction.getFrontOfShieldNoField(), frontOfShieldNoField);
+        } else {
+            assertThrows(IllegalArgumentException.class, () -> faction.setFrontOfShieldNoField(frontOfShieldNoField));
+        }
+    }
 }
