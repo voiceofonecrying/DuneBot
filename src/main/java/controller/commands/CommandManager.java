@@ -547,6 +547,8 @@ public class CommandManager extends ListenerAdapter {
         winner.addTreacheryCard(game.getBidCard());
 
         game.setBidCard(null);
+        game.setBidLeader("");
+        game.setCurrentBid(0);
 
         // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {

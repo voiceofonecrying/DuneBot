@@ -109,8 +109,9 @@ public class RicheseCommands {
         if (bidType.equalsIgnoreCase("Normal")) {
             RunCommands.updateBidOrder(game);
             List<String> bidOrder = game.getEligibleBidOrder();
-
-            RunCommands.createBidMessage(discordGame, game, bidOrder, game.getFaction(bidOrder.get(bidOrder.size() - 1)));
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+            game.setCurrentBidder(factionBeforeFirstToBid.getName());
+            RunCommands.createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
         } else {
             runRicheseBid(discordGame, game, bidType, true);
         }

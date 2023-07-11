@@ -337,6 +337,8 @@ public class RunCommands {
             discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
             game.getTreacheryDeck().addFirst(game.getBidCard());
             game.setBidCard(null);
+            game.setBidLeader("");
+            game.setCurrentBid(0);
         }
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
     }
@@ -375,11 +377,11 @@ public class RunCommands {
 
             AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
 
-            Faction firstBidFaction = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
 
-            game.setCurrentBidder(firstBidFaction.getName());
+            game.setCurrentBidder(factionBeforeFirstToBid.getName());
 
-            createBidMessage(discordGame, game, bidOrder, firstBidFaction);
+            createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
 
             discordGame.pushGame();
         }
