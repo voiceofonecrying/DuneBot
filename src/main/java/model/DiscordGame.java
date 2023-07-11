@@ -189,7 +189,9 @@ public class DiscordGame {
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
-        sendMessage("bot-data", "Command: `" + getEvent().getCommandString() + "`", fileUpload);
+        String message = getEvent() == null ? "Manual update" : "Command: `" + getEvent().getCommandString() + "`";
+
+        sendMessage("bot-data", message, fileUpload);
     }
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
