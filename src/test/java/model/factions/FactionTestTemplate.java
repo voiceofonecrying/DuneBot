@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 abstract class FactionTestTemplate {
@@ -211,6 +213,53 @@ abstract class FactionTestTemplate {
         void invalidToTanksNegatives() {
             assertThrows(IllegalArgumentException.class,
                     () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, true, false, forceName));
+        }
+    }
+
+    @Nested
+    @DisplayName("#isNearShieldWall")
+    class IsNearShieldWall {
+        Faction faction;
+        Territory territory;
+        String forceName;
+
+        @BeforeEach
+        void setUpRemoveSpice() {
+            faction = getFaction();
+
+            Force force = faction.getReserves();
+            forceName = force.getName();
+
+            territory = game.getTerritories().get("Arrakeen");
+            territory.setForceStrength(forceName, 1);
+            territory = game.getTerritories().get("Polar Sink");
+            territory.setForceStrength(forceName, 1);
+            territory = game.getTerritories().get("Hidden Mobile Stronghold");
+            territory.setForceStrength(forceName, 1);
+        }
+
+        @Test
+        void trueOnShieldWall() {
+            assertFalse(faction.isNearShieldWall());
+            territory = game.getTerritories().get("Shield Wall (North Sector)");
+            territory.setForceStrength(forceName, 1);
+            assertTrue(faction.isNearShieldWall());
+        }
+
+        @Test
+        void trueInImperialBasin() {
+            assertFalse(faction.isNearShieldWall());
+            territory = game.getTerritories().get("Imperial Basin (Center Sector)");
+            territory.setForceStrength(forceName, 1);
+            assertTrue(faction.isNearShieldWall());
+        }
+
+        @Test
+        void trueInFalseWallEast() {
+            assertFalse(faction.isNearShieldWall());
+            territory = game.getTerritories().get("False Wall East (Far North Sector)");
+            territory.setForceStrength(forceName, 1);
+            assertTrue(faction.isNearShieldWall());
         }
     }
 }

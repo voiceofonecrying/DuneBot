@@ -402,6 +402,16 @@ public class Faction {
         this.outbidAlly = outbidAlly;
     }
 
+    public boolean isNearShieldWall() {
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.isNearShieldWall() &&
+                    (territory.getForce(name).getStrength() > 0 || territory.getForce(name + "*").getStrength() > 0)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     /**
      * Adds forces from a Territory to the reserves or tanks

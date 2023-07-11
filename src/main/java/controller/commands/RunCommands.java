@@ -94,22 +94,30 @@ public class RunCommands {
 
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
+        boolean atomicsEligible = false;
+        for (Faction faction : game.getFactions()) {
+            boolean isNearShieldWall = false;
+            if (faction.isNearShieldWall()) {
+                isNearShieldWall = true;
+                atomicsEligible = true;
+            }
+            for (TreacheryCard card : faction.getTreacheryHand()) {
+                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
+                } else if (card.name().trim().equalsIgnoreCase("Family Atomics") && isNearShieldWall) {
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
+                }
+            }
+        }
         if (game.getTurn() != 1) {
             discordGame.sendMessage("turn-summary",
                     "The storm would move " +
                     game.getStormMovement() +
-                    " sectors this turn. Weather Control and Family Atomics may be played at this time.");
+                    " sectors this turn. Weather Control " +
+                    (atomicsEligible ? "and Family Atomics " : "") +
+                    "may be played at this time.");
         } else {
             discordGame.sendMessage("mod-info", "Run advance to complete turn 1 storm phase.");
-        }
-        for (Faction faction : game.getFactions()) {
-            for (TreacheryCard card : faction.getTreacheryHand()) {
-                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
-                }
-            }
         }
     }
 

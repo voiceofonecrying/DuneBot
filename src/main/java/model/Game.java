@@ -58,7 +58,7 @@ public class Game {
         territories = new HashMap<>();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
-            territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3))));
+            territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3)), Boolean.parseBoolean(csvRecord.get(4))));
         }
 
         this.gameOptions = new HashSet<>();

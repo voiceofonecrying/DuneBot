@@ -11,18 +11,30 @@ public class Territory {
     private final int sector;
     private boolean isRock;
     private final boolean isStronghold;
+    private final boolean isNearShieldWall;
     private int spice;
     private final List<Force> forces;
     private Integer richeseNoField;
 
-    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold) {
+    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
         this.territoryName = territoryName;
         this.sector = sector;
         this.isRock = isRock;
         this.isStronghold = isStronghold;
+        this.isNearShieldWall = isNearShieldWall;
         this.spice = 0;
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
+
+        // Temporary patch until all games have started with the isNearShieldWall boolean in Territories.csv
+        if (territoryName.startsWith("False Wall East")) isNearShieldWall = true;
+        if (territoryName.startsWith("Hole In The Rock")) isNearShieldWall = true;
+        if (territoryName.startsWith("Gara Kulon")) isNearShieldWall = true;
+        if (territoryName.startsWith("Imperial Basin")) isNearShieldWall = true;
+        if (territoryName.startsWith("Pasty Mesa")) isNearShieldWall = true;
+        if (territoryName.startsWith("Shield Wall")) isNearShieldWall = true;
+        if (territoryName.startsWith("Sihaya Ridge")) isNearShieldWall = true;
+        if (territoryName.startsWith("The Minor Erg")) isNearShieldWall = true;
     }
 
     public String getTerritoryName() {
@@ -39,6 +51,10 @@ public class Territory {
 
     public boolean isStronghold() {
         return isStronghold;
+    }
+
+    public boolean isNearShieldWall() {
+        return isNearShieldWall;
     }
 
     public int getSpice() {
