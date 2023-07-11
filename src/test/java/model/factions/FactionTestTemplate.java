@@ -261,5 +261,13 @@ abstract class FactionTestTemplate {
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
+
+        @Test
+        void trueInGaraKulon() {
+            assertFalse(faction.isNearShieldWall());
+            territory = game.getTerritories().get("Gara Kulon");
+            territory.setForceStrength(forceName, 1);
+            assertTrue(faction.isNearShieldWall());
+        }
     }
 }

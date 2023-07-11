@@ -95,6 +95,7 @@ public class RunCommands {
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
         boolean atomicsEligible = false;
+        boolean nobodyHoldsAtomics = true;
         for (Faction faction : game.getFactions()) {
             boolean isNearShieldWall = false;
             if (faction.isNearShieldWall()) {
@@ -105,8 +106,21 @@ public class RunCommands {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
                     discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics") && isNearShieldWall) {
+                    nobodyHoldsAtomics = false;
                     discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
                 }
+            }
+        }
+        if (atomicsEligible && nobodyHoldsAtomics) {
+            boolean discardHasAtomics = false;
+            for (TreacheryCard card: game.getTreacheryDiscard()) {
+                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    discardHasAtomics = true;
+                    break;
+                }
+            }
+            if (!discardHasAtomics) {
+                atomicsEligible = false;
             }
         }
         if (game.getTurn() != 1) {
