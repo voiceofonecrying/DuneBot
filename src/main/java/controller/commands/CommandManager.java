@@ -1004,9 +1004,21 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.breakShieldWall();
+        Faction factionWithAtomics = null;
+        try {
+            factionWithAtomics = game.getFactionWithAtomics();
+        } catch (NoSuchElementException e) {
+            discordGame.sendMessage("mod-info", "No faction holds Family Atomics.");
+            return;
+        }
 
-        discordGame.pushGame();
+        if (!factionWithAtomics.isNearShieldWall()) {
+            discordGame.sendMessage("mod-info", "" + factionWithAtomics.getName() + " is not in position to use Family Atomics.");
+        } else {
+            String message = game.breakShieldWall(factionWithAtomics);
+            discordGame.sendMessage("mod-info", message);
+            discordGame.pushGame();
+        }
     }
 
     public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

@@ -375,13 +375,37 @@ public class Game {
         setStorm(getStorm() + movement);
     }
 
-    public void breakShieldWall() {
+    public Faction getFactionWithAtomics() {
+        for (Faction faction : getFactions()) {
+            try {
+                faction.getTreacheryCard("Family Atomics ");
+                return faction;
+            }
+            catch (IllegalArgumentException e) {
+                continue;
+            }
+        }
+
+        throw new NoSuchElementException("No faction holds Atomics");
+    }
+
+    public String breakShieldWall(Faction factionWithAtomics) {
         shieldWallDestroyed = true;
         territories.get("Carthag").setRock(false);
         territories.get("Imperial Basin (Center Sector)").setRock(false);
         territories.get("Imperial Basin (East Sector)").setRock(false);
         territories.get("Imperial Basin (West Sector)").setRock(false);
         territories.get("Arrakeen").setRock(false);
+
+        String message = "The Shield Wall has been destroyed. ";
+        TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics ");
+        if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
+            getTreacheryDiscard().add(familyAtomics);
+            message += "Family Atomics has been moved to the discard pile.";
+        } else {
+            message += "Family Atomics has been removed from the game.";
+        }
+        return message;
     }
 
     public boolean isShieldWallDestroyed() {

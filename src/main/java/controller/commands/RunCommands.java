@@ -105,21 +105,32 @@ public class RunCommands {
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
                     discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics") && isNearShieldWall) {
+                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
                     nobodyHoldsAtomics = false;
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
+                    if (isNearShieldWall) {
+                        discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
+                    }
                 }
             }
         }
         if (atomicsEligible && nobodyHoldsAtomics) {
-            boolean discardHasAtomics = false;
-            for (TreacheryCard card: game.getTreacheryDiscard()) {
+            boolean atomicsStillInGame = false;
+            for (TreacheryCard card: game.getTreacheryDeck()) {
                 if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discardHasAtomics = true;
+                    atomicsStillInGame = true;
                     break;
                 }
             }
-            if (!discardHasAtomics) {
+            for (TreacheryCard card: game.getTreacheryDiscard()) {
+                if (atomicsStillInGame) {
+                    break;
+                }
+                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    atomicsStillInGame = true;
+                    break;
+                }
+            }
+            if (!atomicsStillInGame) {
                 atomicsEligible = false;
             }
         }
