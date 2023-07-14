@@ -41,7 +41,7 @@ public class CommandManager extends ListenerAdapter {
         List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
 
         try {
-            String responseMessage = "";
+            String ephemeralMessage = "";
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
             //else if (name.equals("clean")) clean(event); Leaving this command commented so that the command is ignored in production
             else {
@@ -64,7 +64,7 @@ public class CommandManager extends ListenerAdapter {
                     case "bt" -> BTCommands.runCommand(event, discordGame, game);
                     case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                     case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
-                    case "player" -> responseMessage = PlayerCommands.runCommand(event, discordGame, game);
+                    case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
                     case "transfercard" -> transferCard(discordGame, game);
@@ -88,7 +88,7 @@ public class CommandManager extends ListenerAdapter {
                     case "create-alliance" -> createAlliance(discordGame, game);
                     case "remove-alliance" -> removeAlliance(discordGame, game);
                     case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
-                    case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
+                    case "destroy-shield-wall" -> ephemeralMessage = destroyShieldWall(discordGame, game);
                     case "weather-control-storm" -> weatherControlStorm(discordGame, game);
                     case "add-spice" -> addSpice(discordGame, game);
                     case "remove-spice" -> removeSpice(discordGame, game);
@@ -97,7 +97,8 @@ public class CommandManager extends ListenerAdapter {
                 refreshChangedInfo(discordGame);
             }
 
-            event.getHook().editOriginal("Command Done. " + responseMessage).queue();
+            if (ephemeralMessage.length() == 0) ephemeralMessage = "Command Done.";
+            event.getHook().editOriginal(ephemeralMessage).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
@@ -1003,22 +1004,22 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public String destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction factionWithAtomics = null;
         try {
             factionWithAtomics = game.getFactionWithAtomics();
         } catch (NoSuchElementException e) {
-            discordGame.sendMessage("mod-info", "No faction holds Family Atomics.");
-            return;
+            return "No faction holds Family Atomics.";
         }
 
         if (!factionWithAtomics.isNearShieldWall()) {
-            discordGame.sendMessage("mod-info", "" + factionWithAtomics.getName() + " is not in position to use Family Atomics.");
+            return "" + factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.";
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
-            discordGame.sendMessage("mod-info", message);
+            discordGame.sendMessage("turn-summary", message);
             discordGame.pushGame();
         }
+        return "";
     }
 
     public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

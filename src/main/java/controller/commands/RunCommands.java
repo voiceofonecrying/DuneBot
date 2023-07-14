@@ -141,6 +141,9 @@ public class RunCommands {
                     " sectors this turn. Weather Control " +
                     (atomicsEligible ? "and Family Atomics " : "") +
                     "may be played at this time.");
+            if (atomicsEligible && game.getStorm() >= 5 && game.getStorm() <= 9) {
+                discordGame.sendMessage("turn-summary", "(Check if storm position prevents use of Family Atomics.)");
+            }
         } else {
             discordGame.sendMessage("mod-info", "Run advance to complete turn 1 storm phase.");
         }
