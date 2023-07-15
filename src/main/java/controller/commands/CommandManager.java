@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.Permission;
@@ -88,7 +89,7 @@ public class CommandManager extends ListenerAdapter {
                     case "create-alliance" -> createAlliance(discordGame, game);
                     case "remove-alliance" -> removeAlliance(discordGame, game);
                     case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
-                    case "destroy-shield-wall" -> ephemeralMessage = destroyShieldWall(discordGame, game);
+                    case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
                     case "weather-control-storm" -> weatherControlStorm(discordGame, game);
                     case "add-spice" -> addSpice(discordGame, game);
                     case "remove-spice" -> removeSpice(discordGame, game);
@@ -99,6 +100,8 @@ public class CommandManager extends ListenerAdapter {
 
             if (ephemeralMessage.length() == 0) ephemeralMessage = "Command Done.";
             event.getHook().editOriginal(ephemeralMessage).queue();
+        } catch (InvalidGameStateException e) {
+            event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
@@ -1004,22 +1007,21 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public String destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction factionWithAtomics = null;
         try {
             factionWithAtomics = game.getFactionWithAtomics();
         } catch (NoSuchElementException e) {
-            return "No faction holds Family Atomics.";
+            throw new InvalidGameStateException("No faction holds Family Atomics.");
         }
 
         if (!factionWithAtomics.isNearShieldWall()) {
-            return "" + factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.";
+            throw new InvalidGameStateException("" + factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
             discordGame.sendMessage("turn-summary", message);
             discordGame.pushGame();
         }
-        return "";
     }
 
     public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
