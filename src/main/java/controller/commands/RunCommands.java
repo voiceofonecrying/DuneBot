@@ -349,6 +349,7 @@ public class RunCommands {
         int numCardsForBid = factions.stream()
                 .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
                 .toList().size();
+        game.setNumCardsForBid(numCardsForBid);
 
         message.append(
                 MessageFormat.format(
@@ -373,6 +374,8 @@ public class RunCommands {
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (game.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (game.getBidCardNumber() != 0 && game.getBidCardNumber() == game.getNumCardsForBid()) {
+            throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
         updateBidOrder(game);
         List<String> bidOrder = game.getEligibleBidOrder();

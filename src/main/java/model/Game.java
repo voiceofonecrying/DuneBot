@@ -28,6 +28,7 @@ public class Game {
 
     private int stormMovement;
     private int bidCardNumber;
+    private int numCardsForBid;
 
     private List<String> bidOrder;
     private TreacheryCard bidCard;
@@ -161,6 +162,14 @@ public class Game {
 
     public void setBidCardNumber(int bidCardNumber) {
         this.bidCardNumber = bidCardNumber;
+    }
+
+    public int getNumCardsForBid() {
+        return numCardsForBid;
+    }
+
+    public void setNumCardsForBid(int numCardsForBid) {
+        this.numCardsForBid = numCardsForBid;
     }
 
     public void incrementBidCardNumber() {

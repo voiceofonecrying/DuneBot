@@ -76,6 +76,8 @@ public class RicheseCommands {
     public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (game.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (game.getBidCardNumber() != 0 && game.getBidCardNumber() == game.getNumCardsForBid()) {
+            throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
@@ -99,6 +101,8 @@ public class RicheseCommands {
     public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (game.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (game.getBidCardNumber() != 0) {
+            throw new InvalidGameStateException("Black market card must be first in the bidding round.");
         }
         String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
         String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
