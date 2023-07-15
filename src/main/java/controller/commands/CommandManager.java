@@ -507,7 +507,10 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (game.getBidCard() == null) {
+            throw new InvalidGameStateException("There is no card up for bid.");
+        }
         Faction winner = game.getFaction(discordGame.required(faction).getAsString());
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
@@ -550,9 +553,7 @@ public class CommandManager extends ListenerAdapter {
 
         winner.addTreacheryCard(game.getBidCard());
 
-        game.setBidCard(null);
-        game.setBidLeader("");
-        game.setCurrentBid(0);
+        game.clearBidCardInfo();
 
         // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
@@ -1016,7 +1017,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         if (!factionWithAtomics.isNearShieldWall()) {
-            throw new InvalidGameStateException("" + factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
+            throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
             discordGame.sendMessage("turn-summary", message);

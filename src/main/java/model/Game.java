@@ -162,6 +162,7 @@ public class Game {
     public void setBidCardNumber(int bidCardNumber) {
         this.bidCardNumber = bidCardNumber;
     }
+
     public void incrementBidCardNumber() {
         bidCardNumber++;
     }
@@ -179,6 +180,12 @@ public class Game {
 
     public void setBidOrder(List<String> bidOrder) {
         this.bidOrder = bidOrder;
+    }
+
+    public void clearBidCardInfo(){
+        setBidCard(null);
+        setBidLeader("");
+        setCurrentBid(0);
     }
 
     public List<Faction> getFactions() {

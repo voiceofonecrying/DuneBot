@@ -1,6 +1,7 @@
 package controller.commands;
 
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
@@ -38,14 +39,15 @@ public class RicheseCommands {
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
                                 .addOptions(richeseCard, richeseBidType),
                         new SubcommandData("black-market-bid", "Start bidding on a black market card")
-                                .addOptions(CommandOptions.richeseBlackMarketCard, CommandOptions.richeseBlackMarketBidType)
+                                .addOptions(CommandOptions.richeseBlackMarketCard, CommandOptions.richeseBlackMarketBidType),
+                        new SubcommandData("remove-card", "Remove the Richese card from the game")
                 )
         );
 
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -53,6 +55,7 @@ public class RicheseCommands {
             case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(discordGame, game);
             case "card-bid" -> cardBid(discordGame, game);
             case "black-market-bid" -> blackMarketBid(discordGame, game);
+            case "remove-card" -> removeRicheseCard(discordGame, game);
             case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
             case "remove-no-field" -> removeNoFieldToken(discordGame, game);
         }
@@ -70,7 +73,10 @@ public class RicheseCommands {
         }
     }
 
-    public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (game.getBidCard() != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        }
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
 
@@ -90,7 +96,10 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (game.getBidCard() != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        }
         String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
         String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
 
@@ -118,6 +127,17 @@ public class RicheseCommands {
 
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, card);
 
+        discordGame.pushGame();
+    }
+
+    public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (game.getBidCard() == null) {
+            throw new InvalidGameStateException("There is no card up for bid.");
+        }
+        discordGame.sendMessage("turn-summary", MessageFormat.format(
+                    ":rich: {0} has been removed from the game.",
+                    game.getBidCard().name()));
+        game.clearBidCardInfo();
         discordGame.pushGame();
     }
 

@@ -3,6 +3,7 @@ package controller.commands;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.ChoamFaction;
 import model.factions.Faction;
@@ -32,7 +33,7 @@ public class RunCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -319,7 +320,7 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.setBidOrder(new ArrayList<>());
         game.setBidCardNumber(0);
-        game.setBidCard(null);
+        game.clearBidCardInfo();
         game.getFactions().forEach(faction -> {
             faction.setBid("");
             faction.setMaxBid(0);
@@ -351,7 +352,7 @@ public class RunCommands {
 
         message.append(
                 MessageFormat.format(
-                        "There will be {0}{1} up for bid this round.",
+                        "There will be {0} {1} up for bid this round.",
                         numCardsForBid, Emojis.TREACHERY
                 )
         );
@@ -364,14 +365,15 @@ public class RunCommands {
         if (game.getBidCard() != null) {
             discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
             game.getTreacheryDeck().addFirst(game.getBidCard());
-            game.setBidCard(null);
-            game.setBidLeader("");
-            game.setCurrentBid(0);
+            game.clearBidCardInfo();
         }
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
     }
 
-    public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (game.getBidCard() != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        }
         updateBidOrder(game);
         List<String> bidOrder = game.getEligibleBidOrder();
 
