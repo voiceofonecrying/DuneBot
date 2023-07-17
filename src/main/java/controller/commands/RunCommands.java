@@ -318,6 +318,8 @@ public class RunCommands {
 
     public static void startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
+        game.useBiddingObject();
+        game.startBidding();
         game.setBidOrder(new ArrayList<>());
         game.setBidCardNumber(0);
         game.clearBidCardInfo();
@@ -368,6 +370,7 @@ public class RunCommands {
             game.getTreacheryDeck().addFirst(game.getBidCard());
             game.clearBidCardInfo();
         }
+        game.endBidding();
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
     }
 

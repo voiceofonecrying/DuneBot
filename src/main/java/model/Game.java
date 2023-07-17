@@ -3,6 +3,7 @@ package model;
 import enums.GameOption;
 import enums.SetupStep;
 import model.factions.Faction;
+import model.Bidding;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -27,6 +28,8 @@ public class Game {
     private int storm;
 
     private int stormMovement;
+    private Bidding bidding;
+    private boolean useBiddingObject;
     private int bidCardNumber;
     private int numCardsForBid;
 
@@ -81,6 +84,7 @@ public class Game {
         this.shieldWallDestroyed = false;
         this.bidLeader = "";
         this.currentBidder = "";
+        this.bidding = null;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -98,6 +102,18 @@ public class Game {
         this.bidOrder = new ArrayList<>();
         this.bidCardNumber = 0;
         this.sandtroutInPlay = false;
+    }
+
+    public void useBiddingObject() {
+        this.useBiddingObject = true;
+    }
+
+    public void startBidding() {
+        bidding = new Bidding();
+    }
+
+    public void endBidding() {
+        bidding = null;
     }
 
     public Set<GameOption> getGameOptions() {
@@ -149,52 +165,84 @@ public class Game {
     }
 
     public TreacheryCard getBidCard() {
-        return bidCard;
+        if (!useBiddingObject) return bidCard;
+        return bidding.getBidCard();
     }
 
     public void setBidCard(TreacheryCard bidCard) {
-        this.bidCard = bidCard;
+        if (!useBiddingObject) {
+            this.bidCard = bidCard;
+            return;
+        }
+        bidding.setBidCard(bidCard);
     }
 
     public int getBidCardNumber() {
-        return bidCardNumber;
+        if (!useBiddingObject) return bidCardNumber;
+        return bidding.getBidCardNumber();
     }
 
     public void setBidCardNumber(int bidCardNumber) {
-        this.bidCardNumber = bidCardNumber;
+        if (!useBiddingObject) {
+            this.bidCardNumber = bidCardNumber;
+            return;
+        }
+        bidding.setBidCardNumber(bidCardNumber);
     }
 
     public int getNumCardsForBid() {
-        return numCardsForBid;
+        if (!useBiddingObject) return numCardsForBid;
+        return bidding.getNumCardsForBid();
     }
 
     public void setNumCardsForBid(int numCardsForBid) {
-        this.numCardsForBid = numCardsForBid;
+        if (!useBiddingObject) {
+            this.numCardsForBid = numCardsForBid;
+            return;
+        }
+        bidding.setNumCardsForBid(numCardsForBid);
     }
 
     public void incrementBidCardNumber() {
-        bidCardNumber++;
+        if (!useBiddingObject) {
+            bidCardNumber++;
+            return;
+        }
+        bidding.incrementBidCardNumber();
     }
 
     public List<String> getBidOrder() {
-        return bidOrder;
+        if (!useBiddingObject) return bidOrder;
+        return bidding.getBidOrder();
     }
 
     public List<String> getEligibleBidOrder() {
-        return bidOrder
+        if (!useBiddingObject) return bidOrder
+                .stream()
+                .filter(f -> getFaction(f).getHandLimit() > getFaction(f).getTreacheryHand().size())
+                .collect(Collectors.toList());
+        return bidding.getBidOrder()
                 .stream()
                 .filter(f -> getFaction(f).getHandLimit() > getFaction(f).getTreacheryHand().size())
                 .collect(Collectors.toList());
     }
 
     public void setBidOrder(List<String> bidOrder) {
-        this.bidOrder = bidOrder;
+        if (!useBiddingObject) {
+            this.bidOrder = bidOrder;
+            return;
+        }
+        bidding.setBidOrder(bidOrder);
     }
 
-    public void clearBidCardInfo(){
-        setBidCard(null);
-        setBidLeader("");
-        setCurrentBid(0);
+    public void clearBidCardInfo() {
+        if (!useBiddingObject) {
+            bidCard = null;
+            bidLeader = "";
+            currentBid = 0;
+            return;
+        }
+        bidding.clearBidCardInfo();
     }
 
     public List<Faction> getFactions() {
@@ -456,26 +504,42 @@ public class Game {
         }
     }
     public String getCurrentBidder() {
-        return currentBidder;
+        if (!useBiddingObject) return currentBidder;
+        return bidding.getCurrentBidder();
     }
 
     public void setCurrentBidder(String currentBidder) {
-        this.currentBidder = currentBidder;
+        if (!useBiddingObject) {
+            this.currentBidder = currentBidder;
+            return;
+        }
+        bidding.setCurrentBidder(currentBidder);
     }
 
     public int getCurrentBid() {
-        return currentBid;
+        if (!useBiddingObject) return currentBid;
+        return bidding.getCurrentBid();
     }
 
     public void setCurrentBid(int currentBid) {
-        this.currentBid = currentBid;
+        if (!useBiddingObject) {
+            this.currentBid = currentBid;
+            return;
+        }
+        bidding.setCurrentBid(currentBid);
     }
+
     public String getBidLeader() {
-        return bidLeader;
+        if (!useBiddingObject) return bidLeader;
+        return bidding.getBidLeader();
     }
 
     public void setBidLeader(String bidLeader) {
-        this.bidLeader = bidLeader;
+        if (!useBiddingObject) {
+            this.bidLeader = bidLeader;
+            return;
+        }
+        bidding.setBidLeader(bidLeader);
     }
 
     /**

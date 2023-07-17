@@ -78,6 +78,7 @@ public class SetupCommands {
 
         if (!game.isSetupStarted() && !game.isSetupFinished()) {
             game.setSetupStarted(true);
+            game.useBiddingObject();
             createSetupSteps(game);
             showSetupSteps(discordGame, game);
         }
