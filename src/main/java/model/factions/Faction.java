@@ -19,7 +19,7 @@ public class Faction {
     private final String name;
     protected String emoji;
     private String player;
-    private final String userName;
+    private String userName;
     protected int handLimit;
     protected int spice;
     private final List<TechToken> techTokens;
@@ -156,6 +156,10 @@ public class Faction {
 
     public String getUserName() {
         return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getAlly() {

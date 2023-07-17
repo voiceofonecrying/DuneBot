@@ -93,6 +93,7 @@ public class CommandManager extends ListenerAdapter {
                     case "weather-control-storm" -> weatherControlStorm(discordGame, game);
                     case "add-spice" -> addSpice(discordGame, game);
                     case "remove-spice" -> removeSpice(discordGame, game);
+                    case "reassign-faction" -> reassignFaction(discordGame, game);
                 }
 
                 refreshChangedInfo(discordGame);
@@ -157,6 +158,7 @@ public class CommandManager extends ListenerAdapter {
 
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
+        commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -1028,6 +1030,22 @@ public class CommandManager extends ListenerAdapter {
     public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int wcStormMovement = discordGame.required(sectors).getAsInt();
         game.setStormMovement(wcStormMovement);
+
+        discordGame.pushGame();
+    }
+
+    public void reassignFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        String playerName = discordGame.required(user).getAsUser().getAsMention();
+        Member player = discordGame.required(user).getAsMember();
+
+        if (player == null) throw new IllegalArgumentException("Not a valid user");
+
+        String userName = player.getNickname();
+
+        Faction faction = game.getFaction(factionName);
+        faction.setPlayer(playerName);
+        faction.setUserName(userName);
 
         discordGame.pushGame();
     }
