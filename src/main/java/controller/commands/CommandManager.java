@@ -898,31 +898,39 @@ public class CommandManager extends ListenerAdapter {
         Faction recipientFaction = game.getFaction(discordGame.required(recipient).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
 
-        if (fromFaction.getSpice() < amountValue) {
-            discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
-            return;
-        }
-        fromFaction.subtractSpice(amountValue);
-        spiceMessage(discordGame, amountValue, fromFaction.getName(), "bribe to " + recipientFaction.getEmoji(), false);
+        if (amountValue != 0) {
+            if (fromFaction.getSpice() < amountValue) {
+                discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
+                return;
+            }
+            fromFaction.subtractSpice(amountValue);
+            spiceMessage(discordGame, amountValue, fromFaction.getName(), "bribe to " + recipientFaction.getEmoji(), false);
 
-        discordGame.sendMessage(
-                "turn-summary",
-                MessageFormat.format(
-                        "{0} places {1} {2} in front of {3} shield.",
-                        fromFaction.getEmoji(), amountValue, Emojis.SPICE, recipientFaction.getEmoji()
-                )
-        );
+            discordGame.sendMessage(
+                    "turn-summary",
+                    MessageFormat.format(
+                            "{0} places {1} {2} in front of {3} shield.",
+                            fromFaction.getEmoji(), amountValue, Emojis.SPICE, recipientFaction.getEmoji()
+                    )
+            );
 
-        if (discordGame.optional(reason) != null) {
-            discordGame.sendMessage("bribes",
-                    MessageFormat.format("{0} {1}\n{2}",
-                            fromFaction.getEmoji(), recipientFaction.getEmoji(),
-                            discordGame.optional(reason).getAsString()
+            recipientFaction.addFrontOfShieldSpice(amountValue);
+        } else {
+            discordGame.sendMessage(
+                    "turn-summary",
+                    MessageFormat.format(
+                            "{0} bribes {2}. {1} TBD or NA.",
+                            fromFaction.getEmoji(), Emojis.SPICE, recipientFaction.getEmoji()
                     )
             );
         }
 
-        recipientFaction.addFrontOfShieldSpice(amountValue);
+        String message = MessageFormat.format("{0} {1}",
+                fromFaction.getEmoji(), recipientFaction.getEmoji());
+        if (discordGame.optional(reason) != null) {
+            message += "\n" + discordGame.optional(reason).getAsString();
+        }
+        discordGame.sendMessage("bribes", message);
         discordGame.pushGame();
     }
 
