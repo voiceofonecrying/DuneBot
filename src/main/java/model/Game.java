@@ -177,6 +177,16 @@ public class Game {
         bidding.setBidCard(bidCard);
     }
 
+    public boolean isRicheseCacheCard() {
+        if (!useBiddingObject) return false;
+        return bidding.isRicheseCacheCard();
+    }
+
+    public void setRicheseCacheCard(boolean richeseCacheCard) {
+        if(!useBiddingObject) return;
+        bidding.setRicheseCacheCard(richeseCacheCard);
+    }
+
     public int getBidCardNumber() {
         if (!useBiddingObject) return bidCardNumber;
         return bidding.getBidCardNumber();

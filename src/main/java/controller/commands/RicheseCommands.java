@@ -84,7 +84,7 @@ public class RicheseCommands {
 
         RicheseFaction faction = (RicheseFaction)game.getFaction("Richese");
 
-
+        game.setRicheseCacheCard(true);
         game.setBidCard(
                 faction.removeTreacheryCardFromCache(
                         faction.getTreacheryCardFromCache(cardName)
@@ -137,6 +137,8 @@ public class RicheseCommands {
     public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (game.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
+        } else if (!game.isRicheseCacheCard()) {
+            throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
         discordGame.sendMessage("turn-summary", MessageFormat.format(
                     ":rich: {0} has been removed from the game.",

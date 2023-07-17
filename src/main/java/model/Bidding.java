@@ -8,6 +8,7 @@ public class Bidding {
 
     private List<String> bidOrder;
     private TreacheryCard bidCard;
+    private boolean richeseCacheCard;
 
     private final LinkedList<TreacheryCard> market;
 
@@ -34,6 +35,14 @@ public class Bidding {
 
     public void setBidCard(TreacheryCard bidCard) {
         this.bidCard = bidCard;
+    }
+
+    public boolean isRicheseCacheCard() {
+        return richeseCacheCard;
+    }
+
+    public void setRicheseCacheCard(boolean richeseCacheCard) {
+        this.richeseCacheCard = richeseCacheCard;
     }
 
     public int getBidCardNumber() {
@@ -66,6 +75,7 @@ public class Bidding {
 
     public void clearBidCardInfo() {
         bidCard = null;
+        richeseCacheCard = false;
         bidLeader = "";
         currentBid = 0;
     }
