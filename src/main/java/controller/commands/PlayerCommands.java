@@ -57,9 +57,9 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
         tryBid(discordGame, game, faction);
-        String responseMessage = faction.getEmoji() + " passed their bid.";
-        discordGame.sendMessage("mod-info", responseMessage);
-        return responseMessage;
+        discordGame.sendMessage("mod-info", faction.getEmoji() + " passed their bid.");
+        if (faction.isAutoBid()) return "You will auto-pass until the next card or until you set auto-pass to false.";
+        return "You will pass one time.";
     }
 
     private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
@@ -69,6 +69,10 @@ public class PlayerCommands {
         tryBid(discordGame, game, faction);
         String responseMessage = faction.getEmoji() + " set auto-pass to " + enabled;
         discordGame.sendMessage("mod-info", responseMessage);
+        responseMessage = "You set auto-pass to " + enabled + ".";
+        if (enabled) {
+            responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher.";
+        }
         return responseMessage;
     }
 
@@ -79,6 +83,17 @@ public class PlayerCommands {
         String responseMessage = faction.getEmoji() + " set their auto-bid policy to " + (useExact ? "exact" : "increment");
         discordGame.sendMessage("mod-info", responseMessage);
         discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage);
+
+        responseMessage = "You set your auto-bid policy to " + (useExact ? "exact" : "increment");
+        int bidAmount = faction.getMaxBid();
+        if (bidAmount != 0) {
+            responseMessage += ". You will bid ";
+            if (faction.isUseExactBid()) {
+                responseMessage += "+1 up to " + bidAmount + ".";
+            } else {
+                responseMessage += "exactly " + bidAmount + " if possible.";
+            }
+        }
         return responseMessage;
     }
 
@@ -86,16 +101,26 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         int bidAmount = discordGame.required(amount).getAsInt();
         faction.setMaxBid(bidAmount);
-        String responseMessage = faction.getEmoji() + " set their bid to " + bidAmount;
-        discordGame.sendMessage("mod-info", responseMessage);
+        discordGame.sendMessage("mod-info", faction.getEmoji() + " set their bid to " + bidAmount);
+        String responseMessage = "You will bid ";
+        if (faction.isUseExactBid()) {
+            responseMessage += "exactly " + bidAmount + " if possible.";
+        } else {
+            responseMessage += "+1 up to " + bidAmount + ".";
+        }
+        if (faction.isAutoBid()) {
+            responseMessage += "\nYou will then auto-pass.";
+        } else {
+            responseMessage += "\nYou will not auto-pass.\nA new bid or pass will be needed if you are outbid.";
+        }
         String responseMessage2 = "";
-        if (discordGame.optional(outbidAlly) != null){
+        if (discordGame.optional(outbidAlly) != null) {
             boolean outbidAllyValue = discordGame.optional(outbidAlly).getAsBoolean();
             faction.setOutbidAlly(outbidAllyValue);
             responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
             discordGame.sendMessage("mod-info", responseMessage2);
             discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
-            responseMessage2 = ". " + responseMessage2;
+            responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : "not") + " outbid your ally";
         }
         tryBid(discordGame, game, faction);
         return responseMessage + responseMessage2;
