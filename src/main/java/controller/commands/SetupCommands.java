@@ -301,8 +301,10 @@ public class SetupCommands {
                 ).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         for (TraitorCard card : faction.getTraitorHand()) {
-            if (!card.equals(traitor)) game.getTraitorDeck().add(faction.removeTraitorCard(card));
+            if (!card.equals(traitor)) game.getTraitorDeck().add(card);
         }
+        faction.getTraitorHand().clear();
+        faction.addTraitorCard(traitor);
 
         Collections.shuffle(game.getTraitorDeck());
 
