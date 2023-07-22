@@ -3,8 +3,8 @@ package controller.commands;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidOptionException;
 import exceptions.InvalidGameStateException;
+import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.Permission;
@@ -674,7 +674,7 @@ public class CommandManager extends ListenerAdapter {
                 if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild")) {
                     game.getFaction("Guild").addSpice(cost);
                     message.append(" paid to ")
-                            .append(game.getFaction("Guild").getEmoji());
+                            .append(Emojis.GUILD);
                     spiceMessage(discordGame, cost, "guild", targetFaction.getEmoji() + " shipment", true);
                 }
 
@@ -701,7 +701,7 @@ public class CommandManager extends ListenerAdapter {
      * @param amount The number of forces to place.
      * @param special Whether the force is a special reserve.
      */
-    public void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
+    public static void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
         String forceName;
 
         if (special) {

@@ -1,5 +1,6 @@
 package controller;
 
+import controller.commands.ButtonManager;
 import controller.commands.CommandManager;
 import controller.listeners.EventListener;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -26,7 +27,7 @@ public class DuneBot {
                     .setActivity(Activity.playing("Dune"))
                     .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                     .build()
-                    .addEventListener(new EventListener(), new CommandManager());
+                    .addEventListener(new EventListener(), new CommandManager(), new ButtonManager());
         } catch (DotenvException e) {
             System.err.println("Dotenv file or Token not found.");
             throw new RuntimeException(e);
