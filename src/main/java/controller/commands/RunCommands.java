@@ -11,6 +11,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -552,6 +554,11 @@ public class RunCommands {
                 }
             }
             if (!message.isEmpty()) discordGame.sendMessage("game-actions", message.append(game.getFaction("BG").getPlayer()).toString());
+        }
+        for (Faction faction: game.getFactions()){
+            MessageCreateAction message = discordGame.prepareMessage(faction.getName().toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn.");
+            message.addActionRow(Button.primary( "begin-shipment", "Begin a ship action"))
+                    .addActionRow(Button.danger( "pass-shipment", "Pass shipment")).queue();
         }
         ShowCommands.showBoard(discordGame, game);
     }

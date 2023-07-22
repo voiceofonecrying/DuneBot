@@ -41,6 +41,7 @@ public class Faction {
     private final List<StrongholdCard> strongholdCards;
     private final List<Leader> leaders;
     protected final List<Resource> resources;
+    private Shipment shipment;
 
     private Game game;
 
@@ -65,6 +66,7 @@ public class Faction {
         this.useExact = true;
         this.outbidAlly = false;
         this.specialReserves = new Force("", 0);
+        this.shipment = new Shipment();
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -469,4 +471,11 @@ public class Faction {
 
     }
 
+    public Shipment getShipment() {
+        return shipment;
+    }
+
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+    }
 }
