@@ -358,7 +358,8 @@ public class Game {
     }
 
     public LinkedList<TreacheryCard> getMarket() {
-        return market;
+        if (!useBiddingObject) return market;
+        return bidding.getMarket();
     }
 
     public int getTurn() {
