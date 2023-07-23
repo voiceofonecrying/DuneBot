@@ -1,9 +1,11 @@
 package controller.commands;
 
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.factions.Faction;
 import model.Game;
+import model.Bidding;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -33,7 +35,7 @@ public class PlayerCommands {
     }
 
 
-    public static String runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static String runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
 
         if (game.getFactions().stream().noneMatch(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))) {
             return "";
@@ -53,7 +55,7 @@ public class PlayerCommands {
         return responseMessage;
     }
 
-    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
         tryBid(discordGame, game, faction);
@@ -62,7 +64,7 @@ public class PlayerCommands {
         return "You will pass one time.";
     }
 
-    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setAutoBid(enabled);
@@ -97,7 +99,7 @@ public class PlayerCommands {
         return responseMessage;
     }
 
-    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         int bidAmount = discordGame.required(amount).getAsInt();
         faction.setMaxBid(bidAmount);
@@ -126,20 +128,21 @@ public class PlayerCommands {
         return responseMessage + responseMessage2;
     }
 
-    private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
-        if (!game.getCurrentBidder().equals(faction.getName())) return;
+    private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        if (!bidding.getCurrentBidder().equals(faction.getName())) return;
 
         if (faction.getMaxBid() == -1) {
             faction.setBid("pass");
             faction.setMaxBid(0);
-        } else if (faction.getMaxBid() <= game.getCurrentBid()) {
+        } else if (faction.getMaxBid() <= bidding.getCurrentBid()) {
             if (!faction.isAutoBid()) return;
             faction.setBid("pass");
-        } else if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(game.getBidLeader())) faction.setBid("pass");
+        } else if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidding.getBidLeader())) faction.setBid("pass");
         else if (faction.isUseExactBid()) faction.setBid(String.valueOf(faction.getMaxBid()));
-        else faction.setBid(String.valueOf(game.getCurrentBid() + 1));
+        else faction.setBid(String.valueOf(bidding.getCurrentBid() + 1));
         boolean r = RunCommands.createBidMessage(discordGame, game, discordGame.getGame().getEligibleBidOrder(), faction);
         if (r) return;
-        tryBid(discordGame, game, game.getFaction(game.getCurrentBidder()));
+        tryBid(discordGame, game, game.getFaction(bidding.getCurrentBidder()));
     }
 }

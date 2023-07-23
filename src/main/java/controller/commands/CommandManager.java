@@ -479,10 +479,11 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void putBack(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void putBack(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
         String cardName = discordGame.required(putBackCard).getAsString();
         boolean isBottom = discordGame.required(bottom).getAsBoolean();
-        LinkedList<TreacheryCard> market = game.getMarket();
+        LinkedList<TreacheryCard> market = bidding.getMarket();
         int i = 0;
         boolean found = false;
         for (; i < market.size(); i++) {
@@ -510,7 +511,8 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (game.getBidCard() == null) {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
         }
         Faction winner = game.getFaction(discordGame.required(faction).getAsString());
@@ -521,7 +523,7 @@ public class CommandManager extends ListenerAdapter {
         String currentCard = MessageFormat.format(
                 "R{0}:C{1}",
                 game.getTurn(),
-                game.getBidCardNumber()
+                bidding.getBidCardNumber()
         );
 
         discordGame.sendMessage("turn-summary",
@@ -553,9 +555,9 @@ public class CommandManager extends ListenerAdapter {
             );
         }
 
-        winner.addTreacheryCard(game.getBidCard());
+        winner.addTreacheryCard(bidding.getBidCard());
 
-        game.clearBidCardInfo();
+        bidding.clearBidCardInfo();
 
         // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
@@ -959,7 +961,12 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.sendMessage("mod-info", game.getSpiceDiscardB().toString());
                 discordGame.sendMessage("mod-info", game.getLeaderSkillDeck().toString());
                 discordGame.sendMessage("mod-info", game.getTraitorDeck().toString());
-                discordGame.sendMessage("mod-info", game.getMarket().toString());
+                try {
+                    Bidding bidding = game.getBidding();
+                    discordGame.sendMessage("mod-info", bidding.getMarket().toString());
+                } catch (InvalidGameStateException e) {
+                    discordGame.sendMessage("mod-info", "No bidding state. Game is not in bidding phase.");
+                }
             }
             case "factions" -> {
                 for (Faction faction: game.getFactions()) {

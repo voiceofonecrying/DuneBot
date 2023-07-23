@@ -2,6 +2,7 @@ package model;
 
 import enums.GameOption;
 import enums.SetupStep;
+import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 import model.Bidding;
 import org.apache.commons.csv.CSVParser;
@@ -29,12 +30,6 @@ public class Game {
 
     private int stormMovement;
     private Bidding bidding;
-    private boolean useBiddingObject;
-    private int bidCardNumber;
-    private int numCardsForBid;
-
-    private List<String> bidOrder;
-    private TreacheryCard bidCard;
 
     private final List<Faction> factions;
 
@@ -45,14 +40,10 @@ public class Game {
     private final LinkedList<SpiceCard> spiceDiscardA;
     private final LinkedList<SpiceCard> spiceDiscardB;
     private final LinkedList<TraitorCard> traitorDeck;
-    private final LinkedList<TreacheryCard> market;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private boolean shieldWallDestroyed;
-    private String currentBidder;
-    private int currentBid;
-    private String bidLeader;
     private boolean sandtroutInPlay;
 
     public Game() throws IOException {
@@ -75,15 +66,12 @@ public class Game {
         this.spiceDiscardB = new LinkedList<>();
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
-        this.market = new LinkedList<>();
         this.turn = 0;
         this.phase = 0;
         this.subPhase = 0;
         this.storm = 18;
         this.stormMovement = 0;
         this.shieldWallDestroyed = false;
-        this.bidLeader = "";
-        this.currentBidder = "";
         this.bidding = null;
 
         csvParser = getCSVFile("TreacheryCards.csv");
@@ -99,13 +87,7 @@ public class Game {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
         }
 
-        this.bidOrder = new ArrayList<>();
-        this.bidCardNumber = 0;
         this.sandtroutInPlay = false;
-    }
-
-    public void useBiddingObject() {
-        this.useBiddingObject = true;
     }
 
     public void startBidding() {
@@ -164,95 +146,16 @@ public class Game {
         this.getFactions().forEach(Faction::setFrontOfShieldModified);
     }
 
-    public TreacheryCard getBidCard() {
-        if (!useBiddingObject) return bidCard;
-        return bidding.getBidCard();
-    }
-
-    public void setBidCard(TreacheryCard bidCard) {
-        if (!useBiddingObject) {
-            this.bidCard = bidCard;
-            return;
-        }
-        bidding.setBidCard(bidCard);
-    }
-
-    public boolean isRicheseCacheCard() {
-        if (!useBiddingObject) return false;
-        return bidding.isRicheseCacheCard();
-    }
-
-    public void setRicheseCacheCard(boolean richeseCacheCard) {
-        if(!useBiddingObject) return;
-        bidding.setRicheseCacheCard(richeseCacheCard);
-    }
-
-    public int getBidCardNumber() {
-        if (!useBiddingObject) return bidCardNumber;
-        return bidding.getBidCardNumber();
-    }
-
-    public void setBidCardNumber(int bidCardNumber) {
-        if (!useBiddingObject) {
-            this.bidCardNumber = bidCardNumber;
-            return;
-        }
-        bidding.setBidCardNumber(bidCardNumber);
-    }
-
-    public int getNumCardsForBid() {
-        if (!useBiddingObject) return numCardsForBid;
-        return bidding.getNumCardsForBid();
-    }
-
-    public void setNumCardsForBid(int numCardsForBid) {
-        if (!useBiddingObject) {
-            this.numCardsForBid = numCardsForBid;
-            return;
-        }
-        bidding.setNumCardsForBid(numCardsForBid);
-    }
-
-    public void incrementBidCardNumber() {
-        if (!useBiddingObject) {
-            bidCardNumber++;
-            return;
-        }
-        bidding.incrementBidCardNumber();
-    }
-
-    public List<String> getBidOrder() {
-        if (!useBiddingObject) return bidOrder;
-        return bidding.getBidOrder();
+    public Bidding getBidding() throws InvalidGameStateException {
+        if (bidding == null) throw new InvalidGameStateException("Game is not in bidding phase.");
+        return bidding;
     }
 
     public List<String> getEligibleBidOrder() {
-        if (!useBiddingObject) return bidOrder
-                .stream()
-                .filter(f -> getFaction(f).getHandLimit() > getFaction(f).getTreacheryHand().size())
-                .collect(Collectors.toList());
         return bidding.getBidOrder()
                 .stream()
                 .filter(f -> getFaction(f).getHandLimit() > getFaction(f).getTreacheryHand().size())
                 .collect(Collectors.toList());
-    }
-
-    public void setBidOrder(List<String> bidOrder) {
-        if (!useBiddingObject) {
-            this.bidOrder = bidOrder;
-            return;
-        }
-        bidding.setBidOrder(bidOrder);
-    }
-
-    public void clearBidCardInfo() {
-        if (!useBiddingObject) {
-            bidCard = null;
-            bidLeader = "";
-            currentBid = 0;
-            return;
-        }
-        bidding.clearBidCardInfo();
     }
 
     public List<Faction> getFactions() {
@@ -355,11 +258,6 @@ public class Game {
 
     public LinkedList<SpiceCard> getSpiceDiscardB() {
         return spiceDiscardB;
-    }
-
-    public LinkedList<TreacheryCard> getMarket() {
-        if (!useBiddingObject) return market;
-        return bidding.getMarket();
     }
 
     public int getTurn() {
@@ -513,44 +411,6 @@ public class Game {
             case "treachery deck" -> getFaction(faction).addTreacheryCard(getTreacheryDeck().pollLast());
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
-    }
-    public String getCurrentBidder() {
-        if (!useBiddingObject) return currentBidder;
-        return bidding.getCurrentBidder();
-    }
-
-    public void setCurrentBidder(String currentBidder) {
-        if (!useBiddingObject) {
-            this.currentBidder = currentBidder;
-            return;
-        }
-        bidding.setCurrentBidder(currentBidder);
-    }
-
-    public int getCurrentBid() {
-        if (!useBiddingObject) return currentBid;
-        return bidding.getCurrentBid();
-    }
-
-    public void setCurrentBid(int currentBid) {
-        if (!useBiddingObject) {
-            this.currentBid = currentBid;
-            return;
-        }
-        bidding.setCurrentBid(currentBid);
-    }
-
-    public String getBidLeader() {
-        if (!useBiddingObject) return bidLeader;
-        return bidding.getBidLeader();
-    }
-
-    public void setBidLeader(String bidLeader) {
-        if (!useBiddingObject) {
-            this.bidLeader = bidLeader;
-            return;
-        }
-        bidding.setBidLeader(bidLeader);
     }
 
     /**

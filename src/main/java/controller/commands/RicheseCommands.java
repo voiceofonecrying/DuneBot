@@ -74,9 +74,10 @@ public class RicheseCommands {
     }
 
     public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (game.getBidCard() != null) {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (game.getBidCardNumber() != 0 && game.getBidCardNumber() == game.getNumCardsForBid()) {
+        } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
         String cardName = discordGame.required(richeseCard).getAsString();
@@ -84,14 +85,14 @@ public class RicheseCommands {
 
         RicheseFaction faction = (RicheseFaction)game.getFaction("Richese");
 
-        game.setRicheseCacheCard(true);
-        game.setBidCard(
+        bidding.setRicheseCacheCard(true);
+        bidding.setBidCard(
                 faction.removeTreacheryCardFromCache(
                         faction.getTreacheryCardFromCache(cardName)
                 )
         );
 
-        game.incrementBidCardNumber();
+        bidding.incrementBidCardNumber();
 
         runRicheseBid(discordGame, game, bidType, false);
 
@@ -99,9 +100,10 @@ public class RicheseCommands {
     }
 
     public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (game.getBidCard() != null) {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (game.getBidCardNumber() != 0) {
+        } else if (bidding.getBidCardNumber() != 0) {
             throw new InvalidGameStateException("Black market card must be first in the bidding round.");
         }
         String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
@@ -116,14 +118,14 @@ public class RicheseCommands {
                 .orElseThrow();
 
         cards.remove(card);
-        game.setBidCard(card);
-        game.incrementBidCardNumber();
+        bidding.setBidCard(card);
+        bidding.incrementBidCardNumber();
 
         if (bidType.equalsIgnoreCase("Normal")) {
             RunCommands.updateBidOrder(game);
             List<String> bidOrder = game.getEligibleBidOrder();
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
-            game.setCurrentBidder(factionBeforeFirstToBid.getName());
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             RunCommands.createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
         } else {
             runRicheseBid(discordGame, game, bidType, true);
@@ -135,15 +137,16 @@ public class RicheseCommands {
     }
 
     public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (game.getBidCard() == null) {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
-        } else if (!game.isRicheseCacheCard()) {
+        } else if (!bidding.isRicheseCacheCard()) {
             throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
         discordGame.sendMessage("turn-summary", MessageFormat.format(
                     ":rich: {0} has been removed from the game.",
-                    game.getBidCard().name()));
-        game.clearBidCardInfo();
+                    bidding.getBidCard().name()));
+        bidding.clearBidCardInfo();
         discordGame.pushGame();
     }
 
@@ -167,7 +170,8 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException {
+    public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
         if (bidType.equalsIgnoreCase("Silent")) {
             if (blackMarket) {
                 discordGame.sendMessage("bidding-phase", "We will now silently auction a card from Richese's " +
@@ -176,7 +180,7 @@ public class RicheseCommands {
                 discordGame.sendMessage("bidding-phase",
                         MessageFormat.format(
                                 "We will now silently auction a brand new Richese {0}!  Please place your bid in your private channels.",
-                                game.getBidCard().name()
+                                bidding.getBidCard().name()
                         )
                 );
             }
@@ -187,7 +191,7 @@ public class RicheseCommands {
             } else {
                 message.append(
                         MessageFormat.format("We are now bidding on a shiny, brand new Richese {0}!\n",
-                                game.getBidCard().name()
+                                bidding.getBidCard().name()
                         )
                 );
             }
@@ -216,7 +220,7 @@ public class RicheseCommands {
             message.append(
                     MessageFormat.format(
                             "R{0}:C{1} (Once Around)\n{2} - {3}\n",
-                            game.getTurn(), game.getBidCardNumber(),
+                            game.getTurn(), bidding.getBidCardNumber(),
                             filteredBidOrder.get(0).getEmoji(), filteredBidOrder.get(0).getPlayer()
                     )
             );

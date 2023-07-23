@@ -23,6 +23,7 @@ public class Bidding {
         this.numCardsForBid = 0;
         this.bidOrder = new ArrayList<>();
         this.bidCard = null;
+        this.richeseCacheCard = false;
         this.market = new LinkedList<>();
         this.currentBidder = "";
         this.currentBid = 0;

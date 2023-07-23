@@ -44,7 +44,7 @@ public class RunCommands {
         }
     }
 
-    public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (game.getTurn() == 0) {
             discordGame.sendMessage("mod-info", "Please complete setup first.");
             return;
@@ -318,11 +318,7 @@ public class RunCommands {
 
     public static void startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
-        game.useBiddingObject();
         game.startBidding();
-        game.setBidOrder(new ArrayList<>());
-        game.setBidCardNumber(0);
-        game.clearBidCardInfo();
         game.getFactions().forEach(faction -> {
             faction.setBid("");
             faction.setMaxBid(0);
@@ -330,7 +326,8 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Run black market bid (if exists), then advance the game.");
     }
 
-    public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
         StringBuilder message = new StringBuilder();
 
         message.append(MessageFormat.format(
@@ -351,7 +348,7 @@ public class RunCommands {
         int numCardsForBid = factions.stream()
                 .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
                 .toList().size();
-        game.setNumCardsForBid(numCardsForBid);
+        bidding.setNumCardsForBid(numCardsForBid);
 
         message.append(
                 MessageFormat.format(
@@ -364,20 +361,22 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
     }
 
-    public static void finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (game.getBidCard() != null) {
+    public static void finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() != null) {
             discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
-            game.getTreacheryDeck().addFirst(game.getBidCard());
-            game.clearBidCardInfo();
+            game.getTreacheryDeck().addFirst(bidding.getBidCard());
+            bidding.clearBidCardInfo();
         }
         game.endBidding();
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (game.getBidCard() != null) {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (game.getBidCardNumber() != 0 && game.getBidCardNumber() == game.getNumCardsForBid()) {
+        } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
         updateBidOrder(game);
@@ -387,7 +386,7 @@ public class RunCommands {
             discordGame.sendMessage("bidding-phase", "All hands are full.");
             discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
         } else {
-            game.incrementBidCardNumber();
+            bidding.incrementBidCardNumber();
 
             List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
 
@@ -400,10 +399,7 @@ public class RunCommands {
             }
 
             TreacheryCard bidCard = treacheryDeck.remove(0);
-
-            game.setBidCard(bidCard);
-            game.setBidLeader("");
-            game.setCurrentBid(0);
+            bidding.setBidCard(bidCard);
 
             for (Faction faction : game.getFactions()) {
                 faction.setMaxBid(0);
@@ -415,7 +411,7 @@ public class RunCommands {
 
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
 
-            game.setCurrentBidder(factionBeforeFirstToBid.getName());
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
 
             createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
 
@@ -423,20 +419,19 @@ public class RunCommands {
         }
     }
 
-    public static boolean createBidMessage(DiscordGame discordGame, Game game, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException {
+    public static boolean createBidMessage(DiscordGame discordGame, Game game, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
         StringBuilder message = new StringBuilder();
 
-
-
         if (!currentBidder.getBid().equals("pass") && !currentBidder.getBid().equals("")) {
-            game.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
-            game.setBidLeader(currentBidder.getName());
+            bidding.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
+            bidding.setBidLeader(currentBidder.getName());
         }
 
         message.append(
                 MessageFormat.format(
                         "R{0}:C{1}\n",
-                        game.getTurn(), game.getBidCardNumber()
+                        game.getTurn(), bidding.getBidCardNumber()
                 )
         );
 
@@ -444,12 +439,12 @@ public class RunCommands {
         for (String factionName : bidOrder) {
             Faction f = game.getFaction(factionName);
             if (tag) {
-                if (f.getName().equals(game.getBidLeader())) {
+                if (f.getName().equals(bidding.getBidLeader())) {
                     discordGame.sendMessage("bidding-phase", message.toString());
                     discordGame.sendMessage("bidding-phase", f.getEmoji() + " has the top bid.");
                     return true;
                 }
-                game.setCurrentBidder(f.getName());
+                bidding.setCurrentBidder(f.getName());
                 message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
                 tag = false;
             } else {
@@ -462,10 +457,11 @@ public class RunCommands {
         return false;
     }
 
-    public static void updateBidOrder(Game game) {
+    public static void updateBidOrder(Game game) throws InvalidGameStateException{
+        Bidding bidding = game.getBidding();
         List<String> bidOrder;
 
-        if (game.getBidOrder().isEmpty()) {
+        if (bidding.getBidOrder().isEmpty()) {
             List<Faction> factions = game.getFactions();
 
             int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
@@ -476,7 +472,7 @@ public class RunCommands {
             bidOrderFactions.addAll(factions.subList(0, firstBid));
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
         } else {
-            bidOrder = game.getBidOrder();
+            bidOrder = bidding.getBidOrder();
             List<String> eligibleBidOrder = game.getEligibleBidOrder();
             while (!bidOrder.get(0).equalsIgnoreCase(eligibleBidOrder.get(0))) {
                 bidOrder.add(bidOrder.remove(0));
@@ -494,8 +490,7 @@ public class RunCommands {
             }
 
         }
-
-        game.setBidOrder(bidOrder);
+        bidding.setBidOrder(bidOrder);
     }
 
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
