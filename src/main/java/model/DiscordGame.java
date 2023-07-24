@@ -86,8 +86,8 @@ public class DiscordGame {
         return this.getTextChannel("bot-data");
     }
 
-    public SlashCommandInteractionEvent getEvent() {
-        return (SlashCommandInteractionEvent) this.event;
+    public GenericInteractionCreateEvent getEvent() {
+        return this.event;
     }
 
     public void setGame(Game game) {
@@ -175,6 +175,10 @@ public class DiscordGame {
         }
     }
 
+    public void pushGame(Game game) throws ChannelNotFoundException {
+        this.game = game;
+        pushGame();
+    }
     public void pushGame() throws ChannelNotFoundException {
         removeGameReferenceFromFactions(this.game);
 
@@ -198,9 +202,16 @@ public class DiscordGame {
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
-        String message = getEvent() == null ? "Manual update" : "Command: `" + getEvent().getCommandString() + "`";
-
-        sendMessage("bot-data", message, fileUpload);
+        if (getEvent() instanceof SlashCommandInteractionEvent) {
+            SlashCommandInteractionEvent slashCommandInteractionEvent = (SlashCommandInteractionEvent) event;
+            String message = getEvent() == null ? "Manual update" : "Command: `" + slashCommandInteractionEvent.getCommandString() + "`";
+            sendMessage("bot-data", message, fileUpload);
+        }
+        else {
+            ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
+            String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + buttonInteractionEvent.getMember().getUser().getName() + "`";
+            sendMessage("bot-data", message, fileUpload);
+        }
     }
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
