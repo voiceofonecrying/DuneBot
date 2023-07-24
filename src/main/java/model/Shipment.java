@@ -1,69 +1,29 @@
 package model;
 
-import constants.Emojis;
 import controller.commands.CommandManager;
+import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
 
-import java.text.MessageFormat;
-
-import static controller.commands.CommandManager.spiceMessage;
+import java.io.IOException;
 
 public class Shipment {
     private int force;
     private int specialForce;
-    private Territory territory;
-    private int cost;
+    private String territoryName;
+    public Shipment() {
+    }
 
-    private boolean payGuild;
-
-    public Shipment() {}
-
-    public void execute(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException {
-        CommandManager.placeForceInTerritory(this.territory, faction, force, false);
-        if (specialForce > 0) CommandManager.placeForceInTerritory(this.territory, faction, specialForce, true);
-        StringBuilder message = new StringBuilder();
-        message.append(faction.getEmoji())
-                .append(": ");
-
-        if (force > 0) {
-            message.append(MessageFormat.format("{0} {1} ", force, Emojis.getForceEmoji(faction.getName())));
-        }
-
-        if (specialForce > 0) {
-            message.append(MessageFormat.format("{0} {1} ", specialForce, Emojis.getForceEmoji(faction.getName() + "*")));
-        }
-
-        message.append(
-                MessageFormat.format("placed on {0}",
-                        territory.getTerritoryName()
-                )
-        );
-
-        if (cost > 0) {
-            message.append(
-                    MessageFormat.format(" for {0} {1}",
-                            cost, Emojis.SPICE
-                    )
-            );
-            faction.subtractSpice(cost);
-            spiceMessage(discordGame, cost, faction.getName(),
-                    "shipment to " + territory.getTerritoryName(), false);
-            if (payGuild) {
-                message.append(" paid to " + Emojis.GUILD);
-                game.getFaction("Guild").addSpice(cost);
-                spiceMessage(discordGame, cost, "guild", faction.getEmoji() + " shipment", true);
-
-            }
-        }
-        discordGame.sendMessage("turn-summary", message.toString());
-        this.territory = null;
-        this.cost = 0;
+    public void execute(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
+        Territory territory = game.getTerritory(territoryName);
+        CommandManager.placeForces(territory, faction, this.force, this.specialForce, true, discordGame, game);
+        this.territoryName = "";
         this.force = 0;
         this.specialForce = 0;
-        this.payGuild = false;
-        discordGame.pushGame();
+        discordGame.pushGame(game);
+        ShowCommands.showBoard(discordGame, game);
     }
+
     public int getForce() {
         return force;
     }
@@ -80,27 +40,12 @@ public class Shipment {
         this.specialForce = specialForce;
     }
 
-    public Territory getTerritory() {
-        return territory;
+    public String getTerritoryName() {
+        return territoryName;
     }
 
-    public void setTerritory(Territory territory) {
-        this.territory = territory;
+    public void setTerritoryName(String territoryName) {
+        this.territoryName = territoryName;
     }
 
-    public int getCost() {
-        return cost;
-    }
-
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    public boolean isPayGuild() {
-        return payGuild;
-    }
-
-    public void setPayGuild(boolean payGuild) {
-        this.payGuild = payGuild;
-    }
 }

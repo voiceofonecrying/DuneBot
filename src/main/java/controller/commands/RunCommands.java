@@ -569,7 +569,7 @@ public class RunCommands {
         }
         for (Faction faction: game.getFactions()){
             MessageCreateAction message = discordGame.prepareMessage(faction.getName().toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn.");
-            message.addActionRow(Button.primary( "begin-shipment", "Begin a ship action"))
+            message.addActionRow(Button.primary( "shipment", "Begin a ship action"))
                     .addActionRow(Button.danger( "pass-shipment", "Pass shipment")).queue();
         }
         ShowCommands.showBoard(discordGame, game);

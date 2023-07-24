@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
 import static controller.commands.ShowCommands.refreshChangedInfo;
+import static controller.commands.ShowCommands.showBoard;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -70,7 +71,7 @@ public class CommandManager extends ListenerAdapter {
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
                     case "transfercard" -> transferCard(discordGame, game);
-                    case "placeforces" -> placeForces(discordGame, game);
+                    case "placeforces" -> placeForcesEventHandler(discordGame, game);
                     case "moveforces" -> moveForces(discordGame, game);
                     case "removeforces" -> removeForces(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
@@ -615,11 +616,17 @@ public class CommandManager extends ListenerAdapter {
      * @param discordGame  the discord game
      * @param game         the game
      */
-    public void placeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void placeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
+        boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
+        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game);
+        discordGame.pushGame();
+    }
+
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
 
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
@@ -628,7 +635,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
 
-        if (discordGame.required(isShipment).getAsBoolean()) {
+        if (isShipment) {
             int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
@@ -690,8 +697,6 @@ public class CommandManager extends ListenerAdapter {
 
             discordGame.sendMessage("turn-summary", message.toString());
         }
-
-        discordGame.pushGame();
     }
 
     /**
