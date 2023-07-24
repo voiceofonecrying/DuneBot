@@ -3,7 +3,7 @@ package model;
 import enums.GameOption;
 import enums.SetupStep;
 import exceptions.InvalidGameStateException;
-import model.factions.Faction;
+import model.factions.*;
 import model.Bidding;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -92,6 +92,10 @@ public class Game {
 
     public void startBidding() {
         bidding = new Bidding();
+        try {
+            RicheseFaction faction = (RicheseFaction) getFaction("Richese");
+            if (!faction.getTreacheryCardCache().isEmpty()) bidding.setRicheseCacheCardOutstanding(true);
+        } catch (IllegalArgumentException e) {}
     }
 
     public void endBidding() {

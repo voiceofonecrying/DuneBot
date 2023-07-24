@@ -9,6 +9,7 @@ public class Bidding {
     private List<String> bidOrder;
     private TreacheryCard bidCard;
     private boolean richeseCacheCard;
+    private boolean richeseCacheCardOutstanding;
 
     private final LinkedList<TreacheryCard> market;
 
@@ -24,6 +25,7 @@ public class Bidding {
         this.bidOrder = new ArrayList<>();
         this.bidCard = null;
         this.richeseCacheCard = false;
+        this.richeseCacheCardOutstanding = false;
         this.market = new LinkedList<>();
         this.currentBidder = "";
         this.currentBid = 0;
@@ -44,6 +46,14 @@ public class Bidding {
 
     public void setRicheseCacheCard(boolean richeseCacheCard) {
         this.richeseCacheCard = richeseCacheCard;
+    }
+
+    public boolean isRicheseCacheCardOutstanding() {
+        return richeseCacheCardOutstanding;
+    }
+
+    public void setRicheseCacheCardOutstanding(boolean richeseCacheCardOutstanding) {
+        this.richeseCacheCardOutstanding = richeseCacheCardOutstanding;
     }
 
     public int getBidCardNumber() {
@@ -76,6 +86,9 @@ public class Bidding {
 
     public void clearBidCardInfo() {
         bidCard = null;
+        if (richeseCacheCard) {
+            richeseCacheCardOutstanding = false;
+        }
         richeseCacheCard = false;
         bidLeader = "";
         currentBid = 0;
