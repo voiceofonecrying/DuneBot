@@ -1,12 +1,17 @@
 package controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import controller.commands.ButtonManager;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,6 +23,16 @@ public class Initializers {
                 .getClassLoader().getResourceAsStream(name))));
 
         return CSVParser.parse(bufferedReader, CSVFormat.RFC4180.builder().setHeader().setSkipHeaderRecord(true).build());
+    }
+
+    public static String getJSONString(String name) throws IOException {
+        InputStream inputStream = ButtonManager.class.getClassLoader().getResourceAsStream(name);
+        String json = null;
+        int size = inputStream.available();
+        byte[] buffer = new byte[size];
+        inputStream.read(buffer);
+        inputStream.close();
+        return new String(buffer, StandardCharsets.UTF_8);
     }
 
     public static List<Point> getPoints(String territory) {

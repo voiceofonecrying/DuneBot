@@ -3,6 +3,7 @@ package model;
 import model.factions.Faction;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,8 @@ public class Territory {
     private final List<Force> forces;
     private Integer richeseNoField;
 
+    private final List<String> adjacencyList;
+
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
         this.territoryName = territoryName;
         this.sector = sector;
@@ -25,6 +28,7 @@ public class Territory {
         this.spice = 0;
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
+        this.adjacencyList = new LinkedList<>();
     }
 
     public String getTerritoryName() {
@@ -119,5 +123,9 @@ public class Territory {
 
     public boolean hasRicheseNoField() {
         return getRicheseNoField() != null;
+    }
+
+    public List<String> getAdjacencyList() {
+        return adjacencyList;
     }
 }
