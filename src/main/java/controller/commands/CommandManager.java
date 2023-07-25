@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
 import static controller.commands.ShowCommands.refreshChangedInfo;
-import static controller.commands.ShowCommands.showBoard;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -71,7 +70,7 @@ public class CommandManager extends ListenerAdapter {
                     case "transfercard" -> transferCard(discordGame, game);
                     case "putback" -> putBack(discordGame, game);
                     case "placeforces" -> placeForcesEventHandler(discordGame, game);
-                    case "moveforces" -> moveForces(discordGame, game);
+                    case "moveforces" -> moveForcesEventHandler(discordGame, game);
                     case "removeforces" -> removeForces(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
@@ -747,12 +746,17 @@ public class CommandManager extends ListenerAdapter {
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
 
-    public void moveForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         Territory from = game.getTerritories().get(discordGame.required(fromTerritory).getAsString());
         Territory to = game.getTerritories().get(discordGame.required(toTerritory).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
+
+        moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame);
+    }
+
+    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
 
         int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
         int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();

@@ -2,22 +2,20 @@ package controller.commands;
 
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
-import model.Game;
-import model.Shipment;
-import model.Territory;
+import exceptions.InvalidOptionException;
+import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class ButtonManager extends ListenerAdapter {
     @Override
@@ -28,10 +26,15 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
-            if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame);
-            else if (event.getComponentId().startsWith("ship-")) queueSectorButtons(event, game, discordGame);
-            else if (event.getComponentId().startsWith("add-force-shipment-")) addForceToShipment(event, game, discordGame);
-            else if (event.getComponentId().startsWith("add-special-force-shipment-")) addSpecialForceToShipment(event, game, discordGame);
+            if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame, true);
+            else if (event.getComponentId().startsWith("ship-")) queueSectorButtons(event, game, discordGame, true);
+            else if (event.getComponentId().startsWith("add-force-shipment-")) addForces(event, game, discordGame, true);
+            else if (event.getComponentId().startsWith("add-special-force-shipment-")) addSpecialForces(event, game, discordGame, true);
+            else if (event.getComponentId().startsWith("add-force-movement-")) addForces(event, game, discordGame, false);
+            else if (event.getComponentId().startsWith("add-special-force-movement-")) addSpecialForces(event, game, discordGame, false);
+            else if (event.getComponentId().startsWith("moving-from-")) queueMoveableTerritories(event, game, discordGame);
+            else if (event.getComponentId().startsWith("move-sector-")) filterBySector(event, game, discordGame, false);
+            else if (event.getComponentId().startsWith("move-")) queueSectorButtons(event, game, discordGame, false);
             switch (event.getComponentId()) {
                 case "shipment" -> queueShippingButtons(event);
                 case "pass-shipment" -> passShipment(event, game, discordGame);
@@ -39,100 +42,187 @@ public class ButtonManager extends ListenerAdapter {
                 case "spice-blow" -> queueSpiceBlowShippingButtons(event);
                 case "rock" -> queueRockShippingButtons(event);
                 case "other" -> queueOtherShippingButtons(event);
-                case "reset-shipping-forces" -> resetShippingForces(event, game, discordGame);
-                case "reset-shipment" -> resetShipment(event, game, discordGame);
+                case "reset-shipping-forces" -> resetForces(event, game, discordGame, true);
+                case "reset-shipment" -> resetMovement(event, game, discordGame, true);
                 case "execute-shipment" -> executeShipment(event, game, discordGame);
+                case "reset-moving-forces" -> resetForces(event, game, discordGame, false);
+                case "reset-movement" -> resetMovement(event, game, discordGame, false);
+                case "execute-movement" -> executeMovement(event, game, discordGame);
             }
-        } catch (ChannelNotFoundException | IOException e) {
+        } catch (ChannelNotFoundException | IOException | InvalidOptionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
+        Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
+        Movement movement = faction.getMovement();
+        movement.execute(discordGame, game, faction);
+    }
+
+    private void queueMoveableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
+        Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", ""));
+        faction.getMovement().setMovingFrom(from.getTerritoryName());
+        int spacesCanMove = 1;
+        if (faction.getName().equals("Fremen") || (faction.getName().equals("Ix") && !Objects.equals(from.getForce(faction.getSpecialReserves().getName()).getName(), ""))) spacesCanMove = 2;
+        if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
+        game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName()))) spacesCanMove = 3;
+        Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName(), spacesCanMove, game);
+        moveableTerritories.remove(from.getTerritoryName());
+        TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
+
+        for (String territory : moveableTerritories) {
+            moveToButtons.add(Button.primary("move-" + territory, territory));
+        }
+
+        WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Where will your forces move to?");
+        List<MessageCreateRequest> messageList = arrangeButtonsInActionRow(message, moveToButtons, discordGame, event);
+
+        for (MessageCreateRequest messageCreateRequest : messageList) {
+            if (messageCreateRequest instanceof MessageCreateAction) {
+                MessageCreateAction messageCreateAction = (MessageCreateAction) messageCreateRequest;
+                messageCreateAction.queue();
+            }
+            else {
+                WebhookMessageCreateAction<Message> messageCreateAction = (WebhookMessageCreateAction<Message>) messageCreateRequest;
+                messageCreateAction.queue();
+            }
+        }
+        discordGame.pushGame();
+    }
+
+    public Set<String> getAdjacentTerritoryNames(String territory, int spacesAway, Game game) {
+        if (spacesAway == 0) return new HashSet<>();
+
+        Set<String> adjacentTerritories = new HashSet<>(game.getAdjacencyList().get(territory));
+        Set<String> second = new HashSet<>();
+        for (String adjacentTerritory : adjacentTerritories) {
+            second.addAll(getAdjacentTerritoryNames(adjacentTerritory, spacesAway - 1, game));
+        }
+        adjacentTerritories.addAll(second);
+        return adjacentTerritories;
     }
 
     private void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
         Shipment shipment = faction.getShipment();
         shipment.execute(discordGame, game, faction);
-        queueMovementButtons(game, faction, event);
+        queueMovementButtons(game, faction, event, discordGame);
     }
 
-    private void resetShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void resetMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
-        faction.getShipment().setForce(0);
-        faction.getShipment().setSpecialForce(0);
-        faction.getShipment().setTerritoryName(null);
-        queueShippingButtons(event);
+        if (isShipment){
+            faction.getShipment().setForce(0);
+            faction.getShipment().setSpecialForce(0);
+            faction.getShipment().setTerritoryName("");
+            queueShippingButtons(event);
+        } else {
+            faction.getMovement().setForce(0);
+            faction.getMovement().setSpecialForce(0);
+            faction.getMovement().setMovingFrom("");
+            faction.getMovement().setMovingTo("");
+            queueMovementButtons(game, faction, event, discordGame);
+        }
         discordGame.pushGame();
     }
 
-    private void resetShippingForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void resetForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
-        faction.getShipment().setForce(0);
-        faction.getShipment().setSpecialForce(0);
-        queueForcesButtons(event, game, discordGame, faction);
+        if (isShipment) {
+            faction.getShipment().setForce(0);
+            faction.getShipment().setSpecialForce(0);
+            queueForcesButtons(event, game, discordGame, faction, true);
+        } else {
+            faction.getMovement().setForce(0);
+            faction.getMovement().setSpecialForce(0);
+            queueForcesButtons(event, game, discordGame, faction, false);
+        }
         discordGame.pushGame();
     }
 
-    private void addForceToShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void addForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
-        faction.getShipment().setForce((faction.getShipment().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-shipment-", ""))));
-        queueForcesButtons(event, game, discordGame, faction);
+        if (isShipment) faction.getShipment().setForce((faction.getShipment().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-shipment-", ""))));
+        else faction.getMovement().setForce((faction.getMovement().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-movement-", ""))));
+        queueForcesButtons(event, game, discordGame, faction, isShipment);
         discordGame.pushGame();
     }
 
-    private void addSpecialForceToShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void addSpecialForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
-        faction.getShipment().setSpecialForce((faction.getShipment().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-shipment-", ""))));
-        queueForcesButtons(event, game, discordGame, faction);
+        if (isShipment) faction.getShipment().setSpecialForce((faction.getShipment().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-shipment-", ""))));
+        else faction.getMovement().setSpecialForce((faction.getMovement().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-movement-", ""))));
+        queueForcesButtons(event, game, discordGame, faction, isShipment);
         discordGame.pushGame();
     }
 
-    private void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
+        String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().contains(
-                event.getComponentId().replace("ship-sector-", "").replace("-", " "))
+                event.getComponentId().replace(shipmentOrMovement + "sector-", "").replace("-", " "))
         ).findFirst().orElseThrow();
 
-        faction.getShipment().setTerritoryName(territory.getTerritoryName());
+        if (isShipment) faction.getShipment().setTerritoryName(territory.getTerritoryName());
+        else faction.getMovement().setMovingTo(territory.getTerritoryName());
 
-        queueForcesButtons(event, game, discordGame, faction);
+        queueForcesButtons(event, game, discordGame, faction, isShipment);
         discordGame.pushGame();
     }
 
-    private void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction) {
-        String specialForces = faction.getSpecialReserves().getName().equals("") ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+    private void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction, boolean isShipment) throws ChannelNotFoundException {
 
-        List<Button> forcesButtons = new LinkedList<>();
+        TreeSet<Button> forcesButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
+        String shipOrMove = isShipment ? "shipment" : "movement";
+        int buttonLimitForces = isShipment ? faction.getReserves().getStrength() - faction.getShipment().getForce() :
+                game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName()).getStrength() - faction.getMovement().getForce();
+        int buttonLimitSpecialForces = isShipment ? faction.getSpecialReserves().getStrength() - faction.getShipment().getSpecialForce() :
+                game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName() + "*").getStrength() - faction.getMovement().getSpecialForce();
 
-        for (int i = 0; i < faction.getReserves().getStrength() - faction.getShipment().getForce(); i++) {
-            forcesButtons.add(Button.primary("add-force-shipment-" + (i + 1), (i + 1) + " " + Emojis.getForceEmoji(faction.getName())));
+        for (int i = 0; i < buttonLimitForces; i++) {
+            forcesButtons.add(Button.primary("add-force-" + shipOrMove + "-" + (i + 1), "+" + (i + 1) + " " + Emojis.getForceEmoji(faction.getName())));
         }
-        for (int i = 0; i < faction.getSpecialReserves().getStrength() - faction.getShipment().getSpecialForce(); i++) {
-            forcesButtons.add(Button.primary("add-special-force-shipment-" + (i + 1), (i + 1) + " " + Emojis.getForceEmoji(faction.getName() + "*")));
+        for (int i = 0; i < buttonLimitSpecialForces; i++) {
+            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + "-" + (i + 1), "+" + (i + 1) + " " + Emojis.getForceEmoji(faction.getName() + "*")));
         }
 
-        WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use buttons below to add forces to your shipment." +
-                "\n**Currently shipping:\n" + faction.getShipment().getForce() +  " " + Emojis.getForceEmoji(faction.getName())
-                + specialForces + "\n\n to " + faction.getShipment().getTerritoryName() + "**\n");
+        if (isShipment) {
+            int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
 
-        if (!forcesButtons.isEmpty()) {
-            if (forcesButtons.size() <= 5) message.addActionRow(forcesButtons);
-            else if (forcesButtons.size() <= 10) message.addActionRow(forcesButtons.subList(0, 5)).addActionRow(forcesButtons.subList(5, forcesButtons.size()));
-            else if (forcesButtons.size() <= 15) message.addActionRow(forcesButtons.subList(0, 5)).addActionRow(forcesButtons.subList(5, 10)).addActionRow(forcesButtons.subList(10, forcesButtons.size()));
-            else message.addActionRow(forcesButtons.subList(0, 5)).addActionRow(forcesButtons.subList(5, 10)).addActionRow(forcesButtons.subList(10, 15)).addActionRow(forcesButtons.subList(15, forcesButtons.size()));
+            if (game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold()) spice *= 2;
+
+            if (faction.getName().equals("Fremen")) spice = 0;
+            String specialForces = faction.getSpecialReserves().getName().equals("") ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use buttons below to add forces to your shipment." +
+                    "\n**Currently shipping:\n" + faction.getShipment().getForce() +  " " + Emojis.getForceEmoji(faction.getName())
+                    + specialForces + "\n to " + faction.getShipment().getTerritoryName() + "\n for " + spice + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + Emojis.SPICE + " to spend.**");
+            arrangeButtonsInActionRow(message, forcesButtons, discordGame, event);
+            message.addActionRow(Button.success("execute-shipment", "Confirm Shipment"), Button.danger("reset-shipping-forces", "Reset forces"), Button.danger("reset-shipment", "Start Over"));
+            message.queue();
         }
-        message.addActionRow(Button.success("execute-shipment", "Confirm Shipment"), Button.danger("reset-shipping-forces", "Reset forces"), Button.danger("reset-shipment", "Start Over"));
-        message.queue();
+        else {
+            String specialForces = faction.getSpecialReserves().getName().equals("") ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use buttons below to add forces to your movement." +
+                    "\n**Currently moving:\n" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + "\n to " + faction.getMovement().getMovingTo() + "**");
+            arrangeButtonsInActionRow(message, forcesButtons, discordGame, event);
+            message.addActionRow(Button.success("execute-movement", "Confirm Movement"), Button.danger("reset-moving-forces", "Reset forces"), Button.danger("reset-movement", "Start Over"));
+            message.queue();
+        }
     }
 
-    private void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
+        String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
         List<Territory> territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^\\)]*\\)\\s*", "").equalsIgnoreCase(
-                event.getComponentId().replace("ship-", "").replace("-", " "))
+                event.getComponentId().replace(shipmentOrMovement, "").replace("-", " "))
         ).toList();
 
         if (territory.size() == 1) {
-            faction.getShipment().setTerritoryName(territory.get(0).getTerritoryName());
-            queueForcesButtons(event, game, discordGame, faction);
+            if (isShipment) faction.getShipment().setTerritoryName(territory.get(0).getTerritoryName());
+            else faction.getMovement().setMovingTo(territory.get(0).getTerritoryName());
+            queueForcesButtons(event, game, discordGame, faction, isShipment);
             discordGame.pushGame();
             return;
         }
@@ -140,13 +230,14 @@ public class ButtonManager extends ListenerAdapter {
         List<Button> buttons = new LinkedList<>();
 
         for (Territory sector : territory) {
-            if (sector.getSpice() > 0) buttons.add(Button.primary("ship-sector-" + sector.getTerritoryName(), sector.getSector() + " " + Emojis.SPICE));
-            else buttons.add(Button.primary("ship-sector-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
+            if (sector.getSpice() > 0) buttons.add(Button.primary(shipmentOrMovement + "sector-" + sector.getTerritoryName(), sector.getSector() + " " + Emojis.SPICE));
+            else buttons.add(Button.primary(shipmentOrMovement + "sector-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
         }
         buttons.sort(Comparator.comparing(Button::getLabel));
+        String backButtonId = isShipment ? "reset-shipment" : "reset-movement";
         event.getHook().sendMessage("Which sector?")
                 .addActionRow(buttons)
-                .addActionRow(Button.secondary("shipment", "back")).queue();
+                .addActionRow(Button.secondary(backButtonId, "back")).queue();
     }
 
     private void queueOtherShippingButtons(ButtonInteractionEvent event) {
@@ -169,7 +260,7 @@ public class ButtonManager extends ListenerAdapter {
                         Button.primary("ship-the-greater-flat", "The Greater Flat"),
                         Button.primary("ship-cielago-west", "Cielago West"))
                 .addActionRow(
-                        Button.secondary("shipment", "back"),
+                        Button.secondary("reset-shipment", "back"),
                         Button.danger("pass-shipment", "Pass Shipment")).queue();
     }
 
@@ -183,7 +274,7 @@ public class ButtonManager extends ListenerAdapter {
                 .addActionRow(
                         Button.primary("ship-plastic-basin", "Plastic Basin"),
                         Button.primary("ship-false-wall-west", "False Wall West"),
-                        Button.secondary("shipment", "back"),
+                        Button.secondary("reset-shipment", "back"),
                         Button.danger("pass-shipment", "Pass Shipment")).queue();
     }
 
@@ -207,7 +298,7 @@ public class ButtonManager extends ListenerAdapter {
                         Button.primary("ship-rock-outcroppings", "Rock Outcroppings"),
                         Button.primary("ship-wind-pass-north", "Wind Pass North"))
                 .addActionRow(
-                        Button.secondary("shipment", "back"),
+                        Button.secondary("reset-shipment", "back"),
                         Button.danger("pass-shipment", "Pass Shipment")).queue();
     }
 
@@ -220,7 +311,7 @@ public class ButtonManager extends ListenerAdapter {
                         Button.primary("ship-habbanya-sietch", "Habbanya Sietch"));
 
         if (game.hasFaction("Ix")) message.addActionRow(Button.primary("stronghold-ship-hms", "Hidden Mobile Stronghold"));
-        message.addActionRow(Button.secondary("shipment", "back"),
+        message.addActionRow(Button.secondary("reset-shipment", "back"),
                 Button.danger("pass-shipment", "Pass Shipment"));
         message.queue();
     }
@@ -228,7 +319,7 @@ public class ButtonManager extends ListenerAdapter {
     private void passShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
         discordGame.sendMessage("turn-summary", faction.getEmoji() + " does not ship.");
-        queueMovementButtons(game, faction, event);
+        queueMovementButtons(game, faction, event, discordGame);
     }
 
     private void queueShippingButtons(ButtonInteractionEvent event) throws ChannelNotFoundException {
@@ -242,12 +333,36 @@ public class ButtonManager extends ListenerAdapter {
 
     }
 
-    private void queueMovementButtons(Game game, Faction faction, ButtonInteractionEvent event) {
+    private void queueMovementButtons(Game game, Faction faction, ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
          WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use the following buttons to perform your move.");
 
+         TreeSet<Button> movingFromButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
+
         for (Territory territory : game.getTerritories().values()){
-            if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))) message.addActionRow(Button.primary(territory.getTerritoryName() + "_" + territory.getSector(), territory.getTerritoryName()));
+            if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))) movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
+
+        arrangeButtonsInActionRow(message, movingFromButtons, discordGame, event);
         message.addActionRow(Button.danger("pass-movement", "No move")).queue();
+    }
+
+    private List<MessageCreateRequest> arrangeButtonsInActionRow(WebhookMessageCreateAction<Message> message, TreeSet<Button> buttons, DiscordGame discordGame, ButtonInteractionEvent event) throws ChannelNotFoundException {
+        List<MessageCreateRequest> list = new LinkedList<>();
+        MessageCreateRequest messageCreateRequest = message;
+        int count = 0;
+        while (!buttons.isEmpty()) {
+            List<Button> actionRow = new LinkedList<>();
+            for (int i = 0; i < 5; i++) {
+                if (!buttons.isEmpty()) actionRow.add(buttons.pollFirst());
+            }
+            messageCreateRequest.addActionRow(actionRow);
+            count++;
+            if (count == 5 || buttons.isEmpty()) {
+                list.add(messageCreateRequest);
+                messageCreateRequest = discordGame.prepareMessage(event.getMessageChannel().getName(), "cont.");
+                count = 0;
+            }
+        }
+        return list;
     }
 }

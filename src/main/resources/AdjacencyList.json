@@ -1,0 +1,290 @@
+{
+  "Cielago North": [
+    "Cielago Depression",
+    "Cielago East",
+    "Cielago West",
+    "Wind Pass North",
+    "False Wall South",
+    "Harg Pass",
+    "Polar Sink"
+  ],
+  "Cielago Depression": [
+    "Meridian",
+    "Cielago South",
+    "Cielago East",
+    "Cielago North",
+    "Cielago West"
+  ],
+  "Meridian": [
+    "Cielago South",
+    "Cielago Depression",
+    "Cielago West",
+    "Habbanya Ridge Flat"
+  ],
+  "Cielago South": [
+    "Cielago East",
+    "Cielago Depression",
+    "Meridian"
+  ],
+  "Cielago East": [
+    "Cielago South",
+    "South Mesa",
+    "False Wall South",
+    "Cielago North",
+    "Cielago Depression"
+  ],
+  "Harg Pass": [
+    "Cielago North",
+    "False Wall South",
+    "The Minor Erg",
+    "False Wall East",
+    "Polar Sink"
+  ],
+  "False Wall South": [
+    "Cielago East",
+    "South Mesa",
+    "Tuek's Sietch",
+    "Pasty Mesa",
+    "The Minor Erg",
+    "Harg Pass"
+  ],
+  "South Mesa": [
+    "Cielago East",
+    "False Wall South",
+    "Tuek's Sietch",
+    "Red Chasm",
+    "Pasty Mesa"
+  ],
+  "Tuek's Sietch": [
+    "False Wall South",
+    "South Mesa",
+    "Pasty Mesa"
+  ],
+  "False Wall East": [
+    "Harg Pass",
+    "The Minor Erg",
+    "Shield Wall",
+    "Imperial Basin",
+    "Polar Sink"
+  ],
+  "The Minor Erg": [
+    "Harg Pass",
+    "False Wall South",
+    "Pasty Mesa",
+    "Shield Wall",
+    "False Wall East"
+  ],
+  "Pasty Mesa": [
+    "False Wall South",
+    "Tuek's Sietch",
+    "South Mesa",
+    "Red Chasm",
+    "The Minor Erg",
+    "Gara Kulon",
+    "Shield Wall"
+  ],
+  "Red Chasm": [
+    "South Mesa",
+    "Pasty Mesa"
+  ],
+  "Shield Wall": [
+    "False Wall East",
+    "The Minor Erg",
+    "Pasty Mesa",
+    "Gara Kulon",
+    "Sihaya Ridge",
+    "Hole In The Rock",
+    "Imperial Basin"
+  ],
+  "Gara Kulon": [
+    "Pasty Mesa",
+    "Shield Wall",
+    "Sihaya Ridge"
+  ],
+  "Imperial Basin": [
+    "Polar Sink",
+    "False Wall East",
+    "Shield Wall",
+    "Hole In The Rock",
+    "Rim Wall West",
+    "Arrakeen",
+    "Old Gap",
+    "Tsimpo",
+    "Carthag",
+    "Arsunt"
+  ],
+  "Hole In The Rock": [
+    "Imperial Basin",
+    "Shield Wall",
+    "Sihaya Ridge",
+    "Basin",
+    "Rim Wall West"
+  ],
+  "Rim Wall West": [
+    "Imperial Basin",
+    "Hole In The Rock",
+    "Basin",
+    "Old Gap",
+    "Arrakeen"
+  ],
+  "Basin": [
+    "Rim Wall West",
+    "Hole In The Rock",
+    "Sihaya Ridge",
+    "Old Gap"
+  ],
+  "Sihaya Ridge": [
+    "Shield Wall",
+    "Gara Kulon",
+    "Hole In The Rock",
+    "Basin"
+  ],
+  "Old Gap": [
+    "Arrakeen",
+    "Rim Wall West",
+    "Basin",
+    "Imperial Basin",
+    "Tsimpo",
+    "Broken Land"
+  ],
+  "Arrakeen": [
+    "Imperial Basin",
+    "Rim Wall West",
+    "Old Gap"
+  ],
+  "Arsunt": [
+    "Polar Sink",
+    "Imperial Basin",
+    "Carthag",
+    "Hagga Basin"
+  ],
+  "Carthag": [
+    "Arsunt",
+    "Imperial Basin",
+    "Tsimpo",
+    "Hagga Basin"
+  ],
+  "Tsimpo": [
+    "Carthag",
+    "Imperial Basin",
+    "Old Gap",
+    "Broken Land",
+    "Plastic Basin",
+    "Hagga Basin"
+  ],
+  "Broken Land": [
+    "Tsimpo",
+    "Old Gap",
+    "Plastic Basin",
+    "Rock Outcroppings"
+  ],
+  "Hagga Basin": [
+    "Polar Sink",
+    "Arsunt",
+    "Carthag",
+    "Tsimpo",
+    "Plastic Basin",
+    "Wind Pass"
+  ],
+  "Plastic Basin": [
+    "Hagga Basin",
+    "Tsimpo",
+    "Rock Outcroppings",
+    "Broken Land",
+    "Sietch Tabr",
+    "Bight Of The Cliff",
+    "Funeral Plain",
+    "The Great Flat",
+    "Wind Pass"
+  ],
+  "Rock Outcroppings": [
+    "Sietch Tabr",
+    "Plastic Basin",
+    "Broken Land",
+    "Bight Of The Cliff"
+  ],
+  "Wind Pass": [
+    "Polar Sink",
+    "Hagga Basin",
+    "Plastic Basin",
+    "The Great Flat",
+    "The Greater Flat",
+    "False Wall West",
+    "Cielago West"
+  ],
+  "Sietch Tabr": [
+    "Plastic Basin",
+    "Rock Outcroppings",
+    "Bight Of The Cliff"
+  ],
+  "Bight Of The Cliff": [
+    "Plastic Basin",
+    "Sietch Tabr",
+    "Rock Outcroppings",
+    "Funeral Plain"
+  ],
+  "The Great Flat": [
+    "Wind Pass",
+    "Plastic Basin",
+    "Funeral Plain",
+    "The Greater Flat"
+  ],
+  "Funeral Plain": [
+    "The Great Flat",
+    "Plastic Basin",
+    "Bight Of The Cliff"
+  ],
+  "The Greater Flat": [
+    "Wind Pass",
+    "The Great Flat",
+    "Habbanya Erg",
+    "False Wall West"
+  ],
+  "False Wall West": [
+    "Wind Pass",
+    "The Greater Flat",
+    "Habbanya Erg",
+    "Habbanya Ridge Flat",
+    "Cielago West"
+  ],
+  "Habbanya Erg": [
+    "Habbanya Ridge Flat",
+    "False Wall West",
+    "The Greater Flat"
+  ],
+  "Habbanya Ridge Flat": [
+    "Habbanya Sietch",
+    "Meridian",
+    "Cielago West",
+    "False Wall West",
+    "Habbanya Erg"
+  ],
+  "Habbanya Sietch": [
+    "Habbanya Ridge Flat"
+  ],
+  "Wind Pass North": [
+    "Polar Sink",
+    "Wind Pass",
+    "Cielago West",
+    "Cielago North"
+  ],
+  "Cielago West": [
+    "Wind Pass North",
+    "Wind Pass",
+    "False Wall West",
+    "Habbanya Ridge Flat",
+    "Meridian",
+    "Cielago Depression",
+    "Cielago North"
+  ],
+  "Polar Sink": [
+    "Cielago North",
+    "Harg Pass",
+    "False Wall East",
+    "Imperial Basin",
+    "Arsunt",
+    "Hagga Basin",
+    "Wind Pass",
+    "Wind Pass North"
+  ]
+}

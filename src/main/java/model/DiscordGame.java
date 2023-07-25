@@ -224,11 +224,6 @@ public class DiscordGame {
         return channel.sendMessage(message);
     }
 
-    public MessageCreateAction prepareDeferredReply(String name, String message) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
-        return channel.sendMessage(message);
-    }
-
     public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
         if (this.game.getMute()) return;

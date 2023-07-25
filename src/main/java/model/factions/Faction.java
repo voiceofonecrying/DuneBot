@@ -42,6 +42,7 @@ public class Faction {
     private final List<Leader> leaders;
     protected final List<Resource> resources;
     private Shipment shipment;
+    private Movement movement;
 
     private Game game;
 
@@ -67,6 +68,7 @@ public class Faction {
         this.outbidAlly = false;
         this.specialReserves = new Force("", 0);
         this.shipment = new Shipment();
+        this.movement = new Movement();
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -472,10 +474,20 @@ public class Faction {
     }
 
     public Shipment getShipment() {
+        if (shipment == null) this.shipment = new Shipment();
         return shipment;
     }
 
     public void setShipment(Shipment shipment) {
         this.shipment = shipment;
+    }
+
+    public Movement getMovement() {
+        if (movement == null) this.movement = new Movement();
+        return movement;
+    }
+
+    public void setMovement(Movement movement) {
+        this.movement = movement;
     }
 }
