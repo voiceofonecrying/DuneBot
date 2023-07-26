@@ -1,15 +1,15 @@
-name: Build the Application and Deploy to Registry
+name: Tag for Release and Build Docker Image
 
 on:
   push:
-    tags: ['v[0-9]+']
+    branches: [ "master" ]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,6 +18,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: latest
 
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
