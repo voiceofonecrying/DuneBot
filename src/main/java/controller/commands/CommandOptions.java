@@ -1,6 +1,7 @@
 package controller.commands;
 
 import enums.GameOption;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
@@ -276,10 +277,14 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> cardsInMarket(Game game, String searchValue) {
-        return game.getMarket().stream().map(TreacheryCard::name)
-                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice(card, card))
-                .collect(Collectors.toList());
+        try {
+            return game.getBidding().getMarket().stream().map(TreacheryCard::name)
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .collect(Collectors.toList());
+        } catch (InvalidGameStateException e) {
+            return new LinkedList<>();
+        }
     }
 
     private static List<Command.Choice> richeseCard(Game game, String searchValue) {

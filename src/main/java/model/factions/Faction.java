@@ -184,6 +184,10 @@ public class Faction {
         return handLimit;
     }
 
+    public void setHandLimit(int handLimit) {
+        this.handLimit = handLimit;
+    }
+
     public List<TreacheryCard> getTreacheryHand() {
         return treacheryHand;
     }

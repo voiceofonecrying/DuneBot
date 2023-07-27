@@ -78,7 +78,6 @@ public class SetupCommands {
 
         if (!game.isSetupStarted() && !game.isSetupFinished()) {
             game.setSetupStarted(true);
-            game.useBiddingObject();
             createSetupSteps(game);
             showSetupSteps(discordGame, game);
         }
@@ -137,6 +136,13 @@ public class SetupCommands {
             );
         }
 
+        if (game.hasFaction("Ix")) {
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.TREACHERY_CARDS),
+                    SetupStep.IX_CARD_SELECTION
+            );
+        }
+
         if (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) &&
                 game.hasFaction("Harkonnen")) {
             setupSteps.add(
@@ -174,6 +180,7 @@ public class SetupCommands {
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
             case FREMEN_FORCES -> stepStatus = fremenForcesStep(discordGame, game);
             case BG_FORCE -> stepStatus = bgForceStep(discordGame, game);
+            case IX_CARD_SELECTION -> stepStatus = assignCardsToIx(discordGame, game);
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
             case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(event, discordGame, game);
@@ -280,12 +287,18 @@ public class SetupCommands {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
+        LinkedList<TreacheryCard> ixRejects = new LinkedList<>();
         for (TreacheryCard treacheryCard : hand) {
             if (treacheryCard.equals(card)) continue;
-            game.getTreacheryDeck().add(
-                    faction.removeTreacheryCard(treacheryCard)
-            );
+            ixRejects.add(treacheryCard);
         }
+        Collections.shuffle(ixRejects);
+        for (TreacheryCard treacheryCard : ixRejects) {
+            game.getTreacheryDeck().add(treacheryCard);
+        }
+        faction.getTreacheryHand().clear();
+        faction.setHandLimit(4);
+        faction.addTreacheryCard(card);
 
         discordGame.pushGame();
     }
@@ -386,13 +399,30 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
+    public static StepStatus assignCardsToIx(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        try {
+            IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
+            ixFaction.setHandLimit(6);
+            for (Faction faction : game.getFactions())
+                game.drawCard("treachery deck", ixFaction.getName());
+            discordGame.sendMessage("mod-info", ":ix: has received :treachery: cards. Run /setup ix-hand-selection to select theirs then /setup advance");
+            return StepStatus.STOP;
+        } catch (IllegalArgumentException e) {
+            discordGame.sendMessage("mod-info", ":ix: is not in the game. Skipping card selection and assigning :treachery: cards.");
+            return StepStatus.CONTINUE;
+        }
+    }
+
     public static StepStatus treacheryCardsStep(Game game) {
         for (Faction faction : game.getFactions()) {
             if (faction.getTreacheryHand().size() == 0) {
                 game.drawCard("treachery deck", faction.getName());
-                if (faction.getName().equals("Harkonnen")) game.drawCard("treachery deck", faction.getName());
             }
         }
+        try {
+            Faction harkonnenFaction = game.getFaction("Harkonnen");
+            game.drawCard("treachery deck", "Harkonnen");
+        } catch (IllegalArgumentException e) {}
 
         return StepStatus.CONTINUE;
     }
