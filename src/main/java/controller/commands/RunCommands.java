@@ -364,9 +364,8 @@ public class RunCommands {
     public static void finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() != null) {
-            discordGame.sendMessage("turn-summary", "Card up for bid is placed on top of the Treachery Deck");
-            game.getTreacheryDeck().addFirst(bidding.getBidCard());
-            bidding.clearBidCardInfo();
+            int numCardsReturned = bidding.moveMarketToDeck(game);
+            discordGame.sendMessage("turn-summary", "" + numCardsReturned + " cards were returned to top of the Treachery Deck");
         }
         game.endBidding();
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
@@ -386,25 +385,9 @@ public class RunCommands {
             discordGame.sendMessage("bidding-phase", "All hands are full.");
             discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
         } else {
-            bidding.incrementBidCardNumber();
-
-            List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
-
-            if (treacheryDeck.isEmpty()) {
-                List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            TreacheryCard bidCard = bidding.nextBidCard(game);
+            if (bidding.isTreacheryDeckReshuffled()) {
                 discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
-                treacheryDeck.addAll(treacheryDiscard);
-                Collections.shuffle(treacheryDeck);
-                treacheryDiscard.clear();
-            }
-
-            TreacheryCard bidCard = treacheryDeck.remove(0);
-            bidding.setBidCard(bidCard);
-
-            for (Faction faction : game.getFactions()) {
-                faction.setMaxBid(0);
-                faction.setAutoBid(false);
-                faction.setBid("");
             }
 
             AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);

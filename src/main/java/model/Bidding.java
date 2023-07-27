@@ -1,5 +1,7 @@
 package model;
 
+import exceptions.InvalidGameStateException;
+import model.factions.Faction;
 import java.util.*;
 
 public class Bidding {
@@ -12,6 +14,9 @@ public class Bidding {
     private boolean richeseCacheCardOutstanding;
 
     private final LinkedList<TreacheryCard> market;
+    private boolean marketPopulated;
+    private boolean treacheryDeckReshuffled;
+    private boolean cardFromMarket;
 
     private String currentBidder;
     private int currentBid;
@@ -27,9 +32,60 @@ public class Bidding {
         this.richeseCacheCard = false;
         this.richeseCacheCardOutstanding = false;
         this.market = new LinkedList<>();
+        this.marketPopulated = false;
+        this.treacheryDeckReshuffled = false;
+        this.cardFromMarket = false;
         this.currentBidder = "";
         this.currentBid = 0;
         this.bidLeader = "";
+    }
+
+    public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
+        treacheryDeckReshuffled = false;
+        if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
+            throw new InvalidGameStateException("All cards for this round have already been bid on.");
+        }
+        int numCardsInMarket = numCardsForBid - bidCardNumber;
+        if (richeseCacheCardOutstanding) numCardsInMarket--;
+
+        if (!marketPopulated) {
+            List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+            for (int i = 0; i < numCardsInMarket; i++) {
+                if (treacheryDeck.isEmpty()) {
+                    treacheryDeckReshuffled = true;
+                    List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+                    treacheryDeck.addAll(treacheryDiscard);
+                    Collections.shuffle(treacheryDeck);
+                    treacheryDiscard.clear();
+                }
+                market.add(treacheryDeck.remove(0));
+            }
+            marketPopulated = true;
+        }
+
+        bidCard = market.remove(0);
+        bidCardNumber++;
+        cardFromMarket = true;
+
+        for (Faction faction : game.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setAutoBid(false);
+            faction.setBid("");
+        }
+        return bidCard;
+    }
+
+    public int moveMarketToDeck(Game game) {
+        int numCardsReturned = market.size() + 1;
+        Iterator<TreacheryCard> marketIterator = market.descendingIterator();
+        while (marketIterator.hasNext()) game.getTreacheryDeck().addFirst(marketIterator.next());
+        game.getTreacheryDeck().addFirst(bidCard);
+        clearBidCardInfo();
+        return numCardsReturned;
+    }
+
+    public boolean isTreacheryDeckReshuffled() {
+        return treacheryDeckReshuffled;
     }
 
     public TreacheryCard getBidCard() {
@@ -92,6 +148,7 @@ public class Bidding {
         richeseCacheCard = false;
         bidLeader = "";
         currentBid = 0;
+        cardFromMarket = false;
     }
 
     public LinkedList<TreacheryCard> getMarket() {
