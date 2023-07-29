@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -80,7 +81,7 @@ public class RicheseCommands {
         } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         } else if (!bidding.isRicheseCacheCardOutstanding()) {
-            throw new InvalidGameStateException(":rich: card is not eligible to be sold.");
+            throw new InvalidGameStateException(Emojis.RICHESE + " card is not eligible to be sold.");
         }
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
@@ -146,8 +147,8 @@ public class RicheseCommands {
             throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
         discordGame.sendMessage("turn-summary", MessageFormat.format(
-                    ":rich: {0} has been removed from the game.",
-                    bidding.getBidCard().name()));
+                    "{0} {1} has been removed from the game.",
+                    Emojis.RICHESE, bidding.getBidCard().name()));
         bidding.clearBidCardInfo();
         discordGame.pushGame();
     }

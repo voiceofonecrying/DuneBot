@@ -405,10 +405,10 @@ public class SetupCommands {
             ixFaction.setHandLimit(6);
             for (Faction faction : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
-            discordGame.sendMessage("mod-info", ":ix: has received :treachery: cards. Run /setup ix-hand-selection to select theirs then /setup advance");
+            discordGame.sendMessage("mod-info", Emojis.IX + " has received :treachery: cards. Run /setup ix-hand-selection to select theirs then /setup advance");
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
-            discordGame.sendMessage("mod-info", ":ix: is not in the game. Skipping card selection and assigning :treachery: cards.");
+            discordGame.sendMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
             return StepStatus.CONTINUE;
         }
     }

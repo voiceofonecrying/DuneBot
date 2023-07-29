@@ -71,8 +71,8 @@ public class RunCommands {
             cardCountsInBiddingPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 3) {
-            finishBiddingPhase(discordGame, game);
-            game.advancePhase();
+            if (finishBiddingPhase(discordGame, game))
+                game.advancePhase();
         } else if (phase == 5) {
             startRevivalPhase(discordGame, game);
             game.advancePhase();
@@ -328,6 +328,9 @@ public class RunCommands {
 
     public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() != null) {
+            throw new InvalidGameStateException("The black market card must be awarded before advancing.");
+        }
         StringBuilder message = new StringBuilder();
 
         message.append(MessageFormat.format(
@@ -349,6 +352,7 @@ public class RunCommands {
                 .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
                 .toList().size();
         bidding.setNumCardsForBid(numCardsForBid);
+        bidding.populateMarket(game, game.hasFaction("Ix"));
 
         message.append(
                 MessageFormat.format(
@@ -361,14 +365,29 @@ public class RunCommands {
         discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
     }
 
-    public static void finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() == null && !bidding.getMarket().isEmpty()) {
+            throw new InvalidGameStateException("There are more cards to be auctioned.");
+        } else if (bidding.isRicheseCacheCardOutstanding()) {
+            throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
+// Uncomment after all games have started a new card. Breaks games that have a market card already up for bid.
+//        } else if (!bidding.isCardFromMarket()) {
+//            throw new InvalidGameStateException("Card up for bid is not from bidding market.");
+        }
+
         if (bidding.getBidCard() != null) {
             int numCardsReturned = bidding.moveMarketToDeck(game);
             discordGame.sendMessage("turn-summary", "" + numCardsReturned + " cards were returned to top of the Treachery Deck");
         }
+
+        if (bidding.isRicheseCacheCardOutstanding()) {
+            discordGame.sendMessage("mod-info", "Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
+            return false;
+        }
         game.endBidding();
         discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
+        return true;
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -384,6 +403,19 @@ public class RunCommands {
         if (bidOrder.size() == 0) {
             discordGame.sendMessage("bidding-phase", "All hands are full.");
             discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
+        } else if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
+            StringBuilder message = new StringBuilder();
+            message.append(
+                    MessageFormat.format(
+                            "{0} {1} cards have been shown to {2}",
+                            bidding.getMarket().size(), Emojis.TREACHERY, Emojis.IX
+                    )
+            );
+            IxCommands.sendIxBiddingMarket(discordGame, game);
+            bidding.setMarketShownToIx(true);
+            discordGame.sendMessage("turn-summary", message.toString());
+
+            discordGame.pushGame();
         } else {
             TreacheryCard bidCard = bidding.nextBidCard(game);
             if (bidding.isTreacheryDeckReshuffled()) {

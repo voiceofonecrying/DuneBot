@@ -15,6 +15,7 @@ public class Bidding {
 
     private final LinkedList<TreacheryCard> market;
     private boolean marketPopulated;
+    private boolean marketShownToIx;
     private boolean treacheryDeckReshuffled;
     private boolean cardFromMarket;
 
@@ -33,6 +34,7 @@ public class Bidding {
         this.richeseCacheCardOutstanding = false;
         this.market = new LinkedList<>();
         this.marketPopulated = false;
+        this.marketShownToIx = false;
         this.treacheryDeckReshuffled = false;
         this.cardFromMarket = false;
         this.currentBidder = "";
@@ -45,22 +47,9 @@ public class Bidding {
         if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
-        int numCardsInMarket = numCardsForBid - bidCardNumber;
-        if (richeseCacheCardOutstanding) numCardsInMarket--;
-
-        if (!marketPopulated) {
-            List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
-            for (int i = 0; i < numCardsInMarket; i++) {
-                if (treacheryDeck.isEmpty()) {
-                    treacheryDeckReshuffled = true;
-                    List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                    treacheryDeck.addAll(treacheryDiscard);
-                    Collections.shuffle(treacheryDeck);
-                    treacheryDiscard.clear();
-                }
-                market.add(treacheryDeck.remove(0));
-            }
-            marketPopulated = true;
+        populateMarket(game, false);
+        if (market.isEmpty()) {
+            throw new InvalidGameStateException("All cards from the bidding market have already been bid on.");
         }
 
         bidCard = market.remove(0);
@@ -75,6 +64,28 @@ public class Bidding {
         return bidCard;
     }
 
+    public int populateMarket(Game game, boolean ixInGame) {
+        if (!marketPopulated) {
+            int numCardsInMarket = numCardsForBid - bidCardNumber;
+            if (richeseCacheCardOutstanding) numCardsInMarket--;
+            if (ixInGame) numCardsInMarket++;
+            List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+            for (int i = 0; i < numCardsInMarket; i++) {
+                if (treacheryDeck.isEmpty()) {
+                    treacheryDeckReshuffled = true;
+                    List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+                    treacheryDeck.addAll(treacheryDiscard);
+                    Collections.shuffle(treacheryDeck);
+                    treacheryDiscard.clear();
+                }
+                market.add(treacheryDeck.remove(0));
+            }
+            marketPopulated = true;
+            return numCardsInMarket;
+        }
+        return 0;
+    }
+
     public int moveMarketToDeck(Game game) {
         int numCardsReturned = market.size() + 1;
         Iterator<TreacheryCard> marketIterator = market.descendingIterator();
@@ -84,8 +95,26 @@ public class Bidding {
         return numCardsReturned;
     }
 
+    public void putBackIxCard(Game game, String cardName, String location) {
+        TreacheryCard card = market.stream()
+                .filter(t -> t.name().equals(cardName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Treachery card not found"));
+        market.remove(card);
+        if (location.equalsIgnoreCase("top")) {
+            game.getTreacheryDeck().addFirst(card);
+        } else {
+            game.getTreacheryDeck().add(card);
+        }
+        Collections.shuffle(market);
+    }
+
     public boolean isTreacheryDeckReshuffled() {
         return treacheryDeckReshuffled;
+    }
+
+    public boolean isCardFromMarket() {
+        return cardFromMarket;
     }
 
     public TreacheryCard getBidCard() {
@@ -153,6 +182,18 @@ public class Bidding {
 
     public LinkedList<TreacheryCard> getMarket() {
         return market;
+    }
+
+    public boolean isMarketPopulated() {
+        return marketPopulated;
+    }
+
+    public boolean isMarketShownToIx() {
+        return marketShownToIx;
+    }
+
+    public void setMarketShownToIx(boolean marketShownToIx) {
+        this.marketShownToIx = marketShownToIx;
     }
 
     public String getCurrentBidder() {

@@ -65,11 +65,11 @@ public class CommandManager extends ListenerAdapter {
                     case "bt" -> BTCommands.runCommand(event, discordGame, game);
                     case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                     case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
+                    case "ix" -> IxCommands.runCommand(event, discordGame, game);
                     case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
                     case "transfercard" -> transferCard(discordGame, game);
-                    case "putback" -> putBack(discordGame, game);
                     case "placeforces" -> placeForces(discordGame, game);
                     case "moveforces" -> moveForces(discordGame, game);
                     case "removeforces" -> removeForces(discordGame, game);
@@ -130,7 +130,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(CommandOptions.deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, CommandOptions.card));
         commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, CommandOptions.card, CommandOptions.recipient));
-        commandData.add(Commands.slash("putback", "Used for the Ixian ability to put a treachery card on the top or bottom of the deck.").addOptions(CommandOptions.putBackCard, CommandOptions.bottom));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, CommandOptions.starredAmount, CommandOptions.isShipment, CommandOptions.territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, CommandOptions.fromTerritory, CommandOptions.toTerritory, amount, CommandOptions.starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, CommandOptions.toTanks, CommandOptions.starred, CommandOptions.fromTerritory));
@@ -167,6 +166,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
         commandData.addAll(ChoamCommands.getCommands());
+        commandData.addAll(IxCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
@@ -476,37 +476,6 @@ public class CommandManager extends ListenerAdapter {
                 giver.removeTreacheryCard(cardName)
         );
 
-        discordGame.pushGame();
-    }
-
-    public void putBack(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        String cardName = discordGame.required(putBackCard).getAsString();
-        boolean isBottom = discordGame.required(bottom).getAsBoolean();
-        LinkedList<TreacheryCard> market = bidding.getMarket();
-        int i = 0;
-        boolean found = false;
-        for (; i < market.size(); i++) {
-            if (market.get(i).name().contains(cardName)) {
-                if (!isBottom) game.getTreacheryDeck().addLast(market.get(i));
-                else game.getTreacheryDeck().addFirst(market.get(i));
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            discordGame.sendMessage("mod-info", "Card not found, are you sure it's there?");
-            return;
-        }
-        market.remove(i);
-        Collections.shuffle(market);
-        if (game.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-chat", MessageFormat.format(
-                    "The first card up for bid is {0} {1} {0}",
-                    Emojis.TREACHERY,
-                    market.stream().findFirst().orElseThrow(() -> new RuntimeException("No cards in market!")).name()
-            ));
-        }
         discordGame.pushGame();
     }
 

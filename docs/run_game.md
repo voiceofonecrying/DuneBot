@@ -59,21 +59,27 @@ of cards up for bid are calculated (Richese Black Market).  Use the `/richese bl
 Black Market card up for bid.
 
 In the second part of the bidding phase (Show Card Counts and Calculate Total Cards for Bid) the number of cards up for bid
-is calculated and bidding can start.
+is calculated and bidding can start. Use `/run advance` to proceed to this stage. Cards for bid will be pulled from the treachery deck into the bidding market of cards. One extra card will be included if Ix is in the game.
+
+For bidding on Richese cache cards use `/richese card-bid`.
+If no factions bid on the card and the Richese does not take it for free, use `/richese remove-card` to remove the card from the game.
 
 To start bidding on a normal (non-Richese) card, use the `/run bidding` command, and then use the `/awardbid` command to award the bid.
-When using `/awardbid`, make sure to include the faction that gets paid for the card (if a faction gets paid). Right now
-the only way to handle another faction paying for a card is to use `/resourceaddorsubtract`.
+When using `/awardbid`, make sure to include the faction that gets paid for the card (if a faction gets paid). The way to handle another faction paying for a card is to use `/remove-spice` for the paying faction and `/add-spice` for the faction getting their cost covered.
 
-For Richese bidding use `/richese card-bid`.
+If Ix is in the game, the first `/run bidding` each turn will present the bidding market to the Ix player.
+Use `/ix send-card-to-deck` to put the Ix's rejected card to the top or bottom of the treachery deck. That will also start bidding on the first card from the bidding market.
 
-The bot does not currently stop bidding when bidding is finished on the last card, so it's up to the mod to keep track of
-how many cards are up for bid that round and stop placing cards up for bid when the last card is awarded.
+If all factions pass on a non-Richese card, use `/run advance`. This will usually end the bidding phase.
+If the Richese cache card has not been auctioned yet, use `/richese card-bid` and then `/run advance` again to end the bidding phase
 
 Here are some commands that could be helpful during this phase:
 * `/richese black-market-bid`
-* `/run bidding`
 * `/richese card-bid`
+* `/run bidding`
+* `/ix send-card-to-deck`
 * `/awardbid`
-* `/resourceaddorsubtract` - For the resource, type in "spice". If the amount is negative then the spice is removed. Don't forget to type in a message.
+* `/add-spice`
+* `/remove-spice`
 * `/discard`
+* `/richese remove-card`

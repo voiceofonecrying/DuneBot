@@ -44,8 +44,10 @@ public class CommandOptions {
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
     public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
     public static final OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
+    public static final OptionData topOrBottom = new OptionData(OptionType.STRING, "top-or-bottom", "Top or Bottom of treachery deck", true)
+            .addChoice("Top", "top")
+            .addChoice("Bottom", "bottom");
     public static final OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
-    public static final OptionData bottom = new OptionData(OptionType.BOOLEAN, "bottom", "Place on bottom?", true);
     public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
