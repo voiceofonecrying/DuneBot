@@ -149,7 +149,7 @@ public class RicheseCommands {
         discordGame.sendMessage("turn-summary", MessageFormat.format(
                     "{0} {1} has been removed from the game.",
                     Emojis.RICHESE, bidding.getBidCard().name()));
-        bidding.clearBidCardInfo();
+        bidding.clearBidCardInfo(null);
         discordGame.pushGame();
     }
 

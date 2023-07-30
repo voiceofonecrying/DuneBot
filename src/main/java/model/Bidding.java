@@ -23,6 +23,9 @@ public class Bidding {
     private String currentBidder;
     private int currentBid;
     private String bidLeader;
+    private TreacheryCard previousCard;
+    private String previousWinner;
+    private boolean ixAllySwapped;
 
     public Bidding() {
         super();
@@ -42,6 +45,9 @@ public class Bidding {
         this.currentBidder = "";
         this.currentBid = 0;
         this.bidLeader = "";
+        this.previousCard = null;
+        this.previousWinner = null;
+        this.ixAllySwapped = false;
     }
 
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
@@ -93,7 +99,7 @@ public class Bidding {
         Iterator<TreacheryCard> marketIterator = market.descendingIterator();
         while (marketIterator.hasNext()) game.getTreacheryDeck().addFirst(marketIterator.next());
         game.getTreacheryDeck().addFirst(bidCard);
-        clearBidCardInfo();
+        clearBidCardInfo(null);
         return numCardsReturned;
     }
 
@@ -126,6 +132,28 @@ public class Bidding {
         faction.addTreacheryCard(market.remove(0));
         market.addFirst(cardFromIx);
         ixTechnologyUsed = true;
+    }
+
+    public void ixAllyCardSwap(Game game) throws InvalidGameStateException {
+        Faction faction = game.getFaction("Ix");
+        String allyName = faction.getAlly();
+        if (allyName == null) {
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have an ally");
+        }
+        Faction ally = game.getFaction(allyName);
+        if (previousCard == null) {
+            throw new InvalidGameStateException("No card has been won yet this turn.");
+        } else if (ixAllySwapped) {
+            throw new InvalidGameStateException(faction.getEmoji() + " ally " + ally.getEmoji() + " already swapped the previous card.");
+        } else if (!previousWinner.equalsIgnoreCase(allyName)) {
+            throw new InvalidGameStateException(faction.getEmoji() + " ally " + ally.getEmoji() + " did not win previous card.");
+        }
+
+        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
+        ally.addTreacheryCard(treacheryDeck.remove(0));
+        treacheryDeck.addFirst(cardToSwap);
+        ixAllySwapped = true;
     }
 
     public boolean isTreacheryDeckReshuffled() {
@@ -188,7 +216,7 @@ public class Bidding {
         this.bidOrder = bidOrder;
     }
 
-    public void clearBidCardInfo() {
+    public void clearBidCardInfo(String winner) {
         bidCard = null;
         if (richeseCacheCard) {
             richeseCacheCardOutstanding = false;
@@ -197,6 +225,9 @@ public class Bidding {
         bidLeader = "";
         currentBid = 0;
         cardFromMarket = false;
+        previousCard = bidCard;
+        previousWinner = winner;
+        ixAllySwapped = false;
     }
 
     public LinkedList<TreacheryCard> getMarket() {

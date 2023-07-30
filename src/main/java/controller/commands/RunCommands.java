@@ -394,6 +394,8 @@ public class RunCommands {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (bidding.getNumCardsForBid() == 0) {
+            throw new InvalidGameStateException("You must /run advance before /run bidding.");
         } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }

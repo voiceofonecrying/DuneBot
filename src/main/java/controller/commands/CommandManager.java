@@ -484,7 +484,8 @@ public class CommandManager extends ListenerAdapter {
         if (bidding.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
         }
-        Faction winner = game.getFaction(discordGame.required(faction).getAsString());
+        String winnerName = discordGame.required(faction).getAsString();
+        Faction winner = game.getFaction(winnerName);
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
         int spentValue = discordGame.required(spent).getAsInt();
@@ -526,7 +527,7 @@ public class CommandManager extends ListenerAdapter {
 
         winner.addTreacheryCard(bidding.getBidCard());
 
-        bidding.clearBidCardInfo();
+        bidding.clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
