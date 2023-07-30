@@ -12,6 +12,7 @@ public class Bidding {
     private TreacheryCard bidCard;
     private boolean richeseCacheCard;
     private boolean richeseCacheCardOutstanding;
+    private boolean ixTechnologyUsed;
 
     private final LinkedList<TreacheryCard> market;
     private boolean marketPopulated;
@@ -32,6 +33,7 @@ public class Bidding {
         this.bidCard = null;
         this.richeseCacheCard = false;
         this.richeseCacheCardOutstanding = false;
+        this.ixTechnologyUsed = false;
         this.market = new LinkedList<>();
         this.marketPopulated = false;
         this.marketShownToIx = false;
@@ -107,6 +109,23 @@ public class Bidding {
             game.getTreacheryDeck().add(card);
         }
         Collections.shuffle(market);
+    }
+
+    public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
+        Faction faction = game.getFaction("Ix");
+        if (ixTechnologyUsed) {
+            throw new InvalidGameStateException("Ix has already used technology this turn.");
+        } else if (bidCard != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (numCardsForBid - bidCardNumber - (richeseCacheCardOutstanding ? 1 : 0) < market.size()) {
+            throw new InvalidGameStateException("Ix must send a card back to the deck.");
+        } else if (market.isEmpty()) {
+            throw new InvalidGameStateException("There are no cards in the bidding market.");
+        }
+        TreacheryCard cardFromIx = faction.removeTreacheryCard(cardName);
+        faction.addTreacheryCard(market.remove(0));
+        market.addFirst(cardFromIx);
+        ixTechnologyUsed = true;
     }
 
     public boolean isTreacheryDeckReshuffled() {

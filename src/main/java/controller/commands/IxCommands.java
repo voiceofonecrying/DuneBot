@@ -24,7 +24,11 @@ public class IxCommands {
                         new SubcommandData(
                                 "put-card-back",
                                 "Send one treachery card to the top or bottom of the deck."
-                        ).addOptions(CommandOptions.putBackCard, CommandOptions.topOrBottom)
+                        ).addOptions(CommandOptions.putBackCard, CommandOptions.topOrBottom),
+                        new SubcommandData(
+                                "technology",
+                                "Swap a card in hand for the next card up for bid."
+                        ).addOptions(CommandOptions.ixCard)
                 )
         );
 
@@ -37,6 +41,7 @@ public class IxCommands {
 
         switch (name) {
             case "put-card-back" -> sendCardBackToDeck(discordGame, game);
+            case "technology" -> technology(discordGame, game);
         }
     }
 
@@ -48,8 +53,14 @@ public class IxCommands {
             game.getBidding().putBackIxCard(game, cardName, location);
             discordGame.sendMessage("ix-chat", "You sent " + cardName + " to the " + location.toLowerCase() + " of the deck.");
             discordGame.sendMessage("turn-summary", Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+            discordGame.pushGame();
         }
-        RunCommands.bidding(discordGame, game);
+    }
+
+    public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String cardName = discordGame.required(ixCard).getAsString();
+        game.getBidding().ixTechnology(game, cardName);
+        discordGame.pushGame();
     }
 
     public static void sendIxBiddingMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

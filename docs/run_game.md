@@ -67,8 +67,8 @@ If no factions bid on the card and the Richese does not take it for free, use `/
 To start bidding on a normal (non-Richese) card, use the `/run bidding` command, and then use the `/awardbid` command to award the bid.
 When using `/awardbid`, make sure to include the faction that gets paid for the card (if a faction gets paid). The way to handle another faction paying for a card is to use `/remove-spice` for the paying faction and `/add-spice` for the faction getting their cost covered.
 
-If Ix is in the game, the first `/run bidding` each turn will present the bidding market to the Ix player.
-Use `/ix send-card-to-deck` to put the Ix's rejected card to the top or bottom of the treachery deck. That will also start bidding on the first card from the bidding market.
+If Ix is in the game, the first `/run bidding` each turn will present the bidding market to the Ix player instead of putting a card up for auction.
+Use `/ix send-card-to-deck` to put the Ix's rejected card to the top or bottom of the treachery deck.
 
 If all factions pass on a non-Richese card, use `/run advance`. This will usually end the bidding phase.
 If the Richese cache card has not been auctioned yet, use `/richese card-bid` and then `/run advance` again to end the bidding phase
