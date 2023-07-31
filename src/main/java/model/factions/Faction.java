@@ -35,6 +35,7 @@ public class Faction {
     private boolean useExact;
     private boolean autoBid;
     private boolean outbidAlly;
+    private boolean specialKaramaPowerUsed;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
@@ -64,6 +65,7 @@ public class Faction {
         this.autoBid = false;
         this.useExact = true;
         this.outbidAlly = false;
+        this.specialKaramaPowerUsed = false;
         this.specialReserves = new Force("", 0);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
@@ -408,6 +410,14 @@ public class Faction {
 
     public void setOutbidAlly(boolean outbidAlly) {
         this.outbidAlly = outbidAlly;
+    }
+
+    public boolean isSpecialKaramaPowerUsed() {
+        return specialKaramaPowerUsed;
+    }
+
+    public void setSpecialKaramaPowerUsed(boolean autoBid) {
+        this.specialKaramaPowerUsed = specialKaramaPowerUsed;
     }
 
     public boolean isNearShieldWall() {

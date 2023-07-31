@@ -63,12 +63,15 @@ is calculated and bidding can start. Use `/run advance` to proceed to this stage
 
 For bidding on Richese cache cards use `/richese card-bid`.
 If no factions bid on the card and the Richese does not take it for free, use `/richese remove-card` to remove the card from the game.
+Use `/richese karama-buy` for Richese ability to play Karama and buy any Richese cache card for 3 spice.
 
 To start bidding on a normal (non-Richese) card, use the `/run bidding` command, and then use the `/awardbid` command to award the bid.
 When using `/awardbid`, make sure to include the faction that gets paid for the card (if a faction gets paid). The way to handle another faction paying for a card is to use `/remove-spice` for the paying faction and `/add-spice` for the faction getting their cost covered.
 
 If Ix is in the game, the first `/run bidding` each turn will present the bidding market to the Ix player instead of putting a card up for auction.
 Use `/ix send-card-to-deck` to put the Ix's rejected card to the top or bottom of the treachery deck.
+Use `/ix technology` for Ix to swap a card in hand for the next card up for bid. Call this before `/run bidding`
+Use `/ix ally-card-swap` for Ix ally ability to swap just won card for the card at the top of the treachery deck.
 
 If all factions pass on a non-Richese card, use `/run advance`. This will usually end the bidding phase.
 If the Richese cache card has not been auctioned yet, use `/richese card-bid` and then `/run advance` again to end the bidding phase
@@ -78,8 +81,10 @@ Here are some commands that could be helpful during this phase:
 * `/richese card-bid`
 * `/run bidding`
 * `/ix send-card-to-deck`
+* `/ix technology`
 * `/awardbid`
 * `/add-spice`
 * `/remove-spice`
 * `/discard`
 * `/richese remove-card`
+* `/richese karama-buy`

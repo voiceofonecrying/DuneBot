@@ -79,12 +79,12 @@ public class IxCommands {
         if (game.hasFaction("Ix")) {
             message.append(
                     MessageFormat.format(
-                            "Select one of the following {0} cards to send back to the deck.",
-                            Emojis.TREACHERY
+                            "Turn {0} - Select one of the following {1} cards to send back to the deck.",
+                            game.getTurn(), Emojis.TREACHERY
                     )
             );
             for (TreacheryCard card : bidding.getMarket()) {
-                message.append("\n" + card.name() + "(" + card.type() + ")");
+                message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
             }
             discordGame.sendMessage("ix-chat", message.toString());
         }
