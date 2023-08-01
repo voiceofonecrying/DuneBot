@@ -507,7 +507,7 @@ public class SetupCommands {
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             discordGame.sendMessage("mod-info", "Harkonnen can mulligan");
-            discordGame.sendMessage("harkonnen-chat",faction.getName() + " Please decide if you will mulligan your Traitor cards.");
+            discordGame.sendMessage("harkonnen-chat",faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
             discordGame.sendMessage("mod-info", "Harkonnen can not mulligan");
@@ -540,7 +540,7 @@ public class SetupCommands {
                     game.drawCard("traitor deck", faction.getName());
                 }
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getName() + " Please select your traitor.");
+                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " please select your traitor.");
                 }
             }
         }
