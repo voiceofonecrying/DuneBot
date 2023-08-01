@@ -47,11 +47,30 @@ public class ChannelPermissions {
             Permission.MESSAGE_EXT_EMOJI,
             Permission.MESSAGE_EXT_STICKER,
             Permission.MESSAGE_MENTION_EVERYONE,
-            Permission.MESSAGE_HISTORY
+            Permission.MESSAGE_HISTORY,
+            Permission.USE_APPLICATION_COMMANDS
     );
 
     public static final EnumSet<Permission> readWriteDeny = all.stream()
             .filter(permission -> !readWriteAllow.contains(permission))
+            .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
+
+    public static final EnumSet<Permission> readWriteMinimumAllow = EnumSet.of(
+            Permission.VIEW_CHANNEL,
+            Permission.MESSAGE_SEND,
+            Permission.MESSAGE_SEND_IN_THREADS,
+            Permission.CREATE_PUBLIC_THREADS,
+            Permission.MESSAGE_EMBED_LINKS,
+            Permission.MESSAGE_ATTACH_FILES,
+            Permission.MESSAGE_ADD_REACTION,
+            Permission.MESSAGE_EXT_EMOJI,
+            Permission.MESSAGE_EXT_STICKER,
+            Permission.MESSAGE_MENTION_EVERYONE,
+            Permission.MESSAGE_HISTORY
+    );
+
+    public static final EnumSet<Permission> readWriteMinimumDeny = all.stream()
+            .filter(permission -> !readWriteMinimumAllow.contains(permission))
             .collect(Collectors.toCollection(() -> EnumSet.noneOf(Permission.class)));
 
     public static final EnumSet<Permission> pollBotAllow = EnumSet.of(

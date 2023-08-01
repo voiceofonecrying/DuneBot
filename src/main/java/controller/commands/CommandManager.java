@@ -201,8 +201,8 @@ public class CommandManager extends ListenerAdapter {
         category.createTextChannel("chat")
                 .addPermissionOverride(
                         observerRole,
-                        ChannelPermissions.readWriteAllow,
-                        ChannelPermissions.readWriteDeny
+                        ChannelPermissions.readWriteMinimumAllow,
+                        ChannelPermissions.readWriteMinimumDeny
                 )
                 .addPermissionOverride(
                         gameRoleValue,
