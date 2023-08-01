@@ -44,7 +44,6 @@ public class CommandManager extends ListenerAdapter {
         try {
             String ephemeralMessage = "";
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
-            //else if (name.equals("clean")) clean(event); Leaving this command commented so that the command is ignored in production
             else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
@@ -125,7 +124,6 @@ public class CommandManager extends ListenerAdapter {
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(CommandOptions.password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(CommandOptions.gameName, CommandOptions.gameRole, CommandOptions.modRole));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(CommandOptions.deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, CommandOptions.card));
