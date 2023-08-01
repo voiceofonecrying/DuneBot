@@ -489,6 +489,11 @@ public class CommandManager extends ListenerAdapter {
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
         int spentValue = discordGame.required(spent).getAsInt();
+        if (winner.getSpice() < spentValue) {
+            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
+        } else if (winnerHand.size() >= winner.getHandLimit()) {
+            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
+        }
 
         String currentCard = MessageFormat.format(
                 "R{0}:C{1}",
