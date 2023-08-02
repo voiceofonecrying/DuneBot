@@ -401,10 +401,8 @@ public class RunCommands {
         } else if (bidding.isIxRejectOutstanding()) {
             throw new InvalidGameStateException(Emojis.IX + " must send a " + Emojis.TREACHERY + " card back to the deck.");
         }
-        updateBidOrder(game);
-        List<String> bidOrder = game.getEligibleBidOrder();
 
-        if (bidOrder.size() == 0) {
+        if (game.getEligibleBidOrder().size() == 0) {
             discordGame.sendMessage("bidding-phase", "All hands are full.");
             discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
         } else if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
@@ -421,6 +419,8 @@ public class RunCommands {
 
             discordGame.pushGame();
         } else {
+            updateBidOrder(game);
+            List<String> bidOrder = game.getEligibleBidOrder();
             TreacheryCard bidCard = bidding.nextBidCard(game);
             if (bidding.isTreacheryDeckReshuffled()) {
                 discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
