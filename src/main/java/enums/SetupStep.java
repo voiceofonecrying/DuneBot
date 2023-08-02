@@ -14,5 +14,6 @@ public enum SetupStep {
     TRAITORS,
     BT_FACE_DANCERS,
     STORM_SELECTION,
+    IX_HMS_PLACEMENT,
     START_GAME,
 }
