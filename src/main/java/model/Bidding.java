@@ -17,6 +17,7 @@ public class Bidding {
     private final LinkedList<TreacheryCard> market;
     private boolean marketPopulated;
     private boolean marketShownToIx;
+    private boolean ixRejectOutstanding;
     private boolean treacheryDeckReshuffled;
     private boolean cardFromMarket;
 
@@ -40,6 +41,7 @@ public class Bidding {
         this.market = new LinkedList<>();
         this.marketPopulated = false;
         this.marketShownToIx = false;
+        this.ixRejectOutstanding = false;
         this.treacheryDeckReshuffled = false;
         this.cardFromMarket = false;
         this.currentBidder = "";
@@ -115,6 +117,7 @@ public class Bidding {
             game.getTreacheryDeck().add(card);
         }
         Collections.shuffle(market);
+        ixRejectOutstanding = false;
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
@@ -244,6 +247,11 @@ public class Bidding {
 
     public void setMarketShownToIx(boolean marketShownToIx) {
         this.marketShownToIx = marketShownToIx;
+        if (marketShownToIx) ixRejectOutstanding = true;
+    }
+
+    public boolean isIxRejectOutstanding() {
+        return ixRejectOutstanding;
     }
 
     public String getCurrentBidder() {

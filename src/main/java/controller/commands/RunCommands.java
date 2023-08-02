@@ -398,6 +398,8 @@ public class RunCommands {
             throw new InvalidGameStateException("You must /run advance before /run bidding.");
         } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
+        } else if (bidding.isIxRejectOutstanding()) {
+            throw new InvalidGameStateException(Emojis.IX + " must send a " + Emojis.TREACHERY + " card back to the deck.");
         }
         updateBidOrder(game);
         List<String> bidOrder = game.getEligibleBidOrder();
