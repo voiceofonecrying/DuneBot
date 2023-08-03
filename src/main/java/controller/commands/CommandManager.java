@@ -82,8 +82,6 @@ public class CommandManager extends ListenerAdapter {
                     case "bgflip" -> bgFlip(discordGame, game);
                     case "bribe" -> bribe(discordGame, game);
                     case "mute" -> mute(discordGame, game);
-                    case "placehms" -> placeHMS(discordGame, game);
-                    case "movehms" -> moveHMS(discordGame, game);
                     case "assigntechtoken" -> assignTechToken(discordGame, game);
                     case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
                     case "create-alliance" -> createAlliance(discordGame, game);
@@ -143,7 +141,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, CommandOptions.recipient, amount, CommandOptions.reason));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(CommandOptions.territory));
-        commandData.add(Commands.slash("movehms", "Move Hidden Mobile Stronghold to another territory").addOptions(CommandOptions.territory));
         commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, CommandOptions.token));
         commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(CommandOptions.spiceBlowDeck));
         commandData.add(Commands.slash("create-alliance", "Create an alliance between two factions")
@@ -840,20 +837,6 @@ public class CommandManager extends ListenerAdapter {
         }
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
-    }
-
-    public void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
-        targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
-        discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
-    }
-
-    public void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        for (Territory territory : game.getTerritories().values()) {
-            territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
-        }
-        placeHMS(discordGame, game);
     }
 
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
