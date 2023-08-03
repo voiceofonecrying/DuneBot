@@ -11,6 +11,7 @@ import java.util.List;
 public class RicheseFaction extends Faction {
     List <TreacheryCard> treacheryCardCache;
     Integer frontOfShieldNoField;
+    List<Integer> behindShieldNoField;
 
     public RicheseFaction(String player, String userName, Game game) throws IOException {
         super("Richese", player, userName, game);
@@ -19,6 +20,9 @@ public class RicheseFaction extends Faction {
         this.freeRevival = 2;
         this.reserves = new Force("Richese", 20);
         this.emoji = Emojis.RICHESE;
+        this.behindShieldNoField.add(0);
+        this.behindShieldNoField.add(3);
+        this.behindShieldNoField.add(5);
 
         treacheryCardCache = new ArrayList<>();
         treacheryCardCache.add(new TreacheryCard("Ornithopter", "Special - Movement"));

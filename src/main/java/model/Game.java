@@ -1,10 +1,13 @@
 package model;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import enums.GameOption;
 import enums.SetupStep;
 import exceptions.InvalidGameStateException;
-import model.factions.*;
-import model.Bidding;
+import model.factions.Faction;
+import model.factions.RicheseFaction;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -13,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
+import static controller.Initializers.getJSONString;
 
 public class Game {
     private String gameRole;
@@ -30,8 +34,8 @@ public class Game {
 
     private int stormMovement;
     private Bidding bidding;
-
     private final List<Faction> factions;
+    private Deque<String> turnOrder;
 
     private final Map<String, Territory> territories;
     private final LinkedList<TreacheryCard> treacheryDeck;
@@ -46,10 +50,13 @@ public class Game {
     private boolean shieldWallDestroyed;
     private boolean sandtroutInPlay;
 
+    private transient final HashMap<String, List<String>> adjacencyList;
+
     public Game() throws IOException {
         super();
 
         factions = new LinkedList<>();
+        turnOrder = new LinkedList<>();
         territories = new HashMap<>();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -85,6 +92,17 @@ public class Game {
         csvParser = getCSVFile("LeaderSkillCards.csv");
         for (CSVRecord csvRecord : csvParser) {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
+        }
+
+        String json = getJSONString("AdjacencyList.json");
+        this.adjacencyList = new HashMap<>();
+        JsonObject jsonObject = JsonParser.parseString(json).getAsJsonObject();
+        for (Map.Entry<String, JsonElement> territory : jsonObject.entrySet()) {
+            List<String> adjacent = new LinkedList<>();
+            for (JsonElement adj : territory.getValue().getAsJsonArray().asList()) {
+                adjacent.add(adj.getAsString());
+            }
+            adjacencyList.put(territory.getKey(), adjacent);
         }
 
         this.sandtroutInPlay = false;
@@ -429,5 +447,17 @@ public class Game {
      */
     public void setSandtroutInPlay(boolean sandtroutInPlay) {
         this.sandtroutInPlay = sandtroutInPlay;
+    }
+
+    public HashMap<String, List<String>> getAdjacencyList() {
+        return adjacencyList;
+    }
+
+    public Deque<String> getTurnOrder() {
+        return turnOrder;
+    }
+
+    public void setTurnOrder(Deque<String> turnOrder) {
+        this.turnOrder = turnOrder;
     }
 }

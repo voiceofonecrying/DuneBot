@@ -3,8 +3,8 @@ package controller.commands;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidOptionException;
 import exceptions.InvalidGameStateException;
+import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.Permission;
@@ -44,7 +44,6 @@ public class CommandManager extends ListenerAdapter {
         try {
             String ephemeralMessage = "";
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
-            //else if (name.equals("clean")) clean(event); Leaving this command commented so that the command is ignored in production
             else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
@@ -70,8 +69,8 @@ public class CommandManager extends ListenerAdapter {
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
                     case "transfercard" -> transferCard(discordGame, game);
-                    case "placeforces" -> placeForces(discordGame, game);
-                    case "moveforces" -> moveForces(discordGame, game);
+                    case "placeforces" -> placeForcesEventHandler(discordGame, game);
+                    case "moveforces" -> moveForcesEventHandler(discordGame, game);
                     case "removeforces" -> removeForces(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
@@ -123,7 +122,6 @@ public class CommandManager extends ListenerAdapter {
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("clean", "FOR TEST ONLY: DO NOT RUN").addOptions(CommandOptions.password));
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(CommandOptions.gameName, CommandOptions.gameRole, CommandOptions.modRole));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(CommandOptions.deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, CommandOptions.card));
@@ -617,11 +615,17 @@ public class CommandManager extends ListenerAdapter {
      * @param discordGame  the discord game
      * @param game         the game
      */
-    public void placeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void placeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
+        boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
+        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game);
+        discordGame.pushGame();
+    }
+
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
 
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
@@ -630,7 +634,12 @@ public class CommandManager extends ListenerAdapter {
 
         if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
 
-        if (discordGame.required(isShipment).getAsBoolean()) {
+        if (isShipment) {
+            if (targetFaction.getShipment().hasShipped()) {
+                discordGame.sendMessage("mod-info", "This faction has already shipped.");
+                return;
+            }
+            targetFaction.getShipment().setShipped(true);
             int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
@@ -668,15 +677,23 @@ public class CommandManager extends ListenerAdapter {
                                 cost, Emojis.SPICE
                         )
                 );
+                int support = 0;
+                if (targetFaction.getAllySpiceShipment() > 0) {
+                    support = targetFaction.getAllySpiceShipment() >= cost ? cost : targetFaction.getAllySpiceShipment();
+                    game.getFaction(targetFaction.getAlly()).subtractSpice(support);
+                    spiceMessage(discordGame, support, targetFaction.getAlly(),targetFaction.getEmoji() + " shipment support", false);
+                    message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
+                    targetFaction.setAllySpiceShipment(0);
+                }
 
-                targetFaction.subtractSpice(cost);
-                spiceMessage(discordGame, cost, targetFaction.getName(),
+                targetFaction.subtractSpice(cost - support);
+                spiceMessage(discordGame, cost - support, targetFaction.getName(),
                         "shipment to " + targetTerritory.getTerritoryName(), false);
 
                 if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild")) {
                     game.getFaction("Guild").addSpice(cost);
                     message.append(" paid to ")
-                            .append(game.getFaction("Guild").getEmoji());
+                            .append(Emojis.GUILD);
                     spiceMessage(discordGame, cost, "guild", targetFaction.getEmoji() + " shipment", true);
                 }
 
@@ -692,8 +709,6 @@ public class CommandManager extends ListenerAdapter {
 
             discordGame.sendMessage("turn-summary", message.toString());
         }
-
-        discordGame.pushGame();
     }
 
     /**
@@ -703,27 +718,38 @@ public class CommandManager extends ListenerAdapter {
      * @param amount The number of forces to place.
      * @param special Whether the force is a special reserve.
      */
-    public void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
+    public static void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
         String forceName;
 
         if (special) {
             faction.removeSpecialReserves(amount);
             forceName = faction.getSpecialReserves().getName();
-        } else {
+        }
+        else {
             faction.removeReserves(amount);
             forceName = faction.getReserves().getName();
+            if (faction.getName().equals("BG") && territory.hasForce("Advisor")) {
+                int advisors = territory.getForce("Advisor").getStrength();
+                territory.getForces().add(new Force("BG", advisors));
+                territory.removeForce("Advisor");
+            }
         }
-
         Force territoryForce = territory.getForce(forceName);
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
 
-    public void moveForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         Territory from = game.getTerritories().get(discordGame.required(fromTerritory).getAsString());
         Territory to = game.getTerritories().get(discordGame.required(toTerritory).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
+
+        moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame);
+        discordGame.pushGame();
+    }
+
+    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
 
         int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
         int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
@@ -768,8 +794,6 @@ public class CommandManager extends ListenerAdapter {
         );
 
         discordGame.sendMessage("turn-summary", message.toString());
-
-        discordGame.pushGame();
     }
 
     public void removeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

@@ -14,10 +14,14 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
@@ -36,9 +40,14 @@ public class DiscordGame {
     private List<TextChannel> textChannelList;
     private Game game;
 
-    private SlashCommandInteractionEvent event;
+    private GenericInteractionCreateEvent event;
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
+        this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+        this.game = this.getGame();
+        this.event = event;
+    }
+    public DiscordGame(@NotNull ButtonInteractionEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
         this.game = this.getGame();
         this.event = event;
@@ -77,7 +86,7 @@ public class DiscordGame {
         return this.getTextChannel("bot-data");
     }
 
-    public SlashCommandInteractionEvent getEvent() {
+    public GenericInteractionCreateEvent getEvent() {
         return this.event;
     }
 
@@ -166,6 +175,10 @@ public class DiscordGame {
         }
     }
 
+    public void pushGame(Game game) throws ChannelNotFoundException {
+        this.game = game;
+        pushGame();
+    }
     public void pushGame() throws ChannelNotFoundException {
         removeGameReferenceFromFactions(this.game);
 
@@ -189,15 +202,26 @@ public class DiscordGame {
                 gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
-        String message = getEvent() == null ? "Manual update" : "Command: `" + getEvent().getCommandString() + "`";
-
-        sendMessage("bot-data", message, fileUpload);
+        if (getEvent() instanceof SlashCommandInteractionEvent) {
+            SlashCommandInteractionEvent slashCommandInteractionEvent = (SlashCommandInteractionEvent) event;
+            String message = getEvent() == null ? "Manual update" : "Command: `" + slashCommandInteractionEvent.getCommandString() + "`";
+            sendMessage("bot-data", message, fileUpload);
+        }
+        else {
+            ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
+            String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + buttonInteractionEvent.getMember().getUser().getName() + "`";
+            sendMessage("bot-data", message, fileUpload);
+        }
     }
 
     public void sendMessage(String name, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
         if (this.game.getMute()) return;
         channel.sendMessage(message).queue();
+    }
+    public MessageCreateAction prepareMessage(String name, String message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(name);
+        return channel.sendMessage(message);
     }
 
     public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
@@ -278,6 +302,7 @@ public class DiscordGame {
 
     public OptionMapping optional(OptionData optionData) {
         String optionName = optionData.getName();
-        return event.getOption(optionName);
+        SlashCommandInteractionEvent newEvent = (SlashCommandInteractionEvent) event;
+        return newEvent.getOption(optionName);
     }
 }
