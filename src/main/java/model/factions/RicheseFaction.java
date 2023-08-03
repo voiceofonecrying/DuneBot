@@ -20,6 +20,7 @@ public class RicheseFaction extends Faction {
         this.freeRevival = 2;
         this.reserves = new Force("Richese", 20);
         this.emoji = Emojis.RICHESE;
+        this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);
         this.behindShieldNoField.add(3);
         this.behindShieldNoField.add(5);
