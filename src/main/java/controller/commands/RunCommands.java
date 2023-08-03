@@ -405,10 +405,7 @@ public class RunCommands {
             throw new InvalidGameStateException(Emojis.IX + " must send a " + Emojis.TREACHERY + " card back to the deck.");
         }
 
-        if (game.getEligibleBidOrder().size() == 0) {
-            discordGame.sendMessage("bidding-phase", "All hands are full.");
-            discordGame.sendMessage("mod-info", "If a player discards now, execute '/run bidding' again.");
-        } else if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
+        if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
             StringBuilder message = new StringBuilder();
             message.append(
                     MessageFormat.format(
@@ -421,23 +418,29 @@ public class RunCommands {
             discordGame.sendMessage("turn-summary", message.toString());
 
             discordGame.pushGame();
-        } else {
+        } else  {
             updateBidOrder(game);
             List<String> bidOrder = game.getEligibleBidOrder();
-            TreacheryCard bidCard = bidding.nextBidCard(game);
-            if (bidding.isTreacheryDeckReshuffled()) {
-                discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+
+            if (bidOrder.size() == 0) {
+                discordGame.sendMessage("bidding-phase", "All hands are full.");
+                discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again.");
+            } else  {
+                TreacheryCard bidCard = bidding.nextBidCard(game);
+                if (bidding.isTreacheryDeckReshuffled()) {
+                    discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                }
+
+                AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
+
+                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+
+                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+
+                createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
+
+                discordGame.pushGame();
             }
-
-            AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
-
-            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
-
-            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-
-            createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
-
-            discordGame.pushGame();
         }
     }
 
