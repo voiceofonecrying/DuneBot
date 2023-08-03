@@ -633,6 +633,11 @@ public class CommandManager extends ListenerAdapter {
         if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
 
         if (isShipment) {
+            if (targetFaction.getShipment().hasShipped()) {
+                discordGame.sendMessage("mod-info", "This faction has already shipped.");
+                return;
+            }
+            targetFaction.getShipment().setShipped(true);
             int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
@@ -670,9 +675,17 @@ public class CommandManager extends ListenerAdapter {
                                 cost, Emojis.SPICE
                         )
                 );
+                int support = 0;
+                if (targetFaction.getAllySpiceShipment() > 0) {
+                    support = targetFaction.getAllySpiceShipment() >= cost ? cost : targetFaction.getAllySpiceShipment();
+                    game.getFaction(targetFaction.getAlly()).subtractSpice(support);
+                    spiceMessage(discordGame, support, targetFaction.getAlly(),targetFaction.getEmoji() + " shipment support", false);
+                    message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
+                    targetFaction.setAllySpiceShipment(0);
+                }
 
-                targetFaction.subtractSpice(cost);
-                spiceMessage(discordGame, cost, targetFaction.getName(),
+                targetFaction.subtractSpice(cost - support);
+                spiceMessage(discordGame, cost - support, targetFaction.getName(),
                         "shipment to " + targetTerritory.getTerritoryName(), false);
 
                 if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild")) {
@@ -709,11 +722,16 @@ public class CommandManager extends ListenerAdapter {
         if (special) {
             faction.removeSpecialReserves(amount);
             forceName = faction.getSpecialReserves().getName();
-        } else {
+        }
+        else {
             faction.removeReserves(amount);
             forceName = faction.getReserves().getName();
+            if (faction.getName().equals("BG") && territory.hasForce("Advisor")) {
+                int advisors = territory.getForce("Advisor").getStrength();
+                territory.getForces().add(new Force("BG", advisors));
+                territory.removeForce("Advisor");
+            }
         }
-
         Force territoryForce = territory.getForce(forceName);
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
@@ -726,6 +744,7 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
         moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame);
+        discordGame.pushGame();
     }
 
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
@@ -773,8 +792,6 @@ public class CommandManager extends ListenerAdapter {
         );
 
         discordGame.sendMessage("turn-summary", message.toString());
-
-        discordGame.pushGame();
     }
 
     public void removeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

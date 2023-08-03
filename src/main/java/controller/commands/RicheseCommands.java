@@ -77,6 +77,22 @@ public class RicheseCommands {
         }
     }
 
+    public static void moveNoFieldFromBoardToFrontOfShield(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        int noField = -1;
+        for (Territory territory : game.getTerritories().values()) {
+            noField = territory.getRicheseNoField() == null ? noField : territory.getRicheseNoField();
+            if (territory.getRicheseNoField() != null) {
+                CommandManager.placeForceInTerritory(territory, game.getFaction("Richese"), noField, false);
+                discordGame.sendMessage("turn-summary", "The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
+            }
+            territory.setRicheseNoField(null);
+        }
+        if (noField != -1) {
+            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+            richese.setFrontOfShieldNoField(noField);
+        }
+    }
+
     public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() != null) {

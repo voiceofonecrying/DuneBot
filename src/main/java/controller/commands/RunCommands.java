@@ -7,6 +7,7 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.ChoamFaction;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -553,6 +554,28 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Axlotl Tanks");
 
         discordGame.sendMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
+        for (Faction faction : game.getFactions()) {
+            game.getTurnOrder().add(faction.getName());
+            faction.getShipment().setShipped(false);
+            faction.getMovement().setMoved(false);
+        }
+        while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0) game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
+        game.getTurnOrder().removeIf(name -> name.equals("Guild"));
+        ButtonManager.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame);
+        if (game.hasFaction("Guild")) {
+            game.getTurnOrder().addFirst("guild-hold");
+            ButtonManager.queueGuildTurnOrderButtons(discordGame);
+        }
+        if (game.hasFaction("Richese")) {
+            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+            if (!richese.getTreacheryCardCache().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
+                    !game.getTreacheryDiscard().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
+                game.getTurnOrder().addFirst("juice-of-sapho-hold");
+                discordGame.prepareMessage("game-actions", "Juice of Sapho is in play. Use buttons to play Juice of Sapho to be " +
+                        "considered first or last this shipment and movement phase.").addActionRow(Button.primary("juice-of-sapho-first", "Go first this phase."),
+                        Button.primary("juice-of-sapho-last", "Go last this phase."), Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase.")).queue();
+            }
+        }
         if (game.hasFaction("Atreides")) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null)
@@ -566,11 +589,6 @@ public class RunCommands {
                 }
             }
             if (!message.isEmpty()) discordGame.sendMessage("game-actions", message.append(game.getFaction("BG").getPlayer()).toString());
-        }
-        for (Faction faction: game.getFactions()){
-            MessageCreateAction message = discordGame.prepareMessage(faction.getName().toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn.");
-            message.addActionRow(Button.primary( "shipment", "Begin a ship action"))
-                    .addActionRow(Button.danger( "pass-shipment", "Pass shipment")).queue();
         }
         ShowCommands.showBoard(discordGame, game);
     }

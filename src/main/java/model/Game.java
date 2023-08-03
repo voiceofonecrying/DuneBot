@@ -34,8 +34,8 @@ public class Game {
 
     private int stormMovement;
     private Bidding bidding;
-
     private final List<Faction> factions;
+    private Deque<String> turnOrder;
 
     private final Map<String, Territory> territories;
     private final LinkedList<TreacheryCard> treacheryDeck;
@@ -56,6 +56,7 @@ public class Game {
         super();
 
         factions = new LinkedList<>();
+        turnOrder = new LinkedList<>();
         territories = new HashMap<>();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -450,5 +451,13 @@ public class Game {
 
     public HashMap<String, List<String>> getAdjacencyList() {
         return adjacencyList;
+    }
+
+    public Deque<String> getTurnOrder() {
+        return turnOrder;
+    }
+
+    public void setTurnOrder(Deque<String> turnOrder) {
+        this.turnOrder = turnOrder;
     }
 }
