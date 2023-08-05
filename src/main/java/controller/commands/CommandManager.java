@@ -605,7 +605,8 @@ public class CommandManager extends ListenerAdapter {
                 spiceMessage(discordGame, revivalCost, "bt", targetFaction.getEmoji() + " revivals", true);
             }
         }
-
+        
+        discordGame.sendMessage("turn-summary", targetFaction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(targetFaction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
         discordGame.pushGame();
     }
 

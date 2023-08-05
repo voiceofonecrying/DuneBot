@@ -566,7 +566,7 @@ public class RunCommands {
         }
         while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0) game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        ButtonManager.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame);
+        ButtonManager.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("guild-hold");
             ButtonManager.queueGuildTurnOrderButtons(discordGame);

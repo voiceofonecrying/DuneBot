@@ -156,7 +156,7 @@ public class ButtonManager extends ListenerAdapter {
         game.getTurnOrder().addFirst("Guild");
         game.getTurnOrder().remove("guild-hold");
         event.getHook().sendMessage("You will take your turn now.").queue();
-        sendShipmentMessage("Guild", discordGame);
+        sendShipmentMessage("Guild", discordGame, game);
         discordGame.sendMessage("turn-summary", Emojis.GUILD + " will take their turn next.");
         discordGame.pushGame();
     }
@@ -190,7 +190,7 @@ public class ButtonManager extends ListenerAdapter {
         event.getHook().sendMessage("Button pressed.  You will go " + lastFirst + " this turn.").setEphemeral(true).queue();
         discordGame.sendMessage("turn-summary", faction.getEmoji() + " plays Juice of Sapho to ship and move " + lastFirst + " this turn.");
         discordGame.sendMessage(game.getTurnOrder().peekFirst().toLowerCase() + "-chat", "You are now going first.");
-        sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame);
+        sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Guild")) game.getTurnOrder().addFirst("guild-hold");
         discordGame.pushGame();
     }
@@ -205,7 +205,7 @@ public class ButtonManager extends ListenerAdapter {
         discordGame.sendMessage("turn-summary", faction.getEmoji() + " does not move.");
         game.getTurnOrder().pollFirst();
         if (!game.getTurnOrder().isEmpty()){
-            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame);
+            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         } else {
             discordGame.sendMessage("mod-info", "Everyone has taken their turn, please run advance.");
             discordGame.pushGame();
@@ -230,7 +230,7 @@ public class ButtonManager extends ListenerAdapter {
         movement.execute(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
         if (!game.getTurnOrder().isEmpty()) {
-            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame);
+            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         }
         if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild")) {
             game.getTurnOrder().addFirst("guild-hold");
@@ -648,8 +648,8 @@ public class ButtonManager extends ListenerAdapter {
         }
         return list;
     }
-    public static void sendShipmentMessage(String faction, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.prepareMessage(faction.toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn.")
+    public static void sendShipmentMessage(String faction, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        discordGame.prepareMessage(faction.toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(faction).getPlayer())
                 .addActionRow(Button.primary( "shipment", "Begin a ship action"))
                 .addActionRow(Button.danger( "pass-shipment", "Pass shipment")).queue();
     }
