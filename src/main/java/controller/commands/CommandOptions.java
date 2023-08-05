@@ -34,6 +34,7 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
             .setAutoComplete(true);
+    public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
@@ -76,6 +77,7 @@ public class CommandOptions {
             .addChoice("Spice Production", "Spice Production")
             .addChoice("Axlotl Tanks", "Axlotl Tanks");
     public static final OptionData factionLeader = new OptionData(OptionType.STRING, "factionleader", "The leader.", true).setAutoComplete(true);
+    public static final OptionData nonHarkLeader = new OptionData(OptionType.STRING, "returning", "Leader to return.", true).setAutoComplete(true);
     public static final OptionData factionLeaderSkill =
             new OptionData(OptionType.STRING, "factionleaderskill", "Leader Skill available to the faction", true)
                     .setAutoComplete(true);
@@ -159,6 +161,7 @@ public class CommandOptions {
             case "richese-black-market-card" -> choices = richeseBlackMarketCard(game, searchValue);
             case "add-game-option" -> choices = getAddGameOptions(game, searchValue);
             case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
+            case "returning" -> choices = nonHarkLeaders(event, game, searchValue);
         }
 
         return choices;
@@ -237,6 +240,21 @@ public class CommandOptions {
         return faction.getLeaderSkillsHand().stream().map(LeaderSkillCard::name)
                 .filter(leaderSkillCardName -> leaderSkillCardName.matches(searchRegex(searchValue)))
                 .map(leaderSkillCardName -> new Command.Choice(leaderSkillCardName, leaderSkillCardName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> nonHarkLeaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction("Harkonnen");
+        List<String> harkLeaders = new LinkedList<>();
+        harkLeaders.add("Feyd Rautha");
+        harkLeaders.add("Beast Rabban");
+        harkLeaders.add("Piter de Vries");
+        harkLeaders.add("Cpt. Iakin Nefud");
+        harkLeaders.add("Umman Kudu");
+        return faction.getLeaders().stream().map(Leader::name)
+                .filter(leader -> !harkLeaders.contains(leader))
+                .filter(leader -> leader.matches(searchRegex(searchValue)))
+                .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
     }
 

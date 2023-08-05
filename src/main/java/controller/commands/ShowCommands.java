@@ -4,6 +4,7 @@ import constants.Emojis;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
+import model.factions.BGFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.entities.Message;
@@ -396,6 +397,12 @@ public class ShowCommands {
 
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
+        StringBuilder factionSpecificString = new StringBuilder();
+
+        if (faction.getName().equalsIgnoreCase("bg")) {
+            BGFaction bg = (BGFaction) faction;
+            factionSpecificString.append("\n__Prediction:__ " + bg.getPredictionFactionName() + " Turn " + bg.getPredictionRound());
+        }
         StringBuilder traitorString = new StringBuilder();
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
@@ -419,6 +426,7 @@ public class ShowCommands {
                         .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                                 faction.getSpice() +
                                 reservesString +
+                                factionSpecificString +
                                 traitorString);
                 for (Leader leader : faction.getLeaders()) {
                     builder = builder.addFiles(getResourceFile(leader.name()));

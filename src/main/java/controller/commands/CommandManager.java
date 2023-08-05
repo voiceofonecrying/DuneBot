@@ -65,6 +65,7 @@ public class CommandManager extends ListenerAdapter {
                     case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                     case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
                     case "ix" -> IxCommands.runCommand(event, discordGame, game);
+                    case "bg" -> BGCommands.runCommand(event, discordGame, game);
                     case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
@@ -78,7 +79,6 @@ public class CommandManager extends ListenerAdapter {
                     case "killleader" -> killLeader(discordGame, game);
                     case "reviveleader" -> reviveLeader(discordGame, game);
                     case "setstorm" -> setStorm(discordGame, game);
-                    case "bgflip" -> bgFlip(discordGame, game);
                     case "bribe" -> bribe(discordGame, game);
                     case "mute" -> mute(discordGame, game);
                     case "assigntechtoken" -> assignTechToken(discordGame, game);
@@ -122,31 +122,30 @@ public class CommandManager extends ListenerAdapter {
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(CommandOptions.gameName, CommandOptions.gameRole, CommandOptions.modRole));
-        commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(CommandOptions.deck, faction));
-        commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, CommandOptions.card));
-        commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, CommandOptions.card, CommandOptions.recipient));
-        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, CommandOptions.starredAmount, CommandOptions.isShipment, CommandOptions.territory));
-        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, CommandOptions.fromTerritory, CommandOptions.toTerritory, amount, CommandOptions.starredAmount));
-        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, CommandOptions.toTanks, CommandOptions.starred, CommandOptions.fromTerritory));
-        commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, CommandOptions.spent, CommandOptions.paidToFaction));
-        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, CommandOptions.revived, CommandOptions.starred, CommandOptions.paid));
-        commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(CommandOptions.data));
-        commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(CommandOptions.dialOne, CommandOptions.dialTwo));
-        commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, CommandOptions.leader));
-        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, CommandOptions.reviveLeader));
-        commandData.add(Commands.slash("bgflip", "Flip BG forces to advisor or fighter.").addOptions(CommandOptions.bgTerritories));
+        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
+        commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
+        commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
+        commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
+        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
+        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
+        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
+        commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
+        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
+        commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
+        commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
+        commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
+        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
-        commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, CommandOptions.recipient, amount, CommandOptions.reason));
-        commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(CommandOptions.territory));
-        commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, CommandOptions.token));
-        commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(CommandOptions.spiceBlowDeck));
+        commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
+        commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
+        commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
+        commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(spiceBlowDeck));
         commandData.add(Commands.slash("create-alliance", "Create an alliance between two factions")
-                .addOptions(faction, CommandOptions.otherFaction));
+                .addOptions(faction, otherFaction));
         commandData.add(Commands.slash("remove-alliance", "Remove alliance (only on faction of the alliance needs to be selected)")
                 .addOptions(faction));
         commandData.add(Commands.slash("set-spice-in-territory", "Set the spice amount for a territory")
-                .addOptions(CommandOptions.territory, amount));
+                .addOptions(territory, amount));
         commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
         commandData.add(Commands.slash("weather-control-storm", "Override the storm movement").addOptions(sectors));
 
@@ -162,6 +161,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(HarkCommands.getCommands());
         commandData.addAll(ChoamCommands.getCommands());
         commandData.addAll(IxCommands.getCommands());
+        commandData.addAll(BGCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
@@ -221,7 +221,7 @@ public class CommandManager extends ListenerAdapter {
                 )
                 .complete();
 
-        String[] readAndReactChannels  = {"front-of-shield", "turn-summary", "rules"};
+        String[] readAndReactChannels  = {"front-of-shield", "turn-summary"};
 
         for (String channel : readAndReactChannels) {
             category.createTextChannel(channel)
@@ -238,7 +238,7 @@ public class CommandManager extends ListenerAdapter {
                     .complete();
         }
 
-        String[] readWriteChannels = {"game-actions", "bribes", "bidding-phase"};
+        String[] readWriteChannels = {"game-actions", "bribes", "bidding-phase", "rules"};
         for (String channel : readWriteChannels) {
             category.createTextChannel(channel)
                     .addPermissionOverride(
@@ -459,6 +459,7 @@ public class CommandManager extends ListenerAdapter {
         String cardName = discordGame.required(card).getAsString();
 
         game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
+        discordGame.sendMessage("turn-summary", faction.getEmoji() + " discards " + cardName);
         discordGame.pushGame();
     }
 
@@ -605,7 +606,7 @@ public class CommandManager extends ListenerAdapter {
                 spiceMessage(discordGame, revivalCost, "bt", targetFaction.getEmoji() + " revivals", true);
             }
         }
-        
+
         discordGame.sendMessage("turn-summary", targetFaction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(targetFaction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
         discordGame.pushGame();
     }
@@ -739,7 +740,7 @@ public class CommandManager extends ListenerAdapter {
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
 
-    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         Territory from = game.getTerritories().get(discordGame.required(fromTerritory).getAsString());
         Territory to = game.getTerritories().get(discordGame.required(toTerritory).getAsString());
@@ -747,6 +748,7 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
         moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame);
+        ShowCommands.showBoard(discordGame, game);
         discordGame.pushGame();
     }
 
@@ -801,10 +803,11 @@ public class CommandManager extends ListenerAdapter {
         String territoryName = discordGame.required(fromTerritory).getAsString();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
-        boolean isSpecial = discordGame.required(starred).getAsBoolean();
+        int specialAmount = discordGame.required(starredAmount).getAsInt();
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
-        targetFaction.removeForces(territoryName, amountValue, isSpecial, isToTanks);
+        targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
+        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
 
         discordGame.pushGame();
     }
@@ -842,28 +845,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
     }
-
-    public void bgFlip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        Territory territory = game.getTerritories().get(discordGame.required(bgTerritories).getAsString());
-        int strength = 0;
-        String found = "";
-        for (Force force : territory.getForces()) {
-            if (force.getName().equals("BG") || force.getName().equals("Advisor")) {
-               strength = force.getStrength();
-               found = force.getName();
-            }
-        }
-        territory.getForces().removeIf(force -> force.getName().equals("BG") || force.getName().equals("Advisor"));
-        if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
-        else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
-        else {
-            discordGame.sendMessage("mod-info","No Bene Gesserit were found in that territory.");
-            return;
-        }
-        discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
-    }
-
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         for (Faction faction : game.getFactions()) {
             faction.getTechTokens().removeIf(

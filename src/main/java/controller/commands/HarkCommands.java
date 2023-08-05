@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
@@ -7,14 +8,20 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
-import static controller.commands.CommandOptions.faction;
-import static controller.commands.CommandOptions.factionLeader;
+import static controller.commands.CommandOptions.*;
 
 public class HarkCommands {
     public static List<CommandData> getCommands() {
@@ -28,7 +35,10 @@ public class HarkCommands {
                         new SubcommandData(
                                 "kill-leader",
                                 "Kill a faction's leader after winning a battle."
-                        ).addOptions(faction, factionLeader)
+                        ).addOptions(faction, factionLeader),
+                        new SubcommandData(
+                                "return-leader",
+                                "Return a captured leader to their faction.").addOptions(nonHarkLeader)
                 )
         );
 
@@ -44,7 +54,33 @@ public class HarkCommands {
         switch (name) {
             case "capture-leader" -> captureLeader(discordGame, game);
             case "kill-leader" -> killLeader(discordGame, game);
+            case "return-leader" -> returnLeader(discordGame, game);
         }
+    }
+
+    private static void returnLeader(DiscordGame discordGame, Game game) throws IOException, ChannelNotFoundException {
+        String returningLeader = discordGame.required(nonHarkLeader).getAsString();
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
+        ));
+
+        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
+
+        for (CSVRecord csvRecord : csvParser) {
+            if (csvRecord.get(1).equals(returningLeader)) {
+                Faction faction = game.getFaction(csvRecord.get(0));
+                faction.addLeader(game.getFaction("Harkonnen").getLeader(returningLeader).orElseThrow());
+                break;
+            }
+        }
+        game.getFaction("Harkonnen").getLeaders().removeIf(l -> l.name().equals(returningLeader));
+
+        discordGame.sendMessage("turn-summary", returningLeader + " has returned to their original owner.");
+        
+        discordGame.pushGame();
+
+
     }
 
     public static void captureLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -108,6 +144,8 @@ public class HarkCommands {
         Leader killedLeader = new Leader(leader.name(), leader.value(), null, true);
 
         game.getLeaderTanks().add(killedLeader);
+
+        discordGame.sendMessage(factionName.toLowerCase() + "-chat", killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
 
         CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
 
