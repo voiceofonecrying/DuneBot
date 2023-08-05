@@ -47,7 +47,9 @@ public class SetupCommands {
                         new SubcommandData("advance", "Advance the setup of the game."),
                         new SubcommandData("leader-skill", "Add leader skill to faction")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
-                        new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand")
+                        new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand"),
+                        new SubcommandData("bg-prediction", "Set BG prediction")
+                                .addOptions(faction, turn)
                 )
         );
 
@@ -68,7 +70,15 @@ public class SetupCommands {
             case "advance" -> advance(event, discordGame, game);
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
+            case "bg-prediction" -> setPrediction(discordGame, game);
         }
+    }
+
+    private static void setPrediction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        BGFaction bg = (BGFaction) game.getFaction("BG");
+        bg.setPredictionRound(discordGame.required(turn).getAsInt());
+        bg.setPredictionFactionName(discordGame.required(faction).getAsString());
+        discordGame.pushGame();
     }
 
     public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {

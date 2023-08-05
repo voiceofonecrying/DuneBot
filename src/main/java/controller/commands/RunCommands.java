@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -370,9 +369,7 @@ public class RunCommands {
 
     public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null && !bidding.getMarket().isEmpty()) {
-            throw new InvalidGameStateException("There are more cards to be auctioned.");
-        } else if (bidding.isRicheseCacheCardOutstanding()) {
+        if (bidding.isRicheseCacheCardOutstanding()) {
             throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
 // Uncomment after all games have started a new card. Breaks games that have a market card already up for bid.
 //        } else if (!bidding.isCardFromMarket()) {
@@ -548,6 +545,7 @@ public class RunCommands {
                 if (!faction.getName().equals("BT")) nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
+                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " Would you like to purchase additional revivals?");
             }
         }
         if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
