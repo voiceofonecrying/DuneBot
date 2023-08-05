@@ -29,13 +29,17 @@ public class Shipment {
             discordGame.sendMessage("turn-summary", Emojis.RICHESE + " ship a no-field to " + territoryName);
         }
         else CommandManager.placeForces(territory, faction, this.force, this.specialForce, true, discordGame, game);
+        ShowCommands.showBoard(discordGame, game);
+        clear();
+        discordGame.pushGame(game);
+    }
+
+    public void clear() {
         this.territoryName = "";
         this.force = 0;
         this.specialForce = 0;
         this.hasShipped = true;
         this.isNoField = false;
-        discordGame.pushGame(game);
-        ShowCommands.showBoard(discordGame, game);
     }
 
     public int getForce() {
