@@ -65,7 +65,7 @@ public class Faction {
         this.leaderSkillsHand = new LinkedList<>();
         this.strongholdCards = new LinkedList<>();
         this.spice = 0;
-        this.bid = "0";
+        this.bid = "";
         this.autoBid = false;
         this.useExact = true;
         this.outbidAlly = false;

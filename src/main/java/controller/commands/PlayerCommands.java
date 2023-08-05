@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -130,19 +131,43 @@ public class PlayerCommands {
 
     private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
+        List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
+        if (eligibleBidOrder.size() == 0) {
+            throw new InvalidGameStateException("All hands are full.");
+        }
         if (!bidding.getCurrentBidder().equals(faction.getName())) return;
+        boolean r;
+        do {
+            if (faction.getMaxBid() == -1) {
+                faction.setBid("pass");
+                faction.setMaxBid(0);
+            } else if (faction.getMaxBid() <= bidding.getCurrentBid()) {
+                if (!faction.isAutoBid()) return;
+                faction.setBid("pass");
+            } else if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidding.getBidLeader())) faction.setBid("pass");
+            else {
+                if (faction.isUseExactBid()) faction.setBid(String.valueOf(faction.getMaxBid()));
+                else faction.setBid(String.valueOf(bidding.getCurrentBid() + 1));
+                bidding.setCurrentBid(Integer.parseInt(faction.getBid()));
+                bidding.setBidLeader(faction.getName());
+            }
 
-        if (faction.getMaxBid() == -1) {
-            faction.setBid("pass");
-            faction.setMaxBid(0);
-        } else if (faction.getMaxBid() <= bidding.getCurrentBid()) {
-            if (!faction.isAutoBid()) return;
-            faction.setBid("pass");
-        } else if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidding.getBidLeader())) faction.setBid("pass");
-        else if (faction.isUseExactBid()) faction.setBid(String.valueOf(faction.getMaxBid()));
-        else faction.setBid(String.valueOf(bidding.getCurrentBid() + 1));
-        boolean r = RunCommands.createBidMessage(discordGame, game, discordGame.getGame().getEligibleBidOrder(), faction);
-        if (r) return;
-        tryBid(discordGame, game, game.getFaction(bidding.getCurrentBidder()));
+            boolean tag = true;
+            if (bidding.isRicheseBidding() && bidding.getCurrentBidder().equals(eligibleBidOrder.get(eligibleBidOrder.size() - 1))) tag = false;
+            r = RunCommands.createBidMessage(discordGame, game, tag);
+            faction = game.getFaction(bidding.advanceBidder(game));
+            if (r) break;
+            if (bidding.isRicheseBidding() && bidding.getCurrentBidder().equals(bidding.getEligibleBidOrder(game).get(0))) {
+                String bidLeader = bidding.getBidLeader();
+                if (bidLeader.equals(""))
+                    discordGame.sendMessage("bidding-phase", "All players passed.\n" +
+                            (bidding.isRicheseCacheCard()
+                                    ? (Emojis.RICHESE + " may take cache card for free or remove it from the game.")
+                                    : (Emojis.RICHESE + " must take black market card back.")));
+                else
+                    discordGame.sendMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
+                break;
+            }
+        } while (!r);
     }
 }

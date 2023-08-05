@@ -3,6 +3,7 @@ package model;
 import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Bidding {
     private int bidCardNumber;
@@ -10,6 +11,7 @@ public class Bidding {
 
     private List<String> bidOrder;
     private TreacheryCard bidCard;
+    private List<String> richeseBidOrder;
     private boolean richeseCacheCard;
     private boolean richeseCacheCardOutstanding;
     private boolean ixTechnologyUsed;
@@ -21,6 +23,7 @@ public class Bidding {
     private boolean treacheryDeckReshuffled;
     private boolean cardFromMarket;
 
+    private String nextBidder;
     private String currentBidder;
     private int currentBid;
     private String bidLeader;
@@ -35,6 +38,7 @@ public class Bidding {
         this.numCardsForBid = 0;
         this.bidOrder = new ArrayList<>();
         this.bidCard = null;
+        this.richeseBidOrder = null;
         this.richeseCacheCard = false;
         this.richeseCacheCardOutstanding = false;
         this.ixTechnologyUsed = false;
@@ -44,6 +48,7 @@ public class Bidding {
         this.ixRejectOutstanding = false;
         this.treacheryDeckReshuffled = false;
         this.cardFromMarket = false;
+        this.nextBidder = null;
         this.currentBidder = "";
         this.currentBid = 0;
         this.bidLeader = "";
@@ -191,6 +196,10 @@ public class Bidding {
         this.richeseCacheCardOutstanding = richeseCacheCardOutstanding;
     }
 
+    public boolean isRicheseBidding() {
+        return richeseBidOrder != null;
+    }
+
     public int getBidCardNumber() {
         return bidCardNumber;
     }
@@ -212,15 +221,30 @@ public class Bidding {
     }
 
     public List<String> getBidOrder() {
-        return bidOrder;
+        if (richeseBidOrder == null) return bidOrder;
+        return richeseBidOrder;
     }
 
-    public void setBidOrder(List<String> bidOrder) {
+    public void setBidOrder(Game game, List<String> bidOrder) {
         this.bidOrder = bidOrder;
+        nextBidder = getEligibleBidOrder(game).get(0);
+    }
+
+    public void setRicheseBidOrder(Game game, List<String> bidOrder) {
+        this.richeseBidOrder = bidOrder;
+        nextBidder = getEligibleBidOrder(game).get(0);
+    }
+
+    public List<String> getEligibleBidOrder(Game game) {
+        return getBidOrder()
+                .stream()
+                .filter(f -> game.getFaction(f).getHandLimit() > game.getFaction(f).getTreacheryHand().size())
+                .collect(Collectors.toList());
     }
 
     public void clearBidCardInfo(String winner) {
         bidCard = null;
+        richeseBidOrder = null;
         if (richeseCacheCard) {
             richeseCacheCardOutstanding = false;
         }
@@ -260,6 +284,32 @@ public class Bidding {
 
     public void setCurrentBidder(String currentBidder) {
         this.currentBidder = currentBidder;
+    }
+
+    public String getNextBidder(Game game) {
+        Faction currentFaction = game.getFaction(currentBidder);
+        int currentIndex = getEligibleBidOrder(game).indexOf(currentFaction.getName());
+        int nextIndex = 0;
+        if (currentIndex != getEligibleBidOrder(game).size() - 1) nextIndex = currentIndex + 1;
+        nextBidder = getEligibleBidOrder(game).get(nextIndex);
+        return nextBidder;
+    }
+
+    // Replace the function above after all games have nextBidder assigned by setBidOrder or getNextBidder
+    // public String getNextBidder(Game game) {
+    //     return nextBidder;
+    // }
+
+    public String advanceBidder(Game game) {
+        currentBidder = (nextBidder != null ? nextBidder : getNextBidder(game));
+        // Replace the line above after all games have nextBidder assigned by setBidOrder or getNextBidder
+        // currentBidder = nextBidder;
+        Faction currentFaction = game.getFaction(currentBidder);
+        int currentIndex = getEligibleBidOrder(game).indexOf(currentFaction.getName());
+        int nextIndex = 0;
+        if (currentIndex != getEligibleBidOrder(game).size() - 1) nextIndex = currentIndex + 1;
+        nextBidder = getEligibleBidOrder(game).get(nextIndex);
+        return currentBidder;
     }
 
     public int getCurrentBid() {

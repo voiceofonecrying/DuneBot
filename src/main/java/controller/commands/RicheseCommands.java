@@ -145,10 +145,16 @@ public class RicheseCommands {
 
         if (bidType.equalsIgnoreCase("Normal")) {
             RunCommands.updateBidOrder(game);
-            List<String> bidOrder = game.getEligibleBidOrder();
+            List<String> bidOrder = bidding.getEligibleBidOrder(game);
+            for (Faction f : game.getFactions()) {
+                f.setMaxBid(0);
+                f.setAutoBid(false);
+                f.setBid("");
+            }
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-            RunCommands.createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
+            RunCommands.createBidMessage(discordGame, game);
+            bidding.advanceBidder(game);
         } else {
             runRicheseBid(discordGame, game, bidType, true);
         }
@@ -242,7 +248,7 @@ public class RicheseCommands {
 
             List<Faction> factions = game.getFactions();
 
-            List<Faction> bidOrder = new ArrayList<>();
+            List<Faction> bidOrderFactions = new ArrayList<>();
 
             List<Faction> factionsInBidDirection;
 
@@ -254,28 +260,24 @@ public class RicheseCommands {
             }
 
             int richeseIndex = factionsInBidDirection.indexOf(game.getFaction("Richese"));
-            bidOrder.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
-            bidOrder.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
+            bidOrderFactions.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
+            bidOrderFactions.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
+            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
+            bidding.setRicheseBidOrder(game, bidOrder);
+            List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
+            for (Faction faction : game.getFactions()) {
+                faction.setMaxBid(0);
+                faction.setAutoBid(false);
+                faction.setBid("");
+            }
 
-            List<Faction> filteredBidOrder = bidOrder.stream()
-                    .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
-                    .toList();
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1 ));
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
 
-            message.append(
-                    MessageFormat.format(
-                            "R{0}:C{1} (Once Around)\n{2} - {3}\n",
-                            game.getTurn(), bidding.getBidCardNumber(),
-                            filteredBidOrder.get(0).getEmoji(), filteredBidOrder.get(0).getPlayer()
-                    )
-            );
-
-            message.append(
-                    filteredBidOrder.subList(1, filteredBidOrder.size()).stream()
-                            .map(f -> f.getEmoji() + " - \n")
-                            .collect(Collectors.joining())
-            );
-
+            Faction faction = game.getFaction(filteredBidOrder.get(0));
             discordGame.sendMessage("bidding-phase", message.toString());
+            RunCommands.createBidMessage(discordGame, game);
+            bidding.advanceBidder(game);
         }
     }
 }

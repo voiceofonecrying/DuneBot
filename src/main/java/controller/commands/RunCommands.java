@@ -420,7 +420,7 @@ public class RunCommands {
             discordGame.pushGame();
         } else  {
             updateBidOrder(game);
-            List<String> bidOrder = game.getEligibleBidOrder();
+            List<String> bidOrder = bidding.getEligibleBidOrder(game);
 
             if (bidOrder.size() == 0) {
                 discordGame.sendMessage("bidding-phase", "All hands are full.");
@@ -437,45 +437,47 @@ public class RunCommands {
 
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
 
-                createBidMessage(discordGame, game, bidOrder, factionBeforeFirstToBid);
+                createBidMessage(discordGame, game);
+                bidding.advanceBidder(game);
 
                 discordGame.pushGame();
             }
         }
     }
 
-    public static boolean createBidMessage(DiscordGame discordGame, Game game, List<String> bidOrder, Faction currentBidder) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        StringBuilder message = new StringBuilder();
+    public static boolean createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        return createBidMessage(discordGame, game, true);
+    }
 
-        if (!currentBidder.getBid().equals("pass") && !currentBidder.getBid().equals("")) {
-            bidding.setCurrentBid(Integer.parseInt(currentBidder.getBid()));
-            bidding.setBidLeader(currentBidder.getName());
-        }
+    public static boolean createBidMessage(DiscordGame discordGame, Game game, boolean tag) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        String nextBidderName = bidding.getNextBidder(game);
+        List<String> bidOrder = bidding.getEligibleBidOrder(game);
+        StringBuilder message = new StringBuilder();
 
         message.append(
                 MessageFormat.format(
-                        "R{0}:C{1}\n",
+                        "R{0}:C{1}",
                         game.getTurn(), bidding.getBidCardNumber()
                 )
         );
+        if (bidding.isRicheseBidding()) {
+            message.append(" (Once Around)");
+        }
+        message.append("\n");
 
-        boolean tag = bidOrder.get(bidOrder.size() - 1).equals(currentBidder.getName());
         for (String factionName : bidOrder) {
             Faction f = game.getFaction(factionName);
-            if (tag) {
+            if (factionName.equals(nextBidderName) && tag) {
                 if (f.getName().equals(bidding.getBidLeader())) {
                     discordGame.sendMessage("bidding-phase", message.toString());
                     discordGame.sendMessage("bidding-phase", f.getEmoji() + " has the top bid.");
                     return true;
                 }
-                bidding.setCurrentBidder(f.getName());
                 message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
-                tag = false;
             } else {
                 message.append(f.getEmoji()).append(" - ").append(f.getBid()).append("\n");
             }
-            if (currentBidder.getName().equals(f.getName())) tag = true;
         }
 
         discordGame.sendMessage("bidding-phase", message.toString());
@@ -498,7 +500,7 @@ public class RunCommands {
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
         } else {
             bidOrder = bidding.getBidOrder();
-            List<String> eligibleBidOrder = game.getEligibleBidOrder();
+            List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
             while (!bidOrder.get(0).equalsIgnoreCase(eligibleBidOrder.get(0))) {
                 bidOrder.add(bidOrder.remove(0));
             }
@@ -515,7 +517,7 @@ public class RunCommands {
             }
 
         }
-        bidding.setBidOrder(bidOrder);
+        bidding.setBidOrder(game, bidOrder);
     }
 
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

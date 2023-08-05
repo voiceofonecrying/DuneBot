@@ -13,7 +13,6 @@ import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
 import static controller.Initializers.getJSONString;
@@ -171,13 +170,6 @@ public class Game {
     public Bidding getBidding() throws InvalidGameStateException {
         if (bidding == null) throw new InvalidGameStateException("Game is not in bidding phase.");
         return bidding;
-    }
-
-    public List<String> getEligibleBidOrder() {
-        return bidding.getBidOrder()
-                .stream()
-                .filter(f -> getFaction(f).getHandLimit() > getFaction(f).getTreacheryHand().size())
-                .collect(Collectors.toList());
     }
 
     public List<Faction> getFactions() {
