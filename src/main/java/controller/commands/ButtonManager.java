@@ -594,6 +594,8 @@ public class ButtonManager extends ListenerAdapter {
             return;
         }
         discordGame.sendMessage("turn-summary", faction.getEmoji() + " does not ship.");
+        faction.getShipment().clear();
+        discordGame.pushGame();
         queueMovementButtons(game, faction, event, discordGame);
     }
 
