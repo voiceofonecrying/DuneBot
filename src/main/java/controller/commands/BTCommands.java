@@ -51,11 +51,11 @@ public class BTCommands {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
 
-            btFaceDancerHand.remove(traitorCard);
+            faction.removeTraitorCard(traitorCard);
 
             traitorDeck.add(traitorCard);
             Collections.shuffle(traitorDeck);
-            btFaceDancerHand.add(traitorDeck.pollLast());
+            faction.addTraitorCard(traitorDeck.pollLast());
 
             discordGame.pushGame();
             discordGame.sendMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
