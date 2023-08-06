@@ -1,0 +1,15 @@
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  message:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Webhook Action
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          content: "Pull request merged: ${{ github.event.pull_request.title }}"
