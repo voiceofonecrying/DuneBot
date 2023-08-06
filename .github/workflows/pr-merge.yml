@@ -8,8 +8,10 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      - uses: kceb/pull-request-url-action@v1
+        id: pr-url
       - name: Discord Webhook Action
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          content: "Pull request merged: ${{ github.event.pull_request.title }}"
+          content: "Pull request merged: ${{ github.event.pull_request.title }}\nSee ${{ steps.pr-url.outputs.url }} for details."
