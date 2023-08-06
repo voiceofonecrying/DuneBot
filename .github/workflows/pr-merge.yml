@@ -14,4 +14,4 @@ jobs:
         uses: tsickert/discord-webhook@v5.3.0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          content: "Pull request merged: ${{ github.event.pull_request.title }}\nSee ${{ steps.pr-url.outputs.url }} for details."
+          content: "Pull request merged: ${{ github.event.pull_request.title }}\nBy ${{ github.event.pull_request.user.login }}\nSee ${{ steps.pr-url.outputs.url }} for details."
