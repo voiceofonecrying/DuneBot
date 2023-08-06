@@ -522,11 +522,14 @@ public class RunCommands {
         List<Faction> factions = game.getFactions();
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
+        int factionsWithRevivals = 0;
 
         for (Faction faction : factions) {
             int revived = 0;
             boolean revivedStar = false;
-            for (int i = faction.getFreeRevival(); i > 0; i--) {
+            int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
+
+            for (int i = freeRevivals; i > 0; i--) {
                 if (game.getForceFromTanks(faction.getName()).getStrength() == 0
                         && game.getForceFromTanks(faction.getName() + "*").getStrength() == 0) continue;
                 revived++;
@@ -542,12 +545,25 @@ public class RunCommands {
                 }
             }
             if (revived > 0) {
+                factionsWithRevivals++;
                 if (!faction.getName().equals("BT")) nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " Would you like to purchase additional revivals?");
             }
         }
+
+        if (factionsWithRevivals > 0 && game.hasFaction("BT")) {
+            Faction btFaction = game.getFaction("BT");
+            btFaction.addSpice(factionsWithRevivals);
+            message.append(btFaction.getEmoji())
+                    .append(" receives ")
+                    .append(factionsWithRevivals)
+                    .append(Emojis.SPICE)
+                    .append(" from free revivals\n");
+            CommandManager.spiceMessage(discordGame, factionsWithRevivals, "BT", "for free revivals", true);
+        }
+
         if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
         if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(game, discordGame, "Axlotl Tanks");
 
