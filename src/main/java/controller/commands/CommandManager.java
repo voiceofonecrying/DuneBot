@@ -755,6 +755,7 @@ public class CommandManager extends ListenerAdapter {
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
 
         int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
+        if (targetFaction.getName().equals("BG") && from.getForce("Advisor").getStrength() > 0) fromForceStrength = from.getForce("Advisor").getStrength();
         int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
 
         if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
@@ -767,12 +768,18 @@ public class CommandManager extends ListenerAdapter {
                 .append(": ");
 
         if (amountValue > 0) {
-            from.setForceStrength(targetFaction.getName(), fromForceStrength - amountValue);
-            to.setForceStrength(targetFaction.getName(), to.getForce(targetFaction.getName()).getStrength() + amountValue);
+            String forceName = targetFaction.getName();
+            String targetForceName = targetFaction.getName();
+            if (targetFaction.getName().equals("BG") && from.hasForce("Advisor")) {
+                forceName = "Advisor";
+                if (to.hasForce("Advisor")) targetForceName = "Advisor";
+            }
+            from.setForceStrength(forceName, fromForceStrength - amountValue);
+            to.setForceStrength(targetForceName, to.getForce(targetForceName).getStrength() + amountValue);
 
             message.append(
                     MessageFormat.format("{0} {1} ",
-                            amountValue, Emojis.getForceEmoji(from.getForce(targetFaction.getName()).getName())
+                            amountValue, Emojis.getForceEmoji(from.getForce(forceName).getName())
                     )
             );
         }

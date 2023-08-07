@@ -68,7 +68,7 @@ public class BGCommands {
         String found = "";
         for (Force force : territory.getForces()) {
             if (force.getName().equals("BG") || force.getName().equals("Advisor")) {
-                strength = force.getStrength();
+                strength += force.getStrength();
                 found = force.getName();
             }
         }

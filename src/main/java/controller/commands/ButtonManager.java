@@ -626,7 +626,9 @@ public class ButtonManager extends ListenerAdapter {
          TreeSet<Button> movingFromButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
         for (Territory territory : game.getTerritories().values()){
-            if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName())) || (faction.getName().equals("Richese") && territory.hasRicheseNoField())) movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
+            if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))
+                    || (faction.getName().equals("Richese") && territory.hasRicheseNoField())
+                    || (faction.getName().equals("BG") && territory.hasForce("Advisor"))) movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
 
         arrangeButtonsInActionRow(message, movingFromButtons, discordGame, event);
