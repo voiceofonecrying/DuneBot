@@ -404,6 +404,7 @@ public class ButtonManager extends ListenerAdapter {
         String shipOrMove = isShipment ? "shipment" : "movement";
         int buttonLimitForces = isShipment ? faction.getReserves().getStrength() - faction.getShipment().getForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName()).getStrength() - faction.getMovement().getForce();
+        if (faction.getName().equals("BG") && game.getTerritory(faction.getMovement().getMovingFrom()).hasForce("Advisor")) buttonLimitForces = game.getTerritory(faction.getMovement().getMovingFrom()).getForce("Advisor").getStrength();
         int buttonLimitSpecialForces = isShipment ? faction.getSpecialReserves().getStrength() - faction.getShipment().getSpecialForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName() + "*").getStrength() - faction.getMovement().getSpecialForce();
 
