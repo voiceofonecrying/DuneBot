@@ -9,7 +9,6 @@ import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -100,211 +99,207 @@ public class ShowCommands {
             leaderToFaction.put(csvRecord.get(1), csvRecord.get(0));
         }
 
-        try {
-            BufferedImage board = getResourceImage("Board");
+        BufferedImage board = getResourceImage("Board");
 
-            //Place destroyed Shield Wall
-            if (game.isShieldWallDestroyed()) {
-                BufferedImage brokenShieldWallImage = getResourceImage("Shield Wall Destroyed");
-                brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
-                Point coordinates = Initializers.getDrawCoordinates("shield wall");
-                board = overlay(board, brokenShieldWallImage, coordinates, 1);
-            }
-
-            //Place turn, phase, and storm markers
-            BufferedImage turnMarker = getResourceImage("Turn Marker");
-            turnMarker = resize(turnMarker, 55, 55);
-            int turn = game.getTurn() == 0 ? 1 : game.getTurn();
-            float angle = (turn * 36) + 74f;
-            turnMarker = rotateImageByDegrees(turnMarker, angle);
-            Point coordinates = Initializers.getDrawCoordinates("turn " + game.getTurn());
-            board = overlay(board, turnMarker, coordinates, 1);
-            BufferedImage phaseMarker = getResourceImage("Phase Marker");
-            phaseMarker = resize(phaseMarker, 50, 50);
-            coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhase()));
-            board = overlay(board, phaseMarker, coordinates, 1);
-            BufferedImage stormMarker = getResourceImage("storm");
-            stormMarker = resize(stormMarker, 172, 96);
-            stormMarker = rotateImageByDegrees(stormMarker, -(game.getStorm() * 20));
-            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + game.getStorm()), 1);
-
-            //Place Tech Tokens
-            for (int i = 0; i < game.getFactions().size(); i++) {
-                Faction faction = game.getFactions().get(i);
-                if (faction.getTechTokens().isEmpty()) continue;
-                int offset = 0;
-                for (TechToken token : faction.getTechTokens()) {
-                    BufferedImage tokenImage = getResourceImage(token.getName());
-                    tokenImage = resize(tokenImage, 50, 50);
-                    coordinates = Initializers.getDrawCoordinates("tech token " + i);
-                    Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
-                    board = overlay(board, tokenImage, coordinatesOffset, 1);
-                    offset += 50;
-                }
-            }
-
-            //Place sigils
-            for (int i = 1; i <= game.getFactions().size(); i++) {
-                Faction faction = game.getFactions().get(i - 1);
-                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
-                coordinates = Initializers.getDrawCoordinates("sigil " + i);
-                sigil = resize(sigil, 50, 50);
-                board = overlay(board, sigil, coordinates, 1);
-
-                // Check for alliances
-                if (faction.hasAlly()) {
-                    BufferedImage allySigil =
-                            getResourceImage(faction.getAlly() + " Sigil");
-                    coordinates = Initializers.getDrawCoordinates("ally " + i);
-                    allySigil = resize(allySigil, 40, 40);
-                    board = overlay(board, allySigil, coordinates, 1);
-                }
-            }
-
-
-            //Place forces
-            for (Territory territory : game.getTerritories().values()) {
-                if (territory.getForces().size() == 0 && territory.getSpice() == 0 && !territory.hasRicheseNoField()) continue;
-                if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
-                int offset = 0;
-                int i = 0;
-
-                if (territory.getSpice() != 0) {
-                    i = 1;
-                    int spice = territory.getSpice();
-                    while (spice != 0) {
-                        if (spice >= 10) {
-                            BufferedImage spiceImage = getResourceImage("10 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 10;
-                        } else if (spice >= 8) {
-                            BufferedImage spiceImage = getResourceImage("8 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 8;
-                        } else if (spice >= 6) {
-                            BufferedImage spiceImage = getResourceImage("6 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 6;
-                        } else if (spice == 5) {
-                            BufferedImage spiceImage = getResourceImage("5 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 5;
-                        } else if (spice >= 2) {
-                            BufferedImage spiceImage = getResourceImage("2 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 2;
-                        } else {
-                            BufferedImage spiceImage = getResourceImage("1 Spice");
-                            spiceImage = resize(spiceImage, 25,25);
-                            Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
-                            Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
-                            board = overlay(board, spiceImage, spicePlacementOffset, 1);
-                            spice -= 1;
-                        }
-                        offset += 15;
-                    }
-                }
-                offset = 0;
-                for (Force force : territory.getForces()) {
-                    if (force.getName().equals("Hidden Mobile Stronghold")) {
-                        BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
-                        hms = resize(hms, 150,100);
-                        List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
-                        int forceOffset = 0;
-                        for (Force f : hmsForces) {
-                            BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
-                            hms = overlay(hms, forceImage, new Point(40,20 + forceOffset), 1);
-                            forceOffset += 30;
-                        }
-                        Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
-                        Point forcePlacementOffset = new Point(forcePlacement.x - 55, forcePlacement.y + offset + 5);
-                        board = overlay(board, hms, forcePlacementOffset, 1);
-                        continue;
-                    }
-                    BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
-                    Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
-                    Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
-                    board = overlay(board, forceImage, forcePlacementOffset, 1);
-                    i++;
-                    if (i == Initializers.getPoints(territory.getTerritoryName()).size()) {
-                        offset += 20;
-                        i = 0;
-                    }
-                }
-
-                if (game.hasFaction("Richese") && territory.hasRicheseNoField()) {
-                    BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
-                    Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
-                            .get(i);
-                    board = overlay(board, noFieldImage, noFieldPlacement, 1);
-                }
-            }
-
-            //Place tanks forces
-            int i = 0;
-            int offset = 0;
-            for (Force force : game.getTanks()) {
-                if (force.getStrength() == 0) continue;
-                BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
-
-                Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
-                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
-
-                board = overlay(board, forceImage, tanksOffset, 1);
-                i++;
-                if (i > 1) {
-                    offset += 30;
-                    i = 0;
-                }
-            }
-
-            //Place tanks leaders
-            i = 0;
-            offset = 0;
-            for (Leader leader : game.getLeaderTanks()) {
-                BufferedImage leaderImage;
-                if (leader.faceDown()) {
-                    leaderImage = getResourceImage(leaderToFaction.get(leader.name()) + " Sigil");
-                } else {
-                    leaderImage = getResourceImage(leader.name());
-                }
-                leaderImage = resize(leaderImage, 70,70);
-                Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
-                Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
-                board = overlay(board, leaderImage, tanksOffset, 1);
-                i++;
-                if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
-                    offset += 70;
-                    i = 0;
-                }
-            }
-
-            ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(board, "png", boardOutputStream);
-
-            FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
-            discordGame.getTextChannel("turn-summary")
-                    .sendFiles(boardFileUpload)
-                    .queue();
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        //Place destroyed Shield Wall
+        if (game.isShieldWallDestroyed()) {
+            BufferedImage brokenShieldWallImage = getResourceImage("Shield Wall Destroyed");
+            brokenShieldWallImage = resize(brokenShieldWallImage, 256, 231);
+            Point coordinates = Initializers.getDrawCoordinates("shield wall");
+            board = overlay(board, brokenShieldWallImage, coordinates, 1);
         }
+
+        //Place turn, phase, and storm markers
+        BufferedImage turnMarker = getResourceImage("Turn Marker");
+        turnMarker = resize(turnMarker, 55, 55);
+        int turn = game.getTurn() == 0 ? 1 : game.getTurn();
+        float angle = (turn * 36) + 74f;
+        turnMarker = rotateImageByDegrees(turnMarker, angle);
+        Point coordinates = Initializers.getDrawCoordinates("turn " + game.getTurn());
+        board = overlay(board, turnMarker, coordinates, 1);
+        BufferedImage phaseMarker = getResourceImage("Phase Marker");
+        phaseMarker = resize(phaseMarker, 50, 50);
+        coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhase()));
+        board = overlay(board, phaseMarker, coordinates, 1);
+        BufferedImage stormMarker = getResourceImage("storm");
+        stormMarker = resize(stormMarker, 172, 96);
+        stormMarker = rotateImageByDegrees(stormMarker, -(game.getStorm() * 20));
+        board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + game.getStorm()), 1);
+
+        //Place Tech Tokens
+        for (int i = 0; i < game.getFactions().size(); i++) {
+            Faction faction = game.getFactions().get(i);
+            if (faction.getTechTokens().isEmpty()) continue;
+            int offset = 0;
+            for (TechToken token : faction.getTechTokens()) {
+                BufferedImage tokenImage = getResourceImage(token.getName());
+                tokenImage = resize(tokenImage, 50, 50);
+                coordinates = Initializers.getDrawCoordinates("tech token " + i);
+                Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
+                board = overlay(board, tokenImage, coordinatesOffset, 1);
+                offset += 50;
+            }
+        }
+
+        //Place sigils
+        for (int i = 1; i <= game.getFactions().size(); i++) {
+            Faction faction = game.getFactions().get(i - 1);
+            BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
+            coordinates = Initializers.getDrawCoordinates("sigil " + i);
+            sigil = resize(sigil, 50, 50);
+            board = overlay(board, sigil, coordinates, 1);
+
+            // Check for alliances
+            if (faction.hasAlly()) {
+                BufferedImage allySigil =
+                        getResourceImage(faction.getAlly() + " Sigil");
+                coordinates = Initializers.getDrawCoordinates("ally " + i);
+                allySigil = resize(allySigil, 40, 40);
+                board = overlay(board, allySigil, coordinates, 1);
+            }
+        }
+
+
+        //Place forces
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.getForces().isEmpty() && territory.getSpice() == 0 && !territory.hasRicheseNoField()) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            int offset = 0;
+            int i = 0;
+
+            if (territory.getSpice() != 0) {
+                i = 1;
+                int spice = territory.getSpice();
+                while (spice != 0) {
+                    if (spice >= 10) {
+                        BufferedImage spiceImage = getResourceImage("10 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 10;
+                    } else if (spice >= 8) {
+                        BufferedImage spiceImage = getResourceImage("8 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 8;
+                    } else if (spice >= 6) {
+                        BufferedImage spiceImage = getResourceImage("6 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 6;
+                    } else if (spice == 5) {
+                        BufferedImage spiceImage = getResourceImage("5 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 5;
+                    } else if (spice >= 2) {
+                        BufferedImage spiceImage = getResourceImage("2 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 2;
+                    } else {
+                        BufferedImage spiceImage = getResourceImage("1 Spice");
+                        spiceImage = resize(spiceImage, 25,25);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
+                        board = overlay(board, spiceImage, spicePlacementOffset, 1);
+                        spice -= 1;
+                    }
+                    offset += 15;
+                }
+            }
+            offset = 0;
+            for (Force force : territory.getForces()) {
+                if (force.getName().equals("Hidden Mobile Stronghold")) {
+                    BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
+                    hms = resize(hms, 150,100);
+                    List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
+                    int forceOffset = 0;
+                    for (Force f : hmsForces) {
+                        BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
+                        hms = overlay(hms, forceImage, new Point(40,20 + forceOffset), 1);
+                        forceOffset += 30;
+                    }
+                    Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
+                    Point forcePlacementOffset = new Point(forcePlacement.x - 55, forcePlacement.y + offset + 5);
+                    board = overlay(board, hms, forcePlacementOffset, 1);
+                    continue;
+                }
+                BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
+                Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                board = overlay(board, forceImage, forcePlacementOffset, 1);
+                i++;
+                if (i == Initializers.getPoints(territory.getTerritoryName()).size()) {
+                    offset += 20;
+                    i = 0;
+                }
+            }
+
+            if (game.hasFaction("Richese") && territory.hasRicheseNoField()) {
+                BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
+                Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
+                        .get(i);
+                board = overlay(board, noFieldImage, noFieldPlacement, 1);
+            }
+        }
+
+        //Place tanks forces
+        int i = 0;
+        int offset = 0;
+        for (Force force : game.getTanks()) {
+            if (force.getStrength() == 0) continue;
+            BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+
+            Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
+            Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+
+            board = overlay(board, forceImage, tanksOffset, 1);
+            i++;
+            if (i > 1) {
+                offset += 30;
+                i = 0;
+            }
+        }
+
+        //Place tanks leaders
+        i = 0;
+        offset = 0;
+        for (Leader leader : game.getLeaderTanks()) {
+            BufferedImage leaderImage;
+            if (leader.faceDown()) {
+                leaderImage = getResourceImage(leaderToFaction.get(leader.name()) + " Sigil");
+            } else {
+                leaderImage = getResourceImage(leader.name());
+            }
+            leaderImage = resize(leaderImage, 70,70);
+            Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
+            Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
+            board = overlay(board, leaderImage, tanksOffset, 1);
+            i++;
+            if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
+                offset += 70;
+                i = 0;
+            }
+        }
+
+        ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(board, "png", boardOutputStream);
+
+        FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
+        discordGame.getTextChannel("turn-summary")
+                .sendFiles(boardFileUpload)
+                .queue();
+
     }
 
     private static BufferedImage buildForceImage(String force, int strength) throws IOException {
@@ -393,15 +388,25 @@ public class ShowCommands {
         writeFactionInfo(discordGame, discordGame.getGame().getFaction(factionName));
     }
 
+    /**
+     * Writes the faction info to the faction-info channel
+     * @param discordGame The Discord Game
+     * @param faction The Faction whose info to write
+     * @throws ChannelNotFoundException if the channel is not found
+     * @throws IOException if the image cannot be written
+     */
     public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
-
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
+        String infoChannelName = faction.getName().toLowerCase() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
 
         if (faction.getName().equalsIgnoreCase("bg")) {
             BGFaction bg = (BGFaction) faction;
-            factionSpecificString.append("\n__Prediction:__ " + bg.getPredictionFactionName() + " Turn " + bg.getPredictionRound());
+            factionSpecificString.append("\n__Prediction:__ ")
+                    .append(bg.getPredictionFactionName())
+                    .append(" Turn ")
+                    .append(bg.getPredictionRound());
         }
         StringBuilder traitorString = new StringBuilder();
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
@@ -420,30 +425,40 @@ public class ShowCommands {
         if (faction.getName().equalsIgnoreCase("Fremen")) reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         if (faction.getName().equalsIgnoreCase("Emperor")) reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
         if (faction.getName().equalsIgnoreCase("Ix")) reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        for (TextChannel channel : discordGame.getTextChannels()) {
-            if (channel.getName().equals(faction.getName().toLowerCase() + "-info")) {
-                MessageCreateBuilder builder = new MessageCreateBuilder()
-                        .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
-                                faction.getSpice() +
-                                reservesString +
-                                factionSpecificString +
-                                traitorString);
-                for (Leader leader : faction.getLeaders()) {
-                    builder = builder.addFiles(getResourceFile(leader.name()));
-                }
 
-                MessageCreateData data = builder.build();
-
-                discordGame.sendMessage(channel.getName(), data);
-
-                for (TreacheryCard treachery : faction.getTreacheryHand()) {
-                    discordGame.sendMessage(channel.getName(), MessageFormat.format(
-                            "{0} {1} {0}",
-                            Emojis.TREACHERY, treachery.name()
-                    ));
-                }
-            }
+        MessageCreateBuilder builder = new MessageCreateBuilder()
+                .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
+                        faction.getSpice() +
+                        reservesString +
+                        factionSpecificString +
+                        traitorString);
+        for (Leader leader : faction.getLeaders()) {
+            builder = builder.addFiles(getResourceFile(leader.name()));
         }
+
+        MessageCreateData data = builder.build();
+
+        discordGame.sendMessage(infoChannelName, data);
+
+        List<TreacheryCard> treacheryCards = faction.getTreacheryHand();
+        if (treacheryCards.isEmpty()) return;
+
+        MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
+        StringBuilder treacheryString = new StringBuilder();
+        treacheryString.append("\n__Treachery Cards:__\n");
+        for (TreacheryCard treachery : treacheryCards) {
+            treacheryString.append(Emojis.TREACHERY)
+                    .append(" ")
+                    .append(treachery.name())
+                    .append("\n");
+
+            Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treachery.name());
+            if (image.isPresent())
+                treacheryCardMessageBuilder = treacheryCardMessageBuilder.addFiles(image.get());
+        }
+
+        treacheryCardMessageBuilder.addContent(treacheryString.toString());
+        discordGame.sendMessage(infoChannelName, treacheryCardMessageBuilder.build());
     }
 
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
