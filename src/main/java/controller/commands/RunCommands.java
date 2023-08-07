@@ -497,10 +497,6 @@ public class RunCommands {
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
         } else {
             bidOrder = bidding.getBidOrder();
-            List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
-            while (!bidOrder.get(0).equalsIgnoreCase(eligibleBidOrder.get(0))) {
-                bidOrder.add(bidOrder.remove(0));
-            }
             bidOrder.add(bidOrder.remove(0));
         }
 
