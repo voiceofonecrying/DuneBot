@@ -18,7 +18,7 @@ public class CardImages {
     public static Optional<FileUpload> getTreacheryCardImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
                 ".*Name:\\s*" +
-                        Pattern.quote(cardName) +
+                        Pattern.quote(cardName.trim()) +
                         "\\s*\\R.*(Expansion: Ixian and Tleilaxu|Expansion: CHOAM and Richese|Expansion: Base Game|Expansion: Richese).*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
@@ -28,7 +28,7 @@ public class CardImages {
 
     public static Optional<FileUpload> getLeaderSkillImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
-                ".*" + Pattern.quote(cardName) + ".*",
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
@@ -37,7 +37,7 @@ public class CardImages {
 
     public static Optional<FileUpload> getStrongholdImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
-                ".*" + Pattern.quote(cardName) + ".*",
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
