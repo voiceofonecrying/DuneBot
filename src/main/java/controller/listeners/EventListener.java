@@ -25,6 +25,9 @@ public class EventListener extends ListenerAdapter {
         } else if (message.matches(".*:worm:.*:worm:.*")) {
             String cardName = message.split(":worm:")[1].strip();
             sendStrongholdImage(event, cardName);
+        } else if (message.matches(".*transparent_worm:.*:transparent_worm.*")) {
+            String cardName = message.split("<:transparent_worm:>")[1].strip();
+            sendNexusImage(event, cardName);
         }
 
         //Add any other text based commands here
@@ -49,6 +52,14 @@ public class EventListener extends ListenerAdapter {
     public void sendStrongholdImage(MessageReceivedEvent event, String cardName) {
         Guild guild = event.getGuild();
         Optional<FileUpload> fileUpload = CardImages.getStrongholdImage(guild, cardName);
+
+        if (fileUpload.isEmpty()) return;
+        sendImage(event, fileUpload.get());
+    }
+
+    public void sendNexusImage(MessageReceivedEvent event, String cardName) {
+        Guild guild = event.getGuild();
+        Optional<FileUpload> fileUpload = CardImages.getNexusImage(guild, cardName);
 
         if (fileUpload.isEmpty()) return;
         sendImage(event, fileUpload.get());

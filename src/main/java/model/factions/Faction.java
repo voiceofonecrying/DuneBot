@@ -40,6 +40,8 @@ public class Faction {
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
+
+    private NexusCard nexusCard;
     private final List<Leader> leaders;
     protected final List<Resource> resources;
     private Shipment shipment;
@@ -75,6 +77,7 @@ public class Faction {
         this.movement = new Movement();
         this.allySpiceShipment = 0;
         this.allySpiceBidding = 0;
+        this.nexusCard = null;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -523,5 +526,13 @@ public class Faction {
 
     public void setAllySpiceBidding(int allySpiceBidding) {
         this.allySpiceBidding = allySpiceBidding;
+    }
+
+    public NexusCard getNexusCard() {
+        return nexusCard;
+    }
+
+    public void setNexusCard(NexusCard nexusCard) {
+        this.nexusCard = nexusCard;
     }
 }
