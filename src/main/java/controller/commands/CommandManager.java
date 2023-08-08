@@ -69,7 +69,8 @@ public class CommandManager extends ListenerAdapter {
                     case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                     case "draw" -> drawCard(discordGame, game);
                     case "discard" -> discard(discordGame, game);
-                    case "transfercard" -> transferCard(discordGame, game);
+                    case "transfer-card" -> transferCard(discordGame, game);
+                    case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
                     case "placeforces" -> placeForcesEventHandler(discordGame, game);
                     case "moveforces" -> moveForcesEventHandler(discordGame, game);
                     case "removeforces" -> removeForces(discordGame, game);
@@ -125,7 +126,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
-        commandData.add(Commands.slash("transfercard", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
+        commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
+        commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
@@ -471,6 +473,21 @@ public class CommandManager extends ListenerAdapter {
         receiver.addTreacheryCard(
                 giver.removeTreacheryCard(cardName)
         );
+
+        discordGame.pushGame();
+    }
+
+    public void transferCardFromDiscard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction receiver = game.getFaction(discordGame.required(faction).getAsString());
+        String cardName = discordGame.required(discardCard).getAsString();
+
+        TreacheryCard card  = game.getTreacheryDiscard().stream()
+                .filter(c -> c.name().equalsIgnoreCase(cardName))
+                .findFirst()
+                .orElseThrow(() -> new InvalidGameStateException("Card not found in discard pile."));
+
+        receiver.addTreacheryCard(card);
+        game.getTreacheryDiscard().remove(card);
 
         discordGame.pushGame();
     }

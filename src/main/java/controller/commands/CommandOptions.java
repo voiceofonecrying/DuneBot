@@ -43,6 +43,8 @@ public class CommandOptions {
             .addChoice("Treachery Deck", "treachery deck")
             .addChoice("Traitor Deck", "traitor deck");
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
+    public static final OptionData discardCard = new OptionData(OptionType.STRING, "card-discard", "The card.", true).setAutoComplete(true);
+
     public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
     public static final OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
     public static final OptionData topOrBottom = new OptionData(OptionType.STRING, "top-or-bottom", "Top or Bottom of treachery deck", true)
@@ -149,6 +151,7 @@ public class CommandOptions {
             case "territory", "to" -> choices = territories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
+            case "card-discard" -> choices = cardsInDiscard(event, game, searchValue);
             case "ixcard" -> choices = ixCardsInHand(game, searchValue);
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
             case "from" -> choices = fromTerritories(event, game, searchValue);
@@ -206,6 +209,13 @@ public class CommandOptions {
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> cardsInDiscard(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        return game.getTreacheryDiscard().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .collect(Collectors.toList());
