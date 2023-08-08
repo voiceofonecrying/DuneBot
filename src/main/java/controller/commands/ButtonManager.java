@@ -229,10 +229,13 @@ public class ButtonManager extends ListenerAdapter {
         Movement movement = faction.getMovement();
         movement.execute(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
-        if (game.getTurnOrder().isEmpty() && (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped())) {
-            game.getTurnOrder().addFirst("Guild");
-            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        if (game.getTurnOrder().isEmpty()) {
+            if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped()) {
+                game.getTurnOrder().addFirst("Guild");
+                sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+            }
         } else {
+            sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
             if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild")) {
                 game.getTurnOrder().addFirst("guild-hold");
                 queueGuildTurnOrderButtons(discordGame);
