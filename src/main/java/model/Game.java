@@ -44,6 +44,10 @@ public class Game {
     private final LinkedList<SpiceCard> spiceDiscardB;
     private final LinkedList<TraitorCard> traitorDeck;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
+
+
+    private final LinkedList<NexusCard> nexusDeck;
+    private final LinkedList<NexusCard> nexusDiscard;
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private boolean shieldWallDestroyed;
@@ -72,6 +76,8 @@ public class Game {
         this.spiceDiscardB = new LinkedList<>();
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
+        this.nexusDeck = new LinkedList<>();
+        this.nexusDiscard = new LinkedList<>();
         this.turn = 0;
         this.phase = 0;
         this.subPhase = 0;
@@ -92,6 +98,12 @@ public class Game {
         for (CSVRecord csvRecord : csvParser) {
             leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
         }
+
+        csvParser = getCSVFile("NexusCards.csv");
+        for (CSVRecord csvRecord : csvParser) {
+            nexusDeck.add(new NexusCard(csvRecord.get(0)));
+        }
+        Collections.shuffle(nexusDeck);
 
         String json = getJSONString("AdjacencyList.json");
         this.adjacencyList = new HashMap<>();
@@ -451,5 +463,11 @@ public class Game {
 
     public void setTurnOrder(Deque<String> turnOrder) {
         this.turnOrder = turnOrder;
+    }
+    public LinkedList<NexusCard> getNexusDeck() {
+        return nexusDeck;
+    }
+    public LinkedList<NexusCard> getNexusDiscard() {
+        return nexusDiscard;
     }
 }

@@ -44,6 +44,15 @@ public class CardImages {
         return getCardImage(guild, "stronghold-cards", pattern, cardName);
     }
 
+    public static Optional<FileUpload> getNexusImage(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getCardImage(guild, "nexus-cards", pattern, cardName);
+    }
+
     private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
         if (guild.getCategoriesByName("Mod Area", true).size() == 0) return Optional.empty();
         Category modArea = guild.getCategoriesByName("Mod Area", true).get(0);

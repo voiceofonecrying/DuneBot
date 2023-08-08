@@ -400,6 +400,7 @@ public class ShowCommands {
         List<TraitorCard> traitors = faction.getTraitorHand();
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
+        String nexusCard = faction.getNexusCard() == null ? "" : "\nNexus Card:\n" + Emojis.TRANSPARENT_WORM + faction.getNexusCard().name() + Emojis.TRANSPARENT_WORM;
 
         if (faction.getName().equalsIgnoreCase("bg")) {
             BGFaction bg = (BGFaction) faction;
@@ -430,6 +431,7 @@ public class ShowCommands {
                 .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                         faction.getSpice() +
                         reservesString +
+                        nexusCard +
                         factionSpecificString +
                         traitorString);
         for (Leader leader : faction.getLeaders()) {

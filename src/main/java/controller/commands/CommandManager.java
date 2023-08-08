@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
 import static controller.commands.ShowCommands.refreshChangedInfo;
+import static controller.commands.ShowCommands.showFactionInfo;
 
 public class CommandManager extends ListenerAdapter {
 
@@ -92,6 +93,8 @@ public class CommandManager extends ListenerAdapter {
                     case "add-spice" -> addSpice(discordGame, game);
                     case "remove-spice" -> removeSpice(discordGame, game);
                     case "reassign-faction" -> reassignFaction(discordGame, game);
+                    case "draw-nexus-card" -> drawNexusCard(discordGame, game);
+                    case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 }
 
                 refreshChangedInfo(discordGame);
@@ -106,6 +109,7 @@ public class CommandManager extends ListenerAdapter {
             e.printStackTrace();
         }
     }
+
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
@@ -154,6 +158,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
+        commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
+        commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -450,6 +456,24 @@ public class CommandManager extends ListenerAdapter {
 
         discordGame.sendMessage("turn-summary", message.toString());
         ShowCommands.showBoard(discordGame, game);
+    }
+
+    private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
+        if (faction.getNexusCard() != null) {
+            game.getNexusDiscard().add(faction.getNexusCard());
+        }
+        faction.setNexusCard(game.getNexusDeck().pollFirst());
+        showFactionInfo(discordGame);
+        discordGame.pushGame();
+    }
+
+    private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
+        game.getNexusDiscard().add(faction.getNexusCard());
+        faction.setNexusCard(null);
+        showFactionInfo(discordGame);
+        discordGame.pushGame();
     }
 
     public void drawCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
