@@ -5,6 +5,7 @@ import model.factions.Faction;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Territory {
@@ -87,12 +88,16 @@ public class Territory {
 
     // Returns list of factions that have active forces in the territories (not Advisors)
     public List<Faction> getActiveFactions(Game game) {
-        return forces.stream()
+        Set<Faction> factions = forces.stream()
                 .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                 .map(Force::getFactionName)
                 .distinct()
                 .map(game::getFaction)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
+
+        if (hasRicheseNoField()) factions.add(game.getFaction("Richese"));
+
+        return new ArrayList<>(factions);
     }
 
     public int countActiveFactions(Game game) {

@@ -42,7 +42,7 @@ public class RunCommands {
         switch (name) {
             case "advance" -> advance(discordGame, game);
             case "bidding" -> bidding(discordGame, game);
-            case "update-stronghold-skills" -> updateStrongholdSkills(discordGame, game);
+            case "update-stronghold-skills" -> updateStrongholdSkillsCommand(discordGame, game);
         }
     }
 
@@ -748,6 +748,11 @@ public class RunCommands {
         updateStrongholdSkills(discordGame, game);
     }
 
+    public static void updateStrongholdSkillsCommand(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        updateStrongholdSkills(discordGame, game);
+        discordGame.pushGame();
+    }
+
     public static void updateStrongholdSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasStrongholdSkills()) {
             for (Faction faction : game.getFactions()) {
@@ -766,8 +771,6 @@ public class RunCommands {
                         stronghold.getActiveFactions(game).get(0).getEmoji(), Emojis.WORM,
                         stronghold.getTerritoryName()));
             }
-
-            discordGame.pushGame();
         }
     }
 }
