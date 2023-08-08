@@ -622,6 +622,7 @@ public class RunCommands {
             List<Force> forces = territory.getForces();
             Set<String> factionNames = forces.stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                     .map(Force::getFactionName)
                     .collect(Collectors.toSet());
 
