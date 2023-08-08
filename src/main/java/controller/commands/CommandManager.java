@@ -383,20 +383,23 @@ public class CommandManager extends ListenerAdapter {
 
             drawn = deck.pop();
             boolean saveWormForReshuffle = false;
-            if (drawn.name().equalsIgnoreCase("Shai-Hulud")) {
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud")  || drawn.name().equalsIgnoreCase("Great Maker")) {
                 if (game.getTurn() <= 1) {
                     saveWormForReshuffle = true;
-                    message.append("Shai-Hulud will be reshuffled back into deck.\n");
+                    message.append(drawn.name())
+                            .append(" will be reshuffled back into deck.\n");
                 } else if (discard.size() > 0 && !shaiHuludSpotted) {
                     shaiHuludSpotted = true;
 
                     if (game.isSandtroutInPlay()) {
                         spiceMultiplier = 2;
                         game.setSandtroutInPlay(false);
-                        message.append("Shai-Hulud has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                        message.append(drawn.name())
+                            .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
                         SpiceCard lastCard = discard.getLast();
-                        message.append("Shai-Hulud has been spotted in ").append(lastCard.name()).append("!\n");
+                        message.append(drawn.name())
+                            .append(" has been spotted in ").append(lastCard.name()).append("!\n");
                         int spice = game.getTerritories().get(lastCard.name()).getSpice();
                         if (spice > 0) {
                             message.append(spice);
@@ -409,7 +412,8 @@ public class CommandManager extends ListenerAdapter {
                 } else {
                     shaiHuludSpotted = true;
                     spiceMultiplier = 1;
-                    message.append("Shai-Hulud has been spotted!\n");
+                    message.append(drawn.name())
+                        .append(" has been spotted!\n");
                 }
             } else if (drawn.name().equalsIgnoreCase("Sandtrout")){
                 shaiHuludSpotted = true;
@@ -427,6 +431,7 @@ public class CommandManager extends ListenerAdapter {
                 discard.add(drawn);
             }
         } while (drawn.name().equalsIgnoreCase("Shai-Hulud") ||
+                drawn.name().equalsIgnoreCase("Great Maker") ||
                 drawn.name().equalsIgnoreCase("Sandtrout"));
 
         while (wormsToReshuffle.size() > 0) {

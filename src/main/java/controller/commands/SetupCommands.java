@@ -350,6 +350,15 @@ public class SetupCommands {
             game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0));
         }
 
+        if (game.hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER)) {
+            SpiceCard spiceCard = game.getSpiceDeck().stream().filter((s) -> s.name().equals("Shai-Hulud"))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Shai-Hulud not found"));
+
+            game.getSpiceDeck().remove(spiceCard);
+            game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0));
+        }
+
         if (game.hasGameOption(GameOption.CHEAP_HERO_TRAITOR)) {
             game.getTraitorDeck().add(new TraitorCard("Cheap Hero", "Any", 0));
         }
