@@ -19,7 +19,7 @@ public class CardImages {
         Pattern pattern = Pattern.compile(
                 ".*Name:\\s*" +
                         Pattern.quote(cardName.trim()) +
-                        "\\s*\\R.*(Expansion: Ixian and Tleilaxu|Expansion: CHOAM and Richese|Expansion: Base Game|Expansion: Richese).*",
+                        "\\s*\\R.*(Expansion: Ixian and Tleilaxu|Expansion: CHOAM and Richese|Expansion: Base Game|Expansion: Richese|Expansion: Ecaz & Moritani).*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 

@@ -370,6 +370,13 @@ public class SetupCommands {
             }
         }
 
+        if (game.hasGameOption(GameOption.EM_EXPANSION_TREACHERY_CARDS)) {
+            CSVParser csvParser = getCSVFile("EmExpansionTreacheryCards.csv");
+            for (CSVRecord csvRecord : csvParser) {
+                game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+            }
+        }
+
         Collections.shuffle(game.getTreacheryDeck());
         Collections.shuffle(game.getSpiceDeck());
         Collections.shuffle(game.getTraitorDeck());
