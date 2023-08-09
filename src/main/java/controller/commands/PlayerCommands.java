@@ -136,7 +136,9 @@ public class PlayerCommands {
             throw new InvalidGameStateException("All hands are full.");
         }
         if (!bidding.getCurrentBidder().equals(faction.getName())) return;
-        boolean r;
+        boolean topBidderDeclared = false;
+        boolean onceAroundFinished = false;
+        boolean allPlayersPassed = false;
         do {
             if (faction.getMaxBid() == -1) {
                 faction.setBid("pass");
@@ -153,21 +155,32 @@ public class PlayerCommands {
             }
 
             boolean tag = true;
-            if (bidding.isRicheseBidding() && bidding.getCurrentBidder().equals(eligibleBidOrder.get(eligibleBidOrder.size() - 1))) tag = false;
-            r = RunCommands.createBidMessage(discordGame, game, tag);
-            faction = game.getFaction(bidding.advanceBidder(game));
-            if (r) break;
-            if (bidding.isRicheseBidding() && bidding.getCurrentBidder().equals(bidding.getEligibleBidOrder(game).get(0))) {
-                String bidLeader = bidding.getBidLeader();
-                if (bidLeader.equals(""))
+            if (bidding.getCurrentBidder().equals(eligibleBidOrder.get(eligibleBidOrder.size() - 1))) {
+                if (bidding.isRicheseBidding()) onceAroundFinished = true;
+                if (bidding.getBidLeader().equals("")) allPlayersPassed = true;
+                if (onceAroundFinished || allPlayersPassed) tag = false;
+            }
+            topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
+
+            if (onceAroundFinished) {
+                if (allPlayersPassed)
                     discordGame.sendMessage("bidding-phase", "All players passed.\n" +
                             (bidding.isRicheseCacheCard()
                                     ? (Emojis.RICHESE + " may take cache card for free or remove it from the game.")
                                     : (Emojis.RICHESE + " must take black market card back.")));
                 else
                     discordGame.sendMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
-                break;
+            } else if (allPlayersPassed) {
+                discordGame.sendMessage("bidding-phase", "All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
+                String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";
+                if (bidding.isRicheseCacheCardOutstanding())
+                    modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
+                else
+                    modMessage += " and end the bidding phase.";
+                discordGame.sendMessage("mod-info", modMessage);
             }
-        } while (!r);
+
+            faction = game.getFaction(bidding.advanceBidder(game));
+        } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
     }
 }

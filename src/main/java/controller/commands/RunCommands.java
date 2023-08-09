@@ -369,14 +369,13 @@ public class RunCommands {
 
     public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
-        if (bidding.isRicheseCacheCardOutstanding()) {
+        if (bidding.getBidCard() == null && bidding.isRicheseCacheCardOutstanding()) {
             throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
-// Uncomment after all games have started a new card. Breaks games that have a market card already up for bid.
-//        } else if (!bidding.isCardFromMarket()) {
-//            throw new InvalidGameStateException("Card up for bid is not from bidding market.");
+        } else if (bidding.getBidCard() != null && !bidding.isCardFromMarket()) {
+            throw new InvalidGameStateException("Card up for bid is not from bidding market.");
         }
 
-        if (bidding.getBidCard() != null) {
+        if (bidding.getBidCard() != null && bidding.isCardFromMarket()) {
             int numCardsReturned = bidding.moveMarketToDeck(game);
             discordGame.sendMessage("turn-summary", "" + numCardsReturned + " cards were returned to top of the Treachery Deck");
         }
