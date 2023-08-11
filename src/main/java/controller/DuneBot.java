@@ -1,6 +1,6 @@
 package controller;
 
-import controller.commands.ButtonManager;
+import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
 import controller.listeners.EventListener;
 import io.github.cdimascio.dotenv.Dotenv;

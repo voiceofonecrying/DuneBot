@@ -29,7 +29,9 @@ public class CommandOptions {
             .addChoice("Ixian", "Ix")
             .addChoice("Tleilaxu", "BT")
             .addChoice("CHOAM", "CHOAM")
-            .addChoice("Richese", "Richese");
+            .addChoice("Richese", "Richese")
+            .addChoice("Ecaz", "Ecaz")
+            .addChoice("Moritani", "Moritani");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)

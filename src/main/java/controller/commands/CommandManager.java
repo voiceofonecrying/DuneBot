@@ -97,7 +97,7 @@ public class CommandManager extends ListenerAdapter {
                     case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 }
 
-                refreshChangedInfo(discordGame);
+                if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
             }
 
             if (ephemeralMessage.length() == 0) ephemeralMessage = "Command Done.";
