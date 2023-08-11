@@ -88,3 +88,60 @@ Here are some commands that could be helpful during this phase:
 * `/discard`
 * `/richese remove-card`
 * `/richese karama-buy`
+
+## Revival
+At the start of the revival phase, the bot will automatically do free revivals, taking Fremen alliance into account.
+The bot will also take care of paying BT for the free revivals and paying the holder of the Axlotl Tanks token at the
+end of the phase.
+
+Use the following commands to do paid revivals:
+* `/reviveforces` - Revive forces from the tanks to player reserves. Set Paid to true to charge for the revival and pay BT.
+* `/reviveleader` - Revive a leader.  This can also be used for BT to revive a different faction's leader.
+* `/add-spice`
+* `/remove-spice`
+
+The bot will automatically give revival money to BT.
+
+## Shipping/Movement
+The bot will show buttons to each faction during the shipping and movement phase.  The mod can always modify everything
+using commands.
+
+The following commands can be useful during the Shipping/Movement phase:
+* `/placeforces` - Place forces on the board.  Set isShipment to true to charge for the shipment, and pay Guild.
+* `/moveforces` - Move forces from one place to another on the board.
+* `/removeforces` - Remove forces to tanks or reserve.
+* `/bg flip` - Flip a BG force.
+* `/bg advise` - Place a BG advisor.
+* `/richese no-fields-to-front-of-shield` - Remove a no-fields token from the board and place it in front of the Richese shield.  The mod has to manually place the troops.
+* `/richese place-no-fields-token` - Place a no-fields token on the board.
+* `/add-spice`
+* `/remove-spice`
+* `/discard` - Discard a card from a player's hand.
+
+## Battle
+Battle is the most manual of all the phases.  At the beginning of the phase the bot will show all the battles that
+will take place, in storm order.  The mod asks players to create their battle plans, calculates the results, and then
+sends commands to the bot to remove the appropriate forces, cards, spice, etc...
+
+The following commands can be useful during the battle phase:
+* `/removeforces` - Remove forces from a territory and optionally send them to the tanks.
+* `/killleader` - Send a leader to the tanks.
+* `/richese no-fields-to-front-of-shield` - Remove a no-fields token from the board and place it in front of the Richese shield.  The mod has to manually place the troops.
+* `/discard` - Discard a card from a player's hand.
+* `/add-spice`
+* `/remove-spice`
+* `/hark capture-leader` - Harkonnen capture leader ability
+* `/hark kill-leader` - Harkonnen kill leader ability
+* `/hark return-leader` - Harkonnen return captured leader
+
+## Spice Collection
+There shouldn't typically be mod intervention during this phase.  Spice collection is calculated automatically and
+spice is transferred.
+
+## Mentat Pause
+During the Mentat Pause spice is automatically transfered from front of shield to back of shield.
+
+The following commands can be useful during the Mentat Pause:
+* `/bt swap-face-dancer` - Swap one of the face dancers for a different one.  Currently, the mod has to keep track of which face dancers have been revealed.
+* `/choam set-inflation` - Sets the CHOAM inflation marker to "Double" or "Cancel" CHOAM Charity in the next round.
+* `/ix move-hms` - Move the HMS to a different location.
