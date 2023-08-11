@@ -10,6 +10,8 @@ public final class Emojis {
     public static final String BT_TROOP = "<:bt_troop:998567371453255700>";
     public static final String CHOAM = "<:choam:991763324624703538>";
     public static final String CHOAM_TROOP = "<:choam_troop:998567370350141492>";
+    public static final String ECAZ = "Ecaz";
+    public static final String ECAZ_TROOP = "Ecaz Troop";
     public static final String EMPEROR = "<:emperor:991763323454500914>";
     public static final String EMPEROR_TROOP = "<:emperor_troop:998567367565115504>";
     public static final String EMPEROR_SARDAUKAR = "<:emperor_sardaukar:998567368739541113>";

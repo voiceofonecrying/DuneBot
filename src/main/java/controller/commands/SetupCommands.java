@@ -244,6 +244,7 @@ public class SetupCommands {
             case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, game);
             case "IX"        -> faction = new IxFaction(playerName, userName, game);
             case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, game);
+            case "ECAZ"      -> faction = new EcazFaction(playerName, userName, game);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 

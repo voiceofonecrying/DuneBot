@@ -1,11 +1,13 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.buttons.ShipmentAndMovementButtons;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.ChoamFaction;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -562,6 +564,11 @@ public class RunCommands {
         if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
         if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(game, discordGame, "Axlotl Tanks");
 
+        if (game.hasFaction("Ecaz")) {
+            EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
+            ecaz.sendAmbassadorLocationMessage(game, discordGame, 1);
+        }
+
         ShowCommands.showBoard(discordGame, game);
     }
 
@@ -577,10 +584,10 @@ public class RunCommands {
         }
         while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0) game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        ButtonManager.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("guild-hold");
-            ButtonManager.queueGuildTurnOrderButtons(discordGame);
+            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame);
         }
         if (game.hasFaction("Richese")) {
             RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");

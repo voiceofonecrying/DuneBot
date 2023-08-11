@@ -18,6 +18,8 @@ public class Territory {
     private final List<Force> forces;
     private Integer richeseNoField;
 
+    private String ecazAmbassador;
+
     private final List<String> adjacencyList;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
@@ -29,6 +31,7 @@ public class Territory {
         this.spice = 0;
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
+        this.ecazAmbassador = null;
         this.adjacencyList = new LinkedList<>();
     }
 
@@ -132,5 +135,13 @@ public class Territory {
 
     public List<String> getAdjacencyList() {
         return adjacencyList;
+    }
+
+    public String getEcazAmbassador() {
+        return ecazAmbassador;
+    }
+
+    public void setEcazAmbassador(String ecazAmbassador) {
+        this.ecazAmbassador = ecazAmbassador;
     }
 }
