@@ -223,6 +223,7 @@ public class RicheseCommands {
     public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidType.equalsIgnoreCase("Silent")) {
+            bidding.setSilentAuction(true);
             if (blackMarket) {
                 discordGame.sendMessage("bidding-phase", "We will now silently auction a card from Richese's " +
                         "hand on the black market! Please place your bid in your private channels.");

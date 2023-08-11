@@ -132,7 +132,7 @@ public class PlayerCommands {
     private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
-        if (eligibleBidOrder.size() == 0) {
+        if (eligibleBidOrder.size() == 0 && !bidding.isSilentAuction()) {
             throw new InvalidGameStateException("All hands are full.");
         }
         if (!bidding.getCurrentBidder().equals(faction.getName())) return;
@@ -160,7 +160,8 @@ public class PlayerCommands {
                 if (bidding.getBidLeader().equals("")) allPlayersPassed = true;
                 if (onceAroundFinished || allPlayersPassed) tag = false;
             }
-            topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
+            if (!bidding.isSilentAuction())
+                topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
 
             if (onceAroundFinished) {
                 if (allPlayersPassed)

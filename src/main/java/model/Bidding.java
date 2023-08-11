@@ -13,6 +13,7 @@ public class Bidding {
     private TreacheryCard bidCard;
     private List<String> richeseBidOrder;
     private boolean richeseCacheCard;
+    private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
     private boolean ixTechnologyUsed;
 
@@ -40,6 +41,7 @@ public class Bidding {
         this.bidCard = null;
         this.richeseBidOrder = null;
         this.richeseCacheCard = false;
+        this.silentAuction = false;
         this.richeseCacheCardOutstanding = false;
         this.ixTechnologyUsed = false;
         this.market = new LinkedList<>();
@@ -188,6 +190,14 @@ public class Bidding {
         this.richeseCacheCard = richeseCacheCard;
     }
 
+    public boolean isSilentAuction() {
+        return silentAuction;
+    }
+
+    public void setSilentAuction(boolean silentAuction) {
+        this.silentAuction = silentAuction;
+    }
+
     public boolean isRicheseCacheCardOutstanding() {
         return richeseCacheCardOutstanding;
     }
@@ -249,6 +259,7 @@ public class Bidding {
             richeseCacheCardOutstanding = false;
         }
         richeseCacheCard = false;
+        silentAuction = false;
         bidLeader = "";
         currentBid = 0;
         cardFromMarket = false;
