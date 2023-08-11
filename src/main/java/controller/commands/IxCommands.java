@@ -4,6 +4,7 @@ import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -87,10 +88,11 @@ public class IxCommands {
         Bidding bidding = game.getBidding();
         StringBuilder message = new StringBuilder();
         if (game.hasFaction("Ix")) {
+            IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
             message.append(
                     MessageFormat.format(
-                            "Turn {0} - Select one of the following {1} cards to send back to the deck.",
-                            game.getTurn(), Emojis.TREACHERY
+                            "{0}\nTurn {1} - Select one of the following {1} cards to send back to the deck.",
+                            ixFaction.getPlayer(), game.getTurn(), Emojis.TREACHERY
                     )
             );
             for (TreacheryCard card : bidding.getMarket()) {
