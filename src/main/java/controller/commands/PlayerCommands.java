@@ -92,9 +92,9 @@ public class PlayerCommands {
         if (bidAmount != 0) {
             responseMessage += ". You will bid ";
             if (faction.isUseExactBid()) {
-                responseMessage += "+1 up to " + bidAmount + ".";
-            } else {
                 responseMessage += "exactly " + bidAmount + " if possible.";
+            } else {
+                responseMessage += "+1 up to " + bidAmount + ".";
             }
         }
         return responseMessage;
