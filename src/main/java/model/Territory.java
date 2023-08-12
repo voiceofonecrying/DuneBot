@@ -85,26 +85,47 @@ public class Territory {
         return forces.stream().anyMatch(force -> force.getName().equals(name));
     }
 
+    /**
+     * Returns a list of forces in the territory that belong to the given faction.
+     * @param faction The faction to filter by.
+     * @return A list of forces in the territory that belong to the given faction.
+     */
+    public List<Force> getForces(Faction faction) {
+        return forces.stream().filter(force -> force.getFactionName().equals(faction.getName())).toList();
+    }
+
     public void removeForce(String name) {
         forces.remove(getForce(name));
     }
 
-    // Returns list of factions that have active forces in the territories (not Advisors)
-    public List<Faction> getActiveFactions(Game game) {
-        Set<Faction> factions = forces.stream()
+    public void addForce(Force force) {
+        forces.add(force);
+    }
+
+    public List<String> getActiveFactionNames() {
+        Set<String> factions = forces.stream()
                 .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                 .map(Force::getFactionName)
-                .distinct()
-                .map(game::getFaction)
                 .collect(Collectors.toSet());
 
-        if (hasRicheseNoField()) factions.add(game.getFaction("Richese"));
+        if (hasRicheseNoField()) factions.add("Richese");
 
         return new ArrayList<>(factions);
     }
 
-    public int countActiveFactions(Game game) {
-        return getActiveFactions(game).size();
+    // Returns list of factions that have active forces in the territories (not Advisors)
+    public List<Faction> getActiveFactions(Game game) {
+        return getActiveFactionNames().stream()
+                .map(game::getFaction)
+                .toList();
+    }
+
+    public boolean hasActiveFaction(Faction faction) {
+        return getActiveFactionNames().contains(faction.getName());
+    }
+
+    public int countActiveFactions() {
+        return getActiveFactionNames().size();
     }
 
     public void setForceStrength(String name, int strength) {

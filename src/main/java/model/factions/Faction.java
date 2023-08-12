@@ -494,6 +494,18 @@ public class Faction {
 
     }
 
+    /**
+     * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
+     * spice.  It only calculates the total
+     * @param territory The territory to calculate the spice from
+     * @return The total spice that would be collected from the territory
+     */
+    public int getSpiceCollectedFromTerritory(Territory territory) {
+        int multiplier = hasMiningEquipment() ? 3 : 2;
+        int totalSpice = territory.getForces(this).stream().map(Force::getStrength).reduce(0, Integer::sum);
+        return Math.min(multiplier * totalSpice, territory.getSpice());
+    }
+
     public Shipment getShipment() {
         if (shipment == null) this.shipment = new Shipment();
         return shipment;

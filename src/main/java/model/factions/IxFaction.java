@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 import java.io.IOException;
 
@@ -29,5 +30,21 @@ public class IxFaction extends Faction {
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
         removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+    }
+
+    /**
+     * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
+     * spice.  It only calculates the total
+     * @param territory The territory to calculate the spice from
+     * @return The total spice that would be collected from the territory
+     */
+    @Override
+    public int getSpiceCollectedFromTerritory(Territory territory) {
+        int multiplier = hasMiningEquipment() ? 3 : 2;
+        int spiceFromSuboids = territory.hasForce("Ix") ? territory.getForce("Ix").getStrength() * multiplier : 0;
+        int spiceFromCyborge = territory.hasForce("Ix*") ? territory.getForce("Ix*").getStrength() * 3 : 0;
+
+        int totalSpice = spiceFromSuboids + spiceFromCyborge;
+        return Math.min(totalSpice, territory.getSpice());
     }
 }

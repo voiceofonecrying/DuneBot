@@ -15,6 +15,12 @@ public class Force {
         this.factionName = name.replace("*", "");
     }
 
+    public Force(String name, int strength, String factionName) {
+        this.name = name;
+        this.strength = strength;
+        this.factionName = factionName;
+    }
+
     public String getName() {
         return name;
     }

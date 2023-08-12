@@ -6,10 +6,7 @@ import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
-import model.factions.ChoamFaction;
-import model.factions.EcazFaction;
-import model.factions.Faction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -672,32 +669,32 @@ public class RunCommands {
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
             if (territory.getForces().size() != 1) continue;
-            if (territory.getForces().get(0).getName().equals("Advisor")) {
-                int strength = territory.getForces().get(0).getStrength();
-                territory.getForces().clear();
-                territory.getForces().add(new Force("BG", strength));
-                discordGame.sendMessage("turn-summary", "Advisors are alone in " + territory.getTerritoryName() + " and have flipped to fighters.");
+            if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
+                BGFaction bg = (BGFaction) game.getFaction("BG");
+                bg.flipForces(territory);
+                discordGame.sendMessage("turn-summary",
+                        "Advisors are alone in " + territory.getTerritoryName() + " and have flipped to fighters.");
             }
         }
 
         for (Faction faction : game.getFactions()) {
             faction.setHasMiningEquipment(false);
-            if (territories.get("Arrakeen").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
+            if (territories.get("Arrakeen").hasActiveFaction(faction)) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Arrakeen", true);
-                discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
+                discordGame.sendMessage("turn-summary", faction.getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Arrakeen");
                 faction.setHasMiningEquipment(true);
             }
-            if (territories.get("Carthag").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
+            if (territories.get("Carthag").hasActiveFaction(faction)) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Carthag", true);
-                discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
+                discordGame.sendMessage("turn-summary", faction.getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Carthag");
                 faction.setHasMiningEquipment(true);
             }
-            if (territories.get("Tuek's Sietch").getForces().stream().anyMatch(force -> force.getName().contains(faction.getName()))) {
-                discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
+            if (territories.get("Tuek's Sietch").hasActiveFaction(faction)) {
+                discordGame.sendMessage("turn-summary", faction.getEmoji() +
                         " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
                 faction.addSpice(1);
                 CommandManager.spiceMessage(discordGame, 1, faction.getName(), "for Tuek's Sietch", true);
@@ -706,20 +703,19 @@ public class RunCommands {
 
         boolean altSpiceProductionTriggered = false;
         for (Territory territory: territories.values()) {
-            if (territory.getSpice() == 0 || territory.getForces().size() == 0) continue;
-            int totalStrength = 0;
-            Faction faction = game.getFaction(territory.getForces().stream().filter(force -> !force.getName().equals("Advisor")).findFirst().orElseThrow().getName().replace("*", ""));
-            for (Force force : territory.getForces()) {
-                if (force.getName().equals("Advisor")) continue;
-                totalStrength += force.getStrength();
-            }
-            int multiplier = faction.hasMiningEquipment() ? 3 : 2;
-            int spice = Math.min(multiplier * totalStrength, territory.getSpice());
+            if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
+            Faction faction = territory.getActiveFactions(game).get(0);
+
+            int spice = faction.getSpiceCollectedFromTerritory(territory);
+
             faction.addSpice(spice);
+            territory.setSpice(territory.getSpice() - spice);
+
             CommandManager.spiceMessage(discordGame, spice, faction.getName(), "for Spice Blow", true);
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
-                    && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION))) altSpiceProductionTriggered = true;
-            territory.setSpice(territory.getSpice() - spice);
+                    && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
+                altSpiceProductionTriggered = true;
+
             discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
         }
@@ -767,7 +763,7 @@ public class RunCommands {
 
             List<Territory> strongholds = game.getTerritories().values().stream()
                     .filter(Territory::isStronghold)
-                    .filter(t -> t.countActiveFactions(game) == 1)
+                    .filter(t -> t.countActiveFactions() == 1)
                     .toList();
 
             for (Territory stronghold : strongholds) {

@@ -76,4 +76,26 @@ public class BGFaction extends Faction {
             removeForces(territoryName, "Advisor", amount, toTanks, false, "BG");
         }
     }
+
+    /**
+     * Flip BG forces in a territory between normal and advisor.
+     * @param territory Territory in which to flip forces
+     */
+    public void flipForces(Territory territory) {
+        String from, to;
+
+        if (territory.hasForce("BG")) {
+            from = "BG";
+            to = "Advisor";
+        } else if (territory.hasForce("Advisor")) {
+            from = "Advisor";
+            to = "BG";
+        } else {
+            throw new IllegalStateException("Territory does not have BG forces");
+        }
+
+        Force force = territory.getForce(from);
+        territory.removeForce(from);
+        territory.addForce(new Force(to, force.getStrength(), "BG"));
+    }
 }
