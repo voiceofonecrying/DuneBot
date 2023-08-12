@@ -502,8 +502,8 @@ public class Faction {
      */
     public int getSpiceCollectedFromTerritory(Territory territory) {
         int multiplier = hasMiningEquipment() ? 3 : 2;
-        int totalSpice = territory.getForces(this).stream().map(Force::getStrength).reduce(0, Integer::sum);
-        return Math.min(multiplier * totalSpice, territory.getSpice());
+        int totalForces = territory.getForces(this).stream().map(Force::getStrength).reduce(0, Integer::sum);
+        return Math.min(multiplier * totalForces, territory.getSpice());
     }
 
     public Shipment getShipment() {
