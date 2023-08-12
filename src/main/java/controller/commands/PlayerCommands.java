@@ -59,8 +59,8 @@ public class PlayerCommands {
     private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
-        tryBid(discordGame, game, faction);
         discordGame.sendMessage("mod-info", faction.getEmoji() + " passed their bid.");
+        tryBid(discordGame, game, faction);
         if (faction.isAutoBid()) return "You will auto-pass until the next card or until you set auto-pass to false.";
         return "You will pass one time.";
     }
@@ -69,9 +69,9 @@ public class PlayerCommands {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setAutoBid(enabled);
-        tryBid(discordGame, game, faction);
         String responseMessage = faction.getEmoji() + " set auto-pass to " + enabled;
         discordGame.sendMessage("mod-info", responseMessage);
+        tryBid(discordGame, game, faction);
         responseMessage = "You set auto-pass to " + enabled + ".";
         if (enabled) {
             responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher.";
@@ -163,7 +163,11 @@ public class PlayerCommands {
             if (!bidding.isSilentAuction())
                 topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
 
-            if (onceAroundFinished) {
+             if (topBidderDeclared || allPlayersPassed || onceAroundFinished) {
+                discordGame.sendMessage("mod-info", game.getMod() + " The current card can be completed.");
+            }
+
+           if (onceAroundFinished) {
                 if (allPlayersPassed)
                     discordGame.sendMessage("bidding-phase", "All players passed.\n" +
                             (bidding.isRicheseCacheCard()

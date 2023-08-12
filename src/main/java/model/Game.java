@@ -33,6 +33,7 @@ public class Game {
 
     private int stormMovement;
     private Bidding bidding;
+    private String mod;
     private final List<Faction> factions;
     private Deque<String> turnOrder;
 
@@ -85,6 +86,7 @@ public class Game {
         this.stormMovement = 0;
         this.shieldWallDestroyed = false;
         this.bidding = null;
+        this.mod = "";
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -219,6 +221,14 @@ public class Game {
 
     public void setModRole(String modRole) {
         this.modRole = modRole;
+    }
+
+    public String getMod() {
+        return mod;
+    }
+
+    public void setMod(String mod) {
+        this.mod = mod;
     }
 
     public Boolean getMute() {

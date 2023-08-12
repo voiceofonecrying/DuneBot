@@ -93,6 +93,7 @@ public class CommandManager extends ListenerAdapter {
                     case "add-spice" -> addSpice(discordGame, game);
                     case "remove-spice" -> removeSpice(discordGame, game);
                     case "reassign-faction" -> reassignFaction(discordGame, game);
+                    case "reassign-mod" -> reassignMod(event, discordGame, game);
                     case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                     case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 }
@@ -158,6 +159,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
+        commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
 
@@ -284,6 +286,7 @@ public class CommandManager extends ListenerAdapter {
         Game game = new Game();
         game.setGameRole(gameRoleValue.getName());
         game.setModRole(modRoleValue.getName());
+        game.setMod(event.getUser().getAsMention());
         game.setMute(false);
         discordGame.setGame(game);
         discordGame.pushGame();
@@ -1079,6 +1082,11 @@ public class CommandManager extends ListenerAdapter {
         faction.setPlayer(playerName);
         faction.setUserName(userName);
 
+        discordGame.pushGame();
+    }
+
+    public void reassignMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        game.setMod(event.getUser().getAsMention());
         discordGame.pushGame();
     }
 }
