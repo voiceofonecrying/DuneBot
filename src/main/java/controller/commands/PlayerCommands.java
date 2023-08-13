@@ -89,13 +89,16 @@ public class PlayerCommands {
 
         responseMessage = "You set your auto-bid policy to " + (useExact ? "exact" : "increment");
         int bidAmount = faction.getMaxBid();
-        if (bidAmount != 0) {
+        if (bidAmount > 0) {
             responseMessage += ". You will bid ";
             if (faction.isUseExactBid()) {
                 responseMessage += "exactly " + bidAmount + " if possible.";
             } else {
                 responseMessage += "+1 up to " + bidAmount + ".";
             }
+        }
+        if (faction.hasAlly()) {
+            responseMessage += "\nYou will" + (faction.isOutbidAlly() ? "" : " not") + " outbid your ally";
         }
         return responseMessage;
     }
@@ -117,13 +120,16 @@ public class PlayerCommands {
             responseMessage += "\nYou will not auto-pass.\nA new bid or pass will be needed if you are outbid.";
         }
         String responseMessage2 = "";
+        boolean outbidAllyValue = faction.isOutbidAlly();
         if (discordGame.optional(outbidAlly) != null) {
-            boolean outbidAllyValue = discordGame.optional(outbidAlly).getAsBoolean();
+            outbidAllyValue = discordGame.optional(outbidAlly).getAsBoolean();
             faction.setOutbidAlly(outbidAllyValue);
             responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
             discordGame.sendMessage("mod-info", responseMessage2);
             discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
-            responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : "not") + " outbid your ally";
+        }
+        if (faction.hasAlly()) {
+            responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";
         }
         tryBid(discordGame, game, faction);
         return responseMessage + responseMessage2;
