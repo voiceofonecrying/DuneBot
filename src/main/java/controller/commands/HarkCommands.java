@@ -130,13 +130,13 @@ public class HarkCommands {
 
         if (leader.skillCard()!= null) {
             discordGame.sendMessage("turn-summary", MessageFormat.format(
-                    "{0} has killed the {1} skilled leader, {2}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name()
+                    "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
+                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name(), Emojis.SPICE
             ));
         } else {
             discordGame.sendMessage("turn-summary", MessageFormat.format(
-                    "{0} has killed the {1} leader",
-                    harkonnenFaction.getEmoji(), faction.getEmoji()
+                    "{0} has killed the {1} leader for 2 {2}",
+                    harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
             ));
 
         }
