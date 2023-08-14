@@ -78,6 +78,7 @@ public class CommandManager extends ListenerAdapter {
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
                     case "awardbid" -> awardBid(event, discordGame, game);
+                    case "awardtopbidder" -> awardTopBidder(event, discordGame, game);
                     case "killleader" -> killLeader(discordGame, game);
                     case "reviveleader" -> reviveLeader(discordGame, game);
                     case "setstorm" -> setStorm(discordGame, game);
@@ -137,6 +138,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
+        commandData.add(Commands.slash("awardtopbidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
@@ -525,15 +527,33 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void awardBid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String winnerName = discordGame.required(faction).getAsString();
+        String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
+        int spentValue = discordGame.required(spent).getAsInt();
+        assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+    }
+
+    public void awardTopBidder(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        String winnerName = bidding.getBidLeader();
+        if (winnerName.equals(""))
+            throw new InvalidGameStateException("There is no top bidder for this card.");
+        String paidToFactionName = "Bank";
+        if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
+            paidToFactionName = "Richese";
+        else if (!winnerName.equals("Emperor"))
+            paidToFactionName = "Emperor";
+        int spentValue = bidding.getCurrentBid();
+        assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+    }
+
+    public void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
         }
-        String winnerName = discordGame.required(faction).getAsString();
         Faction winner = game.getFaction(winnerName);
-        String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
-        int spentValue = discordGame.required(spent).getAsInt();
         if (winner.getSpice() < spentValue) {
             throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
         } else if (winnerHand.size() >= winner.getHandLimit()) {

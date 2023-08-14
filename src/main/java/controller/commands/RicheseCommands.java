@@ -140,6 +140,7 @@ public class RicheseCommands {
                 .orElseThrow();
 
         cards.remove(card);
+        bidding.setBlackMarketCard(true);
         bidding.setBidCard(card);
         bidding.incrementBidCardNumber();
 
