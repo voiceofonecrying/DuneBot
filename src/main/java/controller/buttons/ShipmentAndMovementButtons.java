@@ -25,6 +25,8 @@ public class ShipmentAndMovementButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidOptionException {
 
         if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame, true);
+        else if (event.getComponentId().startsWith("ship-to-reserves-")) queueForcesButtons(event, game, discordGame, game.getFaction("Guild"), true);
+        else if (event.getComponentId().startsWith("cross-ship-from-")) setCrossShipFrom(event, game, discordGame);
         else if (event.getComponentId().startsWith("ship-")) queueSectorButtons(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("add-force-shipment-")) addForces(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("add-special-force-shipment-"))
@@ -59,8 +61,40 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "guild-wait-last" -> guildWaitLast(event, game, discordGame);
             case "guild-defer" -> guildDefer(event, game, discordGame);
             case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
+            case "guild-cross-ship" -> crossShip(event, game, discordGame);
+            case "guild-ship-to-reserves" -> shipToReserves(event, game, discordGame);
         }
     }
+
+    private static void setCrossShipFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String from = game.getTerritory(event.getComponentId().replace("cross-ship-from-", "")).getTerritoryName();
+        faction.getShipment().setCrossShipFrom(from);
+        queueShippingButtons(event, game, discordGame);
+        game.getFaction("Guild").getShipment().setToReserves(false);
+        discordGame.pushGame();
+    }
+
+    private static void shipToReserves(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        TreeSet<Button> buttons = new TreeSet<>(getButtonComparator());
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.hasForce("Guild")) buttons.add(Button.primary("ship-to-reserves-" + territory.getTerritoryName(), territory.getTerritoryName()));
+        }
+        arrangeButtonsAndSend(event.getHook().sendMessage("Where would you like to ship to reserves from?"), buttons, discordGame, event);
+        game.getFaction("Guild").getShipment().setToReserves(true);
+        discordGame.pushGame();
+    }
+
+    private static void crossShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        TreeSet<Button> buttons = new TreeSet<>(getButtonComparator());
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.hasForce("Guild")) buttons.add(Button.primary("cross-ship-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
+        }
+        arrangeButtonsAndSend(event.getHook().sendMessage("Where would you like to ship from?"), buttons, discordGame, event);
+        game.getFaction("Guild").getShipment().setToReserves(true);
+        discordGame.pushGame();
+    }
+
     private static void supportAlly(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (event.getComponentId().equals("support-max")) {
@@ -74,18 +108,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             for (int i = 0; i < limit; i++) {
                 buttonList.add(Button.primary("support-" + (i + 1), Integer.toString(i + 1)));
             }
-            WebhookMessageCreateAction message = event.getHook().sendMessage("How much would you like to offer in support?");
-            List<MessageCreateAction> messageList = arrangeButtonsInActionRow(message, buttonList, discordGame, event);
-            for (MessageCreateRequest messageCreateRequest : messageList) {
-                if (messageCreateRequest instanceof MessageCreateAction) {
-                    MessageCreateAction messageCreateAction = (MessageCreateAction) messageCreateRequest;
-                    messageCreateAction.queue();
-                }
-                else {
-                    WebhookMessageCreateAction<Message> messageCreateAction = (WebhookMessageCreateAction<Message>) messageCreateRequest;
-                    messageCreateAction.queue();
-                }
-            }
+            arrangeButtonsAndSend(event.getHook().sendMessage("How much would you like to offer in support?"), buttonList, discordGame, event);
         } else {
             game.getFaction(faction.getAlly()).setAllySpiceShipment(Integer.parseInt(event.getComponentId().replace("support-", "")));
             discordGame.sendMessage(faction.getAlly().toLowerCase() + "-chat", "Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
@@ -258,19 +281,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             moveToButtons.add(Button.primary("move-" + territory, territory));
         }
 
-        WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Where will your forces move to?");
-        List<MessageCreateRequest> messageList = arrangeButtonsInActionRow(message, moveToButtons, discordGame, event);
+        arrangeButtonsAndSend(event.getHook().sendMessage("Where will your forces move to?"), moveToButtons, discordGame, event);
 
-        for (MessageCreateRequest messageCreateRequest : messageList) {
-            if (messageCreateRequest instanceof MessageCreateAction) {
-                MessageCreateAction messageCreateAction = (MessageCreateAction) messageCreateRequest;
-                messageCreateAction.queue();
-            }
-            else {
-                WebhookMessageCreateAction<Message> messageCreateAction = (WebhookMessageCreateAction<Message>) messageCreateRequest;
-                messageCreateAction.queue();
-            }
-        }
         discordGame.pushGame();
     }
 
@@ -321,16 +333,10 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void resetShipmentMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment){
-            faction.getShipment().setForce(0);
-            faction.getShipment().setSpecialForce(0);
-            faction.getShipment().setTerritoryName("");
-            faction.getShipment().setNoField(false);
+            faction.getShipment().clear();
             queueShippingButtons(event, game, discordGame);
         } else {
-            faction.getMovement().setForce(0);
-            faction.getMovement().setSpecialForce(0);
-            faction.getMovement().setMovingFrom("");
-            faction.getMovement().setMovingTo("");
+            faction.getMovement().clear();
             queueMovementButtons(game, faction, event, discordGame);
         }
         discordGame.pushGame();
@@ -405,6 +411,18 @@ public class ShipmentAndMovementButtons implements Pressable {
         int buttonLimitSpecialForces = isShipment ? faction.getSpecialReserves().getStrength() - faction.getShipment().getSpecialForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName() + "*").getStrength() - faction.getMovement().getSpecialForce();
 
+        if (faction.getShipment().isToReserves()) {
+            if (event.getComponentId().startsWith("ship-to-reserves-")){
+                faction.getShipment().setToReserves(true);
+                faction.getShipment().setTerritoryName(event.getComponentId().replace("ship-to-reserves-", ""));
+            }
+            buttonLimitForces = game.getTerritory(faction.getShipment().getTerritoryName()).getForce("Guild").getStrength() - faction.getShipment().getForce();
+        }
+
+        if (!faction.getShipment().getCrossShipFrom().isEmpty()) {
+            buttonLimitForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce("Guild").getStrength() - faction.getShipment().getForce();
+        }
+
         for (int i = 0; i < buttonLimitForces; i++) {
             forcesButtons.add(Button.primary("add-force-" + shipOrMove + "-" + (i + 1), "+" + (i + 1) + " regular"));
         }
@@ -415,27 +433,21 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (isShipment) {
             int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
 
-            if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold()) spice *= 2;
+            String territory = faction.getShipment().getTerritoryName();
+            if (faction.getShipment().isToReserves()) territory = "reserves from " + territory;
+            if (!faction.getShipment().getCrossShipFrom().isEmpty()) territory = territory + " cross shipping from " + faction.getShipment().getCrossShipFrom();
+
+            if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() && !faction.getShipment().isToReserves()) spice *= 2;
 
             if (faction.getName().equals("Fremen")) spice = 0;
             if (faction.getName().equals("Guild")) spice = Math.ceilDiv(spice, 2);
             String specialForces = faction.getSpecialReserves().getName().equals("") ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
             WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use buttons below to add forces to your shipment." +
                     "\n**Currently shipping:\n" + faction.getShipment().getForce() +  " " + Emojis.getForceEmoji(faction.getName())
-                    + specialForces + "\n to " + faction.getShipment().getTerritoryName() + "\n for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.**");
+                    + specialForces + "\n to " + territory + "\n for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.**");
 
             if (!forcesButtons.isEmpty()) {
-                List<MessageCreateRequest> messageList = arrangeButtonsInActionRow(message, forcesButtons, discordGame, event);
-                for (MessageCreateRequest request : messageList) {
-                    if (request instanceof MessageCreateAction) {
-                        MessageCreateAction messageCreateAction = (MessageCreateAction) request;
-                        messageCreateAction.queue();
-                    }
-                    else {
-                        WebhookMessageCreateAction<Message> messageCreateAction = (WebhookMessageCreateAction<Message>) request;
-                        messageCreateAction.queue();
-                    }
-                }
+                arrangeButtonsAndSend(message, forcesButtons, discordGame, event);
             } else message.queue();
             if (faction.getName().equals("Richese")) {
                 MessageCreateAction noFieldButtonMessage = discordGame.prepareMessage("richese-chat", "no-field options:");
@@ -461,10 +473,13 @@ public class ShipmentAndMovementButtons implements Pressable {
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
             WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Use buttons below to add forces to your movement." +
                     "\n**Currently moving:\n" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "\n to " + faction.getMovement().getMovingTo() + "**");
-            arrangeButtonsInActionRow(message, forcesButtons, discordGame, event);
-            message.addActionRow(Button.success("execute-movement", "Confirm Movement"), Button.danger("reset-moving-forces", "Reset forces"), Button.danger("reset-movement", "Start Over"));
-            message.queue();
+            forcesButtons.add(Button.success("execute-movement", "Confirm Movement"));
+            forcesButtons.add(Button.danger("reset-moving-forces", "Reset forces"));
+            forcesButtons.add(Button.danger("reset-movement", "Start Over"));
+
+            arrangeButtonsAndSend(message, forcesButtons, discordGame, event);
         }
+        discordGame.pushGame();
     }
     private static void richeseNoFieldMove(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
@@ -609,7 +624,15 @@ public class ShipmentAndMovementButtons implements Pressable {
                         Button.primary("spice-blow", "Spice Blow Territories"),
                         Button.primary("rock", "Rock Territories"),
                         Button.primary("other", "Somewhere else"),
-                        Button.danger("pass-shipment", "I don't want to ship.")).queue();
+                        Button.danger("pass-shipment", "I don't want to ship.")).complete();
+
+        if (faction.getName().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
+            discordGame.prepareMessage("guild-chat", "Special options for " + Emojis.GUILD + ":")
+                    .addActionRow(
+                            Button.primary("guild-cross-ship", "Cross ship"),
+                            Button.primary("guild-ship-to-reserves", "Ship to reserves")
+                            ).complete();
+        }
 
         if (faction.hasAlly()) {
             discordGame.prepareMessage(faction.getAlly().toLowerCase() + "-chat", "Use buttons below to support your ally's shipment")
@@ -628,12 +651,12 @@ public class ShipmentAndMovementButtons implements Pressable {
                     || (faction.getName().equals("Richese") && territory.hasRicheseNoField())
                     || (faction.getName().equals("BG") && territory.hasForce("Advisor"))) movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
+        movingFromButtons.add(Button.danger("pass-movement", "No move"));
 
-        arrangeButtonsInActionRow(message, movingFromButtons, discordGame, event);
-        message.addActionRow(Button.danger("pass-movement", "No move")).queue();
+        arrangeButtonsAndSend(message, movingFromButtons, discordGame, event);
     }
 
-    private static List<MessageCreateRequest> arrangeButtonsInActionRow(WebhookMessageCreateAction<Message> message, TreeSet<Button> buttons, DiscordGame discordGame, ButtonInteractionEvent event) throws ChannelNotFoundException {
+    private static void arrangeButtonsAndSend(WebhookMessageCreateAction<Message> message, TreeSet<Button> buttons, DiscordGame discordGame, ButtonInteractionEvent event) throws ChannelNotFoundException {
         List<MessageCreateRequest> list = new LinkedList<>();
         MessageCreateRequest messageCreateRequest = message;
         int count = 0;
@@ -650,7 +673,16 @@ public class ShipmentAndMovementButtons implements Pressable {
                 count = 0;
             }
         }
-        return list;
+        for (MessageCreateRequest item : list) {
+            if (item instanceof MessageCreateAction) {
+                MessageCreateAction messageCreateAction = (MessageCreateAction) item;
+                messageCreateAction.queue();
+            }
+            else {
+                WebhookMessageCreateAction<Message> messageCreateAction = (WebhookMessageCreateAction<Message>) item;
+                messageCreateAction.queue();
+            }
+        }
     }
     public static void sendShipmentMessage(String faction, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.prepareMessage(faction.toLowerCase() + "-chat", "Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(faction).getPlayer())
@@ -666,18 +698,15 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     public static Comparator<Button> getButtonComparator() {
-        return new Comparator<Button>() {
-            @Override
-            public int compare(Button o1, Button o2) {
-                String labelo1 = o1.getLabel();
-                String labelo2 = o2.getLabel();
-                labelo1 = labelo1.replaceAll("[^0-9]", "");
-                labelo2 = labelo2.replaceAll("[^0-9]", "");
-                int o1int = Integer.parseInt(labelo1);
-                int o2int = Integer.parseInt(labelo2);
-                if (o1int - o2int == 0) return 1;
-                return o1int - o2int;
-            }
+        return (o1, o2) -> {
+            String labelo1 = o1.getLabel();
+            String labelo2 = o2.getLabel();
+            labelo1 = labelo1.replaceAll("[^0-9]", "").isEmpty() ? "999" : labelo1.replaceAll("[^0-9]", "");
+            labelo2 = labelo2.replaceAll("[^0-9]", "").isEmpty() ? "999" : labelo2.replaceAll("[^0-9]", "");
+            int o1int = Integer.parseInt(labelo1);
+            int o2int = Integer.parseInt(labelo2);
+            if (o1int - o2int == 0) return 1;
+            return o1int - o2int;
         };
     }
 }
