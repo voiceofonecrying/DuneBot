@@ -34,7 +34,6 @@ public class ButtonManager extends ListenerAdapter {
         } catch (ChannelNotFoundException | IOException | InvalidOptionException e) {
             throw new RuntimeException(e);
         }
-        event.getMessage().delete().queue();
     }
 
     public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {

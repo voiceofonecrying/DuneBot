@@ -28,13 +28,17 @@ public class Movement {
             discordGame.sendMessage("turn-summary", Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
         }
         if (force != 0 || specialForce != 0) CommandManager.moveForces(faction, from, to, force, specialForce, discordGame);
+        clear();
+        ShowCommands.showBoard(discordGame, game);
+    }
+
+    public void clear() {
         this.movingFrom = "";
         this.movingTo = "";
         this.force = 0;
         this.specialForce = 0;
         this.hasMoved = true;
         this.movingNoField = false;
-        ShowCommands.showBoard(discordGame, game);
     }
 
     public String getMovingFrom() {

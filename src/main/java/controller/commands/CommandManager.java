@@ -74,7 +74,7 @@ public class CommandManager extends ListenerAdapter {
                     case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
                     case "placeforces" -> placeForcesEventHandler(discordGame, game);
                     case "moveforces" -> moveForcesEventHandler(discordGame, game);
-                    case "removeforces" -> removeForces(discordGame, game);
+                    case "removeforces" -> removeForcesEventHandler(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
                     case "awardbid" -> awardBid(event, discordGame, game);
@@ -730,7 +730,7 @@ public class CommandManager extends ListenerAdapter {
                 );
                 int support = 0;
                 if (targetFaction.getAllySpiceShipment() > 0) {
-                    support = targetFaction.getAllySpiceShipment() >= cost ? cost : targetFaction.getAllySpiceShipment();
+                    support = Math.min(targetFaction.getAllySpiceShipment(), cost);
                     game.getFaction(targetFaction.getAlly()).subtractSpice(support);
                     spiceMessage(discordGame, support, targetFaction.getAlly(),targetFaction.getEmoji() + " shipment support", false);
                     message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
@@ -855,17 +855,19 @@ public class CommandManager extends ListenerAdapter {
         discordGame.sendMessage("turn-summary", message.toString());
     }
 
-    public void removeForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(fromTerritory).getAsString();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int specialAmount = discordGame.required(starredAmount).getAsInt();
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
+        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        discordGame.pushGame();
+    }
+    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
-
-        discordGame.pushGame();
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

@@ -576,6 +576,8 @@ public class RunCommands {
         discordGame.sendMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
         for (Faction faction : game.getFactions()) {
             game.getTurnOrder().add(faction.getName());
+            faction.getShipment().clear();
+            faction.getMovement().clear();
             faction.getShipment().setShipped(false);
             faction.getMovement().setMoved(false);
         }

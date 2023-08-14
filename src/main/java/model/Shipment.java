@@ -16,6 +16,8 @@ public class Shipment {
     private String territoryName;
     private boolean hasShipped;
     private boolean isNoField;
+    private boolean toReserves;
+    private String crossShipFrom;
     public Shipment() {
     }
 
@@ -28,10 +30,21 @@ public class Shipment {
             faction.subtractSpice(spice);
             discordGame.sendMessage("turn-summary", Emojis.RICHESE + " ship a no-field to " + territoryName);
         }
-        else CommandManager.placeForces(territory, faction, this.force, this.specialForce, true, discordGame, game);
+        else if (isToReserves()) {
+            CommandManager.removeForces(territoryName, faction, force, specialForce, false);
+            int spice = Math.ceilDiv(force, 2);
+            faction.subtractSpice(spice);
+            discordGame.sendMessage("turn-summary", Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+        }
+        else if (!crossShipFrom.isEmpty()) {
+            CommandManager.removeForces(crossShipFrom, faction, force, 0, false);
+            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game);
+            discordGame.sendMessage("turn-summary", Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
+        }
+        else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game);
         ShowCommands.showBoard(discordGame, game);
         clear();
-        discordGame.pushGame(game);
+        discordGame.pushGame();
     }
 
     public void clear() {
@@ -40,6 +53,8 @@ public class Shipment {
         this.specialForce = 0;
         this.hasShipped = true;
         this.isNoField = false;
+        this.toReserves = false;
+        this.crossShipFrom = "";
     }
 
     public int getForce() {
@@ -80,5 +95,21 @@ public class Shipment {
 
     public void setNoField(boolean noField) {
         isNoField = noField;
+    }
+
+    public boolean isToReserves() {
+        return toReserves;
+    }
+
+    public void setToReserves(boolean toReserves) {
+        this.toReserves = toReserves;
+    }
+
+    public String getCrossShipFrom() {
+        return crossShipFrom;
+    }
+
+    public void setCrossShipFrom(String crossShipFrom) {
+        this.crossShipFrom = crossShipFrom;
     }
 }
