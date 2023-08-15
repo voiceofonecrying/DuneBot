@@ -173,7 +173,7 @@ public class PlayerCommands {
                 discordGame.sendMessage("mod-info", game.getMod() + " The current card can be completed.");
             }
 
-           if (onceAroundFinished) {
+            if (onceAroundFinished) {
                 if (allPlayersPassed)
                     discordGame.sendMessage("bidding-phase", "All players passed.\n" +
                             (bidding.isRicheseCacheCard()
@@ -189,6 +189,8 @@ public class PlayerCommands {
                 else
                     modMessage += " and end the bidding phase.";
                 discordGame.sendMessage("mod-info", modMessage);
+            } else if (topBidderDeclared) {
+                discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card to the winner and pay appropriate recipient.\nUse /awardbid if a Karama affected winner or payment.");
             }
 
             faction = game.getFaction(bidding.advanceBidder(game));
