@@ -106,6 +106,7 @@ public class Shipment {
     }
 
     public String getCrossShipFrom() {
+        if (crossShipFrom == null) crossShipFrom = "";
         return crossShipFrom;
     }
 
