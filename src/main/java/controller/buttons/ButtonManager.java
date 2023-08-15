@@ -37,6 +37,14 @@ public class ButtonManager extends ListenerAdapter {
     }
 
     public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
+        try {
         return game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
+        } catch (Exception e) {
+            System.out.println(event.getMember().getUser().getId());
+            for (Faction faction : game.getFactions()) {
+                System.out.println(faction.getPlayer());
+            }
+            throw e;
+        }
     }
 }
