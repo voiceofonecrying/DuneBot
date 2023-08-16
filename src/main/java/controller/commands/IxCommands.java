@@ -91,7 +91,7 @@ public class IxCommands {
             IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
             message.append(
                     MessageFormat.format(
-                            "{0}\nTurn {1} - Select one of the following {1} cards to send back to the deck.",
+                            "{0}\nTurn {1} - Select one of the following {2} cards to send back to the deck.",
                             ixFaction.getPlayer(), game.getTurn(), Emojis.TREACHERY
                     )
             );
