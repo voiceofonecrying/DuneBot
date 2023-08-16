@@ -174,11 +174,16 @@ public class PlayerCommands {
             }
 
             if (onceAroundFinished) {
-                if (allPlayersPassed)
-                    discordGame.sendMessage("bidding-phase", "All players passed.\n" +
-                            (bidding.isRicheseCacheCard()
-                                    ? (Emojis.RICHESE + " may take cache card for free or remove it from the game.")
-                                    : (Emojis.RICHESE + " must take black market card back.")));
+                if (allPlayersPassed) {
+                    discordGame.sendMessage("bidding-phase", "All players passed.\n");
+                    if (bidding.isRicheseCacheCard()) {
+                        discordGame.sendMessage("bidding-phase", Emojis.RICHESE + " may take cache card for free or remove it from the game.");
+                        discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
+                    } else {
+                        discordGame.sendMessage("bidding-phase", Emojis.RICHESE + " must take black market card back.");
+                        discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ".");
+                    }
+                }
                 else
                     discordGame.sendMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
             } else if (allPlayersPassed) {

@@ -536,15 +536,20 @@ public class CommandManager extends ListenerAdapter {
     public void awardTopBidder(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         String winnerName = bidding.getBidLeader();
-        if (winnerName.equals(""))
-            throw new InvalidGameStateException("There is no top bidder for this card.");
-        String paidToFactionName = "Bank";
-        if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
-            paidToFactionName = "Richese";
-        else if (!winnerName.equals("Emperor"))
-            paidToFactionName = "Emperor";
-        int spentValue = bidding.getCurrentBid();
-        assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+        if (winnerName.equals("")) {
+            if (bidding.isRicheseCacheCard() || bidding.isBlackMarketCard())
+                assignAndPayForCard(discordGame, game, "Richese", "", 0);
+            else
+                throw new InvalidGameStateException("There is no top bidder for this card.");
+        } else {
+            String paidToFactionName = "Bank";
+            if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
+                paidToFactionName = "Richese";
+            else if (!winnerName.equals("Emperor"))
+                paidToFactionName = "Emperor";
+            int spentValue = bidding.getCurrentBid();
+            assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+        }
     }
 
     public void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {

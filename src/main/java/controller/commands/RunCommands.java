@@ -363,7 +363,11 @@ public class RunCommands {
         );
 
         discordGame.sendMessage("turn-summary", message.toString());
-        discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
+        if (numCardsForBid == 0) {
+            discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+        } else {
+            discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
+        }
     }
 
     public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -393,7 +397,7 @@ public class RunCommands {
         if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
         } else if (bidding.getNumCardsForBid() == 0) {
-            throw new InvalidGameStateException("You must /run advance before /run bidding.");
+            throw new InvalidGameStateException("Use /run advance.");
         } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         } else if (bidding.isIxRejectOutstanding()) {
@@ -419,7 +423,7 @@ public class RunCommands {
 
             if (bidOrder.size() == 0) {
                 discordGame.sendMessage("bidding-phase", "All hands are full.");
-                discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again.");
+                discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else  {
                 TreacheryCard bidCard = bidding.nextBidCard(game);
                 if (bidding.isTreacheryDeckReshuffled()) {
