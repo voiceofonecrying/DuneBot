@@ -470,7 +470,7 @@ public class ShowCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
 
         for (Message message : messages) {
-            message.delete().queue();
+            message.delete().complete();
         }
 
         for (Faction faction : game.getFactions()) {

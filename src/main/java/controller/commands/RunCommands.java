@@ -763,6 +763,8 @@ public class RunCommands {
                 faction.removeResource("strongholdCard");
             }
 
+            game.getFactions().forEach(Faction::removeAllStrongholdCards);
+
             List<Territory> strongholds = game.getTerritories().values().stream()
                     .filter(Territory::isStronghold)
                     .filter(t -> t.countActiveFactions() == 1)
@@ -770,7 +772,7 @@ public class RunCommands {
 
             for (Territory stronghold : strongholds) {
                 Faction faction = stronghold.getActiveFactions(game).get(0);
-                faction.addResource(new StringResource("strongholdCard", stronghold.getTerritoryName()));
+                faction.addStrongholdCard(new StrongholdCard(stronghold.getTerritoryName()));
                 discordGame.sendMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
                         stronghold.getActiveFactions(game).get(0).getEmoji(), Emojis.WORM,
                         stronghold.getTerritoryName()));

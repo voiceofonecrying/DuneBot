@@ -8,6 +8,8 @@ import model.Game;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 
 import java.io.IOException;
@@ -31,7 +33,16 @@ public class CopyBotData {
         DiscordGame mainDiscordGame = getDiscordGame(mainToken, mainGuildId, category);
         DiscordGame testDiscordGame = getDiscordGame(testToken, testGuildId, category);
 
-        Game mainGame = mainDiscordGame.getGame();
+        int copyOffset = Dotenv.configure().load().get("COPY_OFFSET") != null ?
+                Integer.parseInt(Dotenv.configure().load().get("COPY_OFFSET")) : 0;
+
+        MessageHistory h = mainDiscordGame.getBotDataChannel()
+                .getHistory();
+
+        h.retrievePast(1 + copyOffset).complete();
+
+        List<Message> ml = h.getRetrievedHistory();
+        Game mainGame = mainDiscordGame.getGame(ml.get(copyOffset));
 
         mainGame.setGameRole(gameRole);
         mainGame.setModRole(modRole);

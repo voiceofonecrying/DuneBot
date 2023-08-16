@@ -247,6 +247,15 @@ public class Faction {
     }
 
     public List<StrongholdCard> getStrongholdCards() {return strongholdCards;}
+    public void addStrongholdCard(StrongholdCard card) {
+        strongholdCards.add(card);
+        setFrontOfShieldModified();
+    }
+
+    public void removeAllStrongholdCards() {
+        strongholdCards.clear();
+        setFrontOfShieldModified();
+    }
 
     public int getSpice() {
         return spice;

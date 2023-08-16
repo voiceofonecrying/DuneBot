@@ -108,22 +108,32 @@ public class DiscordGame {
             h.retrievePast(1).complete();
 
             List<Message> ml = h.getRetrievedHistory();
-            Message.Attachment encoded = ml.get(0).getAttachments().get(0);
-            CompletableFuture<InputStream> future = encoded.getProxy().download();
+            this.game = getGame(ml.get(0));
+        }
+        return this.game;
+    }
 
-            try {
-                String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
-                Gson gson = createGsonDeserializer();
-                Game returnGame = gson.fromJson(gameStateString, Game.class);
-                future.get().close();
-                addGameReferenceToFactions(returnGame);
-                migrateGameState(returnGame);
+    /**
+     * Loads the game state from the bot data channel, or returns an already loaded game state.
+     *
+     * @return Game object representing the game state.
+     */
+    public Game getGame(Message message) throws IOException {
+        Message.Attachment encoded = message.getAttachments().get(0);
+        CompletableFuture<InputStream> future = encoded.getProxy().download();
+
+        try {
+            String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+            Gson gson = createGsonDeserializer();
+            Game returnGame = gson.fromJson(gameStateString, Game.class);
+            future.get().close();
+            addGameReferenceToFactions(returnGame);
+            migrateGameState(returnGame);
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
-            return new Game();}
+            return new Game();
         }
-        return this.game;
     }
 
     /**
@@ -158,21 +168,17 @@ public class DiscordGame {
     }
 
     public static void migrateGameState(Game game) {
-        if (game.getGameOptions() == null) {
-            game.setGameOptions(new HashSet<>());
-        }
+        game.getFactions().stream().forEach(faction -> {
+            faction.getResources("strongholdCard").stream().forEach(card -> {
+                String StrongholdName = (String)card.getValue();
+                faction.addStrongholdCard(new StrongholdCard(StrongholdName));
+            });
+            faction.removeResource("strongholdCard");
 
-        if (game.hasTechTokens()) {
-            game.addGameOption(GameOption.TECH_TOKENS);
-        }
-
-        if (game.hasLeaderSkills()) {
-            game.addGameOption(GameOption.LEADER_SKILLS);
-        }
-
-        if (game.hasStrongholdSkills()) {
-            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
-        }
+            // Reset modified flags to avoid printing out updates from the migration
+            faction.setFrontOfShieldModified(false);
+            faction.setBackOfShieldModified(false);
+        });
     }
 
     public void pushGame(Game game) throws ChannelNotFoundException {

@@ -1,6 +1,5 @@
 package model.factions;
 
-import com.google.gson.internal.LinkedTreeMap;
 import constants.Emojis;
 import model.*;
 
@@ -38,47 +37,15 @@ public class RicheseFaction extends Faction {
         treacheryCardCache.add(new TreacheryCard("Nullentropy Box", "Special"));
     }
 
-    public void migrateRichese() {
-        // Saving modified values to make sure the migration does not cause updates to be triggered
-        boolean frontOfShieldModified = isFrontOfShieldModified();
-        boolean backOfShieldModified = isBackOfShieldModified();
-
-        if (hasResource("frontOfShieldNoField")) {
-            frontOfShieldNoField = Math.round(Float.parseFloat(getResource("frontOfShieldNoField").getValue().toString()));
-            removeResource("frontOfShieldNoField");
-        }
-
-        if (hasResource("cache")) {
-            treacheryCardCache = new ArrayList<>();
-
-            List<LinkedTreeMap> rawList = (ArrayList<LinkedTreeMap>) getResource("cache").getValue();
-
-            for (LinkedTreeMap linkedTreeMap : rawList) {
-                treacheryCardCache.add(new TreacheryCard(
-                        (String) linkedTreeMap.get("name"), (String) linkedTreeMap.get("type")
-                ));
-            }
-
-            removeResource("cache");
-        }
-
-        // Making sure the migration does not cause updates to be triggered
-        setFrontOfShieldModified(frontOfShieldModified);
-        setBackOfShieldModified(backOfShieldModified);
-    }
-
     public boolean hasFrontOfShieldNoField() {
-        migrateRichese();
         return frontOfShieldNoField != null;
     }
 
     public Integer getFrontOfShieldNoField() {
-        migrateRichese();
         return frontOfShieldNoField;
     }
 
     public void setFrontOfShieldNoField(Integer frontOfShieldNoField) {
-        migrateRichese();
         if (!List.of(0, 3, 5).contains(frontOfShieldNoField)) {
             throw new IllegalArgumentException("Front of shield no field must be 0, 3, or 5");
         }
@@ -89,7 +56,6 @@ public class RicheseFaction extends Faction {
     }
 
     public TreacheryCard getTreacheryCardFromCache(String name) {
-        migrateRichese();
         return treacheryCardCache.stream()
                 .filter(t -> t.name().equals(name))
                 .findFirst()
@@ -97,14 +63,12 @@ public class RicheseFaction extends Faction {
     }
 
     public TreacheryCard removeTreacheryCardFromCache(TreacheryCard card) {
-        migrateRichese();
         treacheryCardCache.remove(card);
         setBackOfShieldModified();
         return card;
     }
 
     public List<TreacheryCard> getTreacheryCardCache() {
-        migrateRichese();
         return treacheryCardCache;
     }
 
