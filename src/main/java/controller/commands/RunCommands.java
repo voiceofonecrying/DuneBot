@@ -425,8 +425,9 @@ public class RunCommands {
                 discordGame.sendMessage("bidding-phase", "All hands are full.");
                 discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else  {
+                boolean reshuffled = bidding.isTreacheryDeckReshuffled();
                 TreacheryCard bidCard = bidding.nextBidCard(game);
-                if (bidding.isTreacheryDeckReshuffled()) {
+                if (reshuffled) {
                     discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
                 }
 
