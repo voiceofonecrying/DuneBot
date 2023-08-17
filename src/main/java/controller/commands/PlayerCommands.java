@@ -146,14 +146,15 @@ public class PlayerCommands {
         boolean onceAroundFinished = false;
         boolean allPlayersPassed = false;
         do {
-            if (faction.getMaxBid() == -1) {
+            if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidding.getBidLeader())) {
+                faction.setBid("pass (ally has top bid)");
+            } else if (faction.getMaxBid() == -1) {
                 faction.setBid("pass");
                 faction.setMaxBid(0);
             } else if (faction.getMaxBid() <= bidding.getCurrentBid()) {
                 if (!faction.isAutoBid()) return;
                 faction.setBid("pass");
-            } else if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidding.getBidLeader())) faction.setBid("pass");
-            else {
+            } else {
                 if (faction.isUseExactBid()) faction.setBid(String.valueOf(faction.getMaxBid()));
                 else faction.setBid(String.valueOf(bidding.getCurrentBid() + 1));
                 bidding.setCurrentBid(Integer.parseInt(faction.getBid()));
