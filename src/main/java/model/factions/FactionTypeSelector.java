@@ -24,6 +24,8 @@ public class FactionTypeSelector implements TypeSelector<Faction> {
             case "HARKONNEN" -> factionClass = HarkonnenFaction.class;
             case "IX" -> factionClass = IxFaction.class;
             case "RICHESE" -> factionClass = RicheseFaction.class;
+            case "ECAZ" -> factionClass = EcazFaction.class;
+            case "MORITANI" -> factionClass = MoritaniFaction.class;
         }
 
         return factionClass;

@@ -172,6 +172,22 @@ public class SetupCommands {
             );
         }
 
+        if (game.hasFaction("Ecaz")) {
+            if (game.hasFaction("Harkonnen") && game.hasGameOption(GameOption.HARKONNEN_MULLIGAN)) {
+                setupSteps.add(
+                        setupSteps.indexOf(SetupStep.HARKONNEN_TRAITORS),
+                        SetupStep.ECAZ_LOYALTY
+                );
+
+            }
+            else {
+                setupSteps.add(
+                        setupSteps.indexOf(SetupStep.TRAITORS),
+                        SetupStep.ECAZ_LOYALTY
+                );
+            }
+        }
+
         game.setSetupSteps(setupSteps);
     }
 
@@ -198,6 +214,7 @@ public class SetupCommands {
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
             case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(event, discordGame, game);
+            case ECAZ_LOYALTY -> stepStatus = ecazLoyaltyStep(discordGame, game);
             case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(discordGame, game);
             case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
             case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(discordGame, game);
@@ -208,6 +225,8 @@ public class SetupCommands {
 
         return stepStatus;
     }
+
+
 
     public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
@@ -545,6 +564,15 @@ public class SetupCommands {
             discordGame.sendMessage("mod-info", "Harkonnen can not mulligan");
             return StepStatus.CONTINUE;
         }
+    }
+    private static StepStatus ecazLoyaltyStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
+        List<Leader> leaders = ecaz.getLeaders();
+        Collections.shuffle(leaders);
+        ecaz.setLoyalLeader(leaders.get(0));
+        game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().name()));
+        discordGame.sendMessage("turn-summary", Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
+        return StepStatus.CONTINUE;
     }
 
     public static void harkonnenMulligan(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

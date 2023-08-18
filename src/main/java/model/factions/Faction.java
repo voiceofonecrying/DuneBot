@@ -20,6 +20,7 @@ public class Faction {
     protected String emoji;
     private String player;
     private String userName;
+    private boolean graphicDisplay;
     protected int handLimit;
     protected int spice;
     private final List<TechToken> techTokens;
@@ -56,6 +57,7 @@ public class Faction {
         this.name = name;
         this.player = player;
         this.userName = userName;
+        this.graphicDisplay = false;
         this.treacheryHand = new LinkedList<>();
         this.frontOfShieldSpice = 0;
         this.hasMiningEquipment = false;
@@ -555,5 +557,13 @@ public class Faction {
 
     public void setNexusCard(NexusCard nexusCard) {
         this.nexusCard = nexusCard;
+    }
+
+    public boolean isGraphicDisplay() {
+        return graphicDisplay;
+    }
+
+    public void setGraphicDisplay(boolean graphicDisplay) {
+        this.graphicDisplay = graphicDisplay;
     }
 }

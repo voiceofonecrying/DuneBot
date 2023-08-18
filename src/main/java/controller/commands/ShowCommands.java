@@ -5,6 +5,7 @@ import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.BGFaction;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.entities.Message;
@@ -14,6 +15,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -33,6 +35,7 @@ import java.util.*;
 import java.util.List;
 
 import static controller.commands.CommandOptions.faction;
+import static controller.commands.CommandOptions.gameName;
 
 public class ShowCommands {
     public static List<CommandData> getCommands() {
@@ -66,7 +69,8 @@ public class ShowCommands {
 
     public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         String factionName = discordGame.required(faction).getAsString();
-        writeFactionInfo(discordGame, factionName);
+        if (discordGame.getGame().getFaction(factionName).isGraphicDisplay()) drawFactionInfo(discordGame, discordGame.getGame(), factionName);
+        else writeFactionInfo(discordGame, factionName);
     }
 
     private static BufferedImage getResourceImage(String name) throws IOException {
@@ -84,7 +88,36 @@ public class ShowCommands {
         InputStream inputStream = resourceURL.openStream();
         return FileUpload.fromData(inputStream, name + ".png");
     }
+    private static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException {
+        if (game.getMute()) return;
+        Faction faction = game.getFaction(factionName);
+        BufferedImage table = getResourceImage("behind shield");
 
+        //Place reserves
+        int reserves = faction.getReserves().getStrength();
+        int specialReserves = faction.getSpecialReserves().getStrength();
+
+        if (reserves > 0) {
+            BufferedImage reservesImage = buildForceImage(faction.getName(), reserves);
+            table = overlay(table, reservesImage, new Point(80, 50), 1);
+        }
+        if (specialReserves > 0) {
+            BufferedImage specialReservesImage = buildForceImage(faction.getName() + "*", specialReserves);
+            table = overlay(table, specialReservesImage, new Point(80, 90), 1);
+        }
+
+        ByteArrayOutputStream tableOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(table, "png", tableOutputStream);
+
+        FileUpload boardFileUpload = FileUpload.fromData(tableOutputStream.toByteArray(), "behind shield.png");
+        discordGame.getTextChannel("turn-summary")
+                .sendFiles(boardFileUpload)
+                .queue();
+
+        //discordGame.prepareMessage(faction.getName().toLowerCase() + "-info", "Use these buttons to take the corresponding actions.").addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).queue();
+
+
+    }
     private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
 
@@ -162,10 +195,18 @@ public class ShowCommands {
 
         //Place forces
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForces().isEmpty() && territory.getSpice() == 0 && !territory.hasRicheseNoField()) continue;
+            if (territory.getForces().isEmpty() && territory.getSpice() == 0 && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             int offset = 0;
             int i = 0;
+
+            if (territory.getEcazAmbassador() != null) {
+                BufferedImage ambassador = getResourceImage("Ambassador");
+                ambassador = resize(ambassador, 40, 40);
+                Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
+                Point placementCorner = new Point(placement.x + 40, placement.y);
+                board = overlay(board, ambassador, placementCorner, 1);
+            }
 
             if (territory.getSpice() != 0) {
                 i = 1;
@@ -408,6 +449,9 @@ public class ShowCommands {
                     .append(bg.getPredictionFactionName())
                     .append(" Turn ")
                     .append(bg.getPredictionRound());
+        } else if (faction.getName().equalsIgnoreCase("ecaz")) {
+            EcazFaction ecaz = (EcazFaction) faction;
+            factionSpecificString.append(ecaz.getAmbassadorSupply());
         }
         StringBuilder traitorString = new StringBuilder();
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
@@ -461,6 +505,7 @@ public class ShowCommands {
 
         treacheryCardMessageBuilder.addContent(treacheryString.toString());
         discordGame.sendMessage(infoChannelName, treacheryCardMessageBuilder.build());
+        //discordGame.prepareMessage(faction.getName().toLowerCase() + "-info", "Use these buttons to take the corresponding actions.").addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).queue();
     }
 
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -492,6 +537,10 @@ public class ShowCommands {
             if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction)faction).hasFrontOfShieldNoField()) {
                 message.append(((RicheseFaction)faction).getFrontOfShieldNoField())
                         .append(" No-Field Token\n");
+            }
+
+            if (faction.getName().equalsIgnoreCase("Ecaz")) {
+                message.append(((EcazFaction)faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
             }
 
             if (game.hasLeaderSkills()) {
