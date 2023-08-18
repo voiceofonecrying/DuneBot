@@ -111,6 +111,7 @@ public class Bidding {
         while (marketIterator.hasNext()) game.getTreacheryDeck().addFirst(marketIterator.next());
         game.getTreacheryDeck().addFirst(bidCard);
         clearBidCardInfo(null);
+        numCardsForBid -= numCardsReturned;
         return numCardsReturned;
     }
 

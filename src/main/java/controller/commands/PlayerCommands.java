@@ -181,12 +181,26 @@ public class PlayerCommands {
                         discordGame.sendMessage("bidding-phase", Emojis.RICHESE + " may take cache card for free or remove it from the game.");
                         discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
                     } else {
-                        discordGame.sendMessage("bidding-phase", Emojis.RICHESE + " must take black market card back.");
-                        discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ".");
+                        CommandManager.awardTopBidder(discordGame, game);
+                        discordGame.sendMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
+                        discordGame.sendMessage("mod-info", "Use /run advance to continue the bidding phase.");
+                        return;
                     }
                 }
-                else
+                else {
+                    CommandManager.awardTopBidder(discordGame, game);
                     discordGame.sendMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
+                    if (bidding.isRicheseCacheCard()) {
+                        if (bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
+                            discordGame.sendMessage("mod-info", "Use /run advance to end the bidding phase.");
+                        } else {
+                            discordGame.sendMessage("mod-info", "Use /run bidding to put the next card up for bid.");
+                        }
+                    } else {
+                        discordGame.sendMessage("mod-info", "Use /run advance to continue the bidding phase.");
+                    }
+                    return;
+                }
             } else if (allPlayersPassed) {
                 discordGame.sendMessage("bidding-phase", "All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
                 String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";

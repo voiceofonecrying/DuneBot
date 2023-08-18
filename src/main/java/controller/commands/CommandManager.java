@@ -78,7 +78,7 @@ public class CommandManager extends ListenerAdapter {
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
                     case "awardbid" -> awardBid(event, discordGame, game);
-                    case "awardtopbidder" -> awardTopBidder(event, discordGame, game);
+                    case "awardtopbidder" -> awardTopBidder(discordGame, game);
                     case "killleader" -> killLeader(discordGame, game);
                     case "reviveleader" -> reviveLeader(discordGame, game);
                     case "setstorm" -> setStorm(discordGame, game);
@@ -533,7 +533,7 @@ public class CommandManager extends ListenerAdapter {
         assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
     }
 
-    public void awardTopBidder(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         String winnerName = bidding.getBidLeader();
         if (winnerName.equals("")) {
@@ -552,7 +552,7 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
