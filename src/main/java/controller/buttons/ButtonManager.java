@@ -1,5 +1,7 @@
 package controller.buttons;
 
+import controller.commands.RunCommands;
+import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.DiscordGame;
@@ -22,6 +24,20 @@ public class ButtonManager extends ListenerAdapter {
             Game game = discordGame.getGame();
                 ShipmentAndMovementButtons.press(event, game, discordGame);
                 EcazButtons.press(event, game, discordGame);
+                switch (event.getComponentId()) {
+                    case "graphic" -> {
+                        getButtonPresser(event, game).setGraphicDisplay(true);
+                        discordGame.pushGame();
+                        event.getHook().sendMessage("Graphic mode active").queue();
+                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    }
+                    case "text" -> {
+                        getButtonPresser(event, game).setGraphicDisplay(false);
+                        discordGame.pushGame();
+                        event.getHook().sendMessage("Text mode active").queue();
+                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    }
+                }
 
         } catch (ChannelNotFoundException | IOException | InvalidOptionException e) {
             throw new RuntimeException(e);

@@ -6,6 +6,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -784,6 +785,10 @@ public class CommandManager extends ListenerAdapter {
             }
 
             discordGame.sendMessage("turn-summary", message.toString());
+            if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+            && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
+                    && !(game.getFaction("Ecaz").hasAlly()
+                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) ((EcazFaction)game.getFaction("Ecaz")).triggerAmbassador(game, discordGame, targetFaction, targetTerritory.getEcazAmbassador());
         }
     }
 
@@ -821,12 +826,12 @@ public class CommandManager extends ListenerAdapter {
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
-        moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame);
+        moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame, game);
         ShowCommands.showBoard(discordGame, game);
         discordGame.pushGame();
     }
 
-    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
+    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
 
         int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
         if (targetFaction.getName().equals("BG") && from.getForce("Advisor").getStrength() > 0) fromForceStrength = from.getForce("Advisor").getStrength();
@@ -878,6 +883,10 @@ public class CommandManager extends ListenerAdapter {
         );
 
         discordGame.sendMessage("turn-summary", message.toString());
+        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+                && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
+                && !(game.getFaction("Ecaz").hasAlly()
+                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) ((EcazFaction)game.getFaction("Ecaz")).triggerAmbassador(game, discordGame, targetFaction, to.getEcazAmbassador());
     }
 
     public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

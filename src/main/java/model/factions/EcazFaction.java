@@ -3,10 +3,7 @@ package model.factions;
 import constants.Emojis;
 import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
-import model.Force;
-import model.Game;
-import model.Territory;
+import model.*;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
@@ -14,9 +11,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class EcazFaction  extends Faction {
+public class EcazFaction extends Faction {
     private final List<String> ambassadorPool;
     private final List<String> ambassadorSupply;
+
+    private Leader loyalLeader;
 
     public EcazFaction(String player, String userName, Game game) throws IOException {
         super("Ecaz", player, userName, game);
@@ -53,14 +52,18 @@ public class EcazFaction  extends Faction {
 
     public void triggerAmbassador(Game game, DiscordGame discordGame, Faction triggeringFaction, String ambassador) throws ChannelNotFoundException {
 
+        discordGame.sendMessage("turn-summary", "The " + ambassador + " ambassador has been triggered!");
+
         switch (ambassador) {
             case "Ecaz" -> {
                 Button getVidal = Button.primary("ecaz-get-vidal", "Get Duke Vidal");
+                Button offerAlliance = Button.primary("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
                 if (game.getLeaderTanks().stream().anyMatch(leader -> leader.name().equals("Duke Vidal"))
                         || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal")))
                         || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal")))) getVidal = getVidal.asDisabled();
+                if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly()) offerAlliance = offerAlliance.asDisabled();
                 discordGame.prepareMessage("ecaz-chat", "Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?")
-                        .addActionRow(getVidal, Button.primary("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance")).queue();
+                        .addActionRow(getVidal, offerAlliance).queue();
                 ambassadorPool.add("Ecaz");
             }
             case "Atreides" -> discordGame.sendMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
@@ -88,6 +91,7 @@ public class EcazFaction  extends Faction {
         }
 
         for (Territory territory : game.getTerritories().values()) {
+            if (territory.getEcazAmbassador() == null) continue;
             if (territory.getEcazAmbassador().equals(ambassador)) territory.setEcazAmbassador(null);
         }
 
@@ -112,9 +116,9 @@ public class EcazFaction  extends Faction {
         }
     }
 
-    public void sendAmbassadorMessage(Game game, DiscordGame discordGame, String territory, int cost) throws ChannelNotFoundException {
+    public void sendAmbassadorMessage(DiscordGame discordGame, String territory, int cost) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
-        for (String ambassador : ambassadorPool) {
+        for (String ambassador : ambassadorSupply) {
             buttons.add(Button.primary("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
         }
         if (buttons.size() > 5) {
@@ -122,10 +126,32 @@ public class EcazFaction  extends Faction {
                     .addActionRow(buttons.subList(0, 5))
                     .addActionRow(buttons.get(5)).queue();
         }
+        else {
+            discordGame.prepareMessage("ecaz-chat", "Which ambassador would you like to send?")
+                    .addActionRow(buttons).queue();
+        }
     }
 
     public void placeAmbassador(Territory territory, String ambassador) {
-        ambassadorPool.removeIf(a -> a.equals(ambassador));
+        ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
+    }
+
+    public Leader getLoyalLeader() {
+        return loyalLeader;
+    }
+
+    public void setLoyalLeader(Leader loyalLeader) {
+        this.loyalLeader = loyalLeader;
+    }
+
+    public String getAmbassadorSupply() {
+        StringBuilder supply = new StringBuilder();
+        supply.append("\nAmbassador Supply:\n");
+
+        for (String ambassador : ambassadorSupply) {
+            supply.append(ambassador + "\n");
+        }
+        return supply.toString();
     }
 }
