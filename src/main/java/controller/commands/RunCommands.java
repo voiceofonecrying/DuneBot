@@ -372,7 +372,9 @@ public class RunCommands {
 
     public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null && bidding.isRicheseCacheCardOutstanding()) {
+        if (bidding.getBidCard() == null && !bidding.getMarket().isEmpty()) {
+            throw new InvalidGameStateException("Use /run bidding to auction the next card.");
+        } else if (bidding.getBidCard() == null && bidding.isRicheseCacheCardOutstanding()) {
             throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
         } else if (bidding.getBidCard() != null && !bidding.isCardFromMarket()) {
             throw new InvalidGameStateException("Card up for bid is not from bidding market.");
@@ -418,7 +420,7 @@ public class RunCommands {
 
             discordGame.pushGame();
         } else  {
-            updateBidOrder(game);
+            bidding.updateBidOrder(game);
             List<String> bidOrder = bidding.getEligibleBidOrder(game);
 
             if (bidOrder.size() == 0) {
@@ -482,38 +484,6 @@ public class RunCommands {
 
         discordGame.sendMessage("bidding-phase", message.toString());
         return false;
-    }
-
-    public static void updateBidOrder(Game game) throws InvalidGameStateException{
-        Bidding bidding = game.getBidding();
-        List<String> bidOrder;
-
-        if (bidding.getBidOrder().isEmpty()) {
-            List<Faction> factions = game.getFactions();
-
-            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
-
-            List<Faction> bidOrderFactions = new ArrayList<>();
-
-            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
-            bidOrderFactions.addAll(factions.subList(0, firstBid));
-            bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-        } else {
-            bidOrder = bidding.getBidOrder();
-            bidOrder.add(bidOrder.remove(0));
-        }
-
-        String firstFaction = bidOrder.get(0);
-        String faction = firstFaction;
-        while (game.getFaction(faction).getHandLimit() <= game.getFaction(faction).getTreacheryHand().size()) {
-            faction = bidOrder.remove(0);
-            bidOrder.add(faction);
-            if (faction.equalsIgnoreCase(firstFaction)) {
-                break;
-            }
-
-        }
-        bidding.setBidOrder(game, bidOrder);
     }
 
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

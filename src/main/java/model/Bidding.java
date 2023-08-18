@@ -241,7 +241,7 @@ public class Bidding {
         bidCardNumber++;
     }
 
-    public List<String> getBidOrder() {
+    private List<String> getBidOrder() {
         if (richeseBidOrder == null) return bidOrder;
         return richeseBidOrder;
     }
@@ -261,6 +261,32 @@ public class Bidding {
                 .stream()
                 .filter(f -> game.getFaction(f).getHandLimit() > game.getFaction(f).getTreacheryHand().size())
                 .collect(Collectors.toList());
+    }
+
+    public void updateBidOrder(Game game) throws InvalidGameStateException {
+        if (bidOrder.isEmpty()) {
+            List<Faction> factions = game.getFactions();
+
+            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
+
+            List<Faction> bidOrderFactions = new ArrayList<>();
+
+            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
+            bidOrderFactions.addAll(factions.subList(0, firstBid));
+            bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
+        } else {
+            bidOrder.add(bidOrder.remove(0));
+        }
+
+        String firstFaction = bidOrder.get(0);
+        String faction = firstFaction;
+        while (game.getFaction(faction).getHandLimit() <= game.getFaction(faction).getTreacheryHand().size()) {
+            faction = bidOrder.remove(0);
+            bidOrder.add(faction);
+            if (faction.equalsIgnoreCase(firstFaction)) {
+                break;
+            }
+        }
     }
 
     public void clearBidCardInfo(String winner) {

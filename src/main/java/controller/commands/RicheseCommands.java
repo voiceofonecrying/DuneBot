@@ -145,7 +145,7 @@ public class RicheseCommands {
         bidding.incrementBidCardNumber();
 
         if (bidType.equalsIgnoreCase("Normal")) {
-            RunCommands.updateBidOrder(game);
+            bidding.updateBidOrder(game);
             List<String> bidOrder = bidding.getEligibleBidOrder(game);
             for (Faction f : game.getFactions()) {
                 f.setMaxBid(0);
