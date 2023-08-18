@@ -231,8 +231,8 @@ public class RicheseCommands {
             } else {
                 discordGame.sendMessage("bidding-phase",
                         MessageFormat.format(
-                                "We will now silently auction a brand new Richese {0}!  Please place your bid in your private channels.",
-                                bidding.getBidCard().name()
+                                "We will now silently auction a brand new Richese {0} {1} {0}!  Please place your bid in your private channels.",
+                                Emojis.TREACHERY, bidding.getBidCard().name()
                         )
                 );
             }
