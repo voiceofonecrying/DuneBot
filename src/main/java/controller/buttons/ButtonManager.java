@@ -4,6 +4,7 @@ import controller.commands.RunCommands;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
+import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.Game;
 import model.factions.Faction;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 public class ButtonManager extends ListenerAdapter {
     @Override
-    public void onButtonInteraction(@NotNull ButtonInteractionEvent event){
+    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
 
         event.deferReply().queue();
 
@@ -24,6 +25,7 @@ public class ButtonManager extends ListenerAdapter {
             Game game = discordGame.getGame();
                 ShipmentAndMovementButtons.press(event, game, discordGame);
                 EcazButtons.press(event, game, discordGame);
+                IxButtons.press(event, game, discordGame);
                 switch (event.getComponentId()) {
                     case "graphic" -> {
                         getButtonPresser(event, game).setGraphicDisplay(true);
@@ -38,7 +40,8 @@ public class ButtonManager extends ListenerAdapter {
                         ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
                     }
                 }
-
+        } catch (InvalidGameStateException e) {
+            event.getHook().editOriginal(e.getMessage()).queue();
         } catch (ChannelNotFoundException | IOException | InvalidOptionException e) {
             throw new RuntimeException(e);
         }

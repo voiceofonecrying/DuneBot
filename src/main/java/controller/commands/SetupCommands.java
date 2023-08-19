@@ -450,13 +450,14 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         try {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
             ixFaction.setHandLimit(6);
             for (Faction faction : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
-            discordGame.sendMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards. Use /setup ix-hand-selection to select theirs then /setup advance.");
+            discordGame.sendMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
+            IxCommands.initialCardButtons(discordGame, game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
             discordGame.sendMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
