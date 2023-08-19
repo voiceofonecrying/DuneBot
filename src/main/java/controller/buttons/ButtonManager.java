@@ -42,8 +42,9 @@ public class ButtonManager extends ListenerAdapter {
                 }
         } catch (InvalidGameStateException e) {
             event.getHook().editOriginal(e.getMessage()).queue();
-        } catch (ChannelNotFoundException | IOException | InvalidOptionException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            event.getHook().editOriginal(e.getMessage()).queue();
+            e.printStackTrace();
         }
     }
 
