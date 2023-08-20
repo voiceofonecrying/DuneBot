@@ -241,6 +241,10 @@ public class Bidding {
         bidCardNumber++;
     }
 
+    public void decrementBidCardNumber() {
+        bidCardNumber--;
+    }
+
     private List<String> getBidOrder() {
         if (richeseBidOrder == null) return bidOrder;
         return richeseBidOrder;
