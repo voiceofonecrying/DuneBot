@@ -20,6 +20,9 @@ public class Territory {
 
     private String ecazAmbassador;
 
+    private String terrorToken;
+    private boolean aftermathToken;
+
     private final List<String> adjacencyList;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
@@ -33,6 +36,7 @@ public class Territory {
         this.richeseNoField = null;
         this.ecazAmbassador = null;
         this.adjacencyList = new LinkedList<>();
+        this.aftermathToken = false;
     }
 
     public String getTerritoryName() {
@@ -164,5 +168,22 @@ public class Territory {
 
     public void setEcazAmbassador(String ecazAmbassador) {
         this.ecazAmbassador = ecazAmbassador;
+    }
+
+    public String getTerrorToken() {
+        return terrorToken;
+    }
+
+    public void setTerrorToken(String terrorToken) {
+        this.terrorToken = terrorToken;
+    }
+
+
+    public boolean isAftermathToken() {
+        return aftermathToken;
+    }
+
+    public void setAftermathToken(boolean aftermathToken) {
+        this.aftermathToken = aftermathToken;
     }
 }

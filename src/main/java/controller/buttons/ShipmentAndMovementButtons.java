@@ -579,12 +579,16 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     private static void queueStrongholdShippingButtons(ButtonInteractionEvent event, Game game) {
-        WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Which stronghold?")
-                .addActionRow(Button.primary("ship-arrakeen", "Arrakeen"),
+        WebhookMessageCreateAction<Message> message = event.getHook().sendMessage("Which stronghold?");
+        List<Button> strongholds = List.of(Button.primary("ship-arrakeen", "Arrakeen"),
                         Button.primary("ship-carthag", "Carthag"),
                         Button.primary("ship-sietch-tabr", "Sietch Tabr"),
                         Button.primary("ship-tuek's-sietch", "Tuek's Sietch"),
                         Button.primary("ship-habbanya-sietch", "Habbanya Sietch"));
+        for (Button stronghold : strongholds) {
+            if (game.getTerritory(stronghold.getLabel()).isAftermathToken()) stronghold = stronghold.asDisabled();
+        }
+        message.addActionRow(strongholds);
 
         if (game.hasFaction("Ix")) message.addActionRow(Button.primary("stronghold-ship-hms", "Hidden Mobile Stronghold"));
         message.addActionRow(Button.secondary("reset-shipment", "back"),

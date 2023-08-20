@@ -188,6 +188,13 @@ public class SetupCommands {
             }
         }
 
+        if (game.hasFaction("Moritani")) {
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.TRAITORS) + 1,
+                    SetupStep.MORITANI_FORCE
+            );
+        }
+
         game.setSetupSteps(setupSteps);
     }
 
@@ -210,6 +217,7 @@ public class SetupCommands {
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
             case FREMEN_FORCES -> stepStatus = fremenForcesStep(discordGame, game);
             case BG_FORCE -> stepStatus = bgForceStep(discordGame, game);
+            case MORITANI_FORCE -> stepStatus = moritaniForceStep(discordGame, game);
             case IX_CARD_SELECTION -> stepStatus = ixCardSelectionStep(discordGame, game);
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
@@ -264,6 +272,7 @@ public class SetupCommands {
             case "IX"        -> faction = new IxFaction(playerName, userName, game);
             case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, game);
             case "ECAZ"      -> faction = new EcazFaction(playerName, userName, game);
+            case "MORITANI"  -> faction = new MoritaniFaction(playerName, userName, game);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 
@@ -444,6 +453,20 @@ public class SetupCommands {
                         Emojis.BG_ADVISOR,
                         Emojis.BG_FIGHTER,
                         bg.getPlayer()
+                )
+        );
+
+        return StepStatus.STOP;
+    }
+
+    public static StepStatus moritaniForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction moritani = game.getFaction("Moritani");
+        discordGame.sendMessage("game-actions",
+                MessageFormat.format(
+                        "{0} Please provide the placement of your starting {1}. {2}",
+                        moritani.getEmoji(),
+                        Emojis.MORITANI_TROOP,
+                        moritani.getPlayer()
                 )
         );
 

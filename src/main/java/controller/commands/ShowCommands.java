@@ -193,12 +193,22 @@ public class ShowCommands {
         }
 
 
-        //Place forces
+        //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForces().isEmpty() && territory.getSpice() == 0 && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null) continue;
+            if (territory.getForces().isEmpty() && territory.getSpice() == 0
+                    && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
+                    && !territory.isAftermathToken()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             int offset = 0;
             int i = 0;
+
+            if (territory.isAftermathToken()) {
+                BufferedImage aftermath = getResourceImage("Aftermath");
+                aftermath = resize(aftermath, 50, 50);
+                Point placement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                Point placementCorner = new Point(placement.x, placement.y);
+                board = overlay(board, aftermath, placementCorner, 1);
+            }
 
             if (territory.getEcazAmbassador() != null) {
                 BufferedImage ambassador = getResourceImage("Ambassador");
