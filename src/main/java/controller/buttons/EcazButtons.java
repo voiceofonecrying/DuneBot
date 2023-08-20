@@ -65,7 +65,7 @@ public class EcazButtons implements Pressable {
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         discordGame.queueMessage("Your Bene Gesserit token will be used for the " + event.getComponentId().split("-")[3] + " effect.");
-        event.getMessage().delete().queue();
+        discordGame.queueDeleteMessage();
         faction.triggerAmbassador(game, discordGame, game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
         discordGame.pushGame();
     }
@@ -73,13 +73,13 @@ public class EcazButtons implements Pressable {
     private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You have sent the Ambassador away empty-handed.");
         discordGame.queueMessage("ecaz-chat", "Your ambassador has returned with news that no alliance will take place.");
-        event.getMessage().delete().queue();
+        discordGame.queueDeleteMessage();
     }
 
     private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the Ambassador away with news of their new alliance!");
-        event.getMessage().delete().queue();
+        discordGame.queueDeleteMessage();
 
         faction.setAlly("Ecaz");
         game.getFaction("Ecaz").setAlly(faction.getName());
@@ -96,7 +96,7 @@ public class EcazButtons implements Pressable {
                         .addActionRow(Button.primary("ecaz-accept-offer", "Yes"), Button.danger("ecaz-deny-offer", "No"))
                 );
         discordGame.queueMessage("Your ambassador has been sent to negotiate an alliance.");
-        event.getMessage().delete().queue();
+        discordGame.queueDeleteMessage();
     }
 
     private static void getDukeVidal(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -105,7 +105,7 @@ public class EcazButtons implements Pressable {
         ecaz.addLeader(new Leader("Duke Vidal", 6, null, false));
         discordGame.pushGame();
         discordGame.queueMessage("Duke Vidal has been returned to you!");
-        event.getMessage().delete().queue();
+        discordGame.queueDeleteMessage();
     }
 
 }

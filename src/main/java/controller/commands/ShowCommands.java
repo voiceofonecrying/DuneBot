@@ -519,9 +519,7 @@ public class ShowCommands {
 
         List<Message> messages = messageHistory.getRetrievedHistory();
 
-        for (Message message : messages) {
-            message.delete().complete();
-        }
+        messages.forEach(discordGame::queueDeleteMessage);
 
         for (Faction faction : game.getFactions()) {
             StringBuilder message = new StringBuilder();

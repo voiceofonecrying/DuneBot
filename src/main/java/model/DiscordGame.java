@@ -20,13 +20,12 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.requests.FluentRestAction;
+import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.dv8tion.jda.api.utils.messages.MessageCreateRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class DiscordGame {
 
     private GenericInteractionCreateEvent event;
 
-    private final List<FluentRestAction> messageQueue = new ArrayList<>();
+    private final List<RestAction> messageQueue = new ArrayList<>();
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
@@ -289,31 +288,79 @@ public class DiscordGame {
         messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
     }
 
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param messageCreateBuilder Message to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
     public void queueMessage(String channelName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
         messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
     }
 
+    /**
+     * Queues a message to be sent.
+     * @param messageCreateAction Message to send.
+     */
     public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
         messageQueue.add(messageCreateAction);
     }
 
+    /**
+     * Queues a message to be sent.
+     * @param messageCreateAction Message to send.
+     */
     public void queueMessage(MessageCreateAction messageCreateAction) {
         messageQueue.add(messageCreateAction);
     }
 
+    /**
+     * Queues a message to be sent to the event channel.
+     * @param message Message to send.
+     */
     public void queueMessage(String message) {
         messageQueue.add(getHook().sendMessage(message));
     }
 
+    /**
+     * Queues a message to be sent to the event channel.
+     * @param message Message to send.
+     */
     public void queueMessage(MessageCreateBuilder message) {
         messageQueue.add(getHook().sendMessage(message.build()));
     }
 
+    /**
+     * Queues a message to be sent to the ephemeral channel.
+     * @param message Message to send.
+     */
     public void queueMessageToEphemeral(String message) {
         messageQueue.add(getHook().sendMessage(message).setEphemeral(true));
     }
 
+    /**
+     * Queue deletion of the message that triggered the event.
+     */
+    public void queueDeleteMessage() {
+        if (event instanceof ButtonInteractionEvent){
+            messageQueue.add(((ButtonInteractionEvent)event).getMessage().delete());
+        } else {
+            throw new IllegalArgumentException("Unknown event type");
+        }
+    }
+
+    /** Queue deletion of the given message.
+     * @param message Message to delete.
+     */
+    public void queueDeleteMessage(Message message) {
+        messageQueue.add(message.delete());
+    }
+
+    /**
+     * Get hook from the current event
+     * @return InteractionHook from the current event
+     */
     private InteractionHook getHook() {
         if (event instanceof SlashCommandInteractionEvent)
             return ((SlashCommandInteractionEvent) event).getHook();
@@ -328,7 +375,7 @@ public class DiscordGame {
      */
     public void sendAllMessages() {
         if (this.game.getMute()) return;
-        messageQueue.forEach(FluentRestAction::complete);
+        messageQueue.forEach(RestAction::complete);
         messageQueue.clear();
     }
 
