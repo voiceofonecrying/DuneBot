@@ -67,7 +67,7 @@ public class IxCommands {
 
     public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, boolean fromButton, String cardName, String location) throws ChannelNotFoundException, InvalidGameStateException {
         game.getBidding().putBackIxCard(game, cardName, location);
-        String message = "You sent " + cardName + " to the " + location.toLowerCase() + " of the deck.";
+        String message = "You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.";
         if (fromButton)
             event.getHook().sendMessage(message).queue();
         else
@@ -190,11 +190,19 @@ public class IxCommands {
                 .addActionRow(buttons).queue();
     }
 
+    public static void confirmCardToSendBack(DiscordGame discordGame, Game game, String cardName, String location) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.success("ix-confirm-reject" + "-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
+        buttons.add(Button.secondary("ix-confirm-reject-reset", "Start over"));
+        discordGame.prepareMessage("ix-chat", "Confirm your selection of " + cardName.trim() + " to " + location + ".")
+                .addActionRow(buttons).queue();
+    }
+
     public static void confirmStartingCard(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("ix-confirm-" + cardName, "Confirm " + cardName));
-        buttons.add(Button.secondary("ix-confirm-reset", "Choose a different card"));
-        discordGame.prepareMessage("ix-chat", "Confirm your selection of " + cardName + ".")
+        buttons.add(Button.success("ix-confirm-start-" + cardName, "Confirm " + cardName));
+        buttons.add(Button.secondary("ix-confirm-start-reset", "Choose a different card"));
+        discordGame.prepareMessage("ix-chat", "Confirm your selection of " + cardName.trim() + ".")
                 .addActionRow(buttons).queue();
     }
 
