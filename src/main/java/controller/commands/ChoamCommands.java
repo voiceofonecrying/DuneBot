@@ -51,7 +51,7 @@ public class ChoamCommands {
             faction.setFirstInflation(game.getTurn(), choamInflationType);
 
             discordGame.pushGame();
-            discordGame.sendMessage("turn-summary", "CHOAM set inflation to " + choamInflationType + " for next round!");
+            discordGame.queueMessage("turn-summary", "CHOAM set inflation to " + choamInflationType + " for next round!");
         }
     }
 }

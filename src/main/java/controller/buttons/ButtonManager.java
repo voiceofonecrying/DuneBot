@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
+import static controller.commands.ShowCommands.refreshChangedInfo;
+
 public class ButtonManager extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
@@ -23,23 +25,25 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
-                ShipmentAndMovementButtons.press(event, game, discordGame);
-                EcazButtons.press(event, game, discordGame);
-                IxButtons.press(event, game, discordGame);
-                switch (event.getComponentId()) {
-                    case "graphic" -> {
-                        getButtonPresser(event, game).setGraphicDisplay(true);
-                        discordGame.pushGame();
-                        event.getHook().sendMessage("Graphic mode active").queue();
-                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
-                    }
-                    case "text" -> {
-                        getButtonPresser(event, game).setGraphicDisplay(false);
-                        discordGame.pushGame();
-                        event.getHook().sendMessage("Text mode active").queue();
-                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
-                    }
+            ShipmentAndMovementButtons.press(event, game, discordGame);
+            EcazButtons.press(event, game, discordGame);
+            IxButtons.press(event, game, discordGame);
+            switch (event.getComponentId()) {
+                case "graphic" -> {
+                    getButtonPresser(event, game).setGraphicDisplay(true);
+                    discordGame.queueMessage("Graphic mode active");
+                    discordGame.pushGame();
+                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
                 }
+                case "text" -> {
+                    getButtonPresser(event, game).setGraphicDisplay(false);
+                    discordGame.queueMessage("Text mode active");
+                    discordGame.pushGame();
+                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                }
+            }
+            refreshChangedInfo(discordGame);
+            discordGame.sendAllMessages();
         } catch (InvalidGameStateException e) {
             event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {

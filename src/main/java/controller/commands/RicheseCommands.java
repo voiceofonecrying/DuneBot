@@ -83,7 +83,7 @@ public class RicheseCommands {
             noField = territory.getRicheseNoField() == null ? noField : territory.getRicheseNoField();
             if (territory.getRicheseNoField() != null) {
                 CommandManager.placeForceInTerritory(territory, game.getFaction("Richese"), noField, false);
-                discordGame.sendMessage("turn-summary", "The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
+                discordGame.queueMessage("turn-summary", "The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
             }
             territory.setRicheseNoField(null);
         }
@@ -172,7 +172,7 @@ public class RicheseCommands {
         } else if (!bidding.isRicheseCacheCard()) {
             throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
-        discordGame.sendMessage("turn-summary", MessageFormat.format(
+        discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} {1} has been removed from the game.",
                     Emojis.RICHESE, bidding.getBidCard().name()));
         bidding.clearBidCardInfo(null);
@@ -197,7 +197,7 @@ public class RicheseCommands {
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
         faction.subtractSpice(3);
-        discordGame.sendMessage("turn-summary", faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
         discordGame.pushGame();
     }
 
@@ -226,10 +226,10 @@ public class RicheseCommands {
         if (bidType.equalsIgnoreCase("Silent")) {
             bidding.setSilentAuction(true);
             if (blackMarket) {
-                discordGame.sendMessage("bidding-phase", "We will now silently auction a card from Richese's " +
+                discordGame.queueMessage("bidding-phase", "We will now silently auction a card from Richese's " +
                         "hand on the black market! Please place your bid in your private channels.");
             } else {
-                discordGame.sendMessage("bidding-phase",
+                discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
                                 "We will now silently auction a brand new Richese {0} {1} {0}!  Please place your bid in your private channels.",
                                 Emojis.TREACHERY, bidding.getBidCard().name()
@@ -277,7 +277,7 @@ public class RicheseCommands {
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
 
             Faction faction = game.getFaction(filteredBidOrder.get(0));
-            discordGame.sendMessage("bidding-phase", message.toString());
+            discordGame.queueMessage("bidding-phase", message.toString());
             RunCommands.createBidMessage(discordGame, game);
             bidding.advanceBidder(game);
         }

@@ -20,7 +20,7 @@ public class TechToken {
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice == 0) {
                     tt.spice = faction.getTechTokens().size();
-                    discordGame.sendMessage("turn-summary", tt.spice + " " + Emojis.SPICE + " is placed on " + Emojis.getTechTokenEmoji(techToken));
+                    discordGame.queueMessage("turn-summary", tt.spice + " " + Emojis.SPICE + " is placed on " + Emojis.getTechTokenEmoji(techToken));
                 }
             }
         }
@@ -32,7 +32,7 @@ public class TechToken {
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice > 0) {
                     faction.addSpice(tt.spice);
-                    discordGame.sendMessage("turn-summary", faction.getEmoji() +  " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
+                    discordGame.queueMessage("turn-summary", faction.getEmoji() +  " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
                     CommandManager.spiceMessage(discordGame, tt.spice, faction.getName(), "for " + Emojis.getTechTokenEmoji(techToken), true);
                     tt.spice = 0;
                     break;

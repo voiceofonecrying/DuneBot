@@ -4,7 +4,6 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
@@ -18,18 +17,22 @@ import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.FluentRestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageCreateRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -41,6 +44,8 @@ public class DiscordGame {
     private Game game;
 
     private GenericInteractionCreateEvent event;
+
+    private final List<FluentRestAction> messageQueue = new ArrayList<>();
 
     public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
@@ -211,41 +216,120 @@ public class DiscordGame {
         if (getEvent() instanceof SlashCommandInteractionEvent) {
             SlashCommandInteractionEvent slashCommandInteractionEvent = (SlashCommandInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Command: `" + slashCommandInteractionEvent.getCommandString() + "`";
-            sendMessage("bot-data", message, fileUpload);
+            queueMessage("bot-data", message, fileUpload);
         }
         else {
             ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + buttonInteractionEvent.getMember().getUser().getName() + "`";
-            sendMessage("bot-data", message, fileUpload);
+            queueMessage("bot-data", message, fileUpload);
         }
     }
 
-    public void sendMessage(String name, String message) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
-        if (this.game.getMute()) return;
-        channel.sendMessage(message).queue();
-    }
     public MessageCreateAction prepareMessage(String name, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(name);
         return channel.sendMessage(message);
     }
 
-    public void sendMessage(String name, MessageCreateData message) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
-        if (this.game.getMute()) return;
-        channel.sendMessage(message).queue();
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param message Message to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, String message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        messageQueue.add(channel.sendMessage(message));
     }
 
-    public void sendMessage(String name, String message, FileUpload fileUpload) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
-        if (this.game.getMute()) return;
-        channel.sendMessage(message).addFiles(fileUpload).queue();
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param message Message to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, MessageCreateData message) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        messageQueue.add(channel.sendMessage(message));
     }
 
-    public void sendMessage(String name, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param message Message to send.
+     * @param fileUpload File to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, String message, FileUpload fileUpload) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        messageQueue.add(channel.sendMessage(message).addFiles(fileUpload));
+    }
+
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param message Message to send.
+     * @param fileUploads Files to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        messageQueue.add(channel.sendMessage(message).addFiles(fileUploads));
+    }
+
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Channel name to send the message to.
+     * @param fileUpload File to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, FileUpload fileUpload) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        MessageCreateBuilder messageCreateBuilder =
+                (new MessageCreateBuilder()).addFiles(fileUpload);
+        messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
+    }
+
+    public void queueMessage(String channelName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
+    }
+
+    public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
+        messageQueue.add(messageCreateAction);
+    }
+
+    public void queueMessage(MessageCreateAction messageCreateAction) {
+        messageQueue.add(messageCreateAction);
+    }
+
+    public void queueMessage(String message) {
+        messageQueue.add(getHook().sendMessage(message));
+    }
+
+    public void queueMessage(MessageCreateBuilder message) {
+        messageQueue.add(getHook().sendMessage(message.build()));
+    }
+
+    public void queueMessageToEphemeral(String message) {
+        messageQueue.add(getHook().sendMessage(message).setEphemeral(true));
+    }
+
+    private InteractionHook getHook() {
+        if (event instanceof SlashCommandInteractionEvent)
+            return ((SlashCommandInteractionEvent) event).getHook();
+        else if (event instanceof ButtonInteractionEvent)
+            return ((ButtonInteractionEvent) event).getHook();
+        else
+            throw new IllegalArgumentException("Unknown event type");
+    }
+
+    /**
+     * Sends all messages in the message queue.
+     */
+    public void sendAllMessages() {
         if (this.game.getMute()) return;
-        channel.sendMessage(message).addFiles(fileUploads).queue();
+        messageQueue.forEach(FluentRestAction::complete);
+        messageQueue.clear();
     }
 
     /**

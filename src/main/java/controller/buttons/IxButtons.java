@@ -33,7 +33,7 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        event.getHook().sendMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".").queue();
+        discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
         IxCommands.confirmStartingCard(discordGame, game, event.getComponentId().split("-")[4]);
     }
 
@@ -44,7 +44,7 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        event.getHook().sendMessage("Choosing a different card.").queue();
+        discordGame.queueMessage("Choosing a different card.");
         IxCommands.initialCardButtons(discordGame, game);
     }
 
@@ -55,19 +55,18 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        event.getHook().sendMessage("You will keep " + event.getComponentId().split("-")[2].trim() + ".").queue();
+        discordGame.queueMessage("You will keep " + event.getComponentId().split("-")[2].trim() + ".");
         IxCommands.ixHandSelection(discordGame, game, event.getComponentId().split("-")[2]);
     }
 
     private static void cardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[4]);
         if (buttonTurn != game.getTurn()) {
             throw new InvalidGameStateException("Button is from turn " + buttonTurn);
         } else if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
-        event.getHook().sendMessage("You selected " + event.getComponentId().split("-")[6].trim() + ".").queue();
+        discordGame.queueMessage("You selected " + event.getComponentId().split("-")[6].trim() + ".");
         IxCommands.sendBackLocationButtons(discordGame, game, event.getComponentId().split("-")[6]);
     }
 
@@ -85,7 +84,7 @@ public class IxButtons implements Pressable {
         if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
-        event.getHook().sendMessage("Choosing a different card.").queue();
+        discordGame.queueMessage("Choosing a different card.");
         IxCommands.cardToRejectButtons(discordGame, game);
     }
 }

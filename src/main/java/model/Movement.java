@@ -25,7 +25,7 @@ public class Movement {
         if (movingNoField) {
             to.setRicheseNoField(from.getRicheseNoField());
             from.setRicheseNoField(null);
-            discordGame.sendMessage("turn-summary", Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
+            discordGame.queueMessage("turn-summary", Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
         }
         if (force != 0 || specialForce != 0) CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
         clear();

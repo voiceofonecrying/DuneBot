@@ -35,10 +35,10 @@ public class MoritaniFaction extends Faction {
     }
     public void triggerTerrorToken(Game game, DiscordGame discordGame, Faction triggeringFaction, Territory location, String terror) throws ChannelNotFoundException, IOException {
 
-        discordGame.sendMessage("turn-summary", "The " + terror + " token has been triggered!");
+        discordGame.queueMessage("turn-summary", "The " + terror + " token has been triggered!");
 
         switch (terror) {
-            case "Assassination" -> discordGame.sendMessage("mod-info", "Send a random " + triggeringFaction.getEmoji()
+            case "Assassination" -> discordGame.queueMessage("mod-info", "Send a random " + triggeringFaction.getEmoji()
                     + " leader to the tanks. " + Emojis.MORITANI + " collects " + Emojis.SPICE + " for it.");
             case "Atomics" -> {
                 this.handLimit = 3;
@@ -58,7 +58,7 @@ public class MoritaniFaction extends Faction {
                         Button.primary("moritani-robbery-draw", "Draw card")).queue();
             case "Sabotage" -> {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
-                discordGame.sendMessage("turn-summary", triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
+                discordGame.queueMessage("turn-summary", triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
                 game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(triggeringFaction.getTreacheryHand().get(0).name()));
                 MessageCreateAction message = discordGame.prepareMessage("moritani-chat", "Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?");
 

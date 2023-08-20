@@ -70,9 +70,9 @@ public class IxCommands {
         String message = "You sent " + cardName + " to the " + location.toLowerCase() + " of the deck.";
         if (fromButton)
             event.getHook().sendMessage(message).queue();
-        else 
-            discordGame.sendMessage("ix-chat", message);
-        discordGame.sendMessage("turn-summary", Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+        else
+            discordGame.queueMessage("ix-chat", message);
+        discordGame.queueMessage("turn-summary", Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
         discordGame.pushGame();
     }
 
@@ -111,7 +111,7 @@ public class IxCommands {
             for (TreacheryCard card : bidding.getMarket()) {
                 message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
             }
-            discordGame.sendMessage("ix-chat", message.toString());
+            discordGame.queueMessage("ix-chat", message.toString());
         }
     }
     public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

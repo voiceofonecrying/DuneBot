@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
@@ -76,7 +75,7 @@ public class HarkCommands {
         }
         game.getFaction("Harkonnen").getLeaders().removeIf(l -> l.name().equals(returningLeader));
 
-        discordGame.sendMessage("turn-summary", returningLeader + " has returned to their original owner.");
+        discordGame.queueMessage("turn-summary", returningLeader + " has returned to their original owner.");
         
         discordGame.pushGame();
 
@@ -96,13 +95,13 @@ public class HarkCommands {
         faction.removeLeader(leader);
 
         if (leader.skillCard() != null) {
-            discordGame.sendMessage("turn-summary", MessageFormat.format(
+            discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} have captured a {1} skilled leader: {2} the {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(),
                     leader.name(), leader.skillCard().name()
             ));
         } else {
-            discordGame.sendMessage("turn-summary", MessageFormat.format(
+            discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} have captured a {1} leader",
                     harkonnenFaction.getEmoji(), faction.getEmoji()
             ));
@@ -129,12 +128,12 @@ public class HarkCommands {
         harkonnenFaction.addSpice(2);
 
         if (leader.skillCard()!= null) {
-            discordGame.sendMessage("turn-summary", MessageFormat.format(
+            discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name(), Emojis.SPICE
             ));
         } else {
-            discordGame.sendMessage("turn-summary", MessageFormat.format(
+            discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} has killed the {1} leader for 2 {2}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
             ));
@@ -145,7 +144,7 @@ public class HarkCommands {
 
         game.getLeaderTanks().add(killedLeader);
 
-        discordGame.sendMessage(factionName.toLowerCase() + "-chat", killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.queueMessage(factionName.toLowerCase() + "-chat", killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
 
         CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
 

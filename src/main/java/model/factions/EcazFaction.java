@@ -52,7 +52,7 @@ public class EcazFaction extends Faction {
 
     public void triggerAmbassador(Game game, DiscordGame discordGame, Faction triggeringFaction, String ambassador) throws ChannelNotFoundException {
 
-        discordGame.sendMessage("turn-summary", "The " + ambassador + " ambassador has been triggered!");
+        discordGame.queueMessage("turn-summary", "The " + ambassador + " ambassador has been triggered!");
 
         switch (ambassador) {
             case "Ecaz" -> {
@@ -66,7 +66,7 @@ public class EcazFaction extends Faction {
                         .addActionRow(getVidal, offerAlliance).queue();
                 ambassadorPool.add("Ecaz");
             }
-            case "Atreides" -> discordGame.sendMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
+            case "Atreides" -> discordGame.queueMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
             case "BG" -> {
                 List<String> triggerOptions = ambassadorPool.subList(5, 9);
                 List<Button> buttons = new LinkedList<>();
@@ -77,17 +77,17 @@ public class EcazFaction extends Faction {
                         .addActionRow(buttons).queue();
                 ambassadorPool.removeIf(s -> s.equals("Bene Gesserit"));
             }
-            case "CHOAM" -> discordGame.sendMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
+            case "CHOAM" -> discordGame.queueMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
                 CommandManager.spiceMessage(discordGame, 5, "ecaz", Emojis.EMPEROR + " ambassador token", true);
                 addSpice(5);
             }
-            case "Fremen" -> discordGame.sendMessage("mod-info", "Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
-            case "Harkonnen" -> discordGame.sendMessage("mod-info", "Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
-            case "Ix" -> discordGame.sendMessage("mod-info", "Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
-            case "Richese" -> discordGame.sendMessage("mod-info", "Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
-            case "Guild" -> discordGame.sendMessage("mod-info", "Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
-            case "BT" -> discordGame.sendMessage("mod-info", "BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
+            case "Fremen" -> discordGame.queueMessage("mod-info", "Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
+            case "Harkonnen" -> discordGame.queueMessage("mod-info", "Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
+            case "Ix" -> discordGame.queueMessage("mod-info", "Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
+            case "Richese" -> discordGame.queueMessage("mod-info", "Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
+            case "Guild" -> discordGame.queueMessage("mod-info", "Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
+            case "BT" -> discordGame.queueMessage("mod-info", "BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
         }
 
         for (Territory territory : game.getTerritories().values()) {

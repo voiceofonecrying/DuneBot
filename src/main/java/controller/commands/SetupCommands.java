@@ -203,11 +203,11 @@ public class SetupCommands {
                 game.getSetupSteps().stream().map(SetupStep::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.sendMessage("mod-info", stringBuilder);
+        discordGame.queueMessage("mod-info", stringBuilder);
     }
 
     public static StepStatus runSetupStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, SetupStep setupStep) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        discordGame.sendMessage("mod-info", "Starting step " + setupStep.name());
+        discordGame.queueMessage("mod-info", "Starting step " + setupStep.name());
 
         StepStatus stepStatus = StepStatus.STOP;
 
@@ -247,15 +247,15 @@ public class SetupCommands {
         String userName = player.getNickname();
 
         if (game.getTurn() != 0) {
-            modInfo.sendMessage("The game has already started, you can't add more factions!").queue();
+            discordGame.queueMessage("mod-info", "The game has already started, you can't add more factions!");
             return;
         }
         if (game.getFactions().size() >= 6) {
-            modInfo.sendMessage("This game is already full!").queue();
+            discordGame.queueMessage("mod-info", "This game is already full!");
             return;
         }
         if (game.hasFaction(factionName)) {
-            modInfo.sendMessage("This faction has already been taken!").queue();
+            discordGame.queueMessage("mod-info", "This faction has already been taken!");
             return;
         }
         Faction faction;
@@ -303,7 +303,7 @@ public class SetupCommands {
                 game.getGameOptions().stream().map(GameOption::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.sendMessage("mod-info", stringBuilder);
+        discordGame.queueMessage("mod-info", stringBuilder);
     }
 
     public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -365,7 +365,7 @@ public class SetupCommands {
 
         Collections.shuffle(game.getTraitorDeck());
 
-        discordGame.sendMessage(faction.getName().toLowerCase() + "-chat",
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat",
                 MessageFormat.format(
                         "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
                         traitor.name()
@@ -416,7 +416,7 @@ public class SetupCommands {
     public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Collections.shuffle(game.getFactions());
 
-        discordGame.sendMessage("turn-summary", "__**Game Setup**__");
+        discordGame.queueMessage("turn-summary", "__**Game Setup**__");
 
         ShowCommands.showBoard(discordGame, game);
 
@@ -424,14 +424,14 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("bg-chat", game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
+        discordGame.queueMessage("bg-chat", game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
 
         return StepStatus.STOP;
     }
 
     public static StepStatus fremenForcesStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction fremen = game.getFaction("Fremen");
-        discordGame.sendMessage("game-actions",
+        discordGame.queueMessage("game-actions",
                 MessageFormat.format(
                         "{0} Please provide the placement of your 10 starting {1} and {2} forces including sector. {3}",
                         fremen.getEmoji(),
@@ -446,7 +446,7 @@ public class SetupCommands {
 
     public static StepStatus bgForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction bg = game.getFaction("BG");
-        discordGame.sendMessage("game-actions",
+        discordGame.queueMessage("game-actions",
                 MessageFormat.format(
                         "{0} Please provide the placement of your starting {1} or {2}. {3}",
                         bg.getEmoji(),
@@ -461,7 +461,7 @@ public class SetupCommands {
 
     public static StepStatus moritaniForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction moritani = game.getFaction("Moritani");
-        discordGame.sendMessage("game-actions",
+        discordGame.queueMessage("game-actions",
                 MessageFormat.format(
                         "{0} Please provide the placement of your starting {1}. {2}",
                         moritani.getEmoji(),
@@ -479,11 +479,11 @@ public class SetupCommands {
             ixFaction.setHandLimit(6);
             for (Faction faction : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
-            discordGame.sendMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
+            discordGame.queueMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
             IxCommands.initialCardButtons(discordGame, game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
-            discordGame.sendMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
+            discordGame.queueMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
             return StepStatus.CONTINUE;
         }
     }
@@ -521,7 +521,7 @@ public class SetupCommands {
                     ) +
                     faction.getPlayer();
 
-            discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage);
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage);
         }
 
         return StepStatus.STOP;
@@ -545,7 +545,7 @@ public class SetupCommands {
             leaderSkills.add(leaderSkillInfo);
         }
 
-        discordGame.sendMessage(channelName, "__**Setup: Leader Skills**__");
+        discordGame.queueMessage(channelName, "__**Setup: Leader Skills**__");
 
         for (Map<String, String> leaderSkill : leaderSkills) {
             String message = MessageFormat.format(
@@ -558,9 +558,9 @@ public class SetupCommands {
             Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(event.getGuild(), leaderSkill.get("skill"));
 
             if (fileUpload.isEmpty()) {
-                discordGame.sendMessage(channelName, message);
+                discordGame.queueMessage(channelName, message);
             } else {
-                discordGame.sendMessage(channelName, message, fileUpload.get());
+                discordGame.queueMessage(channelName, message, fileUpload.get());
             }
         }
 
@@ -581,11 +581,11 @@ public class SetupCommands {
 
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
-            discordGame.sendMessage("mod-info", "Harkonnen can mulligan");
-            discordGame.sendMessage("harkonnen-chat",faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
+            discordGame.queueMessage("mod-info", "Harkonnen can mulligan");
+            discordGame.queueMessage("harkonnen-chat",faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
-            discordGame.sendMessage("mod-info", "Harkonnen can not mulligan");
+            discordGame.queueMessage("mod-info", "Harkonnen can not mulligan");
             return StepStatus.CONTINUE;
         }
     }
@@ -595,7 +595,7 @@ public class SetupCommands {
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.get(0));
         game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().name()));
-        discordGame.sendMessage("turn-summary", Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
+        discordGame.queueMessage("turn-summary", Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
         return StepStatus.CONTINUE;
     }
 
@@ -624,12 +624,12 @@ public class SetupCommands {
                     game.drawCard("traitor deck", faction.getName());
                 }
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " please select your traitor.");
+                    discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " please select your traitor.");
                 }
             }
         }
 
-        discordGame.sendMessage("turn-summary", "__**Setup: Traitors**__");
+        discordGame.queueMessage("turn-summary", "__**Setup: Traitors**__");
 
         return StepStatus.STOP;
     }
@@ -639,7 +639,7 @@ public class SetupCommands {
         game.drawCard("traitor deck", "BT");
         game.drawCard("traitor deck", "BT");
 
-        discordGame.sendMessage("turn-summary", "Bene Tleilax have drawn their Face Dancers.");
+        discordGame.queueMessage("turn-summary", "Bene Tleilax have drawn their Face Dancers.");
 
         return StepStatus.CONTINUE;
     }
@@ -647,19 +647,19 @@ public class SetupCommands {
     public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction1 = game.getFactions().get(0);
         Faction faction2 = game.getFactions().get(game.getFactions().size() - 1);
-        discordGame.sendMessage(faction1.getName().toLowerCase() + "-chat",
+        discordGame.queueMessage(faction1.getName().toLowerCase() + "-chat",
                 faction1.getPlayer() + " Please submit your dial for initial storm position (0-20)."
         );
-        discordGame.sendMessage(faction2.getName().toLowerCase() + "-chat",
+        discordGame.queueMessage(faction2.getName().toLowerCase() + "-chat",
                 faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);
-        discordGame.sendMessage("turn-summary", "Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
+        discordGame.queueMessage("turn-summary", "Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
 
         return StepStatus.STOP;
     }
 
     public static StepStatus ixHMSPlacementStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("mod-info", "Use /placehms to set the initial placement of the HMS then /setup advance.");
+        discordGame.queueMessage("mod-info", "Use /placehms to set the initial placement of the HMS then /setup advance.");
 
         return StepStatus.STOP;
     }
@@ -667,7 +667,7 @@ public class SetupCommands {
     public static StepStatus startGameStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.advanceTurn();
         game.setSetupFinished(true);
-        discordGame.sendMessage("mod-info", "The game has begun!");
+        discordGame.queueMessage("mod-info", "The game has begun!");
 
         return StepStatus.STOP;
     }
@@ -693,7 +693,7 @@ public class SetupCommands {
 
         faction.getLeaderSkillsHand().clear();
 
-        discordGame.sendMessage(
+        discordGame.queueMessage(
                 faction.getName().toLowerCase() + "-chat",
                 MessageFormat.format("After years of training, {0} has become a {1}! ",
                         updatedLeader.name(), leaderSkillCard.name()

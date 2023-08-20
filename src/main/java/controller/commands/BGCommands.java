@@ -56,7 +56,7 @@ public class BGCommands {
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));
-        discordGame.sendMessage("turn-summary", Emojis.BG + " advise to " + territory.getTerritoryName());
+        discordGame.queueMessage("turn-summary", Emojis.BG + " advise to " + territory.getTerritoryName());
 
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
@@ -76,7 +76,7 @@ public class BGCommands {
         if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
         else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
         else {
-            discordGame.sendMessage("mod-info","No Bene Gesserit were found in that territory.");
+            discordGame.queueMessage("mod-info","No Bene Gesserit were found in that territory.");
             return;
         }
         discordGame.pushGame();

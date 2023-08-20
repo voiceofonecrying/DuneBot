@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -35,7 +34,6 @@ import java.util.*;
 import java.util.List;
 
 import static controller.commands.CommandOptions.faction;
-import static controller.commands.CommandOptions.gameName;
 
 public class ShowCommands {
     public static List<CommandData> getCommands() {
@@ -347,10 +345,7 @@ public class ShowCommands {
         ImageIO.write(board, "png", boardOutputStream);
 
         FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
-        discordGame.getTextChannel("turn-summary")
-                .sendFiles(boardFileUpload)
-                .queue();
-
+        discordGame.queueMessage("turn-summary", boardFileUpload);
     }
 
     private static BufferedImage buildForceImage(String force, int strength) throws IOException {
@@ -494,7 +489,7 @@ public class ShowCommands {
 
         MessageCreateData data = builder.build();
 
-        discordGame.sendMessage(infoChannelName, data);
+        discordGame.queueMessage(infoChannelName, data);
 
         List<TreacheryCard> treacheryCards = faction.getTreacheryHand();
         if (treacheryCards.isEmpty()) return;
@@ -514,7 +509,7 @@ public class ShowCommands {
         }
 
         treacheryCardMessageBuilder.addContent(treacheryString.toString());
-        discordGame.sendMessage(infoChannelName, treacheryCardMessageBuilder.build());
+        discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
         //discordGame.prepareMessage(faction.getName().toLowerCase() + "-info", "Use these buttons to take the corresponding actions.").addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).queue();
     }
 
@@ -584,9 +579,9 @@ public class ShowCommands {
             }
 
             if (uploads.isEmpty()) {
-                discordGame.sendMessage("front-of-shield", message.toString());
+                discordGame.queueMessage("front-of-shield", message.toString());
             } else {
-                discordGame.sendMessage("front-of-shield", message.toString(), uploads);
+                discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
         }
     }

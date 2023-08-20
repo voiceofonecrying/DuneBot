@@ -59,7 +59,7 @@ public class PlayerCommands {
     private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
-        discordGame.sendMessage("mod-info", faction.getEmoji() + " passed their bid.");
+        discordGame.queueMessage("mod-info", faction.getEmoji() + " passed their bid.");
         tryBid(discordGame, game, faction);
         if (faction.isAutoBid()) return "You will auto-pass until the next card or until you set auto-pass to false.";
         return "You will pass one time.";
@@ -70,7 +70,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setAutoBid(enabled);
         String responseMessage = faction.getEmoji() + " set auto-pass to " + enabled;
-        discordGame.sendMessage("mod-info", responseMessage);
+        discordGame.queueMessage("mod-info", responseMessage);
         tryBid(discordGame, game, faction);
         responseMessage = "You set auto-pass to " + enabled + ".";
         if (enabled) {
@@ -84,8 +84,8 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setUseExact(useExact);
         String responseMessage = faction.getEmoji() + " set their auto-bid policy to " + (useExact ? "exact" : "increment");
-        discordGame.sendMessage("mod-info", responseMessage);
-        discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage);
+        discordGame.queueMessage("mod-info", responseMessage);
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", responseMessage);
 
         responseMessage = "You set your auto-bid policy to " + (useExact ? "exact" : "increment");
         int bidAmount = faction.getMaxBid();
@@ -107,7 +107,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         int bidAmount = discordGame.required(amount).getAsInt();
         faction.setMaxBid(bidAmount);
-        discordGame.sendMessage("mod-info", faction.getEmoji() + " set their bid to " + bidAmount);
+        discordGame.queueMessage("mod-info", faction.getEmoji() + " set their bid to " + bidAmount);
         String responseMessage = "You will bid ";
         if (faction.isUseExactBid()) {
             responseMessage += "exactly " + bidAmount + " if possible.";
@@ -125,8 +125,8 @@ public class PlayerCommands {
             outbidAllyValue = discordGame.optional(outbidAlly).getAsBoolean();
             faction.setOutbidAlly(outbidAllyValue);
             responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
-            discordGame.sendMessage("mod-info", responseMessage2);
-            discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
+            discordGame.queueMessage("mod-info", responseMessage2);
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
         }
         if (faction.hasAlly()) {
             responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";
@@ -171,47 +171,47 @@ public class PlayerCommands {
                 topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
 
              if (topBidderDeclared || allPlayersPassed || onceAroundFinished) {
-                discordGame.sendMessage("mod-info", game.getMod() + " The current card can be completed.");
+                discordGame.queueMessage("mod-info", game.getMod() + " The current card can be completed.");
             }
 
             if (onceAroundFinished) {
                 if (allPlayersPassed) {
-                    discordGame.sendMessage("bidding-phase", "All players passed.\n");
+                    discordGame.queueMessage("bidding-phase", "All players passed.\n");
                     if (bidding.isRicheseCacheCard()) {
-                        discordGame.sendMessage("bidding-phase", Emojis.RICHESE + " may take cache card for free or remove it from the game.");
-                        discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
+                        discordGame.queueMessage("bidding-phase", Emojis.RICHESE + " may take cache card for free or remove it from the game.");
+                        discordGame.queueMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
                     } else {
                         bidding.decrementBidCardNumber();
                         CommandManager.awardTopBidder(discordGame, game);
-                        discordGame.sendMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
-                        discordGame.sendMessage("mod-info", "Use /run advance to continue the bidding phase.");
+                        discordGame.queueMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
+                        discordGame.queueMessage("mod-info", "Use /run advance to continue the bidding phase.");
                         return;
                     }
                 }
                 else {
                     CommandManager.awardTopBidder(discordGame, game);
-                    discordGame.sendMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
+                    discordGame.queueMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
                     if (bidding.isRicheseCacheCard()) {
                         if (bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
-                            discordGame.sendMessage("mod-info", "Use /run advance to end the bidding phase.");
+                            discordGame.queueMessage("mod-info", "Use /run advance to end the bidding phase.");
                         } else {
-                            discordGame.sendMessage("mod-info", "Use /run bidding to put the next card up for bid.");
+                            discordGame.queueMessage("mod-info", "Use /run bidding to put the next card up for bid.");
                         }
                     } else {
-                        discordGame.sendMessage("mod-info", "Use /run advance to continue the bidding phase.");
+                        discordGame.queueMessage("mod-info", "Use /run advance to continue the bidding phase.");
                     }
                     return;
                 }
             } else if (allPlayersPassed) {
-                discordGame.sendMessage("bidding-phase", "All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
+                discordGame.queueMessage("bidding-phase", "All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
                 String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";
                 if (bidding.isRicheseCacheCardOutstanding())
                     modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
                 else
                     modMessage += " and end the bidding phase.";
-                discordGame.sendMessage("mod-info", modMessage);
+                discordGame.queueMessage("mod-info", modMessage);
             } else if (topBidderDeclared) {
-                discordGame.sendMessage("mod-info", "Use /awardtopbidder to assign card to the winner and pay appropriate recipient.\nUse /awardbid if a Karama affected winner or payment.");
+                discordGame.queueMessage("mod-info", "Use /awardtopbidder to assign card to the winner and pay appropriate recipient.\nUse /awardbid if a Karama affected winner or payment.");
             }
 
             faction = game.getFaction(bidding.advanceBidder(game));

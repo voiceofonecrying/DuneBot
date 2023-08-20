@@ -14,7 +14,7 @@ public class AtreidesCommands {
     public static void sendAtreidesCardPrescience(DiscordGame discordGame, Game game, TreacheryCard card) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (game.hasFaction("Atreides")) {
-            discordGame.sendMessage("atreides-chat",
+            discordGame.queueMessage("atreides-chat",
                     MessageFormat.format(
                             "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
                             Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()

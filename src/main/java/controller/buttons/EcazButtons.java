@@ -12,6 +12,7 @@ import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 
@@ -38,16 +39,15 @@ public class EcazButtons implements Pressable {
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
         int cost = Integer.parseInt(event.getComponentId().split("-")[5]);
         if (cost > ecazFaction.getSpice()) {
-            event.getHook().sendMessage("You can't afford to send your ambassador.").queue();
+            discordGame.queueMessage("You can't afford to send your ambassador.");
             return;
         }
         ecazFaction.subtractSpice(cost);
         CommandManager.spiceMessage(discordGame, cost, ecazFaction.getName(), " ambassador to " + territory.getTerritoryName(), false);
-        ShowCommands.writeFactionInfo(discordGame, ecazFaction);
         ecazFaction.placeAmbassador(territory, ambassador);
-        discordGame.sendMessage("turn-summary", "An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
+        discordGame.queueMessage("turn-summary", "An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
         discordGame.pushGame();
-        event.getHook().sendMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName()).queue();
+        discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
         ecazFaction.sendAmbassadorLocationMessage(game, discordGame, cost + 1);
     }
 
@@ -56,7 +56,7 @@ public class EcazButtons implements Pressable {
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         int cost = Integer.parseInt(event.getComponentId().split("-")[4]);
         if (cost > ecazFaction.getSpice()) {
-            event.getHook().sendMessage("You can't afford to send your ambassador.").queue();
+            discordGame.queueMessage("You can't afford to send your ambassador.");
             return;
         }
         ecazFaction.sendAmbassadorMessage(discordGame, territory.getTerritoryName(), cost);
@@ -64,26 +64,26 @@ public class EcazButtons implements Pressable {
 
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
-        event.getHook().sendMessage("Your Bene Gesserit token will be used for the " + event.getComponentId().split("-")[3] + " effect.").queue();
+        discordGame.queueMessage("Your Bene Gesserit token will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         event.getMessage().delete().queue();
         faction.triggerAmbassador(game, discordGame, game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
         discordGame.pushGame();
     }
 
     private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        event.getHook().sendMessage("You have sent the Ambassador away empty-handed.").queue();
-        discordGame.sendMessage("ecaz-chat", "Your ambassador has returned with news that no alliance will take place.");
+        discordGame.queueMessage("You have sent the Ambassador away empty-handed.");
+        discordGame.queueMessage("ecaz-chat", "Your ambassador has returned with news that no alliance will take place.");
         event.getMessage().delete().queue();
     }
 
     private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        event.getHook().sendMessage("You have sent the Ambassador away with news of their new alliance!").queue();
+        discordGame.queueMessage("You have sent the Ambassador away with news of their new alliance!");
         event.getMessage().delete().queue();
 
         faction.setAlly("Ecaz");
         game.getFaction("Ecaz").setAlly(faction.getName());
-        discordGame.sendMessage("turn-summary", Emojis.ECAZ + " and " + faction.getEmoji() + " have formed an alliance!");
+        discordGame.queueMessage("turn-summary", Emojis.ECAZ + " and " + faction.getEmoji() + " have formed an alliance!");
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
     }
@@ -91,9 +91,11 @@ public class EcazButtons implements Pressable {
 
 
     private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.prepareMessage(event.getComponentId().replace("ecaz-offer-alliance-", "").toLowerCase() + "-chat", "An ambassador of Ecaz has approached you to offer a formal alliance.  Do you accept?")
-                .addActionRow(Button.primary("ecaz-accept-offer", "Yes"), Button.danger("ecaz-deny-offer", "No")).queue();
-        event.getHook().sendMessage("Your ambassador has been sent to negotiate an alliance.").queue();
+        discordGame.queueMessage(event.getComponentId().replace("ecaz-offer-alliance-", "").toLowerCase() + "-chat",
+                new MessageCreateBuilder().setContent("An ambassador of Ecaz has approached you to offer a formal alliance.  Do you accept?")
+                        .addActionRow(Button.primary("ecaz-accept-offer", "Yes"), Button.danger("ecaz-deny-offer", "No"))
+                );
+        discordGame.queueMessage("Your ambassador has been sent to negotiate an alliance.");
         event.getMessage().delete().queue();
     }
 
@@ -102,8 +104,7 @@ public class EcazButtons implements Pressable {
         if (!ecaz.getLeader("Duke Vidal").isEmpty()) return;
         ecaz.addLeader(new Leader("Duke Vidal", 6, null, false));
         discordGame.pushGame();
-        event.getHook().sendMessage("Duke Vidal has been returned to you!").queue();
-        ShowCommands.writeFactionInfo(discordGame, "Ecaz");
+        discordGame.queueMessage("Duke Vidal has been returned to you!");
         event.getMessage().delete().queue();
     }
 

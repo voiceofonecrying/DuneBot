@@ -103,9 +103,10 @@ public class CommandManager extends ListenerAdapter {
                 }
 
                 if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
+                discordGame.sendAllMessages();
             }
 
-            if (ephemeralMessage.length() == 0) ephemeralMessage = "Command Done.";
+            if (ephemeralMessage.isEmpty()) ephemeralMessage = "Command Done.";
             event.getHook().editOriginal(ephemeralMessage).queue();
         } catch (InvalidGameStateException e) {
             event.getHook().editOriginal(e.getMessage()).queue();
@@ -277,8 +278,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         DiscordGame discordGame = new DiscordGame(category);
-
-        discordGame.getTextChannel("rules").sendMessage(MessageFormat.format(
+        discordGame.queueMessage("rules", MessageFormat.format(
                 """
             {0}  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
             {1}  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
@@ -290,7 +290,7 @@ public class CommandManager extends ListenerAdapter {
                 Emojis.IX, Emojis.BT,
                 Emojis.CHOAM, Emojis.RICHESE,
                 Emojis.ECAZ, Emojis.MORITANI
-        )).queue();
+        ));
 
         Game game = new Game();
         game.setGameRole(gameRoleValue.getName());
@@ -354,7 +354,7 @@ public class CommandManager extends ListenerAdapter {
 
         String frontOfShieldMessage = add ? "to front of shield" : "from front of shield";
 
-        discordGame.sendMessage(
+        discordGame.queueMessage(
                 "turn-summary",
                 MessageFormat.format(
                         "{0} {1} {2} {3} {4} {5}",
@@ -466,7 +466,7 @@ public class CommandManager extends ListenerAdapter {
 
         discordGame.pushGame();
 
-        discordGame.sendMessage("turn-summary", message.toString());
+        discordGame.queueMessage("turn-summary", message.toString());
         ShowCommands.showBoard(discordGame, game);
     }
 
@@ -502,7 +502,7 @@ public class CommandManager extends ListenerAdapter {
         String cardName = discordGame.required(card).getAsString();
 
         game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
-        discordGame.sendMessage("turn-summary", faction.getEmoji() + " discards " + cardName);
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards " + cardName);
         discordGame.pushGame();
     }
 
@@ -578,7 +578,7 @@ public class CommandManager extends ListenerAdapter {
                 bidding.getBidCardNumber()
         );
 
-        discordGame.sendMessage("turn-summary",
+        discordGame.queueMessage("turn-summary",
                 MessageFormat.format(
                         "{0} wins {1} for {2} {3}",
                         winner.getEmoji(),
@@ -596,7 +596,7 @@ public class CommandManager extends ListenerAdapter {
             Faction paidToFaction = game.getFaction(paidToFactionName);
             spiceMessage(discordGame, spentValue, paidToFaction.getName(), currentCard, true);
             game.getFaction(paidToFaction.getName()).addSpice(spentValue);
-            discordGame.sendMessage("turn-summary",
+            discordGame.queueMessage("turn-summary",
                     MessageFormat.format(
                             "{0} is paid {1} {2} for {3}",
                             paidToFaction.getEmoji(),
@@ -615,13 +615,13 @@ public class CommandManager extends ListenerAdapter {
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
             if (game.getTreacheryDeck().isEmpty()) {
                 List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                discordGame.queueMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
                 game.getTreacheryDeck().addAll(treacheryDiscard);
                 treacheryDiscard.clear();
             }
 
             game.drawCard("treachery deck", "Harkonnen");
-            discordGame.sendMessage("turn-summary", MessageFormat.format(
+            discordGame.queueMessage("turn-summary", MessageFormat.format(
                     "{0} draws another card from the {1} deck.",
                     winner.getEmoji(), Emojis.TREACHERY
             ));
@@ -634,7 +634,7 @@ public class CommandManager extends ListenerAdapter {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                discordGame.sendMessage(channel.getName(),
+                discordGame.queueMessage(channel.getName(),
                         MessageFormat.format(
                                 "{0}{1}{2} {3}",
                                 plusSign,
@@ -688,7 +688,7 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
-        discordGame.sendMessage("turn-summary", targetFaction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(targetFaction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
+        discordGame.queueMessage("turn-summary", targetFaction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(targetFaction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
         discordGame.pushGame();
     }
 
@@ -719,7 +719,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (isShipment) {
             if (targetFaction.getShipment().hasShipped()) {
-                discordGame.sendMessage("mod-info", "This faction has already shipped.");
+                discordGame.queueMessage("mod-info", "This faction has already shipped.");
                 return;
             }
             targetFaction.getShipment().setShipped(true);
@@ -790,7 +790,7 @@ public class CommandManager extends ListenerAdapter {
                 TechToken.addSpice(game, discordGame, "Heighliners");
             }
 
-            discordGame.sendMessage("turn-summary", message.toString());
+            discordGame.queueMessage("turn-summary", message.toString());
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
             && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
@@ -888,7 +888,7 @@ public class CommandManager extends ListenerAdapter {
                 )
         );
 
-        discordGame.sendMessage("turn-summary", message.toString());
+        discordGame.queueMessage("turn-summary", message.toString());
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
@@ -914,7 +914,7 @@ public class CommandManager extends ListenerAdapter {
         int stormDialOne = discordGame.required(dialOne).getAsInt();
         int stormDialTwo = discordGame.required(dialTwo).getAsInt();
         game.advanceStorm(stormDialOne + stormDialTwo);
-        discordGame.sendMessage("turn-summary","The storm has been initialized to sector " + game.getStorm() + " (" + stormDialOne + " + " + stormDialTwo + ")");
+        discordGame.queueMessage("turn-summary","The storm has been initialized to sector " + game.getStorm() + " (" + stormDialOne + " + " + stormDialTwo + ")");
         if (game.hasTechTokens()) {
             List<TechToken> techTokens = new LinkedList<>();
             if (game.hasFaction("BT")) {
@@ -950,7 +950,7 @@ public class CommandManager extends ListenerAdapter {
         }
         game.getFaction(discordGame.required(faction).getAsString())
                 .getTechTokens().add(new TechToken(discordGame.required(token).getAsString()));
-        discordGame.sendMessage("turn-summary",
+        discordGame.queueMessage("turn-summary",
                 discordGame.required(token).getAsString() + " has been transferred to " +
                         game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
         ShowCommands.showBoard(discordGame, game);
@@ -964,13 +964,13 @@ public class CommandManager extends ListenerAdapter {
 
         if (amountValue != 0) {
             if (fromFaction.getSpice() < amountValue) {
-                discordGame.getTextChannel("mod-info").sendMessage("Faction does not have enough spice to pay the bribe!").queue();
+                discordGame.queueMessage("mod-info", "Faction does not have enough spice to pay the bribe!");
                 return;
             }
             fromFaction.subtractSpice(amountValue);
             spiceMessage(discordGame, amountValue, fromFaction.getName(), "bribe to " + recipientFaction.getEmoji(), false);
 
-            discordGame.sendMessage(
+            discordGame.queueMessage(
                     "turn-summary",
                     MessageFormat.format(
                             "{0} places {1} {2} in front of {3} shield.",
@@ -980,7 +980,7 @@ public class CommandManager extends ListenerAdapter {
 
             recipientFaction.addFrontOfShieldSpice(amountValue);
         } else {
-            discordGame.sendMessage(
+            discordGame.queueMessage(
                     "turn-summary",
                     MessageFormat.format(
                             "{0} bribes {2}. {1} TBD or NA.",
@@ -994,7 +994,7 @@ public class CommandManager extends ListenerAdapter {
         if (discordGame.optional(reason) != null) {
             message += "\n" + discordGame.optional(reason).getAsString();
         }
-        discordGame.sendMessage("bribes", message);
+        discordGame.queueMessage("bribes", message);
         discordGame.pushGame();
     }
 
@@ -1011,23 +1011,23 @@ public class CommandManager extends ListenerAdapter {
                Map<String, Territory> territories = game.getTerritories();
                for (Territory territory: territories.values()) {
                    if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty()) continue;
-                   discordGame.sendMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
+                   discordGame.queueMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
                            "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
                }
             }
             case "dnd" -> {
-                discordGame.sendMessage("mod-info", game.getTreacheryDeck().toString());
-                discordGame.sendMessage("mod-info", game.getTreacheryDiscard().toString());
-                discordGame.sendMessage("mod-info", game.getSpiceDeck().toString());
-                discordGame.sendMessage("mod-info", game.getSpiceDiscardA().toString());
-                discordGame.sendMessage("mod-info", game.getSpiceDiscardB().toString());
-                discordGame.sendMessage("mod-info", game.getLeaderSkillDeck().toString());
-                discordGame.sendMessage("mod-info", game.getTraitorDeck().toString());
+                discordGame.queueMessage("mod-info", game.getTreacheryDeck().toString());
+                discordGame.queueMessage("mod-info", game.getTreacheryDiscard().toString());
+                discordGame.queueMessage("mod-info", game.getSpiceDeck().toString());
+                discordGame.queueMessage("mod-info", game.getSpiceDiscardA().toString());
+                discordGame.queueMessage("mod-info", game.getSpiceDiscardB().toString());
+                discordGame.queueMessage("mod-info", game.getLeaderSkillDeck().toString());
+                discordGame.queueMessage("mod-info", game.getTraitorDeck().toString());
                 try {
                     Bidding bidding = game.getBidding();
-                    discordGame.sendMessage("mod-info", bidding.getMarket().toString());
+                    discordGame.queueMessage("mod-info", bidding.getMarket().toString());
                 } catch (InvalidGameStateException e) {
-                    discordGame.sendMessage("mod-info", "No bidding state. Game is not in bidding phase.");
+                    discordGame.queueMessage("mod-info", "No bidding state. Game is not in bidding phase.");
                 }
             }
             case "factions" -> {
@@ -1035,7 +1035,7 @@ public class CommandManager extends ListenerAdapter {
                     String message = "**" + faction.getName() + ":**\nPlayer: " + faction.getUserName() + "\n" +
                             "spice: " + faction.getSpice() + "\nTreachery Cards: " + faction.getTreacheryHand() +
                             "\nTraitors:" + faction.getTraitorHand() + "\nLeaders: " + faction.getLeaders() + "\n";
-                    discordGame.sendMessage(channel.getName(), message);
+                    discordGame.queueMessage(channel.getName(), message);
                 }
             }
         }
@@ -1099,7 +1099,7 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
-            discordGame.sendMessage("turn-summary", message);
+            discordGame.queueMessage("turn-summary", message);
             discordGame.pushGame();
         }
     }

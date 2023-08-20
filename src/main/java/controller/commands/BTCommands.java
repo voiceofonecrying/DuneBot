@@ -58,7 +58,7 @@ public class BTCommands {
             faction.addTraitorCard(traitorDeck.pollLast());
 
             discordGame.pushGame();
-            discordGame.sendMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
+            discordGame.queueMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
         }
     }
 }

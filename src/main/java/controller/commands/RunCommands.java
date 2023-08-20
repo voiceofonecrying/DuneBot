@@ -47,7 +47,7 @@ public class RunCommands {
 
     public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (game.getTurn() == 0) {
-            discordGame.sendMessage("mod-info", "Please complete setup first.");
+            discordGame.queueMessage("mod-info", "Please complete setup first.");
             return;
         }
         int phase = game.getPhase();
@@ -95,7 +95,7 @@ public class RunCommands {
     }
 
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Storm Phase:");
         boolean atomicsEligible = false;
         boolean nobodyHoldsAtomics = true;
         for (Faction faction : game.getFactions()) {
@@ -106,11 +106,11 @@ public class RunCommands {
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
+                    discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
                     nobodyHoldsAtomics = false;
                     if (isNearShieldWall) {
-                        discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
+                        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
                     }
                 }
             }
@@ -137,17 +137,17 @@ public class RunCommands {
             }
         }
         if (game.getTurn() != 1) {
-            discordGame.sendMessage("turn-summary",
+            discordGame.queueMessage("turn-summary",
                     "The storm would move " +
                     game.getStormMovement() +
                     " sectors this turn. Weather Control " +
                     (atomicsEligible ? "and Family Atomics " : "") +
                     "may be played at this time.");
             if (atomicsEligible && game.getStorm() >= 5 && game.getStorm() <= 9) {
-                discordGame.sendMessage("turn-summary", "(Check if storm position prevents use of Family Atomics.)");
+                discordGame.queueMessage("turn-summary", "(Check if storm position prevents use of Family Atomics.)");
             }
         } else {
-            discordGame.sendMessage("mod-info", "Run advance to complete turn 1 storm phase.");
+            discordGame.queueMessage("mod-info", "Run advance to complete turn 1 storm phase.");
         }
     }
 
@@ -217,7 +217,7 @@ public class RunCommands {
     public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Map<String, Territory> territories = game.getTerritories();
         if (game.getTurn() != 1) {
-            discordGame.sendMessage("turn-summary", "The storm moves " + game.getStormMovement() + " sectors this turn.");
+            discordGame.queueMessage("turn-summary", "The storm moves " + game.getStormMovement() + " sectors this turn.");
 
             StringBuilder message = new StringBuilder();
             for (int i = 0; i < game.getStormMovement(); i++) {
@@ -245,30 +245,30 @@ public class RunCommands {
             }
 
             if (!message.isEmpty())
-                discordGame.sendMessage("turn-summary", message.toString());
+                discordGame.queueMessage("turn-summary", message.toString());
 
             ShowCommands.showBoard(discordGame, game);
         }
 
         game.setStormMovement(new Random().nextInt(6) + 1);
         if (game.hasFaction("Fremen")) {
-            discordGame.sendMessage("fremen-chat", "The storm will move " + game.getStormMovement() + " sectors next turn.");
+            discordGame.queueMessage("fremen-chat", "The storm will move " + game.getStormMovement() + " sectors next turn.");
         }
     }
 
     public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Spice Blow Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Spice Blow Phase:");
     }
 
     public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " CHOAM Charity Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " CHOAM Charity Phase:");
         int multiplier = 1;
 
         if (game.hasFaction("CHOAM")) {
             multiplier = ((ChoamFaction) game.getFaction("CHOAM")).getChoamMultiplier(game.getTurn());
 
             if (multiplier == 0) {
-                discordGame.sendMessage("turn-summary", "CHOAM Charity is cancelled!");
+                discordGame.queueMessage("turn-summary", "CHOAM Charity is cancelled!");
                 return;
             }
         }
@@ -276,7 +276,7 @@ public class RunCommands {
         int choamGiven = 0;
         List<Faction> factions = game.getFactions();
         if (game.hasFaction("CHOAM")) {
-            discordGame.sendMessage("turn-summary",
+            discordGame.queueMessage("turn-summary",
                     game.getFaction("CHOAM").getEmoji() + " receives " +
                             game.getFactions().size() * 2 * multiplier +
                             " " + Emojis.SPICE + " in dividends from their many investments."
@@ -288,7 +288,7 @@ public class RunCommands {
             if (faction.getName().equals("BG")) {
                 choamGiven += 2 * multiplier;
                 faction.addSpice(2 * multiplier);
-                discordGame.sendMessage("turn-summary", faction.getEmoji() + " have received " +
+                discordGame.queueMessage("turn-summary", faction.getEmoji() + " have received " +
                         2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
                 CommandManager.spiceMessage(discordGame, 2 * multiplier, faction.getName(), "CHOAM Charity", true);
             }
@@ -296,7 +296,7 @@ public class RunCommands {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
                 faction.addSpice(charity);
-                discordGame.sendMessage("turn-summary",
+                discordGame.queueMessage("turn-summary",
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
                                 " in CHOAM Charity."
                 );
@@ -308,7 +308,7 @@ public class RunCommands {
             Faction choamFaction = game.getFaction("CHOAM");
             choamFaction.addSpice((2 * factions.size() * multiplier) - choamGiven);
             CommandManager.spiceMessage(discordGame, game.getFactions().size() * 2 * multiplier, "choam", "CHOAM Charity", true);
-            discordGame.sendMessage("turn-summary",
+            discordGame.queueMessage("turn-summary",
                     choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
             );
@@ -318,13 +318,13 @@ public class RunCommands {
     }
 
     public static void startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.startBidding();
         game.getFactions().forEach(faction -> {
             faction.setBid("");
             faction.setMaxBid(0);
         });
-        discordGame.sendMessage("mod-info", "Run black market bid (if exists), then advance the game.");
+        discordGame.queueMessage("mod-info", "Run black market bid (if exists), then advance the game.");
     }
 
     public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -362,11 +362,11 @@ public class RunCommands {
                 )
         );
 
-        discordGame.sendMessage("turn-summary", message.toString());
+        discordGame.queueMessage("turn-summary", message.toString());
         if (numCardsForBid == 0) {
-            discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+            discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
         } else {
-            discordGame.sendMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
+            discordGame.queueMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
         }
     }
 
@@ -382,15 +382,15 @@ public class RunCommands {
 
         if (bidding.getBidCard() != null && bidding.isCardFromMarket()) {
             int numCardsReturned = bidding.moveMarketToDeck(game);
-            discordGame.sendMessage("turn-summary", "" + numCardsReturned + " cards were returned to top of the Treachery Deck");
+            discordGame.queueMessage("turn-summary", "" + numCardsReturned + " cards were returned to top of the Treachery Deck");
         }
 
         if (bidding.isRicheseCacheCardOutstanding()) {
-            discordGame.sendMessage("mod-info", "Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
+            discordGame.queueMessage("mod-info", "Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
             return false;
         }
         game.endBidding();
-        discordGame.sendMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
+        discordGame.queueMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
         return true;
     }
 
@@ -416,7 +416,7 @@ public class RunCommands {
             );
             IxCommands.cardToRejectButtons(discordGame, game);
             bidding.setMarketShownToIx(true);
-            discordGame.sendMessage("turn-summary", message.toString());
+            discordGame.queueMessage("turn-summary", message.toString());
 
             discordGame.pushGame();
         } else  {
@@ -424,13 +424,13 @@ public class RunCommands {
             List<String> bidOrder = bidding.getEligibleBidOrder(game);
 
             if (bidOrder.size() == 0) {
-                discordGame.sendMessage("bidding-phase", "All hands are full.");
-                discordGame.sendMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+                discordGame.queueMessage("bidding-phase", "All hands are full.");
+                discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else  {
                 boolean reshuffled = bidding.isTreacheryDeckReshuffled();
                 TreacheryCard bidCard = bidding.nextBidCard(game);
                 if (reshuffled) {
-                    discordGame.sendMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                    discordGame.queueMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
                 }
 
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
@@ -472,8 +472,8 @@ public class RunCommands {
             Faction f = game.getFaction(factionName);
             if (factionName.equals(nextBidderName) && tag) {
                 if (f.getName().equals(bidding.getBidLeader())) {
-                    discordGame.sendMessage("bidding-phase", message.toString());
-                    discordGame.sendMessage("bidding-phase", f.getEmoji() + " has the top bid.");
+                    discordGame.queueMessage("bidding-phase", message.toString());
+                    discordGame.queueMessage("bidding-phase", f.getEmoji() + " has the top bid.");
                     return true;
                 }
                 message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
@@ -482,12 +482,12 @@ public class RunCommands {
             }
         }
 
-        discordGame.sendMessage("bidding-phase", message.toString());
+        discordGame.queueMessage("bidding-phase", message.toString());
         return false;
     }
 
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Revival Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Revival Phase:");
         List<Faction> factions = game.getFactions();
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
@@ -518,7 +518,7 @@ public class RunCommands {
                 if (!faction.getName().equals("BT")) nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
-                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) discordGame.sendMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " Would you like to purchase additional revivals?");
+                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " Would you like to purchase additional revivals?");
             }
         }
 
@@ -533,7 +533,7 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, factionsWithRevivals, "BT", "for free revivals", true);
         }
 
-        if (!message.isEmpty()) discordGame.sendMessage("turn-summary", message.toString());
+        if (!message.isEmpty()) discordGame.queueMessage("turn-summary", message.toString());
         if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(game, discordGame, "Axlotl Tanks");
 
         if (game.hasFaction("Ecaz")) {
@@ -548,7 +548,7 @@ public class RunCommands {
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Axlotl Tanks");
 
-        discordGame.sendMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
+        discordGame.queueMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
         for (Faction faction : game.getFactions()) {
             game.getTurnOrder().add(faction.getName());
             faction.getShipment().clear();
@@ -576,7 +576,7 @@ public class RunCommands {
         if (game.hasFaction("Atreides")) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null)
-                discordGame.sendMessage("atreides-chat", "You see visions of " + nextCard.name() + " in your future.");
+                discordGame.queueMessage("atreides-chat", "You see visions of " + nextCard.name() + " in your future.");
         }
         if(game.hasFaction("BG")) {
             StringBuilder message = new StringBuilder();
@@ -585,7 +585,7 @@ public class RunCommands {
                     message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n");
                 }
             }
-            if (!message.isEmpty()) discordGame.sendMessage("game-actions", message.append(game.getFaction("BG").getPlayer()).toString());
+            if (!message.isEmpty()) discordGame.queueMessage("game-actions", message.append(game.getFaction("BG").getPlayer()).toString());
         }
         ShowCommands.showBoard(discordGame, game);
     }
@@ -594,7 +594,7 @@ public class RunCommands {
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Heighliners");
 
-        discordGame.sendMessage("turn-summary","Turn " + game.getTurn() + " Battle Phase:");
+        discordGame.queueMessage("turn-summary","Turn " + game.getTurn() + " Battle Phase:");
 
         // Get list of territories with multiple factions
         List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
@@ -632,24 +632,24 @@ public class RunCommands {
                             )
                     ).collect(Collectors.joining("\n"));
 
-            discordGame.sendMessage("turn-summary",
+            discordGame.queueMessage("turn-summary",
                     "The following battles will take place this turn:\n" + battleMessages
             );
         } else {
-            discordGame.sendMessage("turn-summary", "There are no battles this turn.");
+            discordGame.queueMessage("turn-summary", "There are no battles this turn.");
         }
         ShowCommands.showBoard(discordGame, game);
     }
 
     public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Spice Harvest Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Spice Harvest Phase:");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
             if (territory.getForces().size() != 1) continue;
             if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
                 BGFaction bg = (BGFaction) game.getFaction("BG");
                 bg.flipForces(territory);
-                discordGame.sendMessage("turn-summary",
+                discordGame.queueMessage("turn-summary",
                         "Advisors are alone in " + territory.getTerritoryName() + " and have flipped to fighters.");
             }
         }
@@ -659,19 +659,19 @@ public class RunCommands {
             if (territories.get("Arrakeen").hasActiveFaction(faction)) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Arrakeen", true);
-                discordGame.sendMessage("turn-summary", faction.getEmoji() +
+                discordGame.queueMessage("turn-summary", faction.getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Arrakeen");
                 faction.setHasMiningEquipment(true);
             }
             if (territories.get("Carthag").hasActiveFaction(faction)) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getName(), "for Carthag", true);
-                discordGame.sendMessage("turn-summary", faction.getEmoji() +
+                discordGame.queueMessage("turn-summary", faction.getEmoji() +
                         " collects 2 " + Emojis.SPICE + " from Carthag");
                 faction.setHasMiningEquipment(true);
             }
             if (territories.get("Tuek's Sietch").hasActiveFaction(faction)) {
-                discordGame.sendMessage("turn-summary", faction.getEmoji() +
+                discordGame.queueMessage("turn-summary", faction.getEmoji() +
                         " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
                 faction.addSpice(1);
                 CommandManager.spiceMessage(discordGame, 1, faction.getName(), "for Tuek's Sietch", true);
@@ -693,7 +693,7 @@ public class RunCommands {
                     && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
                 altSpiceProductionTriggered = true;
 
-            discordGame.sendMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
+            discordGame.queueMessage("turn-summary", game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
         }
 
@@ -706,10 +706,10 @@ public class RunCommands {
     }
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.sendMessage("turn-summary", "Turn " + game.getTurn() + " Mentat Pause Phase:");
+        discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : game.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {
-                discordGame.sendMessage("turn-summary", faction.getEmoji() + " collects " +
+                discordGame.queueMessage("turn-summary", faction.getEmoji() + " collects " +
                         faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
                 CommandManager.spiceMessage(discordGame,  faction.getFrontOfShieldSpice(), faction.getName(), "front of shield", true);
                 faction.addSpice(faction.getFrontOfShieldSpice());
@@ -717,9 +717,9 @@ public class RunCommands {
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.sendMessage("mod-info", faction.getEmoji() + " has Weather Control.");
+                    discordGame.queueMessage("mod-info", faction.getEmoji() + " has Weather Control.");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.sendMessage("mod-info", faction.getEmoji() + " has Family Atomics.");
+                    discordGame.queueMessage("mod-info", faction.getEmoji() + " has Family Atomics.");
                 }
             }
         }
@@ -748,7 +748,7 @@ public class RunCommands {
             for (Territory stronghold : strongholds) {
                 Faction faction = stronghold.getActiveFactions(game).get(0);
                 faction.addStrongholdCard(new StrongholdCard(stronghold.getTerritoryName()));
-                discordGame.sendMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
+                discordGame.queueMessage("turn-summary", MessageFormat.format("{0} controls {1}{2}{1}",
                         stronghold.getActiveFactions(game).get(0).getEmoji(), Emojis.WORM,
                         stronghold.getTerritoryName()));
             }
