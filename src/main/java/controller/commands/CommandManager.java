@@ -47,6 +47,7 @@ public class CommandManager extends ListenerAdapter {
         try {
             String ephemeralMessage = "";
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
+            else if (name.equals("waitinglist")) waitingList(event);
             else {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
@@ -166,6 +167,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
+        commandData.add(Commands.slash("waitinglist", "Add an entry to the waiting list")
+                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -1127,5 +1130,23 @@ public class CommandManager extends ListenerAdapter {
     public void reassignMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.setMod(event.getUser().getAsMention());
         discordGame.pushGame();
+    }
+
+    public void waitingList(SlashCommandInteractionEvent event) throws ChannelNotFoundException {
+        String userTag = event.getUser().getId();
+        TextChannel  textChannel = event.getGuild().getTextChannelsByName("waiting-list", true).get(0);
+        String message = "";
+        message += "Speed: :scooter: ";
+        if (event.getOption(slowGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :blue_car: "; else message += ":no_entry_sign: -- :blue_car: ";
+        if (event.getOption(midGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :race_car: "; else message += ":no_entry_sign: -- :race_car: ";
+        if (event.getOption(fastGame.getName()).getAsBoolean()) message += ":white_check_mark:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> "; else message += ":no_entry_sign:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
+        if (event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean()) message += ":white_check_mark: -- <:choam:991763324624703538> <:rich:991763318467465337> "; else message += ":no_entry_sign: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
+        if (event.getOption(choamricheseExpansion.getName()).getAsBoolean()) message += ":white_check_mark: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> "; else message += ":no_entry_sign: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
+        if (event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean()) message += ":white_check_mark:\nOptions: <:weirding:991763071775297681> "; else message += ":no_entry_sign:\nOptions: <:weirding:991763071775297681> ";
+        if (event.getOption(leaderSkills.getName()).getAsBoolean()) message += ":white_check_mark: -- :european_castle: "; else message += ":no_entry_sign: -- :european_castle: ";
+        if (event.getOption(strongholdCards.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: "; else message += ":no_entry_sign:\nUser: ";
+        message += "<@" + userTag + ">";
+        textChannel.sendMessage(message).queue();
+        // textChannel.sendMessage("Speed: :turtle: " + event.getOption(slowGame.getName()).getAsBoolean() + " :racehorse: " + event.getOption(midGame.getName()).getAsBoolean() + " :race_car: " + event.getOption(fastGame.getName()).getAsBoolean() + "\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514>  " + event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean() + " <:choam:991763324624703538> <:rich:991763318467465337> " + event.getOption(choamricheseExpansion.getName()).getAsBoolean() + " :ecaz: :moritani: " + event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean() + "\nOptions: Leader Skills " + event.getOption(leaderSkills.getName()).getAsBoolean() + " Stronghold Cards " + event.getOption(strongholdCards.getName()).getAsBoolean() + "\nUser: <@" + userTag + ">").queue();
     }
 }

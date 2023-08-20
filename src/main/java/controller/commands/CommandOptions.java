@@ -142,6 +142,30 @@ public class CommandOptions {
                     .addChoice("Double", "DOUBLE")
                     .addChoice("Cancel", "CANCEL");
 
+    public static final OptionData slowGame =
+            new OptionData(OptionType.BOOLEAN, "slow-game", "Set to true if you are okay with playing a slow speed game", true);
+
+    public static final OptionData midGame =
+            new OptionData(OptionType.BOOLEAN, "mid-game", "Set to true if you are okay with playing a normal speed game", true);
+
+    public static final OptionData fastGame =
+            new OptionData(OptionType.BOOLEAN, "fast-game", "Set to true if you are okay with playing a fast speed game", true);
+
+    public static final OptionData ixianstleilaxuExpansion =
+            new OptionData(OptionType.BOOLEAN, "ix-bt", "Set to true if you are okay with playing with the Ixians & Tleilaxu expansion content", true);
+
+    public static final OptionData choamricheseExpansion =
+            new OptionData(OptionType.BOOLEAN, "choam-rich", "Set to true if you are okay with playing with the Choam & Richese expansion content", true);
+
+    public static final OptionData ecazmoritaniExpansion =
+            new OptionData(OptionType.BOOLEAN, "ecaz-moritani", "Set to true if you are okay with playing with the Ecaz & Moritani expansion content", true);
+
+    public static final OptionData leaderSkills =
+            new OptionData(OptionType.BOOLEAN, "leader-skills", "Set to true if you are okay with playing with leader skills", true);
+
+    public static final OptionData strongholdCards =
+            new OptionData(OptionType.BOOLEAN, "stronghold-cards", "Set to true if you are okay with playing with stronghold cards", true);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game game) {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
