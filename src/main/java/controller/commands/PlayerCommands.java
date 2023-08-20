@@ -189,8 +189,8 @@ public class PlayerCommands {
                     }
                 }
                 else {
-                    CommandManager.awardTopBidder(discordGame, game);
                     discordGame.queueMessage("bidding-phase", game.getFaction(bidding.getBidLeader()).getEmoji() + " has the top bid.");
+                    CommandManager.awardTopBidder(discordGame, game);
                     if (bidding.isRicheseCacheCard()) {
                         if (bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
                             discordGame.queueMessage("mod-info", "Use /run advance to end the bidding phase.");
