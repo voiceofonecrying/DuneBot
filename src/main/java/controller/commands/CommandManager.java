@@ -167,8 +167,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
-        commandData.add(Commands.slash("waitinglist", "Add an entry to the waiting list")
-                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -187,6 +185,8 @@ public class CommandManager extends ListenerAdapter {
                 .collect(Collectors.toList());
 
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+        commandDataWithPermissions.add(Commands.slash("waitinglist", "Add an entry to the waiting list")
+                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
 
         event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
     }
