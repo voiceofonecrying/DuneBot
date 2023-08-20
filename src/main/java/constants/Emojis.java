@@ -10,7 +10,7 @@ public final class Emojis {
     public static final String BT_TROOP = "<:bt_troop:998567371453255700>";
     public static final String CHOAM = "<:choam:991763324624703538>";
     public static final String CHOAM_TROOP = "<:choam_troop:998567370350141492>";
-    public static final String ECAZ = "Ecaz";
+    public static final String ECAZ = "<:ecaz:1142126129105346590>";
     public static final String ECAZ_TROOP = "Ecaz Troop";
     public static final String EMPEROR = "<:emperor:991763323454500914>";
     public static final String EMPEROR_TROOP = "<:emperor_troop:998567367565115504>";
@@ -25,6 +25,8 @@ public final class Emojis {
     public static final String IX = "<:ix:991763319406997514>";
     public static final String IX_SUBOID = "<:ixian_suboid:998567360858427512>";
     public static final String IX_CYBORG = "<:ixian_cyborg:998567362024456254>";
+    public static final String MORITANI = "<:moritani:1142126199775182879>";
+    public static final String MORITANI_TROOP = "Moritani Troop";
     public static final String RICHESE = "<:rich:991763318467465337>";
     public static final String RICHESE_TROOP = "<:richese_troop:998567359579160606>";
     public static final String SPICE = "<:spice4:991763531798167573>";
