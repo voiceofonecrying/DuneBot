@@ -18,6 +18,7 @@ public class MoritaniFaction extends Faction {
 
 
     private final List<String> terrorTokens;
+    private final List<String> assassinationTargets;
     public MoritaniFaction(String player, String userName, Game game) throws IOException {
         super("Moritani", player, userName, game);
 
@@ -26,6 +27,7 @@ public class MoritaniFaction extends Faction {
         this.reserves = new Force("Moritani", 14);
         this.emoji = Emojis.MORITANI;
         this.terrorTokens = new LinkedList<>();
+        this.assassinationTargets = new LinkedList<>();
 
         terrorTokens.add("Assassination");
         terrorTokens.add("Atomics");
@@ -142,5 +144,9 @@ public class MoritaniFaction extends Faction {
             discordGame.queueMessage("moritani-chat", new MessageCreateBuilder().addContent("Use these buttons to place Terror Tokens from your supply.")
                     .addActionRow(buttons));
         }
+    }
+
+    public List<String> getAssassinationTargets() {
+        return assassinationTargets;
     }
 }

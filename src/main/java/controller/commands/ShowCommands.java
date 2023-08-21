@@ -4,10 +4,7 @@ import constants.Emojis;
 import controller.Initializers;
 import exceptions.ChannelNotFoundException;
 import model.*;
-import model.factions.BGFaction;
-import model.factions.EcazFaction;
-import model.factions.Faction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -552,6 +549,10 @@ public class ShowCommands {
 
             if (faction.getName().equalsIgnoreCase("Ecaz")) {
                 message.append(((EcazFaction)faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
+            }
+
+            if (faction.getName().equalsIgnoreCase("Moritani")) {
+                message.append("Assassinated targets:\n").append(((MoritaniFaction)faction).getAssassinationTargets().toString());
             }
 
             if (game.hasLeaderSkills()) {
