@@ -36,11 +36,13 @@ public class EcazButtons implements Pressable {
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+        if (!ButtonManager.getButtonPresser(event, game).getName().equals("Ecaz")) return;
         discordGame.queueMessage(Emojis.ECAZ + " Do not trigger their ambassador token.");
         discordGame.queueDeleteMessage();
     }
 
     private static void triggerAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        if (!ButtonManager.getButtonPresser(event, game).getName().equals("Ecaz")) return;
         String ambassador = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");

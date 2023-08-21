@@ -802,11 +802,12 @@ public class CommandManager extends ListenerAdapter {
                         .addActionRow(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
                                 Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
             }
+
             if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
-                    && !(game.getFaction("Moritani").hasAlly()
-                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
+                    && (!(game.getFaction("Moritani").hasAlly()
+                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
                 discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now.")
-                        .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"),
+                        .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"),
                                 Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
             }
         }
@@ -910,6 +911,14 @@ public class CommandManager extends ListenerAdapter {
             discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now.")
                     .addActionRow(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
                             Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
+        }
+
+        if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+                && !(game.getFaction("Moritani").hasAlly()
+                && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now.")
+                    .addActionRow(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"),
+                            Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
         }
     }
 

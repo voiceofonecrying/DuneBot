@@ -128,6 +128,13 @@ public class SetupCommands {
             ));
         }
 
+        if (game.hasFaction("Moritani")) {
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.TRAITORS) + 1,
+                    SetupStep.MORITANI_FORCE
+            );
+        }
+
         if (game.hasFaction("BG")) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.FACTION_POSITIONS) + 1,
@@ -145,6 +152,7 @@ public class SetupCommands {
                     SetupStep.FREMEN_FORCES
             );
         }
+
 
         if (game.hasFaction("Ix")) {
             setupSteps.add(
@@ -188,12 +196,7 @@ public class SetupCommands {
             }
         }
 
-        if (game.hasFaction("Moritani")) {
-            setupSteps.add(
-                    setupSteps.indexOf(SetupStep.TRAITORS) + 1,
-                    SetupStep.MORITANI_FORCE
-            );
-        }
+
 
         game.setSetupSteps(setupSteps);
     }

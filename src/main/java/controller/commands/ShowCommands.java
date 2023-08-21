@@ -216,6 +216,14 @@ public class ShowCommands {
                 board = overlay(board, ambassador, placementCorner, 1);
             }
 
+            if (territory.getTerrorToken() != null) {
+                BufferedImage terrorToken = getResourceImage("Terror Token");
+                terrorToken = resize(terrorToken, 40, 40);
+                Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
+                Point placementCorner = new Point(placement.x - 20, placement.y);
+                board = overlay(board, terrorToken, placementCorner, 1);
+            }
+
             if (territory.getSpice() != 0) {
                 i = 1;
                 int spice = territory.getSpice();

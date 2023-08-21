@@ -114,7 +114,7 @@ public class MoritaniFaction extends Faction {
 
     public void placeTerrorToken(Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
-        territory.setEcazAmbassador(terror);
+        territory.setTerrorToken(terror);
     }
     public void getDukeVidal() {
         if (getLeader("Duke Vidal").isEmpty()) return;

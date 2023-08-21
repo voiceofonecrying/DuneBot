@@ -609,7 +609,7 @@ public class RunCommands {
 
             if (game.hasFaction("Richese") && territory.hasRicheseNoField())
                 factionNames.add("Richese");
-            if (game.hasFaction("Moritani") && territory.isStronghold() && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
+            if (game.hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
             && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
 
             List<Faction> factions = factionNames.stream()
@@ -623,6 +623,7 @@ public class RunCommands {
         }
         if (dukeVidalCount >= 2 && game.getLeaderTanks().stream().noneMatch(leader -> leader.name().equals("Duke Vidal"))) {
             for (Faction faction : game.getFactions()) {
+                if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
                 if (faction.getName().equals("Ecaz")) discordGame.queueMessage("ecaz-chat", "Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
                 if (faction.getName().equals("Harkonnen")) discordGame.queueMessage("harkonnen-chat", "Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
