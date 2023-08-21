@@ -299,6 +299,7 @@ public class CommandManager extends ListenerAdapter {
         game.setMute(false);
         discordGame.setGame(game);
         discordGame.pushGame();
+        discordGame.sendAllMessages();
     }
 
     /**
