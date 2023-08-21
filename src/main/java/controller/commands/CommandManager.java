@@ -8,6 +8,7 @@ import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.EcazFaction;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -102,6 +103,7 @@ public class CommandManager extends ListenerAdapter {
                     case "reassign-mod" -> reassignMod(event, discordGame, game);
                     case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                     case "discard-nexus-card" -> discardNexusCard(discordGame, game);
+                    case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
                 }
 
                 if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
@@ -170,6 +172,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
+        commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
 
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
@@ -935,6 +938,22 @@ public class CommandManager extends ListenerAdapter {
     public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+    }
+
+    private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+        String assassinated = moritani.getTraitorHand().get(0).name();
+        moritani.getAssassinationTargets().add(assassinated);
+        moritani.getTraitorHand().clear();
+        for (Faction faction : game.getFactions()) {
+            if (faction.getLeaders().stream().anyMatch(leader1 -> leader1.name().equals(assassinated))) {
+                game.getLeaderTanks().add(faction.removeLeader(assassinated));
+                break;
+            }
+        }
+        discordGame.queueMessage("turn-summary", Emojis.MORITANI + " have assassinated " + assassinated + "!");
+        moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
+        discordGame.pushGame();
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
