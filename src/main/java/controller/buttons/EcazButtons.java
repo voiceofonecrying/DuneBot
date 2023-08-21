@@ -25,12 +25,27 @@ public class EcazButtons implements Pressable {
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-place-ambassador-")) queueAmbassadorButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-ambassador-selected-")) sendAmbassador(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-trigger-ambassador-")) triggerAmbassador(event, game, discordGame);
         switch (event.getComponentId()) {
             case "ecaz-get-vidal" -> getDukeVidal(event, game, discordGame);
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "ecaz-deny-offer" -> denyAlliance(event, game, discordGame);
+            case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
         }
 
+    }
+
+    private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+        discordGame.queueMessage(Emojis.ECAZ + " Do not trigger their ambassador token.");
+        discordGame.queueDeleteMessage();
+    }
+
+    private static void triggerAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String ambassador = event.getComponentId().split("-")[3];
+        Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
+        EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
+        ecaz.triggerAmbassador(game, discordGame, triggeringFaction, ambassador);
+        discordGame.pushGame();
     }
 
     private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {

@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -22,6 +21,9 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -795,7 +797,18 @@ public class CommandManager extends ListenerAdapter {
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
             && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
-                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) ((EcazFaction)game.getFaction("Ecaz")).triggerAmbassador(game, discordGame, targetFaction, targetTerritory.getEcazAmbassador());
+                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now.")
+                        .addActionRow(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
+                                Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
+            }
+            if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+                    && !(game.getFaction("Moritani").hasAlly()
+                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now.")
+                        .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"),
+                                Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
+            }
         }
     }
 
@@ -893,7 +906,11 @@ public class CommandManager extends ListenerAdapter {
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
-                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) ((EcazFaction)game.getFaction("Ecaz")).triggerAmbassador(game, discordGame, targetFaction, to.getEcazAmbassador());
+                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now.")
+                    .addActionRow(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
+                            Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
+        }
     }
 
     public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

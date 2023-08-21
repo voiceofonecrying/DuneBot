@@ -7,6 +7,7 @@ import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -52,6 +53,10 @@ public class MoritaniFaction extends Faction {
             case "Extortion" -> {
                 addFrontOfShieldSpice(5);
                 ShowCommands.refreshChangedInfo(discordGame);
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent("The Extortion token will be returned unless someone " +
+                        "pays 3 " + Emojis.SPICE + " to remove it from the game.")
+                        .addActionRow(Button.primary("moritani-pay-extortion", "Pay to remove"),
+                                Button.secondary("moritani-pass-extortion", "Don't pay to remove")));
             }
             case "Robbery" -> discordGame.prepareMessage("moritani-chat", "Your terrorist in " + triggeringFaction + " has robbed the " + triggeringFaction.getEmoji() +
                         "! What would you like to do?").addActionRow(Button.primary("moritani-robbery-rob", "Steal spice"),
@@ -89,10 +94,53 @@ public class MoritaniFaction extends Faction {
             if (territory.getTerrorToken() == null) continue;
             if (territory.getTerrorToken().equals(terror)) territory.setTerrorToken(null);
         }
-        if (!terror.equals("Extortion")) terrorTokens.remove(terror);
+    }
+
+    public void sendTerrorTokenMessage(DiscordGame discordGame, String territory) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        for (String terror : terrorTokens) {
+            buttons.add(Button.primary("moritani-terror-selected-" + terror + "-" + territory + "-", terror));
+        }
+        if (buttons.size() > 5) {
+            discordGame.prepareMessage("moritani-chat", "Which terror token would you like to place?")
+                    .addActionRow(buttons.subList(0, 5))
+                    .addActionRow(buttons.get(5)).queue();
+        }
+        else {
+            discordGame.prepareMessage("moritani-chat", "Which terror token would you like to place?")
+                    .addActionRow(buttons).queue();
+        }
+    }
+
+    public void placeTerrorToken(Territory territory, String terror) {
+        terrorTokens.removeIf(a -> a.equals(terror));
+        territory.setEcazAmbassador(terror);
+    }
+    public void getDukeVidal() {
+        if (getLeader("Duke Vidal").isEmpty()) return;
+        addLeader(new Leader("Duke Vidal", 6, null, false));
     }
 
     public List<String> getTerrorTokens() {
         return terrorTokens;
+    }
+
+    public void sendTerrorTokenLocationMessage(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        for (Territory territory : game.getTerritories().values()) {
+            if (!territory.isStronghold()) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            Button stronghold = Button.primary("moritani-place-terror-" + territory.getTerritoryName(), "Place Terror Token in " + territory.getTerritoryName());
+            if (territory.getTerrorToken() != null || game.getStorm() == territory.getSector()) stronghold = stronghold.asDisabled();
+            buttons.add(stronghold);
+        }
+        if (buttons.size() > 5) {
+            discordGame.queueMessage("moritani-chat", new MessageCreateBuilder().addContent("Use these buttons to place Terror Tokens from your supply.")
+                    .addActionRow(buttons.subList(0, 5))
+                    .addActionRow(buttons.subList(5, buttons.size())));
+        } else {
+            discordGame.queueMessage("moritani-chat", new MessageCreateBuilder().addContent("Use these buttons to place Terror Tokens from your supply.")
+                    .addActionRow(buttons));
+        }
     }
 }

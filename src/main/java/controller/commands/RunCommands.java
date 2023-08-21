@@ -598,6 +598,7 @@ public class RunCommands {
 
         // Get list of territories with multiple factions
         List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
+        int dukeVidalCount = 0;
         for (Territory territory : game.getTerritories().values()) {
             List<Force> forces = territory.getForces();
             Set<String> factionNames = forces.stream()
@@ -608,6 +609,8 @@ public class RunCommands {
 
             if (game.hasFaction("Richese") && territory.hasRicheseNoField())
                 factionNames.add("Richese");
+            if (game.hasFaction("Moritani") && territory.isStronghold() && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
+            && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
 
             List<Faction> factions = factionNames.stream()
                     .sorted(Comparator.comparingInt(game::getFactionTurnIndex))
@@ -617,6 +620,15 @@ public class RunCommands {
             if (factions.size() > 1 && !territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) {
                 battles.add(new ImmutablePair<>(territory, factions));
             }
+        }
+        if (dukeVidalCount >= 2 && game.getLeaderTanks().stream().noneMatch(leader -> leader.name().equals("Duke Vidal"))) {
+            for (Faction faction : game.getFactions()) {
+                faction.removeLeader("Duke Vidal");
+                if (faction.getName().equals("Ecaz")) discordGame.queueMessage("ecaz-chat", "Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
+                if (faction.getName().equals("Harkonnen")) discordGame.queueMessage("harkonnen-chat", "Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
+            }
+            ((MoritaniFaction)game.getFaction("Moritani")).getDukeVidal();
+            discordGame.queueMessage("moritani-chat", "Duke Vidal has come to fight for you!");
         }
 
         if(battles.size() > 0) {
@@ -722,6 +734,10 @@ public class RunCommands {
                     discordGame.queueMessage("mod-info", faction.getEmoji() + " has Family Atomics.");
                 }
             }
+        }
+        if (game.hasFaction("Moritani")) {
+            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+            moritani.sendTerrorTokenLocationMessage(game, discordGame);
         }
 
         updateStrongholdSkills(discordGame, game);
