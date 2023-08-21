@@ -52,7 +52,7 @@ public class EcazFaction extends Faction {
 
     public void triggerAmbassador(Game game, DiscordGame discordGame, Faction triggeringFaction, String ambassador) throws ChannelNotFoundException {
 
-        discordGame.queueMessage("turn-summary", "The " + ambassador + " ambassador has been triggered!");
+        discordGame.queueMessage("The " + ambassador + " ambassador has been triggered!");
 
         switch (ambassador) {
             case "Ecaz" -> {
@@ -102,6 +102,7 @@ public class EcazFaction extends Faction {
         List<Button> buttons = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold") && !game.hasFaction("Ix")) continue;
             Button stronghold = Button.primary("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
             if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector()) stronghold = stronghold.asDisabled();
             buttons.add(stronghold);
