@@ -54,6 +54,7 @@ public class CopyBotData {
         testDiscordGame.setGame(mainGame);
 
         testDiscordGame.pushGame();
+        testDiscordGame.sendAllMessages();
     }
 
     private static DiscordGame getDiscordGame(String token, String guildId, String category) throws InterruptedException, ChannelNotFoundException {
