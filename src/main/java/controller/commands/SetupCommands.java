@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import templates.ChannelPermissions;
@@ -513,18 +514,20 @@ public class SetupCommands {
             game.drawCard("leader skills deck", faction.getName());
             game.drawCard("leader skills deck", faction.getName());
 
-            String leaderSkillsMessage = "Please select your leader and their skill from the following two options:\n" +
-                    MessageFormat.format(
-                            "{0}{1}{0}\n",
-                            Emojis.WEIRDING, faction.getLeaderSkillsHand().get(0).name()
-                    ) +
-                    MessageFormat.format(
-                            "{0}{1}{0}\n",
-                            Emojis.WEIRDING, faction.getLeaderSkillsHand().get(1).name()
-                    ) +
-                    faction.getPlayer();
+            MessageCreateBuilder message = new MessageCreateBuilder();
+            message.setContent(faction.getPlayer());
+            message.addContent(" please select your leader and their skill from the following two options:\n");
+            faction.getLeaderSkillsHand().forEach(leaderSkillCard -> message.addContent("* " + leaderSkillCard.name() + "\n"));
 
-            discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", leaderSkillsMessage);
+            faction.getLeaderSkillsHand().stream()
+                    .map(leaderSkillCard -> CardImages.getLeaderSkillImage(
+                            discordGame.getEvent().getGuild(), leaderSkillCard.name())
+                    )
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .forEach(message::addFiles);
+
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", message);
         }
 
         return StepStatus.STOP;
