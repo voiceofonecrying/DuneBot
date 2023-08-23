@@ -339,11 +339,14 @@ public class ShipmentAndMovementButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment){
             faction.getShipment().clear();
+            faction.getShipment().setShipped(false);
             queueShippingButtons(event, game, discordGame);
         } else {
             faction.getMovement().clear();
+            faction.getMovement().setMoved(false);
             queueMovementButtons(game, faction, event, discordGame);
         }
+        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
