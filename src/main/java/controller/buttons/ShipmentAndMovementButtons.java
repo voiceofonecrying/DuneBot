@@ -264,7 +264,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 queueGuildTurnOrderButtons(discordGame);
             }
         }
-        if (game.getTurnOrder().peekLast().equals("Guild") && game.getTurnOrder().size() > 1)
+        if (!game.getTurnOrder().isEmpty() && game.getTurnOrder().peekLast().equals("Guild") && game.getTurnOrder().size() > 1)
             discordGame.queueMessage("turn-summary", Emojis.GUILD + " does not ship at this time");
         discordGame.queueMessage("Shipment and movement complete.");
         discordGame.pushGame();
