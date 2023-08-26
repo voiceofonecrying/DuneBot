@@ -206,8 +206,14 @@ public class ShowCommands {
             }
 
             if (territory.getEcazAmbassador() != null) {
-                BufferedImage ambassador = getResourceImage("Ambassador");
-                ambassador = resize(ambassador, 40, 40);
+                BufferedImage ambassadorSigil = getResourceImage(territory.getEcazAmbassador() + " Sigil");
+                BufferedImage ambassadorBackground = getResourceImage("Ambassador");
+                BufferedImage ambassador = overlay(
+                        resize(ambassadorBackground, 40, 40),
+                        resize(ambassadorSigil, 22, 22),
+                        new Point(20,20),
+                        1
+                );
                 Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
                 Point placementCorner = new Point(placement.x + 40, placement.y);
                 board = overlay(board, ambassador, placementCorner, 1);
