@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class EcazFaction extends Faction {
     private final List<String> ambassadorPool;
@@ -95,7 +96,15 @@ public class EcazFaction extends Faction {
             if (territory.getEcazAmbassador().equals(ambassador)) territory.setEcazAmbassador(null);
         }
 
-        if (!ambassador.equals("Ecaz") && ambassadorPool.stream().anyMatch(a -> !a.equals("Ecaz"))) drawNewSupply();
+        long nonEcazAmbassadorsCount = game.getTerritories().values().stream()
+                .map(Territory::getEcazAmbassador)
+                .filter(Objects::nonNull)
+                .filter(a -> !a.equals("Ecaz"))
+                .count();
+        nonEcazAmbassadorsCount += ambassadorSupply.stream().filter(a -> !a.equals("Ecaz")).count();
+
+        if (nonEcazAmbassadorsCount == 0) drawNewSupply();
+        setBackOfShieldModified();
     }
 
     public void sendAmbassadorLocationMessage(Game game, DiscordGame discordGame, int cost) throws ChannelNotFoundException {
@@ -136,6 +145,7 @@ public class EcazFaction extends Faction {
     public void placeAmbassador(Territory territory, String ambassador) {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
+        setBackOfShieldModified();
     }
 
     public Leader getLoyalLeader() {
