@@ -66,7 +66,10 @@ public class RunCommands {
             choamCharity(discordGame, game);
             game.advancePhase();
         } else if (phase == 4 && subPhase == 1) {
-            startBiddingPhase(discordGame, game);
+            if (startBiddingPhase(discordGame, game)) {
+                game.advanceSubPhase();
+                cardCountsInBiddingPhase(discordGame, game);
+            }
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 2) {
             cardCountsInBiddingPhase(discordGame, game);
@@ -317,14 +320,26 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
-    public static void startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.startBidding();
         game.getFactions().forEach(faction -> {
             faction.setBid("");
             faction.setMaxBid(0);
         });
-        discordGame.queueMessage("mod-info", "Run black market bid (if exists), then advance the game.");
+        RicheseFaction richeseFaction;
+        try {
+            richeseFaction = (RicheseFaction)game.getFaction("Richese");
+            if (richeseFaction.getTreacheryHand().isEmpty()) {
+                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market.");
+                return true;
+            } else {
+                discordGame.queueMessage("mod-info", "Run black market bid (if exists), then advance the game.");
+                return false;
+            }
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
     }
 
     public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
