@@ -60,11 +60,23 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "guild-wait-last" -> guildWaitLast(game, discordGame);
             case "guild-defer" -> guildDefer(game, discordGame);
             case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
-            case "guild-cross-ship" -> crossShip(event, game, discordGame);
-            case "guild-ship-to-reserves" -> shipToReserves(event, game, discordGame);
+            case "guild-cross-ship" -> crossShip(game, discordGame);
+            case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
+            case "hajr" -> hajr(event, game, discordGame);
         }
 
         discordGame.sendAllMessages();
+    }
+
+    private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards Hajr to move again.");
+        faction.getMovement().execute(discordGame, game, faction);
+        deleteAllButtonsInChannel(event.getMessageChannel());
+        queueMovementButtons(game, faction, discordGame);
+        faction.setBackOfShieldModified();
+        discordGame.pushGame();
     }
 
     private static void setCrossShipFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -76,22 +88,22 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void shipToReserves(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void shipToReserves(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         TreeSet<Button> buttons = new TreeSet<>(getButtonComparator());
         for (Territory territory : game.getTerritories().values()) {
             if (territory.hasForce("Guild")) buttons.add(Button.primary("ship-to-reserves-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
-        arrangeButtonsAndSend("Where would you like to ship to reserves from?", buttons, discordGame, event);
+        arrangeButtonsAndSend("Where would you like to ship to reserves from?", buttons, discordGame);
         game.getFaction("Guild").getShipment().setToReserves(true);
         discordGame.pushGame();
     }
 
-    private static void crossShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void crossShip(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         TreeSet<Button> buttons = new TreeSet<>(getButtonComparator());
         for (Territory territory : game.getTerritories().values()) {
             if (territory.hasForce("Guild")) buttons.add(Button.primary("cross-ship-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
-        arrangeButtonsAndSend("Where would you like to ship from?", buttons, discordGame, event);
+        arrangeButtonsAndSend("Where would you like to ship from?", buttons, discordGame);
         game.getFaction("Guild").getShipment().setToReserves(true);
         discordGame.pushGame();
     }
@@ -109,7 +121,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             for (int i = 0; i < limit; i++) {
                 buttonList.add(Button.primary("support-" + (i + 1), Integer.toString(i + 1)));
             }
-            arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame, event);
+            arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
         } else {
             game.getFaction(faction.getAlly()).setAllySpiceShipment(Integer.parseInt(event.getComponentId().replace("support-", "")));
             discordGame.queueMessage(faction.getAlly().toLowerCase() + "-chat", "Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
@@ -214,10 +226,6 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (faction.getMovement().hasMoved()) {
-            discordGame.queueMessage("You have already moved this turn.");
-            return;
-        }
         Movement movement = faction.getMovement();
         movement.execute(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
@@ -255,7 +263,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             moveToButtons.add(Button.primary("move-" + territory, territory));
         }
 
-        arrangeButtonsAndSend("Where will your forces move to?", moveToButtons, discordGame, event);
+        arrangeButtonsAndSend("Where will your forces move to?", moveToButtons, discordGame);
 
         discordGame.pushGame();
     }
@@ -286,7 +294,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         faction.getShipment().execute(discordGame, game, faction);
         discordGame.queueMessage("Shipment complete.");
         deleteAllButtonsInChannel(event.getMessageChannel());
-        queueMovementButtons(game, faction, event, discordGame);
+        queueMovementButtons(game, faction, discordGame);
     }
 
     private static void resetShipmentMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
@@ -298,7 +306,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else {
             faction.getMovement().clear();
             faction.getMovement().setMoved(false);
-            queueMovementButtons(game, faction, event, discordGame);
+            queueMovementButtons(game, faction, discordGame);
         }
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
@@ -418,7 +426,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                     + specialForces + "\n to " + territory + "\n for " + spice + " " + Emojis.SPICE + "\n\nYou have " +
                     faction.getSpice() + " " + Emojis.SPICE + " to spend.**";
             if (!forcesButtons.isEmpty()) {
-                arrangeButtonsAndSend(message, forcesButtons, discordGame, event);
+                arrangeButtonsAndSend(message, forcesButtons, discordGame);
             } else {
                 discordGame.queueMessage(message);
             };
@@ -461,11 +469,12 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             String message = "Use buttons below to add forces to your movement." +
                     "\n**Currently moving:\n" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "\n to " + faction.getMovement().getMovingTo() + "**";
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Hajr "))) forcesButtons.add(Button.secondary("hajr", "Confirm Movement with Hajr"));
             forcesButtons.add(Button.success("execute-movement", "Confirm Movement"));
             forcesButtons.add(Button.danger("reset-moving-forces", "Reset forces"));
             forcesButtons.add(Button.danger("reset-movement", "Start Over"));
 
-            arrangeButtonsAndSend(message, forcesButtons, discordGame, event);
+            arrangeButtonsAndSend(message, forcesButtons, discordGame);
         }
         discordGame.pushGame();
     }
@@ -606,7 +615,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         faction.getShipment().clear();
         discordGame.pushGame();
         deleteAllButtonsInChannel(event.getMessageChannel());
-        queueMovementButtons(game, faction, event, discordGame);
+        queueMovementButtons(game, faction, discordGame);
     }
 
     private static void queueShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -641,7 +650,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void queueMovementButtons(Game game, Faction faction, ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void queueMovementButtons(Game game, Faction faction, DiscordGame discordGame) throws ChannelNotFoundException {
         String message = "Use the following buttons to perform your move.";
 
         TreeSet<Button> movingFromButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
@@ -653,10 +662,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));
 
-        arrangeButtonsAndSend(message, movingFromButtons, discordGame, event);
+        arrangeButtonsAndSend(message, movingFromButtons, discordGame);
     }
 
-    private static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame, ButtonInteractionEvent event) {
+    private static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {
         List<MessageCreateBuilder> messagesToQueue = new LinkedList<>();
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         messageCreateBuilder.setContent(message);
