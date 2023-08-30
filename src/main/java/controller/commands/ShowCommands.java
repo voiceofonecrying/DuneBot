@@ -192,7 +192,7 @@ public class ShowCommands {
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
-                    && !territory.isAftermathToken()) continue;
+                    && !territory.isAftermathToken() && !territory.hasTerrorToken()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             int offset = 0;
             int i = 0;

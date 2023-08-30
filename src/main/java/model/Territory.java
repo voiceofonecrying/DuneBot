@@ -178,6 +178,9 @@ public class Territory {
         this.terrorToken = terrorToken;
     }
 
+    public boolean hasTerrorToken() {
+        return terrorToken != null;
+    }
 
     public boolean isAftermathToken() {
         return aftermathToken;
