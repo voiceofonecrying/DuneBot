@@ -24,6 +24,7 @@ public class ButtonManager extends ListenerAdapter {
             IxButtons.press(event, game, discordGame);
             EcazButtons.press(event, game, discordGame);
             MoritaniButtons.press(event, game, discordGame);
+            BGButtons.press(event, game, discordGame);
             switch (event.getComponentId()) {
                 case "graphic" -> {
                     getButtonPresser(event, game).setGraphicDisplay(true);
