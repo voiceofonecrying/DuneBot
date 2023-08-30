@@ -11,9 +11,13 @@ import java.io.IOException;
 
 public class Movement {
     private String movingFrom;
+    private String secondMovingFrom;
     private String movingTo;
     private int force;
+    private int secondForce;
     private int specialForce;
+
+    private int secondSpecialForce;
     private boolean hasMoved;
     private boolean movingNoField;
 
@@ -28,6 +32,10 @@ public class Movement {
             discordGame.queueMessage("turn-summary", Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
         }
         if (force != 0 || specialForce != 0) CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
+        if (secondForce != 0 || secondSpecialForce != 0) {
+            discordGame.queueMessage("turn-summary", faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
+            CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
+        }
         clear();
         ShowCommands.showBoard(discordGame, game);
     }
@@ -37,6 +45,9 @@ public class Movement {
         this.movingTo = "";
         this.force = 0;
         this.specialForce = 0;
+        this.secondForce = 0;
+        this.secondSpecialForce = 0;
+        this.secondMovingFrom = "";
         this.hasMoved = true;
         this.movingNoField = false;
     }
@@ -87,5 +98,29 @@ public class Movement {
 
     public void setMovingNoField(boolean movingNoField) {
         this.movingNoField = movingNoField;
+    }
+
+    public String getSecondMovingFrom() {
+        return secondMovingFrom;
+    }
+
+    public void setSecondMovingFrom(String secondMovingFrom) {
+        this.secondMovingFrom = secondMovingFrom;
+    }
+
+    public int getSecondForce() {
+        return secondForce;
+    }
+
+    public void setSecondForce(int secondForce) {
+        this.secondForce = secondForce;
+    }
+
+    public int getSecondSpecialForce() {
+        return secondSpecialForce;
+    }
+
+    public void setSecondSpecialForce(int secondSpecialForce) {
+        this.secondSpecialForce = secondSpecialForce;
     }
 }
