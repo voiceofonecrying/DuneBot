@@ -722,10 +722,6 @@ public class CommandManager extends ListenerAdapter {
         if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
 
         if (isShipment) {
-            if (targetFaction.getShipment().hasShipped()) {
-                discordGame.queueMessage("mod-info", "This faction has already shipped.");
-                return;
-            }
             targetFaction.getShipment().setShipped(true);
             int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
             int baseCost = costPerForce * (amountValue + starredAmountValue);
@@ -792,6 +788,14 @@ public class CommandManager extends ListenerAdapter {
                             game.hasGameOption(GameOption.TECH_TOKENS)
             ) {
                 TechToken.addSpice(game, discordGame, "Heighliners");
+            }
+
+            if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))) {
+                Button toPlace = Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise");
+                Button toSink = Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink");
+                Button no = Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No");
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG
+                + " to advise. " + game.getFaction("BG").getPlayer()).addActionRow(toPlace, toSink, no));
             }
 
             discordGame.queueMessage("turn-summary", message.toString());

@@ -45,12 +45,16 @@ public class BGCommands {
 
         switch (name) {
             case "flip" -> flip(discordGame, game);
-            case "advise" -> advise(discordGame, game);
+            case "advise" -> adviseEventHandler(discordGame, game);
         }
     }
 
-    private static void advise(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static void adviseEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritory(discordGame.required(CommandOptions.territory).getAsString());
+        advise(discordGame, game, territory);
+    }
+
+    public static void advise(DiscordGame discordGame, Game game, Territory territory) throws ChannelNotFoundException, IOException {
 
         CommandManager.placeForceInTerritory(territory, game.getFaction("BG"), 1, false);
         int fighters = territory.getForce("BG").getStrength();
