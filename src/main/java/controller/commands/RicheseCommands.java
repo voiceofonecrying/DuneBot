@@ -97,10 +97,12 @@ public class RicheseCommands {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
-            throw new InvalidGameStateException("All cards for this round have already been bid on.");
         } else if (!bidding.isRicheseCacheCardOutstanding()) {
-            throw new InvalidGameStateException(Emojis.RICHESE + " card is not eligible to be sold.");
+            if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
+                throw new InvalidGameStateException("All cards for this round have already been bid on.");
+            } else {
+                throw new InvalidGameStateException(Emojis.RICHESE + " card is not eligible to be sold.");
+            }
         }
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
