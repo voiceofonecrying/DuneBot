@@ -33,6 +33,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("add-force-movement-")) addForces(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("add-special-force-movement-"))
             addSpecialForces(event, game, discordGame, false);
+        else if (event.getComponentId().startsWith("planetologist-add-force-"))
+            planetologistAddForces(event, game, discordGame);
+        else if (event.getComponentId().startsWith("planetologist-add-special-force-"))
+            planetologistAddSpecialForces(event, game, discordGame);
         else if (event.getComponentId().startsWith("moving-from-")) queueMovableTerritories(event, game, discordGame);
         else if (event.getComponentId().startsWith("move-sector-")) filterBySector(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("move-")) queueSectorButtons(event, game, discordGame, false);
@@ -66,6 +70,31 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
 
         discordGame.sendAllMessages();
+    }
+
+    private static void planetologistAddSpecialForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (!event.getComponentId().split("-")[4].equals(faction.getMovement().getSecondMovingFrom())) {
+            faction.getMovement().setSecondSpecialForce(0);
+            faction.getMovement().setSecondForce(0);
+        }
+        faction.getMovement().setSecondMovingFrom(event.getComponentId().split("-")[4]);
+        faction.getMovement().setSecondSpecialForce(faction.getMovement().getSecondSpecialForce() + Integer.parseInt(event.getComponentId().split("-")[5]));
+        queueForcesButtons(event, game, discordGame, faction, false);
+
+    }
+
+    private static void planetologistAddForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (!event.getComponentId().split("-")[3].equals(faction.getMovement().getSecondMovingFrom())) {
+            faction.getMovement().setSecondSpecialForce(0);
+            faction.getMovement().setSecondForce(0);
+        }
+        faction.getMovement().setSecondMovingFrom(event.getComponentId().split("-")[3]);
+        faction.getMovement().setSecondForce(faction.getMovement().getSecondForce() + Integer.parseInt(event.getComponentId().split("-")[4]));
+        queueForcesButtons(event, game, discordGame, faction, false);
+
+
     }
 
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
@@ -255,8 +284,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (faction.getName().equals("Fremen") || (faction.getName().equals("Ix") && !Objects.equals(from.getForce(faction.getSpecialReserves().getName()).getName(), ""))) spacesCanMove = 2;
         if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
                 game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName()))) spacesCanMove = 3;
+        if (faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist") && spacesCanMove < 3) spacesCanMove++;
         Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
-        moveableTerritories.remove(from.getTerritoryName());
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
         for (String territory : moveableTerritories) {
@@ -322,6 +351,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else {
             faction.getMovement().setForce(0);
             faction.getMovement().setSpecialForce(0);
+            faction.getMovement().setSecondForce(0);
+            faction.getMovement().setSecondSpecialForce(0);
             faction.getMovement().setMovingNoField(false);
             queueForcesButtons(event, game, discordGame, faction, false);
         }
@@ -475,6 +506,45 @@ public class ShipmentAndMovementButtons implements Pressable {
             forcesButtons.add(Button.danger("reset-movement", "Start Over"));
 
             arrangeButtonsAndSend(message, forcesButtons, discordGame);
+
+            if (faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist")) {
+                int spacesCanMove = 1;
+                if (faction.getName().equals("Fremen")) spacesCanMove = 2;
+                if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
+                        game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName()))) spacesCanMove = 3;
+                for (Territory territory : game.getTerritories().values()) {
+                    if (territory.getTerritoryName().equals(faction.getMovement().getMovingFrom())) continue;
+                    if (!territory.hasForce(faction.getName()) && !territory.hasForce(faction.getName() + "*")) continue;
+
+                    Set<String> territoriesInRange = getAdjacentTerritoryNames(territory.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
+                    if (!territoriesInRange.contains(faction.getMovement().getMovingTo().replaceAll("\\(.*\\)", "").strip())) continue;
+
+                    TreeSet<Button> secondForcesButtons = new TreeSet<>(getButtonComparator());
+                    int secondForcesButtonLimit = territory.getForce(faction.getName()).getStrength();
+                    if (faction.getName().equals("BG")  && game.getTerritory(faction.getMovement().getMovingFrom()).hasForce("Advisor"))
+                        secondForcesButtonLimit = territory.getForce("Advisor").getStrength();
+                    int secondSpecialForcesButtonLimit = territory.getForce(faction.getName() + "*").getStrength();
+
+                    if (territory.getTerritoryName().equals(faction.getMovement().getSecondMovingFrom())) {
+                        secondForcesButtonLimit -= faction.getMovement().getSecondForce();
+                        secondSpecialForcesButtonLimit -= faction.getMovement().getSecondSpecialForce();
+                    }
+
+                    for (int i = 0; i < secondForcesButtonLimit; i++) {
+                        secondForcesButtons.add(Button.primary("planetologist-add-force-" + territory.getTerritoryName() + "-" + (i + 1), "+" + (i + 1) + " regular"));
+                    }
+                    for (int i = 0; i < secondSpecialForcesButtonLimit; i++) {
+                        secondForcesButtons.add(Button.primary("planetologist-add-special-force-" + territory.getTerritoryName() + "-" + (i + 1), "+" + (i + 1) + " starred"));
+                    }
+
+                    arrangeButtonsAndSend("Second force that can move from " + territory.getTerritoryName() + " using Planetologist ability.", secondForcesButtons, discordGame);
+
+                }
+                String secondSpecialForcesMessage = Emojis.getForceEmoji(faction.getName() + "*").equals(" force ") ? "" : "\n" + faction.getMovement().getSecondSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+                String planetologistMessage =
+                        "**Currently moving (Planetologist):\n" + faction.getMovement().getSecondForce() + " " + Emojis.getForceEmoji(faction.getName()) + secondSpecialForcesMessage + "\n from " + faction.getMovement().getSecondMovingFrom() + "**";
+                if (!faction.getMovement().getSecondMovingFrom().equals("")) discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", planetologistMessage);
+            }
         }
         discordGame.pushGame();
     }
