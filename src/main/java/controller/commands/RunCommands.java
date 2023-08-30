@@ -564,6 +564,7 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Axlotl Tanks");
 
         discordGame.queueMessage("turn-summary","Turn " + game.getTurn() + " Shipment and Movement Phase:");
+        game.getTurnOrder().clear();
         for (Faction faction : game.getFactions()) {
             game.getTurnOrder().add(faction.getName());
             faction.getShipment().clear();
@@ -573,21 +574,18 @@ public class RunCommands {
         }
         while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0) game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
-        if (game.hasFaction("Guild")) {
-            game.getTurnOrder().addFirst("guild-hold");
-            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame);
-        }
-        if (game.hasFaction("Richese")) {
-            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-            if (!richese.getTreacheryCardCache().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
+        if (game.hasFaction("Richese") && !((RicheseFaction)game.getFaction("Richese")).getTreacheryCardCache().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
                     !game.getTreacheryDiscard().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
                 game.getTurnOrder().addFirst("juice-of-sapho-hold");
                 discordGame.prepareMessage("game-actions", "Juice of Sapho is in play. Use buttons to play Juice of Sapho to be " +
                         "considered first or last this shipment and movement phase.").addActionRow(Button.primary("juice-of-sapho-first", "Go first this phase."),
                         Button.primary("juice-of-sapho-last", "Go last this phase."), Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase.")).queue();
             }
+        else if (game.hasFaction("Guild")) {
+            game.getTurnOrder().addFirst("Guild");
+            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame, game);
         }
+        else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Atreides")) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null)

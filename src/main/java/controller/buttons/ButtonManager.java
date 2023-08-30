@@ -1,9 +1,6 @@
 package controller.buttons;
 
-import controller.commands.RunCommands;
 import controller.commands.ShowCommands;
-import exceptions.ChannelNotFoundException;
-import exceptions.InvalidOptionException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.Game;
@@ -11,8 +8,6 @@ import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 

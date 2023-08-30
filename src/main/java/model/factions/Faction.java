@@ -41,6 +41,7 @@ public class Faction {
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
+    private final List<Long> buttonMessages;
 
     private NexusCard nexusCard;
     private final List<Leader> leaders;
@@ -61,6 +62,7 @@ public class Faction {
         this.treacheryHand = new LinkedList<>();
         this.frontOfShieldSpice = 0;
         this.hasMiningEquipment = false;
+        this.buttonMessages = new LinkedList<>();
 
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
@@ -565,5 +567,9 @@ public class Faction {
 
     public void setGraphicDisplay(boolean graphicDisplay) {
         this.graphicDisplay = graphicDisplay;
+    }
+
+    public List<Long> getButtonMessages() {
+        return buttonMessages;
     }
 }
