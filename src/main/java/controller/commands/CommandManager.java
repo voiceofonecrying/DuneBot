@@ -799,6 +799,11 @@ public class CommandManager extends ListenerAdapter {
             }
 
             discordGame.queueMessage("turn-summary", message.toString());
+
+            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName())
+                        .addActionRow(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip")));
+            }
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
             && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
@@ -866,6 +871,9 @@ public class CommandManager extends ListenerAdapter {
         if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
             throw new InvalidOptionException("Not enough forces in territory.");
         }
+        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly()))) {
+            throw new InvalidOptionException("You cannot move into a territory with your ally.");
+        }
 
         StringBuilder message = new StringBuilder();
 
@@ -909,6 +917,11 @@ public class CommandManager extends ListenerAdapter {
         );
 
         discordGame.queueMessage("turn-summary", message.toString());
+
+        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName())
+                    .addActionRow(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip")));
+        }
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()

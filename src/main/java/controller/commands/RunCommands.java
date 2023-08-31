@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -595,10 +596,11 @@ public class RunCommands {
             StringBuilder message = new StringBuilder();
             for (Territory territory : game.getTerritories().values()) {
                 if (territory.getForce("Advisor").getStrength() > 0) {
-                    message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n");
+                    discordGame.queueMessage("game-actions", new MessageCreateBuilder().setContent(
+                            message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n").append(game.getFaction("BG").getPlayer()).toString())
+                            .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));;
                 }
             }
-            if (!message.isEmpty()) discordGame.queueMessage("game-actions", message.append(game.getFaction("BG").getPlayer()).toString());
         }
         ShowCommands.showBoard(discordGame, game);
     }
