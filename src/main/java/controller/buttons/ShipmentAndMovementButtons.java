@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.DiscordGame;
@@ -37,7 +38,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             planetologistAddForces(event, game, discordGame);
         else if (event.getComponentId().startsWith("planetologist-add-special-force-"))
             planetologistAddSpecialForces(event, game, discordGame);
-        else if (event.getComponentId().startsWith("moving-from-")) queueMovableTerritories(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moving-from-")) queueMovableTerritories(event, game, discordGame, false);
+        else if (event.getComponentId().startsWith("ornithopter-moving-from-")) ornithopterMovement(event, game, discordGame);
         else if (event.getComponentId().startsWith("move-sector-")) filterBySector(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("move-")) queueSectorButtons(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-no-field-ship-"))
@@ -66,10 +68,19 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
             case "guild-cross-ship" -> crossShip(game, discordGame);
             case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
-            case "hajr" -> hajr(event, game, discordGame);
+            case "hajr" -> hajr(event, game, discordGame, true);
+            case "Ornithopter" -> hajr(event, game, discordGame, false);
         }
 
         discordGame.sendAllMessages();
+    }
+
+    private static void ornithopterMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " use Ornithopter to move 3 spaces with their move.");
+        queueMovableTerritories(event, game, discordGame, true);
+        discordGame.pushGame();
     }
 
     private static void planetologistAddSpecialForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -97,10 +108,12 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     }
 
-    private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
+    private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards Hajr to move again.");
+        if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
+        else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
+        String hajrOrOrnithopter = hajr ? "Hajr" : "Ornithopter";
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");
         faction.getMovement().execute(discordGame, game, faction);
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
@@ -276,15 +289,15 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void queueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void queueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", ""));
+        Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", "").replace("ornithopter-", ""));
         faction.getMovement().setMovingFrom(from.getTerritoryName());
         int spacesCanMove = 1;
         if (faction.getName().equals("Fremen") || (faction.getName().equals("Ix") && !Objects.equals(from.getForce(faction.getSpecialReserves().getName()).getName(), ""))) spacesCanMove = 2;
-        if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
+        if (ornithopter || game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
                 game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName()))) spacesCanMove = 3;
-        if (faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist") && spacesCanMove < 3) spacesCanMove++;
+        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist") && spacesCanMove < 3) spacesCanMove++;
         Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
@@ -500,14 +513,16 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             String message = "Use buttons below to add forces to your movement." +
                     "\n**Currently moving:\n" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "\n to " + faction.getMovement().getMovingTo() + "**";
-            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Hajr "))) forcesButtons.add(Button.secondary("hajr", "Confirm Movement with Hajr"));
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Hajr "))) forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter"))) forcesButtons.add(Button.secondary("Ornithopter", "Confirm Movement and play Ornithopter"));
+
             forcesButtons.add(Button.success("execute-movement", "Confirm Movement"));
             forcesButtons.add(Button.danger("reset-moving-forces", "Reset forces"));
             forcesButtons.add(Button.danger("reset-movement", "Start Over"));
 
             arrangeButtonsAndSend(message, forcesButtons, discordGame);
 
-            if (faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist")) {
+            if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist")) {
                 int spacesCanMove = 1;
                 if (faction.getName().equals("Fremen")) spacesCanMove = 2;
                 if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
@@ -728,7 +743,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Territory territory : game.getTerritories().values()){
             if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))
                     || (faction.getName().equals("Richese") && territory.hasRicheseNoField())
-                    || (faction.getName().equals("BG") && territory.hasForce("Advisor"))) movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
+                    || (faction.getName().equals("BG") && territory.hasForce("Advisor"))) {
+                movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
+                if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter"))) movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territory.getTerritoryName(), territory.getTerritoryName() + " (use Ornithopter)"));
+            }
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));
 
