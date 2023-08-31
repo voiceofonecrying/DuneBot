@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.DiscordGame;
@@ -55,7 +54,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "other" -> queueOtherShippingButtons(discordGame);
             case "reset-shipping-forces" -> resetForces(event, game, discordGame, true);
             case "reset-shipment" -> resetShipmentMovement(event, game, discordGame, true);
-            case "execute-shipment" -> executeShipment(event, game, discordGame);
+            case "execute-shipment" -> executeShipment(event, game, discordGame, false);
+            case "karama-execute-shipment" -> karamaExecuteShipment(event, game, discordGame);
             case "reset-moving-forces" -> resetForces(event, game, discordGame, false);
             case "reset-movement" -> resetShipmentMovement(event, game, discordGame, false);
             case "execute-movement" -> executeMovement(event, game, discordGame);
@@ -73,6 +73,13 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
 
         discordGame.sendAllMessages();
+    }
+
+    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Karama"));
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
+        executeShipment(event, game, discordGame, true);
     }
 
     private static void ornithopterMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -322,18 +329,18 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
-    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
         if (faction.getName().equals("Fremen")) spice = 0;
         if (faction.getShipment().isNoField()) spice = 1;
         spice *= game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() ? 1 : 2;
-        if (faction.getName().equals("Guild")) spice = Math.ceilDiv(spice, 2);
+        if (faction.getName().equals("Guild") || karama) spice = Math.ceilDiv(spice, 2);
         if (spice > faction.getSpice() + faction.getAllySpiceShipment()) {
             discordGame.queueMessage("You cannot afford this shipment.");
             return;
         }
-        faction.getShipment().execute(discordGame, game, faction);
+        faction.getShipment().execute(discordGame, game, faction, karama);
         discordGame.queueMessage("Shipment complete.");
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
@@ -492,19 +499,21 @@ public class ShipmentAndMovementButtons implements Pressable {
                 noFieldButtonMessage.addActionRow(noFieldButtons);
                 discordGame.queueMessage("richese-chat", noFieldButtonMessage);
             }
+            List<Button> finalizeButtons = new LinkedList<>();
 
             Button execute = Button.success("execute-shipment", "Confirm Shipment");
 
+
             if (faction.getShipment().hasShipped()) execute = execute.asDisabled();
+            finalizeButtons.add(execute);
+            finalizeButtons.add(Button.danger("reset-shipping-forces", "Reset forces"));
+            finalizeButtons.add(Button.danger("reset-shipment", "Start Over"));
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama"))) finalizeButtons.add(Button.secondary("karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)"));
 
             discordGame.queueMessage(
                     event.getMessageChannel().getName(), new MessageCreateBuilder()
                             .setContent("Finalize or start over:")
-                            .addActionRow(
-                                    execute,
-                                    Button.danger("reset-shipping-forces", "Reset forces"),
-                                    Button.danger("reset-shipment", "Start Over"))
-            );
+                            .addActionRow(finalizeButtons));
         }
         else {
             if (faction.getName().equals("Richese") && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField()) forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token"));
