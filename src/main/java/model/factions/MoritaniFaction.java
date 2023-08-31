@@ -119,7 +119,7 @@ public class MoritaniFaction extends Faction {
         territory.setTerrorToken(terror);
     }
     public void getDukeVidal() {
-        if (getLeader("Duke Vidal").isEmpty()) return;
+        if (getLeader("Duke Vidal").isPresent()) return;
         addLeader(new Leader("Duke Vidal", 6, null, false));
     }
 
