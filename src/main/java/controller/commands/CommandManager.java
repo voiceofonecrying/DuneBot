@@ -727,7 +727,7 @@ public class CommandManager extends ListenerAdapter {
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
 
-            if (targetFaction.getName().equalsIgnoreCase("Guild") || karama) {
+            if (targetFaction.getName().equalsIgnoreCase("Guild") || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild"))  || karama) {
                 cost = Math.ceilDiv(baseCost, 2);
             } else if (targetFaction.getName().equalsIgnoreCase("Fremen")) {
                 cost = 0;

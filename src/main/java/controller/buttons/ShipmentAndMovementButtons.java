@@ -335,7 +335,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (faction.getName().equals("Fremen")) spice = 0;
         if (faction.getShipment().isNoField()) spice = 1;
         spice *= game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() ? 1 : 2;
-        if (faction.getName().equals("Guild") || karama) spice = Math.ceilDiv(spice, 2);
+        if (faction.getName().equals("Guild") || (faction.hasAlly() && faction.getAlly().equals("Guild")) || karama) spice = Math.ceilDiv(spice, 2);
         if (spice > faction.getSpice() + faction.getAllySpiceShipment()) {
             discordGame.queueMessage("You cannot afford this shipment.");
             return;
@@ -469,7 +469,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() && !faction.getShipment().isToReserves()) spice *= 2;
 
             if (faction.getName().equals("Fremen")) spice = 0;
-            if (faction.getName().equals("Guild")) spice = Math.ceilDiv(spice, 2);
+            if (faction.getName().equals("Guild") || (faction.hasAlly() && faction.getAlly().equals("Guild"))) spice = Math.ceilDiv(spice, 2);
             String specialForces = faction.getSpecialReserves().getName().equals("") ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
 
             String message = "Use buttons below to add forces to your shipment." +
