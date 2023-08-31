@@ -68,6 +68,10 @@ public class BGCommands {
 
     public static void flip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritories().get(discordGame.required(bgTerritories).getAsString());
+        flip(discordGame, game, territory);
+    }
+
+    public static void flip(DiscordGame discordGame, Game game, Territory territory) throws ChannelNotFoundException, IOException {
         int strength = 0;
         String found = "";
         for (Force force : territory.getForces()) {
