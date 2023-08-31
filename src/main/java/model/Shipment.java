@@ -20,7 +20,7 @@ public class Shipment {
     public Shipment() {
     }
 
-    public void execute(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
+    public void execute(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritory(territoryName);
         if (isNoField) {
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
@@ -37,10 +37,10 @@ public class Shipment {
         }
         else if (!crossShipFrom.isEmpty()) {
             CommandManager.removeForces(crossShipFrom, faction, force, 0, false);
-            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game);
+            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
             discordGame.queueMessage("turn-summary", Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
         }
-        else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game);
+        else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
         ShowCommands.showBoard(discordGame, game);
         clear();
         discordGame.pushGame();

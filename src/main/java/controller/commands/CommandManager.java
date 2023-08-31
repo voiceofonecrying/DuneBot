@@ -708,11 +708,11 @@ public class CommandManager extends ListenerAdapter {
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
         boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
-        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game);
+        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game, false);
         discordGame.pushGame();
     }
 
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
 
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
@@ -727,7 +727,7 @@ public class CommandManager extends ListenerAdapter {
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
 
-            if (targetFaction.getName().equalsIgnoreCase("Guild")) {
+            if (targetFaction.getName().equalsIgnoreCase("Guild") || karama) {
                 cost = Math.ceilDiv(baseCost, 2);
             } else if (targetFaction.getName().equalsIgnoreCase("Fremen")) {
                 cost = 0;
@@ -773,7 +773,7 @@ public class CommandManager extends ListenerAdapter {
                 spiceMessage(discordGame, cost - support, targetFaction.getName(),
                         "shipment to " + targetTerritory.getTerritoryName(), false);
 
-                if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild")) {
+                if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild") && !karama) {
                     game.getFaction("Guild").addSpice(cost);
                     message.append(" paid to ")
                             .append(Emojis.GUILD);
