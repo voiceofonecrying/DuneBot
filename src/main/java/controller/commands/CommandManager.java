@@ -53,11 +53,22 @@ public class CommandManager extends ListenerAdapter {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
 
-                if (roles.stream().noneMatch(role ->
-                        role.getName().equals(game.getModRole()) || (role.getName().equals(game.getGameRole()))
-                && name.startsWith("player"))
-                ) {
+                if (roles.stream().noneMatch(role -> role.getName().equals(game.getModRole()) ||
+                        role.getName().equals(game.getGameRole()) && name.startsWith("player"))) {
                     event.getHook().editOriginal("You do not have permission to use this command.").queue();
+                    return;
+                }
+
+                if (game.isOnHold()) {
+                    if (name.equals("remove-hold")) {
+                        game.setOnHold(false);
+                        discordGame.queueMessage("turn-summary", "The hold has been resolved. Gameplay may proceed.");
+                        discordGame.pushGame();
+                        discordGame.sendAllMessages();
+                        event.getHook().editOriginal("Command Done.").queue();
+                    } else {
+                        event.getHook().editOriginal("The game is on hold. Please wait for the mod to resolve the issue.").queue();
+                    }
                     return;
                 }
 
@@ -151,6 +162,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
+        commandData.add(Commands.slash("remove-hold", "Remove the hold and allow gameplay to proceed."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
         commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
         commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));

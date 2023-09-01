@@ -135,6 +135,8 @@ public class CommandOptions {
     public static final OptionData outbidAlly =
             new OptionData(OptionType.BOOLEAN, "outbid-ally", "You will pass if your ally is highest bidder unless set to true.");
 
+    public static final OptionData holdgameReason = new OptionData(OptionType.STRING, "reason-for-hold", "Tell the mod why you are putting a hold on the game", true);
+
     public static final OptionData frontOfShield =
             new OptionData(OptionType.BOOLEAN, "front-of-shield", "Set to true for front of shield (default false)");
     public static final OptionData choamInflationType =

@@ -27,7 +27,8 @@ public class PlayerCommands {
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
                 new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(incrementOrExact, amount, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
-                new SubcommandData("pass", "Pass your turn during a bid.")
+                new SubcommandData("pass", "Pass your turn during a bid."),
+                new SubcommandData("holdgame", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
         return commandData;
@@ -48,6 +49,7 @@ public class PlayerCommands {
             case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
+            case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
         }
         discordGame.pushGame();
         return responseMessage;
@@ -191,5 +193,14 @@ public class PlayerCommands {
 
             faction = game.getFaction(bidding.advanceBidder(game));
         } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
+    }
+
+    private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        String reason = discordGame.required(holdgameReason).getAsString();
+        game.setOnHold(true);
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " put the game on hold. Please wait for the mod to resolve the issue.");
+        discordGame.queueMessage("mod-info", game.getMod() + " " + faction.getEmoji() + " put the game on hold because: " + reason);
+        return "";
     }
 }

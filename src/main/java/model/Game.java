@@ -37,6 +37,7 @@ public class Game {
     private final List<Faction> factions;
     private Deque<String> turnOrder;
 
+    private boolean onHold;
     private final Map<String, Territory> territories;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
@@ -87,6 +88,7 @@ public class Game {
         this.shieldWallDestroyed = false;
         this.bidding = null;
         this.mod = "";
+        this.onHold = false;
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -179,6 +181,14 @@ public class Game {
     public void setSetupFinished(boolean setupFinished) {
         this.setupFinished = setupFinished;
         this.getFactions().forEach(Faction::setFrontOfShieldModified);
+    }
+
+    public boolean isOnHold() {
+        return onHold;
+    }
+
+    public void setOnHold(boolean onHold) {
+        this.onHold = onHold;
     }
 
     public Bidding getBidding() throws InvalidGameStateException {
@@ -474,9 +484,11 @@ public class Game {
     public void setTurnOrder(Deque<String> turnOrder) {
         this.turnOrder = turnOrder;
     }
+
     public LinkedList<NexusCard> getNexusDeck() {
         return nexusDeck;
     }
+
     public LinkedList<NexusCard> getNexusDiscard() {
         return nexusDiscard;
     }
