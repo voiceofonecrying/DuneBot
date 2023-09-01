@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -144,13 +145,13 @@ public class IxCommands {
             buttons.add(Button.primary("ix-starting-card-" + i + "-" + card.name(), card.name()));
         }
         if (buttons.size() > 5) {
-            discordGame.prepareMessage("ix-chat", message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
                     .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.get(5)).queue();
+                    .addActionRow(buttons.get(5)));
         }
         else {
-            discordGame.prepareMessage("ix-chat", message.toString())
-                    .addActionRow(buttons).queue();
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+                    .addActionRow(buttons));
         }
     }
 
@@ -171,13 +172,13 @@ public class IxCommands {
             buttons.add(Button.primary("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
         }
         if (buttons.size() > 5) {
-            discordGame.prepareMessage("ix-chat", message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
                     .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.get(5)).queue();
+                    .addActionRow(buttons.get(5)));
         }
         else {
-            discordGame.prepareMessage("ix-chat", message.toString())
-                    .addActionRow(buttons).queue();
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+                    .addActionRow(buttons));
         }
     }
 
@@ -186,24 +187,24 @@ public class IxCommands {
         buttons.add(Button.primary("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
         buttons.add(Button.primary("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
         buttons.add(Button.secondary("ix-reset-card-selection", "Choose a different card"));
-        discordGame.prepareMessage("ix-chat", "Where do you want to send the " + cardName + "?")
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("Where do you want to send the " + cardName + "?")
+                .addActionRow(buttons));
     }
 
     public static void confirmCardToSendBack(DiscordGame discordGame, Game game, String cardName, String location) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("ix-confirm-reject" + "-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
         buttons.add(Button.secondary("ix-confirm-reject-reset", "Start over"));
-        discordGame.prepareMessage("ix-chat", "Confirm your selection of " + cardName.trim() + " to " + location + ".")
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("Confirm your selection of " + cardName.trim() + " to " + location + ".")
+                .addActionRow(buttons));
     }
 
     public static void confirmStartingCard(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("ix-confirm-start-" + cardName, "Confirm " + cardName));
         buttons.add(Button.secondary("ix-confirm-start-reset", "Choose a different card"));
-        discordGame.prepareMessage("ix-chat", "Confirm your selection of " + cardName.trim() + ".")
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("Confirm your selection of " + cardName.trim() + ".")
+                .addActionRow(buttons));
     }
 
     public static void ixHandSelection(DiscordGame discordGame, Game game, String ixCardName) throws ChannelNotFoundException {

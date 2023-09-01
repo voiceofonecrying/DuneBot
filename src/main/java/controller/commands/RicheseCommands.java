@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -308,8 +309,8 @@ public class RicheseCommands {
             buttons.add(Button.primary("richeserunblackmarket-" + card.name() + "-" + i, card.name()));
         }
         buttons.add(Button.danger("richeserunblackmarket-skip", "No black market"));
-        discordGame.prepareMessage("richese-chat", message.toString())
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("richese-chat", new MessageCreateBuilder().addContent(message.toString())
+                .addActionRow(buttons));
     }
 
     public static void blackMarketMethod(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException, InvalidGameStateException {
@@ -321,8 +322,8 @@ public class RicheseCommands {
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Silent", "Silent"));
         buttons.add(Button.secondary("richeseblackmarketmethod-reselect", "Start over"));
-        discordGame.prepareMessage("richese-chat", "How would you like to sell " + cardName.trim() + "?")
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("richese-chat", new MessageCreateBuilder().addContent("How would you like to sell " + cardName.trim() + "?")
+                .addActionRow(buttons));
     }
     public static void confirmBlackMarket(DiscordGame discordGame, Game game, String cardName, String method) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
@@ -330,7 +331,7 @@ public class RicheseCommands {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
-        discordGame.prepareMessage("richese-chat", "")
-                .addActionRow(buttons).queue();
+        discordGame.queueMessage("richese-chat", new MessageCreateBuilder().addContent("")
+                .addActionRow(buttons));
     }
 }
