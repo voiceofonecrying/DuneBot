@@ -829,7 +829,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     public static void deleteAllButtonsInChannel(MessageChannel channel) {
-        List<Message> messages = channel.getHistoryFromBeginning(100).complete().getRetrievedHistory();
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         for (Message message : messages) {
             if (!message.getButtons().isEmpty()) message.delete().complete();
         }
