@@ -484,7 +484,7 @@ public class SetupCommands {
             for (Faction faction : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
             discordGame.queueMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
-            IxCommands.initialCardButtons(discordGame, game);
+            IxCommands.initialCard(discordGame, game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
             discordGame.queueMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");

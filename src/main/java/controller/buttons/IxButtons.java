@@ -30,18 +30,20 @@ public class IxButtons implements Pressable {
             throw new InvalidGameStateException("You have already selected your card.");
         }
         discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
+        discordGame.queueDeleteMessage();
         IxCommands.confirmStartingCard(discordGame, game, event.getComponentId().split("-")[4]);
     }
 
-    private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+    private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         if (game.isSetupFinished()) {
             throw new InvalidGameStateException("Setup phase is completed.");
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("Choose again from the buttons above.");
+        discordGame.queueMessage("Choose a different card.");
         discordGame.queueDeleteMessage();
+        IxCommands.initialCardButtons(discordGame, game);
     }
 
     private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -52,6 +54,7 @@ public class IxButtons implements Pressable {
             throw new InvalidGameStateException("You have already selected your card.");
         }
         discordGame.queueMessage("You will keep " + event.getComponentId().split("-")[3].trim() + ".");
+        discordGame.queueDeleteMessage();
         IxCommands.ixHandSelection(discordGame, game, event.getComponentId().split("-")[3]);
     }
 

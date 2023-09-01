@@ -129,7 +129,7 @@ public class IxCommands {
         placeHMS(discordGame, game);
     }
 
-    public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         StringBuilder message = new StringBuilder();
         IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
         message.append(
@@ -138,6 +138,16 @@ public class IxCommands {
                         Emojis.TREACHERY, ixFaction.getPlayer()
                 )
         );
+        for (TreacheryCard card : ixFaction.getTreacheryHand()) {
+            message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
+        }
+        discordGame.queueMessage("ix-chat", message.toString());
+        initialCardButtons(discordGame, game);
+    }
+
+    public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        StringBuilder message = new StringBuilder();
+        IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
         List<Button> buttons = new LinkedList<>();
         int i = 0;
         for (TreacheryCard card : ixFaction.getTreacheryHand()) {
@@ -145,12 +155,12 @@ public class IxCommands {
             buttons.add(Button.primary("ix-starting-card-" + i + "-" + card.name(), card.name()));
         }
         if (buttons.size() > 5) {
-            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons.subList(0, 5))
                     .addActionRow(buttons.get(5)));
         }
         else {
-            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons));
         }
     }
