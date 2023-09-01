@@ -321,7 +321,7 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
-    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.startBidding();
         game.getFactions().forEach(faction -> {
@@ -335,7 +335,8 @@ public class RunCommands {
                 discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market.");
                 return true;
             } else {
-                discordGame.queueMessage("mod-info", "Run black market bid (if exists), then advance the game.");
+                RicheseCommands.askBlackMarket(discordGame, game);
+                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked about black market.");
                 return false;
             }
         } catch (IllegalArgumentException e) {

@@ -55,8 +55,7 @@ Here are some commands that could be helpful during this phase:
 
 ## Bidding Phase
 The first part of the bidding phase ("Start Bidding Phase") is used in cases when actions should be done before the number
-of cards up for bid are calculated (Richese Black Market).  Use the `/richese black-market-bid` command to put a Richese
-Black Market card up for bid.
+of cards up for bid are calculated (Richese Black Market).  The Richese will be presented with buttons to select a card to auction or to decline black market for the turn.
 
 In the second part of the bidding phase (Show Card Counts and Calculate Total Cards for Bid) the number of cards up for bid
 is calculated and bidding can start. Use `/run advance` to proceed to this stage. Cards for bid will be pulled from the treachery deck into the bidding market of cards. One extra card will be included if Ix is in the game.
@@ -78,10 +77,8 @@ If all factions pass on a non-Richese card, use `/run advance`. This will usuall
 If the Richese cache card has not been auctioned yet, use `/richese card-bid` and then `/run advance` again to end the bidding phase
 
 Here are some commands that could be helpful during this phase:
-* `/richese black-market-bid`
 * `/richese card-bid`
 * `/run bidding`
-* `/ix send-card-to-deck`
 * `/ix technology`
 * `/awardtopbidder`
 * `/awardbid`
@@ -90,6 +87,9 @@ Here are some commands that could be helpful during this phase:
 * `/discard`
 * `/richese remove-card`
 * `/richese karama-buy`
+These commands are available to the mod, but should not be needed. Player buttons will perform these actions.
+* `/richese black-market-bid`
+* `/ix send-card-to-deck`
 
 ## Revival
 At the start of the revival phase, the bot will automatically do free revivals, taking Fremen alliance into account.

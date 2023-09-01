@@ -10,9 +10,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -123,15 +125,13 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void blackMarketBidComplete(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (bidding.getBidCard() != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
         } else if (bidding.getBidCardNumber() != 0) {
             throw new InvalidGameStateException("Black market card must be first in the bidding round.");
         }
-        String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
-        String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
 
         Faction faction = game.getFaction("Richese");
         List<TreacheryCard> cards = faction.getTreacheryHand();
@@ -165,6 +165,12 @@ public class RicheseCommands {
         AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, card);
 
         discordGame.pushGame();
+    }
+
+    public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
+        String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
+        blackMarketBidComplete(discordGame, game, cardName, bidType);
     }
 
     public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -283,5 +289,48 @@ public class RicheseCommands {
             RunCommands.createBidMessage(discordGame, game);
             bidding.advanceBidder(game);
         }
+    }
+
+    public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        StringBuilder message = new StringBuilder();
+        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+        message.append(
+                MessageFormat.format(
+                        "Turn {0} - Select a {1} card to sell on the black market.",
+                        game.getTurn(), Emojis.TREACHERY
+                )
+        );
+        List<Button> buttons = new LinkedList<>();
+        int i = 0;
+        for (TreacheryCard card : richeseFaction.getTreacheryHand()) {
+            i++;
+            buttons.add(Button.primary("richeserunblackmarket-" + card.name() + "-" + i, card.name()));
+        }
+        buttons.add(Button.danger("richeserunblackmarket-skip", "No black market"));
+        discordGame.prepareMessage("richese-chat", message.toString())
+                .addActionRow(buttons).queue();
+    }
+
+    public static void blackMarketMethod(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
+        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
+        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
+        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Silent", "Silent"));
+        buttons.add(Button.secondary("richeseblackmarketmethod-reselect", "Start over"));
+        discordGame.prepareMessage("richese-chat", "How would you like to sell " + cardName.trim() + "?")
+                .addActionRow(buttons).queue();
+    }
+    public static void confirmBlackMarket(DiscordGame discordGame, Game game, String cardName, String method) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
+        buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
+        discordGame.prepareMessage("richese-chat", "")
+                .addActionRow(buttons).queue();
     }
 }
