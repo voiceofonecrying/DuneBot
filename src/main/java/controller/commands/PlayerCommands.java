@@ -25,9 +25,7 @@ public class PlayerCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(CommandOptions.amount, CommandOptions.outbidAlly),
-                new SubcommandData("set-auto-bid-policy", "Set policy to either increment or " +
-                        "exact.").addOptions(incrementOrExact),
+                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(incrementOrExact, amount, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid.")
         ));
@@ -49,7 +47,6 @@ public class PlayerCommands {
         switch (command) {
             case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
-            case "set-auto-bid-policy" -> responseMessage = setAutoBidPolicy(event, discordGame);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
         }
         discordGame.pushGame();
@@ -79,37 +76,15 @@ public class PlayerCommands {
         return responseMessage;
     }
 
-    private static String setAutoBidPolicy(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
-        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        faction.setUseExact(useExact);
-        String responseMessage = faction.getEmoji() + " set their auto-bid policy to " + (useExact ? "exact" : "increment");
-        discordGame.queueMessage("mod-info", responseMessage);
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", responseMessage);
-
-        responseMessage = "You set your auto-bid policy to " + (useExact ? "exact" : "increment");
-        int bidAmount = faction.getMaxBid();
-        if (bidAmount > 0) {
-            responseMessage += ". You will bid ";
-            if (faction.isUseExactBid()) {
-                responseMessage += "exactly " + bidAmount + " if possible.";
-            } else {
-                responseMessage += "+1 up to " + bidAmount + ".";
-            }
-        }
-        if (faction.hasAlly()) {
-            responseMessage += "\nYou will" + (faction.isOutbidAlly() ? "" : " not") + " outbid your ally";
-        }
-        return responseMessage;
-    }
-
     private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
         int bidAmount = discordGame.required(amount).getAsInt();
+        faction.setUseExact(useExact);
         faction.setMaxBid(bidAmount);
         discordGame.queueMessage("mod-info", faction.getEmoji() + " set their bid to " + bidAmount);
         String responseMessage = "You will bid ";
-        if (faction.isUseExactBid()) {
+        if (useExact) {
             responseMessage += "exactly " + bidAmount + " if possible.";
         } else {
             responseMessage += "+1 up to " + bidAmount + ".";
