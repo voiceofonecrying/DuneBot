@@ -431,7 +431,7 @@ public class RunCommands {
                             bidding.getMarket().size(), Emojis.TREACHERY, Emojis.IX
                     )
             );
-            IxCommands.cardToRejectButtons(discordGame, game);
+            IxCommands.cardToReject(discordGame, game);
             bidding.setMarketShownToIx(true);
             discordGame.queueMessage("turn-summary", message.toString());
 

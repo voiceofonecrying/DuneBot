@@ -155,7 +155,7 @@ public class IxCommands {
         }
     }
 
-    public static void cardToRejectButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void cardToReject(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         StringBuilder message = new StringBuilder();
         IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
@@ -165,6 +165,15 @@ public class IxCommands {
                         game.getTurn(), Emojis.TREACHERY, ixFaction.getPlayer()
                 )
         );
+        for (TreacheryCard card : bidding.getMarket()) {
+            message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
+        }
+        discordGame.queueMessage("ix-chat", message.toString());
+        cardToRejectButtons(discordGame, game);
+    }
+
+    public static void cardToRejectButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
         List<Button> buttons = new LinkedList<>();
         int i = 0;
         for (TreacheryCard card : bidding.getMarket()) {
@@ -172,12 +181,12 @@ public class IxCommands {
             buttons.add(Button.primary("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
         }
         if (buttons.size() > 5) {
-            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons.subList(0, 5))
                     .addActionRow(buttons.get(5)));
         }
         else {
-            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent(message.toString())
+            discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons));
         }
     }
