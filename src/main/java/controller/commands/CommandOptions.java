@@ -132,6 +132,9 @@ public class CommandOptions {
     public static final OptionData autoPass =
             new OptionData(OptionType.BOOLEAN, "enabled", "Set to true if you want auto-pass enabled.", true);
 
+    public static final OptionData autoPassAfterMax =
+            new OptionData(OptionType.BOOLEAN, "auto-pass-after-max", "Set to true if you want to automatically pass after your max bid is exceeded.", false);
+
     public static final OptionData outbidAlly =
             new OptionData(OptionType.BOOLEAN, "outbid-ally", "You will pass if your ally is highest bidder unless set to true.");
 
