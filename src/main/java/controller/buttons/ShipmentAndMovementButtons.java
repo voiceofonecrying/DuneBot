@@ -192,6 +192,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void guildWaitLast(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         game.getTurnOrder().addLast("Guild");
         discordGame.queueMessage("You will take your turn last.");
+        game.getTurnOrder().pollFirst();
         sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
