@@ -47,7 +47,7 @@ public class CommandManager extends ListenerAdapter {
 
         try {
             String ephemeralMessage = "";
-            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Game Master"))) newGame(event);
+            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) newGame(event);
             else if (name.equals("waitinglist")) waitingList(event);
             else {
                 DiscordGame discordGame = new DiscordGame(event);
