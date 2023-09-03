@@ -73,6 +73,7 @@ public class CommandManager extends ListenerAdapter {
                 }
 
                 switch (name) {
+                    case "gamestate" -> GameStateCommands.runCommand(event, discordGame, game);
                     case "show" -> ShowCommands.runCommand(event, discordGame, game);
                     case "setup" -> SetupCommands.runCommand(event, discordGame, game);
                     case "run" -> RunCommands.runCommand(event, discordGame, game);
@@ -136,7 +137,7 @@ public class CommandManager extends ListenerAdapter {
 
         try {
             Game game = discordGame.getGame();
-            event.replyChoices(CommandOptions.getCommandChoices(event, game)).queue();
+            event.replyChoices(CommandOptions.getCommandChoices(event, discordGame, game)).queue();
         } catch (ChannelNotFoundException|IOException e) {
             throw new RuntimeException(e);
         }
@@ -184,6 +185,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
 
+        commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
         commandData.addAll(RunCommands.getCommands());

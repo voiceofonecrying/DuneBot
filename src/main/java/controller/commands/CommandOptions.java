@@ -1,18 +1,24 @@
 package controller.commands;
 
 import enums.GameOption;
+import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class CommandOptions {
     public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
@@ -171,7 +177,10 @@ public class CommandOptions {
     public static final OptionData strongholdCards =
             new OptionData(OptionType.BOOLEAN, "stronghold-cards", "Set to true if you are okay with playing with stronghold cards", true);
 
-    public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, Game game) {
+    public static final OptionData gameState =
+            new OptionData(OptionType.STRING, "game-state", "Select a game state to rewind to.", true)
+                    .setAutoComplete(true);
+    public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
 
@@ -196,6 +205,7 @@ public class CommandOptions {
             case "add-game-option" -> choices = getAddGameOptions(game, searchValue);
             case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
             case "returning" -> choices = nonHarkLeaders(event, game, searchValue);
+            case "game-state" -> choices = getGameStates(discordGame, searchValue);
         }
 
         return choices;
@@ -399,10 +409,30 @@ public class CommandOptions {
         }
     }
 
+    private static List<Command.Choice> getGameStates(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        MessageChannel botDataChannel = discordGame.getTextChannel("bot-data");
+
+        String latestMessageId = botDataChannel.getLatestMessageId();
+        MessageHistory messageHistory = botDataChannel.getHistoryBefore(latestMessageId, 25).complete();
+        List<Message> messages = messageHistory.getRetrievedHistory();
+
+
+        List<Command.Choice> choices = IntStream.range(0, messageHistory.size())
+                .filter(i -> messages.get(i).getContentDisplay().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .mapToObj(i -> new Command.Choice(
+                        StringUtils.left(i + " - " + messages.get(i).getTimeCreated() + " - " +
+                                messages.get(i).getContentDisplay(), 100),
+                                messages.get(i).getId()
+                        ))
+                .toList();
+        return choices;
+    }
+
     private static List<Command.Choice> gameOptionsToChoices(List<GameOption> list, String searchValue) {
         return list.stream().map(Enum::name)
                 .filter(e -> e.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(e -> new Command.Choice(e, e))
                 .toList();
     }
+
 }
