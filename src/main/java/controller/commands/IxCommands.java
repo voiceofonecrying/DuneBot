@@ -157,7 +157,7 @@ public class IxCommands {
         if (buttons.size() > 5) {
             discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.get(5)));
+                    .addActionRow(buttons.subList(5, buttons.size())));
         }
         else {
             discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
@@ -193,7 +193,7 @@ public class IxCommands {
         if (buttons.size() > 5) {
             discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")
                     .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.get(5)));
+                    .addActionRow(buttons.subList(5, buttons.size())));
         }
         else {
             discordGame.queueMessage("ix-chat", new MessageCreateBuilder().addContent("")

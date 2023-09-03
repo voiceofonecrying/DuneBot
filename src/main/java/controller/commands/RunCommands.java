@@ -332,11 +332,11 @@ public class RunCommands {
         try {
             richeseFaction = (RicheseFaction)game.getFaction("Richese");
             if (richeseFaction.getTreacheryHand().isEmpty()) {
-                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market.");
+                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
                 return true;
             } else {
                 RicheseCommands.askBlackMarket(discordGame, game);
-                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked about black market.");
+                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been given buttons for black market.");
                 return false;
             }
         } catch (IllegalArgumentException e) {
@@ -382,6 +382,9 @@ public class RunCommands {
         discordGame.queueMessage("turn-summary", message.toString());
         if (numCardsForBid == 0) {
             discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+        } else if (bidding.isRicheseCacheCardOutstanding()) {
+            RicheseCommands.cacheCard(discordGame, game);
+            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been given buttons for selling their cache card.");
         } else {
             discordGame.queueMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
         }

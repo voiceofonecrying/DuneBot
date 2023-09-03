@@ -645,6 +645,10 @@ public class CommandManager extends ListenerAdapter {
             ));
         }
 
+        if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() -1 && bidding.isRicheseCacheCardOutstanding()) {
+            RicheseCommands.cacheCard(discordGame, game);
+            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked to select the last card of the turn.");
+        }
         discordGame.pushGame();
     }
 
