@@ -43,13 +43,13 @@ public class EventListener extends ListenerAdapter {
         try {
             discordGame = new DiscordGame(event);
         } catch (ChannelNotFoundException | IOException e) {
-            throw new RuntimeException(e);
+            return;
         }
         Game game;
         try {
             game = discordGame.getGame();
         } catch (ChannelNotFoundException | IOException e) {
-            throw new RuntimeException(e);
+            return;
         }
 
         for (Faction faction : game.getFactions()) {
