@@ -294,6 +294,7 @@ public class Bidding {
     }
 
     public void clearBidCardInfo(String winner) {
+        previousCard = bidCard;
         bidCard = null;
         richeseBidOrder = null;
         if (richeseCacheCard) {
@@ -305,7 +306,6 @@ public class Bidding {
         bidLeader = "";
         currentBid = 0;
         cardFromMarket = false;
-        previousCard = bidCard;
         previousWinner = winner;
         ixAllySwapped = false;
     }

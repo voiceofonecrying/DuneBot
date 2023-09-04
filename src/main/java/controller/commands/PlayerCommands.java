@@ -25,7 +25,7 @@ public class PlayerCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("bidd", "Place a bid during bidding phase.").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
+                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("holdgame", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
@@ -46,7 +46,7 @@ public class PlayerCommands {
 
         String responseMessage = "";
         switch (command) {
-            case "bidd" -> responseMessage = bid(event, discordGame, game);
+            case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
