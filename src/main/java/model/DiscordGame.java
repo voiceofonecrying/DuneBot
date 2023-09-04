@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -50,6 +51,11 @@ public class DiscordGame {
         this.gameCategory = ((TextChannel) event.getChannel()).getParentCategory();
         this.game = this.getGame();
         this.event = event;
+    }
+
+    public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException, IOException {
+        this.gameCategory = ((TextChannel) event.getChannel()).getParentCategory();
+        this.game = this.getGame();
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
