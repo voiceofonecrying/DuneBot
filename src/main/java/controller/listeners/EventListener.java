@@ -1,12 +1,18 @@
 package controller.listeners;
 
+import exceptions.ChannelNotFoundException;
+import model.DiscordGame;
+import model.Game;
+import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.NotNull;
 import utils.CardImages;
 
+import java.io.IOException;
 import java.util.Optional;
 
 public class EventListener extends ListenerAdapter {
@@ -30,7 +36,30 @@ public class EventListener extends ListenerAdapter {
             sendNexusImage(event, cardName);
         }
 
+        if (event.getMember().getUser().isBot()) return;
+
         //Add any other text based commands here
+        DiscordGame discordGame;
+        try {
+            discordGame = new DiscordGame(event);
+        } catch (ChannelNotFoundException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        Game game;
+        try {
+            game = discordGame.getGame();
+        } catch (ChannelNotFoundException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Faction faction : game.getFactions()) {
+            if (event.getMember().getUser().getAsMention().equals(faction.getPlayer())) {
+                String emojiName = faction.getEmoji().replace("<:", "").replaceAll(":.*>", "");
+                long id = Long.parseLong(faction.getEmoji().replaceAll("<:.*:", "").replace(">", ""));
+                event.getMessage().addReaction(Emoji.fromCustom(emojiName, id, false)).queue();
+            }
+        }
+
     }
 
     public void sendTreacheryImage(MessageReceivedEvent event, String cardName) {
