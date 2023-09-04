@@ -5,9 +5,13 @@ import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.Game;
 import model.factions.Faction;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
@@ -59,6 +63,12 @@ public class ButtonManager extends ListenerAdapter {
                 System.out.println(faction.getPlayer());
             }
             throw e;
+        }
+    }
+    public static void deleteAllButtonsInChannel(MessageChannel channel) {
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
+        for (Message message : messages) {
+            if (!message.getButtons().isEmpty()) message.delete().complete();
         }
     }
 }

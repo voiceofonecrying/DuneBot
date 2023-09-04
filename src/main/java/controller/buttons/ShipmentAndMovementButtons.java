@@ -9,14 +9,14 @@ import model.Movement;
 import model.Territory;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.*;
+
+import static controller.buttons.ButtonManager.deleteAllButtonsInChannel;
 
 public class ShipmentAndMovementButtons implements Pressable {
     
@@ -830,10 +830,4 @@ public class ShipmentAndMovementButtons implements Pressable {
         };
     }
 
-    public static void deleteAllButtonsInChannel(MessageChannel channel) {
-        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        for (Message message : messages) {
-            if (!message.getButtons().isEmpty()) message.delete().complete();
-        }
-    }
 }

@@ -116,14 +116,10 @@ public class EcazFaction extends Faction {
             if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector()) stronghold = stronghold.asDisabled();
             buttons.add(stronghold);
         }
-        if (buttons.size() > 5) {
-            discordGame.prepareMessage("ecaz-chat", "Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + ".")
-                    .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.subList(5, buttons.size())).queue();
-        } else {
-            discordGame.prepareMessage("ecaz-chat", "Use these buttons to place Ambassador tokens from your supply.for " + cost + " " + Emojis.SPICE + ".")
-                    .addActionRow(buttons).queue();
-        }
+        buttons.add(Button.secondary("ecaz-no-more-ambassadors", "No more ambassadors."));
+        discordGame.prepareMessage("ecaz-chat", "Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer())
+                .addActionRow(buttons.subList(0, 5))
+                .addActionRow(buttons.subList(5, buttons.size())).queue();
     }
 
     public void sendAmbassadorMessage(DiscordGame discordGame, String territory, int cost) throws ChannelNotFoundException {

@@ -819,14 +819,14 @@ public class CommandManager extends ListenerAdapter {
             discordGame.queueMessage("turn-summary", message.toString());
 
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName())
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer())
                         .addActionRow(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip")));
             }
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
             && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
                     && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now.")
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer())
                         .addActionRow(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
                                 Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
             }
@@ -834,7 +834,7 @@ public class CommandManager extends ListenerAdapter {
             if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
                     && (!(game.getFaction("Moritani").hasAlly()
                     && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now.")
+                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer())
                         .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"),
                                 Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
             }
@@ -937,14 +937,14 @@ public class CommandManager extends ListenerAdapter {
         discordGame.queueMessage("turn-summary", message.toString());
 
         if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName())
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer())
                     .addActionRow(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip")));
         }
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
                 && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now.")
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer())
                     .addActionRow(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
                             Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
         }
@@ -952,7 +952,7 @@ public class CommandManager extends ListenerAdapter {
         if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
                 && !(game.getFaction("Moritani").hasAlly()
                 && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now.")
+            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer())
                     .addActionRow(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"),
                             Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
         }
