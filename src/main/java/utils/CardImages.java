@@ -3,6 +3,7 @@ package utils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.FileUpload;
 
@@ -56,7 +57,10 @@ public class CardImages {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);
         } else {
-            Optional<TextChannel> channel = guild.getTextChannels().stream()
+            if (guild.getCategoriesByName("Game Resources", true).isEmpty()) return new ArrayList<>();
+            Category gameResources = guild.getCategoriesByName("Game Resources", true).get(0);
+
+            Optional<TextChannel> channel = gameResources.getTextChannels().stream()
                     .filter(c -> c.getName().equalsIgnoreCase(channelName))
                     .findFirst();
 
