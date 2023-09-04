@@ -232,19 +232,38 @@ public class RicheseCommands {
 
     public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
+        for (Faction faction : game.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setAutoBid(false);
+            faction.setBid("");
+        }
         if (bidType.equalsIgnoreCase("Silent")) {
             bidding.setSilentAuction(true);
             if (blackMarket) {
-                discordGame.queueMessage("bidding-phase", "We will now silently auction a card from Richese's " +
-                        "hand on the black market! Please place your bid in your private channels.");
+                discordGame.queueMessage("bidding-phase",
+                        MessageFormat.format(
+                                "@{0} We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
+                                game.getGameRole(), Emojis.RICHESE
+                        )
+                );
             } else {
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
-                                "We will now silently auction a brand new Richese {0} {1} {0}!  Please place your bid in your private channels.",
-                                Emojis.TREACHERY, bidding.getBidCard().name()
+                                "@{0} We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
+                                game.getGameRole(), Emojis.TREACHERY, bidding.getBidCard().name()
                         )
                 );
             }
+            List<Faction> factions = game.getFactions();
+            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
+            List<Faction> bidOrderFactions = new ArrayList<>();
+            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
+            bidOrderFactions.addAll(factions.subList(0, firstBid));
+            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
+            bidding.setRicheseBidOrder(game, bidOrder);
+            List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1 ));
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
         } else {
             StringBuilder message = new StringBuilder();
             if (blackMarket) {
@@ -258,11 +277,8 @@ public class RicheseCommands {
             }
 
             List<Faction> factions = game.getFactions();
-
             List<Faction> bidOrderFactions = new ArrayList<>();
-
             List<Faction> factionsInBidDirection;
-
             if (bidType.equalsIgnoreCase("OnceAroundCW")) {
                 factionsInBidDirection = new ArrayList<>(factions);
                 Collections.reverse(factionsInBidDirection);
@@ -276,16 +292,8 @@ public class RicheseCommands {
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
             bidding.setRicheseBidOrder(game, bidOrder);
             List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            for (Faction faction : game.getFactions()) {
-                faction.setMaxBid(0);
-                faction.setAutoBid(false);
-                faction.setBid("");
-            }
-
             Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1 ));
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-
-            Faction faction = game.getFaction(filteredBidOrder.get(0));
             discordGame.queueMessage("bidding-phase", message.toString());
             RunCommands.createBidMessage(discordGame, game);
             bidding.advanceBidder(game);

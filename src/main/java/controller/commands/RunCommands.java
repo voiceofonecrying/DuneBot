@@ -483,7 +483,9 @@ public class RunCommands {
                         game.getTurn(), bidding.getBidCardNumber()
                 )
         );
-        if (bidding.isRicheseBidding()) {
+        if (bidding.isSilentAuction()) {
+            message.append(" (Silent Auction)");
+        } else if (bidding.isRicheseBidding()) {
             message.append(" (Once Around)");
         }
         message.append("\n");
