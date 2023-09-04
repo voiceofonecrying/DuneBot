@@ -31,8 +31,15 @@ public class EcazButtons implements Pressable {
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "ecaz-deny-offer" -> denyAlliance(event, game, discordGame);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
+            case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(event, game, discordGame);
         }
 
+    }
+
+    private static void noMoreAmbassadors(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+        discordGame.queueMessage("Finished sending ambassadors.");
+        discordGame.queueDeleteMessage();
+        ButtonManager.deleteAllButtonsInChannel(event.getChannel());
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
@@ -50,7 +57,7 @@ public class EcazButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
         String ambassador = event.getComponentId().split("-")[3];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
