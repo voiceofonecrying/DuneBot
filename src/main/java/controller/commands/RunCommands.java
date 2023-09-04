@@ -770,10 +770,6 @@ public class RunCommands {
 
     public static void updateStrongholdSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasStrongholdSkills()) {
-            for (Faction faction : game.getFactions()) {
-                faction.removeResource("strongholdCard");
-            }
-
             game.getFactions().forEach(Faction::removeAllStrongholdCards);
 
             List<Territory> strongholds = game.getTerritories().values().stream()

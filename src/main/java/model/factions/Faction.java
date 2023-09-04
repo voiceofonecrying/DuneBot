@@ -45,7 +45,6 @@ public class Faction {
 
     private NexusCard nexusCard;
     private final List<Leader> leaders;
-    protected final List<Resource> resources;
     private Shipment shipment;
     private Movement movement;
     private int allySpiceShipment;
@@ -66,7 +65,6 @@ public class Faction {
 
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
-        this.resources = new LinkedList<>();
         this.techTokens = new LinkedList<>();
         this.leaderSkillsHand = new LinkedList<>();
         this.strongholdCards = new LinkedList<>();
@@ -135,24 +133,6 @@ public class Faction {
 
     public Game getGame() {
         return game;
-    }
-
-    public Resource getResource(String name) {
-        return resources.stream()
-                .filter(r -> r.getName().equals(name))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Resource not found"));
-    }
-
-    public List<Resource> getResources(String name) {
-        return resources.stream()
-                .filter(r -> r.getName().equals(name))
-                .toList();
-    }
-
-    public boolean hasResource(String name) {
-        return resources.stream()
-                .anyMatch(r -> r.getName().equals(name));
     }
 
     public String getName() {
@@ -281,15 +261,6 @@ public class Faction {
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
         setBackOfShieldModified();
-    }
-
-    public void addResource(Resource resource) {
-        resources.add(resource);
-    }
-
-    public void removeResource(String resourceName) {
-        resources.removeAll(getResources(resourceName));
-        setFrontOfShieldModified();
     }
 
     public Force getReserves() {

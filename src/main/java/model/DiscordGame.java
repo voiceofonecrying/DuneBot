@@ -46,13 +46,8 @@ public class DiscordGame {
 
     private final List<RestAction> messageQueue = new ArrayList<>();
 
-    public DiscordGame(@NotNull SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
-        this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
-        this.game = this.getGame();
-        this.event = event;
-    }
-    public DiscordGame(@NotNull ButtonInteractionEvent event) throws ChannelNotFoundException, IOException {
-        this.gameCategory = event.getChannel().asTextChannel().getParentCategory();
+    public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
+        this.gameCategory = ((TextChannel) event.getChannel()).getParentCategory();
         this.game = this.getGame();
         this.event = event;
     }
@@ -132,7 +127,6 @@ public class DiscordGame {
             Game returnGame = gson.fromJson(gameStateString, Game.class);
             future.get().close();
             addGameReferenceToFactions(returnGame);
-            migrateGameState(returnGame);
             return returnGame;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
@@ -169,20 +163,6 @@ public class DiscordGame {
         GsonFireBuilder builder = new GsonFireBuilder()
                 .registerTypeSelector(Faction.class, new FactionTypeSelector());
         return builder.createGson();
-    }
-
-    public static void migrateGameState(Game game) {
-        game.getFactions().stream().forEach(faction -> {
-            faction.getResources("strongholdCard").stream().forEach(card -> {
-                String StrongholdName = (String)card.getValue();
-                faction.addStrongholdCard(new StrongholdCard(StrongholdName));
-            });
-            faction.removeResource("strongholdCard");
-
-            // Reset modified flags to avoid printing out updates from the migration
-            faction.setFrontOfShieldModified(false);
-            faction.setBackOfShieldModified(false);
-        });
     }
 
     public void pushGame(Game game) throws ChannelNotFoundException {
@@ -383,7 +363,7 @@ public class DiscordGame {
      * Creates a thread in the parent channel with the given name and adds the given users to it.
      * @param parentChannelName The name of the parent channel
      * @param threadName The name of the thread to create
-     * @param userIds The ids of the users to add to the thread.  All non-numeeric characters will be removed.
+     * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
      * @throws ChannelNotFoundException Thrown if the parent channel is not found.
      */
     public void createThread(String parentChannelName, String threadName, List<String> userIds) throws ChannelNotFoundException {
@@ -400,7 +380,7 @@ public class DiscordGame {
     /**
      * Adds the given users to the given thread.
      * @param threadChannel The thread to add the users to
-     * @param userIds The ids of the users to add to the thread.  All non-numeeric characters will be removed.
+     * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
     private void addUsersToThread(ThreadChannel threadChannel, List<String> userIds) {
         JDA jda = threadChannel.getJDA();
