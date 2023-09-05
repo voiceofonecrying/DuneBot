@@ -93,8 +93,8 @@ public class CommandManager extends ListenerAdapter {
                     case "removeforces" -> removeForcesEventHandler(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
                     case "reviveforces" -> revival(discordGame, game);
-                    case "awardbid" -> awardBid(event, discordGame, game);
-                    case "awardtopbidder" -> awardTopBidder(discordGame, game);
+                    case "award-bid" -> awardBid(event, discordGame, game);
+                    case "award-top-bidder" -> awardTopBidder(discordGame, game);
                     case "killleader" -> killLeader(discordGame, game);
                     case "reviveleader" -> reviveLeader(discordGame, game);
                     case "setstorm" -> setStorm(discordGame, game);
@@ -155,8 +155,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
         commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
-        commandData.add(Commands.slash("awardbid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
-        commandData.add(Commands.slash("awardtopbidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
+        commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
+        commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));

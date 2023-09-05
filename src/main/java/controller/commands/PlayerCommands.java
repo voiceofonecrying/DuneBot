@@ -127,7 +127,7 @@ public class PlayerCommands {
             discordGame.queueMessage("bidding-phase", "All players passed.\n");
             if (bidding.isRicheseCacheCard()) {
                 discordGame.queueMessage("bidding-phase", Emojis.RICHESE + " may take cache card for free or remove it from the game.");
-                discordGame.queueMessage("mod-info", "Use /awardtopbidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
+                discordGame.queueMessage("mod-info", "Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game.");
             } else {
                 bidding.decrementBidCardNumber();
                 discordGame.queueMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
@@ -236,7 +236,7 @@ public class PlayerCommands {
                     modMessage += " and end the bidding phase.";
                 discordGame.queueMessage("mod-info", modMessage);
             } else if (topBidderDeclared) {
-                discordGame.queueMessage("mod-info", "Use /awardtopbidder to assign card to the winner and pay appropriate recipient.\nUse /awardbid if a Karama affected winner or payment.");
+                discordGame.queueMessage("mod-info", "Use /award-top-bidder to assign card to the winner and pay appropriate recipient.\nUse /award-bid if a Karama affected winner or payment.");
             }
 
             faction = game.getFaction(bidding.advanceBidder(game));
