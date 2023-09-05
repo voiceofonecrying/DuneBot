@@ -23,6 +23,7 @@ public class Bidding {
     private boolean marketShownToIx;
     private boolean ixRejectOutstanding;
     private boolean treacheryDeckReshuffled;
+    private int numCardsFromOldDeck;
     private boolean cardFromMarket;
 
     private String nextBidder;
@@ -51,6 +52,7 @@ public class Bidding {
         this.marketShownToIx = false;
         this.ixRejectOutstanding = false;
         this.treacheryDeckReshuffled = false;
+        this.numCardsFromOldDeck = 0;
         this.cardFromMarket = false;
         this.nextBidder = null;
         this.currentBidder = "";
@@ -63,6 +65,7 @@ public class Bidding {
 
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
         treacheryDeckReshuffled = false;
+        numCardsFromOldDeck = 0;
         if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
@@ -89,9 +92,11 @@ public class Bidding {
             if (richeseCacheCardOutstanding) numCardsInMarket--;
             if (ixInGame) numCardsInMarket++;
             List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+            int numCardsInDeck = treacheryDeck.size();
             for (int i = 0; i < numCardsInMarket; i++) {
                 if (treacheryDeck.isEmpty()) {
                     treacheryDeckReshuffled = true;
+                    numCardsFromOldDeck = numCardsInDeck;
                     List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
                     treacheryDeck.addAll(treacheryDiscard);
                     Collections.shuffle(treacheryDeck);
@@ -171,6 +176,10 @@ public class Bidding {
 
     public boolean isTreacheryDeckReshuffled() {
         return treacheryDeckReshuffled;
+    }
+
+    public int getNumCardsFromOldDeck() {
+        return numCardsFromOldDeck;
     }
 
     public boolean isCardFromMarket() {

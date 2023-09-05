@@ -633,7 +633,10 @@ public class CommandManager extends ListenerAdapter {
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
             if (game.getTreacheryDeck().isEmpty()) {
                 List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                discordGame.queueMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                discordGame.queueMessage("turn-summary", MessageFormat.format(
+                        "The {0} deck was empty and has been replenished from the discard pile.",
+                        Emojis.TREACHERY
+                ));
                 game.getTreacheryDeck().addAll(treacheryDiscard);
                 treacheryDiscard.clear();
             }

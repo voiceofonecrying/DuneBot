@@ -437,7 +437,6 @@ public class RunCommands {
             IxCommands.cardToReject(discordGame, game);
             bidding.setMarketShownToIx(true);
             discordGame.queueMessage("turn-summary", message.toString());
-
             discordGame.pushGame();
         } else  {
             bidding.updateBidOrder(game);
@@ -447,21 +446,18 @@ public class RunCommands {
                 discordGame.queueMessage("bidding-phase", "All hands are full.");
                 discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else  {
-                boolean reshuffled = bidding.isTreacheryDeckReshuffled();
-                TreacheryCard bidCard = bidding.nextBidCard(game);
-                if (reshuffled) {
-                    discordGame.queueMessage("turn-summary", "The Treachery Deck has been replenished from the Discard Pile");
+                if (bidding.isTreacheryDeckReshuffled()) {
+                    discordGame.queueMessage("turn-summary", MessageFormat.format(
+                            "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
+                            bidding.getNumCardsFromOldDeck(), Emojis.TREACHERY
+                    ));
                 }
-
+                TreacheryCard bidCard = bidding.nextBidCard(game);
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
-
                 Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
-
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-
                 createBidMessage(discordGame, game);
                 bidding.advanceBidder(game);
-
                 discordGame.pushGame();
             }
         }
