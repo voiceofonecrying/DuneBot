@@ -236,18 +236,7 @@ public class RicheseCommands {
                 "{0} played Karama to block the {1} from selling their cache card.",
                 karamaFaction.getEmoji(), Emojis.RICHESE
         ));
-        if (bidCardNumber == 1) {
-            discordGame.queueMessage("bidding-phase", "The card was canceled by Karama. There will be a new card 1.");
-            bidding.decrementBidCardNumber();
-            bidding.setRicheseCacheCardOutstanding(false);
-            if (bidding.isBlackMarketCard()) {
-                discordGame.queueMessage("mod-info", "Use /run advance to progress the game.");
-            } else {
-                discordGame.queueMessage("mod-info", "Use /run bidding to auction the next card.");
-            }
-        } else {
-            bidding.setRicheseCacheCardOutstanding(false);
-        }
+        bidding.setRicheseCacheCardOutstanding(false);
         discordGame.pushGame();
     }
 
