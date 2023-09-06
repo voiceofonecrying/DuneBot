@@ -1,5 +1,6 @@
 package model;
 
+import caches.GameCache;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -107,13 +108,23 @@ public class DiscordGame {
      */
     public Game getGame() throws ChannelNotFoundException, IOException {
         if (this.game == null) {
+            String gameName = this.gameCategory.getName();
+
+            if (GameCache.hasGameJson(gameName)) {
+                this.game = gameJsonToGame(GameCache.getGameJson(gameName));
+                return this.game;
+            }
+
             MessageHistory h = this.getBotDataChannel()
                     .getHistory();
 
             h.retrievePast(1).complete();
 
             List<Message> ml = h.getRetrievedHistory();
-            this.game = getGame(ml.get(0));
+            String gameJson = getGameJson(ml.get(0));
+            Game game = gameJsonToGame(gameJson);
+            GameCache.setGameJson(gameName, gameJson);
+            this.game = game;
         }
         return this.game;
     }
@@ -123,21 +134,30 @@ public class DiscordGame {
      *
      * @return Game object representing the game state.
      */
-    public Game getGame(Message message) throws IOException {
+    public Game getGame(Message message) {
+        String gameJson = getGameJson(message);
+        return gameJsonToGame(gameJson);
+    }
+
+    public String getGameJson(Message message) {
         Message.Attachment encoded = message.getAttachments().get(0);
         CompletableFuture<InputStream> future = encoded.getProxy().download();
 
         try {
-            String gameStateString = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
-            Gson gson = createGsonDeserializer();
-            Game returnGame = gson.fromJson(gameStateString, Game.class);
+            String gameJson = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
             future.get().close();
-            addGameReferenceToFactions(returnGame);
-            return returnGame;
+            return gameJson;
         } catch (IOException | InterruptedException | ExecutionException e) {
             System.out.println("Didn't work...");
-            return new Game();
+            return "";
         }
+    }
+
+    public Game gameJsonToGame(String gameJson) {
+        Gson gson = createGsonDeserializer();
+        Game returnGame = gson.fromJson(gameJson, Game.class);
+        addGameReferenceToFactions(returnGame);
+        return returnGame;
     }
 
     /**
@@ -194,8 +214,11 @@ public class DiscordGame {
                 .addSerializationExclusionStrategy(strategy)
                 .create();
 
+        String gameJson = gson.toJson(this.game);
+        GameCache.setGameJson(this.gameCategory.getName(), gameJson);
+
         FileUpload fileUpload = FileUpload.fromData(
-                gson.toJson(this.game).getBytes(StandardCharsets.UTF_8), "gamestate.json"
+                gameJson.getBytes(StandardCharsets.UTF_8), "gamestate.json"
         );
 
         if (getEvent() instanceof SlashCommandInteractionEvent) {

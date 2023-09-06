@@ -1,5 +1,6 @@
 package controller.commands;
 
+import caches.GameCache;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -29,7 +30,11 @@ public class GameStateCommands {
                         new SubcommandData(
                                 "rewind",
                                 "Rewind to a previous game state"
-                        ).addOptions(CommandOptions.gameState)
+                        ).addOptions(CommandOptions.gameState),
+                        new SubcommandData(
+                                "refresh",
+                                "Refresh the current game state to match the current JSON file"
+                        )
                 )
         );
 
@@ -42,6 +47,7 @@ public class GameStateCommands {
 
         switch (name) {
             case "rewind" -> rewind(discordGame);
+            case "refresh" -> refresh(discordGame);
         }
     }
 
@@ -67,5 +73,10 @@ public class GameStateCommands {
                 .setMessageReference(message.getId());
 
         discordGame.queueMessage(messageCreateAction);
+    }
+
+    public static void refresh(DiscordGame discordGame) {
+        String gameName = discordGame.getGameCategory().getName();
+        GameCache.clearGameJson(gameName);
     }
 }
