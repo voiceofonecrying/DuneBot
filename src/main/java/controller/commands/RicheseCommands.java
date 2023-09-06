@@ -341,8 +341,7 @@ public class RicheseCommands {
         }
     }
 
-    public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
+    public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
         RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
         message.append(
@@ -362,9 +361,7 @@ public class RicheseCommands {
                 .addActionRow(buttons));
     }
 
-    public static void blackMarketMethod(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+    public static void blackMarketMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException{
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
@@ -375,9 +372,7 @@ public class RicheseCommands {
                 .addActionRow(buttons));
     }
 
-    public static void confirmBlackMarket(DiscordGame discordGame, Game game, String cardName, String method) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+    public static void confirmBlackMarket(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException{
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
@@ -408,9 +403,7 @@ public class RicheseCommands {
         discordGame.queueMessage("richese-chat", mcb);
     }
 
-    public static void confirmLast(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+    public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException{
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richesecachelast-confirm", "Confirm you wish to sell your card last."));
         buttons.add(Button.secondary("richesecachecardmethod-reselect", "Start over"));
@@ -418,9 +411,7 @@ public class RicheseCommands {
                 .addActionRow(buttons));
     }
 
-    public static void cacheCardMethod(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+    public static void cacheCardMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException{
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
         buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
@@ -430,9 +421,7 @@ public class RicheseCommands {
                 .addActionRow(buttons));
     }
 
-    public static void confirmCacheCard(DiscordGame discordGame, Game game, String cardName, String method) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+    public static void confirmCacheCard(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException{
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richesecachecardconfirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richesecachecardconfirm-reselect", "Start over"));
