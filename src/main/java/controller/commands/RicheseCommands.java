@@ -218,7 +218,7 @@ public class RicheseCommands {
         Faction karamaFaction = game.getFaction(karamaFactionName);
         Bidding bidding = game.getBidding();
         int bidCardNumber = bidding.getBidCardNumber();
-        if (bidCardNumber > 1 || bidCardNumber == 1 && bidding.isRicheseCacheCardOutstanding() && !bidding.isBlackMarketCard()) {
+        if (bidCardNumber > 1 || bidCardNumber == 1 && !bidding.isBlackMarketCard()) {
             throw new InvalidGameStateException("It is too late to Karama the " + Emojis.RICHESE + " card.");
         }
         TreacheryCard karama;
