@@ -46,7 +46,9 @@ public class RicheseCommands {
                                 .addOptions(CommandOptions.richeseBlackMarketCard, CommandOptions.richeseBlackMarketBidType),
                         new SubcommandData("remove-card", "Remove the Richese card from the game"),
                         new SubcommandData("karama-buy", "Richese can take any card from cache for 3 spice.")
-                                .addOptions(richeseCard)
+                                .addOptions(richeseCard),
+                        new SubcommandData("karama-block-cache-card", "Prevent Richese from auctioning a card on the black market")
+                                .addOptions(karamaFaction)
                 )
         );
 
@@ -63,6 +65,7 @@ public class RicheseCommands {
             case "black-market-bid" -> blackMarketBid(discordGame, game);
             case "remove-card" -> removeRicheseCard(discordGame, game);
             case "karama-buy" -> karamaBuy(discordGame, game);
+            case "karama-block-cache-card" -> karamaBlockCacheCard(discordGame, game);
             case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
             case "remove-no-field" -> removeNoFieldToken(discordGame, game);
         }
@@ -194,6 +197,7 @@ public class RicheseCommands {
         TreacheryCard karama;
         try {
             karama = faction.removeTreacheryCard("Karama ");
+            game.getTreacheryDiscard().add(karama);
         } catch (Exception e) {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have a Karama.");
         }
@@ -202,11 +206,48 @@ public class RicheseCommands {
         } else if (faction.getSpice() < 3) {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have 3 spice for this action.");
         }
-        game.getTreacheryDiscard().add(karama);
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
         faction.subtractSpice(3);
         discordGame.queueMessage("turn-summary", faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
+        discordGame.pushGame();
+    }
+
+    public static void karamaBlockCacheCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String karamaFactionName = discordGame.required(karamaFaction).getAsString();
+        Faction karamaFaction = game.getFaction(karamaFactionName);
+        Bidding bidding = game.getBidding();
+        int bidCardNumber = bidding.getBidCardNumber();
+        if (bidCardNumber > 1 || bidCardNumber == 1 && bidding.isRicheseCacheCardOutstanding() && !bidding.isBlackMarketCard()) {
+            throw new InvalidGameStateException("It is too late to Karama the " + Emojis.RICHESE + " card.");
+        }
+        TreacheryCard karama;
+        try {
+            karama = karamaFaction.removeTreacheryCard("Karama ");
+        } catch (Exception e) {
+            throw new InvalidGameStateException(karamaFaction.getEmoji() + " does not have a Karama.");
+        }
+        game.getTreacheryDiscard().add(karama);
+        discordGame.queueMessage("mod-info", MessageFormat.format(
+                "The Karama has been discarded from {0} hand.",
+                karamaFaction.getEmoji()
+        ));
+        discordGame.queueMessage("turn-summary", MessageFormat.format(
+                "{0} played Karama to block the {1} from selling their cache card.",
+                karamaFaction.getEmoji(), Emojis.RICHESE
+        ));
+        if (bidCardNumber == 1) {
+            discordGame.queueMessage("bidding-phase", "The card was canceled by Karama. There will be a new card 1.");
+            bidding.decrementBidCardNumber();
+            bidding.setRicheseCacheCardOutstanding(false);
+            if (bidding.isBlackMarketCard()) {
+                discordGame.queueMessage("mod-info", "Use /run advance to progress the game.");
+            } else {
+                discordGame.queueMessage("mod-info", "Use /run bidding to auction the next card.");
+            }
+        } else {
+            bidding.setRicheseCacheCardOutstanding(false);
+        }
         discordGame.pushGame();
     }
 

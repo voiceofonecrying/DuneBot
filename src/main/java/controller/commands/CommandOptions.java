@@ -42,6 +42,8 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
             .setAutoComplete(true);
+    public static final OptionData karamaFaction = new OptionData(OptionType.STRING, "karama-faction", "The faction playing Karama", true)
+            .setAutoComplete(true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
@@ -187,7 +189,7 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction" -> choices = factions(game, searchValue);
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" -> choices = factions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
