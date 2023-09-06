@@ -73,6 +73,7 @@ public class GameStateCommands {
                 .setMessageReference(message.getId());
 
         discordGame.queueMessage(messageCreateAction);
+        GameCache.clearGameJson(discordGame.getGameCategory().getName());
     }
 
     public static void refresh(DiscordGame discordGame) {
