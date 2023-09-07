@@ -536,7 +536,18 @@ public class RunCommands {
                 if (!faction.getName().equals("BT")) nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
-                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " Would you like to purchase additional revivals?");
+                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) {
+                    List<Button> buttons = new LinkedList<>();
+                    for (int i = 0; i <= 3 - revived; i++) {
+                        Button button = Button.primary("revive-" + i, Integer.toString(i));
+                        if ((!(faction.getName().equals("BT") || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i) button = button.asDisabled();
+                        buttons.add(button);
+                    }
+
+                    discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", new MessageCreateBuilder()
+                            .addContent(faction.getPlayer() + " Would you like to purchase additional revivals?")
+                            .addActionRow(buttons));
+                }
             }
         }
 
