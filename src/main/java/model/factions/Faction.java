@@ -50,6 +50,8 @@ public class Faction {
     private int allySpiceShipment;
     private int allySpiceBidding;
 
+    private int maxRevival;
+
     private Game game;
 
     public Faction(String name, String player, String userName, Game game) throws IOException {
@@ -80,6 +82,7 @@ public class Faction {
         this.allySpiceShipment = 0;
         this.allySpiceBidding = 0;
         this.nexusCard = null;
+        this.maxRevival = 3;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -543,5 +546,13 @@ public class Faction {
 
     public List<Long> getButtonMessages() {
         return buttonMessages;
+    }
+
+    public int getMaxRevival() {
+        return maxRevival;
+    }
+
+    public void setMaxRevival(int maxRevival) {
+        this.maxRevival = maxRevival;
     }
 }

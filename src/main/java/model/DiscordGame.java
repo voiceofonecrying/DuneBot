@@ -384,7 +384,13 @@ public class DiscordGame {
      */
     public void sendAllMessages() {
         if (this.game.getMute()) return;
-        messageQueue.forEach(RestAction::complete);
+        for (RestAction restAction : messageQueue) {
+            try {
+                restAction.complete();
+            } catch (Exception e) {
+                restAction.submit();
+            }
+        }
         messageQueue.clear();
     }
 
