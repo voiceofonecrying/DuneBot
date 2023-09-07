@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import controller.Queue;
 import controller.commands.ShowCommands;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -12,15 +13,20 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class ButtonManager extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-
         event.deferReply().queue();
+        String categoryName = event.getChannel().asTextChannel().getParentCategory().getName();
+        CompletableFuture<Void> future = Queue.getFuture(categoryName);
+        Queue.putFuture(categoryName, future.thenRunAsync(() -> runButtonCommand(event)));
+    }
 
+    private void runButtonCommand(@NotNull ButtonInteractionEvent event) {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();

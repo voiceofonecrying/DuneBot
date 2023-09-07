@@ -14,12 +14,17 @@ import utils.CardImages;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class EventListener extends ListenerAdapter {
 
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        CompletableFuture.runAsync(() -> runOnMessageReceived(event));
+    }
+
+    public void runOnMessageReceived(@NotNull MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw().replaceAll("\\d", "");
 
         if (message.matches(".*<:treachery:>.*<:treachery:>.*")) {
@@ -60,7 +65,6 @@ public class EventListener extends ListenerAdapter {
             }
             if (message.matches("@.*" + faction.getEmoji().replaceAll("[0-9]", "") + ".*")) event.getChannel().sendMessage(faction.getPlayer()).queue();
         }
-
     }
 
     public void sendTreacheryImage(MessageReceivedEvent event, String cardName) {

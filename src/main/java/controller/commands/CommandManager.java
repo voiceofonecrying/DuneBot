@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.Queue;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -29,6 +30,7 @@ import templates.ChannelPermissions;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
@@ -46,79 +48,100 @@ public class CommandManager extends ListenerAdapter {
         List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
 
         try {
-            String ephemeralMessage = "";
-            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) newGame(event);
-            else if (name.equals("waitinglist")) waitingList(event);
-            else {
-                DiscordGame discordGame = new DiscordGame(event);
-                Game game = discordGame.getGame();
-
-                if (roles.stream().noneMatch(role -> role.getName().equals(game.getModRole()) ||
-                        role.getName().equals(game.getGameRole()) && name.startsWith("player"))) {
-                    event.getHook().editOriginal("You do not have permission to use this command.").queue();
-                    return;
-                }
-
-                if (game.isOnHold()) {
-                    if (name.equals("remove-hold")) {
-                        game.setOnHold(false);
-                        discordGame.queueMessage("turn-summary", "The hold has been resolved. Gameplay may proceed.");
-                        discordGame.pushGame();
-                        discordGame.sendAllMessages();
-                        event.getHook().editOriginal("Command Done.").queue();
-                    } else {
-                        event.getHook().editOriginal("The game is on hold. Please wait for the mod to resolve the issue.").queue();
-                    }
-                    return;
-                }
-
-                switch (name) {
-                    case "gamestate" -> GameStateCommands.runCommand(event, discordGame, game);
-                    case "show" -> ShowCommands.runCommand(event, discordGame, game);
-                    case "setup" -> SetupCommands.runCommand(event, discordGame, game);
-                    case "run" -> RunCommands.runCommand(event, discordGame, game);
-                    case "richese" -> RicheseCommands.runCommand(event, discordGame, game);
-                    case "bt" -> BTCommands.runCommand(event, discordGame, game);
-                    case "hark" -> HarkCommands.runCommand(event, discordGame, game);
-                    case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
-                    case "ix" -> IxCommands.runCommand(event, discordGame, game);
-                    case "bg" -> BGCommands.runCommand(event, discordGame, game);
-                    case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
-                    case "draw" -> drawCard(discordGame, game);
-                    case "discard" -> discard(discordGame, game);
-                    case "transfer-card" -> transferCard(discordGame, game);
-                    case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
-                    case "placeforces" -> placeForcesEventHandler(discordGame, game);
-                    case "moveforces" -> moveForcesEventHandler(discordGame, game);
-                    case "removeforces" -> removeForcesEventHandler(discordGame, game);
-                    case "display" -> displayGameState(discordGame, game);
-                    case "reviveforces" -> revivalHandler(discordGame, game);
-                    case "award-bid" -> awardBid(event, discordGame, game);
-                    case "award-top-bidder" -> awardTopBidder(discordGame, game);
-                    case "killleader" -> killLeader(discordGame, game);
-                    case "reviveleader" -> reviveLeader(discordGame, game);
-                    case "setstorm" -> setStorm(discordGame, game);
-                    case "bribe" -> bribe(discordGame, game);
-                    case "mute" -> mute(discordGame, game);
-                    case "assigntechtoken" -> assignTechToken(discordGame, game);
-                    case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
-                    case "create-alliance" -> createAlliance(discordGame, game);
-                    case "remove-alliance" -> removeAlliance(discordGame, game);
-                    case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
-                    case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
-                    case "weather-control-storm" -> weatherControlStorm(discordGame, game);
-                    case "add-spice" -> addSpice(discordGame, game);
-                    case "remove-spice" -> removeSpice(discordGame, game);
-                    case "reassign-faction" -> reassignFaction(discordGame, game);
-                    case "reassign-mod" -> reassignMod(event, discordGame, game);
-                    case "draw-nexus-card" -> drawNexusCard(discordGame, game);
-                    case "discard-nexus-card" -> discardNexusCard(discordGame, game);
-                    case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
-                }
-
-                if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
-                discordGame.sendAllMessages();
+            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                newGame(event);
+                event.getHook().editOriginal("Command Done.").queue();
             }
+            else if (name.equals("waitinglist")) {
+                waitingList(event);
+                event.getHook().editOriginal("Command Done.").queue();
+            }
+            else {
+                String categoryName = event.getChannel().asTextChannel().getParentCategory().getName();
+                CompletableFuture<Void> future = Queue.getFuture(categoryName);
+                Queue.putFuture(categoryName, future.thenRunAsync(() -> runGameCommand(event)));
+            }
+        } catch (Exception e) {
+            event.getHook().editOriginal(e.getMessage()).queue();
+            e.printStackTrace();
+        }
+    }
+
+    private void runGameCommand(@NotNull SlashCommandInteractionEvent event) {
+        String ephemeralMessage = "";
+
+        try {
+            Member member = event.getMember();
+            String name = event.getName();
+            List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
+            DiscordGame discordGame = new DiscordGame(event);
+            Game game = discordGame.getGame();
+
+            if (roles.stream().noneMatch(role -> role.getName().equals(game.getModRole()) ||
+                    role.getName().equals(game.getGameRole()) && name.startsWith("player"))) {
+                event.getHook().editOriginal("You do not have permission to use this command.").queue();
+                return;
+            }
+
+            if (game.isOnHold()) {
+                if (name.equals("remove-hold")) {
+                    game.setOnHold(false);
+                    discordGame.queueMessage("turn-summary", "The hold has been resolved. Gameplay may proceed.");
+                    discordGame.pushGame();
+                    discordGame.sendAllMessages();
+                    event.getHook().editOriginal("Command Done.").queue();
+                } else {
+                    event.getHook().editOriginal("The game is on hold. Please wait for the mod to resolve the issue.").queue();
+                }
+                return;
+            }
+
+            switch (name) {
+                case "gamestate" -> GameStateCommands.runCommand(event, discordGame, game);
+                case "show" -> ShowCommands.runCommand(event, discordGame, game);
+                case "setup" -> SetupCommands.runCommand(event, discordGame, game);
+                case "run" -> RunCommands.runCommand(event, discordGame, game);
+                case "richese" -> RicheseCommands.runCommand(event, discordGame, game);
+                case "bt" -> BTCommands.runCommand(event, discordGame, game);
+                case "hark" -> HarkCommands.runCommand(event, discordGame, game);
+                case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
+                case "ix" -> IxCommands.runCommand(event, discordGame, game);
+                case "bg" -> BGCommands.runCommand(event, discordGame, game);
+                case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
+                case "draw" -> drawCard(discordGame, game);
+                case "discard" -> discard(discordGame, game);
+                case "transfer-card" -> transferCard(discordGame, game);
+                case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
+                case "placeforces" -> placeForcesEventHandler(discordGame, game);
+                case "moveforces" -> moveForcesEventHandler(discordGame, game);
+                case "removeforces" -> removeForcesEventHandler(discordGame, game);
+                case "display" -> displayGameState(discordGame, game);
+                case "reviveforces" -> revivalHandler(discordGame, game);
+                case "award-bid" -> awardBid(event, discordGame, game);
+                case "award-top-bidder" -> awardTopBidder(discordGame, game);
+                case "killleader" -> killLeader(discordGame, game);
+                case "reviveleader" -> reviveLeader(discordGame, game);
+                case "setstorm" -> setStorm(discordGame, game);
+                case "bribe" -> bribe(discordGame, game);
+                case "mute" -> mute(discordGame, game);
+                case "assigntechtoken" -> assignTechToken(discordGame, game);
+                case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
+                case "create-alliance" -> createAlliance(discordGame, game);
+                case "remove-alliance" -> removeAlliance(discordGame, game);
+                case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
+                case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
+                case "weather-control-storm" -> weatherControlStorm(discordGame, game);
+                case "add-spice" -> addSpice(discordGame, game);
+                case "remove-spice" -> removeSpice(discordGame, game);
+                case "reassign-faction" -> reassignFaction(discordGame, game);
+                case "reassign-mod" -> reassignMod(event, discordGame, game);
+                case "draw-nexus-card" -> drawNexusCard(discordGame, game);
+                case "discard-nexus-card" -> discardNexusCard(discordGame, game);
+                case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
+            }
+
+            if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
+            discordGame.sendAllMessages();
 
             if (ephemeralMessage.isEmpty()) ephemeralMessage = "Command Done.";
             event.getHook().editOriginal(ephemeralMessage).queue();
@@ -133,6 +156,10 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
+        CompletableFuture.runAsync(() -> runCommandAutoCompleteInteraction(event));
+    }
+
+    private void runCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         DiscordGame discordGame = new DiscordGame(event);
 
         try {
