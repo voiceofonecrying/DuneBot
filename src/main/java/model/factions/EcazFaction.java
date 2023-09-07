@@ -51,7 +51,7 @@ public class EcazFaction extends Faction {
         Collections.shuffle(ambassadorPool);
 
         for (int i = 0; i < 5; i++) {
-            ambassadorSupply.add(ambassadorPool.get(i));
+            ambassadorSupply.add(ambassadorPool.remove(0));
         }
         ambassadorSupply.add("Ecaz");
     }
