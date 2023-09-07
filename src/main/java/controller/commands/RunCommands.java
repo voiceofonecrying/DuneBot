@@ -326,7 +326,7 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
-    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Bidding Phase:");
         game.startBidding();
         game.getFactions().forEach(faction -> {
@@ -355,35 +355,24 @@ public class RunCommands {
             throw new InvalidGameStateException("The black market card must be awarded before advancing.");
         }
         StringBuilder message = new StringBuilder();
-
         message.append(MessageFormat.format(
                 "{0}Number of Treachery Cards{0}\n",
                 Emojis.TREACHERY
         ));
-
-        List<Faction> factions = game.getFactions();
-
         message.append(
-                factions.stream().map(
+                game.getFactions().stream().map(
                         f -> MessageFormat.format(
                                 "{0}: {1}\n", f.getEmoji(), f.getTreacheryHand().size()
                         )
                 ).collect(Collectors.joining())
         );
-
-        int numCardsForBid = factions.stream()
-                .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
-                .toList().size();
-        bidding.setNumCardsForBid(numCardsForBid);
-        bidding.populateMarket(game, game.hasFaction("Ix"));
-
+        int numCardsForBid = bidding.populateMarket(game);
         message.append(
                 MessageFormat.format(
                         "There will be {0} {1} up for bid this round.",
                         numCardsForBid, Emojis.TREACHERY
                 )
         );
-
         discordGame.queueMessage("turn-summary", message.toString());
         if (numCardsForBid == 0) {
             discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
@@ -447,7 +436,7 @@ public class RunCommands {
             bidding.updateBidOrder(game);
             List<String> bidOrder = bidding.getEligibleBidOrder(game);
 
-            if (bidOrder.size() == 0) {
+            if (bidOrder.isEmpty()) {
                 discordGame.queueMessage("bidding-phase", "All hands are full.");
                 discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else  {
@@ -468,8 +457,8 @@ public class RunCommands {
         }
     }
 
-    public static boolean createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        return createBidMessage(discordGame, game, true);
+    public static void createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        createBidMessage(discordGame, game, true);
     }
 
     public static boolean createBidMessage(DiscordGame discordGame, Game game, boolean tag) throws ChannelNotFoundException, InvalidGameStateException {
@@ -477,7 +466,6 @@ public class RunCommands {
         String nextBidderName = bidding.getNextBidder(game);
         List<String> bidOrder = bidding.getEligibleBidOrder(game);
         StringBuilder message = new StringBuilder();
-
         message.append(
                 MessageFormat.format(
                         "R{0}:C{1}",

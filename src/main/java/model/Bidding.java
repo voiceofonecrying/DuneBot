@@ -69,7 +69,6 @@ public class Bidding {
         if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
             throw new InvalidGameStateException("All cards for this round have already been bid on.");
         }
-        populateMarket(game, false);
         if (market.isEmpty()) {
             throw new InvalidGameStateException("All cards from the bidding market have already been bid on.");
         }
@@ -86,28 +85,31 @@ public class Bidding {
         return bidCard;
     }
 
-    public int populateMarket(Game game, boolean ixInGame) {
-        if (!marketPopulated) {
-            int numCardsInMarket = numCardsForBid - bidCardNumber;
-            if (richeseCacheCardOutstanding) numCardsInMarket--;
-            if (ixInGame) numCardsInMarket++;
-            List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
-            int numCardsInDeck = treacheryDeck.size();
-            for (int i = 0; i < numCardsInMarket; i++) {
-                if (treacheryDeck.isEmpty()) {
-                    treacheryDeckReshuffled = true;
-                    numCardsFromOldDeck = numCardsInDeck;
-                    List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                    treacheryDeck.addAll(treacheryDiscard);
-                    Collections.shuffle(treacheryDeck);
-                    treacheryDiscard.clear();
-                }
-                market.add(treacheryDeck.remove(0));
-            }
-            marketPopulated = true;
-            return numCardsInMarket;
+    public int populateMarket(Game game) throws InvalidGameStateException {
+        if (marketPopulated) {
+            throw new InvalidGameStateException("Bidding market is already populated.");
         }
-        return 0;
+        List<Faction> factions = game.getFactions();
+        numCardsForBid = factions.stream()
+                .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
+                .toList().size();
+        int numCardsInMarket = numCardsForBid - bidCardNumber;
+        if (richeseCacheCardOutstanding) numCardsInMarket--;
+        if (game.hasFaction("Ix")) numCardsInMarket++;
+        List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        for (int i = 0; i < numCardsInMarket; i++) {
+            if (treacheryDeck.isEmpty()) {
+                treacheryDeckReshuffled = true;
+                numCardsFromOldDeck = i;
+                List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+                treacheryDeck.addAll(treacheryDiscard);
+                Collections.shuffle(treacheryDeck);
+                treacheryDiscard.clear();
+            }
+            market.add(treacheryDeck.remove(0));
+        }
+        marketPopulated = true;
+        return numCardsInMarket;
     }
 
     public int moveMarketToDeck(Game game) {
@@ -238,10 +240,6 @@ public class Bidding {
         return numCardsForBid;
     }
 
-    public void setNumCardsForBid(int numCardsForBid) {
-        this.numCardsForBid = numCardsForBid;
-    }
-
     public void incrementBidCardNumber() {
         bidCardNumber++;
     }
@@ -344,20 +342,8 @@ public class Bidding {
         return nextBidder;
     }
 
-    // Replace the function above after all games have nextBidder assigned by setBidOrder or getNextBidder
-    // public String getNextBidder(Game game) {
-    //     return nextBidder;
-    // }
-
     public String advanceBidder(Game game) {
-        currentBidder = (nextBidder != null ? nextBidder : getNextBidder(game));
-        // Replace the line above after all games have nextBidder assigned by setBidOrder or getNextBidder
-        // currentBidder = nextBidder;
-        Faction currentFaction = game.getFaction(currentBidder);
-        int currentIndex = getEligibleBidOrder(game).indexOf(currentFaction.getName());
-        int nextIndex = 0;
-        if (currentIndex != getEligibleBidOrder(game).size() - 1) nextIndex = currentIndex + 1;
-        nextBidder = getEligibleBidOrder(game).get(nextIndex);
+        currentBidder = getNextBidder(game);
         return currentBidder;
     }
 

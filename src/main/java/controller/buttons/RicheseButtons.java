@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import controller.commands.RicheseCommands;
 import controller.commands.RunCommands;
@@ -74,7 +75,7 @@ public class RicheseButtons implements Pressable {
     private static void confirmLast(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will sell last.");
-        discordGame.queueMessage("mod-info", "Use /richese card-bid when it is time for the last card. (Button solution coming soon.)");
+        discordGame.queueMessage("mod-info", Emojis.RICHESE + "will be given buttons when it is time for the last card.");
         RunCommands.bidding(discordGame, game);
     }
 
