@@ -16,6 +16,8 @@ public class EcazFaction extends Faction {
     private final List<String> ambassadorPool;
     private final List<String> ambassadorSupply;
 
+    private final List<String> triggeredAmbassadors;
+
     private Leader loyalLeader;
 
     public EcazFaction(String player, String userName, Game game) throws IOException {
@@ -28,6 +30,7 @@ public class EcazFaction extends Faction {
         game.getTerritories().get("Imperial Basin (Center Sector)").getForces().add(new Force("Ecaz", 6));
         this.ambassadorPool = new LinkedList<>();
         this.ambassadorSupply = new LinkedList<>();
+        this.triggeredAmbassadors = new LinkedList<>();
         ambassadorPool.add("Atreides");
         ambassadorPool.add("BG");
         ambassadorPool.add("CHOAM");
@@ -43,6 +46,8 @@ public class EcazFaction extends Faction {
 
     public void drawNewSupply() {
         this.ambassadorSupply.clear();
+        ambassadorPool.addAll(triggeredAmbassadors);
+        triggeredAmbassadors.clear();
         Collections.shuffle(ambassadorPool);
 
         for (int i = 0; i < 5; i++) {
@@ -65,18 +70,16 @@ public class EcazFaction extends Faction {
                 if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly()) offerAlliance = offerAlliance.asDisabled();
                 discordGame.prepareMessage("ecaz-chat", "Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?")
                         .addActionRow(getVidal, offerAlliance).queue();
-                ambassadorPool.add("Ecaz");
+                ambassadorSupply.add("Ecaz");
             }
             case "Atreides" -> discordGame.queueMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
             case "BG" -> {
-                List<String> triggerOptions = ambassadorPool.subList(5, 9);
                 List<Button> buttons = new LinkedList<>();
-                for (String option : triggerOptions) {
+                for (String option : ambassadorPool) {
                     buttons.add(Button.primary("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option));
                 }
                 discordGame.prepareMessage("ecaz-chat", "Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?")
                         .addActionRow(buttons).queue();
-                ambassadorPool.removeIf(s -> s.equals("Bene Gesserit"));
             }
             case "CHOAM" -> discordGame.queueMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
@@ -94,6 +97,9 @@ public class EcazFaction extends Faction {
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getEcazAmbassador() == null) continue;
             if (territory.getEcazAmbassador().equals(ambassador)) territory.setEcazAmbassador(null);
+        }
+        if (!ambassador.equals("BG")) {
+            triggeredAmbassadors.add(ambassador);
         }
 
         long nonEcazAmbassadorsCount = game.getTerritories().values().stream()
