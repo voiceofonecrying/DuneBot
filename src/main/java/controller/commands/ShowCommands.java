@@ -129,6 +129,14 @@ public class ShowCommands {
 
         BufferedImage board = getResourceImage("Board");
 
+        // Add border to show where Fremen can ship
+        if (game.hasFaction("Fremen")) {
+            BufferedImage fremenShipBorder = getResourceImage("Fremen Ship Border");
+            fremenShipBorder = resize(fremenShipBorder, 461, 716);
+            Point coordinates = new Point(316, 475);
+            board = overlay(board, fremenShipBorder, coordinates, 1);
+        }
+
         //Place destroyed Shield Wall
         if (game.isShieldWallDestroyed()) {
             BufferedImage brokenShieldWallImage = getResourceImage("Shield Wall Destroyed");
