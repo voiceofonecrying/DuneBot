@@ -12,6 +12,7 @@ import java.util.Set;
 
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
+    private int revivalRatesSet;
 
     public BTFaction(String player, String userName, Game game) throws IOException {
         super("BT", player, userName, game);
@@ -20,6 +21,7 @@ public class BTFaction extends Faction {
         this.freeRevival = 2;
         this.reserves = new Force("BT", 20);
         this.emoji = Emojis.BT;
+        this.revivalRatesSet = 0;
     }
 
     /**
@@ -42,5 +44,13 @@ public class BTFaction extends Faction {
         }
         revealedFaceDancers.add(revealedFaceDancer);
         setBackOfShieldModified();
+    }
+
+    public int getRevivalRatesSet() {
+        return revivalRatesSet;
+    }
+
+    public void setRevivalRatesSet(int revivalRatesSet) {
+        this.revivalRatesSet = revivalRatesSet;
     }
 }

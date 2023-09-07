@@ -72,7 +72,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "Ornithopter" -> hajr(event, game, discordGame, false);
         }
 
-        discordGame.sendAllMessages();
     }
 
     private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {

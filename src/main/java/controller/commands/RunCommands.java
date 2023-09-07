@@ -78,7 +78,12 @@ public class RunCommands {
         } else if (phase == 4 && subPhase == 3) {
             if (finishBiddingPhase(discordGame, game))
                 game.advancePhase();
-        } else if (phase == 5) {
+        } else if (phase == 5 && subPhase == 1) {
+            game.advanceSubPhase();
+            if (!game.hasFaction("BT")) {
+                startRevivalPhase(discordGame, game);
+            } else btSetRevivalRates(discordGame, game);
+        } else if (phase == 5 && subPhase == 2) {
             startRevivalPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 6) {
@@ -504,6 +509,21 @@ public class RunCommands {
         return false;
     }
 
+    public static void btSetRevivalRates(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+
+        discordGame.queueMessage("bt-chat", "Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
+
+        for (Faction faction : game.getFactions()) {
+            if (faction.getName().equals("BT")) continue;
+            discordGame.queueMessage("bt-chat", new MessageCreateBuilder().addContent(faction.getEmoji())
+                    .addActionRow(Button.primary("bt-revival-rate-set-" + faction.getName() + "-3", "3"),
+                            Button.primary("bt-revival-rate-set-" + faction.getName() + "-4", "4"),
+                            Button.primary("bt-revival-rate-set-" + faction.getName() + "-5", "5")
+                    ));
+        }
+
+    }
+
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         discordGame.queueMessage("turn-summary", "Turn " + game.getTurn() + " Revival Phase:");
         List<Faction> factions = game.getFactions();
@@ -538,7 +558,7 @@ public class RunCommands {
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) {
                     List<Button> buttons = new LinkedList<>();
-                    for (int i = 0; i <= 3 - revived; i++) {
+                    for (int i = 0; i <= faction.getMaxRevival() - revived; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
                         if ((!(faction.getName().equals("BT") || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i) button = button.asDisabled();
                         buttons.add(button);
