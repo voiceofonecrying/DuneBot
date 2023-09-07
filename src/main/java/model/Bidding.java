@@ -234,10 +234,6 @@ public class Bidding {
         return bidCardNumber;
     }
 
-    public void setBidCardNumber(int bidCardNumber) {
-        this.bidCardNumber = bidCardNumber;
-    }
-
     public int getNumCardsForBid() {
         return numCardsForBid;
     }
@@ -259,11 +255,6 @@ public class Bidding {
         return richeseBidOrder;
     }
 
-    public void setBidOrder(Game game, List<String> bidOrder) {
-        this.bidOrder = bidOrder;
-        nextBidder = getEligibleBidOrder(game).get(0);
-    }
-
     public void setRicheseBidOrder(Game game, List<String> bidOrder) {
         this.richeseBidOrder = bidOrder;
         nextBidder = getEligibleBidOrder(game).get(0);
@@ -276,7 +267,7 @@ public class Bidding {
                 .collect(Collectors.toList());
     }
 
-    public void updateBidOrder(Game game) throws InvalidGameStateException {
+    public void updateBidOrder(Game game) {
         if (bidOrder.isEmpty()) {
             List<Faction> factions = game.getFactions();
 
@@ -321,10 +312,6 @@ public class Bidding {
 
     public LinkedList<TreacheryCard> getMarket() {
         return market;
-    }
-
-    public boolean isMarketPopulated() {
-        return marketPopulated;
     }
 
     public boolean isMarketShownToIx() {
