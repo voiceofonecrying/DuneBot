@@ -92,7 +92,7 @@ public class CommandManager extends ListenerAdapter {
                     case "moveforces" -> moveForcesEventHandler(discordGame, game);
                     case "removeforces" -> removeForcesEventHandler(discordGame, game);
                     case "display" -> displayGameState(discordGame, game);
-                    case "reviveforces" -> revival(discordGame, game);
+                    case "reviveforces" -> revivalHandler(discordGame, game);
                     case "award-bid" -> awardBid(event, discordGame, game);
                     case "award-top-bidder" -> awardTopBidder(discordGame, game);
                     case "killleader" -> killLeader(discordGame, game);
@@ -686,35 +686,40 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void revival(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String star = discordGame.required(starred).getAsBoolean() ? "*" : "";
+    public void revivalHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        boolean star = discordGame.required(starred).getAsBoolean();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         boolean isPaid = discordGame.required(paid).getAsBoolean();
         int revivedValue = discordGame.required(revived).getAsInt();
+        revival(star, targetFaction, isPaid, revivedValue, game, discordGame);
+        discordGame.pushGame();
+    }
+
+    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String star = starred ? "*" : "";
 
         int revivalCost;
 
-        if (targetFaction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
-        else if (targetFaction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
+        if (faction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
+        else if (faction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
         else revivalCost = revivedValue * 2;
 
-        if (star.equals("")) targetFaction.addReserves(revivedValue);
-        else targetFaction.addSpecialReserves(revivedValue);
+        if (star.equals("")) faction.addReserves(revivedValue);
+        else faction.addSpecialReserves(revivedValue);
 
-        Force force = game.getForceFromTanks(targetFaction.getName() + star);
+        Force force = game.getForceFromTanks(faction.getName() + star);
         force.setStrength(force.getStrength() - revivedValue);
 
         if (isPaid) {
-            targetFaction.subtractSpice(revivalCost);
-            spiceMessage(discordGame, revivalCost, targetFaction.getName(), "Revivals", false);
-            if (game.hasFaction("BT") && !targetFaction.getName().equalsIgnoreCase("BT")) {
+            faction.subtractSpice(revivalCost);
+            spiceMessage(discordGame, revivalCost, faction.getName(), "Revivals", false);
+            if (game.hasFaction("BT") && !faction.getName().equalsIgnoreCase("BT")) {
                 game.getFaction("BT").addSpice(revivalCost);
-                spiceMessage(discordGame, revivalCost, "bt", targetFaction.getEmoji() + " revivals", true);
+                spiceMessage(discordGame, revivalCost, "bt", faction.getEmoji() + " revivals", true);
             }
         }
 
-        discordGame.queueMessage("turn-summary", targetFaction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(targetFaction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
-        discordGame.pushGame();
+        discordGame.queueMessage("turn-summary", faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
     }
 
     /**

@@ -160,6 +160,7 @@ public class Faction {
     }
 
     public String getAlly() {
+        if (ally == null) return "";
         return ally;
     }
 
