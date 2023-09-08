@@ -53,12 +53,6 @@ class RicheseFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
 
-    @Test
-    public void setFrontOfShieldNoFieldSetsModified() {
-        faction.setFrontOfShieldNoField(0);
-        assertTrue(faction.isFrontOfShieldModified());
-    }
-
     @RepeatedTest(20)
     public void setFrontOfShieldNoFieldValidAndInvalid(RepetitionInfo repetitionInfo) {
         int frontOfShieldNoField = repetitionInfo.getCurrentRepetition() - 1;

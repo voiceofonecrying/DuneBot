@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.*;
 
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class RicheseFaction extends Faction {
 
         this.frontOfShieldNoField = frontOfShieldNoField;
 
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public TreacheryCard getTreacheryCardFromCache(String name) {
@@ -64,7 +65,7 @@ public class RicheseFaction extends Faction {
 
     public TreacheryCard removeTreacheryCardFromCache(TreacheryCard card) {
         treacheryCardCache.remove(card);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         return card;
     }
 

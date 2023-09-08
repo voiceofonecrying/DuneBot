@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import controller.commands.CommandManager;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -110,7 +111,7 @@ public class EcazFaction extends Faction {
         nonEcazAmbassadorsCount += ambassadorSupply.stream().filter(a -> !a.equals("Ecaz")).count();
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void sendAmbassadorLocationMessage(Game game, DiscordGame discordGame, int cost) throws ChannelNotFoundException {
@@ -147,7 +148,7 @@ public class EcazFaction extends Faction {
     public void placeAmbassador(Territory territory, String ambassador) {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public Leader getLoyalLeader() {

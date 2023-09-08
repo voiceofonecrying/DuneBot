@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Force;
 import model.Game;
 import model.TraitorCard;
@@ -43,7 +44,7 @@ public class BTFaction extends Faction {
             revealedFaceDancers = new HashSet<>();
         }
         revealedFaceDancers.add(revealedFaceDancer);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public int getRevivalRatesSet() {

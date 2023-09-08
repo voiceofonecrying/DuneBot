@@ -2,6 +2,8 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.Initializers;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.*;
@@ -546,14 +548,27 @@ public class ShowCommands {
 
             message.append(
                     MessageFormat.format(
-                            "{0}{1} Front of Shield{0}\n",
+                            "{0}{1} Info{0}\n",
                             faction.getEmoji(), faction.getName()
                     )
             );
 
+            if (game.hasGameOption(GameOption.SPICE_PUBLIC)) {
+                message.append("Back of shield Spice: ")
+                        .append(faction.getSpice())
+                        .append(" " + Emojis.SPICE + "\n");
+            }
+
             if (faction.getFrontOfShieldSpice() > 0) {
-                message.append(faction.getFrontOfShieldSpice())
+                message.append("Front of shield spice: ")
+                        .append(faction.getFrontOfShieldSpice())
                         .append(" " + Emojis.SPICE +"\n");
+            }
+
+            if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC)) {
+                message.append("Treachery Cards: ")
+                        .append(faction.getTreacheryHand().size())
+                        .append("\n");
             }
 
             if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction)faction).hasFrontOfShieldNoField()) {
@@ -611,10 +626,25 @@ public class ShowCommands {
         Game game = discordGame.getGame();
         boolean frontOfShieldModified = false;
         for (Faction faction : game.getFactions()) {
-            if (faction.isBackOfShieldModified()) {
+            Set<UpdateType> updateTypes = faction.getUpdateTypes();
+            if (
+                    updateTypes.contains(UpdateType.MISC_BACK_OF_SHIELD) ||
+                    updateTypes.contains(UpdateType.SPICE_BACK) ||
+                    updateTypes.contains(UpdateType.TREACHERY_CARDS)
+            ) {
                 writeFactionInfo(discordGame, faction);
             }
-            if (faction.isFrontOfShieldModified()) {
+
+            if (updateTypes.contains(UpdateType.MISC_FRONT_OF_SHIELD)) {
+                frontOfShieldModified = true;
+            }
+
+            if (game.hasGameOption(GameOption.SPICE_PUBLIC) && updateTypes.contains(UpdateType.SPICE_BACK)) {
+                frontOfShieldModified = true;
+            }
+
+            if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC) &&
+                    updateTypes.contains(UpdateType.TREACHERY_CARDS)) {
                 frontOfShieldModified = true;
             }
         }

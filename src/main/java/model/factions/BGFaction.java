@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Force;
 import model.Game;
 import model.Territory;
@@ -33,7 +34,7 @@ public class BGFaction extends Faction {
      */
     public void setPredictionFactionName(String predictionFactionName) {
         this.predictionFactionName = predictionFactionName;
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     /**
@@ -52,7 +53,7 @@ public class BGFaction extends Faction {
             throw new IllegalArgumentException("Prediction round must be between 1 and 10");
         }
         this.predictionRound = predictionRound;
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     /**

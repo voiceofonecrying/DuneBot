@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.DiscordGame;
@@ -123,7 +124,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         faction.getMovement().execute(discordGame, game, faction);
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
-        faction.setBackOfShieldModified();
+        faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         discordGame.pushGame();
     }
 

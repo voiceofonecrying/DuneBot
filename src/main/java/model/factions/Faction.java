@@ -1,5 +1,6 @@
 package model.factions;
 
+import enums.UpdateType;
 import helpers.Exclude;
 import model.*;
 import org.apache.commons.csv.CSVFormat;
@@ -13,9 +14,7 @@ import java.util.*;
 
 public class Faction {
     @Exclude
-    private boolean backOfShieldModified;
-    @Exclude
-    private boolean frontOfShieldModified;
+    private Set<UpdateType> updateTypes;
     private final String name;
     protected String emoji;
     private String player;
@@ -106,28 +105,14 @@ public class Faction {
         this.game = game;
     }
 
-    public void setFrontOfShieldModified() {
-        setFrontOfShieldModified(true);
+    public void setUpdated(UpdateType updateType) {
+        if (this.updateTypes == null) this.updateTypes = new HashSet<>();
+        this.updateTypes.add(updateType);
     }
 
-    public void setFrontOfShieldModified(boolean frontOfShieldModified) {
-        this.frontOfShieldModified = frontOfShieldModified;
-    }
-
-    public boolean isFrontOfShieldModified() {
-        return this.frontOfShieldModified;
-    }
-
-    public void setBackOfShieldModified() {
-        setBackOfShieldModified(true);
-    }
-
-    public void setBackOfShieldModified(boolean backOfShieldModified) {
-        this.backOfShieldModified = backOfShieldModified;
-    }
-
-    public boolean isBackOfShieldModified() {
-        return this.backOfShieldModified;
+    public Set<UpdateType> getUpdateTypes() {
+        if (this.updateTypes == null) this.updateTypes = new HashSet<>();
+        return this.updateTypes;
     }
 
     public void setGame(Game game) {
@@ -202,7 +187,7 @@ public class Faction {
         }
 
         treacheryHand.add(card);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.TREACHERY_CARDS);
     }
 
     public TreacheryCard removeTreacheryCard(String name) {
@@ -211,18 +196,18 @@ public class Faction {
 
     public TreacheryCard removeTreacheryCard(TreacheryCard card) {
         treacheryHand.remove(card);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.TREACHERY_CARDS);
         return card;
     }
 
     public void addTraitorCard(TraitorCard card) {
         traitorHand.add(card);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public TraitorCard removeTraitorCard(TraitorCard card) {
         traitorHand.remove(card);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         return card;
     }
 
@@ -237,12 +222,12 @@ public class Faction {
     public List<StrongholdCard> getStrongholdCards() {return strongholdCards;}
     public void addStrongholdCard(StrongholdCard card) {
         strongholdCards.add(card);
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void removeAllStrongholdCards() {
         strongholdCards.clear();
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public int getSpice() {
@@ -251,20 +236,20 @@ public class Faction {
 
     public void setSpice(int spice) {
         this.spice = spice;
-        setBackOfShieldModified();
+        setUpdated(UpdateType.SPICE_BACK);
     }
 
     public void addSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.spice += spice;
-        setBackOfShieldModified();
+        setUpdated(UpdateType.SPICE_BACK);
     }
 
     public void subtractSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
-        setBackOfShieldModified();
+        setUpdated(UpdateType.SPICE_BACK);
     }
 
     public Force getReserves() {
@@ -272,12 +257,12 @@ public class Faction {
     }
     public void addReserves(int amount) {
         getReserves().addStrength(amount);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeReserves(int amount) {
         getReserves().removeStrength(amount);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public Force getSpecialReserves() {
@@ -286,12 +271,12 @@ public class Faction {
 
     public void addSpecialReserves(int amount) {
         getSpecialReserves().addStrength(amount);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeSpecialReserves(int amount) {
         getSpecialReserves().removeStrength(amount);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public int getFrontOfShieldSpice() {
@@ -324,39 +309,40 @@ public class Faction {
                 .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
 
         leaders.remove(remove);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+
         return remove;
     }
 
     public void removeLeader(Leader leader) {
         getLeaders().remove(leader);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         if (leader.skillCard() != null) {
-            setFrontOfShieldModified();
+            setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
         }
     }
 
     public void addLeader(Leader leader) {
         getLeaders().add(leader);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void setFrontOfShieldSpice(int frontOfShieldSpice) {
         this.frontOfShieldSpice = frontOfShieldSpice;
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void addFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice += spice;
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void subtractFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice -= spice;
         if (this.frontOfShieldSpice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
-        setFrontOfShieldModified();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public boolean hasMiningEquipment() {
@@ -477,7 +463,7 @@ public class Faction {
             } else {
                 reserves.addStrength(amount);
             }
-            setBackOfShieldModified();
+            setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         }
 
     }

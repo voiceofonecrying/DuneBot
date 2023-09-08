@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Force;
 import model.Game;
 
@@ -34,7 +35,7 @@ public class AtreidesFaction extends Faction {
      */
     public void setForcesLost(int forcesLost) {
         this.forcesLost = forcesLost;
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     /**
@@ -42,7 +43,7 @@ public class AtreidesFaction extends Faction {
      */
     public void addForceLost(int forceLost) {
         setForcesLost(this.forcesLost + forceLost);
-        setBackOfShieldModified();
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     /**

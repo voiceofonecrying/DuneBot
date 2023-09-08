@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import enums.GameOption;
 import enums.SetupStep;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
@@ -180,7 +181,7 @@ public class Game {
 
     public void setSetupFinished(boolean setupFinished) {
         this.setupFinished = setupFinished;
-        this.getFactions().forEach(Faction::setFrontOfShieldModified);
+        this.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD));
     }
 
     public boolean isOnHold() {
