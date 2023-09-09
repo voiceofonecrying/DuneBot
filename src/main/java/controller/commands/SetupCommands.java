@@ -591,7 +591,7 @@ public class SetupCommands {
             discordGame.queueMessage("harkonnen-chat",faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
-            discordGame.queueMessage("mod-info", "Harkonnen can not mulligan");
+            discordGame.queueMessage("mod-info", "Harkonnen cannot mulligan");
             return StepStatus.CONTINUE;
         }
     }

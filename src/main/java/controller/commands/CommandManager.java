@@ -124,7 +124,7 @@ public class CommandManager extends ListenerAdapter {
                 case "setstorm" -> setStorm(discordGame, game);
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
-                case "assigntechtoken" -> assignTechToken(discordGame, game);
+                case "assign-tech-token" -> assignTechToken(discordGame, game);
                 case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
                 case "create-alliance" -> createAlliance(discordGame, game);
                 case "remove-alliance" -> removeAlliance(discordGame, game);
@@ -192,8 +192,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("remove-hold", "Remove the hold and allow gameplay to proceed."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
-        commandData.add(Commands.slash("placehms", "Starting position for Hidden Mobile Stronghold").addOptions(territory));
-        commandData.add(Commands.slash("assigntechtoken", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
+        commandData.add(Commands.slash("assign-tech-token", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
         commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(spiceBlowDeck));
         commandData.add(Commands.slash("create-alliance", "Create an alliance between two factions")
                 .addOptions(faction, otherFaction));
