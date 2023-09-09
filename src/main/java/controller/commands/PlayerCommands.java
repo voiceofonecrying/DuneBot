@@ -25,7 +25,7 @@ public class PlayerCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("bid", "Place a bid during bidding phase.").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
+                new SubcommandData("bid", "Place a bid during bidding phase (use-exact is ignored for silent auctions).").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("holdgame", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
@@ -158,10 +158,10 @@ public class PlayerCommands {
         return false;
     }
 
-    private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
-        if (eligibleBidOrder.size() == 0 && !bidding.isSilentAuction()) {
+        if (eligibleBidOrder.isEmpty() && !bidding.isSilentAuction()) {
             throw new InvalidGameStateException("All hands are full.");
         }
         if (bidding.isSilentAuction()) {
@@ -178,7 +178,7 @@ public class PlayerCommands {
             boolean allHaveBid = true;
             for (String factionName : bidding.getEligibleBidOrder(game)) {
                 Faction f = game.getFaction(factionName);
-                if (f.getBid().equals("")) {
+                if (f.getBid().isEmpty()) {
                     allHaveBid = false;
                     bidding.setCurrentBid(0);
                     bidding.setBidLeader("");
@@ -218,7 +218,7 @@ public class PlayerCommands {
             boolean tag = true;
             if (bidding.getCurrentBidder().equals(eligibleBidOrder.get(eligibleBidOrder.size() - 1))) {
                 if (bidding.isRicheseBidding()) onceAroundFinished = true;
-                if (bidding.getBidLeader().equals("")) allPlayersPassed = true;
+                if (bidding.getBidLeader().isEmpty()) allPlayersPassed = true;
                 if (onceAroundFinished || allPlayersPassed) tag = false;
             }
             if (!bidding.isSilentAuction())
@@ -243,7 +243,7 @@ public class PlayerCommands {
         } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
     }
 
-    private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String reason = discordGame.required(holdgameReason).getAsString();
         game.setOnHold(true);
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
