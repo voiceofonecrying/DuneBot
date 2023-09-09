@@ -90,6 +90,7 @@ public class Game {
         this.shieldWallDestroyed = false;
         this.bidding = null;
         this.mod = "";
+        this.gameRoleMention = "";
         this.onHold = false;
 
         csvParser = getCSVFile("TreacheryCards.csv");
