@@ -871,7 +871,8 @@ public class CommandManager extends ListenerAdapter {
                     && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
                 discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer())
                         .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"),
-                                Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
+                                Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"),
+                                Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance")));
             }
         }
     }

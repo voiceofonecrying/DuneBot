@@ -149,4 +149,14 @@ public class MoritaniFaction extends Faction {
     public List<String> getAssassinationTargets() {
         return assassinationTargets;
     }
+
+    public String getTerrorTokenMessage() {
+        StringBuilder supply = new StringBuilder();
+        supply.append("\nTerror Tokens:\n");
+
+        for (String token : terrorTokens) {
+            supply.append(token).append("\n");
+        }
+        return supply.toString();
+    }
 }
