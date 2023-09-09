@@ -272,15 +272,15 @@ public class RicheseCommands {
             if (blackMarket) {
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
-                                "We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
-                                game.getGameRole(), Emojis.RICHESE
+                                "{0} We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
+                                game.getGameRoleMention(), Emojis.RICHESE
                         )
                 );
             } else {
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
-                                "We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
-                                game.getGameRole(), Emojis.TREACHERY, bidding.getBidCard().name()
+                                "{0} We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
+                                game.getGameRoleMention(), Emojis.TREACHERY, bidding.getBidCard().name()
                         )
                 );
             }
@@ -308,11 +308,15 @@ public class RicheseCommands {
         } else {
             StringBuilder message = new StringBuilder();
             if (blackMarket) {
-                message.append("We are now bidding on a card from Richese's hand on the black market!\n");
+                message.append(
+                        MessageFormat.format("{0} You may now place your bids for a black market card from {1} hand!\n",
+                                game.getGameRoleMention(), Emojis.RICHESE
+                        )
+                );
             } else {
                 message.append(
-                        MessageFormat.format("We are now bidding on a shiny, brand new Richese {0}!\n",
-                                bidding.getBidCard().name()
+                        MessageFormat.format("{0} You may now place your bids for a shiny, brand new {1} {2}!\n",
+                                game.getGameRoleMention(), Emojis.RICHESE, bidding.getBidCard().name()
                         )
                 );
             }

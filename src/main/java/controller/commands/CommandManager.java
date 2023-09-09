@@ -337,6 +337,7 @@ public class CommandManager extends ListenerAdapter {
 
         Game game = new Game();
         game.setGameRole(gameRoleValue.getName());
+        game.setGameRoleMention(gameRoleValue.getAsMention());
         game.setModRole(modRoleValue.getName());
         game.setMod(event.getUser().getAsMention());
         game.setMute(false);
@@ -1242,6 +1243,10 @@ public class CommandManager extends ListenerAdapter {
 
     public void reassignMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.setMod(event.getUser().getAsMention());
+        List<Role> roles = event.getGuild().getRolesByName(game.getGameRole(), false);
+        if (!roles.isEmpty()) {
+            game.setGameRoleMention(roles.get(0).getAsMention());
+        }
         discordGame.pushGame();
     }
 

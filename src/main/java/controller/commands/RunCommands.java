@@ -450,6 +450,11 @@ public class RunCommands {
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
                 Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+                discordGame.queueMessage("bidding-phase",
+                        MessageFormat.format("{0} You may now place your bids for R{1}:C{2}",
+                                game.getGameRoleMention(), game.getTurn(), bidding.getBidCardNumber()
+                        )
+                );
                 createBidMessage(discordGame, game);
                 bidding.advanceBidder(game);
                 discordGame.pushGame();
@@ -619,7 +624,7 @@ public class RunCommands {
                 if (territory.getForce("Advisor").getStrength() > 0) {
                     discordGame.queueMessage("game-actions", new MessageCreateBuilder().setContent(
                             message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n").append(game.getFaction("BG").getPlayer()).toString())
-                            .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));;
+                            .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));
                 }
             }
         }

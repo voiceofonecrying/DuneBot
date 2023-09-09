@@ -35,6 +35,7 @@ public class Game {
     private int stormMovement;
     private Bidding bidding;
     private String mod;
+    private String gameRoleMention;
     private final List<Faction> factions;
     private Deque<String> turnOrder;
 
@@ -242,6 +243,13 @@ public class Game {
         this.mod = mod;
     }
 
+    public String getGameRoleMention() {
+        return gameRoleMention;
+    }
+
+    public void setGameRoleMention(String gameRoleMention) {
+        this.gameRoleMention = gameRoleMention;
+    }
     public Boolean getMute() {
         return mute;
     }
