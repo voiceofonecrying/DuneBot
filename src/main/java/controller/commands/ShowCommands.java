@@ -478,6 +478,9 @@ public class ShowCommands {
         } else if (faction.getName().equalsIgnoreCase("ecaz")) {
             EcazFaction ecaz = (EcazFaction) faction;
             factionSpecificString.append(ecaz.getAmbassadorSupply());
+        } else if (faction.getName().equalsIgnoreCase("moritani")) {
+            MoritaniFaction moritani = (MoritaniFaction) faction;
+            factionSpecificString.append(moritani.getTerrorTokenMessage());
         }
         StringBuilder traitorString = new StringBuilder();
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
