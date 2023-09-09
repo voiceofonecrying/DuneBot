@@ -272,19 +272,30 @@ public class RicheseCommands {
             if (blackMarket) {
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
-                                "@{0} We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
+                                "We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
                                 game.getGameRole(), Emojis.RICHESE
                         )
                 );
             } else {
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format(
-                                "@{0} We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
+                                "We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
                                 game.getGameRole(), Emojis.TREACHERY, bidding.getBidCard().name()
                         )
                 );
             }
             List<Faction> factions = game.getFactions();
+            for (Faction faction : factions) {
+                String channel = faction.getName().toLowerCase() + "-chat";
+                if (faction.getHandLimit() > faction.getTreacheryHand().size()) {
+                    discordGame.queueMessage(channel,
+                            MessageFormat.format(
+                                    "{0} Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.",
+                                    faction.getPlayer()
+                            )
+                    );
+                }
+            }
             int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
             List<Faction> bidOrderFactions = new ArrayList<>();
             bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
