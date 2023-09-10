@@ -350,8 +350,8 @@ public class RicheseCommands {
         RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
         message.append(
                 MessageFormat.format(
-                        "Turn {0} - Select a {1} card to sell on the black market.",
-                        game.getTurn(), Emojis.TREACHERY
+                        "Turn {0} - Select a {1} card to sell on the black market. {2}",
+                        game.getTurn(), Emojis.TREACHERY, richeseFaction.getPlayer()
                 )
         );
         List<Button> buttons = new LinkedList<>();
@@ -399,10 +399,10 @@ public class RicheseCommands {
             mcb.addActionRow(buttons);
         }
         if (bidding.getBidCardNumber() < bidding.getNumCardsForBid() - 1) {
-            mcb.addContent("Please select your cache card to sell or choose to sell last.");
+            mcb.addContent("Please select your cache card to sell or choose to sell last. " + richeseFaction.getPlayer());
             mcb.addActionRow(Button.danger("richesecachetime-last", "Sell cache card last"));
         } else {
-            mcb.addContent("Please select your cache card to sell. You must sell now.");
+            mcb.addContent("Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer());
         }
         discordGame.queueMessage("richese-chat", mcb);
     }
