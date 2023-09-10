@@ -369,10 +369,18 @@ public class RunCommands {
         int numCardsForBid = bidding.populateMarket(game);
         message.append(
                 MessageFormat.format(
-                        "There will be {0} {1} up for bid this round.",
+                        "{0} cards will be pulled from the {1} deck for bidding.",
                         numCardsForBid, Emojis.TREACHERY
                 )
         );
+        if (game.hasFaction("Ix")) {
+            message.append(
+                    MessageFormat.format(
+                            "\n{0} will send one of them back to the deck.",
+                            Emojis.IX
+                    )
+            );
+        }
         discordGame.queueMessage("turn-summary", message.toString());
         if (numCardsForBid == 0) {
             discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");

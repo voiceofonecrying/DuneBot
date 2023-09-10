@@ -85,7 +85,7 @@ public class PlayerCommands {
         int bidAmount = discordGame.required(amount).getAsInt();
         faction.setUseExact(useExact);
         faction.setMaxBid(bidAmount);
-        discordGame.queueMessage("mod-info", faction.getEmoji() + " set their bid to " + bidAmount);
+        String modMessage = faction.getEmoji() + " set their bid to " + (useExact ? "exactly " : "increment up to ") + bidAmount + ".";
         String responseMessage = "You will bid ";
         if (silentAuction) {
             responseMessage += "exactly " + bidAmount + " in the silent auction.";
@@ -97,7 +97,9 @@ public class PlayerCommands {
         if (discordGame.optional(autoPassAfterMax) != null) {
             boolean enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
             faction.setAutoBid(enableAutoPass);
+            modMessage += enableAutoPass ? " Auto-pass enabled." : "No auto-pass.";
         }
+        discordGame.queueMessage("mod-info", modMessage);
         String responseMessage2 = "";
         if (!silentAuction) {
             if (faction.isAutoBid()) {
