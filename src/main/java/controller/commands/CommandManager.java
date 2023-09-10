@@ -659,7 +659,9 @@ public class CommandManager extends ListenerAdapter {
 
         winner.addTreacheryCard(bidding.getBidCard());
 
-        discordGame.queueMessage(winnerName.toLowerCase() + "-info", "ledger", "Received " + bidding.getBidCard().name() + " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber());
+        discordGame.queueMessage(winnerName.toLowerCase() + "-info", "ledger",
+                "Received " + bidding.getBidCard().name() +
+                        " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber() + ")");
 
         bidding.clearBidCardInfo(winnerName);
 
