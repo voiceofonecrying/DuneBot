@@ -340,6 +340,12 @@ public class DiscordGame {
         messageQueue.add(getHook().sendMessage(message.build()));
     }
 
+    public void queueMessage(String parentChannel, String threadChannel, String message) throws ChannelNotFoundException {
+        TextChannel parent = getTextChannel(parentChannel);
+        ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadChannel)).findFirst().get();
+        messageQueue.add(thread.sendMessage(message));
+    }
+
     /**
      * Queues a message to be sent to the ephemeral channel.
      * @param message Message to send.

@@ -46,7 +46,7 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
-    public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", false);
+    public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
     public static final OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
     public static final OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)

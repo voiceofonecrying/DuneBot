@@ -536,6 +536,7 @@ public class CommandManager extends ListenerAdapter {
     public void drawCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
+        discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", game.getTreacheryDeck().peekFirst().name() + " drawn from deck.");
         faction.addTreacheryCard(game.getTreacheryDeck().pop());
         discordGame.pushGame();
     }
@@ -548,6 +549,7 @@ public class CommandManager extends ListenerAdapter {
 
         game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
         discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards " + cardName);
+        discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", cardName + " discarded from hand.");
         discordGame.pushGame();
     }
 
@@ -559,6 +561,8 @@ public class CommandManager extends ListenerAdapter {
         receiver.addTreacheryCard(
                 giver.removeTreacheryCard(cardName)
         );
+        discordGame.queueMessage(receiver.getName().toLowerCase() + "-info", "ledger", "Received " + cardName + " from " + giver.getEmoji());
+        discordGame.queueMessage(giver.getName().toLowerCase() + "-info", "ledger", "Sent " + cardName + " to " + receiver.getEmoji());
 
         discordGame.pushGame();
     }
@@ -574,6 +578,7 @@ public class CommandManager extends ListenerAdapter {
 
         receiver.addTreacheryCard(card);
         game.getTreacheryDiscard().remove(card);
+        discordGame.queueMessage(receiver.getName().toLowerCase() + "-info", "ledger", "Received " + cardName + " from discard.");
 
         discordGame.pushGame();
     }
@@ -654,6 +659,8 @@ public class CommandManager extends ListenerAdapter {
 
         winner.addTreacheryCard(bidding.getBidCard());
 
+        discordGame.queueMessage(winnerName + "-info", "ledger", "Received " + bidding.getBidCard().name() + " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber());
+
         bidding.clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
@@ -687,6 +694,7 @@ public class CommandManager extends ListenerAdapter {
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
                 discordGame.queueMessage(channel.getName(),
+                        "ledger",
                         MessageFormat.format(
                                 "{0}{1}{2} {3}",
                                 plusSign,
@@ -701,6 +709,7 @@ public class CommandManager extends ListenerAdapter {
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         game.getLeaderTanks().add(targetFaction.removeLeader(discordGame.required(leader).getAsString()));
+        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", leader + " was sent to the tanks.");
         discordGame.pushGame();
     }
 
@@ -709,7 +718,7 @@ public class CommandManager extends ListenerAdapter {
         targetFaction.addLeader(
                 game.removeLeaderFromTanks(discordGame.required(reviveLeader).getAsString())
         );
-
+        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", leader + " was revived from the tanks.");
         discordGame.pushGame();
     }
 
@@ -746,6 +755,8 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
+
         discordGame.queueMessage("turn-summary", faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
     }
 
@@ -770,9 +781,20 @@ public class CommandManager extends ListenerAdapter {
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
 
-        if (amountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
+        if (amountValue > 0) {
+            placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
+            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
+                    "ledger",
+                    MessageFormat.format("{0} {1} removed from reserves.", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
 
-        if (starredAmountValue > 0) placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
+        }
+
+        if (starredAmountValue > 0) {
+            placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
+            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
+                    "ledger",
+                    MessageFormat.format("{0} {1} removed from reserves.", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
+        }
 
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
@@ -1059,12 +1081,16 @@ public class CommandManager extends ListenerAdapter {
         ShowCommands.showBoard(discordGame, game);
     }
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        for (Faction faction : game.getFactions()) {
-            faction.getTechTokens().removeIf(
-                    techToken -> techToken.getName().equals(discordGame.required(token).getAsString()));
+        for (Faction f : game.getFactions()) {
+            if (f.getTechTokens().removeIf(
+                    techToken -> techToken.getName().equals(discordGame.required(token).getAsString())))
+                discordGame.queueMessage(f.getName().toLowerCase() + "-info",
+                        "ledger",
+                        discordGame.required(token).getAsString() + " was sent to " + game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
         }
         game.getFaction(discordGame.required(faction).getAsString())
                 .getTechTokens().add(new TechToken(discordGame.required(token).getAsString()));
+        discordGame.queueMessage(discordGame.required(faction).getAsString().toLowerCase() + "-info", "ledger", discordGame.required(token).getAsString() + " transferred to you.");
         discordGame.queueMessage("turn-summary",
                 discordGame.required(token).getAsString() + " has been transferred to " +
                         game.getFaction(discordGame.required(faction).getAsString()).getEmoji());

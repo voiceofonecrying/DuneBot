@@ -109,6 +109,7 @@ public class SetupCommands {
 
         if (game.hasGameOption(GameOption.LEADER_SKILLS)) {
             setupSteps = new ArrayList<>(List.of(
+                    SetupStep.LEDGER_THREADS,
                     SetupStep.CREATE_DECKS,
                     SetupStep.FACTION_POSITIONS,
                     SetupStep.TREACHERY_CARDS,
@@ -120,6 +121,7 @@ public class SetupCommands {
             ));
         } else {
             setupSteps = new ArrayList<>(List.of(
+                    SetupStep.LEDGER_THREADS,
                     SetupStep.CREATE_DECKS,
                     SetupStep.FACTION_POSITIONS,
                     SetupStep.TRAITORS,
@@ -216,6 +218,7 @@ public class SetupCommands {
         StepStatus stepStatus = StepStatus.STOP;
 
         switch (setupStep) {
+            case LEDGER_THREADS -> stepStatus = ledgerThreads(discordGame, game);
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
@@ -238,6 +241,12 @@ public class SetupCommands {
         return stepStatus;
     }
 
+    private static StepStatus ledgerThreads(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        for (Faction faction : game.getFactions()) {
+            discordGame.createThread(faction.getName().toLowerCase() + "-info", "ledger", List.of(faction.getPlayer()));
+        }
+        return StepStatus.CONTINUE;
+    }
 
 
     public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
@@ -362,14 +371,19 @@ public class SetupCommands {
                 ).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         for (TraitorCard card : faction.getTraitorHand()) {
-            if (!card.equals(traitor)) game.getTraitorDeck().add(card);
+            if (card.equals(traitor)) continue;
+            game.getTraitorDeck().add(card);
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-info",
+                    "ledger",
+                    card.name() + " was sent back to the Traitor Deck.");
         }
         faction.getTraitorHand().clear();
         faction.addTraitorCard(traitor);
 
         Collections.shuffle(game.getTraitorDeck());
 
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat",
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info",
+                "ledger",
                 MessageFormat.format(
                         "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
                         traitor.name()
