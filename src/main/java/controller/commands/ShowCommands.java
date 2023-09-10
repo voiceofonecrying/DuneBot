@@ -463,6 +463,13 @@ public class ShowCommands {
      * @throws IOException if the image cannot be written
      */
     public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
+        MessageChannel infoChannel = discordGame.getTextChannel(faction.getName().toLowerCase() + "-info");
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(infoChannel).complete();
+
+        List<Message> messages = messageHistory.getRetrievedHistory();
+
+        messages.forEach(discordGame::queueDeleteMessage);
+
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
         String infoChannelName = faction.getName().toLowerCase() + "-info";
