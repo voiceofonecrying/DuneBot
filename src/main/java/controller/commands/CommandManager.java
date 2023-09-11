@@ -711,7 +711,7 @@ public class CommandManager extends ListenerAdapter {
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         game.getLeaderTanks().add(targetFaction.removeLeader(discordGame.required(leader).getAsString()));
-        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", leader + " was sent to the tanks.");
+        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", discordGame.required(leader).getAsString() + " was sent to the tanks.");
         discordGame.pushGame();
     }
 
@@ -720,7 +720,7 @@ public class CommandManager extends ListenerAdapter {
         targetFaction.addLeader(
                 game.removeLeaderFromTanks(discordGame.required(reviveLeader).getAsString())
         );
-        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", leader + " was revived from the tanks.");
+        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", discordGame.required(leader).getAsString() + " was revived from the tanks.");
         discordGame.pushGame();
     }
 
