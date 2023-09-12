@@ -106,23 +106,6 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static void sendIxBiddingMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        StringBuilder message = new StringBuilder();
-        if (game.hasFaction("Ix")) {
-            IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
-            message.append(
-                    MessageFormat.format(
-                            "{0}\nTurn {1} - Select one of the following {2} cards to send back to the deck.",
-                            ixFaction.getPlayer(), game.getTurn(), Emojis.TREACHERY
-                    )
-            );
-            for (TreacheryCard card : bidding.getMarket()) {
-                message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
-            }
-            discordGame.queueMessage("ix-chat", message.toString());
-        }
-    }
     public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
@@ -147,7 +130,11 @@ public class IxCommands {
                 )
         );
         for (TreacheryCard card : ixFaction.getTreacheryHand()) {
-            message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
+            message.append(
+                    MessageFormat.format(
+                            "\n\t**{0}** _{1}_",
+                            card.name(), card.type()
+                    ));
         }
         discordGame.queueMessage("ix-chat", message.toString());
         initialCardButtons(discordGame, game);
@@ -183,7 +170,10 @@ public class IxCommands {
                 )
         );
         for (TreacheryCard card : bidding.getMarket()) {
-            message.append("\n\t**" + card.name() + "** _" + card.type() + "_");
+            message.append(
+                    MessageFormat.format("\n\t**{0}** _{1}_",
+                            card.name(), card.type()
+                    ));
         }
         discordGame.queueMessage("ix-chat", message.toString());
         cardToRejectButtons(discordGame, game);
@@ -217,7 +207,7 @@ public class IxCommands {
                 .addActionRow(buttons));
     }
 
-    public static void confirmCardToSendBack(DiscordGame discordGame, Game game, String cardName, String location) throws ChannelNotFoundException {
+    public static void confirmCardToSendBack(DiscordGame discordGame, String cardName, String location) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("ix-confirm-reject" + "-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
         buttons.add(Button.secondary("ix-confirm-reject-reset", "Start over"));
@@ -225,7 +215,7 @@ public class IxCommands {
                 .addActionRow(buttons));
     }
 
-    public static void confirmStartingCard(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException {
+    public static void confirmStartingCard(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("ix-confirm-start-" + cardName, "Confirm " + cardName));
         buttons.add(Button.secondary("ix-confirm-start-reset", "Choose a different card"));

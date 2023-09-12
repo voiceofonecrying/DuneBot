@@ -15,10 +15,10 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().equals("ix-confirm-start-reset")) resetStartingCardSelection(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-start-")) confirmStartingCard(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-card-to-reject-")) cardSelected(event, discordGame, game);
-        else if (event.getComponentId().startsWith("ix-reject-reset")) chooseDifferentCard(event, discordGame, game);
+        else if (event.getComponentId().startsWith("ix-reject-reset")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-reject-")) locationSelected(event, discordGame, game);
-        else if (event.getComponentId().equals("ix-reset-card-selection")) chooseDifferentCard(event, discordGame, game);
-        else if (event.getComponentId().startsWith("ix-confirm-reject-reset")) chooseDifferentCard(event, discordGame, game);
+        else if (event.getComponentId().equals("ix-reset-card-selection")) chooseDifferentCard(discordGame, game);
+        else if (event.getComponentId().startsWith("ix-confirm-reject-reset")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
     }
 
@@ -31,7 +31,7 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.confirmStartingCard(discordGame, game, event.getComponentId().split("-")[4]);
+        IxCommands.confirmStartingCard(discordGame, event.getComponentId().split("-")[4]);
     }
 
     private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -79,27 +79,16 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("You selected to send it to the " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.confirmCardToSendBack(discordGame, game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
+        IxCommands.confirmCardToSendBack(discordGame, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
     }
 
-    private static void chooseDifferentCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void chooseDifferentCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
         discordGame.queueMessage("Starting over.");
         discordGame.queueDeleteMessage();
         IxCommands.cardToRejectButtons(discordGame, game);
-    }
-
-    private static void confirmCardToSendBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
-        int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[2]);
-        if (buttonTurn != game.getTurn()) {
-            throw new InvalidGameStateException("Button is from turn " + buttonTurn);
-        } else if (!game.getBidding().isIxRejectOutstanding()) {
-            throw new InvalidGameStateException("You have already sent a card back.");
-        }
-        discordGame.queueMessage("You will send " + event.getComponentId().split("-")[3].trim() + " to the " + event.getComponentId().split("-")[4] + ".");
-        discordGame.queueDeleteMessage();
     }
 
     private static void sendCardBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
