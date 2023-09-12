@@ -90,11 +90,19 @@ public class IxCommands {
     public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(ixCard).getAsString();
         game.getBidding().ixTechnology(game, cardName);
+        discordGame.queueMessage("turn-summary", MessageFormat.format(
+                "{0} used technology to swap a card from their hand for R{1}:C{2}.",
+                Emojis.IX, game.getTurn(), game.getBidding().getBidCardNumber() + 1
+        ));
         discordGame.pushGame();
     }
 
     public static void allyCardSwap(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.getBidding().ixAllyCardSwap(game);
+        discordGame.queueMessage("turn-summary", MessageFormat.format(
+                "{0} ({1} ally) swapped the card just won for the {2} deck top card.",
+                game.getFaction(game.getFaction("Ix").getAlly()).getEmoji(), Emojis.IX, Emojis.TREACHERY
+        ));
         discordGame.pushGame();
     }
 
@@ -129,7 +137,7 @@ public class IxCommands {
         placeHMS(discordGame, game);
     }
 
-    public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
         IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
         message.append(
@@ -145,8 +153,7 @@ public class IxCommands {
         initialCardButtons(discordGame, game);
     }
 
-    public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        StringBuilder message = new StringBuilder();
+    public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
         List<Button> buttons = new LinkedList<>();
         int i = 0;
