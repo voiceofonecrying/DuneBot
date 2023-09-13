@@ -98,7 +98,7 @@ public class ShowCommands {
 
         Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage("behind shield");
-        table = resize(table, 500, 600);
+        table = resize(table, 800, 600);
 
         //Place reserves
         int reserves = faction.getReserves().getStrength();
@@ -154,7 +154,7 @@ public class ShowCommands {
             leaderImage = resize(leaderImage, 70, 70);
             Point leaderPoint = new Point(150 + offset, 100);
             table = overlay(table, leaderImage, leaderPoint, 1);
-            offset += 50;
+            offset += 65;
         }
 
         offset = 0;
@@ -189,6 +189,37 @@ public class ShowCommands {
                 Point cardPoint = new Point(100 + offset, 475);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 100;
+            }
+        }
+
+        //Place nexus card if any
+        if (faction.getNexusCard() != null) {
+            Optional<FileUpload> image = CardImages.getNexusImage(discordGame.getEvent().getGuild(), faction.getNexusCard().name());
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 107, 150);
+                Point cardPoint = new Point(100 + offset, 475);
+                table = overlay(table, cardImage, cardPoint, 1);
+            }
+        }
+
+        //BG Prediction
+        if (faction.getName().equals("BG")) {
+            offset += 100;
+            Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + ((BGFaction)faction).getPredictionRound());
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 107, 150);
+                Point cardPoint = new Point(100 + offset, 475);
+                table = overlay(table, cardImage, cardPoint, 1);
+            }
+            offset += 100;
+            image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), ((BGFaction)faction).getPredictionFactionName());
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 107, 150);
+                Point cardPoint = new Point(100 + offset, 475);
+                table = overlay(table, cardImage, cardPoint, 1);
             }
         }
 
