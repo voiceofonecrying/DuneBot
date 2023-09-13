@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -85,8 +86,16 @@ public class ShowCommands {
         InputStream inputStream = resourceURL.openStream();
         return FileUpload.fromData(inputStream, name + ".png");
     }
-    private static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException {
+    public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException {
         if (game.getMute()) return;
+
+        MessageChannel infoChannel = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(infoChannel).complete();
+
+        List<Message> messages = messageHistory.getRetrievedHistory();
+
+        messages.forEach(discordGame::queueDeleteMessage);
+
         Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage("behind shield");
 
@@ -103,15 +112,88 @@ public class ShowCommands {
             table = overlay(table, specialReservesImage, new Point(80, 90), 1);
         }
 
-        ByteArrayOutputStream tableOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(table, "png", tableOutputStream);
+        //Place spice
+        int spice = faction.getSpice();
+        int offset = 0;
+        Point spicePlacement = new Point(150, 50);
+        while (spice != 0) {
+            if (spice >= 10) {
+                BufferedImage spiceImage = getResourceImage("10 Spice");
+                spiceImage = resize(spiceImage, 25,25);
+                Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
+                table = overlay(table, spiceImage, spicePlacementOffset, 1);
+                spice -= 10;
+            } else if (spice == 5) {
+                BufferedImage spiceImage = getResourceImage("5 Spice");
+                spiceImage = resize(spiceImage, 25,25);
+                Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
+                table = overlay(table, spiceImage, spicePlacementOffset, 1);
+                spice -= 5;
+            } else if (spice >= 2) {
+                BufferedImage spiceImage = getResourceImage("2 Spice");
+                spiceImage = resize(spiceImage, 25,25);
+                Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
+                table = overlay(table, spiceImage, spicePlacementOffset, 1);
+                spice -= 2;
+            } else {
+                BufferedImage spiceImage = getResourceImage("1 Spice");
+                spiceImage = resize(spiceImage, 25,25);
+                Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
+                table = overlay(table, spiceImage, spicePlacementOffset, 1);
+                spice -= 1;
+            }
+            offset += 15;
+        }
 
-        FileUpload boardFileUpload = FileUpload.fromData(tableOutputStream.toByteArray(), "behind shield.png");
-        discordGame.getTextChannel("turn-summary")
-                .sendFiles(boardFileUpload)
-                .queue();
+        offset = 0;
 
-        //discordGame.prepareMessage(faction.getName().toLowerCase() + "-info", "Use these buttons to take the corresponding actions.").addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).queue();
+        //Place leaders
+        for (Leader leader : faction.getLeaders()) {
+            BufferedImage leaderImage = getResourceImage(leader.name());
+            leaderImage = resize(leaderImage, 70, 70);
+            Point leaderPoint = new Point(150 + offset, 100);
+            table = overlay(table, leaderImage, leaderPoint, 1);
+            offset += 50;
+        }
+
+        offset = 0;
+
+        //Place Treachery Cards
+        for (TreacheryCard treacheryCard : faction.getTreacheryHand()) {
+            Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treacheryCard.name());
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 107, 150);
+                Point cardPoint = new Point(100 + offset, 250);
+                table = overlay(table, cardImage, cardPoint, 1);
+                offset += 100;
+        }
+        }
+
+        offset = 0;
+
+        //Place Traitor Cards
+        for (TraitorCard traitorCard : faction.getTraitorHand()) {
+            Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.name());
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 107, 150);
+                Point cardPoint = new Point(100 + offset, 450);
+                table = overlay(table, cardImage, cardPoint, 1);
+                offset += 100;
+            }
+        }
+
+
+        ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(table, "png", boardOutputStream);
+
+        FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "behind shield.png");
+
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "Faction Info", boardFileUpload);
+
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("Use these buttons to take the corresponding actions.")
+                .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
 
 
     }
@@ -541,7 +623,8 @@ public class ShowCommands {
 
         treacheryCardMessageBuilder.addContent(treacheryString.toString());
         discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
-        //discordGame.prepareMessage(faction.getName().toLowerCase() + "-info", "Use these buttons to take the corresponding actions.").addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).queue();
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("Use these buttons to take the corresponding actions.")
+                .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
     }
 
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -642,7 +725,8 @@ public class ShowCommands {
                     updateTypes.contains(UpdateType.SPICE_BACK) ||
                     updateTypes.contains(UpdateType.TREACHERY_CARDS)
             ) {
-                writeFactionInfo(discordGame, faction);
+                if (faction.isGraphicDisplay()) drawFactionInfo(discordGame, game, faction.getName());
+                else writeFactionInfo(discordGame, faction);
             }
 
             if (updateTypes.contains(UpdateType.MISC_FRONT_OF_SHIELD)) {

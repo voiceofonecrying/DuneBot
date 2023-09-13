@@ -43,7 +43,7 @@ public class ButtonManager extends ListenerAdapter {
                     getButtonPresser(event, game).setGraphicDisplay(true);
                     discordGame.queueMessage("Graphic mode active");
                     discordGame.pushGame();
-                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    ShowCommands.drawFactionInfo(discordGame, game,  getButtonPresser(event, game).getName());
                 }
                 case "text" -> {
                     getButtonPresser(event, game).setGraphicDisplay(false);
