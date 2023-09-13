@@ -15,6 +15,9 @@ public class HarkonnenFaction extends Faction {
         this.hasMiningEquipment = true;
         this.reserves = new Force("Harkonnen", 10);
         this.emoji = Emojis.HARKONNEN;
+        this.highThreshold = 7;
+        this.lowThreshold = 6;
+        this.occupiedIncome = 2;
         game.getTerritories().get("Carthag").getForces().add(new Force("Harkonnen", 10));
         this.handLimit = 8;
     }

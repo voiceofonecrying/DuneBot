@@ -50,6 +50,12 @@ public class Faction {
     private int allySpiceBidding;
 
     private int maxRevival;
+    protected int highThreshold;
+    protected int lowThreshold;
+    protected int occupiedIncome;
+
+
+
 
     private Game game;
 
@@ -540,5 +546,16 @@ public class Faction {
 
     public void setMaxRevival(int maxRevival) {
         this.maxRevival = maxRevival;
+    }
+    public int getHighThreshold() {
+        return highThreshold;
+    }
+
+    public int getLowThreshold() {
+        return lowThreshold;
+    }
+
+    public int getOccupiedIncome() {
+        return occupiedIncome;
     }
 }

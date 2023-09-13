@@ -15,6 +15,9 @@ public class FremenFaction extends Faction {
         this.reserves = new Force("Fremen", 17);
         this.specialReserves = new Force("Fremen*", 3);
         this.emoji = Emojis.FREMEN;
+        this.highThreshold = 3;
+        this.lowThreshold = 2;
+        this.occupiedIncome = 0;
     }
 
     /**

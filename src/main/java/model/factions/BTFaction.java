@@ -23,6 +23,9 @@ public class BTFaction extends Faction {
         this.reserves = new Force("BT", 20);
         this.emoji = Emojis.BT;
         this.revivalRatesSet = 0;
+        this.highThreshold = 9;
+        this.lowThreshold = 8;
+        this.occupiedIncome = 2;
     }
 
     /**
