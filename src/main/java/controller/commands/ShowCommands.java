@@ -98,6 +98,7 @@ public class ShowCommands {
 
         Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage("behind shield");
+        table = resize(table, 500, 600);
 
         //Place reserves
         int reserves = faction.getReserves().getStrength();
@@ -159,14 +160,21 @@ public class ShowCommands {
         offset = 0;
 
         //Place Treachery Cards
+        int count = 0;
+        int offsetY = 0;
         for (TreacheryCard treacheryCard : faction.getTreacheryHand()) {
             Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treacheryCard.name());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 250);
+                Point cardPoint = new Point(100 + offset, 250 + offsetY);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 100;
+                count++;
+                if (count == 4) {
+                    offset = 0;
+                    offsetY = 40;
+                }
         }
         }
 
@@ -178,7 +186,7 @@ public class ShowCommands {
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 450);
+                Point cardPoint = new Point(100 + offset, 475);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 100;
             }
