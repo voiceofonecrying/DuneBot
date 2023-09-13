@@ -20,6 +20,9 @@ public class RicheseFaction extends Faction {
         this.freeRevival = 2;
         this.reserves = new Force("Richese", 20);
         this.emoji = Emojis.RICHESE;
+        this.highThreshold = 10;
+        this.lowThreshold = 9;
+        this.occupiedIncome = 1;
         this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);
         this.behindShieldNoField.add(3);

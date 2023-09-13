@@ -19,6 +19,9 @@ public class BGFaction extends Faction {
         this.freeRevival = 1;
         this.reserves = new Force("BG", 20);
         this.emoji = Emojis.BG;
+        this.highThreshold = 11;
+        this.lowThreshold = 10;
+        this.occupiedIncome = 1;
     }
 
     /**

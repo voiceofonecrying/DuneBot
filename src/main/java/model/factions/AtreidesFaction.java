@@ -18,6 +18,9 @@ public class AtreidesFaction extends Faction {
         this.hasMiningEquipment = true;
         this.reserves = new Force("Atreides", 10);
         this.emoji = Emojis.ATREIDES;
+        this.highThreshold = 6;
+        this.lowThreshold = 5;
+        this.occupiedIncome = 2;
         game.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
 
         this.forcesLost = 0;

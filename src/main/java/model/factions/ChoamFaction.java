@@ -18,6 +18,9 @@ public class ChoamFaction extends Faction {
         this.freeRevival = 0;
         this.reserves = new Force("CHOAM", 20);
         this.emoji = Emojis.CHOAM;
+        this.highThreshold = 11;
+        this.lowThreshold = 10;
+        this.occupiedIncome = 2;
         this.handLimit = 5;
         this.firstInflationRound = 0;
     }

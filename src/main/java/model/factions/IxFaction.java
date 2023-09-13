@@ -16,6 +16,9 @@ public class IxFaction extends Faction {
         this.reserves = new Force("Ix", 10);
         this.specialReserves = new Force("Ix*", 4);
         this.emoji = Emojis.IX;
+        this.highThreshold = 5;
+        this.lowThreshold = 4;
+        this.occupiedIncome = 2;
         game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
         game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix*", 3));
     }

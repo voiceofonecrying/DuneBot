@@ -25,6 +25,9 @@ public class MoritaniFaction extends Faction {
         this.freeRevival = 2;
         this.reserves = new Force("Moritani", 20);
         this.emoji = Emojis.MORITANI;
+        this.highThreshold = 8;
+        this.lowThreshold = 7;
+        this.occupiedIncome = 2;
         this.terrorTokens = new LinkedList<>();
         this.assassinationTargets = new LinkedList<>();
 
