@@ -53,6 +53,15 @@ public class CardImages {
         return getCardImage(guild, "nexus-cards", pattern, cardName);
     }
 
+    public static Optional<FileUpload> getTraitorImage(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getCardImage(guild, "traitor-cards", pattern, cardName);
+    }
+
     private static List<Message> getChannelMessages(Guild guild, String channelName) {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);
