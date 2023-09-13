@@ -74,9 +74,15 @@ public class CardImages {
                     .findFirst();
 
             if (channel.isEmpty()) return new ArrayList<>();
-            MessageHistory history = MessageHistory.getHistoryFromBeginning(channel.get()).complete();
+            List<Message> messages = new LinkedList<>();
+            String id = "0";
 
-            List<Message> messages = history.getRetrievedHistory();
+            while (!MessageHistory.getHistoryAfter(channel.get(), id).complete().isEmpty()) {
+                MessageHistory history = MessageHistory.getHistoryAfter(channel.get(), id).complete();
+                messages.addAll(history.getRetrievedHistory());
+                id = history.getRetrievedHistory().get(0).getId();
+            }
+
             cardChannelMessages.put(channelName, messages);
             return messages;
         }
