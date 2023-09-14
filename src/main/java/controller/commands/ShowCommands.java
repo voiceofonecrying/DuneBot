@@ -30,8 +30,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static controller.commands.CommandOptions.faction;
 
@@ -73,6 +73,7 @@ public class ShowCommands {
 
     private static BufferedImage getResourceImage(String name) throws IOException {
         URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
+        if (file == null) file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".jpg");
         assert file != null;
         return ImageIO.read(file);
     }
@@ -98,7 +99,8 @@ public class ShowCommands {
 
         Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage("behind shield");
-        table = resize(table, 800, 600);
+        table = table.getSubimage(0, 0, 2000, 1200);
+        table = resize(table, 5000, 5000);
 
         //Place reserves
         int reserves = faction.getReserves().getStrength();
@@ -106,44 +108,46 @@ public class ShowCommands {
 
         if (reserves > 0) {
             BufferedImage reservesImage = buildForceImage(faction.getName(), reserves);
-            table = overlay(table, reservesImage, new Point(80, 50), 1);
+            reservesImage = resize(reservesImage, 353, 218);
+            table = overlay(table, reservesImage, new Point(300, 200), 1);
         }
         if (specialReserves > 0) {
             BufferedImage specialReservesImage = buildForceImage(faction.getName() + "*", specialReserves);
-            table = overlay(table, specialReservesImage, new Point(80, 90), 1);
+            specialReservesImage = resize(specialReservesImage, 353, 218);
+            table = overlay(table, specialReservesImage, new Point(300, 375), 1);
         }
 
         //Place spice
         int spice = faction.getSpice();
         int offset = 0;
-        Point spicePlacement = new Point(150, 50);
+        Point spicePlacement = new Point(1000, 200);
         while (spice != 0) {
             if (spice >= 10) {
                 BufferedImage spiceImage = getResourceImage("10 Spice");
-                spiceImage = resize(spiceImage, 25,25);
+                spiceImage = resize(spiceImage, 200,200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 10;
             } else if (spice == 5) {
                 BufferedImage spiceImage = getResourceImage("5 Spice");
-                spiceImage = resize(spiceImage, 25,25);
+                spiceImage = resize(spiceImage, 200,200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 5;
             } else if (spice >= 2) {
                 BufferedImage spiceImage = getResourceImage("2 Spice");
-                spiceImage = resize(spiceImage, 25,25);
+                spiceImage = resize(spiceImage, 200,200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 2;
             } else {
                 BufferedImage spiceImage = getResourceImage("1 Spice");
-                spiceImage = resize(spiceImage, 25,25);
+                spiceImage = resize(spiceImage, 200,200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 1;
             }
-            offset += 15;
+            offset += 120;
         }
 
         offset = 0;
@@ -151,10 +155,10 @@ public class ShowCommands {
         //Place leaders
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage = getResourceImage(leader.name());
-            leaderImage = resize(leaderImage, 70, 70);
-            Point leaderPoint = new Point(150 + offset, 100);
+            leaderImage = resize(leaderImage, 500, 500);
+            Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
-            offset += 65;
+            offset += 450;
         }
 
         offset = 0;
@@ -166,14 +170,13 @@ public class ShowCommands {
             Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treacheryCard.name());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
-                cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 250 + offsetY);
+                Point cardPoint = new Point(1250 + offset, 1250 + offsetY);
                 table = overlay(table, cardImage, cardPoint, 1);
-                offset += 100;
+                offset += 900;
                 count++;
                 if (count == 4) {
                     offset = 0;
-                    offsetY = 40;
+                    offsetY = 1000;
                 }
         }
         }
@@ -185,10 +188,10 @@ public class ShowCommands {
             Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.name());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
-                cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 475);
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
-                offset += 100;
+                offset += 900;
             }
         }
 
@@ -197,28 +200,28 @@ public class ShowCommands {
             Optional<FileUpload> image = CardImages.getNexusImage(discordGame.getEvent().getGuild(), faction.getNexusCard().name());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
-                cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 475);
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
             }
         }
 
         //BG Prediction
         if (faction.getName().equals("BG")) {
-            offset += 100;
+            offset += 900;
             Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + ((BGFaction)faction).getPredictionRound());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
-                cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 475);
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
             }
-            offset += 100;
+            offset += 900;
             image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), ((BGFaction)faction).getPredictionFactionName());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
-                cardImage = resize(cardImage, 107, 150);
-                Point cardPoint = new Point(100 + offset, 475);
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
             }
         }
