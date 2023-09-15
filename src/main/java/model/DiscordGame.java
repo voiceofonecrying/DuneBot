@@ -11,9 +11,11 @@ import io.gsonfire.GsonFireBuilder;
 import model.factions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -49,22 +51,55 @@ public class DiscordGame {
     private final List<RestAction> messageQueue = new ArrayList<>();
 
     public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
-        this.gameCategory = ((TextChannel) event.getChannel()).getParentCategory();
+        this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
         this.event = event;
     }
 
     public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException, IOException {
-        this.gameCategory = ((TextChannel) event.getChannel()).getParentCategory();
+        this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
-        this.gameCategory = Objects.requireNonNull(event.getChannel()).asTextChannel().getParentCategory();
+        this.gameCategory = categoryFromEvent(event);
     }
 
     public DiscordGame(Category category) {
         this.gameCategory = category;
+    }
+
+    public static Category categoryFromEvent(@NotNull GenericInteractionCreateEvent event) {
+        Channel channel = Objects.requireNonNull(event.getChannel());
+        TextChannel textChannel = null;
+        if (channel instanceof TextChannel) {
+            textChannel = (TextChannel)channel;
+        } else if (channel instanceof ThreadChannel) {
+            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+        }
+        return textChannel.getParentCategory();
+    }
+
+    public static Category categoryFromEvent(@NotNull MessageReceivedEvent event) {
+        MessageChannelUnion channel = Objects.requireNonNull(event.getChannel());
+        TextChannel textChannel = null;
+        if (channel instanceof TextChannel) {
+            textChannel = (TextChannel)channel;
+        } else if (channel instanceof ThreadChannel) {
+            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+        }
+        return textChannel.getParentCategory();
+    }
+
+    public static Category categoryFromEvent(@NotNull CommandAutoCompleteInteractionEvent event) {
+        MessageChannelUnion channel = Objects.requireNonNull(event.getChannel());
+        TextChannel textChannel = null;
+        if (channel instanceof TextChannel) {
+            textChannel = (TextChannel)channel;
+        } else if (channel instanceof ThreadChannel) {
+            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+        }
+        return textChannel.getParentCategory();
     }
 
     public Category getGameCategory() {
@@ -238,6 +273,10 @@ public class DiscordGame {
         return channel.sendMessage(message);
     }
 
+    public List<RestAction> getMessageQueue() {
+        return messageQueue;
+    }
+
     /**
      * Queues a message to be sent to the given channel.
      * @param channelName Channel name to send the message to.
@@ -344,6 +383,19 @@ public class DiscordGame {
         TextChannel parent = getTextChannel(parentChannel);
         ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadChannel)).findFirst().get();
         messageQueue.add(thread.sendMessage(message));
+    }
+
+    /**
+     * Queues a message to be sent to the given channel.
+     * @param channelName Name of the parent channel whcih has the thread
+     * @param threadName Name of the thread to send the message to
+     * @param messageCreateBuilder Message to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(String channelName, String threadName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
+        TextChannel parent = getTextChannel(channelName);
+        ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadName)).findFirst().get();
+        messageQueue.add(thread.sendMessage(messageCreateBuilder.build()));
     }
 
     /**

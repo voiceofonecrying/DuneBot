@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.buttons.ShipmentAndMovementButtons;
+import controller.channels.FactionChat;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -115,11 +116,13 @@ public class RunCommands {
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Weather Control?");
+                    FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
+                    chatChannel.queueMessage(faction.getPlayer() + " will you play Weather Control?");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
                     nobodyHoldsAtomics = false;
                     if (isNearShieldWall) {
-                        discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", faction.getPlayer() + " will you play Family Atomics?");
+                        FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
+                        chatChannel.queueMessage(faction.getPlayer() + " will you play Family Atomics?");
                     }
                 }
             }
@@ -261,7 +264,8 @@ public class RunCommands {
 
         game.setStormMovement(new Random().nextInt(6) + 1);
         if (game.hasFaction("Fremen")) {
-            discordGame.queueMessage("fremen-chat", "The storm will move " + game.getStormMovement() + " sectors next turn.");
+            FactionChat chatChannel = new FactionChat(discordGame, "Fremen");
+            chatChannel.queueMessage("The storm will move " + game.getStormMovement() + " sectors next turn.");
         }
     }
 
@@ -511,16 +515,16 @@ public class RunCommands {
     }
 
     public static void btSetRevivalRates(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-
-        discordGame.queueMessage("bt-chat", "Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
+        FactionChat chatChannel = new FactionChat(discordGame, "BT");
+        chatChannel.queueMessage("Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
 
         for (Faction faction : game.getFactions()) {
             if (faction.getName().equals("BT")) continue;
-            discordGame.queueMessage("bt-chat", new MessageCreateBuilder().addContent(faction.getEmoji())
-                    .addActionRow(Button.primary("bt-revival-rate-set-" + faction.getName() + "-3", "3"),
-                            Button.primary("bt-revival-rate-set-" + faction.getName() + "-4", "4"),
-                            Button.primary("bt-revival-rate-set-" + faction.getName() + "-5", "5")
-                    ));
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-3", "3"));
+            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-4", "4"));
+            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-5", "5"));
+            chatChannel.queueMessage(faction.getEmoji(), buttons);
         }
 
     }
@@ -565,9 +569,8 @@ public class RunCommands {
                         buttons.add(button);
                     }
 
-                    discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", new MessageCreateBuilder()
-                            .addContent(faction.getPlayer() + " Would you like to purchase additional revivals?")
-                            .addActionRow(buttons));
+                    FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
+                    chatChannel.queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals?", buttons);
                 }
             }
         }
@@ -623,8 +626,10 @@ public class RunCommands {
         else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Atreides")) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
-            if (nextCard != null)
-                discordGame.queueMessage("atreides-chat", "You see visions of " + nextCard.name() + " in your future.");
+            if (nextCard != null) {
+                FactionChat chatChannel = new FactionChat(discordGame, "Atreides");
+                chatChannel.queueMessage("You see visions of " + nextCard.name() + " in your future.");
+            }
         }
         if(game.hasFaction("BG")) {
             StringBuilder message = new StringBuilder();
@@ -674,11 +679,18 @@ public class RunCommands {
             for (Faction faction : game.getFactions()) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
-                if (faction.getName().equals("Ecaz")) discordGame.queueMessage("ecaz-chat", "Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
-                if (faction.getName().equals("Harkonnen")) discordGame.queueMessage("harkonnen-chat", "Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
+                if (faction.getName().equals("Ecaz")) {
+                    FactionChat ecazChat = new FactionChat(discordGame, "Ecaz");
+                    ecazChat.queueMessage("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
+                }
+                if (faction.getName().equals("Harkonnen")) {
+                    FactionChat harkonnenChat = new FactionChat(discordGame, "Harkonnen");
+                    harkonnenChat.queueMessage("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
+                }
             }
             ((MoritaniFaction)game.getFaction("Moritani")).getDukeVidal();
-            discordGame.queueMessage("moritani-chat", "Duke Vidal has come to fight for you!");
+            FactionChat moritaniChat = new FactionChat(discordGame, "Moritani");
+            moritaniChat.queueMessage("Duke Vidal has come to fight for you!");
         }
 
         if(battles.size() > 0) {

@@ -57,7 +57,7 @@ public class CommandManager extends ListenerAdapter {
                 event.getHook().editOriginal("Command Done.").queue();
             }
             else {
-                String categoryName = event.getChannel().asTextChannel().getParentCategory().getName();
+                String categoryName = DiscordGame.categoryFromEvent(event).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
                 Queue.putFuture(categoryName, future.thenRunAsync(() -> runGameCommand(event)));
             }

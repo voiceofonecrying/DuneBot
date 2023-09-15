@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
@@ -14,6 +15,8 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class MoritaniButtons implements Pressable {
 
@@ -94,7 +97,8 @@ public class MoritaniButtons implements Pressable {
 
     private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         discordGame.queueMessage("You have sent the emissary away empty-handed. Time to prepare for the worst.");
-        discordGame.queueMessage("moritani-chat", "Your ambassador has returned with news that no alliance will take place.");
+        FactionChat moritaniChat = new FactionChat(discordGame, "Moritani");
+        moritaniChat.queueMessage("Your ambassador has returned with news that no alliance will take place.");
         discordGame.queueDeleteMessage();
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         ((MoritaniFaction)game.getFaction("Moritani")).triggerTerrorToken(game, discordGame, ButtonManager.getButtonPresser(event, game), territory, territory.getTerrorToken());
@@ -123,10 +127,11 @@ public class MoritaniButtons implements Pressable {
     private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String faction = event.getComponentId().split("-")[3];
         String territory = event.getComponentId().split("-")[4];
-        discordGame.queueMessage(faction.toLowerCase() + "-chat",
-                new MessageCreateBuilder().setContent("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept?")
-                        .addActionRow(Button.primary("moritani-accept-offer-" + territory, "Yes"), Button.danger("moritani-deny-offer-" + territory, "No"))
-        );
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("moritani-accept-offer-" + territory, "Yes"));
+        buttons.add(Button.danger("moritani-deny-offer-" + territory, "No"));
+        FactionChat chatChannel = new FactionChat(discordGame, faction);
+        chatChannel.queueMessage("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept?", buttons);
         discordGame.queueMessage(Emojis.MORITANI + " are offering an alliance in exchange for safety from their terror token!");
         discordGame.queueDeleteMessage();
     }

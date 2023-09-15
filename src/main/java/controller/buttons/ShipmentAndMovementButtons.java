@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
@@ -161,7 +162,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (event.getComponentId().equals("support-max")) {
             game.getFaction(faction.getAlly()).setAllySpiceShipment(faction.getSpice());
-            discordGame.queueMessage(faction.getAlly().toLowerCase() + "-chat", "Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
+            FactionChat chatChannel = new FactionChat(discordGame, faction.getAlly());
+            chatChannel.queueMessage("Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
             discordGame.queueMessage("You have offered your ally all of your spice to ship with.");
             discordGame.pushGame();
         } else if (event.getComponentId().equals("support-number")){
@@ -173,7 +175,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
         } else {
             game.getFaction(faction.getAlly()).setAllySpiceShipment(Integer.parseInt(event.getComponentId().replace("support-", "")));
-            discordGame.queueMessage(faction.getAlly().toLowerCase() + "-chat", "Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
+            FactionChat chatChannel = new FactionChat(discordGame, faction.getAlly());
+            chatChannel.queueMessage("Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
             discordGame.queueMessage("You have offered your ally " + event.getComponentId().replace("support-", "") + " " + Emojis.SPICE + " to ship with.");
             discordGame.pushGame();
         }
@@ -499,7 +502,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                     noFieldButtons.add(Button.primary("richese-no-field-ship-" + noField, "Ship " + noField + " no-field token."));
                 }
                 noFieldButtonMessage.addActionRow(noFieldButtons);
-                discordGame.queueMessage("richese-chat", noFieldButtonMessage);
+                FactionChat richeseChat = new FactionChat(discordGame, "Richese");
+                richeseChat.queueMessage(noFieldButtonMessage);
             }
             List<Button> finalizeButtons = new LinkedList<>();
 
@@ -569,7 +573,10 @@ public class ShipmentAndMovementButtons implements Pressable {
                 String secondSpecialForcesMessage = Emojis.getForceEmoji(faction.getName() + "*").equals(" force ") ? "" : "\n" + faction.getMovement().getSecondSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
                 String planetologistMessage =
                         "**Currently moving (Planetologist):\n" + faction.getMovement().getSecondForce() + " " + Emojis.getForceEmoji(faction.getName()) + secondSpecialForcesMessage + "\n from " + faction.getMovement().getSecondMovingFrom() + "**";
-                if (!faction.getMovement().getSecondMovingFrom().equals("")) discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", planetologistMessage);
+                if (!faction.getMovement().getSecondMovingFrom().equals("")) {
+                    FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
+                    chatChannel.queueMessage(planetologistMessage);
+                }
             }
         }
         discordGame.pushGame();
@@ -727,21 +734,19 @@ public class ShipmentAndMovementButtons implements Pressable {
         );
 
         if (faction.getName().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
-            discordGame.queueMessage("guild-chat",
-                new MessageCreateBuilder().setContent("Special options for " + Emojis.GUILD + ":")
-                        .addActionRow(
-                                Button.primary("guild-cross-ship", "Cross ship"),
-                                Button.primary("guild-ship-to-reserves", "Ship to reserves")
-                        )
-            );
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("guild-cross-ship", "Cross ship"));
+            buttons.add(Button.primary("guild-ship-to-reserves", "Ship to reserves"));
+            FactionChat guildChat = new FactionChat(discordGame, "Guild");
+            guildChat.queueMessage("Special options for " + Emojis.GUILD + ":", buttons);
         }
 
         if (faction.hasAlly()) {
-            discordGame.queueMessage(faction.getAlly().toLowerCase() + "-chat",
-                    new MessageCreateBuilder().setContent("Use buttons below to support your ally's shipment")
-                            .addActionRow(Button.primary("support-max", "Support ally (no limits)"),
-                                    Button.primary("support-number", "Support ally (specific amount)"))
-            );
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("support-max", "Support ally (no limits)"));
+            buttons.add(Button.primary("support-number", "Support ally (specific amount)"));
+            FactionChat chatChannel = new FactionChat(discordGame, faction.getAlly());
+            chatChannel.queueMessage("Use buttons below to support your ally's shipment", buttons);
         }
         discordGame.queueDeleteMessage();
     }
@@ -788,12 +793,11 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     public static void sendShipmentMessage(String faction, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.queueMessage(faction.toLowerCase() + "-chat",
-                new MessageCreateBuilder()
-                        .setContent("Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(faction).getPlayer())
-                        .addActionRow(Button.primary( "shipment", "Begin a ship action"))
-                        .addActionRow(Button.danger( "pass-shipment", "Pass shipment"))
-        );
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary( "shipment", "Begin a ship action"));
+        buttons.add(Button.danger( "pass-shipment", "Pass shipment"));
+        FactionChat chatChannel = new FactionChat(discordGame, faction);
+        chatChannel.queueMessage("Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(faction).getPlayer(), buttons);
     }
 
     public static void queueGuildTurnOrderButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -810,11 +814,12 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (game.getTurnOrder().size() == 3) defer = defer.asDisabled();
         }
 
-        discordGame.queueMessage("guild-chat",
-                new MessageCreateBuilder()
-                        .setContent("Use buttons to take your turn out of order.")
-                        .addActionRow(takeTurn, defer, last)
-                );
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(takeTurn);
+        buttons.add(defer);
+        buttons.add(last);
+        FactionChat guildChat = new FactionChat(discordGame, "Guild");
+        guildChat.queueMessage("Use buttons to take your turn out of order.", buttons);
     }
 
     public static Comparator<Button> getButtonComparator() {

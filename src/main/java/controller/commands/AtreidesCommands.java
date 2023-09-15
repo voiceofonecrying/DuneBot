@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -14,7 +15,8 @@ public class AtreidesCommands {
     public static void sendAtreidesCardPrescience(DiscordGame discordGame, Game game, TreacheryCard card) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         if (game.hasFaction("Atreides")) {
-            discordGame.queueMessage("atreides-chat",
+            FactionChat atreidesChat = new FactionChat(discordGame, "Atreides");
+            atreidesChat.queueMessage(
                     MessageFormat.format(
                             "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
                             Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()

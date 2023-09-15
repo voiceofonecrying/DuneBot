@@ -1,0 +1,40 @@
+package controller.channels;
+
+import exceptions.ChannelNotFoundException;
+import model.DiscordGame;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+
+import java.util.List;
+
+public class DiscordChannel {
+    DiscordGame discordGame;
+    MessageChannel messageChannel;
+
+    DiscordChannel(DiscordGame discordGame) {
+        this.discordGame = discordGame;
+    }
+
+    public void queueMessage(String message) throws ChannelNotFoundException {
+        discordGame.getMessageQueue().add(messageChannel.sendMessage(message));
+    }
+
+    public void queueMessage(String message, List<Button> buttons) throws ChannelNotFoundException {
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
+                .addContent(message);
+        int i = 0;
+        while (i + 5 < buttons.size()) {
+            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
+            i += 5;
+        }
+        if (i < buttons.size()) {
+            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
+        }
+        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+    }
+
+    public void queueMessage(MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
+        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+    }
+}

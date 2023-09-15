@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
@@ -15,6 +16,8 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class EcazButtons implements Pressable {
 
@@ -96,7 +99,8 @@ public class EcazButtons implements Pressable {
 
     private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You have sent the Ambassador away empty-handed.");
-        discordGame.queueMessage("ecaz-chat", "Your ambassador has returned with news that no alliance will take place.");
+        FactionChat ecazChat = new FactionChat(discordGame, "Ecaz");
+        ecazChat.queueMessage("Your ambassador has returned with news that no alliance will take place.");
         discordGame.queueDeleteMessage();
     }
 
@@ -115,10 +119,11 @@ public class EcazButtons implements Pressable {
 
 
     private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.queueMessage(event.getComponentId().replace("ecaz-offer-alliance-", "").toLowerCase() + "-chat",
-                new MessageCreateBuilder().setContent("An ambassador of Ecaz has approached you to offer a formal alliance.  Do you accept?")
-                        .addActionRow(Button.primary("ecaz-accept-offer", "Yes"), Button.danger("ecaz-deny-offer", "No"))
-                );
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("ecaz-accept-offer", "Yes"));
+        buttons.add(Button.danger("ecaz-deny-offer", "No"));
+        FactionChat chatChannel = new FactionChat(discordGame, event.getComponentId().replace("ecaz-offer-alliance-", ""));
+        chatChannel.queueMessage("An ambassador of Ecaz has approached you to offer a formal alliance.  Do you accept?", buttons);
         discordGame.queueMessage("Your ambassador has been sent to negotiate an alliance.");
         discordGame.queueDeleteMessage();
     }

@@ -21,7 +21,7 @@ public class ButtonManager extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         event.deferReply().queue();
-        String categoryName = event.getChannel().asTextChannel().getParentCategory().getName();
+        String categoryName = DiscordGame.categoryFromEvent(event).getName();
         CompletableFuture<Void> future = Queue.getFuture(categoryName);
         Queue.putFuture(categoryName, future.thenRunAsync(() -> runButtonCommand(event)));
     }

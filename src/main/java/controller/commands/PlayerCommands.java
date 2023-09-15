@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -113,7 +114,8 @@ public class PlayerCommands {
                 faction.setOutbidAlly(outbidAllyValue);
                 responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
                 discordGame.queueMessage("mod-info", responseMessage2);
-                discordGame.queueMessage(faction.getName().toLowerCase() + "-chat", responseMessage2);
+                FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
+                chatChannel.queueMessage(responseMessage2);
             }
             if (faction.hasAlly()) {
                 responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";

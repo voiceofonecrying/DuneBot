@@ -1,12 +1,12 @@
 package model.factions;
 
 import constants.Emojis;
+import controller.channels.FactionChat;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
@@ -60,35 +60,35 @@ public class MoritaniFaction extends Faction {
                         .addActionRow(Button.primary("moritani-pay-extortion", "Pay to remove"),
                                 Button.secondary("moritani-pass-extortion", "Don't pay to remove")));
             }
-            case "Robbery" -> discordGame.prepareMessage("moritani-chat", "Your terrorist in " + triggeringFaction + " has robbed the " + triggeringFaction.getEmoji() +
-                        "! What would you like to do?").addActionRow(Button.primary("moritani-robbery-rob", "Steal spice"),
-                        Button.primary("moritani-robbery-draw", "Draw card")).queue();
+            case "Robbery" -> {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("moritani-robbery-rob", "Steal spice"));
+                buttons.add(Button.primary("moritani-robbery-draw", "Draw card"));
+                FactionChat chatChannel = new FactionChat(discordGame, "Moritani");
+                chatChannel.queueMessage("Your terrorist in " + triggeringFaction + " has robbed the " + triggeringFaction.getEmoji() +
+                        "! What would you like to do?", buttons);
+            }
             case "Sabotage" -> {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
                 discordGame.queueMessage("turn-summary", triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
                 game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(triggeringFaction.getTreacheryHand().get(0).name()));
-                MessageCreateAction message = discordGame.prepareMessage("moritani-chat", "Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?");
-
                 List<Button> treacheryCards = new LinkedList<>();
                 for (TreacheryCard card : getTreacheryHand()) {
                     treacheryCards.add(Button.primary("moritani-sabotage-give-card-" + card.name(), card.name()));
                 }
                 treacheryCards.add(Button.secondary("moritani-sabotage-no-card", "Don't send a card"));
-                message.addActionRow(treacheryCards).queue();
+                FactionChat chatChannel = new FactionChat(discordGame, "Moritani");
+                chatChannel.queueMessage("Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?", treacheryCards);
             }
             case "Sneak Attack" -> {
-                Button one = Button.primary("moritani-sneak-attack-1", "1");
-                Button two = Button.primary("moritani-sneak-attack-2", "2");
-                Button three = Button.primary("moritani-sneak-attack-3", "3");
-                Button four = Button.primary("moritani-sneak-attack-4", "4");
-                Button five = Button.primary("moritani-sneak-attack-5", "5");
-
-                discordGame.prepareMessage("moritani-chat", "How many forces do you want to send on your sneak attack?")
-                        .addActionRow(one.withDisabled(reserves.getStrength()>=1),
-                                two.withDisabled(reserves.getStrength()>=2),
-                                three.withDisabled(reserves.getStrength()>=3),
-                                four.withDisabled(reserves.getStrength()>=4),
-                                five.withDisabled(reserves.getStrength()>=5)).queue();
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength()>=1));
+                buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength()>=2));
+                buttons.add(Button.primary("moritani-sneak-attack-3", "3").withDisabled(reserves.getStrength()>=3));
+                buttons.add(Button.primary("moritani-sneak-attack-4", "4").withDisabled(reserves.getStrength()>=4));
+                buttons.add(Button.primary("moritani-sneak-attack-5", "5").withDisabled(reserves.getStrength()>=5));
+                FactionChat chatChannel = new FactionChat(discordGame, "Moritani");
+                chatChannel.queueMessage("How many forces do you want to send on your sneak attack?", buttons);
             }
         }
 
@@ -103,15 +103,8 @@ public class MoritaniFaction extends Faction {
         for (String terror : terrorTokens) {
             buttons.add(Button.primary("moritani-terror-selected-" + terror + "-" + territory + "-", terror));
         }
-        if (buttons.size() > 5) {
-            discordGame.prepareMessage("moritani-chat", "Which terror token would you like to place?")
-                    .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.get(5)).queue();
-        }
-        else {
-            discordGame.prepareMessage("moritani-chat", "Which terror token would you like to place?")
-                    .addActionRow(buttons).queue();
-        }
+        FactionChat chatChannel = new FactionChat(discordGame, "Moritani");
+        chatChannel.queueMessage("Which terror token would you like to place?", buttons);
     }
 
     public void placeTerrorToken(Territory territory, String terror) {
@@ -136,14 +129,8 @@ public class MoritaniFaction extends Faction {
             if (territory.getTerrorToken() != null || game.getStorm() == territory.getSector()) stronghold = stronghold.asDisabled();
             buttons.add(stronghold);
         }
-        if (buttons.size() > 5) {
-            discordGame.queueMessage("moritani-chat", new MessageCreateBuilder().addContent("Use these buttons to place Terror Tokens from your supply.")
-                    .addActionRow(buttons.subList(0, 5))
-                    .addActionRow(buttons.subList(5, buttons.size())));
-        } else {
-            discordGame.queueMessage("moritani-chat", new MessageCreateBuilder().addContent("Use these buttons to place Terror Tokens from your supply.")
-                    .addActionRow(buttons));
-        }
+        FactionChat chatChannel = new FactionChat(discordGame, "Moritani");
+        chatChannel.queueMessage("Use these buttons to place Terror Tokens from your supply.", buttons);
     }
 
     public List<String> getAssassinationTargets() {
