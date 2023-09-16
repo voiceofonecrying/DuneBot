@@ -171,6 +171,7 @@ public class RunCommands {
 
         List<Force> nonFremenForces = territory.getForces().stream()
                 .filter(f -> !fremenForces.contains(f))
+                .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                 .toList();
 
         if (fremenForces.size() > 0)
