@@ -464,7 +464,7 @@ public class Game {
     public void drawCard(String deckName, String faction) {
         switch (deckName) {
             case "traitor deck" -> getFaction(faction).addTraitorCard(getTraitorDeck().pollLast());
-            case "treachery deck" -> getFaction(faction).addTreacheryCard(getTreacheryDeck().pollLast());
+            case "treachery deck" -> getFaction(faction).addTreacheryCard(getTreacheryDeck().remove(0));
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
     }
