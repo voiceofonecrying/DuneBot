@@ -119,8 +119,8 @@ public class CommandManager extends ListenerAdapter {
                 case "reviveforces" -> revivalHandler(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
-                case "killleader" -> killLeader(discordGame, game);
-                case "reviveleader" -> reviveLeader(discordGame, game);
+                case "kill-leader" -> killLeader(discordGame, game);
+                case "revive-leader" -> reviveLeader(discordGame, game);
                 case "setstorm" -> setStorm(discordGame, game);
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
@@ -187,8 +187,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
-        commandData.add(Commands.slash("killleader", "Send a leader to the tanks.").addOptions(faction, leader));
-        commandData.add(Commands.slash("reviveleader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
+        commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
+        commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("remove-hold", "Remove the hold and allow gameplay to proceed."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
@@ -717,10 +717,11 @@ public class CommandManager extends ListenerAdapter {
 
     public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
+        String leaderToRevive = discordGame.required(reviveLeader).getAsString();
         targetFaction.addLeader(
-                game.removeLeaderFromTanks(discordGame.required(reviveLeader).getAsString())
+                game.removeLeaderFromTanks(leaderToRevive)
         );
-        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", discordGame.required(leader).getAsString() + " was revived from the tanks.");
+        discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info", "ledger", leaderToRevive + " was revived from the tanks.");
         discordGame.pushGame();
     }
 
