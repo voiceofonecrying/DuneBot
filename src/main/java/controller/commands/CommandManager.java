@@ -951,8 +951,10 @@ public class CommandManager extends ListenerAdapter {
         if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
             throw new InvalidOptionException("Not enough forces in territory.");
         }
-        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly()))) {
-            throw new InvalidOptionException("You cannot move into a territory with your ally.");
+        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
+                (!(targetFaction.getName().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
+                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals("Ecaz"))))) {
+                throw new InvalidOptionException("You cannot move into a territory with your ally.");
         }
 
         StringBuilder message = new StringBuilder();
