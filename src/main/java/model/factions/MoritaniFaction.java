@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
@@ -37,8 +38,8 @@ public class MoritaniFaction extends Faction {
         terrorTokens.add("Sneak Attack");
     }
     public void triggerTerrorToken(Game game, DiscordGame discordGame, Faction triggeringFaction, Territory location, String terror) throws ChannelNotFoundException, IOException {
-
-        discordGame.queueMessage("turn-summary", "The " + terror + " token has been triggered!");
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage("The " + terror + " token has been triggered!");
 
         switch (terror) {
             case "Assassination" -> discordGame.queueMessage("mod-info", "Send a random " + triggeringFaction.getEmoji()
@@ -55,10 +56,11 @@ public class MoritaniFaction extends Faction {
             case "Extortion" -> {
                 addFrontOfShieldSpice(5);
                 ShowCommands.refreshChangedInfo(discordGame);
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent("The Extortion token will be returned unless someone " +
-                        "pays 3 " + Emojis.SPICE + " to remove it from the game.")
-                        .addActionRow(Button.primary("moritani-pay-extortion", "Pay to remove"),
-                                Button.secondary("moritani-pass-extortion", "Don't pay to remove")));
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("moritani-pay-extortion", "Pay to remove"));
+                buttons.add(Button.secondary("moritani-pass-extortion", "Don't pay to remove"));
+                turnSummary.queueMessage("The Extortion token will be returned unless someone " +
+                        "pays 3 " + Emojis.SPICE + " to remove it from the game.", buttons);
             }
             case "Robbery" -> {
                 List<Button> buttons = new LinkedList<>();
@@ -70,7 +72,7 @@ public class MoritaniFaction extends Faction {
             }
             case "Sabotage" -> {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
-                discordGame.queueMessage("turn-summary", triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
+                turnSummary.queueMessage(triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
                 game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(triggeringFaction.getTreacheryHand().get(0).name()));
                 List<Button> treacheryCards = new LinkedList<>();
                 for (TreacheryCard card : getTreacheryHand()) {

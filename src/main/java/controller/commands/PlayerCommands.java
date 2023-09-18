@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -251,7 +252,7 @@ public class PlayerCommands {
         String reason = discordGame.required(holdgameReason).getAsString();
         game.setOnHold(true);
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " put the game on hold. Please wait for the mod to resolve the issue.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " put the game on hold. Please wait for the mod to resolve the issue.");
         discordGame.queueMessage("mod-info", game.getMod() + " " + faction.getEmoji() + " put the game on hold because: " + reason);
         return "";
     }

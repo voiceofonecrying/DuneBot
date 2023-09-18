@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.Queue;
+import controller.channels.TurnSummary;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -23,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -86,7 +86,7 @@ public class CommandManager extends ListenerAdapter {
             if (game.isOnHold()) {
                 if (name.equals("remove-hold")) {
                     game.setOnHold(false);
-                    discordGame.queueMessage("turn-summary", "The hold has been resolved. Gameplay may proceed.");
+                    discordGame.getTurnSummary().queueMessage("The hold has been resolved. Gameplay may proceed.");
                     discordGame.pushGame();
                     discordGame.sendAllMessages();
                     event.getHook().editOriginal("Command Done.").queue();
@@ -396,11 +396,9 @@ public class CommandManager extends ListenerAdapter {
                 faction.subtractSpice(amountValue);
             }
         }
-
         String frontOfShieldMessage = add ? "to front of shield" : "from front of shield";
 
-        discordGame.queueMessage(
-                "turn-summary",
+        discordGame.getTurnSummary().queueMessage(
                 MessageFormat.format(
                         "{0} {1} {2} {3} {4} {5}",
                         faction.getEmoji(),
@@ -510,8 +508,7 @@ public class CommandManager extends ListenerAdapter {
             game.getTerritories().get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
 
         discordGame.pushGame();
-
-        discordGame.queueMessage("turn-summary", message.toString());
+        discordGame.getTurnSummary().queueMessage(message.toString());
         ShowCommands.showBoard(discordGame, game);
     }
 
@@ -548,7 +545,7 @@ public class CommandManager extends ListenerAdapter {
         String cardName = discordGame.required(card).getAsString();
 
         game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards " + cardName);
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + cardName);
         discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", cardName + " discarded from hand.");
         discordGame.pushGame();
     }
@@ -628,7 +625,8 @@ public class CommandManager extends ListenerAdapter {
                 bidding.getBidCardNumber()
         );
 
-        discordGame.queueMessage("turn-summary",
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage(
                 MessageFormat.format(
                         "{0} wins {1} for {2} {3}",
                         winner.getEmoji(),
@@ -646,7 +644,7 @@ public class CommandManager extends ListenerAdapter {
             Faction paidToFaction = game.getFaction(paidToFactionName);
             spiceMessage(discordGame, spentValue, paidToFaction.getName(), currentCard, true);
             game.getFaction(paidToFaction.getName()).addSpice(spentValue);
-            discordGame.queueMessage("turn-summary",
+            turnSummary.queueMessage(
                     MessageFormat.format(
                             "{0} is paid {1} {2} for {3}",
                             paidToFaction.getEmoji(),
@@ -669,7 +667,7 @@ public class CommandManager extends ListenerAdapter {
         if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
             if (game.getTreacheryDeck().isEmpty()) {
                 List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                discordGame.queueMessage("turn-summary", MessageFormat.format(
+                turnSummary.queueMessage(MessageFormat.format(
                         "The {0} deck was empty and has been replenished from the discard pile.",
                         Emojis.TREACHERY
                 ));
@@ -678,7 +676,7 @@ public class CommandManager extends ListenerAdapter {
             }
 
             game.drawCard("treachery deck", "Harkonnen");
-            discordGame.queueMessage("turn-summary", MessageFormat.format(
+            turnSummary.queueMessage(MessageFormat.format(
                     "{0} draws another card from the {1} deck.",
                     winner.getEmoji(), Emojis.TREACHERY
             ));
@@ -759,8 +757,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
-
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
     }
 
     /**
@@ -868,36 +865,40 @@ public class CommandManager extends ListenerAdapter {
                 TechToken.addSpice(game, discordGame, "Heighliners");
             }
 
+            TurnSummary turnSummary = discordGame.getTurnSummary();
             if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))) {
-                Button toPlace = Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise");
-                Button toSink = Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink");
-                Button no = Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No");
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG
-                + " to advise. " + game.getFaction("BG").getPlayer()).addActionRow(toPlace, toSink, no));
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
+                buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
+                buttons.add(Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No"));
+                turnSummary.queueMessage(Emojis.BG + " to advise. " + game.getFaction("BG").getPlayer(), buttons);
             }
-
-            discordGame.queueMessage("turn-summary", message.toString());
+            turnSummary.queueMessage(message.toString());
 
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer())
-                        .addActionRow(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip")));
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
+                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
+                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
             }
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
             && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
                     && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer())
-                        .addActionRow(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
-                                Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
+                buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
+                turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
             }
 
             if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
                     && (!(game.getFaction("Moritani").hasAlly()
                     && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
-                discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer())
-                        .addActionRow(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"),
-                                Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"),
-                                Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance")));
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"));
+                buttons.add(Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"));
+                buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance"));
+                turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
             }
         }
     }
@@ -994,28 +995,32 @@ public class CommandManager extends ListenerAdapter {
                         from.getTerritoryName(), to.getTerritoryName()
                 )
         );
-
-        discordGame.queueMessage("turn-summary", message.toString());
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage(message.toString());
 
         if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer())
-                    .addActionRow(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip")));
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
+            buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
+            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
         }
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
                 && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer())
-                    .addActionRow(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"),
-                            Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger")));
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
+            buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
+            turnSummary.queueMessage(message.toString());
         }
 
         if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
                 && !(game.getFaction("Moritani").hasAlly()
                 && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
-            discordGame.queueMessage("turn-summary", new MessageCreateBuilder().addContent(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer())
-                    .addActionRow(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"),
-                            Button.danger("moritani-don't-trigger-terror", "Don't Trigger")));
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"));
+            buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
+            turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
         }
     }
 
@@ -1045,7 +1050,7 @@ public class CommandManager extends ListenerAdapter {
                 break;
             }
         }
-        discordGame.queueMessage("turn-summary", Emojis.MORITANI + " have assassinated " + assassinated + "!");
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " have assassinated " + assassinated + "!");
         moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
         discordGame.pushGame();
     }
@@ -1054,7 +1059,7 @@ public class CommandManager extends ListenerAdapter {
         int stormDialOne = discordGame.required(dialOne).getAsInt();
         int stormDialTwo = discordGame.required(dialTwo).getAsInt();
         game.advanceStorm(stormDialOne + stormDialTwo);
-        discordGame.queueMessage("turn-summary","The storm has been initialized to sector " + game.getStorm() + " (" + stormDialOne + " + " + stormDialTwo + ")");
+        discordGame.getTurnSummary().queueMessage("The storm has been initialized to sector " + game.getStorm() + " (" + stormDialOne + " + " + stormDialTwo + ")");
         if (game.hasTechTokens()) {
             List<TechToken> techTokens = new LinkedList<>();
             if (game.hasFaction("BT")) {
@@ -1094,7 +1099,7 @@ public class CommandManager extends ListenerAdapter {
         game.getFaction(discordGame.required(faction).getAsString())
                 .getTechTokens().add(new TechToken(discordGame.required(token).getAsString()));
         discordGame.queueMessage(discordGame.required(faction).getAsString().toLowerCase() + "-info", "ledger", discordGame.required(token).getAsString() + " transferred to you.");
-        discordGame.queueMessage("turn-summary",
+        discordGame.getTurnSummary().queueMessage(
                 discordGame.required(token).getAsString() + " has been transferred to " +
                         game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
         ShowCommands.showBoard(discordGame, game);
@@ -1113,9 +1118,7 @@ public class CommandManager extends ListenerAdapter {
             }
             fromFaction.subtractSpice(amountValue);
             spiceMessage(discordGame, amountValue, fromFaction.getName(), "bribe to " + recipientFaction.getEmoji(), false);
-
-            discordGame.queueMessage(
-                    "turn-summary",
+            discordGame.getTurnSummary().queueMessage(
                     MessageFormat.format(
                             "{0} places {1} {2} in front of {3} shield.",
                             fromFaction.getEmoji(), amountValue, Emojis.SPICE, recipientFaction.getEmoji()
@@ -1124,8 +1127,7 @@ public class CommandManager extends ListenerAdapter {
 
             recipientFaction.addFrontOfShieldSpice(amountValue);
         } else {
-            discordGame.queueMessage(
-                    "turn-summary",
+            discordGame.getTurnSummary().queueMessage(
                     MessageFormat.format(
                             "{0} bribes {2}. {1} TBD or NA.",
                             fromFaction.getEmoji(), Emojis.SPICE, recipientFaction.getEmoji()
@@ -1243,7 +1245,7 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
-            discordGame.queueMessage("turn-summary", message);
+            discordGame.getTurnSummary().queueMessage(message);
             discordGame.pushGame();
         }
     }

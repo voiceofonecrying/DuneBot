@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
@@ -72,7 +73,7 @@ public class EcazButtons implements Pressable {
         ecazFaction.subtractSpice(cost);
         CommandManager.spiceMessage(discordGame, cost, ecazFaction.getName(), " ambassador to " + territory.getTerritoryName(), false);
         ecazFaction.placeAmbassador(territory, ambassador);
-        discordGame.queueMessage("turn-summary", "An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
+        discordGame.getTurnSummary().queueMessage("An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
         ecazFaction.sendAmbassadorLocationMessage(game, discordGame, cost + 1);
@@ -111,7 +112,7 @@ public class EcazButtons implements Pressable {
 
         faction.setAlly("Ecaz");
         game.getFaction("Ecaz").setAlly(faction.getName());
-        discordGame.queueMessage("turn-summary", Emojis.ECAZ + " and " + faction.getEmoji() + " have formed an alliance!");
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " and " + faction.getEmoji() + " have formed an alliance!");
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
     }

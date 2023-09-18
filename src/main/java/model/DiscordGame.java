@@ -5,6 +5,7 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
@@ -44,6 +45,7 @@ import java.util.concurrent.ExecutionException;
 public class DiscordGame {
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
+    private TurnSummary turnSummary;
     private Game game;
 
     private GenericInteractionCreateEvent event;
@@ -125,6 +127,13 @@ public class DiscordGame {
 
     public TextChannel getBotDataChannel() throws ChannelNotFoundException {
         return this.getTextChannel("bot-data");
+    }
+
+    public TurnSummary getTurnSummary() throws ChannelNotFoundException {
+        if (turnSummary == null) {
+            turnSummary = new TurnSummary(this, game);
+        }
+        return turnSummary;
     }
 
     public GenericInteractionCreateEvent getEvent() {

@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.StepStatus;
@@ -434,8 +435,7 @@ public class SetupCommands {
 
     public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Collections.shuffle(game.getFactions());
-
-        discordGame.queueMessage("turn-summary", "__**Game Setup**__");
+        discordGame.getTurnSummary().queueMessage("__**Game Setup**__");
 
         ShowCommands.showBoard(discordGame, game);
 
@@ -550,7 +550,7 @@ public class SetupCommands {
     }
 
     public static StepStatus showLeaderSkillCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        String channelName = "turn-summary";
+        TurnSummary turnSummary = discordGame.getTurnSummary();
         List<Map<String, String>> leaderSkills = new ArrayList<>();
 
         for (Faction faction : game.getFactions()) {
@@ -566,8 +566,7 @@ public class SetupCommands {
             );
             leaderSkills.add(leaderSkillInfo);
         }
-
-        discordGame.queueMessage(channelName, "__**Setup: Leader Skills**__");
+        turnSummary.queueMessage("__**Setup: Leader Skills**__");
 
         for (Map<String, String> leaderSkill : leaderSkills) {
             String message = MessageFormat.format(
@@ -580,9 +579,9 @@ public class SetupCommands {
             Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(event.getGuild(), leaderSkill.get("skill"));
 
             if (fileUpload.isEmpty()) {
-                discordGame.queueMessage(channelName, message);
+                turnSummary.queueMessage(message);
             } else {
-                discordGame.queueMessage(channelName, message, fileUpload.get());
+                turnSummary.queueMessage(message, fileUpload.get());
             }
         }
 
@@ -618,7 +617,7 @@ public class SetupCommands {
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.get(0));
         game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().name()));
-        discordGame.queueMessage("turn-summary", Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
         return StepStatus.CONTINUE;
     }
 
@@ -652,8 +651,7 @@ public class SetupCommands {
                 }
             }
         }
-
-        discordGame.queueMessage("turn-summary", "__**Setup: Traitors**__");
+        discordGame.getTurnSummary().queueMessage("__**Setup: Traitors**__");
 
         return StepStatus.STOP;
     }
@@ -662,8 +660,7 @@ public class SetupCommands {
         game.drawCard("traitor deck", "BT");
         game.drawCard("traitor deck", "BT");
         game.drawCard("traitor deck", "BT");
-
-        discordGame.queueMessage("turn-summary", "Bene Tleilax have drawn their Face Dancers.");
+        discordGame.getTurnSummary().queueMessage("Bene Tleilax have drawn their Face Dancers.");
 
         return StepStatus.CONTINUE;
     }
@@ -676,7 +673,7 @@ public class SetupCommands {
         FactionChat chatChannel2 = new FactionChat(discordGame, faction2.getName());
         chatChannel2.queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);
-        discordGame.queueMessage("turn-summary", "Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
+        discordGame.getTurnSummary().queueMessage("Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
 
         return StepStatus.STOP;
     }

@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
@@ -20,7 +21,7 @@ public class TechToken {
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice == 0) {
                     tt.spice = faction.getTechTokens().size();
-                    discordGame.queueMessage("turn-summary", tt.spice + " " + Emojis.SPICE + " is placed on " + Emojis.getTechTokenEmoji(techToken));
+                    discordGame.getTurnSummary().queueMessage(tt.spice + " " + Emojis.SPICE + " is placed on " + Emojis.getTechTokenEmoji(techToken));
                 }
             }
         }
@@ -32,7 +33,7 @@ public class TechToken {
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice > 0) {
                     faction.addSpice(tt.spice);
-                    discordGame.queueMessage("turn-summary", faction.getEmoji() +  " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() +  " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
                     CommandManager.spiceMessage(discordGame, tt.spice, faction.getName(), "for " + Emojis.getTechTokenEmoji(techToken), true);
                     tt.spice = 0;
                     break;

@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -76,7 +77,7 @@ public class IxCommands {
             FactionChat chatChannel = new FactionChat(discordGame, "Ix");
             chatChannel.queueMessage(message);
         }
-        discordGame.queueMessage("turn-summary", Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+        discordGame.getTurnSummary().queueMessage(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
         discordGame.pushGame();
     }
 
@@ -93,7 +94,7 @@ public class IxCommands {
     public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(ixCard).getAsString();
         game.getBidding().ixTechnology(game, cardName);
-        discordGame.queueMessage("turn-summary", MessageFormat.format(
+        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} used technology to swap a card from their hand for R{1}:C{2}.",
                 Emojis.IX, game.getTurn(), game.getBidding().getBidCardNumber() + 1
         ));
@@ -102,7 +103,7 @@ public class IxCommands {
 
     public static void allyCardSwap(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.getBidding().ixAllyCardSwap(game);
-        discordGame.queueMessage("turn-summary", MessageFormat.format(
+        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} ({1} ally) swapped the card just won for the {2} deck top card.",
                 game.getFaction(game.getFaction("Ix").getAlly()).getEmoji(), Emojis.IX, Emojis.TREACHERY
         ));

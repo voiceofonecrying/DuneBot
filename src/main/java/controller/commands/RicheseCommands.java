@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -89,7 +90,7 @@ public class RicheseCommands {
             noField = territory.getRicheseNoField() == null ? noField : territory.getRicheseNoField();
             if (territory.getRicheseNoField() != null) {
                 CommandManager.placeForceInTerritory(territory, game.getFaction("Richese"), noField, false);
-                discordGame.queueMessage("turn-summary", "The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
+                discordGame.getTurnSummary().queueMessage("The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
             }
             territory.setRicheseNoField(null);
         }
@@ -184,7 +185,7 @@ public class RicheseCommands {
         } else if (!bidding.isRicheseCacheCard()) {
             throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
-        discordGame.queueMessage("turn-summary", MessageFormat.format(
+        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                     "{0} {1} has been removed from the game.",
                     Emojis.RICHESE, bidding.getBidCard().name()));
         bidding.clearBidCardInfo(null);
@@ -209,7 +210,7 @@ public class RicheseCommands {
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
         faction.subtractSpice(3);
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
         discordGame.pushGame();
     }
 
@@ -232,7 +233,7 @@ public class RicheseCommands {
                 "The Karama has been discarded from {0} hand.",
                 karamaFaction.getEmoji()
         ));
-        discordGame.queueMessage("turn-summary", MessageFormat.format(
+        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} played Karama to block the {1} from selling their cache card.",
                 karamaFaction.getEmoji(), Emojis.RICHESE
         ));

@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -30,14 +31,14 @@ public class BGButtons implements Pressable {
     }
 
     private static void bgFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        discordGame.queueMessage("turn-summary", Emojis.BG + " flip in " + event.getComponentId().split("-")[2]);
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " flip in " + event.getComponentId().split("-")[2]);
         flip(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]));
         discordGame.queueMessageToEphemeral("You will flip.");
         discordGame.queueDeleteMessage();
     }
 
     private static void dontFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.queueMessage("turn-summary", Emojis.BG + " Don't flip in " + event.getComponentId().split("-")[3]);
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " Don't flip in " + event.getComponentId().split("-")[3]);
         discordGame.queueMessageToEphemeral("You will not flip.");
         discordGame.queueDeleteMessage();
     }

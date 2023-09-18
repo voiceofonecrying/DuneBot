@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import controller.channels.TurnSummary;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -26,7 +27,7 @@ public class BTButtons implements Pressable {
         bt.setRevivalRatesSet(bt.getRevivalRatesSet() + 1);
         Faction faction = game.getFaction(event.getComponentId().split("-")[4]);
         faction.setMaxRevival(Integer.parseInt(event.getComponentId().split("-")[5]));
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival());
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival());
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("Revival limit for " + faction.getName() + " has been set.");
         if (bt.getRevivalRatesSet() == 5) {

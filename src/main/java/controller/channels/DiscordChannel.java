@@ -4,6 +4,7 @@ import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.util.List;
@@ -36,5 +37,16 @@ public class DiscordChannel {
 
     public void queueMessage(MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
         discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+    }
+
+    public void queueMessage(String message, FileUpload fileUpload) {
+        discordGame.getMessageQueue().add(messageChannel.sendMessage(message).addFiles(fileUpload));
+    }
+
+    public void queueMessage(FileUpload fileUpload) {
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
+                .addFiles(fileUpload);
+        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+
     }
 }

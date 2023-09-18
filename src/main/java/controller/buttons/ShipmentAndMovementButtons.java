@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
@@ -79,14 +80,14 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Karama"));
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
         executeShipment(event, game, discordGame, true);
     }
 
     private static void ornithopterMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " use Ornithopter to move 3 spaces with their move.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter to move 3 spaces with their move.");
         queueMovableTerritories(event, game, discordGame, true);
         discordGame.pushGame();
     }
@@ -121,7 +122,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
         else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
         String hajrOrOrnithopter = hajr ? "Hajr" : "Ornithopter";
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");
         faction.getMovement().execute(discordGame, game, faction);
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
@@ -186,7 +187,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void guildDefer(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         game.getTurnOrder().pollFirst();
         discordGame.queueMessage("You will defer this turn.");
-        discordGame.queueMessage("turn-summary", Emojis.GUILD + " does not ship at this time.");
+        discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time.");
         sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
@@ -204,7 +205,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void guildTakeTurn(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You will take your turn now.");
         sendShipmentMessage("Guild", discordGame, game);
-        discordGame.queueMessage("turn-summary", Emojis.GUILD + " will take their turn next.");
+        discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " will take their turn next.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -214,7 +215,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.queueMessageToEphemeral("These buttons were not intended for you");
             return;
         }
-        discordGame.queueMessage("turn-summary", "Juice of Sapho is not played at this time.");
+        discordGame.getTurnSummary().queueMessage("Juice of Sapho is not played at this time.");
         discordGame.queueMessage("You will not play Juice of Sapho this turn.");
         game.getTurnOrder().pollFirst();
         if (game.hasFaction("Guild")) {
@@ -245,7 +246,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Juice of Sapho"));
         discordGame.queueMessageToEphemeral("Button pressed.  You will go " + lastFirst + " this turn.");
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " plays Juice of Sapho to ship and move " + lastFirst + " this turn.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " plays Juice of Sapho to ship and move " + lastFirst + " this turn.");
         if (last && game.hasFaction("Guild") && !faction.getName().equals("Guild")) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(discordGame, game);
@@ -258,7 +259,8 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void passMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("Shipment and movement complete.");
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " does not move.");
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage(faction.getEmoji() + " does not move.");
         game.getTurnOrder().pollFirst();
         if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild")) {
             game.getTurnOrder().addFirst("Guild");
@@ -271,8 +273,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.pushGame();
             return;
         }
-        if (game.getTurnOrder().size() > 1 && game.getTurnOrder().peekLast().equals("Guild"))
-            discordGame.queueMessage("turn-summary", Emojis.GUILD + " does not ship at this time");
+        if (game.getTurnOrder().size() > 1 && game.getTurnOrder().peekLast().equals("Guild")) {
+            turnSummary.queueMessage(Emojis.GUILD + " does not ship at this time");
+        }
 
         discordGame.pushGame();
         deleteAllButtonsInChannel(event.getMessageChannel());
@@ -294,8 +297,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.pushGame();
             return;
         }
-        if (!game.getTurnOrder().isEmpty() && game.getTurnOrder().peekLast().equals("Guild") && game.getTurnOrder().size() > 1)
-            discordGame.queueMessage("turn-summary", Emojis.GUILD + " does not ship at this time");
+        if (!game.getTurnOrder().isEmpty() && game.getTurnOrder().peekLast().equals("Guild") && game.getTurnOrder().size() > 1) {
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time");
+        }
         deleteAllButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Shipment and movement complete.");
         discordGame.pushGame();
@@ -714,7 +718,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void passShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        discordGame.queueMessage("turn-summary", faction.getEmoji() + " does not ship.");
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " does not ship.");
         faction.getShipment().clear();
         discordGame.pushGame();
         deleteAllButtonsInChannel(event.getMessageChannel());

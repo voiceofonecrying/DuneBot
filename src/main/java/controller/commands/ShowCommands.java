@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.Initializers;
+import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -490,7 +491,7 @@ public class ShowCommands {
         ImageIO.write(board, "png", boardOutputStream);
 
         FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
-        discordGame.queueMessage("turn-summary", boardFileUpload);
+        discordGame.getTurnSummary().queueMessage(boardFileUpload);
     }
 
     private static BufferedImage buildForceImage(String force, int strength) throws IOException {

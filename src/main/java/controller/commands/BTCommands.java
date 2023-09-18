@@ -1,5 +1,6 @@
 package controller.commands;
 
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
@@ -58,7 +59,7 @@ public class BTCommands {
             faction.addTraitorCard(traitorDeck.pollLast());
 
             discordGame.pushGame();
-            discordGame.queueMessage("turn-summary", faction.getEmoji() + " swapped a Face Dancer");
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
         }
     }
 }

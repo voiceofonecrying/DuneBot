@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.Faction;
@@ -75,12 +76,8 @@ public class HarkCommands {
             }
         }
         game.getFaction("Harkonnen").getLeaders().removeIf(l -> l.name().equals(returningLeader));
-
-        discordGame.queueMessage("turn-summary", returningLeader + " has returned to their original owner.");
-        
+        discordGame.getTurnSummary().queueMessage(returningLeader + " has returned to their original owner.");
         discordGame.pushGame();
-
-
     }
 
     public static void captureLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -95,14 +92,15 @@ public class HarkCommands {
         harkonnenFaction.addLeader(leader);
         faction.removeLeader(leader);
 
+        TurnSummary turnSummary = discordGame.getTurnSummary();
         if (leader.skillCard() != null) {
-            discordGame.queueMessage("turn-summary", MessageFormat.format(
+            turnSummary.queueMessage(MessageFormat.format(
                     "{0} have captured a {1} skilled leader: {2} the {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(),
                     leader.name(), leader.skillCard().name()
             ));
         } else {
-            discordGame.queueMessage("turn-summary", MessageFormat.format(
+            turnSummary.queueMessage(MessageFormat.format(
                     "{0} have captured a {1} leader",
                     harkonnenFaction.getEmoji(), faction.getEmoji()
             ));
@@ -128,13 +126,14 @@ public class HarkCommands {
 
         harkonnenFaction.addSpice(2);
 
+        TurnSummary turnSummary = discordGame.getTurnSummary();
         if (leader.skillCard()!= null) {
-            discordGame.queueMessage("turn-summary", MessageFormat.format(
+            turnSummary.queueMessage(MessageFormat.format(
                     "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name(), Emojis.SPICE
             ));
         } else {
-            discordGame.queueMessage("turn-summary", MessageFormat.format(
+            turnSummary.queueMessage(MessageFormat.format(
                     "{0} has killed the {1} leader for 2 {2}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
             ));

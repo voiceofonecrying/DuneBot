@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.RicheseCommands;
 import controller.commands.ShowCommands;
@@ -27,18 +28,18 @@ public class Shipment {
             territory.setRicheseNoField(force);
             int spice = territory.isStronghold() ? 1 : 2;
             faction.subtractSpice(spice);
-            discordGame.queueMessage("turn-summary", Emojis.RICHESE + " ship a no-field to " + territoryName);
+            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " ship a no-field to " + territoryName);
         }
         else if (isToReserves()) {
             CommandManager.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice);
-            discordGame.queueMessage("turn-summary", Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         }
         else if (!crossShipFrom.isEmpty()) {
             CommandManager.removeForces(crossShipFrom, faction, force, 0, false);
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
-            discordGame.queueMessage("turn-summary", Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
         }
         else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
         ShowCommands.showBoard(discordGame, game);

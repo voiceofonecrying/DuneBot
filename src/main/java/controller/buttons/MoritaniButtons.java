@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.FactionChat;
+import controller.channels.TurnSummary;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
@@ -82,7 +83,7 @@ public class MoritaniButtons implements Pressable {
         String terror = event.getComponentId().split("-")[3];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
         moritaniFaction.placeTerrorToken(territory, terror);
-        discordGame.queueMessage("turn-summary", "A " + Emojis.MORITANI + " terror token has been placed in " + territory.getTerritoryName());
+        discordGame.getTurnSummary().queueMessage("A " + Emojis.MORITANI + " terror token has been placed in " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueMessage("The " + terror + " token has been sent to " + territory.getTerritoryName());
         discordGame.queueDeleteMessage();
@@ -116,7 +117,7 @@ public class MoritaniButtons implements Pressable {
         game.getFaction("Moritani").setAlly(faction.getName());
         if (oldAlly != null) game.getFaction(oldAlly).setAlly(null);
         if (moritaniOldAlly != null) game.getFaction(moritaniOldAlly).setAlly(null);
-        discordGame.queueMessage("turn-summary", Emojis.MORITANI + " and " + faction.getEmoji() + " have forsaken former political ties and formed an alliance!");
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " and " + faction.getEmoji() + " have forsaken former political ties and formed an alliance!");
         String terror = game.getTerritory(event.getComponentId().split("-")[3]).getTerrorToken();
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
         moritani.getTerrorTokens().add(terror);

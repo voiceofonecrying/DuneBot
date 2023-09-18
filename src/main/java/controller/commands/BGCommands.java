@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.DiscordGame;
@@ -60,8 +61,7 @@ public class BGCommands {
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));
-        discordGame.queueMessage("turn-summary", Emojis.BG + " advise to " + territory.getTerritoryName());
-
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " advise to " + territory.getTerritoryName());
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
     }
