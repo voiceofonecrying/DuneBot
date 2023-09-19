@@ -81,10 +81,10 @@ public class RunCommands {
             if (finishBiddingPhase(discordGame, game))
                 game.advancePhase();
         } else if (phase == 5 && subPhase == 1) {
+            if (game.hasFaction("BT")) {
+                btSetRevivalRates(discordGame, game);
+            }
             game.advanceSubPhase();
-            if (!game.hasFaction("BT")) {
-                startRevivalPhase(discordGame, game);
-            } else btSetRevivalRates(discordGame, game);
         } else if (phase == 5 && subPhase == 2) {
             startRevivalPhase(discordGame, game);
             game.advancePhase();
