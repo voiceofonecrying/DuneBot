@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import controller.channels.FactionChat;
 import controller.commands.CommandManager;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -70,11 +69,10 @@ public class EcazFaction extends Faction {
                         || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal")))
                         || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal")))) getVidal = getVidal.asDisabled();
                 if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly()) offerAlliance = offerAlliance.asDisabled();
-                FactionChat chatChannel = new FactionChat(discordGame, "Ecaz");
                 List<Button> buttons = new LinkedList<>();
                 buttons.add(getVidal);
                 buttons.add(offerAlliance);
-                chatChannel.queueMessage("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", buttons);
+                discordGame.getEcazChat().queueMessage("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", buttons);
                 ambassadorSupply.add("Ecaz");
             }
             case "Atreides" -> discordGame.queueMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
@@ -83,8 +81,7 @@ public class EcazFaction extends Faction {
                 for (String option : ambassadorPool) {
                     buttons.add(Button.primary("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option));
                 }
-                FactionChat chatChannel = new FactionChat(discordGame, "Ecaz");
-                chatChannel.queueMessage("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", buttons);
+                discordGame.getEcazChat().queueMessage("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", buttons);
             }
             case "CHOAM" -> discordGame.queueMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
@@ -128,8 +125,7 @@ public class EcazFaction extends Faction {
             buttons.add(stronghold);
         }
         buttons.add(Button.secondary("ecaz-no-more-ambassadors", "No more ambassadors."));
-        FactionChat chatChannel = new FactionChat(discordGame, "Ecaz");
-        chatChannel.queueMessage("Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer(), buttons);
+        discordGame.getEcazChat().queueMessage("Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer(), buttons);
     }
 
     public void sendAmbassadorMessage(DiscordGame discordGame, String territory, int cost) throws ChannelNotFoundException {
@@ -137,8 +133,7 @@ public class EcazFaction extends Faction {
         for (String ambassador : ambassadorSupply) {
             buttons.add(Button.primary("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
         }
-        FactionChat chatChannel = new FactionChat(discordGame, "Ecaz");
-        chatChannel.queueMessage("Which ambassador would you like to send?", buttons);
+        discordGame.getEcazChat().queueMessage("Which ambassador would you like to send?", buttons);
     }
 
     public void placeAmbassador(Territory territory, String ambassador) {

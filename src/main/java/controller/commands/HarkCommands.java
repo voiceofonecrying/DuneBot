@@ -144,8 +144,7 @@ public class HarkCommands {
 
         game.getLeaderTanks().add(killedLeader);
 
-        FactionChat chatChannel = new FactionChat(discordGame, factionName);
-        chatChannel.queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getFactionChat(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
 
         ShowCommands.showBoard(discordGame, game);

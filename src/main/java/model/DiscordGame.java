@@ -5,6 +5,7 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
@@ -130,10 +131,60 @@ public class DiscordGame {
     }
 
     public TurnSummary getTurnSummary() throws ChannelNotFoundException {
-        if (turnSummary == null) {
-            turnSummary = new TurnSummary(this, game);
-        }
+        if (turnSummary == null) turnSummary = new TurnSummary(this, game);
         return turnSummary;
+    }
+
+    public FactionChat getFactionChat(String factionName) throws ChannelNotFoundException {
+        return new FactionChat(this, factionName);
+    }
+
+    public FactionChat getAtreidesChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Atreides");
+    }
+
+    public FactionChat getBGChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "BG");
+    }
+
+    public FactionChat getBTChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "BT");
+    }
+
+    public FactionChat getCHOAMChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "CHOAM");
+    }
+
+    public FactionChat getEcazChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Ecaz");
+    }
+
+    public FactionChat getEmperorChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Emperor");
+    }
+
+    public FactionChat getFremenChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Fremen");
+    }
+
+    public FactionChat getGuildChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Guild");
+    }
+
+    public FactionChat getHarkonnenChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Harkonnen");
+    }
+
+    public FactionChat getIxChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Ix");
+    }
+
+    public FactionChat getMoritaniChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Moritani");
+    }
+
+    public FactionChat getRicheseChat() throws ChannelNotFoundException {
+        return new FactionChat(this, "Richese");
     }
 
     public GenericInteractionCreateEvent getEvent() {

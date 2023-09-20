@@ -1,7 +1,6 @@
 package controller.commands;
 
 import constants.Emojis;
-import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.SetupStep;
@@ -443,8 +442,7 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        FactionChat bgChat = new FactionChat(discordGame, "BG");
-        bgChat.queueMessage(game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
+        discordGame.getBGChat().queueMessage(game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
         return StepStatus.STOP;
     }
 
@@ -542,8 +540,7 @@ public class SetupCommands {
                     .map(Optional::get)
                     .forEach(message::addFiles);
 
-            FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
-            chatChannel.queueMessage(message);
+            discordGame.getFactionChat(faction.getName()).queueMessage(message);
         }
 
         return StepStatus.STOP;
@@ -603,8 +600,7 @@ public class SetupCommands {
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             discordGame.queueMessage("mod-info", "Harkonnen can mulligan");
-            FactionChat harkonnenChat = new FactionChat(discordGame, "Harkonnen");
-            harkonnenChat.queueMessage(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
+            discordGame.getHarkonnenChat().queueMessage(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
             discordGame.queueMessage("mod-info", "Harkonnen cannot mulligan");
@@ -646,8 +642,7 @@ public class SetupCommands {
                     game.drawCard("traitor deck", faction.getName());
                 }
                 if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
-                    FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
-                    chatChannel.queueMessage(faction.getPlayer() + " please select your traitor.");
+                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " please select your traitor.");
                 }
             }
         }
@@ -668,10 +663,8 @@ public class SetupCommands {
     public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction1 = game.getFactions().get(0);
         Faction faction2 = game.getFactions().get(game.getFactions().size() - 1);
-        FactionChat chatChannel1 = new FactionChat(discordGame, faction1.getName());
-        chatChannel1.queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
-        FactionChat chatChannel2 = new FactionChat(discordGame, faction2.getName());
-        chatChannel2.queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        discordGame.getFactionChat(faction1.getName()).queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        discordGame.getFactionChat(faction2.getName()).queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);
         discordGame.getTurnSummary().queueMessage("Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
 
@@ -712,8 +705,7 @@ public class SetupCommands {
         faction.addLeader(updatedLeader);
 
         faction.getLeaderSkillsHand().clear();
-        FactionChat chatChannel = new FactionChat(discordGame, faction.getName());
-        chatChannel.queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
+        discordGame.getFactionChat(faction.getName()).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
                         updatedLeader.name(), leaderSkillCard.name()
                 )
         );
