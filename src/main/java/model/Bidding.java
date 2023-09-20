@@ -172,7 +172,7 @@ public class Bidding {
         LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
         TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
         ally.addTreacheryCard(treacheryDeck.remove(0));
-        treacheryDeck.addFirst(cardToSwap);
+        game.getTreacheryDiscard().add(cardToSwap);
         ixAllySwapped = true;
     }
 
