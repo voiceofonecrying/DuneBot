@@ -1,9 +1,11 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.factions.Faction;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -89,19 +91,42 @@ public class IxCommands {
 
     public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(ixCard).getAsString();
-        game.getBidding().ixTechnology(game, cardName);
+        TreacheryCard newCard = game.getBidding().ixTechnology(game, cardName);
+        discordGame.queueMessage("ix-info", "ledger",
+                MessageFormat.format("Received {0} and put {1} back as the next card for bid.",
+                newCard.name(), cardName)
+        );
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} used technology to swap a card from their hand for R{1}:C{2}.",
                 Emojis.IX, game.getTurn(), game.getBidding().getBidCardNumber() + 1
         ));
+        discordGame.getIxChat().queueMessage("You took " + newCard.name() + " instead of " + cardName);
         discordGame.pushGame();
     }
 
     public static void allyCardSwap(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().ixAllyCardSwap(game);
+        Bidding bidding = game.getBidding();
+        TreacheryCard cardToDiscard = bidding.getPreviousCard();
+        TreacheryCard newCard = game.getBidding().ixAllyCardSwap(game);
+        Faction ixAlly = game.getFaction(game.getFaction("Ix").getAlly());
+        discordGame.queueMessage(ixAlly.getName().toLowerCase() + "-info", "ledger",
+                MessageFormat.format("Received {0} from the {1} deck and discarded {2} with {3} ally power.",
+                newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
+                );
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                "{0} ({1} ally) swapped the card just won for the {2} deck top card.",
-                game.getFaction(game.getFaction("Ix").getAlly()).getEmoji(), Emojis.IX, Emojis.TREACHERY
+                "{0} as {1} ally discarded the card just won and took the {2} deck top card.",
+                ixAlly.getEmoji(), Emojis.IX, Emojis.TREACHERY
+        ));
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        if (bidding.isTreacheryDeckReshuffled()) {
+            turnSummary.queueMessage(MessageFormat.format(
+                    "There were no cards left in the {0} deck. The {0} deck has been replenished from the discard pile.",
+                    Emojis.TREACHERY
+            ));
+        }
+        turnSummary.queueMessage(MessageFormat.format(
+                "{0} as {1} ally discarded the card just won and took the {2} deck top card.",
+                ixAlly.getEmoji(), Emojis.IX, Emojis.TREACHERY
         ));
         discordGame.pushGame();
     }

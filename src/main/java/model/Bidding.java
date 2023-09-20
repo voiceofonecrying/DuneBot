@@ -137,7 +137,7 @@ public class Bidding {
         ixRejectOutstanding = false;
     }
 
-    public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
+    public TreacheryCard ixTechnology(Game game, String cardName) throws InvalidGameStateException {
         Faction faction = game.getFaction("Ix");
         if (ixTechnologyUsed) {
             throw new InvalidGameStateException("Ix has already used technology this turn.");
@@ -149,12 +149,14 @@ public class Bidding {
             throw new InvalidGameStateException("There are no cards in the bidding market.");
         }
         TreacheryCard cardFromIx = faction.removeTreacheryCard(cardName);
-        faction.addTreacheryCard(market.remove(0));
+        TreacheryCard newCard = market.remove(0);
+        faction.addTreacheryCard(newCard);
         market.addFirst(cardFromIx);
         ixTechnologyUsed = true;
+        return newCard;
     }
 
-    public void ixAllyCardSwap(Game game) throws InvalidGameStateException {
+    public TreacheryCard ixAllyCardSwap(Game game) throws InvalidGameStateException {
         Faction faction = game.getFaction("Ix");
         String allyName = faction.getAlly();
         if (allyName == null) {
@@ -170,10 +172,20 @@ public class Bidding {
         }
 
         LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        treacheryDeckReshuffled = false;
+        if (treacheryDeck.isEmpty()) {
+            treacheryDeckReshuffled = true;
+            List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            treacheryDeck.addAll(treacheryDiscard);
+            Collections.shuffle(treacheryDeck);
+            treacheryDiscard.clear();
+        }
         TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
-        ally.addTreacheryCard(treacheryDeck.remove(0));
+        TreacheryCard newCard = treacheryDeck.remove(0);
+        ally.addTreacheryCard(newCard);
         game.getTreacheryDiscard().add(cardToSwap);
         ixAllySwapped = true;
+        return newCard;
     }
 
     public boolean isTreacheryDeckReshuffled() {
@@ -362,4 +374,6 @@ public class Bidding {
     public void setBidLeader(String bidLeader) {
         this.bidLeader = bidLeader;
     }
+
+    public TreacheryCard getPreviousCard() { return previousCard; }
 }
