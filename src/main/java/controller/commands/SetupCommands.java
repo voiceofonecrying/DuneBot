@@ -244,6 +244,8 @@ public class SetupCommands {
 
     private static StepStatus ledgerThreads(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
+            discordGame.createThread(faction.getName().toLowerCase() + "-info", "notes", List.of(faction.getPlayer()));
+            discordGame.createThread(faction.getName().toLowerCase() + "-info", "chat", List.of(faction.getPlayer()));
             discordGame.createThread(faction.getName().toLowerCase() + "-info", "ledger", List.of(faction.getPlayer()));
         }
         return StepStatus.CONTINUE;
@@ -296,14 +298,6 @@ public class SetupCommands {
         discordGame.pushGame();
 
         gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
-                .addPermissionOverride(
-                        player,
-                        ChannelPermissions.readAndReactAllow,
-                        ChannelPermissions.readAndReactDeny
-                )
-                .queue();
-
-        gameCategory.createTextChannel(factionName.toLowerCase() + "-chat")
                 .addPermissionOverride(
                         player,
                         ChannelPermissions.readWriteAllow,
