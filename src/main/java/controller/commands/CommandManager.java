@@ -410,7 +410,7 @@ public class CommandManager extends ListenerAdapter {
         );
 
         if (!toFrontOfShield)
-            spiceMessage(discordGame, amountValue, faction.getName(), messageValue, add);
+            spiceMessage(discordGame, amountValue, faction.getSpice(), faction.getName(), messageValue, add);
 
         discordGame.pushGame();
     }
@@ -638,11 +638,11 @@ public class CommandManager extends ListenerAdapter {
 
         // Winner pays for the card
         winner.subtractSpice(spentValue);
-        spiceMessage(discordGame, spentValue, winner.getName(), currentCard, false);
+        spiceMessage(discordGame, spentValue, winner.getSpice(), winner.getName(), currentCard, false);
 
         if (game.hasFaction(paidToFactionName)) {
             Faction paidToFaction = game.getFaction(paidToFactionName);
-            spiceMessage(discordGame, spentValue, paidToFaction.getName(), currentCard, true);
+            spiceMessage(discordGame, spentValue, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
             game.getFaction(paidToFaction.getName()).addSpice(spentValue);
             turnSummary.queueMessage(
                     MessageFormat.format(
@@ -689,18 +689,20 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void spiceMessage(DiscordGame discordGame, int amount, String faction, String message, boolean plus) throws ChannelNotFoundException {
+    public static void spiceMessage(DiscordGame discordGame, int amount, int newTotal, String faction, String message, boolean plus) throws ChannelNotFoundException {
         String plusSign = plus ? "+" : "-";
         for (TextChannel channel : discordGame.getTextChannels()) {
             if (channel.getName().equals(faction.toLowerCase() + "-info")) {
                 discordGame.queueMessage(channel.getName(),
                         "ledger",
                         MessageFormat.format(
-                                "{0}{1}{2} {3}",
+                                "{0}{1}{2} {3} = {4}{5}",
                                 plusSign,
                                 amount,
                                 Emojis.SPICE,
-                                message
+                                message,
+                                newTotal,
+                                Emojis.SPICE
                         ));
             }
         }
@@ -749,10 +751,12 @@ public class CommandManager extends ListenerAdapter {
 
         if (isPaid) {
             faction.subtractSpice(revivalCost);
-            spiceMessage(discordGame, revivalCost, faction.getName(), "Revivals", false);
+            spiceMessage(discordGame, revivalCost, faction.getSpice(), faction.getName(), "Revivals", false);
             if (game.hasFaction("BT") && !faction.getName().equalsIgnoreCase("BT")) {
-                game.getFaction("BT").addSpice(revivalCost);
-                spiceMessage(discordGame, revivalCost, "bt", faction.getEmoji() + " revivals", true);
+                Faction btFaction = game.getFaction("BT");
+                btFaction.addSpice(revivalCost);
+                spiceMessage(discordGame, revivalCost, btFaction.getSpice(),
+                        "bt", faction.getEmoji() + " revivals", true);
             }
         }
 
@@ -838,21 +842,25 @@ public class CommandManager extends ListenerAdapter {
                 int support = 0;
                 if (targetFaction.getAllySpiceShipment() > 0) {
                     support = Math.min(targetFaction.getAllySpiceShipment(), cost);
-                    game.getFaction(targetFaction.getAlly()).subtractSpice(support);
-                    spiceMessage(discordGame, support, targetFaction.getAlly(),targetFaction.getEmoji() + " shipment support", false);
+                    Faction allyFaction = game.getFaction(targetFaction.getAlly());
+                    allyFaction.subtractSpice(support);
+                    spiceMessage(discordGame, support, allyFaction.getSpice(), targetFaction.getAlly(),
+                            targetFaction.getEmoji() + " shipment support", false);
                     message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
                     targetFaction.setAllySpiceShipment(0);
                 }
 
                 targetFaction.subtractSpice(cost - support);
-                spiceMessage(discordGame, cost - support, targetFaction.getName(),
+                spiceMessage(discordGame, cost - support, targetFaction.getSpice(), targetFaction.getName(),
                         "shipment to " + targetTerritory.getTerritoryName(), false);
 
                 if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild") && !karama) {
-                    game.getFaction("Guild").addSpice(cost);
+                    Faction guildFaction = game.getFaction("Guild");
+                    guildFaction.addSpice(cost);
                     message.append(" paid to ")
                             .append(Emojis.GUILD);
-                    spiceMessage(discordGame, cost, "guild", targetFaction.getEmoji() + " shipment", true);
+                    spiceMessage(discordGame, cost, guildFaction.getSpice(), "guild",
+                            targetFaction.getEmoji() + " shipment", true);
                 }
 
             }
@@ -1119,7 +1127,8 @@ public class CommandManager extends ListenerAdapter {
                 return;
             }
             fromFaction.subtractSpice(amountValue);
-            spiceMessage(discordGame, amountValue, fromFaction.getName(), "bribe to " + recipientFaction.getEmoji(), false);
+            spiceMessage(discordGame, amountValue, fromFaction.getSpice(), fromFaction.getName(),
+                    "bribe to " + recipientFaction.getEmoji(), false);
             discordGame.getTurnSummary().queueMessage(
                     MessageFormat.format(
                             "{0} places {1} {2} in front of {3} shield.",

@@ -1,7 +1,6 @@
 package controller.commands;
 
 import constants.Emojis;
-import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -145,7 +144,8 @@ public class HarkCommands {
         game.getLeaderTanks().add(killedLeader);
 
         discordGame.getFactionChat(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        CommandManager.spiceMessage(discordGame, 2, "Harkonnen", "from the killed leader", true);
+        CommandManager.spiceMessage(discordGame, 2, harkonnenFaction.getSpice(),
+                "Harkonnen", "from the killed leader", true);
 
         ShowCommands.showBoard(discordGame, game);
 

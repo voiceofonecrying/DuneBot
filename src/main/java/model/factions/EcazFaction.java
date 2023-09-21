@@ -85,8 +85,9 @@ public class EcazFaction extends Faction {
             }
             case "CHOAM" -> discordGame.queueMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
-                CommandManager.spiceMessage(discordGame, 5, "ecaz", Emojis.EMPEROR + " ambassador token", true);
                 addSpice(5);
+                CommandManager.spiceMessage(discordGame, 5, getSpice(), "ecaz",
+                        Emojis.EMPEROR + " ambassador token", true);
             }
             case "Fremen" -> discordGame.queueMessage("mod-info", "Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
             case "Harkonnen" -> discordGame.queueMessage("mod-info", "Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");

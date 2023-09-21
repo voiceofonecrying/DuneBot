@@ -69,7 +69,8 @@ public class EcazButtons implements Pressable {
             return;
         }
         ecazFaction.subtractSpice(cost);
-        CommandManager.spiceMessage(discordGame, cost, ecazFaction.getName(), " ambassador to " + territory.getTerritoryName(), false);
+        CommandManager.spiceMessage(discordGame, cost, ecazFaction.getSpice(),
+                ecazFaction.getName(), " ambassador to " + territory.getTerritoryName(), false);
         ecazFaction.placeAmbassador(territory, ambassador);
         discordGame.getTurnSummary().queueMessage("An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
         discordGame.pushGame();
