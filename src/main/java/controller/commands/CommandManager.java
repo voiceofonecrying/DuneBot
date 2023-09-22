@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -282,22 +283,22 @@ public class CommandManager extends ListenerAdapter {
                 )
                 .complete();
 
-        String[] readAndReactChannels  = {"front-of-shield", "turn-summary"};
-
-        for (String channel : readAndReactChannels) {
-            category.createTextChannel(channel)
-                    .addPermissionOverride(
-                            observerRole,
-                            ChannelPermissions.readAndReactAllow,
-                            ChannelPermissions.readAndReactDeny
-                    )
-                    .addPermissionOverride(
-                            gameRoleValue,
-                            ChannelPermissions.readAndReactAllow,
-                            ChannelPermissions.readAndReactDeny
-                    )
-                    .complete();
-        }
+        TextChannel fosChannel = category.createTextChannel("front-of-shield")
+                .addPermissionOverride(
+                        observerRole,
+                        ChannelPermissions.readAndReactAllow,
+                        ChannelPermissions.readAndReactDeny
+                )
+                .addPermissionOverride(
+                        gameRoleValue,
+                        ChannelPermissions.readAndReactAllow,
+                        ChannelPermissions.readAndReactDeny
+                )
+                .complete();
+        fosChannel.createThreadChannel("turn-summary", true)
+                .setInvitable(false)
+                .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_3_DAYS)
+                .complete();
 
         String[] readWriteChannels = {"game-actions", "bribes", "bidding-phase", "rules"};
         for (String channel : readWriteChannels) {

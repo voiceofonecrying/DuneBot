@@ -532,7 +532,7 @@ public class DiscordGame {
      * @param threadChannel The thread to add the users to
      * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
-    private void addUsersToThread(ThreadChannel threadChannel, List<String> userIds) {
+    public void addUsersToThread(ThreadChannel threadChannel, List<String> userIds) {
         JDA jda = threadChannel.getJDA();
 
         userIds.forEach(

@@ -294,6 +294,7 @@ public class SetupCommands {
         discordGame.createThread(channel, "notes", List.of(playerName));
         discordGame.createThread(channel, "chat", List.of(playerName));
         discordGame.createThread(channel, "ledger", List.of(playerName));
+        discordGame.getTurnSummary().addUser(playerName);
     }
 
     public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
