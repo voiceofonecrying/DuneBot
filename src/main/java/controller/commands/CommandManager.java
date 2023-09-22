@@ -1215,7 +1215,7 @@ public class CommandManager extends ListenerAdapter {
                 factionTwo.getName()
         );
 
-        discordGame.createThread("chat", threadName, Arrays.asList(
+        discordGame.createThread(discordGame.getTextChannel("chat"), threadName, Arrays.asList(
                 factionOne.getPlayer(), factionTwo.getPlayer()
         ));
 

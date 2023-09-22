@@ -514,20 +514,17 @@ public class DiscordGame {
 
     /**
      * Creates a thread in the parent channel with the given name and adds the given users to it.
-     * @param parentChannelName The name of the parent channel
+     * @param parentChannel The parent channel
      * @param threadName The name of the thread to create
      * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
      * @throws ChannelNotFoundException Thrown if the parent channel is not found.
      */
-    public void createThread(String parentChannelName, String threadName, List<String> userIds) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(parentChannelName);
-
-        channel.createThreadChannel(threadName, true)
+    public void createThread(TextChannel parentChannel, String threadName, List<String> userIds) throws ChannelNotFoundException {
+        ThreadChannel threadChannel = parentChannel.createThreadChannel(threadName, true)
                 .setInvitable(false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
-                .queue(
-                        threadChannel -> addUsersToThread(threadChannel, userIds)
-                );
+                .complete();
+        addUsersToThread(threadChannel, userIds);
     }
 
     /**

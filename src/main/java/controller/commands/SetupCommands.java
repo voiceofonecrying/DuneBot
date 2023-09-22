@@ -110,7 +110,6 @@ public class SetupCommands {
 
         if (game.hasGameOption(GameOption.LEADER_SKILLS)) {
             setupSteps = new ArrayList<>(List.of(
-                    SetupStep.LEDGER_THREADS,
                     SetupStep.CREATE_DECKS,
                     SetupStep.FACTION_POSITIONS,
                     SetupStep.TREACHERY_CARDS,
@@ -122,7 +121,6 @@ public class SetupCommands {
             ));
         } else {
             setupSteps = new ArrayList<>(List.of(
-                    SetupStep.LEDGER_THREADS,
                     SetupStep.CREATE_DECKS,
                     SetupStep.FACTION_POSITIONS,
                     SetupStep.TRAITORS,
@@ -219,7 +217,6 @@ public class SetupCommands {
         StepStatus stepStatus = StepStatus.STOP;
 
         switch (setupStep) {
-            case LEDGER_THREADS -> stepStatus = ledgerThreads(discordGame, game);
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
             case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
@@ -241,16 +238,6 @@ public class SetupCommands {
 
         return stepStatus;
     }
-
-    private static StepStatus ledgerThreads(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        for (Faction faction : game.getFactions()) {
-            discordGame.createThread(faction.getName().toLowerCase() + "-info", "notes", List.of(faction.getPlayer()));
-            discordGame.createThread(faction.getName().toLowerCase() + "-info", "chat", List.of(faction.getPlayer()));
-            discordGame.createThread(faction.getName().toLowerCase() + "-info", "ledger", List.of(faction.getPlayer()));
-        }
-        return StepStatus.CONTINUE;
-    }
-
 
     public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         TextChannel modInfo = discordGame.getTextChannel("mod-info");
@@ -297,13 +284,16 @@ public class SetupCommands {
         Category gameCategory = discordGame.getGameCategory();
         discordGame.pushGame();
 
-        gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
+        TextChannel channel = gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
                 .addPermissionOverride(
                         player,
                         ChannelPermissions.readWriteAllow,
                         ChannelPermissions.readWriteDeny
                 )
-                .queue();
+                .complete();
+        discordGame.createThread(channel, "notes", List.of(playerName));
+        discordGame.createThread(channel, "chat", List.of(playerName));
+        discordGame.createThread(channel, "ledger", List.of(playerName));
     }
 
     public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
