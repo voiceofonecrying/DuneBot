@@ -478,9 +478,12 @@ public class SetupCommands {
     public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         try {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-            ixFaction.setHandLimit(6);
+            ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
             for (Faction faction : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
+            if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
+                game.drawCard("treachery deck", ixFaction.getName());
+            }
             discordGame.queueMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
             IxCommands.initialCard(discordGame, game);
             return StepStatus.STOP;
