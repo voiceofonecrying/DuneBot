@@ -46,7 +46,6 @@ import java.util.concurrent.ExecutionException;
 public class DiscordGame {
     private final Category gameCategory;
     private List<TextChannel> textChannelList;
-    private TurnSummary turnSummary;
     private Game game;
 
     private GenericInteractionCreateEvent event;
@@ -131,8 +130,7 @@ public class DiscordGame {
     }
 
     public TurnSummary getTurnSummary() throws ChannelNotFoundException {
-        if (turnSummary == null) turnSummary = new TurnSummary(this, game);
-        return turnSummary;
+        return new TurnSummary(this, game);
     }
 
     public FactionChat getFactionChat(String factionName) throws ChannelNotFoundException {
