@@ -26,10 +26,13 @@ public class EcazFaction extends Faction {
 
         setSpice(12);
         this.freeRevival = 2;
-        this.reserves = new Force("Ecaz", 14);
         this.emoji = Emojis.ECAZ;
         this.highThreshold = 7;
         this.lowThreshold = 6;
+        this.homeworld = "Ecaz";
+        game.getTerritories().put("Ecaz", new Territory("Ecaz", -1, false, false, false));
+        game.getTerritory("Ecaz").addForce(new Force("Ecaz", 20));
+        game.getHomeworlds().put(getName(), homeworld);
         this.occupiedIncome = 2;
         game.getTerritories().get("Imperial Basin (Center Sector)").getForces().add(new Force("Ecaz", 6));
         this.ambassadorPool = new LinkedList<>();

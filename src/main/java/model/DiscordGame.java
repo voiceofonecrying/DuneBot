@@ -266,16 +266,6 @@ public class DiscordGame {
     }
 
     /**
-     * Removes the reference to the game object from all factions in the game.
-     * @param game Game object to remove references from.
-     */
-    public static void removeGameReferenceFromFactions(Game game) {
-        for (Faction faction : game.getFactions()) {
-            faction.setGame(null);
-        }
-    }
-
-    /**
      * Creates a Gson object that can deserialize the GameState object.
      *
      * @return Gson object that can deserialize the GameState object.
@@ -291,7 +281,6 @@ public class DiscordGame {
         pushGame();
     }
     public void pushGame() throws ChannelNotFoundException {
-        removeGameReferenceFromFactions(this.game);
 
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override

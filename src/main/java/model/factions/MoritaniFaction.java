@@ -23,11 +23,14 @@ public class MoritaniFaction extends Faction {
 
         setSpice(12);
         this.freeRevival = 2;
-        this.reserves = new Force("Moritani", 20);
         this.emoji = Emojis.MORITANI;
         this.highThreshold = 8;
         this.lowThreshold = 7;
         this.occupiedIncome = 2;
+        this.homeworld = "Grumman";
+        game.getTerritories().put("Grumman", new Territory("Grumman", -1, false, false, false));
+        game.getTerritory("Grumman").addForce(new Force("Moritani", 20));
+        game.getHomeworlds().put(getName(), homeworld);
         this.terrorTokens = new LinkedList<>();
         this.assassinationTargets = new LinkedList<>();
 
@@ -82,6 +85,7 @@ public class MoritaniFaction extends Faction {
                 discordGame.getMoritaniChat().queueMessage("Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?", treacheryCards);
             }
             case "Sneak Attack" -> {
+                Force reserves = game.getTerritory("Grumman").getForce("Moritani");
                 List<Button> buttons = new LinkedList<>();
                 buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength()>=1));
                 buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength()>=2));
