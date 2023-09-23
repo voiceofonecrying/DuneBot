@@ -703,7 +703,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
         message.addActionRow(strongholds);
 
-        if (game.hasFaction("Ix")) message.addActionRow(Button.primary("stronghold-ship-hms", "Hidden Mobile Stronghold"));
+        if (game.hasFaction("Ix")) message.addActionRow(Button.primary("ship-hidden-mobile-stronghold", "Hidden Mobile Stronghold"));
         message.addActionRow(Button.secondary("reset-shipment", "back"),
                 Button.danger("pass-shipment", "Pass Shipment"));
 
