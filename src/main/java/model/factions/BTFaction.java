@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.UpdateType;
 import model.Force;
 import model.Game;
+import model.Territory;
 import model.TraitorCard;
 
 import java.io.IOException;
@@ -20,12 +21,15 @@ public class BTFaction extends Faction {
 
         setSpice(5);
         this.freeRevival = 2;
-        this.reserves = new Force("BT", 20);
         this.emoji = Emojis.BT;
         this.revivalRatesSet = 0;
         this.highThreshold = 9;
         this.lowThreshold = 8;
         this.occupiedIncome = 2;
+        this.homeworld = "Tleilax";
+        game.getTerritories().put("Tleilax", new Territory("Tleilax", -1, false, false, false));
+        game.getTerritory("Tleilax").addForce(new Force("BT", 20));
+        game.getHomeworlds().put(getName(), homeworld);
     }
 
     /**

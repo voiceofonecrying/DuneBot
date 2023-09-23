@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.Initializers;
-import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -99,8 +98,10 @@ public class ShowCommands {
         messages.forEach(discordGame::queueDeleteMessage);
 
         Faction faction = game.getFaction(factionName);
-        BufferedImage table = getResourceImage("behind shield");
-        table = table.getSubimage(0, 0, 2000, 1200);
+        BufferedImage table = getResourceImage(faction.getHomeworld());
+        if (factionName.equals("Emperor")) {
+            table = getResourceImage(((EmperorFaction) faction).getSecondHomeworld());
+        }
         table = resize(table, 5000, 5000);
 
         //Place reserves
@@ -193,6 +194,30 @@ public class ShowCommands {
                 Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 900;
+            }
+        }
+
+        //Place Homeworld Card
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            String lowHigh = faction.isHighThreshold() ? "High" : "Low";
+            Optional<FileUpload> image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh);
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(4500, 750);
+                table = overlay(table, cardImage, cardPoint, 1);
+            }
+            if (factionName.equals("Emperor")) {
+                EmperorFaction emperor = (EmperorFaction) faction;
+                lowHigh = emperor.isSecundusHighThreshold() ? "High" : "Low";
+                image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), emperor.getSecondHomeworld() + " " + lowHigh);
+                if (image.isPresent()) {
+                    BufferedImage cardImage = ImageIO.read(image.get().getData());
+                    cardImage = resize(cardImage, 988, 1376);
+                    Point cardPoint = new Point(4500, 2250);
+                    table = overlay(table, cardImage, cardPoint, 1);
+                }
+
             }
         }
 
@@ -329,6 +354,7 @@ public class ShowCommands {
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
                     && !territory.isAftermathToken() && !territory.hasTerrorToken()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
             int offset = 0;
             int i = 0;
 

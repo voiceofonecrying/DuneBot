@@ -62,6 +62,15 @@ public class CardImages {
         return getCardImage(guild, "traitor-cards", pattern, cardName);
     }
 
+    public static Optional<FileUpload> getHomeworldImage(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getCardImage(guild, "homeworlds", pattern, cardName);
+    }
+
     public static Optional<FileUpload> getPredictionImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
                 ".*" + Pattern.quote(cardName.trim()) + ".*",

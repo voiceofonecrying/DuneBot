@@ -23,8 +23,6 @@ public class Faction {
     protected int handLimit;
     protected int spice;
     private final List<TechToken> techTokens;
-    protected Force reserves;
-    protected Force specialReserves;
     private int frontOfShieldSpice;
     protected int freeRevival;
     protected boolean hasMiningEquipment;
@@ -50,13 +48,16 @@ public class Faction {
     private int allySpiceBidding;
 
     private int maxRevival;
+    private boolean isHighThreshold;
     protected int highThreshold;
     protected int lowThreshold;
     protected int occupiedIncome;
+    protected String homeworld;
 
 
 
 
+    @Exclude
     private Game game;
 
     public Faction(String name, String player, String userName, Game game) throws IOException {
@@ -81,13 +82,13 @@ public class Faction {
         this.useExact = true;
         this.outbidAlly = false;
         this.specialKaramaPowerUsed = false;
-        this.specialReserves = new Force("", 0);
         this.shipment = new Shipment();
         this.movement = new Movement();
         this.allySpiceShipment = 0;
         this.allySpiceBidding = 0;
         this.nexusCard = null;
         this.maxRevival = 3;
+        this.isHighThreshold = true;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -259,7 +260,7 @@ public class Faction {
     }
 
     public Force getReserves() {
-        return reserves;
+        return game.getTerritory(homeworld).getForce(name);
     }
     public void addReserves(int amount) {
         getReserves().addStrength(amount);
@@ -272,7 +273,7 @@ public class Faction {
     }
 
     public Force getSpecialReserves() {
-        return specialReserves == null ? new Force("", 0): specialReserves;
+        return game.getTerritory(homeworld).getForce(name + "*");
     }
 
     public void addSpecialReserves(int amount) {
@@ -465,9 +466,11 @@ public class Faction {
             game.getForceFromTanks(targetForceName).addStrength(amount);
         } else {
             if (isSpecial) {
-                specialReserves.addStrength(amount);
+                if (game.getTerritory(homeworld).hasForce(name + "*")) game.getTerritory(homeworld).getForce(name + "*").addStrength(amount);
+                else game.getTerritory(homeworld).addForce(new Force(name + "*", amount));
             } else {
-                reserves.addStrength(amount);
+                if (game.getTerritory(homeworld).hasForce(name)) game.getTerritory(homeworld).getForce(name).addStrength(amount);
+                else game.getTerritory(homeworld).addForce(new Force(name, amount));
             }
             setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         }
@@ -557,5 +560,16 @@ public class Faction {
 
     public int getOccupiedIncome() {
         return occupiedIncome;
+    }
+
+    public String getHomeworld() {
+        return homeworld;
+    }
+
+    public void setHighThreshold(boolean highThreshold) {
+        isHighThreshold = highThreshold;
+    }
+    public boolean isHighThreshold() {
+        return isHighThreshold;
     }
 }
