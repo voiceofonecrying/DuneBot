@@ -53,8 +53,8 @@ public class MoritaniFaction extends Faction {
                 location.setAftermathToken(true);
                 for (Force force : location.getForces()) {
                     if (force.getName().contains("*")) CommandManager
-                            .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true);
-                    else CommandManager.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true);
+                            .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true, game, discordGame);
+                    else CommandManager.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
                 }
             }
             case "Extortion" -> {

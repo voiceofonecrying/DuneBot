@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -904,7 +905,8 @@ public class CommandManager extends ListenerAdapter {
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
             if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
-                    && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()))
+                    && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()
+                    && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())))
             {
                 List<Button> buttons = new LinkedList<>();
                 buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
@@ -1076,12 +1078,23 @@ public class CommandManager extends ListenerAdapter {
         int specialAmount = discordGame.required(starredAmount).getAsInt();
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
-        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks, game, discordGame);
         discordGame.pushGame();
     }
-    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
+    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.getHomeworlds().values().contains(territoryName)) {
+            Faction homeworldFaction = game.getFactions().stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
+            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction)homeworldFaction).getSecundusHighThreshold() > game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction)homeworldFaction).isSecundusHighThreshold()) {
+                ((EmperorFaction)homeworldFaction).setSecundusHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage("Salusa Secundus has flipped to low threshold.");
+
+            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
+                homeworldFaction.setHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
+            }
+        }
     }
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
@@ -52,6 +53,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "pass-movement" -> passMovement(event, game, discordGame);
             case "stronghold" -> queueStrongholdShippingButtons(game, discordGame);
             case "spice-blow" -> queueSpiceBlowShippingButtons(discordGame);
+            case "homeworlds" -> queueHomeworldShippingButtons(event, game, discordGame);
             case "rock" -> queueRockShippingButtons(discordGame);
             case "other" -> queueOtherShippingButtons(discordGame);
             case "reset-shipping-forces" -> resetForces(event, game, discordGame, true);
@@ -516,8 +518,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             finalizeButtons.add(Button.danger("reset-shipment", "Start Over"));
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama"))) finalizeButtons.add(Button.secondary("karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)"));
 
-            discordGame.queueMessage(
-                    event.getMessageChannel().getName(), new MessageCreateBuilder()
+            discordGame.getFactionChat(faction.getName()).queueMessage(new MessageCreateBuilder()
                             .setContent("Finalize or start over:")
                             .addActionRow(finalizeButtons));
         }
@@ -691,6 +692,22 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
+    private static void queueHomeworldShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        List<Button> buttons = new LinkedList<>();
+
+        for (Faction f : game.getFactions()) {
+            if (faction.getName().equals(f.getName())) continue;
+            buttons.add(Button.primary("ship-" + f.getHomeworld(), f.getHomeworld()));
+        }
+
+        MessageCreateBuilder message = new MessageCreateBuilder()
+                .setContent("Which Homeworld?")
+                .addActionRow(buttons);
+        discordGame.queueMessage(message);
+        discordGame.queueDeleteMessage();
+    }
+
     private static void queueStrongholdShippingButtons(Game game, DiscordGame discordGame) {
         MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
         List<Button> strongholds = List.of(Button.primary("ship-arrakeen", "Arrakeen"),
@@ -722,28 +739,28 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void queueShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("stronghold", "Stronghold"));
+        buttons.add(Button.primary("spice-blow", "Spice Blow Territories"));
+        buttons.add(Button.primary("rock", "Rock Territories"));
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) buttons.add(Button.primary("homeworlds", "Homeworlds"));
+        buttons.add(Button.primary("other", "Somewhere else"));
+        buttons.add(Button.danger("pass-shipment", "I don't want to ship."));
 
-        discordGame.queueMessage(
-                new MessageCreateBuilder().setContent("What part of Arrakis would you like to ship to?")
-                        .addActionRow(Button.primary("stronghold", "Stronghold"),
-                                Button.primary("spice-blow", "Spice Blow Territories"),
-                                Button.primary("rock", "Rock Territories"),
-                                Button.primary("other", "Somewhere else"),
-                                Button.danger("pass-shipment", "I don't want to ship."))
-        );
+        discordGame.getFactionChat(faction.getName()).queueMessage("What part of Arrakis would you like to ship to?", buttons);
 
         if (faction.getName().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("guild-cross-ship", "Cross ship"));
-            buttons.add(Button.primary("guild-ship-to-reserves", "Ship to reserves"));
-            discordGame.getGuildChat().queueMessage("Special options for " + Emojis.GUILD + ":", buttons);
+            List<Button> guildButtons = new LinkedList<>();
+            guildButtons.add(Button.primary("guild-cross-ship", "Cross ship"));
+            guildButtons.add(Button.primary("guild-ship-to-reserves", "Ship to reserves"));
+            discordGame.getGuildChat().queueMessage("Special options for " + Emojis.GUILD + ":", guildButtons);
         }
 
         if (faction.hasAlly()) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("support-max", "Support ally (no limits)"));
-            buttons.add(Button.primary("support-number", "Support ally (specific amount)"));
-            discordGame.getFactionChat(faction.getAlly()).queueMessage("Use buttons below to support your ally's shipment", buttons);
+            List<Button> allyButtons = new LinkedList<>();
+            allyButtons.add(Button.primary("support-max", "Support ally (no limits)"));
+            allyButtons.add(Button.primary("support-number", "Support ally (specific amount)"));
+            discordGame.getFactionChat(faction.getAlly()).queueMessage("Use buttons below to support your ally's shipment", allyButtons);
         }
         discordGame.queueDeleteMessage();
     }
