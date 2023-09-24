@@ -96,7 +96,7 @@ public class Bidding {
         int numCardsInMarket = numCardsForBid - bidCardNumber;
         if (richeseCacheCardOutstanding) numCardsInMarket--;
         if (game.hasFaction("Ix")) numCardsInMarket++;
-        List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
         for (int i = 0; i < numCardsInMarket; i++) {
             if (treacheryDeck.isEmpty()) {
                 treacheryDeckReshuffled = true;
@@ -106,7 +106,7 @@ public class Bidding {
                 Collections.shuffle(treacheryDeck);
                 treacheryDiscard.clear();
             }
-            market.add(treacheryDeck.remove(0));
+            market.add(treacheryDeck.pollLast());
         }
         marketPopulated = true;
         return numCardsInMarket;
