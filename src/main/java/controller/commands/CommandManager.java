@@ -650,8 +650,8 @@ public class CommandManager extends ListenerAdapter {
 
         if (game.hasFaction(paidToFactionName)) {
             Faction paidToFaction = game.getFaction(paidToFactionName);
+            paidToFaction.addSpice(spentValue);
             spiceMessage(discordGame, spentValue, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
-            game.getFaction(paidToFaction.getName()).addSpice(spentValue);
             turnSummary.queueMessage(
                     MessageFormat.format(
                             "{0} is paid {1} {2} for {3}",
