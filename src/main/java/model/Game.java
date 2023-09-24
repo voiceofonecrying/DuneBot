@@ -469,8 +469,8 @@ public class Game {
         }
     }
 
-    public void drawBonusCard() {
-        getFaction("Harkonnen").addTreacheryCard(getTreacheryDeck().remove(0));
+    public void shuffleTreacheryDeck() {
+        Collections.shuffle(getTreacheryDeck());
     }
 
     /**

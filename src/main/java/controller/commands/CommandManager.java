@@ -110,6 +110,7 @@ public class CommandManager extends ListenerAdapter {
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                 case "draw" -> drawCard(discordGame, game);
+                case "shuffle-treachery-deck" -> shuffleTreacheryDeck(discordGame, game);
                 case "discard" -> discard(discordGame, game);
                 case "transfer-card" -> transferCard(discordGame, game);
                 case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
@@ -177,6 +178,7 @@ public class CommandManager extends ListenerAdapter {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("draw", "Draw a card from the top of a deck.").addOptions(deck, faction));
+        commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
@@ -535,7 +537,12 @@ public class CommandManager extends ListenerAdapter {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
         discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", game.getTreacheryDeck().peekFirst().name() + " drawn from deck.");
-        faction.addTreacheryCard(game.getTreacheryDeck().pop());
+        faction.addTreacheryCard(game.getTreacheryDeck().pollLast());
+        discordGame.pushGame();
+    }
+
+    public void shuffleTreacheryDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        game.shuffleTreacheryDeck();
         discordGame.pushGame();
     }
 
@@ -676,7 +683,7 @@ public class CommandManager extends ListenerAdapter {
                 treacheryDiscard.clear();
             }
 
-            game.drawBonusCard();
+            game.drawCard("treachery deck", "Harkonnen");
             turnSummary.queueMessage(MessageFormat.format(
                     "{0} draws another card from the {1} deck.",
                     winner.getEmoji(), Emojis.TREACHERY

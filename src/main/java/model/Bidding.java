@@ -129,9 +129,9 @@ public class Bidding {
                 .orElseThrow(() -> new IllegalArgumentException("Treachery card not found"));
         market.remove(card);
         if (location.equalsIgnoreCase("top")) {
-            game.getTreacheryDeck().addFirst(card);
-        } else {
             game.getTreacheryDeck().add(card);
+        } else {
+            game.getTreacheryDeck().addFirst(card);
         }
         Collections.shuffle(market);
         ixRejectOutstanding = false;
@@ -181,7 +181,7 @@ public class Bidding {
             treacheryDiscard.clear();
         }
         TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
-        TreacheryCard newCard = treacheryDeck.remove(0);
+        TreacheryCard newCard = treacheryDeck.pollLast();
         ally.addTreacheryCard(newCard);
         game.getTreacheryDiscard().add(cardToSwap);
         ixAllySwapped = true;
