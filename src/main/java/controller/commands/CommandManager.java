@@ -676,7 +676,7 @@ public class CommandManager extends ListenerAdapter {
                 treacheryDiscard.clear();
             }
 
-            game.drawCard("treachery deck", "Harkonnen");
+            game.drawBonusCard();
             turnSummary.queueMessage(MessageFormat.format(
                     "{0} draws another card from the {1} deck.",
                     winner.getEmoji(), Emojis.TREACHERY
