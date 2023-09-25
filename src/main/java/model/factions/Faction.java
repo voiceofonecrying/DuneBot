@@ -53,6 +53,10 @@ public class Faction {
     protected int lowThreshold;
     protected int occupiedIncome;
     protected String homeworld;
+    @Exclude
+    private Force reserves;
+    @Exclude
+    private Force specialReserves;
 
 
 
@@ -260,7 +264,8 @@ public class Faction {
     }
 
     public Force getReserves() {
-        return game.getTerritory(homeworld).getForce(name);
+        if (reserves == null) return game.getTerritory(homeworld).getForce(name);
+        return reserves;
     }
     public void addReserves(int amount) {
         getReserves().addStrength(amount);
@@ -273,7 +278,8 @@ public class Faction {
     }
 
     public Force getSpecialReserves() {
-        return game.getTerritory(homeworld).getForce(name + "*");
+        if (specialReserves == null) return game.getTerritory(homeworld).getForce(name + "*");
+        return specialReserves;
     }
 
     public void addSpecialReserves(int amount) {

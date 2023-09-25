@@ -72,4 +72,9 @@ public class EmperorFaction extends Faction {
     public void setSecundusHighThreshold(boolean secundusHighThreshold) {
         isSecundusHighThreshold = secundusHighThreshold;
     }
+    @Override
+    public Force getSpecialReserves() {
+        if (getSpecialReserves() == null) return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
+        return getSpecialReserves();
+    }
 }
