@@ -96,7 +96,7 @@ public class Bidding {
         int numCardsInMarket = numCardsForBid - bidCardNumber;
         if (richeseCacheCardOutstanding) numCardsInMarket--;
         if (game.hasFaction("Ix")) numCardsInMarket++;
-        List<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
         for (int i = 0; i < numCardsInMarket; i++) {
             if (treacheryDeck.isEmpty()) {
                 treacheryDeckReshuffled = true;
@@ -106,7 +106,7 @@ public class Bidding {
                 Collections.shuffle(treacheryDeck);
                 treacheryDiscard.clear();
             }
-            market.add(treacheryDeck.remove(0));
+            market.add(treacheryDeck.pollLast());
         }
         marketPopulated = true;
         return numCardsInMarket;
@@ -129,9 +129,9 @@ public class Bidding {
                 .orElseThrow(() -> new IllegalArgumentException("Treachery card not found"));
         market.remove(card);
         if (location.equalsIgnoreCase("top")) {
-            game.getTreacheryDeck().addFirst(card);
-        } else {
             game.getTreacheryDeck().add(card);
+        } else {
+            game.getTreacheryDeck().addFirst(card);
         }
         Collections.shuffle(market);
         ixRejectOutstanding = false;
@@ -181,7 +181,7 @@ public class Bidding {
             treacheryDiscard.clear();
         }
         TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
-        TreacheryCard newCard = treacheryDeck.remove(0);
+        TreacheryCard newCard = treacheryDeck.pollLast();
         ally.addTreacheryCard(newCard);
         game.getTreacheryDiscard().add(cardToSwap);
         ixAllySwapped = true;

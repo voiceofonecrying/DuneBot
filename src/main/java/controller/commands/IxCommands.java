@@ -238,8 +238,12 @@ public class IxCommands {
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
         LinkedList<TreacheryCard> ixRejects = new LinkedList<>();
+        boolean cardToKeepFound = false;
         for (TreacheryCard treacheryCard : hand) {
-            if (treacheryCard.equals(card)) continue;
+            if (!cardToKeepFound && treacheryCard.equals(card)) {
+                cardToKeepFound = true;
+                continue;
+            }
             ixRejects.add(treacheryCard);
         }
         Collections.shuffle(ixRejects);

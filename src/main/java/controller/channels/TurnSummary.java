@@ -30,6 +30,7 @@ public class TurnSummary extends DiscordChannel {
                 for (Faction faction : game.getFactions()) {
                     userIds.add(faction.getPlayer());
                 }
+                userIds.add(game.getMod());
                 discordGame.createThread(frontOfShield,turnNumSummaryName, userIds);
                 optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(turnNumSummaryName)).findFirst();
                 if (optThread.isPresent()) {
