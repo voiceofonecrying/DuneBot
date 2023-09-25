@@ -11,7 +11,7 @@ public class EmperorFaction extends Faction {
     private final int secundusHighThreshold;
     private final int secundusLowThreshold;
     private final int secundusOccupiedIncome;
-    private final String secondHomeworld;
+    private String secondHomeworld;
     private boolean isSecundusHighThreshold;
 
     public EmperorFaction(String player, String userName, Game game) throws IOException {
@@ -72,9 +72,14 @@ public class EmperorFaction extends Faction {
     public void setSecundusHighThreshold(boolean secundusHighThreshold) {
         isSecundusHighThreshold = secundusHighThreshold;
     }
+
+    public void setSecondHomeworld(String secondHomeworld) {
+        this.secondHomeworld = secondHomeworld;
+    }
+
     @Override
     public Force getSpecialReserves() {
-        if (getSpecialReserves() == null) return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
-        return getSpecialReserves();
+        if (this.specialReserves != null) return this.specialReserves;
+        return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
     }
 }
