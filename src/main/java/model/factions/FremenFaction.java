@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 import java.io.IOException;
 
@@ -12,9 +13,15 @@ public class FremenFaction extends Faction {
 
         setSpice(3);
         this.freeRevival = 3;
-        this.reserves = new Force("Fremen", 17);
-        this.specialReserves = new Force("Fremen*", 3);
         this.emoji = Emojis.FREMEN;
+        this.highThreshold = 3;
+        this.lowThreshold = 2;
+        this.occupiedIncome = 0;
+        this.homeworld = "Southern Hemisphere";
+        game.getTerritories().put("Southern Hemisphere", new Territory("Southern Hemisphere", -1, false, false, false));
+        game.getTerritory("Southern Hemisphere").addForce(new Force("Fremen", 17));
+        game.getTerritory("Southern Hemisphere").addForce(new Force("Fremen*", 3));
+        game.getHomeworlds().put(getName(), homeworld);
     }
 
     /**

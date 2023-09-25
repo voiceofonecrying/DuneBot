@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -216,10 +217,43 @@ public class DiscordGame {
             List<Message> ml = h.getRetrievedHistory();
             String gameJson = getGameJson(ml.get(0));
             Game game = gameJsonToGame(gameJson);
+            if (game.getFactions().get(0).getReserves() != null) {
+                runHomeworldsMigration(game);
+            }
             GameCache.setGameJson(gameName, gameJson);
             this.game = game;
         }
         return this.game;
+    }
+
+    private void runHomeworldsMigration(Game game) {
+        HashMap<String, String> homeworlds = new HashMap<>();
+        homeworlds.put("Atreides", "Caladan");
+        homeworlds.put("Harkonnen", "Giedi Prime");
+        homeworlds.put("Emperor", "Kaitain");
+        homeworlds.put("Fremen", "Southern Hemisphere");
+        homeworlds.put("Guild", "Junction");
+        homeworlds.put("BG", "Wallach IX");
+        homeworlds.put("Ix", "Ix");
+        homeworlds.put("BT", "Tleilax");
+        homeworlds.put("CHOAM", "Tupile");
+        homeworlds.put("Richese", "Richese");
+        homeworlds.put("Ecaz", "Ecaz");
+        homeworlds.put("Moritani", "Grumman");
+
+        for (Faction faction : game.getFactions()) {
+            String homeworldName = homeworlds.get(faction.getName());
+            Territory homeworld = new Territory(homeworldName, -1, false, false, false);
+            game.getTerritories().put(homeworldName, homeworld);
+            game.getHomeworlds().put(faction.getName(), homeworldName);
+            game.getTerritory(homeworldName).getForces().add(faction.getReserves());
+            if (faction.getName().matches("Fremen|Ix")) game.getTerritory(homeworldName).getForces().add(faction.getSpecialReserves());
+        }
+        if (game.hasFaction("Emperor")) {
+            game.getHomeworlds().put("Emperor*", "Salusa Secundus");
+            game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
+            game.getTerritory("Salusa Secundus").getForces().add(game.getFaction("Emperor").getSpecialReserves());
+        }
     }
 
     /**
@@ -264,16 +298,6 @@ public class DiscordGame {
     }
 
     /**
-     * Removes the reference to the game object from all factions in the game.
-     * @param game Game object to remove references from.
-     */
-    public static void removeGameReferenceFromFactions(Game game) {
-        for (Faction faction : game.getFactions()) {
-            faction.setGame(null);
-        }
-    }
-
-    /**
      * Creates a Gson object that can deserialize the GameState object.
      *
      * @return Gson object that can deserialize the GameState object.
@@ -289,7 +313,6 @@ public class DiscordGame {
         pushGame();
     }
     public void pushGame() throws ChannelNotFoundException {
-        removeGameReferenceFromFactions(this.game);
 
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override

@@ -301,8 +301,10 @@ public class RunCommands {
             if (faction.getName().equals("CHOAM")) continue;
             int spice = faction.getSpice();
             if (faction.getName().equals("BG")) {
-                choamGiven += 2 * multiplier;
-                faction.addSpice(2 * multiplier);
+                int charity = multiplier * 2;
+                choamGiven += charity;
+                if (!faction.isHighThreshold()) charity++;
+                faction.addSpice(charity);
                 turnSummary.queueMessage(faction.getEmoji() + " have received " +
                         2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
                 CommandManager.spiceMessage(discordGame, 2 * multiplier, faction.getSpice(), faction.getName(),
@@ -311,6 +313,7 @@ public class RunCommands {
             else if (spice < 2) {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
+                if (!faction.isHighThreshold()) charity++;
                 faction.addSpice(charity);
                 turnSummary.queueMessage(
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
@@ -548,6 +551,7 @@ public class RunCommands {
             int revived = 0;
             boolean revivedStar = false;
             int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
+            if (!faction.isHighThreshold()) freeRevivals++;
 
             for (int i = freeRevivals; i > 0; i--) {
                 if (game.getForceFromTanks(faction.getName()).getStrength() == 0

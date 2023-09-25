@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.Initializers;
-import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -99,8 +98,10 @@ public class ShowCommands {
         messages.forEach(discordGame::queueDeleteMessage);
 
         Faction faction = game.getFaction(factionName);
-        BufferedImage table = getResourceImage("behind shield");
-        table = table.getSubimage(0, 0, 2000, 1200);
+        BufferedImage table = getResourceImage(faction.getHomeworld());
+        if (factionName.equals("Emperor")) {
+            table = getResourceImage(((EmperorFaction) faction).getSecondHomeworld());
+        }
         table = resize(table, 5000, 5000);
 
         //Place reserves
@@ -196,6 +197,30 @@ public class ShowCommands {
             }
         }
 
+        //Place Homeworld Card
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            String lowHigh = faction.isHighThreshold() ? "High" : "Low";
+            Optional<FileUpload> image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh);
+            if (image.isPresent()) {
+                BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 988, 1376);
+                Point cardPoint = new Point(4500, 750);
+                table = overlay(table, cardImage, cardPoint, 1);
+            }
+            if (factionName.equals("Emperor")) {
+                EmperorFaction emperor = (EmperorFaction) faction;
+                lowHigh = emperor.isSecundusHighThreshold() ? "High" : "Low";
+                image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), emperor.getSecondHomeworld() + " " + lowHigh);
+                if (image.isPresent()) {
+                    BufferedImage cardImage = ImageIO.read(image.get().getData());
+                    cardImage = resize(cardImage, 988, 1376);
+                    Point cardPoint = new Point(4500, 2250);
+                    table = overlay(table, cardImage, cardPoint, 1);
+                }
+
+            }
+        }
+
         //Place nexus card if any
         if (faction.getNexusCard() != null) {
             Optional<FileUpload> image = CardImages.getNexusImage(discordGame.getEvent().getGuild(), faction.getNexusCard().name());
@@ -255,6 +280,37 @@ public class ShowCommands {
         }
 
         BufferedImage board = getResourceImage("Board");
+
+        //If Homeworlds are in play, concatenate homeworlds under the board.
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            BufferedImage homeworlds = new BufferedImage(1, 1024, BufferedImage.TYPE_INT_ARGB);
+            for (Faction faction : game.getFactions()) {
+                BufferedImage homeworld = getResourceImage(faction.getHomeworld());
+                int offset = 0;
+                for (Force force : game.getTerritory(faction.getHomeworld()).getForces()) {
+                    BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                    forceImage = resize(forceImage, 376, 232);
+                    Point forcePlacement = new Point(500, 200 + offset);
+                    homeworld = overlay(homeworld, forceImage, forcePlacement, 1);
+                    offset += 240;
+                }
+                offset = 0;
+                homeworlds = concatenateHorizontally(homeworlds, homeworld);
+                if (faction.getName().equals("Emperor")) {
+                    BufferedImage salusa = getResourceImage("Salusa Secundus");
+                    for (Force force : game.getTerritory(((EmperorFaction)faction).getSecondHomeworld()).getForces()) {
+                        BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                        forceImage = resize(forceImage, 376, 232);
+                        Point forcePlacement = new Point(500, 200 + offset);
+                        salusa = overlay(salusa, forceImage, forcePlacement, 1);
+                        offset += 240;
+                    }
+                    homeworlds = concatenateHorizontally(homeworlds, salusa);
+                }
+            }
+            homeworlds = resize(homeworlds, board.getWidth(), 200);
+            board = concatenateVertically(board, homeworlds);
+        }
 
         // Add border to show where Fremen can ship
         if (game.hasFaction("Fremen")) {
@@ -329,6 +385,7 @@ public class ShowCommands {
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
                     && !territory.isAftermathToken() && !territory.hasTerrorToken()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
             int offset = 0;
             int i = 0;
 
@@ -552,6 +609,40 @@ public class ShowCommands {
         return overlay;
     }
 
+    private static BufferedImage concatenateHorizontally(BufferedImage img1, BufferedImage img2) {
+        int offset = 2;
+        int width = img1.getWidth() + img2.getWidth() + offset;
+        int height = Math.max(img1.getHeight(), img2.getHeight()) + offset;
+        BufferedImage newImage = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = newImage.createGraphics();
+        Color oldColor = g2.getColor();
+        g2.setPaint(Color.BLACK);
+        g2.fillRect(0, 0, width, height);
+        g2.setColor(oldColor);
+        g2.drawImage(img1, null, 0, 0);
+        g2.drawImage(img2, null, img1.getWidth() + offset, 0);
+        g2.dispose();
+        return newImage;
+    }
+
+    private static BufferedImage concatenateVertically(BufferedImage img1, BufferedImage img2) {
+        int offset = 2;
+        int height = img1.getHeight() + img2.getHeight() + offset;
+        int width = Math.max(img1.getWidth(), img2.getWidth()) + offset;
+        BufferedImage newImage = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = newImage.createGraphics();
+        Color oldColor = g2.getColor();
+        g2.setPaint(Color.BLACK);
+        g2.fillRect(0, 0, width, height);
+        g2.setColor(oldColor);
+        g2.drawImage(img1, null, 0, 0);
+        g2.drawImage(img2, null, 0, img1.getHeight() + offset);
+        g2.dispose();
+        return newImage;
+    }
+
     private static BufferedImage rotateImageByDegrees(BufferedImage img, double angle) {
         double rads = Math.toRadians(angle);
         double sin = Math.abs(Math.sin(rads)), cos = Math.abs(Math.cos(rads));
@@ -646,6 +737,19 @@ public class ShowCommands {
         MessageCreateData data = builder.build();
 
         discordGame.queueMessage(infoChannelName, data);
+
+        StringBuilder homeworld = new StringBuilder();
+        if (faction.getGame().hasGameOption(GameOption.HOMEWORLDS)) {
+            MessageCreateBuilder homeworldMessageBuilder = new MessageCreateBuilder();
+            homeworld.append(faction.getHomeworld());
+            String lowHigh = faction.isHighThreshold() ? "High" : "Low";
+            homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh).get());
+            if (faction.getName().equals("Emperor")) {
+                lowHigh = ((EmperorFaction)faction).isSecundusHighThreshold() ? "High" : "Low";
+                homeworldMessageBuilder.addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), "Salusa Secundus " + lowHigh).get());
+            }
+            discordGame.queueMessage(infoChannelName, homeworldMessageBuilder);
+        }
 
         List<TreacheryCard> treacheryCards = faction.getTreacheryHand();
         if (treacheryCards.isEmpty()) return;

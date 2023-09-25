@@ -58,6 +58,7 @@ public class Game {
     private boolean sandtroutInPlay;
 
     private transient final HashMap<String, List<String>> adjacencyList;
+    private final HashMap<String, String> homeworlds;
 
     public Game() throws IOException {
         super();
@@ -92,6 +93,7 @@ public class Game {
         this.mod = "";
         this.gameRoleMention = "";
         this.onHold = false;
+        this.homeworlds = new HashMap<>();
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -505,5 +507,9 @@ public class Game {
 
     public LinkedList<NexusCard> getNexusDiscard() {
         return nexusDiscard;
+    }
+
+    public HashMap<String, String> getHomeworlds() {
+        return homeworlds;
     }
 }

@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.UpdateType;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 import java.io.IOException;
 
@@ -16,9 +17,15 @@ public class AtreidesFaction extends Faction {
         setSpice(10);
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
-        this.reserves = new Force("Atreides", 10);
         this.emoji = Emojis.ATREIDES;
-        game.getTerritories().get("Arrakeen").getForces().add(new Force("Atreides", 10));
+        this.highThreshold = 6;
+        this.lowThreshold = 5;
+        this.occupiedIncome = 2;
+        this.homeworld = "Caladan";
+        game.getTerritory("Arrakeen").getForces().add(new Force("Atreides", 10));
+        game.getTerritories().put("Caladan", new Territory("Caladan", -1, false, false, false));
+        game.getTerritory("Caladan").addForce(new Force("Atreides", 10));
+        game.getHomeworlds().put(getName(), homeworld);
 
         this.forcesLost = 0;
     }

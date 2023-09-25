@@ -3,18 +3,38 @@ package model.factions;
 import constants.Emojis;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 import java.io.IOException;
 
 public class EmperorFaction extends Faction {
+    private final int secundusHighThreshold;
+    private final int secundusLowThreshold;
+    private final int secundusOccupiedIncome;
+    private final String secondHomeworld;
+    private boolean isSecundusHighThreshold;
+
     public EmperorFaction(String player, String userName, Game game) throws IOException {
         super("Emperor", player, userName, game);
 
         setSpice(10);
         this.freeRevival = 1;
-        this.reserves = new Force("Emperor", 15);
-        this.specialReserves = new Force("Emperor*", 5);
         this.emoji = Emojis.EMPEROR;
+        this.highThreshold = 5;
+        this.lowThreshold = 4;
+        this.homeworld = "Kaitain";
+        this.secondHomeworld = "Salusa Secundus";
+        game.getTerritories().put("Kaitain", new Territory("Kaitain", -1, false, false, false));
+        game.getTerritory("Kaitain").addForce(new Force("Emperor", 15));
+        game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
+        game.getTerritory("Salusa Secundus").addForce(new Force("Emperor*", 5));
+        game.getHomeworlds().put(getName(), homeworld);
+        game.getHomeworlds().put(getName() + "*", secondHomeworld);
+        this.occupiedIncome = 2;
+        this.secundusHighThreshold = 2;
+        this.secundusLowThreshold = 2;
+        this.secundusOccupiedIncome = 0;
+        this.isSecundusHighThreshold = true;
     }
 
     /**
@@ -28,5 +48,33 @@ public class EmperorFaction extends Faction {
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
         removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+    }
+    public int getSecundusHighThreshold() {
+        return secundusHighThreshold;
+    }
+
+    public int getSecundusLowThreshold() {
+        return secundusLowThreshold;
+    }
+
+    public int getSecundusOccupiedIncome() {
+        return secundusOccupiedIncome;
+    }
+
+    public String getSecondHomeworld() {
+        return secondHomeworld;
+    }
+
+    public boolean isSecundusHighThreshold() {
+        return isSecundusHighThreshold;
+    }
+
+    public void setSecundusHighThreshold(boolean secundusHighThreshold) {
+        isSecundusHighThreshold = secundusHighThreshold;
+    }
+    @Override
+    public Force getSpecialReserves() {
+        if (getSpecialReserves() == null) return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
+        return getSpecialReserves();
     }
 }

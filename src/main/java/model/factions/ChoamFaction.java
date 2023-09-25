@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.ChoamInflationType;
 import model.Force;
 import model.Game;
+import model.Territory;
 
 import java.io.IOException;
 
@@ -16,8 +17,14 @@ public class ChoamFaction extends Faction {
 
         setSpice(2);
         this.freeRevival = 0;
-        this.reserves = new Force("CHOAM", 20);
         this.emoji = Emojis.CHOAM;
+        this.highThreshold = 11;
+        this.lowThreshold = 10;
+        this.homeworld = "Tupile";
+        game.getTerritories().put("Tupile", new Territory("Tupile", -1, false, false, false));
+        game.getTerritory("Tupile").addForce(new Force("CHOAM", 20));
+        game.getHomeworlds().put(getName(), homeworld);
+        this.occupiedIncome = 2;
         this.handLimit = 5;
         this.firstInflationRound = 0;
     }

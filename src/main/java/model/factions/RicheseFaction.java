@@ -18,8 +18,14 @@ public class RicheseFaction extends Faction {
 
         setSpice(5);
         this.freeRevival = 2;
-        this.reserves = new Force("Richese", 20);
         this.emoji = Emojis.RICHESE;
+        this.highThreshold = 10;
+        this.lowThreshold = 9;
+        this.occupiedIncome = 1;
+        this.homeworld = "Richese";
+        game.getTerritories().put("Richese", new Territory("Richese", -1, false, false, false));
+        game.getTerritory("Richese").addForce(new Force("Richese", 20));
+        game.getHomeworlds().put(getName(), homeworld);
         this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);
         this.behindShieldNoField.add(3);

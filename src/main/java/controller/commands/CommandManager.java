@@ -8,6 +8,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
+import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.Permission;
@@ -16,6 +17,7 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -649,14 +651,25 @@ public class CommandManager extends ListenerAdapter {
         spiceMessage(discordGame, spentValue, winner.getSpice(), winner.getName(), currentCard, false);
 
         if (game.hasFaction(paidToFactionName)) {
+            int spicePaid = spentValue;
             Faction paidToFaction = game.getFaction(paidToFactionName);
-            paidToFaction.addSpice(spentValue);
-            spiceMessage(discordGame, spentValue, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+
+            if (paidToFaction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS)
+            && !game.getFaction("Emperor").isHighThreshold()) {
+                spicePaid = Math.ceilDiv(spentValue, 2);
+                if (game.getTerritory("Kaitain").getForces().stream().anyMatch(force -> !force.getName().equals("Emperor"))) {
+                    spiceMessage(discordGame, Math.floorDiv(spentValue, 2), paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+                    game.getFaction(paidToFaction.getName()).addSpice(Math.floorDiv(spentValue, 2));
+                }
+            }
+            spiceMessage(discordGame, spicePaid, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+            game.getFaction(paidToFaction.getName()).addSpice(spicePaid);
+
             turnSummary.queueMessage(
                     MessageFormat.format(
                             "{0} is paid {1} {2} for {3}",
                             paidToFaction.getEmoji(),
-                            spentValue,
+                            spicePaid,
                             Emojis.SPICE,
                             currentCard
                     )
@@ -769,7 +782,25 @@ public class CommandManager extends ListenerAdapter {
         }
 
         discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " for " + revivalCost + " " + Emojis.SPICE);
+        String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
+        if (game.hasGameOption(GameOption.HOMEWORLDS)){
+            if (faction.getName().equals("Emperor")) {
+                EmperorFaction emperor = (EmperorFaction) faction;
+                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                    emperor.setHighThreshold(true);
+                }
+                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()){
+                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
+                    emperor.setSecundusHighThreshold(true);
+                }
+            }
+            else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
+                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                faction.setHighThreshold(true);
+            }
+        }
     }
 
     /**
@@ -882,7 +913,10 @@ public class CommandManager extends ListenerAdapter {
             }
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
-            if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))) {
+            if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
+                    && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()
+                    && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())))
+            {
                 List<Button> buttons = new LinkedList<>();
                 buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
                 buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
@@ -916,6 +950,10 @@ public class CommandManager extends ListenerAdapter {
                 buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance"));
                 turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
             }
+        }
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && (reserves.getStrength() + specialReserves.getStrength() < targetFaction.getHighThreshold()) && targetFaction.isHighThreshold()) {
+            discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
+            targetFaction.setHighThreshold(false);
         }
     }
 
@@ -1049,12 +1087,23 @@ public class CommandManager extends ListenerAdapter {
         int specialAmount = discordGame.required(starredAmount).getAsInt();
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
-        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks, game, discordGame);
         discordGame.pushGame();
     }
-    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
+    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.getHomeworlds().values().contains(territoryName)) {
+            Faction homeworldFaction = game.getFactions().stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
+            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction)homeworldFaction).getSecundusHighThreshold() > game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction)homeworldFaction).isSecundusHighThreshold()) {
+                ((EmperorFaction)homeworldFaction).setSecundusHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage("Salusa Secundus has flipped to low threshold.");
+
+            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
+                homeworldFaction.setHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
+            }
+        }
     }
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
