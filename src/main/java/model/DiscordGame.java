@@ -220,7 +220,7 @@ public class DiscordGame {
             if (game.getFactions().get(0).getReserves() != null) {
                 runHomeworldsMigration(game);
             }
-            GameCache.setGameJson(gameName, gameJson);
+            else GameCache.setGameJson(gameName, gameJson);
             this.game = game;
         }
         return this.game;
@@ -242,15 +242,19 @@ public class DiscordGame {
         homeworlds.put("Moritani", "Grumman");
 
         for (Faction faction : game.getFactions()) {
+            int reserves = faction.getReserves().getStrength();
+            int specialReserves = faction.getSpecialReserves().getStrength();
             String homeworldName = homeworlds.get(faction.getName());
+            faction.setHomeworld(homeworldName);
             Territory homeworld = new Territory(homeworldName, -1, false, false, false);
             game.getTerritories().put(homeworldName, homeworld);
             game.getHomeworlds().put(faction.getName(), homeworldName);
-            game.getTerritory(homeworldName).getForces().add(faction.getReserves());
-            if (faction.getName().matches("Fremen|Ix")) game.getTerritory(homeworldName).getForces().add(faction.getSpecialReserves());
+            game.getTerritory(homeworldName).getForces().add(new Force(faction.getName(), reserves));
+            if (faction.getName().matches("Fremen|Ix")) game.getTerritory(homeworldName).getForces().add(new Force(faction.getName() + "*", specialReserves));
         }
         if (game.hasFaction("Emperor")) {
             game.getHomeworlds().put("Emperor*", "Salusa Secundus");
+            ((EmperorFaction)game.getFaction("Emperor")).setSecondHomeworld("Salusa Secundus");
             game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
             game.getTerritory("Salusa Secundus").getForces().add(game.getFaction("Emperor").getSpecialReserves());
         }
