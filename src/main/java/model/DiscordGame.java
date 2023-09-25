@@ -245,10 +245,12 @@ public class DiscordGame {
             String homeworldName = homeworlds.get(faction.getName());
             Territory homeworld = new Territory(homeworldName, -1, false, false, false);
             game.getTerritories().put(homeworldName, homeworld);
+            game.getHomeworlds().put(faction.getName(), homeworldName);
             game.getTerritory(homeworldName).getForces().add(faction.getReserves());
             if (faction.getName().matches("Fremen|Ix")) game.getTerritory(homeworldName).getForces().add(faction.getSpecialReserves());
         }
         if (game.hasFaction("Emperor")) {
+            game.getHomeworlds().put("Emperor*", "Salusa Secundus");
             game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
             game.getTerritory("Salusa Secundus").getForces().add(game.getFaction("Emperor").getSpecialReserves());
         }
