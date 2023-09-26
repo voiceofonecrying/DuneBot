@@ -658,8 +658,8 @@ public class CommandManager extends ListenerAdapter {
             && !game.getFaction("Emperor").isHighThreshold()) {
                 spicePaid = Math.ceilDiv(spentValue, 2);
                 if (game.getTerritory("Kaitain").getForces().stream().anyMatch(force -> !force.getName().equals("Emperor"))) {
+                    paidToFaction.addSpice(Math.floorDiv(spentValue, 2));
                     spiceMessage(discordGame, Math.floorDiv(spentValue, 2), paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
-                    game.getFaction(paidToFaction.getName()).addSpice(Math.floorDiv(spentValue, 2));
                 }
             }
             spiceMessage(discordGame, spicePaid, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
