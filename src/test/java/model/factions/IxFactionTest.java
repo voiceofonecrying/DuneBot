@@ -45,6 +45,7 @@ class IxFactionTest extends FactionTestTemplate {
         assertTrue(game.getTerritories().containsKey("Hidden Mobile Stronghold"));
 
         for (String territoryName : game.getTerritories().keySet()) {
+            if (game.getHomeworlds().values().contains(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Hidden Mobile Stronghold")) {
                 assertEquals(territory.getForces().get(0).getStrength(), 3);

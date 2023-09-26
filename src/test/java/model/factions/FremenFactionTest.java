@@ -42,6 +42,7 @@ class FremenFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
+            if (game.getHomeworlds().values().contains(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             assertEquals(territory.getForces().size(), 0);
         }

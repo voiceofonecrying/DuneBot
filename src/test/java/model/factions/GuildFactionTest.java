@@ -39,6 +39,7 @@ class GuildFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
+            if (game.getHomeworlds().values().contains(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Tuek's Sietch")) {
                 assertEquals(territory.getForces().get(0).getStrength(), 5);
