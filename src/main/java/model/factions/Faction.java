@@ -54,7 +54,7 @@ public class Faction {
     protected int occupiedIncome;
     protected String homeworld;
     @Exclude
-    protected Force reserves;
+    public Force reserves;
     @Exclude
     protected Force specialReserves;
 
