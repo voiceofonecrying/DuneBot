@@ -312,7 +312,7 @@ public class RunCommands {
             } else if (spice < 2) {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
-                if (!faction.isHighThreshold()) charity++;
+                if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
                 faction.addSpice(charity);
                 turnSummary.queueMessage(
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
@@ -549,7 +549,7 @@ public class RunCommands {
             int revived = 0;
             boolean revivedStar = false;
             int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
-            if (!faction.isHighThreshold()) freeRevivals++;
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) freeRevivals++;
 
             for (int i = freeRevivals; i > 0; i--) {
                 if (game.getForceFromTanks(faction.getName()).getStrength() == 0
