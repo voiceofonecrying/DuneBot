@@ -13,54 +13,47 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 public class Faction {
-    @Exclude
-    private Set<UpdateType> updateTypes;
     private final String name;
-    protected String emoji;
-    private String player;
-    private String userName;
-    private boolean graphicDisplay;
-    protected int handLimit;
-    protected int spice;
     private final List<TechToken> techTokens;
-    private int frontOfShieldSpice;
-    protected int freeRevival;
-    protected boolean hasMiningEquipment;
-    private String ally;
-    private String bid;
-
-    private int maxBid;
-    private boolean useExact;
-    private boolean autoBid;
-    private boolean outbidAlly;
-    private boolean specialKaramaPowerUsed;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
     private final List<Long> buttonMessages;
-
-    private NexusCard nexusCard;
     private final List<Leader> leaders;
-    private Shipment shipment;
-    private Movement movement;
-    private int allySpiceShipment;
-    private int allySpiceBidding;
-
-    private int maxRevival;
-    private boolean isHighThreshold;
+    @Exclude
+    public Force reserves;
+    protected String emoji;
+    protected int handLimit;
+    protected int spice;
+    protected int freeRevival;
+    protected boolean hasMiningEquipment;
     protected int highThreshold;
     protected int lowThreshold;
     protected int occupiedIncome;
     protected String homeworld;
     @Exclude
-    public Force reserves;
-    @Exclude
     protected Force specialReserves;
-
-
-
-
+    @Exclude
+    private Set<UpdateType> updateTypes;
+    private String player;
+    private String userName;
+    private boolean graphicDisplay;
+    private int frontOfShieldSpice;
+    private String ally;
+    private String bid;
+    private int maxBid;
+    private boolean useExact;
+    private boolean autoBid;
+    private boolean outbidAlly;
+    private boolean specialKaramaPowerUsed;
+    private NexusCard nexusCard;
+    private Shipment shipment;
+    private Movement movement;
+    private int allySpiceShipment;
+    private int allySpiceBidding;
+    private int maxRevival;
+    private boolean isHighThreshold;
     @Exclude
     private Game game;
 
@@ -126,12 +119,12 @@ public class Faction {
         return this.updateTypes;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
     public Game getGame() {
         return game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 
     public String getName() {
@@ -166,9 +159,11 @@ public class Faction {
     public void setAlly(String ally) {
         this.ally = ally;
     }
+
     public void removeAlly() {
         ally = null;
     }
+
     public boolean hasAlly() {
         return ally != null;
     }
@@ -216,10 +211,9 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public TraitorCard removeTraitorCard(TraitorCard card) {
+    public void removeTraitorCard(TraitorCard card) {
         traitorHand.remove(card);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        return card;
     }
 
     public List<TraitorCard> getTraitorHand() {
@@ -230,7 +224,10 @@ public class Faction {
         return leaderSkillsHand;
     }
 
-    public List<StrongholdCard> getStrongholdCards() {return strongholdCards;}
+    public List<StrongholdCard> getStrongholdCards() {
+        return strongholdCards;
+    }
+
     public void addStrongholdCard(StrongholdCard card) {
         strongholdCards.add(card);
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
@@ -267,6 +264,7 @@ public class Faction {
         if (reserves != null) return reserves;
         return game.getTerritory(homeworld).getForce(name);
     }
+
     public void addReserves(int amount) {
         getReserves().addStrength(amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -296,6 +294,10 @@ public class Faction {
         return frontOfShieldSpice;
     }
 
+    public void setFrontOfShieldSpice(int frontOfShieldSpice) {
+        this.frontOfShieldSpice = frontOfShieldSpice;
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+    }
 
     public int getFreeRevival() {
         return freeRevival;
@@ -340,11 +342,6 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void setFrontOfShieldSpice(int frontOfShieldSpice) {
-        this.frontOfShieldSpice = frontOfShieldSpice;
-        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
-    }
-
     public void addFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice += spice;
@@ -354,7 +351,8 @@ public class Faction {
     public void subtractFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         this.frontOfShieldSpice -= spice;
-        if (this.frontOfShieldSpice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
+        if (this.frontOfShieldSpice < 0)
+            throw new IllegalStateException("Faction cannot spend more spice than they have.");
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
@@ -414,7 +412,7 @@ public class Faction {
         return specialKaramaPowerUsed;
     }
 
-    public void setSpecialKaramaPowerUsed(boolean autoBid) {
+    public void setSpecialKaramaPowerUsed(boolean specialKaramaPowerUsed) {
         this.specialKaramaPowerUsed = specialKaramaPowerUsed;
     }
 
@@ -431,10 +429,11 @@ public class Faction {
 
     /**
      * Adds forces from a Territory to the reserves or tanks
+     *
      * @param territoryName The name of the Territory.
-     * @param amount The amount of the force.
-     * @param isSpecial Whether the force is special or not.
-     * @param toTanks Whether the force is going to the tanks or not.
+     * @param amount        The amount of the force.
+     * @param isSpecial     Whether the force is special or not.
+     * @param toTanks       Whether the force is going to the tanks or not.
      */
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         if (isSpecial) {
@@ -447,11 +446,12 @@ public class Faction {
 
     /**
      * Removes forces from a Territory and adds them to the reserves or tanks
+     *
      * @param territoryName The name of the Territory.
-     * @param forceName The name of the force.
-     * @param amount The amount of the force.
-     * @param toTanks Weather the force is going to the tanks or not.
-     * @param isSpecial Whether the force is special or not.
+     * @param forceName     The name of the force.
+     * @param amount        The amount of the force.
+     * @param toTanks       Weather the force is going to the tanks or not.
+     * @param isSpecial     Whether the force is special or not.
      */
     public void removeForces(String territoryName, String forceName, int amount, boolean toTanks, boolean isSpecial,
                              String targetForceName) {
@@ -472,10 +472,12 @@ public class Faction {
             game.getForceFromTanks(targetForceName).addStrength(amount);
         } else {
             if (isSpecial) {
-                if (game.getTerritory(homeworld).hasForce(name + "*")) game.getTerritory(homeworld).getForce(name + "*").addStrength(amount);
+                if (game.getTerritory(homeworld).hasForce(name + "*"))
+                    game.getTerritory(homeworld).getForce(name + "*").addStrength(amount);
                 else game.getTerritory(homeworld).addForce(new Force(name + "*", amount));
             } else {
-                if (game.getTerritory(homeworld).hasForce(name)) game.getTerritory(homeworld).getForce(name).addStrength(amount);
+                if (game.getTerritory(homeworld).hasForce(name))
+                    game.getTerritory(homeworld).getForce(name).addStrength(amount);
                 else game.getTerritory(homeworld).addForce(new Force(name, amount));
             }
             setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -486,6 +488,7 @@ public class Faction {
     /**
      * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
      * spice.  It only calculates the total
+     *
      * @param territory The territory to calculate the spice from
      * @return The total spice that would be collected from the territory
      */
@@ -556,6 +559,7 @@ public class Faction {
     public void setMaxRevival(int maxRevival) {
         this.maxRevival = maxRevival;
     }
+
     public int getHighThreshold() {
         return highThreshold;
     }
@@ -572,13 +576,15 @@ public class Faction {
         return homeworld;
     }
 
-    public void setHighThreshold(boolean highThreshold) {
-        isHighThreshold = highThreshold;
+    public void setHomeworld(String homeworld) {
+        this.homeworld = homeworld;
     }
+
     public boolean isHighThreshold() {
         return isHighThreshold;
     }
-    public void setHomeworld(String homeworld) {
-        this.homeworld = homeworld;
+
+    public void setHighThreshold(boolean highThreshold) {
+        isHighThreshold = highThreshold;
     }
 }

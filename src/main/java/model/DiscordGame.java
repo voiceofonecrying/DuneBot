@@ -10,9 +10,12 @@ import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
-import model.factions.*;
+import model.factions.EmperorFaction;
+import model.factions.Faction;
+import model.factions.FactionTypeSelector;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -46,12 +49,11 @@ import java.util.concurrent.ExecutionException;
 
 public class DiscordGame {
     private final Category gameCategory;
+    @SuppressWarnings("rawtypes")
+    private final List<RestAction> messageQueue = new ArrayList<>();
     private List<TextChannel> textChannelList;
     private Game game;
-
     private GenericInteractionCreateEvent event;
-
-    private final List<RestAction> messageQueue = new ArrayList<>();
 
     public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = categoryFromEvent(event);
@@ -76,9 +78,9 @@ public class DiscordGame {
         Channel channel = Objects.requireNonNull(event.getChannel());
         TextChannel textChannel = null;
         if (channel instanceof TextChannel) {
-            textChannel = (TextChannel)channel;
+            textChannel = (TextChannel) channel;
         } else if (channel instanceof ThreadChannel) {
-            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+            textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
         return textChannel.getParentCategory();
     }
@@ -87,9 +89,9 @@ public class DiscordGame {
         MessageChannelUnion channel = Objects.requireNonNull(event.getChannel());
         TextChannel textChannel = null;
         if (channel instanceof TextChannel) {
-            textChannel = (TextChannel)channel;
+            textChannel = (TextChannel) channel;
         } else if (channel instanceof ThreadChannel) {
-            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+            textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
         return textChannel.getParentCategory();
     }
@@ -98,11 +100,33 @@ public class DiscordGame {
         MessageChannelUnion channel = Objects.requireNonNull(event.getChannel());
         TextChannel textChannel = null;
         if (channel instanceof TextChannel) {
-            textChannel = (TextChannel)channel;
+            textChannel = (TextChannel) channel;
         } else if (channel instanceof ThreadChannel) {
-            textChannel = ((ThreadChannel)channel).getParentChannel().asTextChannel();
+            textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
         return textChannel.getParentCategory();
+    }
+
+    /**
+     * Adds a reference to the game object to all factions in the game.
+     *
+     * @param game Game object to add references to.
+     */
+    public static void addGameReferenceToFactions(Game game) {
+        for (Faction faction : game.getFactions()) {
+            faction.setGame(game);
+        }
+    }
+
+    /**
+     * Creates a Gson object that can deserialize the GameState object.
+     *
+     * @return Gson object that can deserialize the GameState object.
+     */
+    public static Gson createGsonDeserializer() {
+        GsonFireBuilder builder = new GsonFireBuilder()
+                .registerTypeSelector(Faction.class, new FactionTypeSelector());
+        return builder.createGson();
     }
 
     public Category getGameCategory() {
@@ -190,17 +214,13 @@ public class DiscordGame {
         return this.event;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
-    }
-
     /**
      * Loads the game state from the bot data channel, or returns an already loaded game state.
      *
      * @return Game object representing the game state.
      * @throws ChannelNotFoundException If the bot data channel is not found.
      */
-    public Game getGame() throws ChannelNotFoundException, IOException {
+    public Game getGame() throws ChannelNotFoundException {
         if (this.game == null) {
             String gameName = this.gameCategory.getName();
 
@@ -219,11 +239,14 @@ public class DiscordGame {
             Game game = gameJsonToGame(gameJson);
             if (game.getFactions().isEmpty() && game.getFactions().get(0).reserves != null) {
                 runHomeworldsMigration(game);
-            }
-            else GameCache.setGameJson(gameName, gameJson);
+            } else GameCache.setGameJson(gameName, gameJson);
             this.game = game;
         }
         return this.game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 
     private void runHomeworldsMigration(Game game) {
@@ -250,11 +273,12 @@ public class DiscordGame {
             game.getTerritories().put(homeworldName, homeworld);
             game.getHomeworlds().put(faction.getName(), homeworldName);
             game.getTerritory(homeworldName).getForces().add(new Force(faction.getName(), reserves));
-            if (faction.getName().matches("Fremen|Ix")) game.getTerritory(homeworldName).getForces().add(new Force(faction.getName() + "*", specialReserves));
+            if (faction.getName().matches("Fremen|Ix"))
+                game.getTerritory(homeworldName).getForces().add(new Force(faction.getName() + "*", specialReserves));
         }
         if (game.hasFaction("Emperor")) {
             game.getHomeworlds().put("Emperor*", "Salusa Secundus");
-            ((EmperorFaction)game.getFaction("Emperor")).setSecondHomeworld("Salusa Secundus");
+            ((EmperorFaction) game.getFaction("Emperor")).setSecondHomeworld("Salusa Secundus");
             game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
             game.getTerritory("Salusa Secundus").getForces().add(game.getFaction("Emperor").getSpecialReserves());
         }
@@ -291,31 +315,11 @@ public class DiscordGame {
         return returnGame;
     }
 
-    /**
-     * Adds a reference to the game object to all factions in the game.
-     * @param game Game object to add references to.
-     */
-    public static void addGameReferenceToFactions(Game game) {
-        for (Faction faction : game.getFactions()) {
-            faction.setGame(game);
-        }
-    }
-
-    /**
-     * Creates a Gson object that can deserialize the GameState object.
-     *
-     * @return Gson object that can deserialize the GameState object.
-     */
-    public static Gson createGsonDeserializer() {
-        GsonFireBuilder builder = new GsonFireBuilder()
-                .registerTypeSelector(Faction.class, new FactionTypeSelector());
-        return builder.createGson();
-    }
-
     public void pushGame(Game game) throws ChannelNotFoundException {
         this.game = game;
         pushGame();
     }
+
     public void pushGame() throws ChannelNotFoundException {
 
         ExclusionStrategy strategy = new ExclusionStrategy() {
@@ -345,8 +349,7 @@ public class DiscordGame {
             SlashCommandInteractionEvent slashCommandInteractionEvent = (SlashCommandInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Command: `" + slashCommandInteractionEvent.getCommandString() + "`";
             queueMessage("bot-data", message, fileUpload);
-        }
-        else {
+        } else {
             ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + buttonInteractionEvent.getMember().getUser().getName() + "`";
             queueMessage("bot-data", message, fileUpload);
@@ -358,14 +361,16 @@ public class DiscordGame {
         return channel.sendMessage(message);
     }
 
+    @SuppressWarnings("rawtypes")
     public List<RestAction> getMessageQueue() {
         return messageQueue;
     }
 
     /**
      * Queues a message to be sent to the given channel.
+     *
      * @param channelName Channel name to send the message to.
-     * @param message Message to send.
+     * @param message     Message to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, String message) throws ChannelNotFoundException {
@@ -375,8 +380,9 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
+     *
      * @param channelName Channel name to send the message to.
-     * @param message Message to send.
+     * @param message     Message to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, MessageCreateData message) throws ChannelNotFoundException {
@@ -386,9 +392,10 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
+     *
      * @param channelName Channel name to send the message to.
-     * @param message Message to send.
-     * @param fileUpload File to send.
+     * @param message     Message to send.
+     * @param fileUpload  File to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, String message, FileUpload fileUpload) throws ChannelNotFoundException {
@@ -398,8 +405,9 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
+     *
      * @param channelName Channel name to send the message to.
-     * @param message Message to send.
+     * @param message     Message to send.
      * @param fileUploads Files to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
@@ -410,8 +418,9 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
+     *
      * @param channelName Channel name to send the message to.
-     * @param fileUpload File to send.
+     * @param fileUpload  File to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, FileUpload fileUpload) throws ChannelNotFoundException {
@@ -423,7 +432,8 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
-     * @param channelName Channel name to send the message to.
+     *
+     * @param channelName          Channel name to send the message to.
      * @param messageCreateBuilder Message to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
@@ -434,6 +444,7 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent.
+     *
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
@@ -442,6 +453,7 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent.
+     *
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(MessageCreateAction messageCreateAction) {
@@ -450,6 +462,7 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the event channel.
+     *
      * @param message Message to send.
      */
     public void queueMessage(String message) {
@@ -458,6 +471,7 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the event channel.
+     *
      * @param message Message to send.
      */
     public void queueMessage(MessageCreateBuilder message) {
@@ -472,8 +486,9 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the given channel.
-     * @param channelName Name of the parent channel whcih has the thread
-     * @param threadName Name of the thread to send the message to
+     *
+     * @param channelName          Name of the parent channel which has the thread
+     * @param threadName           Name of the thread to send the message to
      * @param messageCreateBuilder Message to send.
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
@@ -485,6 +500,7 @@ public class DiscordGame {
 
     /**
      * Queues a message to be sent to the ephemeral channel.
+     *
      * @param message Message to send.
      */
     public void queueMessageToEphemeral(String message) {
@@ -495,14 +511,16 @@ public class DiscordGame {
      * Queue deletion of the message that triggered the event.
      */
     public void queueDeleteMessage() {
-        if (event instanceof ButtonInteractionEvent){
-            messageQueue.add(((ButtonInteractionEvent)event).getMessage().delete());
+        if (event instanceof ButtonInteractionEvent) {
+            messageQueue.add(((ButtonInteractionEvent) event).getMessage().delete());
         } else {
             throw new IllegalArgumentException("Unknown event type");
         }
     }
 
-    /** Queue deletion of the given message.
+    /**
+     * Queue deletion of the given message.
+     *
      * @param message Message to delete.
      */
     public void queueDeleteMessage(Message message) {
@@ -511,6 +529,7 @@ public class DiscordGame {
 
     /**
      * Get hook from the current event
+     *
      * @return InteractionHook from the current event
      */
     private InteractionHook getHook() {
@@ -525,6 +544,7 @@ public class DiscordGame {
     /**
      * Sends all messages in the message queue.
      */
+    @SuppressWarnings("rawtypes")
     public void sendAllMessages() {
         if (this.game.getMute()) return;
         for (RestAction restAction : messageQueue) {
@@ -539,12 +559,12 @@ public class DiscordGame {
 
     /**
      * Creates a thread in the parent channel with the given name and adds the given users to it.
+     *
      * @param parentChannel The parent channel
-     * @param threadName The name of the thread to create
-     * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
-     * @throws ChannelNotFoundException Thrown if the parent channel is not found.
+     * @param threadName    The name of the thread to create
+     * @param userIds       The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
-    public void createThread(TextChannel parentChannel, String threadName, List<String> userIds) throws ChannelNotFoundException {
+    public void createThread(TextChannel parentChannel, String threadName, List<String> userIds) {
         ThreadChannel threadChannel = parentChannel.createThreadChannel(threadName, true)
                 .setInvitable(false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
@@ -554,8 +574,9 @@ public class DiscordGame {
 
     /**
      * Adds the given users to the given thread.
+     *
      * @param threadChannel The thread to add the users to
-     * @param userIds The ids of the users to add to the thread.  All non-numeric characters will be removed.
+     * @param userIds       The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
     public void addUsersToThread(ThreadChannel threadChannel, List<String> userIds) {
         JDA jda = threadChannel.getJDA();

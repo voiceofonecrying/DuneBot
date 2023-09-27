@@ -1,25 +1,30 @@
 package controller.buttons;
 
 import constants.Emojis;
-import exceptions.InvalidGameStateException;
 import controller.commands.RicheseCommands;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
-import model.*;
+import exceptions.InvalidGameStateException;
+import model.DiscordGame;
+import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+
 import java.io.IOException;
 
 public class RicheseButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (event.getComponentId().startsWith("richeserunblackmarket-")) runBlackMarket(event, discordGame, game);
-        else if (event.getComponentId().startsWith("richeseblackmarketmethod-")) blackMarketMethod(event, discordGame, game);
+        else if (event.getComponentId().startsWith("richeseblackmarketmethod-"))
+            blackMarketMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richeseblackmarket-")) confirmBlackMarket(event, discordGame, game);
         else if (event.getComponentId().startsWith("richesecachetime-")) cacheCardTime(event, discordGame);
         else if (event.getComponentId().equals("richesecachelast-confirm")) confirmLast(discordGame, game);
         else if (event.getComponentId().startsWith("richesecachecard-")) cacheCard(event, discordGame);
-        else if (event.getComponentId().startsWith("richesecachecardmethod-")) cacheCardMethod(event, discordGame, game);
-        else if (event.getComponentId().startsWith("richesecachecardconfirm-")) confirmCacheCard(event, discordGame, game);
+        else if (event.getComponentId().startsWith("richesecachecardmethod-"))
+            cacheCardMethod(event, discordGame, game);
+        else if (event.getComponentId().startsWith("richesecachecardconfirm-"))
+            confirmCacheCard(event, discordGame, game);
     }
 
     private static void runBlackMarket(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
@@ -34,7 +39,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException{
+    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String cardName = event.getComponentId().split("-")[1];
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
@@ -63,7 +68,7 @@ public class RicheseButtons implements Pressable {
         }
     }
 
-    private static void cacheCardTime(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException{
+    private static void cacheCardTime(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         String time = event.getComponentId().split("-")[1];
         discordGame.queueDeleteMessage();
         if (time.equals("last")) {
@@ -79,7 +84,7 @@ public class RicheseButtons implements Pressable {
         RunCommands.bidding(discordGame, game);
     }
 
-    private static void cacheCard(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException{
+    private static void cacheCard(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         String cardName = event.getComponentId().split("-")[1];
         discordGame.queueMessage("You selected " + cardName.trim() + ".");

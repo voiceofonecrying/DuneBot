@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -42,6 +41,450 @@ import static controller.commands.ShowCommands.showFactionInfo;
 
 public class CommandManager extends ListenerAdapter {
 
+    public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        String winnerName = bidding.getBidLeader();
+        if (winnerName.isEmpty()) {
+            if (bidding.isRicheseCacheCard() || bidding.isBlackMarketCard())
+                assignAndPayForCard(discordGame, game, "Richese", "", 0);
+            else
+                throw new InvalidGameStateException("There is no top bidder for this card.");
+        } else {
+            String paidToFactionName = "Bank";
+            if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
+                paidToFactionName = "Richese";
+            else if (!winnerName.equals("Emperor"))
+                paidToFactionName = "Emperor";
+            int spentValue = bidding.getCurrentBid();
+            assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+        }
+    }
+
+    public static void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() == null) {
+            throw new InvalidGameStateException("There is no card up for bid.");
+        }
+        Faction winner = game.getFaction(winnerName);
+        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
+        if (winner.getSpice() < spentValue) {
+            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
+        } else if (winnerHand.size() >= winner.getHandLimit()) {
+            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
+        }
+
+        String currentCard = MessageFormat.format(
+                "R{0}:C{1}",
+                game.getTurn(),
+                bidding.getBidCardNumber()
+        );
+
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage(
+                MessageFormat.format(
+                        "{0} wins {1} for {2} {3}",
+                        winner.getEmoji(),
+                        currentCard,
+                        spentValue,
+                        Emojis.SPICE
+                )
+        );
+
+        // Winner pays for the card
+        winner.subtractSpice(spentValue);
+        spiceMessage(discordGame, spentValue, winner.getSpice(), winner.getName(), currentCard, false);
+
+        if (game.hasFaction(paidToFactionName)) {
+            int spicePaid = spentValue;
+            Faction paidToFaction = game.getFaction(paidToFactionName);
+
+            if (paidToFaction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS)
+                    && !game.getFaction("Emperor").isHighThreshold()) {
+                spicePaid = Math.ceilDiv(spentValue, 2);
+                if (game.getTerritory("Kaitain").getForces().stream().anyMatch(force -> !force.getName().equals("Emperor"))) {
+                    paidToFaction.addSpice(Math.floorDiv(spentValue, 2));
+                    spiceMessage(discordGame, Math.floorDiv(spentValue, 2), paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+                }
+            }
+            spiceMessage(discordGame, spicePaid, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+            game.getFaction(paidToFaction.getName()).addSpice(spicePaid);
+
+            turnSummary.queueMessage(
+                    MessageFormat.format(
+                            "{0} is paid {1} {2} for {3}",
+                            paidToFaction.getEmoji(),
+                            spicePaid,
+                            Emojis.SPICE,
+                            currentCard
+                    )
+            );
+        }
+
+        winner.addTreacheryCard(bidding.getBidCard());
+
+        discordGame.queueMessage(winnerName.toLowerCase() + "-info", "ledger",
+                "Received " + bidding.getBidCard().name() +
+                        " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber() + ")");
+
+        bidding.clearBidCardInfo(winnerName);
+
+        // Harkonnen draw an additional card
+        if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
+            if (game.getTreacheryDeck().isEmpty()) {
+                List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+                turnSummary.queueMessage(MessageFormat.format(
+                        "The {0} deck was empty and has been replenished from the discard pile.",
+                        Emojis.TREACHERY
+                ));
+                game.getTreacheryDeck().addAll(treacheryDiscard);
+                treacheryDiscard.clear();
+            }
+
+            game.drawCard("treachery deck", "Harkonnen");
+            turnSummary.queueMessage(MessageFormat.format(
+                    "{0} draws another card from the {1} deck.",
+                    winner.getEmoji(), Emojis.TREACHERY
+            ));
+        }
+
+        if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() - 1 && bidding.isRicheseCacheCardOutstanding()) {
+            RicheseCommands.cacheCard(discordGame, game);
+            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked to select the last card of the turn.");
+        }
+        discordGame.pushGame();
+    }
+
+    public static void spiceMessage(DiscordGame discordGame, int amount, int newTotal, String faction, String message, boolean plus) throws ChannelNotFoundException {
+        String plusSign = plus ? "+" : "-";
+        for (TextChannel channel : discordGame.getTextChannels()) {
+            if (channel.getName().equals(faction.toLowerCase() + "-info")) {
+                discordGame.queueMessage(channel.getName(),
+                        "ledger",
+                        MessageFormat.format(
+                                "{0}{1}{2} {3} = {4}{5}",
+                                plusSign,
+                                amount,
+                                Emojis.SPICE,
+                                message,
+                                newTotal,
+                                Emojis.SPICE
+                        ));
+            }
+        }
+    }
+
+    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String star = starred ? "*" : "";
+
+        int revivalCost;
+
+        if (faction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
+        else if (faction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
+        else revivalCost = revivedValue * 2;
+
+        if (star.isEmpty()) faction.addReserves(revivedValue);
+        else faction.addSpecialReserves(revivedValue);
+
+        Force force = game.getForceFromTanks(faction.getName() + star);
+        force.setStrength(force.getStrength() - revivedValue);
+
+        if (isPaid) {
+            faction.subtractSpice(revivalCost);
+            spiceMessage(discordGame, revivalCost, faction.getSpice(), faction.getName(), "Revivals", false);
+            if (game.hasFaction("BT") && !faction.getName().equalsIgnoreCase("BT")) {
+                Faction btFaction = game.getFaction("BT");
+                btFaction.addSpice(revivalCost);
+                spiceMessage(discordGame, revivalCost, btFaction.getSpice(),
+                        "bt", faction.getEmoji() + " revivals", true);
+            }
+        }
+
+        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
+        String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
+        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            if (faction.getName().equals("Emperor")) {
+                EmperorFaction emperor = (EmperorFaction) faction;
+                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                    emperor.setHighThreshold(true);
+                }
+                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
+                    emperor.setSecundusHighThreshold(true);
+                }
+            } else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
+                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                faction.setHighThreshold(true);
+            }
+        }
+    }
+
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
+
+        Force reserves = targetFaction.getReserves();
+        Force specialReserves = targetFaction.getSpecialReserves();
+
+        if (amountValue > 0) {
+            placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
+            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
+                    "ledger",
+                    MessageFormat.format("{0} {1} removed from reserves.", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
+
+        }
+
+        if (starredAmountValue > 0) {
+            placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
+            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
+                    "ledger",
+                    MessageFormat.format("{0} {1} removed from reserves.", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
+        }
+
+        if (isShipment) {
+            targetFaction.getShipment().setShipped(true);
+            int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
+            int baseCost = costPerForce * (amountValue + starredAmountValue);
+            int cost;
+
+            if (targetFaction.getName().equalsIgnoreCase("Guild") || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama) {
+                cost = Math.ceilDiv(baseCost, 2);
+            } else if (targetFaction.getName().equalsIgnoreCase("Fremen")) {
+                cost = 0;
+            } else {
+                cost = baseCost;
+            }
+
+            StringBuilder message = new StringBuilder();
+
+            message.append(targetFaction.getEmoji())
+                    .append(": ");
+
+            if (amountValue > 0) {
+                message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(reserves.getName())));
+            }
+
+            if (starredAmountValue > 0) {
+                message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(specialReserves.getName())));
+            }
+
+            message.append(
+                    MessageFormat.format("placed on {0}",
+                            targetTerritory.getTerritoryName()
+                    )
+            );
+
+            if (cost > 0) {
+                message.append(
+                        MessageFormat.format(" for {0} {1}",
+                                cost, Emojis.SPICE
+                        )
+                );
+                int support = 0;
+                if (targetFaction.getAllySpiceShipment() > 0) {
+                    support = Math.min(targetFaction.getAllySpiceShipment(), cost);
+                    Faction allyFaction = game.getFaction(targetFaction.getAlly());
+                    allyFaction.subtractSpice(support);
+                    spiceMessage(discordGame, support, allyFaction.getSpice(), targetFaction.getAlly(),
+                            targetFaction.getEmoji() + " shipment support", false);
+                    message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
+                    targetFaction.setAllySpiceShipment(0);
+                }
+
+                targetFaction.subtractSpice(cost - support);
+                spiceMessage(discordGame, cost - support, targetFaction.getSpice(), targetFaction.getName(),
+                        "shipment to " + targetTerritory.getTerritoryName(), false);
+
+                if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild") && !karama) {
+                    Faction guildFaction = game.getFaction("Guild");
+                    guildFaction.addSpice(cost);
+                    message.append(" paid to ")
+                            .append(Emojis.GUILD);
+                    spiceMessage(discordGame, cost, guildFaction.getSpice(), "guild",
+                            targetFaction.getEmoji() + " shipment", true);
+                }
+
+            }
+
+            if (
+                    !targetFaction.getName().equalsIgnoreCase("Guild") &&
+                            !targetFaction.getName().equalsIgnoreCase("Fremen") &&
+                            game.hasGameOption(GameOption.TECH_TOKENS)
+            ) {
+                TechToken.addSpice(game, discordGame, "Heighliners");
+            }
+
+            TurnSummary turnSummary = discordGame.getTurnSummary();
+            if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
+                    && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()
+                    && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName()))) {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
+                buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
+                buttons.add(Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No"));
+                turnSummary.queueMessage(Emojis.BG + " to advise. " + game.getFaction("BG").getPlayer(), buttons);
+            }
+            turnSummary.queueMessage(message.toString());
+
+            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
+                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
+                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
+            }
+            if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+                    && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
+                    && !(game.getFaction("Ecaz").hasAlly()
+                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
+                buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
+                turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
+            }
+
+            if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+                    && (!(game.getFaction("Moritani").hasAlly()
+                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"));
+                buttons.add(Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"));
+                buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance"));
+                turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
+            }
+        }
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && (reserves.getStrength() + specialReserves.getStrength() < targetFaction.getHighThreshold()) && targetFaction.isHighThreshold()) {
+            discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
+            targetFaction.setHighThreshold(false);
+        }
+    }
+
+    /**
+     * Places a force from the reserves into a territory.
+     *
+     * @param territory The territory to place the force in.
+     * @param faction   The faction that owns the force.
+     * @param amount    The number of forces to place.
+     * @param special   Whether the force is a special reserve.
+     */
+    public static void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
+        String forceName;
+
+        if (special) {
+            faction.removeSpecialReserves(amount);
+            forceName = faction.getSpecialReserves().getName();
+        } else {
+            faction.removeReserves(amount);
+            forceName = faction.getReserves().getName();
+            if (faction.getName().equals("BG") && territory.hasForce("Advisor")) {
+                int advisors = territory.getForce("Advisor").getStrength();
+                territory.getForces().add(new Force("BG", advisors));
+                territory.removeForce("Advisor");
+            }
+        }
+        Force territoryForce = territory.getForce(forceName);
+        territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
+    }
+
+    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+
+        int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
+        if (targetFaction.getName().equals("BG") && from.getForce("Advisor").getStrength() > 0)
+            fromForceStrength = from.getForce("Advisor").getStrength();
+        int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
+
+        if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
+            throw new InvalidOptionException("Not enough forces in territory.");
+        }
+        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
+                (!(targetFaction.getName().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
+                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals("Ecaz"))))) {
+            throw new InvalidOptionException("You cannot move into a territory with your ally.");
+        }
+
+        StringBuilder message = new StringBuilder();
+
+        message.append(targetFaction.getEmoji())
+                .append(": ");
+
+        if (amountValue > 0) {
+            String forceName = targetFaction.getName();
+            String targetForceName = targetFaction.getName();
+            if (targetFaction.getName().equals("BG") && from.hasForce("Advisor")) {
+                forceName = "Advisor";
+                if (to.hasForce("Advisor")) targetForceName = "Advisor";
+            }
+            from.setForceStrength(forceName, fromForceStrength - amountValue);
+            to.setForceStrength(targetForceName, to.getForce(targetForceName).getStrength() + amountValue);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            amountValue, Emojis.getForceEmoji(from.getForce(forceName).getName())
+                    )
+            );
+        }
+
+        if (starredAmountValue > 0) {
+            from.setForceStrength(targetFaction.getName() + "*", fromStarredForceStrength - starredAmountValue);
+            to.setForceStrength(targetFaction.getName() + "*",
+                    to.getForce(targetFaction.getName() + "*").getStrength() + starredAmountValue);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            starredAmountValue, Emojis.getForceEmoji(from.getForce(targetFaction.getName() + "*").getName())
+                    )
+            );
+
+        }
+
+        message.append(
+                MessageFormat.format("moved from {0} to {1}",
+                        from.getTerritoryName(), to.getTerritoryName()
+                )
+        );
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+        turnSummary.queueMessage(message.toString());
+
+        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
+            buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
+            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
+        }
+        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+                && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
+                && !(game.getFaction("Ecaz").hasAlly()
+                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
+            buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
+            turnSummary.queueMessage(message.toString());
+        }
+
+        if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+                && !(game.getFaction("Moritani").hasAlly()
+                && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"));
+            buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
+            turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
+        }
+    }
+
+    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
+        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.getHomeworlds().containsValue(territoryName)) {
+            Faction homeworldFaction = game.getFactions().stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
+            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
+                ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage("Salusa Secundus has flipped to low threshold.");
+
+            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
+                homeworldFaction.setHighThreshold(false);
+                discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
+            }
+        }
+    }
+
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String name = event.getName();
@@ -54,12 +497,10 @@ public class CommandManager extends ListenerAdapter {
             if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 newGame(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            }
-            else if (name.equals("waitinglist")) {
+            } else if (name.equals("waitinglist")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            }
-            else {
+            } else {
                 String categoryName = DiscordGame.categoryFromEvent(event).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
                 Queue.putFuture(categoryName, future.thenRunAsync(() -> runGameCommand(event)));
@@ -144,7 +585,8 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
             }
 
-            if (!(name.equals("setup") && event.getSubcommandName().equals("faction"))) refreshChangedInfo(discordGame);
+            if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
+                refreshChangedInfo(discordGame);
             discordGame.sendAllMessages();
 
             if (ephemeralMessage.isEmpty()) ephemeralMessage = "Command Done.";
@@ -157,7 +599,6 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         CompletableFuture.runAsync(() -> runCommandAutoCompleteInteraction(event));
@@ -169,7 +610,7 @@ public class CommandManager extends ListenerAdapter {
         try {
             Game game = discordGame.getGame();
             event.replyChoices(CommandOptions.getCommandChoices(event, discordGame, game)).queue();
-        } catch (ChannelNotFoundException|IOException e) {
+        } catch (ChannelNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
@@ -320,7 +761,7 @@ public class CommandManager extends ListenerAdapter {
                     .complete();
         }
 
-        String[] modChannels  = {"bot-data", "mod-info"};
+        String[] modChannels = {"bot-data", "mod-info"};
         for (String channel : modChannels) {
             category.createTextChannel(channel).complete();
         }
@@ -328,11 +769,11 @@ public class CommandManager extends ListenerAdapter {
         DiscordGame discordGame = new DiscordGame(category);
         discordGame.queueMessage("rules", MessageFormat.format(
                 """
-            {0}  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
-            {1}  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
-            {2} {3}  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
-            {4} {5} CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf
-            {6} {7} Ecaz & Moritani Rules: https://www.gf9games.com/dune/wp-content/uploads/EcazMoritani-Rulebook-LOWRES.pdf""",
+                        {0}  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
+                        {1}  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
+                        {2} {3}  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
+                        {4} {5} CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf
+                        {6} {7} Ecaz & Moritani Rules: https://www.gf9games.com/dune/wp-content/uploads/EcazMoritani-Rulebook-LOWRES.pdf""",
                 Emojis.DUNE_RULEBOOK,
                 Emojis.WEIRDING,
                 Emojis.IX, Emojis.BT,
@@ -355,7 +796,7 @@ public class CommandManager extends ListenerAdapter {
      * Add Spice to a player.  Spice can be added behind the shield or in front, with an optional message.
      *
      * @param discordGame The discord game object.
-     * @param game The game object.
+     * @param game        The game object.
      * @throws ChannelNotFoundException If the channel is not found.
      */
     public void addSpice(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -366,7 +807,7 @@ public class CommandManager extends ListenerAdapter {
      * Remove Spice from a player.  Spice can be removed from behind the shield or in front, with an optional message.
      *
      * @param discordGame The discord game object.
-     * @param game The game object.
+     * @param game        The game object.
      * @throws ChannelNotFoundException If the channel is not found.
      */
     public void removeSpice(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -377,8 +818,8 @@ public class CommandManager extends ListenerAdapter {
      * Add or Remove Spice from a player.  This can be behind the shield or in front, with an optional message.
      *
      * @param discordGame The discord game object.
-     * @param game The game object.
-     * @param add True to add spice, false to remove spice.
+     * @param game        The game object.
+     * @param add         True to add spice, false to remove spice.
      * @throws ChannelNotFoundException If the channel is not found.
      */
     public void addOrRemoveSpice(DiscordGame discordGame, Game game, boolean add) throws ChannelNotFoundException {
@@ -449,23 +890,23 @@ public class CommandManager extends ListenerAdapter {
 
             drawn = deck.pop();
             boolean saveWormForReshuffle = false;
-            if (drawn.name().equalsIgnoreCase("Shai-Hulud")  || drawn.name().equalsIgnoreCase("Great Maker")) {
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud") || drawn.name().equalsIgnoreCase("Great Maker")) {
                 if (game.getTurn() <= 1) {
                     saveWormForReshuffle = true;
                     message.append(drawn.name())
                             .append(" will be reshuffled back into deck.\n");
-                } else if (discard.size() > 0 && !shaiHuludSpotted) {
+                } else if (!discard.isEmpty() && !shaiHuludSpotted) {
                     shaiHuludSpotted = true;
 
                     if (game.isSandtroutInPlay()) {
                         spiceMultiplier = 2;
                         game.setSandtroutInPlay(false);
                         message.append(drawn.name())
-                            .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                                .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
                         SpiceCard lastCard = discard.getLast();
                         message.append(drawn.name())
-                            .append(" has been spotted in ").append(lastCard.name()).append("!\n");
+                                .append(" has been spotted in ").append(lastCard.name()).append("!\n");
                         int spice = game.getTerritories().get(lastCard.name()).getSpice();
                         if (spice > 0) {
                             message.append(spice);
@@ -479,11 +920,11 @@ public class CommandManager extends ListenerAdapter {
                     shaiHuludSpotted = true;
                     spiceMultiplier = 1;
                     message.append(drawn.name())
-                        .append(" has been spotted!\n");
+                            .append(" has been spotted!\n");
                 }
-            } else if (drawn.name().equalsIgnoreCase("Sandtrout")){
+            } else if (drawn.name().equalsIgnoreCase("Sandtrout")) {
                 shaiHuludSpotted = true;
-                message.append("Sandtrout has been spotted, and all aliances have ended!\n");
+                message.append("Sandtrout has been spotted, and all alliances have ended!\n");
                 game.getFactions().forEach(Faction::removeAlly);
                 game.setSandtroutInPlay(true);
             } else {
@@ -500,9 +941,9 @@ public class CommandManager extends ListenerAdapter {
                 drawn.name().equalsIgnoreCase("Great Maker") ||
                 drawn.name().equalsIgnoreCase("Sandtrout"));
 
-        while (wormsToReshuffle.size() > 0) {
+        while (!wormsToReshuffle.isEmpty()) {
             deck.add(wormsToReshuffle.pop());
-            if (wormsToReshuffle.size() == 0) {
+            if (wormsToReshuffle.isEmpty()) {
                 Collections.shuffle(deck);
             }
         }
@@ -578,7 +1019,7 @@ public class CommandManager extends ListenerAdapter {
         Faction receiver = game.getFaction(discordGame.required(faction).getAsString());
         String cardName = discordGame.required(discardCard).getAsString();
 
-        TreacheryCard card  = game.getTreacheryDiscard().stream()
+        TreacheryCard card = game.getTreacheryDiscard().stream()
                 .filter(c -> c.name().equalsIgnoreCase(cardName))
                 .findFirst()
                 .orElseThrow(() -> new InvalidGameStateException("Card not found in discard pile."));
@@ -595,138 +1036,6 @@ public class CommandManager extends ListenerAdapter {
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         int spentValue = discordGame.required(spent).getAsInt();
         assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
-    }
-
-    public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        String winnerName = bidding.getBidLeader();
-        if (winnerName.equals("")) {
-            if (bidding.isRicheseCacheCard() || bidding.isBlackMarketCard())
-                assignAndPayForCard(discordGame, game, "Richese", "", 0);
-            else
-                throw new InvalidGameStateException("There is no top bidder for this card.");
-        } else {
-            String paidToFactionName = "Bank";
-            if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
-                paidToFactionName = "Richese";
-            else if (!winnerName.equals("Emperor"))
-                paidToFactionName = "Emperor";
-            int spentValue = bidding.getCurrentBid();
-            assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
-        }
-    }
-
-    public static void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null) {
-            throw new InvalidGameStateException("There is no card up for bid.");
-        }
-        Faction winner = game.getFaction(winnerName);
-        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
-        if (winner.getSpice() < spentValue) {
-            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
-        } else if (winnerHand.size() >= winner.getHandLimit()) {
-            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
-        }
-
-        String currentCard = MessageFormat.format(
-                "R{0}:C{1}",
-                game.getTurn(),
-                bidding.getBidCardNumber()
-        );
-
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage(
-                MessageFormat.format(
-                        "{0} wins {1} for {2} {3}",
-                        winner.getEmoji(),
-                        currentCard,
-                        spentValue,
-                        Emojis.SPICE
-                )
-        );
-
-        // Winner pays for the card
-        winner.subtractSpice(spentValue);
-        spiceMessage(discordGame, spentValue, winner.getSpice(), winner.getName(), currentCard, false);
-
-        if (game.hasFaction(paidToFactionName)) {
-            int spicePaid = spentValue;
-            Faction paidToFaction = game.getFaction(paidToFactionName);
-
-            if (paidToFaction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS)
-            && !game.getFaction("Emperor").isHighThreshold()) {
-                spicePaid = Math.ceilDiv(spentValue, 2);
-                if (game.getTerritory("Kaitain").getForces().stream().anyMatch(force -> !force.getName().equals("Emperor"))) {
-                    paidToFaction.addSpice(Math.floorDiv(spentValue, 2));
-                    spiceMessage(discordGame, Math.floorDiv(spentValue, 2), paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
-                }
-            }
-            spiceMessage(discordGame, spicePaid, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
-            game.getFaction(paidToFaction.getName()).addSpice(spicePaid);
-
-            turnSummary.queueMessage(
-                    MessageFormat.format(
-                            "{0} is paid {1} {2} for {3}",
-                            paidToFaction.getEmoji(),
-                            spicePaid,
-                            Emojis.SPICE,
-                            currentCard
-                    )
-            );
-        }
-
-        winner.addTreacheryCard(bidding.getBidCard());
-
-        discordGame.queueMessage(winnerName.toLowerCase() + "-info", "ledger",
-                "Received " + bidding.getBidCard().name() +
-                        " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber() + ")");
-
-        bidding.clearBidCardInfo(winnerName);
-
-        // Harkonnen draw an additional card
-        if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit()) {
-            if (game.getTreacheryDeck().isEmpty()) {
-                List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                turnSummary.queueMessage(MessageFormat.format(
-                        "The {0} deck was empty and has been replenished from the discard pile.",
-                        Emojis.TREACHERY
-                ));
-                game.getTreacheryDeck().addAll(treacheryDiscard);
-                treacheryDiscard.clear();
-            }
-
-            game.drawCard("treachery deck", "Harkonnen");
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} draws another card from the {1} deck.",
-                    winner.getEmoji(), Emojis.TREACHERY
-            ));
-        }
-
-        if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() -1 && bidding.isRicheseCacheCardOutstanding()) {
-            RicheseCommands.cacheCard(discordGame, game);
-            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked to select the last card of the turn.");
-        }
-        discordGame.pushGame();
-    }
-
-    public static void spiceMessage(DiscordGame discordGame, int amount, int newTotal, String faction, String message, boolean plus) throws ChannelNotFoundException {
-        String plusSign = plus ? "+" : "-";
-        for (TextChannel channel : discordGame.getTextChannels()) {
-            if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                discordGame.queueMessage(channel.getName(),
-                        "ledger",
-                        MessageFormat.format(
-                                "{0}{1}{2} {3} = {4}{5}",
-                                plusSign,
-                                amount,
-                                Emojis.SPICE,
-                                message,
-                                newTotal,
-                                Emojis.SPICE
-                        ));
-            }
-        }
     }
 
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -755,59 +1064,11 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String star = starred ? "*" : "";
-
-        int revivalCost;
-
-        if (faction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
-        else if (faction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
-        else revivalCost = revivedValue * 2;
-
-        if (star.equals("")) faction.addReserves(revivedValue);
-        else faction.addSpecialReserves(revivedValue);
-
-        Force force = game.getForceFromTanks(faction.getName() + star);
-        force.setStrength(force.getStrength() - revivedValue);
-
-        if (isPaid) {
-            faction.subtractSpice(revivalCost);
-            spiceMessage(discordGame, revivalCost, faction.getSpice(), faction.getName(), "Revivals", false);
-            if (game.hasFaction("BT") && !faction.getName().equalsIgnoreCase("BT")) {
-                Faction btFaction = game.getFaction("BT");
-                btFaction.addSpice(revivalCost);
-                spiceMessage(discordGame, revivalCost, btFaction.getSpice(),
-                        "bt", faction.getEmoji() + " revivals", true);
-            }
-        }
-
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
-        String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
-        if (game.hasGameOption(GameOption.HOMEWORLDS)){
-            if (faction.getName().equals("Emperor")) {
-                EmperorFaction emperor = (EmperorFaction) faction;
-                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                    emperor.setHighThreshold(true);
-                }
-                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()){
-                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
-                    emperor.setSecundusHighThreshold(true);
-                }
-            }
-            else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
-                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                faction.setHighThreshold(true);
-            }
-        }
-    }
-
     /**
      * Place forces in a territory
      *
-     * @param discordGame  the discord game
-     * @param game         the game
+     * @param discordGame the discord game
+     * @param game        the game
      */
     public void placeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
@@ -817,171 +1078,6 @@ public class CommandManager extends ListenerAdapter {
         boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
         placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game, false);
         discordGame.pushGame();
-    }
-
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
-
-        Force reserves = targetFaction.getReserves();
-        Force specialReserves = targetFaction.getSpecialReserves();
-
-        if (amountValue > 0) {
-            placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
-            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
-                    "ledger",
-                    MessageFormat.format("{0} {1} removed from reserves.", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
-
-        }
-
-        if (starredAmountValue > 0) {
-            placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
-            discordGame.queueMessage(targetFaction.getName().toLowerCase() + "-info",
-                    "ledger",
-                    MessageFormat.format("{0} {1} removed from reserves.", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
-        }
-
-        if (isShipment) {
-            targetFaction.getShipment().setShipped(true);
-            int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
-            int baseCost = costPerForce * (amountValue + starredAmountValue);
-            int cost;
-
-            if (targetFaction.getName().equalsIgnoreCase("Guild") || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild"))  || karama) {
-                cost = Math.ceilDiv(baseCost, 2);
-            } else if (targetFaction.getName().equalsIgnoreCase("Fremen")) {
-                cost = 0;
-            } else {
-                cost = baseCost;
-            }
-
-            StringBuilder message = new StringBuilder();
-
-            message.append(targetFaction.getEmoji())
-                            .append(": ");
-
-            if (amountValue > 0) {
-                message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(reserves.getName())));
-            }
-
-            if (starredAmountValue > 0) {
-                message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(specialReserves.getName())));
-            }
-
-            message.append(
-                    MessageFormat.format("placed on {0}",
-                            targetTerritory.getTerritoryName()
-                    )
-            );
-
-            if (cost > 0) {
-                message.append(
-                        MessageFormat.format(" for {0} {1}",
-                                cost, Emojis.SPICE
-                        )
-                );
-                int support = 0;
-                if (targetFaction.getAllySpiceShipment() > 0) {
-                    support = Math.min(targetFaction.getAllySpiceShipment(), cost);
-                    Faction allyFaction = game.getFaction(targetFaction.getAlly());
-                    allyFaction.subtractSpice(support);
-                    spiceMessage(discordGame, support, allyFaction.getSpice(), targetFaction.getAlly(),
-                            targetFaction.getEmoji() + " shipment support", false);
-                    message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
-                    targetFaction.setAllySpiceShipment(0);
-                }
-
-                targetFaction.subtractSpice(cost - support);
-                spiceMessage(discordGame, cost - support, targetFaction.getSpice(), targetFaction.getName(),
-                        "shipment to " + targetTerritory.getTerritoryName(), false);
-
-                if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild") && !karama) {
-                    Faction guildFaction = game.getFaction("Guild");
-                    guildFaction.addSpice(cost);
-                    message.append(" paid to ")
-                            .append(Emojis.GUILD);
-                    spiceMessage(discordGame, cost, guildFaction.getSpice(), "guild",
-                            targetFaction.getEmoji() + " shipment", true);
-                }
-
-            }
-
-            if (
-                    !targetFaction.getName().equalsIgnoreCase("Guild") &&
-                            !targetFaction.getName().equalsIgnoreCase("Fremen") &&
-                            game.hasGameOption(GameOption.TECH_TOKENS)
-            ) {
-                TechToken.addSpice(game, discordGame, "Heighliners");
-            }
-
-            TurnSummary turnSummary = discordGame.getTurnSummary();
-            if (game.hasFaction("BG") && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
-                    && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()
-                    && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())))
-            {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
-                buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
-                buttons.add(Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No"));
-                turnSummary.queueMessage(Emojis.BG + " to advise. " + game.getFaction("BG").getPlayer(), buttons);
-            }
-            turnSummary.queueMessage(message.toString());
-
-            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
-                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
-                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
-            }
-            if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
-            && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
-                    && !(game.getFaction("Ecaz").hasAlly()
-                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
-                buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-                turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
-            }
-
-            if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
-                    && (!(game.getFaction("Moritani").hasAlly()
-                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"));
-                buttons.add(Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"));
-                buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance"));
-                turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
-            }
-        }
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && (reserves.getStrength() + specialReserves.getStrength() < targetFaction.getHighThreshold()) && targetFaction.isHighThreshold()) {
-            discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
-            targetFaction.setHighThreshold(false);
-        }
-    }
-
-    /**
-     * Places a force from the reserves into a territory.
-     * @param territory The territory to place the force in.
-     * @param faction The faction that owns the force.
-     * @param amount The number of forces to place.
-     * @param special Whether the force is a special reserve.
-     */
-    public static void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
-        String forceName;
-
-        if (special) {
-            faction.removeSpecialReserves(amount);
-            forceName = faction.getSpecialReserves().getName();
-        }
-        else {
-            faction.removeReserves(amount);
-            forceName = faction.getReserves().getName();
-            if (faction.getName().equals("BG") && territory.hasForce("Advisor")) {
-                int advisors = territory.getForce("Advisor").getStrength();
-                territory.getForces().add(new Force("BG", advisors));
-                territory.removeForce("Advisor");
-            }
-        }
-        Force territoryForce = territory.getForce(forceName);
-        territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
     }
 
     public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException, IOException {
@@ -996,90 +1092,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
-
-        int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
-        if (targetFaction.getName().equals("BG") && from.getForce("Advisor").getStrength() > 0) fromForceStrength = from.getForce("Advisor").getStrength();
-        int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
-
-        if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
-            throw new InvalidOptionException("Not enough forces in territory.");
-        }
-        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
-                (!(targetFaction.getName().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
-                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals("Ecaz"))))) {
-                throw new InvalidOptionException("You cannot move into a territory with your ally.");
-        }
-
-        StringBuilder message = new StringBuilder();
-
-        message.append(targetFaction.getEmoji())
-                .append(": ");
-
-        if (amountValue > 0) {
-            String forceName = targetFaction.getName();
-            String targetForceName = targetFaction.getName();
-            if (targetFaction.getName().equals("BG") && from.hasForce("Advisor")) {
-                forceName = "Advisor";
-                if (to.hasForce("Advisor")) targetForceName = "Advisor";
-            }
-            from.setForceStrength(forceName, fromForceStrength - amountValue);
-            to.setForceStrength(targetForceName, to.getForce(targetForceName).getStrength() + amountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            amountValue, Emojis.getForceEmoji(from.getForce(forceName).getName())
-                    )
-            );
-        }
-
-        if (starredAmountValue > 0) {
-            from.setForceStrength(targetFaction.getName() + "*", fromStarredForceStrength - starredAmountValue);
-            to.setForceStrength(targetFaction.getName() + "*",
-                    to.getForce(targetFaction.getName() + "*").getStrength() + starredAmountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            starredAmountValue, Emojis.getForceEmoji(from.getForce(targetFaction.getName() + "*").getName())
-                    )
-            );
-
-        }
-
-        message.append(
-                MessageFormat.format("moved from {0} to {1}",
-                        from.getTerritoryName(), to.getTerritoryName()
-                )
-        );
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage(message.toString());
-
-        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
-            buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
-            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
-        }
-        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
-                && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
-                && !(game.getFaction("Ecaz").hasAlly()
-                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
-            buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-            turnSummary.queueMessage(message.toString());
-        }
-
-        if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
-                && !(game.getFaction("Moritani").hasAlly()
-                && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"));
-            buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
-            turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
-        }
-    }
-
     public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(fromTerritory).getAsString();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
@@ -1089,21 +1101,6 @@ public class CommandManager extends ListenerAdapter {
 
         removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks, game, discordGame);
         discordGame.pushGame();
-    }
-    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
-        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.getHomeworlds().values().contains(territoryName)) {
-            Faction homeworldFaction = game.getFactions().stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
-            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction)homeworldFaction).getSecundusHighThreshold() > game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction)homeworldFaction).isSecundusHighThreshold()) {
-                ((EmperorFaction)homeworldFaction).setSecundusHighThreshold(false);
-                discordGame.getTurnSummary().queueMessage("Salusa Secundus has flipped to low threshold.");
-
-            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
-                homeworldFaction.setHighThreshold(false);
-                discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
-            }
-        }
     }
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -1155,6 +1152,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
     }
+
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         for (Faction f : game.getFactions()) {
             if (f.getTechTokens().removeIf(
@@ -1222,12 +1220,13 @@ public class CommandManager extends ListenerAdapter {
         TextChannel channel = discordGame.getTextChannel("mod-info");
         switch (discordGame.required(data).getAsString()) {
             case "territories" -> {
-               Map<String, Territory> territories = game.getTerritories();
-               for (Territory territory: territories.values()) {
-                   if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty()) continue;
-                   discordGame.queueMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
-                           "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
-               }
+                Map<String, Territory> territories = game.getTerritories();
+                for (Territory territory : territories.values()) {
+                    if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty())
+                        continue;
+                    discordGame.queueMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
+                            "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
+                }
             }
             case "dnd" -> {
                 discordGame.queueMessage("mod-info", game.getTreacheryDeck().toString());
@@ -1245,7 +1244,7 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
             case "factions" -> {
-                for (Faction faction: game.getFactions()) {
+                for (Faction faction : game.getFactions()) {
                     String message = "**" + faction.getName() + ":**\nPlayer: " + faction.getUserName() + "\n" +
                             "spice: " + faction.getSpice() + "\nTreachery Cards: " + faction.getTreacheryHand() +
                             "\nTraitors:" + faction.getTraitorHand() + "\nLeaders: " + faction.getLeaders() + "\n";
@@ -1302,7 +1301,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Faction factionWithAtomics = null;
+        Faction factionWithAtomics;
         try {
             factionWithAtomics = game.getFactionWithAtomics();
         } catch (NoSuchElementException e) {
@@ -1350,19 +1349,32 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void waitingList(SlashCommandInteractionEvent event) throws ChannelNotFoundException {
+    public void waitingList(SlashCommandInteractionEvent event) {
         String userTag = event.getUser().getId();
-        TextChannel  textChannel = event.getGuild().getTextChannelsByName("waiting-list", true).get(0);
+        TextChannel textChannel = event.getGuild().getTextChannelsByName("waiting-list", true).get(0);
         String message = "";
         message += "Speed: :scooter: ";
-        if (event.getOption(slowGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :blue_car: "; else message += ":no_entry_sign: -- :blue_car: ";
-        if (event.getOption(midGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :race_car: "; else message += ":no_entry_sign: -- :race_car: ";
-        if (event.getOption(fastGame.getName()).getAsBoolean()) message += ":white_check_mark:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> "; else message += ":no_entry_sign:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
-        if (event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean()) message += ":white_check_mark: -- <:choam:991763324624703538> <:rich:991763318467465337> "; else message += ":no_entry_sign: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
-        if (event.getOption(choamricheseExpansion.getName()).getAsBoolean()) message += ":white_check_mark: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> "; else message += ":no_entry_sign: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
-        if (event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean()) message += ":white_check_mark:\nOptions: <:weirding:991763071775297681> "; else message += ":no_entry_sign:\nOptions: <:weirding:991763071775297681> ";
-        if (event.getOption(leaderSkills.getName()).getAsBoolean()) message += ":white_check_mark: -- :european_castle: "; else message += ":no_entry_sign: -- :european_castle: ";
-        if (event.getOption(strongholdCards.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: "; else message += ":no_entry_sign:\nUser: ";
+        if (event.getOption(slowGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :blue_car: ";
+        else message += ":no_entry_sign: -- :blue_car: ";
+        if (event.getOption(midGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :race_car: ";
+        else message += ":no_entry_sign: -- :race_car: ";
+        if (event.getOption(fastGame.getName()).getAsBoolean())
+            message += ":white_check_mark:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
+        else message += ":no_entry_sign:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
+        if (event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean())
+            message += ":white_check_mark: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
+        else message += ":no_entry_sign: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
+        if (event.getOption(choamricheseExpansion.getName()).getAsBoolean())
+            message += ":white_check_mark: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
+        else message += ":no_entry_sign: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
+        if (event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean())
+            message += ":white_check_mark:\nOptions: <:weirding:991763071775297681> ";
+        else message += ":no_entry_sign:\nOptions: <:weirding:991763071775297681> ";
+        if (event.getOption(leaderSkills.getName()).getAsBoolean())
+            message += ":white_check_mark: -- :european_castle: ";
+        else message += ":no_entry_sign: -- :european_castle: ";
+        if (event.getOption(strongholdCards.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: ";
+        else message += ":no_entry_sign:\nUser: ";
         message += "<@" + userTag + ">";
         textChannel.sendMessage(message).queue();
         // textChannel.sendMessage("Speed: :turtle: " + event.getOption(slowGame.getName()).getAsBoolean() + " :racehorse: " + event.getOption(midGame.getName()).getAsBoolean() + " :race_car: " + event.getOption(fastGame.getName()).getAsBoolean() + "\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514>  " + event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean() + " <:choam:991763324624703538> <:rich:991763318467465337> " + event.getOption(choamricheseExpansion.getName()).getAsBoolean() + " :ecaz: :moritani: " + event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean() + "\nOptions: Leader Skills " + event.getOption(leaderSkills.getName()).getAsBoolean() + " Stronghold Cards " + event.getOption(strongholdCards.getName()).getAsBoolean() + "\nUser: <@" + userTag + ">").queue();

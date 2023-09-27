@@ -2,14 +2,17 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.*;
+import model.Force;
+import model.Game;
+import model.Territory;
+import model.TreacheryCard;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RicheseFaction extends Faction {
-    List <TreacheryCard> treacheryCardCache;
+    List<TreacheryCard> treacheryCardCache;
     Integer frontOfShieldNoField;
     List<Integer> behindShieldNoField;
 
@@ -82,6 +85,7 @@ public class RicheseFaction extends Faction {
     /**
      * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
      * spice.  It only calculates the total
+     *
      * @param territory The territory to calculate the spice from
      * @return The total spice that would be collected from the territory
      */

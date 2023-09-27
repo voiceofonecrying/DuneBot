@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -23,8 +22,7 @@ public class BGButtons implements Pressable {
         if (event.getComponentId().startsWith("bg-advise-")) {
             advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]));
             discordGame.queueDeleteMessage();
-        }
-        else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, game, discordGame);
+        } else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-flip-")) bgFlip(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, game, discordGame);
 

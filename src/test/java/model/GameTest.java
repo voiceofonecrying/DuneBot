@@ -1,10 +1,8 @@
 package model;
 
-import model.factions.Faction;
-import model.factions.AtreidesFaction;
-import model.TreacheryCard;
 import enums.GameOption;
-
+import model.factions.AtreidesFaction;
+import model.factions.Faction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -92,7 +90,7 @@ class GameTest {
             assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atomics == null);
+            assertNotNull(atomics);
             game.breakShieldWall(atreides);
             assertFalse(game.getTerritory("Carthag").isRock());
             assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());
@@ -111,7 +109,7 @@ class GameTest {
             assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atomics == null);
+            assertNotNull(atomics);
             game.breakShieldWall(atreides);
             assertFalse(game.getTerritory("Carthag").isRock());
             assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());

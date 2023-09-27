@@ -28,10 +28,11 @@ public class IxFaction extends Faction {
 
     /**
      * Adds forces from a Territory to the reserves or tanks
+     *
      * @param territoryName The name of the Territory.
-     * @param amount The amount of the force.
-     * @param isSpecial Whether the force is special or not.
-     * @param toTanks Whether the force is going to the tanks or not.
+     * @param amount        The amount of the force.
+     * @param isSpecial     Whether the force is special or not.
+     * @param toTanks       Whether the force is going to the tanks or not.
      */
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
@@ -41,6 +42,7 @@ public class IxFaction extends Faction {
     /**
      * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
      * spice.  It only calculates the total
+     *
      * @param territory The territory to calculate the spice from
      * @return The total spice that would be collected from the territory
      */
@@ -48,9 +50,9 @@ public class IxFaction extends Faction {
     public int getSpiceCollectedFromTerritory(Territory territory) {
         int multiplier = hasMiningEquipment() ? 3 : 2;
         int spiceFromSuboids = territory.hasForce("Ix") ? territory.getForce("Ix").getStrength() * multiplier : 0;
-        int spiceFromCyborge = territory.hasForce("Ix*") ? territory.getForce("Ix*").getStrength() * 3 : 0;
+        int spiceFromCyborgs = territory.hasForce("Ix*") ? territory.getForce("Ix*").getStrength() * 3 : 0;
 
-        int totalSpice = spiceFromSuboids + spiceFromCyborge;
+        int totalSpice = spiceFromSuboids + spiceFromCyborgs;
         return Math.min(totalSpice, territory.getSpice());
     }
 }

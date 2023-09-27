@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import static controller.Initializers.getCSVFile;
 import static controller.commands.CommandOptions.*;
-import static enums.GameOption.HOMEWORLDS;
 
 public class SetupCommands {
     public static List<CommandData> getCommands() {
@@ -190,15 +189,13 @@ public class SetupCommands {
                         SetupStep.ECAZ_LOYALTY
                 );
 
-            }
-            else {
+            } else {
                 setupSteps.add(
                         setupSteps.indexOf(SetupStep.TRAITORS),
                         SetupStep.ECAZ_LOYALTY
                 );
             }
         }
-
 
 
         game.setSetupSteps(setupSteps);
@@ -265,18 +262,18 @@ public class SetupCommands {
         Faction faction;
 
         switch (factionName.toUpperCase()) {
-            case "ATREIDES"  -> faction = new AtreidesFaction(playerName, userName, game);
-            case "BG"        -> faction = new BGFaction(playerName, userName, game);
-            case "BT"        -> faction = new BTFaction(playerName, userName, game);
-            case "CHOAM"     -> faction = new ChoamFaction(playerName, userName, game);
-            case "EMPEROR"   -> faction = new EmperorFaction(playerName, userName, game);
-            case "FREMEN"    -> faction = new FremenFaction(playerName, userName, game);
-            case "GUILD"     -> faction = new GuildFaction(playerName, userName, game);
+            case "ATREIDES" -> faction = new AtreidesFaction(playerName, userName, game);
+            case "BG" -> faction = new BGFaction(playerName, userName, game);
+            case "BT" -> faction = new BTFaction(playerName, userName, game);
+            case "CHOAM" -> faction = new ChoamFaction(playerName, userName, game);
+            case "EMPEROR" -> faction = new EmperorFaction(playerName, userName, game);
+            case "FREMEN" -> faction = new FremenFaction(playerName, userName, game);
+            case "GUILD" -> faction = new GuildFaction(playerName, userName, game);
             case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, game);
-            case "IX"        -> faction = new IxFaction(playerName, userName, game);
-            case "RICHESE"   -> faction = new RicheseFaction(playerName, userName, game);
-            case "ECAZ"      -> faction = new EcazFaction(playerName, userName, game);
-            case "MORITANI"  -> faction = new MoritaniFaction(playerName, userName, game);
+            case "IX" -> faction = new IxFaction(playerName, userName, game);
+            case "RICHESE" -> faction = new RicheseFaction(playerName, userName, game);
+            case "ECAZ" -> faction = new EcazFaction(playerName, userName, game);
+            case "MORITANI" -> faction = new MoritaniFaction(playerName, userName, game);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 
@@ -477,7 +474,7 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         try {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
             ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
@@ -497,14 +494,15 @@ public class SetupCommands {
 
     public static StepStatus treacheryCardsStep(Game game) {
         for (Faction faction : game.getFactions()) {
-            if (faction.getTreacheryHand().size() == 0) {
+            if (faction.getTreacheryHand().isEmpty()) {
                 game.drawCard("treachery deck", faction.getName());
             }
         }
         try {
             Faction harkonnenFaction = game.getFaction("Harkonnen");
             game.drawCard("treachery deck", "Harkonnen");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
 
         return StepStatus.CONTINUE;
     }
@@ -597,6 +595,7 @@ public class SetupCommands {
             return StepStatus.CONTINUE;
         }
     }
+
     private static StepStatus ecazLoyaltyStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
         List<Leader> leaders = ecaz.getLeaders();
@@ -627,7 +626,7 @@ public class SetupCommands {
 
     public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
-            if (!faction.getName().equals("BT") && faction.getTraitorHand().size() == 0) {
+            if (!faction.getName().equals("BT") && faction.getTraitorHand().isEmpty()) {
                 for (int j = 0; j < 4; j++) {
                     game.drawCard("traitor deck", faction.getName());
                 }

@@ -3,7 +3,9 @@ package controller.commands;
 import constants.Emojis;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
-import model.*;
+import model.DiscordGame;
+import model.Game;
+import model.Leader;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -126,7 +128,7 @@ public class HarkCommands {
         harkonnenFaction.addSpice(2);
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (leader.skillCard()!= null) {
+        if (leader.skillCard() != null) {
             turnSummary.queueMessage(MessageFormat.format(
                     "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name(), Emojis.SPICE

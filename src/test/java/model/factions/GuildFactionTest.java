@@ -13,8 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 class GuildFactionTest extends FactionTestTemplate {
 
     private GuildFaction faction;
+
     @Override
-    Faction getFaction() { return faction; }
+    Faction getFaction() {
+        return faction;
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -22,13 +25,19 @@ class GuildFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testInitialSpice() { assertEquals(faction.getSpice(), 5); }
+    public void testInitialSpice() {
+        assertEquals(faction.getSpice(), 5);
+    }
 
     @Test
-    public void testFreeRevivals() { assertEquals(faction.getFreeRevival(), 1); }
+    public void testFreeRevivals() {
+        assertEquals(faction.getFreeRevival(), 1);
+    }
 
     @Test
-    public void testInitialHasMiningEquipment() { assertFalse(faction.hasMiningEquipment()); }
+    public void testInitialHasMiningEquipment() {
+        assertFalse(faction.hasMiningEquipment());
+    }
 
     @Test
     public void testInitialReserves() {
@@ -39,7 +48,7 @@ class GuildFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().values().contains(territoryName)) continue;
+            if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Tuek's Sietch")) {
                 assertEquals(territory.getForces().get(0).getStrength(), 5);
@@ -51,8 +60,12 @@ class GuildFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testEmoji() { assertEquals(faction.getEmoji(), Emojis.GUILD); }
+    public void testEmoji() {
+        assertEquals(faction.getEmoji(), Emojis.GUILD);
+    }
 
     @Test
-    public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
+    public void testHandLimit() {
+        assertEquals(faction.getHandLimit(), 4);
+    }
 }

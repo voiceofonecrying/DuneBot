@@ -13,11 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
@@ -110,7 +106,7 @@ public class RicheseCommands {
             }
         }
 
-        RicheseFaction faction = (RicheseFaction)game.getFaction("Richese");
+        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
         bidding.setRicheseCacheCard(true);
         bidding.setBidCard(
                 faction.removeTreacheryCardFromCache(
@@ -157,7 +153,7 @@ public class RicheseCommands {
                 f.setAutoBid(false);
                 f.setBid("");
             }
-            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1));
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             RunCommands.createBidMessage(discordGame, game);
             bidding.advanceBidder(game);
@@ -184,15 +180,15 @@ public class RicheseCommands {
             throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
         }
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                    "{0} {1} has been removed from the game.",
-                    Emojis.RICHESE, bidding.getBidCard().name()));
+                "{0} {1} has been removed from the game.",
+                Emojis.RICHESE, bidding.getBidCard().name()));
         bidding.clearBidCardInfo(null);
         discordGame.pushGame();
     }
 
     public static void karamaBuy(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(richeseCard).getAsString();
-        RicheseFaction faction = (RicheseFaction)game.getFaction("Richese");
+        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
         TreacheryCard karama;
         try {
             karama = faction.removeTreacheryCard("Karama ");
@@ -301,7 +297,7 @@ public class RicheseCommands {
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
             bidding.setRicheseBidOrder(game, bidOrder);
             List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1 ));
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1));
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
         } else {
             StringBuilder message = new StringBuilder();
@@ -335,7 +331,7 @@ public class RicheseCommands {
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
             bidding.setRicheseBidOrder(game, bidOrder);
             List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1 ));
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1));
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             discordGame.queueMessage("bidding-phase", message.toString());
             RunCommands.createBidMessage(discordGame, game);
@@ -345,7 +341,7 @@ public class RicheseCommands {
 
     public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
         message.append(
                 MessageFormat.format(
                         "Turn {0} - Select a {1} card to sell on the black market. {2}",
@@ -362,7 +358,7 @@ public class RicheseCommands {
         discordGame.getRicheseChat().queueMessage(message.toString(), buttons);
     }
 
-    public static void blackMarketMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException{
+    public static void blackMarketMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
@@ -372,7 +368,7 @@ public class RicheseCommands {
         discordGame.getRicheseChat().queueMessage("How would you like to sell " + cardName.trim() + "?", buttons);
     }
 
-    public static void confirmBlackMarket(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException{
+    public static void confirmBlackMarket(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
@@ -381,7 +377,7 @@ public class RicheseCommands {
 
     public static void cacheCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction)game.getFaction("Richese");
+        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
         List<Button> buttons = new LinkedList<>();
         String message;
         for (TreacheryCard card : richeseFaction.getTreacheryCardCache()) {
@@ -396,14 +392,14 @@ public class RicheseCommands {
         discordGame.getRicheseChat().queueMessage(message, buttons);
     }
 
-    public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException{
+    public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richesecachelast-confirm", "Confirm you wish to sell your card last."));
         buttons.add(Button.secondary("richesecachecardmethod-reselect", "Start over"));
         discordGame.getRicheseChat().queueMessage("", buttons);
     }
 
-    public static void cacheCardMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException{
+    public static void cacheCardMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
         buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
@@ -412,7 +408,7 @@ public class RicheseCommands {
         discordGame.getRicheseChat().queueMessage("How would you like to sell " + cardName.trim() + "?", buttons);
     }
 
-    public static void confirmCacheCard(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException{
+    public static void confirmCacheCard(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.success("richesecachecardconfirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richesecachecardconfirm-reselect", "Start over"));

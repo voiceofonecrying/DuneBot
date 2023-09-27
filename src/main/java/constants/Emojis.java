@@ -34,10 +34,13 @@ public final class Emojis {
     public static final String DUNE_RULEBOOK = "<:DuneRulebook01:991763013814198292>";
     public static final String WEIRDING = "<:weirding:991763071775297681>";
     public static final String WORM = ":worm:";
-    public static final String AXLOTLTANKS = "<:axlotltanks:991763497111269477>";
+    public static final String AXLOTL_TANKS = "<:axlotltanks:991763497111269477>";
     public static final String HEIGHLINERS = "<:heighliners:991763495567769640>";
     public static final String SPICE_PRODUCTION = "<:spiceproduction:991763494267531304>";
     public static final String TRANSPARENT_WORM = "<:transparent_worm:991762942536187964>";
+
+    private Emojis() {
+    }
 
     public static String getForceEmoji(String forceName) {
         switch (forceName) {
@@ -87,7 +90,7 @@ public final class Emojis {
     public static String getTechTokenEmoji(String techToken) {
         switch (techToken) {
             case "Axlotl Tanks" -> {
-                return AXLOTLTANKS;
+                return AXLOTL_TANKS;
             }
             case "Heighliners" -> {
                 return HEIGHLINERS;
@@ -98,5 +101,4 @@ public final class Emojis {
         }
         return " tech token ";
     }
-    private Emojis() {}
 }

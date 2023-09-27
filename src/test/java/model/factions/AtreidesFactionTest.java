@@ -2,10 +2,10 @@ package model.factions;
 
 import constants.Emojis;
 import model.Territory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
 
@@ -16,7 +16,9 @@ class AtreidesFactionTest extends FactionTestTemplate {
     private AtreidesFaction faction;
 
     @Override
-    Faction getFaction() { return faction; }
+    Faction getFaction() {
+        return faction;
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -24,13 +26,19 @@ class AtreidesFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testInitialSpice() { assertEquals(faction.getSpice(), 10); }
+    public void testInitialSpice() {
+        assertEquals(faction.getSpice(), 10);
+    }
 
     @Test
-    public void testFreeRevivals() { assertEquals(faction.getFreeRevival(), 2); }
+    public void testFreeRevivals() {
+        assertEquals(faction.getFreeRevival(), 2);
+    }
 
     @Test
-    public void testInitialHasMiningEquipment() { assertTrue(faction.hasMiningEquipment()); }
+    public void testInitialHasMiningEquipment() {
+        assertTrue(faction.hasMiningEquipment());
+    }
 
     @Test
     public void testInitialReserves() {
@@ -41,7 +49,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().values().contains(territoryName)) continue;
+            if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Arrakeen")) {
                 assertEquals(territory.getForces().get(0).getStrength(), 10);
@@ -53,16 +61,24 @@ class AtreidesFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testEmoji() { assertEquals(faction.getEmoji(), Emojis.ATREIDES); }
+    public void testEmoji() {
+        assertEquals(faction.getEmoji(), Emojis.ATREIDES);
+    }
 
     @Test
-    public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
+    public void testHandLimit() {
+        assertEquals(faction.getHandLimit(), 4);
+    }
 
     @Test
-    public void testInitialForcesLost() { assertEquals(faction.getForcesLost(), 0); }
+    public void testInitialForcesLost() {
+        assertEquals(faction.getForcesLost(), 0);
+    }
 
     @Test
-    public void testInitialHasKH() { assertFalse(faction.isHasKH()); }
+    public void testInitialHasKH() {
+        assertFalse(faction.isHasKH());
+    }
 
     @RepeatedTest(20)
     public void testSetForcesLost(RepetitionInfo repetitionInfo) {

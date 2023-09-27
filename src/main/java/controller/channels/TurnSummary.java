@@ -31,11 +31,11 @@ public class TurnSummary extends DiscordChannel {
                     userIds.add(faction.getPlayer());
                 }
                 userIds.add(game.getMod());
-                discordGame.createThread(frontOfShield,turnNumSummaryName, userIds);
-                optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(turnNumSummaryName)).findFirst();
-                if (optThread.isPresent()) {
-                    this.messageChannel = optThread.get();
-                }
+                discordGame.createThread(frontOfShield, turnNumSummaryName, userIds);
+                optThread = frontOfShield.getThreadChannels().stream()
+                        .filter(channel -> channel.getName().equals(turnNumSummaryName))
+                        .findFirst();
+                optThread.ifPresent(threadChannel -> this.messageChannel = threadChannel);
             }
         } else {
             String turnSummaryName = "turn-summary";
@@ -50,6 +50,6 @@ public class TurnSummary extends DiscordChannel {
     }
 
     public void addUser(String playerName) {
-        if (thread) discordGame.addUsersToThread((ThreadChannel)messageChannel, List.of(playerName));
+        if (thread) discordGame.addUsersToThread((ThreadChannel) messageChannel, List.of(playerName));
     }
 }

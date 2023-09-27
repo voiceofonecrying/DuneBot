@@ -8,7 +8,7 @@ import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
-public class RevivalButtons  implements Pressable {
+public class RevivalButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         if (!event.getComponentId().contains("revive-")) return;
 

@@ -8,16 +8,16 @@ import model.*;
 import model.factions.Faction;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -94,7 +94,7 @@ public class IxCommands {
         TreacheryCard newCard = game.getBidding().ixTechnology(game, cardName);
         discordGame.queueMessage("ix-info", "ledger",
                 MessageFormat.format("Received {0} and put {1} back as the next card for bid.",
-                newCard.name(), cardName)
+                        newCard.name(), cardName)
         );
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} used technology to swap a card from their hand for R{1}:C{2}.",
@@ -111,8 +111,8 @@ public class IxCommands {
         Faction ixAlly = game.getFaction(game.getFaction("Ix").getAlly());
         discordGame.queueMessage(ixAlly.getName().toLowerCase() + "-info", "ledger",
                 MessageFormat.format("Received {0} from the {1} deck and discarded {2} with {3} ally power.",
-                newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
-                );
+                        newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
+        );
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0} as {1} ally discarded the card just won and took the {2} deck top card.",
                 ixAlly.getEmoji(), Emojis.IX, Emojis.TREACHERY
@@ -147,7 +147,7 @@ public class IxCommands {
 
     public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
+        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         message.append(
                 MessageFormat.format(
                         "Select one of the following {0} cards as your starting card. {1}",
@@ -166,7 +166,7 @@ public class IxCommands {
     }
 
     public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
+        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         List<Button> buttons = new LinkedList<>();
         int i = 0;
         for (TreacheryCard card : ixFaction.getTreacheryHand()) {
@@ -179,7 +179,7 @@ public class IxCommands {
     public static void cardToReject(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = (IxFaction)game.getFaction("Ix");
+        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         message.append(
                 MessageFormat.format(
                         "Turn {0} - Select one of the following {1} cards to send back to the deck. {2}",
@@ -230,7 +230,7 @@ public class IxCommands {
     }
 
     public static void ixHandSelection(DiscordGame discordGame, Game game, String ixCardName) throws ChannelNotFoundException {
-        IxFaction faction = (IxFaction)game.getFaction("Ix");
+        IxFaction faction = (IxFaction) game.getFaction("Ix");
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
         TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))

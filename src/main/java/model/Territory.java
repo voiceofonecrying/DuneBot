@@ -11,19 +11,16 @@ import java.util.stream.Collectors;
 public class Territory {
     private final String territoryName;
     private final int sector;
-    private boolean isRock;
     private final boolean isStronghold;
     private final boolean isNearShieldWall;
-    private int spice;
     private final List<Force> forces;
+    private final List<String> adjacencyList;
+    private boolean isRock;
+    private int spice;
     private Integer richeseNoField;
-
     private String ecazAmbassador;
-
     private String terrorToken;
     private boolean aftermathToken;
-
-    private final List<String> adjacencyList;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
         this.territoryName = territoryName;
@@ -49,6 +46,10 @@ public class Territory {
 
     public boolean isRock() {
         return isRock;
+    }
+
+    public void setRock(boolean rock) {
+        isRock = rock;
     }
 
     public boolean isStronghold() {
@@ -91,6 +92,7 @@ public class Territory {
 
     /**
      * Returns a list of forces in the territory that belong to the given faction.
+     *
      * @param faction The faction to filter by.
      * @return A list of forces in the territory that belong to the given faction.
      */
@@ -138,20 +140,16 @@ public class Territory {
         else getForce(name).setStrength(strength);
     }
 
-    public void setRock(boolean rock) {
-        isRock = rock;
-    }
-
     public void addSpice(Integer spice) {
         this.spice += spice;
     }
 
-    public void setRicheseNoField(Integer richeseNoField) {
-        this.richeseNoField = richeseNoField;
-    }
-
     public Integer getRicheseNoField() {
         return richeseNoField;
+    }
+
+    public void setRicheseNoField(Integer richeseNoField) {
+        this.richeseNoField = richeseNoField;
     }
 
     public boolean hasRicheseNoField() {

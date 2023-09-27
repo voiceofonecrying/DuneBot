@@ -2,13 +2,14 @@ package model;
 
 import exceptions.InvalidGameStateException;
 import model.factions.Faction;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Bidding {
+    private final LinkedList<TreacheryCard> market;
     private int bidCardNumber;
     private int numCardsForBid;
-
     private List<String> bidOrder;
     private TreacheryCard bidCard;
     private List<String> richeseBidOrder;
@@ -17,8 +18,6 @@ public class Bidding {
     private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
     private boolean ixTechnologyUsed;
-
-    private final LinkedList<TreacheryCard> market;
     private boolean marketPopulated;
     private boolean marketShownToIx;
     private boolean ixRejectOutstanding;
@@ -375,5 +374,7 @@ public class Bidding {
         this.bidLeader = bidLeader;
     }
 
-    public TreacheryCard getPreviousCard() { return previousCard; }
+    public TreacheryCard getPreviousCard() {
+        return previousCard;
+    }
 }

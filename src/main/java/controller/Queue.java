@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class Queue {
-    private static Map<String, CompletableFuture<Void>> queue = new HashMap<>();
+    private static final Map<String, CompletableFuture<Void>> queue = new HashMap<>();
 
     public static CompletableFuture<Void> getFuture(String id) {
         if (queue.containsKey(id)) {

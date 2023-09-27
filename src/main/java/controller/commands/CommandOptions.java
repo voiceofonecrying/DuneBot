@@ -48,7 +48,6 @@ public class CommandOptions {
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
-    public static final OptionData password = new OptionData(OptionType.STRING, "password", "You really aren't allowed to run this command unless Voiceofonecrying lets you", true);
     public static final OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
             .addChoice("Treachery Deck", "treachery deck")
             .addChoice("Traitor Deck", "traitor deck");
@@ -182,6 +181,7 @@ public class CommandOptions {
     public static final OptionData gameState =
             new OptionData(OptionType.STRING, "game-state", "Select a game state to rewind to.", true)
                     .setAutoComplete(true);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
@@ -189,7 +189,8 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" -> choices = factions(game, searchValue);
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" ->
+                    choices = factions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
@@ -198,7 +199,7 @@ public class CommandOptions {
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
             case "from" -> choices = fromTerritories(event, game, searchValue);
             case "bgterritories" -> choices = bgTerritories(game, searchValue);
-            case "leadertokill", "factionleader"  -> choices = leaders(event, game, searchValue);
+            case "leadertokill", "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, game, searchValue);
             case "richese-card" -> choices = richeseCard(game, searchValue);
@@ -269,7 +270,7 @@ public class CommandOptions {
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForce(faction.getName()).getStrength() > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
-            || (faction.getName().equals("BG") && territory.getForce("Advisor").getStrength() > 0)) {
+                    || (faction.getName().equals("BG") && territory.getForce("Advisor").getStrength() > 0)) {
                 territories.add(territory);
             }
         }
@@ -419,15 +420,14 @@ public class CommandOptions {
         List<Message> messages = messageHistory.getRetrievedHistory();
 
 
-        List<Command.Choice> choices = IntStream.range(0, messageHistory.size())
+        return IntStream.range(0, messageHistory.size())
                 .filter(i -> messages.get(i).getContentDisplay().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .mapToObj(i -> new Command.Choice(
                         StringUtils.left(i + " - " + messages.get(i).getTimeCreated() + " - " +
                                 messages.get(i).getContentDisplay(), 100),
-                                messages.get(i).getId()
-                        ))
+                        messages.get(i).getId()
+                ))
                 .toList();
-        return choices;
     }
 
     private static List<Command.Choice> gameOptionsToChoices(List<GameOption> list, String searchValue) {

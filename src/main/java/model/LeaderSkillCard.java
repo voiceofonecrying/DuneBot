@@ -1,3 +1,4 @@
 package model;
 
-public record LeaderSkillCard(String name) {}
+public record LeaderSkillCard(String name) {
+}

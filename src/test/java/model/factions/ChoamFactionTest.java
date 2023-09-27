@@ -15,8 +15,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class ChoamFactionTest extends FactionTestTemplate {
 
     private ChoamFaction faction;
+
     @Override
-    Faction getFaction() { return faction; }
+    Faction getFaction() {
+        return faction;
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -24,13 +27,19 @@ class ChoamFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testInitialSpice() { assertEquals(faction.getSpice(), 2); }
+    public void testInitialSpice() {
+        assertEquals(faction.getSpice(), 2);
+    }
 
     @Test
-    public void testFreeRevivals() { assertEquals(faction.getFreeRevival(), 0); }
+    public void testFreeRevivals() {
+        assertEquals(faction.getFreeRevival(), 0);
+    }
 
     @Test
-    public void testInitialHasMiningEquipment() { assertFalse(faction.hasMiningEquipment()); }
+    public void testInitialHasMiningEquipment() {
+        assertFalse(faction.hasMiningEquipment());
+    }
 
     @Test
     public void testInitialReserves() {
@@ -41,17 +50,21 @@ class ChoamFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().values().contains(territoryName)) continue;
+            if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             assertEquals(territory.getForces().size(), 0);
         }
     }
 
     @Test
-    public void testEmoji() { assertEquals(faction.getEmoji(), Emojis.CHOAM); }
+    public void testEmoji() {
+        assertEquals(faction.getEmoji(), Emojis.CHOAM);
+    }
 
     @Test
-    public void testHandLimit() { assertEquals(faction.getHandLimit(), 5); }
+    public void testHandLimit() {
+        assertEquals(faction.getHandLimit(), 5);
+    }
 
     @Test
     public void choamCanNotSetInflationRoundTooLow() {

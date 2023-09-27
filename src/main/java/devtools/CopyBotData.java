@@ -3,8 +3,8 @@ package devtools;
 import exceptions.ChannelNotFoundException;
 import io.github.cdimascio.dotenv.Dotenv;
 import model.DiscordGame;
-import model.factions.Faction;
 import model.Game;
+import model.factions.Faction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -12,11 +12,10 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 
-import java.io.IOException;
 import java.util.List;
 
 public class CopyBotData {
-    public static void main(String[] args) throws ChannelNotFoundException, InterruptedException, IOException {
+    public static void main(String[] args) throws ChannelNotFoundException, InterruptedException {
         String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
         String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
 
@@ -64,7 +63,7 @@ public class CopyBotData {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName(category, true);
-        if (categories.size() == 0) throw new ChannelNotFoundException("Category " + category + " not found");
+        if (categories.isEmpty()) throw new ChannelNotFoundException("Category " + category + " not found");
         Category mainCategory = categories.get(0);
         return new DiscordGame(mainCategory);
     }

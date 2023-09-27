@@ -25,9 +25,12 @@ public class EcazButtons implements Pressable {
 
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-place-ambassador-")) queueAmbassadorButtons(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-ambassador-selected-")) sendAmbassador(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-trigger-ambassador-")) triggerAmbassador(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-place-ambassador-"))
+            queueAmbassadorButtons(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-ambassador-selected-"))
+            sendAmbassador(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-trigger-ambassador-"))
+            triggerAmbassador(event, game, discordGame);
         switch (event.getComponentId()) {
             case "ecaz-get-vidal" -> getDukeVidal(event, game, discordGame);
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
@@ -116,7 +119,6 @@ public class EcazButtons implements Pressable {
     }
 
 
-
     private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("ecaz-accept-offer", "Yes"));
@@ -127,9 +129,9 @@ public class EcazButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void getDukeVidal(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void getDukeVidal(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction ecaz = game.getFaction("Ecaz");
-        if (!ecaz.getLeader("Duke Vidal").isEmpty()) return;
+        if (ecaz.getLeader("Duke Vidal").isPresent()) return;
         ecaz.addLeader(new Leader("Duke Vidal", 6, null, false));
         discordGame.pushGame();
         discordGame.queueMessage("Duke Vidal has been returned to you!");

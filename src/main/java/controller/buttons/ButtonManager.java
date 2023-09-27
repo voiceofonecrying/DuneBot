@@ -13,11 +13,34 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class ButtonManager extends ListenerAdapter {
+    public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
+        try {
+            return game.getFactions().stream()
+                    .filter(f -> f.getPlayer().contains(Objects.requireNonNull(event.getMember()).getUser().getId()))
+                    .findAny()
+                    .get();
+        } catch (Exception e) {
+            System.out.println(event.getMember().getUser().getId());
+            for (Faction faction : game.getFactions()) {
+                System.out.println(faction.getPlayer());
+            }
+            throw e;
+        }
+    }
+
+    public static void deleteAllButtonsInChannel(MessageChannel channel) {
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
+        for (Message message : messages) {
+            if (!message.getButtons().isEmpty()) message.delete().complete();
+        }
+    }
+
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         event.deferReply().queue();
@@ -43,7 +66,7 @@ public class ButtonManager extends ListenerAdapter {
                     getButtonPresser(event, game).setGraphicDisplay(true);
                     discordGame.queueMessage("Graphic mode active");
                     discordGame.pushGame();
-                    ShowCommands.drawFactionInfo(discordGame, game,  getButtonPresser(event, game).getName());
+                    ShowCommands.drawFactionInfo(discordGame, game, getButtonPresser(event, game).getName());
                 }
                 case "text" -> {
                     getButtonPresser(event, game).setGraphicDisplay(false);
@@ -59,24 +82,6 @@ public class ButtonManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
-        }
-    }
-
-    public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
-        try {
-        return game.getFactions().stream().filter(f -> f.getPlayer().contains(event.getMember().getUser().getId())).findAny().get();
-        } catch (Exception e) {
-            System.out.println(event.getMember().getUser().getId());
-            for (Faction faction : game.getFactions()) {
-                System.out.println(faction.getPlayer());
-            }
-            throw e;
-        }
-    }
-    public static void deleteAllButtonsInChannel(MessageChannel channel) {
-        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        for (Message message : messages) {
-            if (!message.getButtons().isEmpty()) message.delete().complete();
         }
     }
 }

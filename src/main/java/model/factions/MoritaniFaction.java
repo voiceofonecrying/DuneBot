@@ -18,6 +18,7 @@ public class MoritaniFaction extends Faction {
 
     private final List<String> terrorTokens;
     private final List<String> assassinationTargets;
+
     public MoritaniFaction(String player, String userName, Game game) throws IOException {
         super("Moritani", player, userName, game);
 
@@ -41,6 +42,7 @@ public class MoritaniFaction extends Faction {
         terrorTokens.add("Sabotage");
         terrorTokens.add("Sneak Attack");
     }
+
     public void triggerTerrorToken(Game game, DiscordGame discordGame, Faction triggeringFaction, Territory location, String terror) throws ChannelNotFoundException, IOException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("The " + terror + " token has been triggered!");
@@ -54,7 +56,8 @@ public class MoritaniFaction extends Faction {
                 for (Force force : location.getForces()) {
                     if (force.getName().contains("*")) CommandManager
                             .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true, game, discordGame);
-                    else CommandManager.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
+                    else
+                        CommandManager.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
                 }
             }
             case "Extortion" -> {
@@ -87,11 +90,11 @@ public class MoritaniFaction extends Faction {
             case "Sneak Attack" -> {
                 Force reserves = game.getTerritory("Grumman").getForce("Moritani");
                 List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength()>=1));
-                buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength()>=2));
-                buttons.add(Button.primary("moritani-sneak-attack-3", "3").withDisabled(reserves.getStrength()>=3));
-                buttons.add(Button.primary("moritani-sneak-attack-4", "4").withDisabled(reserves.getStrength()>=4));
-                buttons.add(Button.primary("moritani-sneak-attack-5", "5").withDisabled(reserves.getStrength()>=5));
+                buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength() >= 1));
+                buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength() >= 2));
+                buttons.add(Button.primary("moritani-sneak-attack-3", "3").withDisabled(reserves.getStrength() >= 3));
+                buttons.add(Button.primary("moritani-sneak-attack-4", "4").withDisabled(reserves.getStrength() >= 4));
+                buttons.add(Button.primary("moritani-sneak-attack-5", "5").withDisabled(reserves.getStrength() >= 5));
                 discordGame.getMoritaniChat().queueMessage("How many forces do you want to send on your sneak attack?", buttons);
             }
         }
@@ -114,6 +117,7 @@ public class MoritaniFaction extends Faction {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.setTerrorToken(terror);
     }
+
     public void getDukeVidal() {
         if (getLeader("Duke Vidal").isPresent()) return;
         addLeader(new Leader("Duke Vidal", 6, null, false));
@@ -129,7 +133,8 @@ public class MoritaniFaction extends Faction {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             Button stronghold = Button.primary("moritani-place-terror-" + territory.getTerritoryName(), "Place Terror Token in " + territory.getTerritoryName());
-            if (territory.getTerrorToken() != null || game.getStorm() == territory.getSector()) stronghold = stronghold.asDisabled();
+            if (territory.getTerrorToken() != null || game.getStorm() == territory.getSector())
+                stronghold = stronghold.asDisabled();
             buttons.add(stronghold);
         }
         discordGame.getMoritaniChat().queueMessage("Use these buttons to place Terror Tokens from your supply.", buttons);

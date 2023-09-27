@@ -2,7 +2,6 @@ package controller.commands;
 
 import caches.GameCache;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.entities.Message;
@@ -15,7 +14,6 @@ import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +39,7 @@ public class GameStateCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException, ExecutionException, InterruptedException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, ExecutionException, InterruptedException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 

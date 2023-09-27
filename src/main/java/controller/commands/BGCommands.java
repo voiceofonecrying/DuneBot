@@ -1,9 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
-import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidGameStateException;
 import model.DiscordGame;
 import model.Force;
 import model.Game;
@@ -40,7 +38,7 @@ public class BGCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -84,7 +82,7 @@ public class BGCommands {
         if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
         else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
         else {
-            discordGame.queueMessage("mod-info","No Bene Gesserit were found in that territory.");
+            discordGame.queueMessage("mod-info", "No Bene Gesserit were found in that territory.");
             return;
         }
         discordGame.pushGame();

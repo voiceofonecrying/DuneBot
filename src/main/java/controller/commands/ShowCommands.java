@@ -67,7 +67,8 @@ public class ShowCommands {
 
     public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         String factionName = discordGame.required(faction).getAsString();
-        if (discordGame.getGame().getFaction(factionName).isGraphicDisplay()) drawFactionInfo(discordGame, discordGame.getGame(), factionName);
+        if (discordGame.getGame().getFaction(factionName).isGraphicDisplay())
+            drawFactionInfo(discordGame, discordGame.getGame(), factionName);
         else writeFactionInfo(discordGame, factionName);
     }
 
@@ -87,6 +88,7 @@ public class ShowCommands {
         InputStream inputStream = resourceURL.openStream();
         return FileUpload.fromData(inputStream, name + ".png");
     }
+
     public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException {
         if (game.getMute()) return;
 
@@ -126,25 +128,25 @@ public class ShowCommands {
         while (spice != 0) {
             if (spice >= 10) {
                 BufferedImage spiceImage = getResourceImage("10 Spice");
-                spiceImage = resize(spiceImage, 200,200);
+                spiceImage = resize(spiceImage, 200, 200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 10;
             } else if (spice == 5) {
                 BufferedImage spiceImage = getResourceImage("5 Spice");
-                spiceImage = resize(spiceImage, 200,200);
+                spiceImage = resize(spiceImage, 200, 200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 5;
             } else if (spice >= 2) {
                 BufferedImage spiceImage = getResourceImage("2 Spice");
-                spiceImage = resize(spiceImage, 200,200);
+                spiceImage = resize(spiceImage, 200, 200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 2;
             } else {
                 BufferedImage spiceImage = getResourceImage("1 Spice");
-                spiceImage = resize(spiceImage, 200,200);
+                spiceImage = resize(spiceImage, 200, 200);
                 Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y);
                 table = overlay(table, spiceImage, spicePlacementOffset, 1);
                 spice -= 1;
@@ -180,7 +182,7 @@ public class ShowCommands {
                     offset = 0;
                     offsetY = 1000;
                 }
-        }
+            }
         }
 
         offset = 0;
@@ -235,7 +237,7 @@ public class ShowCommands {
         //BG Prediction
         if (faction.getName().equals("BG")) {
             offset += 900;
-            Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + ((BGFaction)faction).getPredictionRound());
+            Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + ((BGFaction) faction).getPredictionRound());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -243,7 +245,7 @@ public class ShowCommands {
                 table = overlay(table, cardImage, cardPoint, 1);
             }
             offset += 900;
-            image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), ((BGFaction)faction).getPredictionFactionName());
+            image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), ((BGFaction) faction).getPredictionFactionName());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -265,6 +267,7 @@ public class ShowCommands {
 
 
     }
+
     private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
 
@@ -298,7 +301,7 @@ public class ShowCommands {
                 homeworlds = concatenateHorizontally(homeworlds, homeworld);
                 if (faction.getName().equals("Emperor")) {
                     BufferedImage salusa = getResourceImage("Salusa Secundus");
-                    for (Force force : game.getTerritory(((EmperorFaction)faction).getSecondHomeworld()).getForces()) {
+                    for (Force force : game.getTerritory(((EmperorFaction) faction).getSecondHomeworld()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                         forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(500, 200 + offset);
@@ -403,7 +406,7 @@ public class ShowCommands {
                 BufferedImage ambassador = overlay(
                         resize(ambassadorBackground, 40, 40),
                         resize(ambassadorSigil, 22, 22),
-                        new Point(20,20),
+                        new Point(20, 20),
                         1
                 );
                 Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
@@ -425,42 +428,42 @@ public class ShowCommands {
                 while (spice != 0) {
                     if (spice >= 10) {
                         BufferedImage spiceImage = getResourceImage("10 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 10;
                     } else if (spice >= 8) {
                         BufferedImage spiceImage = getResourceImage("8 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 8;
                     } else if (spice >= 6) {
                         BufferedImage spiceImage = getResourceImage("6 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 6;
                     } else if (spice == 5) {
                         BufferedImage spiceImage = getResourceImage("5 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 5;
                     } else if (spice >= 2) {
                         BufferedImage spiceImage = getResourceImage("2 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 2;
                     } else {
                         BufferedImage spiceImage = getResourceImage("1 Spice");
-                        spiceImage = resize(spiceImage, 25,25);
+                        spiceImage = resize(spiceImage, 25, 25);
                         Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
@@ -473,12 +476,12 @@ public class ShowCommands {
             for (Force force : territory.getForces()) {
                 if (force.getName().equals("Hidden Mobile Stronghold")) {
                     BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
-                    hms = resize(hms, 150,100);
+                    hms = resize(hms, 150, 100);
                     List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
                     int forceOffset = 0;
                     for (Force f : hmsForces) {
                         BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
-                        hms = overlay(hms, forceImage, new Point(40,20 + forceOffset), 1);
+                        hms = overlay(hms, forceImage, new Point(40, 20 + forceOffset), 1);
                         forceOffset += 30;
                     }
                     Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
@@ -533,7 +536,7 @@ public class ShowCommands {
             } else {
                 leaderImage = getResourceImage(leader.name());
             }
-            leaderImage = resize(leaderImage, 70,70);
+            leaderImage = resize(leaderImage, 70, 70);
             Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
             Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
             board = overlay(board, leaderImage, tanksOffset, 1);
@@ -563,20 +566,20 @@ public class ShowCommands {
             BufferedImage twoImage = getResourceImage("2");
             BufferedImage zeroImage = getResourceImage("0");
             twoImage = resize(twoImage, 12, 12);
-            zeroImage = resize(zeroImage, 12,12);
+            zeroImage = resize(zeroImage, 12, 12);
             forceImage = overlay(forceImage, twoImage, new Point(28, 14), 1);
             forceImage = overlay(forceImage, zeroImage, new Point(36, 14), 1);
         } else if (strength > 9) {
             BufferedImage oneImage = getResourceImage("1");
             BufferedImage digitImage = getResourceImage(String.valueOf(strength - 10));
             oneImage = resize(oneImage, 12, 12);
-            digitImage = resize(digitImage, 12,12);
+            digitImage = resize(digitImage, 12, 12);
             forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
             forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
         } else {
             BufferedImage numberImage = getResourceImage(String.valueOf(strength));
             numberImage = resize(numberImage, 12, 12);
-            forceImage = overlay(forceImage, numberImage, new Point(30,14), 1);
+            forceImage = overlay(forceImage, numberImage, new Point(30, 14), 1);
 
         }
         return forceImage;
@@ -602,7 +605,7 @@ public class ShowCommands {
         Graphics2D g = overlay.createGraphics();
         g.drawImage(board, 0, 0, null);
         g.setComposite(ac);
-        g.drawImage(piece, coordinates.x - (piece.getWidth()/2), coordinates.y - (piece.getHeight()/2), null);
+        g.drawImage(piece, coordinates.x - (piece.getWidth() / 2), coordinates.y - (piece.getHeight() / 2), null);
         g.setComposite(ac);
         g.dispose();
 
@@ -673,10 +676,11 @@ public class ShowCommands {
 
     /**
      * Writes the faction info to the faction-info channel
+     *
      * @param discordGame The Discord Game
-     * @param faction The Faction whose info to write
+     * @param faction     The Faction whose info to write
      * @throws ChannelNotFoundException if the channel is not found
-     * @throws IOException if the image cannot be written
+     * @throws IOException              if the image cannot be written
      */
     public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
         MessageChannel infoChannel = discordGame.getTextChannel(faction.getName().toLowerCase() + "-info");
@@ -719,9 +723,12 @@ public class ShowCommands {
         }
         StringBuilder reservesString = new StringBuilder();
         reservesString.append("\n__Reserves:__ ").append(faction.getReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Fremen")) reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Emperor")) reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Ix")) reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Fremen"))
+            reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Emperor"))
+            reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        if (faction.getName().equalsIgnoreCase("Ix"))
+            reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
 
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
@@ -745,7 +752,7 @@ public class ShowCommands {
             String lowHigh = faction.isHighThreshold() ? "High" : "Low";
             homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh).get());
             if (faction.getName().equals("Emperor")) {
-                lowHigh = ((EmperorFaction)faction).isSecundusHighThreshold() ? "High" : "Low";
+                lowHigh = ((EmperorFaction) faction).isSecundusHighThreshold() ? "High" : "Low";
                 homeworldMessageBuilder.addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), "Salusa Secundus " + lowHigh).get());
             }
             discordGame.queueMessage(infoChannelName, homeworldMessageBuilder);
@@ -802,7 +809,7 @@ public class ShowCommands {
             if (faction.getFrontOfShieldSpice() > 0) {
                 message.append("Front of shield spice: ")
                         .append(faction.getFrontOfShieldSpice())
-                        .append(" " + Emojis.SPICE +"\n");
+                        .append(" " + Emojis.SPICE + "\n");
             }
 
             if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC)) {
@@ -811,17 +818,17 @@ public class ShowCommands {
                         .append("\n");
             }
 
-            if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction)faction).hasFrontOfShieldNoField()) {
-                message.append(((RicheseFaction)faction).getFrontOfShieldNoField())
+            if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction) faction).hasFrontOfShieldNoField()) {
+                message.append(((RicheseFaction) faction).getFrontOfShieldNoField())
                         .append(" No-Field Token\n");
             }
 
             if (faction.getName().equalsIgnoreCase("Ecaz")) {
-                message.append(((EcazFaction)faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
+                message.append(((EcazFaction) faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
             }
 
             if (faction.getName().equalsIgnoreCase("Moritani")) {
-                message.append("Assassinated targets:\n").append(((MoritaniFaction)faction).getAssassinationTargets().toString());
+                message.append("Assassinated targets:\n").append(((MoritaniFaction) faction).getAssassinationTargets().toString());
             }
 
             if (game.hasLeaderSkills()) {
@@ -869,8 +876,8 @@ public class ShowCommands {
             Set<UpdateType> updateTypes = faction.getUpdateTypes();
             if (
                     updateTypes.contains(UpdateType.MISC_BACK_OF_SHIELD) ||
-                    updateTypes.contains(UpdateType.SPICE_BACK) ||
-                    updateTypes.contains(UpdateType.TREACHERY_CARDS)
+                            updateTypes.contains(UpdateType.SPICE_BACK) ||
+                            updateTypes.contains(UpdateType.TREACHERY_CARDS)
             ) {
                 if (faction.isGraphicDisplay()) drawFactionInfo(discordGame, game, faction.getName());
                 else writeFactionInfo(discordGame, faction);

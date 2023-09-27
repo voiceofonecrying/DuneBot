@@ -5,5 +5,6 @@ import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public interface Pressable {
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {}
+    static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+    }
 }

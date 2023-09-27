@@ -19,27 +19,7 @@ import static controller.Initializers.getCSVFile;
 import static controller.Initializers.getJSONString;
 
 public class Game {
-    private String gameRole;
-    private String modRole;
-    private Boolean mute;
-    private int turn;
-    private Set<GameOption> gameOptions;
-    private List<SetupStep> setupSteps;
-    private boolean setupStarted;
-    private boolean setupFinished;
-
-    private int phase;
-    private int subPhase;
-    private int storm;
-
-    private int stormMovement;
-    private Bidding bidding;
-    private String mod;
-    private String gameRoleMention;
     private final List<Faction> factions;
-    private Deque<String> turnOrder;
-
-    private boolean onHold;
     private final Map<String, Territory> territories;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
@@ -48,17 +28,31 @@ public class Game {
     private final LinkedList<SpiceCard> spiceDiscardB;
     private final LinkedList<TraitorCard> traitorDeck;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
-
-
     private final LinkedList<NexusCard> nexusDeck;
     private final LinkedList<NexusCard> nexusDiscard;
     private final LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
-    private boolean shieldWallDestroyed;
-    private boolean sandtroutInPlay;
-
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
+    private String gameRole;
+    private String modRole;
+    private Boolean mute;
+    private int turn;
+    private Set<GameOption> gameOptions;
+    private List<SetupStep> setupSteps;
+    private boolean setupStarted;
+    private boolean setupFinished;
+    private int phase;
+    private int subPhase;
+    private int storm;
+    private int stormMovement;
+    private Bidding bidding;
+    private String mod;
+    private String gameRoleMention;
+    private Deque<String> turnOrder;
+    private boolean onHold;
+    private boolean shieldWallDestroyed;
+    private boolean sandtroutInPlay;
 
     public Game() throws IOException {
         super();
@@ -133,7 +127,8 @@ public class Game {
         try {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");
             if (!faction.getTreacheryCardCache().isEmpty()) bidding.setRicheseCacheCardOutstanding(true);
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     public void endBidding() {
@@ -144,12 +139,12 @@ public class Game {
         return gameOptions;
     }
 
-    public boolean hasGameOption(GameOption gameOption) {
-        return getGameOptions().contains(gameOption);
-    }
-
     public void setGameOptions(Set<GameOption> gameOptions) {
         this.gameOptions = gameOptions;
+    }
+
+    public boolean hasGameOption(GameOption gameOption) {
+        return getGameOptions().contains(gameOption);
     }
 
     public void addGameOption(GameOption gameOption) {
@@ -211,6 +206,7 @@ public class Game {
 
     /**
      * Returns the territory with the given name.
+     *
      * @param name The territory's name.
      * @return The territory with the given name.
      */
@@ -253,6 +249,7 @@ public class Game {
     public void setGameRoleMention(String gameRoleMention) {
         this.gameRoleMention = gameRoleMention;
     }
+
     public Boolean getMute() {
         return mute;
     }
@@ -269,6 +266,7 @@ public class Game {
 
     /**
      * Returns the faction's turn index (0-5), accounting for the storm.
+     *
      * @param name The faction's name.
      * @return The faction's turn index.
      */
@@ -298,6 +296,7 @@ public class Game {
     public LinkedList<SpiceCard> getSpiceDeck() {
         return spiceDeck;
     }
+
     public LinkedList<TraitorCard> getTraitorDeck() {
         return traitorDeck;
     }
@@ -334,19 +333,23 @@ public class Game {
         return storm;
     }
 
+    public void setStorm(int storm) {
+        this.storm = ((storm - 1) % 18) + 1;
+    }
+
     public LinkedList<Force> getTanks() {
         return tanks;
     }
 
     public void removeZeroStrengthTanks() {
-        this.tanks.removeIf(f-> f.getStrength() == 0);
+        this.tanks.removeIf(f -> f.getStrength() == 0);
     }
 
     public Force getForceFromTanks(String forceName) {
         // This is a temporary fix for duplicates in the tanks list.
         removeZeroStrengthTanks();
 
-        List<Force> forces = this.tanks.stream().filter(f-> f.getName().equalsIgnoreCase(forceName)).toList();
+        List<Force> forces = this.tanks.stream().filter(f -> f.getName().equalsIgnoreCase(forceName)).toList();
 
         Force force;
         if (forces.size() > 1) {
@@ -398,10 +401,6 @@ public class Game {
         subPhase++;
     }
 
-    public void setStorm(int storm) {
-        this.storm = ((storm - 1) % 18) + 1;
-    }
-
     public void advanceStorm(int movement) {
         setStorm(getStorm() + movement);
     }
@@ -411,9 +410,7 @@ public class Game {
             try {
                 faction.getTreacheryCard("Family Atomics ");
                 return faction;
-            }
-            catch (IllegalArgumentException e) {
-                continue;
+            } catch (IllegalArgumentException e) {
             }
         }
 

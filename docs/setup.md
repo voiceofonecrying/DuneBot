@@ -2,7 +2,7 @@
 
 ## New Game
 The `/newgame` command sets up a new channel category for the game.
-You should probably use a different player rold and mod role for each game.
+You should probably use a different player role and mod role for each game.
 
 ## Expansion Choices
 Use the following commands to select options for the game:

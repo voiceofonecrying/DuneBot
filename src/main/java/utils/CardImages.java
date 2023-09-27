@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 public class CardImages {
     private static final Map<String, List<Message>> cardChannelMessages = new HashMap<>();
+
     public static Optional<FileUpload> getTreacheryCardImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
                 ".*Name:\\s*" +

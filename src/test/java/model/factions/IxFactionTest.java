@@ -7,15 +7,16 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class IxFactionTest extends FactionTestTemplate {
 
     private IxFaction faction;
+
     @Override
-    Faction getFaction() { return faction; }
+    Faction getFaction() {
+        return faction;
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -23,13 +24,19 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testInitialSpice() { assertEquals(faction.getSpice(), 10); }
+    public void testInitialSpice() {
+        assertEquals(faction.getSpice(), 10);
+    }
 
     @Test
-    public void testFreeRevivals() { assertEquals(faction.getFreeRevival(), 1); }
+    public void testFreeRevivals() {
+        assertEquals(faction.getFreeRevival(), 1);
+    }
 
     @Test
-    public void testInitialHasMiningEquipment() { assertFalse(faction.hasMiningEquipment()); }
+    public void testInitialHasMiningEquipment() {
+        assertFalse(faction.hasMiningEquipment());
+    }
 
     @Test
     public void testInitialReserves() {
@@ -45,7 +52,7 @@ class IxFactionTest extends FactionTestTemplate {
         assertTrue(game.getTerritories().containsKey("Hidden Mobile Stronghold"));
 
         for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().values().contains(territoryName)) continue;
+            if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Hidden Mobile Stronghold")) {
                 assertEquals(territory.getForces().get(0).getStrength(), 3);
@@ -60,8 +67,12 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testEmoji() { assertEquals(faction.getEmoji(), Emojis.IX); }
+    public void testEmoji() {
+        assertEquals(faction.getEmoji(), Emojis.IX);
+    }
 
     @Test
-    public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
+    public void testHandLimit() {
+        assertEquals(faction.getHandLimit(), 4);
+    }
 }

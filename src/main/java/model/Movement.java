@@ -1,7 +1,6 @@
 package model;
 
 import constants.Emojis;
-import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
@@ -22,7 +21,8 @@ public class Movement {
     private boolean hasMoved;
     private boolean movingNoField;
 
-    public Movement() {}
+    public Movement() {
+    }
 
     public void execute(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Territory from = game.getTerritory(movingFrom);
@@ -32,7 +32,8 @@ public class Movement {
             from.setRicheseNoField(null);
             discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
         }
-        if (force != 0 || specialForce != 0) CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
+        if (force != 0 || specialForce != 0)
+            CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
         if (secondForce != 0 || secondSpecialForce != 0) {
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
             CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);

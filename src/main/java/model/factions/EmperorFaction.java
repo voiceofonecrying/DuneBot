@@ -39,16 +39,18 @@ public class EmperorFaction extends Faction {
 
     /**
      * Adds forces from a Territory to the reserves or tanks
+     *
      * @param territoryName The name of the Territory.
-     * @param amount The amount of the force.
-     * @param isSpecial Whether the force is special or not.
-     * @param toTanks Whether the force is going to the tanks or not.
+     * @param amount        The amount of the force.
+     * @param isSpecial     Whether the force is special or not.
+     * @param toTanks       Whether the force is going to the tanks or not.
      */
     @Override
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
         removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
     }
+
     public int getSecundusHighThreshold() {
         return secundusHighThreshold;
     }
@@ -65,16 +67,16 @@ public class EmperorFaction extends Faction {
         return secondHomeworld;
     }
 
+    public void setSecondHomeworld(String secondHomeworld) {
+        this.secondHomeworld = secondHomeworld;
+    }
+
     public boolean isSecundusHighThreshold() {
         return isSecundusHighThreshold;
     }
 
     public void setSecundusHighThreshold(boolean secundusHighThreshold) {
         isSecundusHighThreshold = secundusHighThreshold;
-    }
-
-    public void setSecondHomeworld(String secondHomeworld) {
-        this.secondHomeworld = secondHomeworld;
     }
 
     @Override

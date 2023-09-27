@@ -129,13 +129,13 @@ public class RunCommands {
         }
         if (atomicsEligible && nobodyHoldsAtomics) {
             boolean atomicsStillInGame = false;
-            for (TreacheryCard card: game.getTreacheryDeck()) {
+            for (TreacheryCard card : game.getTreacheryDeck()) {
                 if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
                     atomicsStillInGame = true;
                     break;
                 }
             }
-            for (TreacheryCard card: game.getTreacheryDiscard()) {
+            for (TreacheryCard card : game.getTreacheryDiscard()) {
                 if (atomicsStillInGame) {
                     break;
                 }
@@ -151,10 +151,10 @@ public class RunCommands {
         if (game.getTurn() != 1) {
             turnSummary.queueMessage(
                     "The storm would move " +
-                    game.getStormMovement() +
-                    " sectors this turn. Weather Control " +
-                    (atomicsEligible ? "and Family Atomics " : "") +
-                    "may be played at this time.");
+                            game.getStormMovement() +
+                            " sectors this turn. Weather Control " +
+                            (atomicsEligible ? "and Family Atomics " : "") +
+                            "may be played at this time.");
             if (atomicsEligible && game.getStorm() >= 5 && game.getStorm() <= 9) {
                 turnSummary.queueMessage("(Check if storm position prevents use of Family Atomics.)");
             }
@@ -174,7 +174,7 @@ public class RunCommands {
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                 .toList();
 
-        if (fremenForces.size() > 0)
+        if (!fremenForces.isEmpty())
             message.append(stormTroopsFremen(territory, fremenForces, game));
 
         for (Force force : nonFremenForces) {
@@ -240,11 +240,11 @@ public class RunCommands {
                 List<Territory> territoriesInStorm = territories.values().stream()
                         .filter(t ->
                                 t.getSector() == game.getStorm() &&
-                                !t.isRock()
+                                        !t.isRock()
                         ).toList();
 
                 List<Territory> territoriesWithTroops = territoriesInStorm.stream()
-                        .filter(t -> t.getForces().size() > 0).toList();
+                        .filter(t -> !t.getForces().isEmpty()).toList();
 
                 List<Territory> territoriesWithSpice = territoriesInStorm.stream()
                         .filter(t -> t.getSpice() > 0).toList();
@@ -309,8 +309,7 @@ public class RunCommands {
                         2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
                 CommandManager.spiceMessage(discordGame, 2 * multiplier, faction.getSpice(), faction.getName(),
                         "CHOAM Charity", true);
-            }
-            else if (spice < 2) {
+            } else if (spice < 2) {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
                 if (!faction.isHighThreshold()) charity++;
@@ -319,7 +318,8 @@ public class RunCommands {
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
                                 " in CHOAM Charity."
                 );
-                if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.addSpice(game, discordGame, "Spice Production");
+                if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
+                    TechToken.addSpice(game, discordGame, "Spice Production");
                 CommandManager.spiceMessage(discordGame, charity, faction.getSpice(), faction.getName(),
                         "CHOAM Charity", true);
             }
@@ -336,7 +336,8 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, choamGiven, choamFaction.getSpice(), "choam",
                     "CHOAM Charity given", false);
         }
-        if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)) TechToken.collectSpice(game, discordGame, "Spice Production");
+        if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
+            TechToken.collectSpice(game, discordGame, "Spice Production");
     }
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -348,7 +349,7 @@ public class RunCommands {
         });
         RicheseFaction richeseFaction;
         try {
-            richeseFaction = (RicheseFaction)game.getFaction("Richese");
+            richeseFaction = (RicheseFaction) game.getFaction("Richese");
             if (richeseFaction.getTreacheryHand().isEmpty()) {
                 discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
                 return true;
@@ -417,7 +418,7 @@ public class RunCommands {
 
         if (bidding.getBidCard() != null && bidding.isCardFromMarket()) {
             int numCardsReturned = bidding.moveMarketToDeck(game);
-            discordGame.getTurnSummary().queueMessage("" + numCardsReturned + " cards were returned to top of the Treachery Deck");
+            discordGame.getTurnSummary().queueMessage(numCardsReturned + " cards were returned to top of the Treachery Deck");
         }
 
         if (bidding.isRicheseCacheCardOutstanding()) {
@@ -443,25 +444,22 @@ public class RunCommands {
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
-            StringBuilder message = new StringBuilder();
-            message.append(
-                    MessageFormat.format(
-                            "{0} {1} cards have been shown to {2}",
-                            bidding.getMarket().size(), Emojis.TREACHERY, Emojis.IX
-                    )
+            String message = MessageFormat.format(
+                    "{0} {1} cards have been shown to {2}",
+                    bidding.getMarket().size(), Emojis.TREACHERY, Emojis.IX
             );
             IxCommands.cardToReject(discordGame, game);
             bidding.setMarketShownToIx(true);
-            turnSummary.queueMessage(message.toString());
+            turnSummary.queueMessage(message);
             discordGame.pushGame();
-        } else  {
+        } else {
             bidding.updateBidOrder(game);
             List<String> bidOrder = bidding.getEligibleBidOrder(game);
 
             if (bidOrder.isEmpty()) {
                 discordGame.queueMessage("bidding-phase", "All hands are full.");
                 discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
-            } else  {
+            } else {
                 if (bidding.isTreacheryDeckReshuffled()) {
                     turnSummary.queueMessage(MessageFormat.format(
                             "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
@@ -470,7 +468,7 @@ public class RunCommands {
                 }
                 TreacheryCard bidCard = bidding.nextBidCard(game);
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1 ));
+                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1));
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
                 discordGame.queueMessage("bidding-phase",
                         MessageFormat.format("{0} You may now place your bids for R{1}:C{2}",
@@ -577,7 +575,8 @@ public class RunCommands {
                     List<Button> buttons = new LinkedList<>();
                     for (int i = 0; i <= faction.getMaxRevival() - revived; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
-                        if ((!(faction.getName().equals("BT") || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i) button = button.asDisabled();
+                        if ((!(faction.getName().equals("BT") || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
+                            button = button.asDisabled();
                         buttons.add(button);
                     }
 
@@ -601,7 +600,8 @@ public class RunCommands {
         if (!message.isEmpty()) {
             turnSummary.queueMessage(message.toString());
         }
-        if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.addSpice(game, discordGame, "Axlotl Tanks");
+        if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS))
+            TechToken.addSpice(game, discordGame, "Axlotl Tanks");
 
         if (game.hasFaction("Ecaz")) {
             EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
@@ -624,32 +624,31 @@ public class RunCommands {
             faction.getShipment().setShipped(false);
             faction.getMovement().setMoved(false);
         }
-        while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0) game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
+        while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0)
+            game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        if (game.hasFaction("Richese") && !((RicheseFaction)game.getFaction("Richese")).getTreacheryCardCache().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
-                    !game.getTreacheryDiscard().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
-                game.getTurnOrder().addFirst("juice-of-sapho-hold");
-                discordGame.prepareMessage("game-actions", "Juice of Sapho is in play. Use buttons to play Juice of Sapho to be " +
-                        "considered first or last this shipment and movement phase.").addActionRow(Button.primary("juice-of-sapho-first", "Go first this phase."),
-                        Button.primary("juice-of-sapho-last", "Go last this phase."), Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase.")).queue();
-            }
-        else if (game.hasFaction("Guild")) {
+        if (game.hasFaction("Richese") && ((RicheseFaction) game.getFaction("Richese")).getTreacheryCardCache().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
+                game.getTreacheryDiscard().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
+            game.getTurnOrder().addFirst("juice-of-sapho-hold");
+            discordGame.prepareMessage("game-actions", "Juice of Sapho is in play. Use buttons to play Juice of Sapho to be " +
+                    "considered first or last this shipment and movement phase.").addActionRow(Button.primary("juice-of-sapho-first", "Go first this phase."),
+                    Button.primary("juice-of-sapho-last", "Go last this phase."), Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase.")).queue();
+        } else if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
             ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame, game);
-        }
-        else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        } else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         if (game.hasFaction("Atreides")) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null) {
                 discordGame.getAtreidesChat().queueMessage("You see visions of " + nextCard.name() + " in your future.");
             }
         }
-        if(game.hasFaction("BG")) {
+        if (game.hasFaction("BG")) {
             StringBuilder message = new StringBuilder();
             for (Territory territory : game.getTerritories().values()) {
                 if (territory.getForce("Advisor").getStrength() > 0) {
                     discordGame.queueMessage("game-actions", new MessageCreateBuilder().setContent(
-                            message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n").append(game.getFaction("BG").getPlayer()).toString())
+                                    message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n").append(game.getFaction("BG").getPlayer()).toString())
                             .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));
                 }
             }
@@ -676,7 +675,7 @@ public class RunCommands {
             if (game.hasFaction("Richese") && territory.hasRicheseNoField())
                 factionNames.add("Richese");
             if (game.hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
-            && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
+                    && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
 
             List<Faction> factions = factionNames.stream()
                     .sorted(Comparator.comparingInt(game::getFactionTurnIndex))
@@ -698,11 +697,11 @@ public class RunCommands {
                     discordGame.getHarkonnenChat().queueMessage("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
                 }
             }
-            ((MoritaniFaction)game.getFaction("Moritani")).getDukeVidal();
+            ((MoritaniFaction) game.getFaction("Moritani")).getDukeVidal();
             discordGame.getMoritaniChat().queueMessage("Duke Vidal has come to fight for you!");
         }
 
-        if(battles.size() > 0) {
+        if (!battles.isEmpty()) {
             String battleMessages = battles.stream()
                     .sorted(Comparator
                             .comparingInt(o -> game.getFactionTurnIndex(o.getRight().get(0).getName()))
@@ -759,7 +758,7 @@ public class RunCommands {
         }
 
         boolean altSpiceProductionTriggered = false;
-        for (Territory territory: territories.values()) {
+        for (Territory territory : territories.values()) {
             if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
             Faction faction = territory.getActiveFactions(game).get(0);
 

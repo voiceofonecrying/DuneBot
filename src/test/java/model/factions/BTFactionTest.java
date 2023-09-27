@@ -13,8 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class BTFactionTest extends FactionTestTemplate {
 
     private BTFaction faction;
+
     @Override
-    Faction getFaction() { return faction; }
+    Faction getFaction() {
+        return faction;
+    }
 
     @BeforeEach
     void setUp() throws IOException {
@@ -22,13 +25,19 @@ class BTFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testInitialSpice() { assertEquals(faction.getSpice(), 5); }
+    public void testInitialSpice() {
+        assertEquals(faction.getSpice(), 5);
+    }
 
     @Test
-    public void testFreeRevivals() { assertEquals(faction.getFreeRevival(), 2); }
+    public void testFreeRevivals() {
+        assertEquals(faction.getFreeRevival(), 2);
+    }
 
     @Test
-    public void testInitialHasMiningEquipment() { assertFalse(faction.hasMiningEquipment()); }
+    public void testInitialHasMiningEquipment() {
+        assertFalse(faction.hasMiningEquipment());
+    }
 
     @Test
     public void testInitialReserves() {
@@ -39,17 +48,21 @@ class BTFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialForcePlacement() {
         for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().values().contains(territoryName)) continue;
+            if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             assertEquals(territory.getForces().size(), 0);
         }
     }
 
     @Test
-    public void testEmoji() { assertEquals(faction.getEmoji(), Emojis.BT); }
+    public void testEmoji() {
+        assertEquals(faction.getEmoji(), Emojis.BT);
+    }
 
     @Test
-    public void testHandLimit() { assertEquals(faction.getHandLimit(), 4); }
+    public void testHandLimit() {
+        assertEquals(faction.getHandLimit(), 4);
+    }
 
     @Test
     public void testInitialRevealedFaceDancers() {

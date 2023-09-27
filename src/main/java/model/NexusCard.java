@@ -1,3 +1,4 @@
 package model;
 
-public record NexusCard (String name) {}
+public record NexusCard(String name) {
+}

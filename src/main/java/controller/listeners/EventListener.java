@@ -53,7 +53,7 @@ public class EventListener extends ListenerAdapter {
         Game game;
         try {
             game = discordGame.getGame();
-        } catch (ChannelNotFoundException | IOException e) {
+        } catch (ChannelNotFoundException e) {
             return;
         }
 
@@ -63,7 +63,8 @@ public class EventListener extends ListenerAdapter {
                 long id = Long.parseLong(faction.getEmoji().replaceAll("<:.*:", "").replace(">", ""));
                 event.getMessage().addReaction(Emoji.fromCustom(emojiName, id, false)).queue();
             }
-            if (message.matches("@.*" + faction.getEmoji().replaceAll("[0-9]", "") + ".*")) event.getChannel().sendMessage(faction.getPlayer()).queue();
+            if (message.matches("@.*" + faction.getEmoji().replaceAll("[0-9]", "") + ".*"))
+                event.getChannel().sendMessage(faction.getPlayer()).queue();
         }
     }
 

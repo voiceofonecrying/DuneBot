@@ -1,3 +1,4 @@
 package model;
 
-public record TreacheryCard(String name, String type) {}
+public record TreacheryCard(String name, String type) {
+}

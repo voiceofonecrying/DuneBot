@@ -3,9 +3,9 @@ package controller.commands;
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import model.Bidding;
 import model.DiscordGame;
 import model.Game;
-import model.Bidding;
 import model.TreacheryCard;
 
 import java.text.MessageFormat;

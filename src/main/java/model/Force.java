@@ -2,12 +2,12 @@ package model;
 
 import java.util.Objects;
 
-//Name = the faction name, or the special troop type (Sardaukar, Advisor, etc)
+//Name = the faction name, or the special troop type (Sardaukar, Advisor, etc.)
 //value = the strength of the force
 public class Force {
-   private final String name;
-   private String factionName;
-   private int strength;
+    private final String name;
+    private String factionName;
+    private int strength;
 
     public Force(String name, int strength) {
         this.name = name;

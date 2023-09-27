@@ -3,10 +3,10 @@ package controller.commands;
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.DiscordGame;
-import model.factions.Faction;
-import model.Game;
 import model.Bidding;
+import model.DiscordGame;
+import model.Game;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -60,7 +60,8 @@ public class PlayerCommands {
         faction.setMaxBid(-1);
         discordGame.queueMessage("mod-info", faction.getEmoji() + " passed their bid.");
         tryBid(discordGame, game, faction);
-        if (faction.isAutoBid() && !game.getBidding().isSilentAuction()) return "You will auto-pass until the next card or until you set auto-pass to false.";
+        if (faction.isAutoBid() && !game.getBidding().isSilentAuction())
+            return "You will auto-pass until the next card or until you set auto-pass to false.";
         return "You will pass one time.";
     }
 
@@ -138,8 +139,7 @@ public class PlayerCommands {
                 CommandManager.awardTopBidder(discordGame, game);
                 return true;
             }
-        }
-        else {
+        } else {
             String winnerEmoji = game.getFaction(bidding.getBidLeader()).getEmoji();
             discordGame.queueMessage("bidding-phase", winnerEmoji + " has the top bid.");
             String modMessage;
