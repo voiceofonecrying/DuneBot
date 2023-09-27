@@ -35,6 +35,7 @@ import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -449,6 +450,16 @@ public class DiscordGame {
      */
     public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
         messageQueue.add(messageCreateAction);
+    }
+
+    /**
+     * Queues a message to be sent to the given channel.
+     *
+     * @param messageEditRequest Message to send.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public void queueMessage(MessageEditRequest messageEditRequest) throws ChannelNotFoundException {
+        messageQueue.add((RestAction) messageEditRequest);
     }
 
     /**

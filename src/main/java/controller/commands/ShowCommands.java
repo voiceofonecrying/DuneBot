@@ -787,8 +787,6 @@ public class ShowCommands {
 
         List<Message> messages = messageHistory.getRetrievedHistory();
 
-        messages.forEach(discordGame::queueDeleteMessage);
-
         for (Faction faction : game.getFactions()) {
             StringBuilder message = new StringBuilder();
             List<FileUpload> uploads = new ArrayList<>();
@@ -861,8 +859,13 @@ public class ShowCommands {
                 }
             }
 
-            if (uploads.isEmpty()) {
-                discordGame.queueMessage("front-of-shield", message.toString());
+            Message foundMessage = messages.stream()
+                    .filter(m -> m.getContentRaw().contains(faction.getName() + " Info"))
+                    .findFirst()
+                    .orElse(null);
+
+            if (foundMessage != null) {
+                discordGame.queueMessage(foundMessage.editMessage(message).setFiles(uploads));
             } else {
                 discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
