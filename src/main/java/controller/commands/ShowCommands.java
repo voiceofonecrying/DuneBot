@@ -62,7 +62,8 @@ public class ShowCommands {
     }
 
     public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        drawGameBoard(discordGame, game);
+        if (game.getMute()) return;
+        discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
     }
 
     public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -268,9 +269,7 @@ public class ShowCommands {
 
     }
 
-    private static void drawGameBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        if (game.getMute()) return;
-
+    private static FileUpload drawGameBoard(Game game) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
         ));
@@ -550,8 +549,7 @@ public class ShowCommands {
         ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
         ImageIO.write(board, "png", boardOutputStream);
 
-        FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
-        discordGame.getTurnSummary().queueMessage(boardFileUpload);
+        return FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
     }
 
     private static BufferedImage buildForceImage(String force, int strength) throws IOException {
@@ -870,6 +868,8 @@ public class ShowCommands {
                 discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
         }
+//        Commented out until all changes to the map call refreshFrontOfShieldInfo
+//        discordGame.queueMessage("front-of-shield", "", drawGameBoard(discordGame, game));
     }
 
     public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
