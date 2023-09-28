@@ -37,6 +37,11 @@ public class TurnSummary extends DiscordChannel {
                         .findFirst();
                 optThread.ifPresent(threadChannel -> this.messageChannel = threadChannel);
             }
+            String prevTurnSummaryName = "turn-" + (game.getTurn() - 1) + "-summary";
+            optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(prevTurnSummaryName)).findFirst();
+            if (optThread.isPresent()) {
+                optThread.get().getManager().setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_24_HOURS).queue();
+            }
         } else {
             String turnSummaryName = "turn-summary";
             optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(turnSummaryName)).findFirst();
