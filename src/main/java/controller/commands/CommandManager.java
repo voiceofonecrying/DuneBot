@@ -149,7 +149,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() - 1 && bidding.isRicheseCacheCardOutstanding()) {
             RicheseCommands.cacheCard(discordGame, game);
-            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been asked to select the last card of the turn.");
+            discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
         discordGame.pushGame();
     }
@@ -1178,7 +1178,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (amountValue != 0) {
             if (fromFaction.getSpice() < amountValue) {
-                discordGame.queueMessage("mod-info", "Faction does not have enough spice to pay the bribe!");
+                discordGame.getModInfo().queueMessage("Faction does not have enough spice to pay the bribe!");
                 return;
             }
             fromFaction.subtractSpice(amountValue);
@@ -1229,18 +1229,18 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
             case "dnd" -> {
-                discordGame.queueMessage("mod-info", game.getTreacheryDeck().toString());
-                discordGame.queueMessage("mod-info", game.getTreacheryDiscard().toString());
-                discordGame.queueMessage("mod-info", game.getSpiceDeck().toString());
-                discordGame.queueMessage("mod-info", game.getSpiceDiscardA().toString());
-                discordGame.queueMessage("mod-info", game.getSpiceDiscardB().toString());
-                discordGame.queueMessage("mod-info", game.getLeaderSkillDeck().toString());
-                discordGame.queueMessage("mod-info", game.getTraitorDeck().toString());
+                discordGame.getModInfo().queueMessage(game.getTreacheryDeck().toString());
+                discordGame.getModInfo().queueMessage(game.getTreacheryDiscard().toString());
+                discordGame.getModInfo().queueMessage(game.getSpiceDeck().toString());
+                discordGame.getModInfo().queueMessage(game.getSpiceDiscardA().toString());
+                discordGame.getModInfo().queueMessage(game.getSpiceDiscardB().toString());
+                discordGame.getModInfo().queueMessage(game.getLeaderSkillDeck().toString());
+                discordGame.getModInfo().queueMessage(game.getTraitorDeck().toString());
                 try {
                     Bidding bidding = game.getBidding();
-                    discordGame.queueMessage("mod-info", bidding.getMarket().toString());
+                    discordGame.getModInfo().queueMessage(bidding.getMarket().toString());
                 } catch (InvalidGameStateException e) {
-                    discordGame.queueMessage("mod-info", "No bidding state. Game is not in bidding phase.");
+                    discordGame.getModInfo().queueMessage("No bidding state. Game is not in bidding phase.");
                 }
             }
             case "factions" -> {

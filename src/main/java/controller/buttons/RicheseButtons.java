@@ -63,7 +63,7 @@ public class RicheseButtons implements Pressable {
             discordGame.queueMessage("You are selling " + cardName.trim() + " by " + method + " auction.");
             RicheseCommands.blackMarketBid(discordGame, game, cardName, method);
             if (method.equals("Silent")) {
-                discordGame.queueMessage("mod-info", "Players should use the bot to enter their bids for the silent auction.");
+                discordGame.getModInfo().queueMessage("Players should use the bot to enter their bids for the silent auction.");
             }
         }
     }
@@ -80,7 +80,7 @@ public class RicheseButtons implements Pressable {
     private static void confirmLast(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will sell last.");
-        discordGame.queueMessage("mod-info", Emojis.RICHESE + "will be given buttons when it is time for the last card.");
+        discordGame.getModInfo().queueMessage(Emojis.RICHESE + "will be given buttons when it is time for the last card.");
         RunCommands.bidding(discordGame, game);
     }
 
@@ -115,7 +115,7 @@ public class RicheseButtons implements Pressable {
             discordGame.queueMessage("You are selling " + cardName.trim() + " by " + method + " auction.");
             RicheseCommands.cardBid(discordGame, game, cardName, method);
             if (method.equals("Silent")) {
-                discordGame.queueMessage("mod-info", "Players should use the bot to enter their bids for the silent auction.");
+                discordGame.getModInfo().queueMessage("Players should use the bot to enter their bids for the silent auction.");
             }
         }
     }

@@ -223,7 +223,7 @@ public class RicheseCommands {
             throw new InvalidGameStateException(karamaFaction.getEmoji() + " does not have a Karama.");
         }
         game.getTreacheryDiscard().add(karama);
-        discordGame.queueMessage("mod-info", MessageFormat.format(
+        discordGame.getModInfo().queueMessage(MessageFormat.format(
                 "The Karama has been discarded from {0} hand.",
                 karamaFaction.getEmoji()
         ));

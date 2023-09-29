@@ -82,7 +82,7 @@ public class BGCommands {
         if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
         else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
         else {
-            discordGame.queueMessage("mod-info", "No Bene Gesserit were found in that territory.");
+            discordGame.getModInfo().queueMessage("No Bene Gesserit were found in that territory.");
             return;
         }
         discordGame.pushGame();
