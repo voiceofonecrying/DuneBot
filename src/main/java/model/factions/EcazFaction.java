@@ -84,7 +84,7 @@ public class EcazFaction extends Faction {
                 ambassadorSupply.add("Ecaz");
             }
             case "Atreides" ->
-                    discordGame.queueMessage("mod-info", "Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
+                    discordGame.getModInfo().queueMessage("Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
             case "BG" -> {
                 List<Button> buttons = new LinkedList<>();
                 for (String option : ambassadorPool) {
@@ -93,24 +93,24 @@ public class EcazFaction extends Faction {
                 discordGame.getEcazChat().queueMessage("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", buttons);
             }
             case "CHOAM" ->
-                    discordGame.queueMessage("mod-info", "CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
+                    discordGame.getModInfo().queueMessage("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
                 addSpice(5);
                 CommandManager.spiceMessage(discordGame, 5, getSpice(), "ecaz",
                         Emojis.EMPEROR + " ambassador token", true);
             }
             case "Fremen" ->
-                    discordGame.queueMessage("mod-info", "Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
+                    discordGame.getModInfo().queueMessage("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
             case "Harkonnen" ->
-                    discordGame.queueMessage("mod-info", "Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
+                    discordGame.getModInfo().queueMessage("Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
             case "Ix" ->
-                    discordGame.queueMessage("mod-info", "Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
+                    discordGame.getModInfo().queueMessage("Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
             case "Richese" ->
-                    discordGame.queueMessage("mod-info", "Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
+                    discordGame.getModInfo().queueMessage("Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
             case "Guild" ->
-                    discordGame.queueMessage("mod-info", "Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
+                    discordGame.getModInfo().queueMessage("Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
             case "BT" ->
-                    discordGame.queueMessage("mod-info", "BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
+                    discordGame.getModInfo().queueMessage("BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
         }
 
         for (Territory territory : game.getTerritories().values()) {

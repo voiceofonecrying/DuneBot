@@ -48,7 +48,7 @@ public class MoritaniFaction extends Faction {
         turnSummary.queueMessage("The " + terror + " token has been triggered!");
 
         switch (terror) {
-            case "Assassination" -> discordGame.queueMessage("mod-info", "Send a random " + triggeringFaction.getEmoji()
+            case "Assassination" -> discordGame.getModInfo().queueMessage("Send a random " + triggeringFaction.getEmoji()
                     + " leader to the tanks. " + Emojis.MORITANI + " collects " + Emojis.SPICE + " for it.");
             case "Atomics" -> {
                 this.handLimit = 3;

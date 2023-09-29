@@ -270,7 +270,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else if (!game.getTurnOrder().isEmpty()) {
             sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         } else {
-            discordGame.queueMessage("mod-info", "Everyone has taken their turn, please run advance.");
+            discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance.");
             discordGame.pushGame();
             return;
         }
@@ -293,7 +293,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else if (!game.getTurnOrder().isEmpty()) {
             sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         } else {
-            discordGame.queueMessage("mod-info", "Everyone has taken their turn, please run advance.");
+            discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance.");
             discordGame.pushGame();
             return;
         }

@@ -6,6 +6,7 @@ import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import controller.channels.FactionChat;
+import controller.channels.ModInfo;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
@@ -157,6 +158,10 @@ public class DiscordGame {
 
     public TurnSummary getTurnSummary() throws ChannelNotFoundException {
         return new TurnSummary(this, game);
+    }
+
+    public ModInfo getModInfo() throws ChannelNotFoundException {
+        return new ModInfo(this);
     }
 
     public FactionChat getFactionChat(String factionName) throws ChannelNotFoundException {

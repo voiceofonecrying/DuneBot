@@ -50,7 +50,7 @@ public class RunCommands {
 
     public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (game.getTurn() == 0) {
-            discordGame.queueMessage("mod-info", "Please complete setup first.");
+            discordGame.getModInfo().queueMessage("Please complete setup first.");
             return;
         }
         int phase = game.getPhase();
@@ -159,7 +159,7 @@ public class RunCommands {
                 turnSummary.queueMessage("(Check if storm position prevents use of Family Atomics.)");
             }
         } else {
-            discordGame.queueMessage("mod-info", "Run advance to complete turn 1 storm phase.");
+            discordGame.getModInfo().queueMessage("Run advance to complete turn 1 storm phase.");
         }
     }
 
@@ -351,11 +351,11 @@ public class RunCommands {
         try {
             richeseFaction = (RicheseFaction) game.getFaction("Richese");
             if (richeseFaction.getTreacheryHand().isEmpty()) {
-                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
+                discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
                 return true;
             } else {
                 RicheseCommands.askBlackMarket(discordGame, game);
-                discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been given buttons for black market.");
+                discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for black market.");
                 return false;
             }
         } catch (IllegalArgumentException e) {
@@ -397,12 +397,12 @@ public class RunCommands {
         }
         discordGame.getTurnSummary().queueMessage(message.toString());
         if (numCardsForBid == 0) {
-            discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+            discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
         } else if (bidding.isRicheseCacheCardOutstanding()) {
             RicheseCommands.cacheCard(discordGame, game);
-            discordGame.queueMessage("mod-info", Emojis.RICHESE + " has been given buttons for selling their cache card.");
+            discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for selling their cache card.");
         } else {
-            discordGame.queueMessage("mod-info", "Start running commands to bid and then advance when all the bidding is done.");
+            discordGame.getModInfo().queueMessage("Start running commands to bid and then advance when all the bidding is done.");
         }
     }
 
@@ -422,11 +422,11 @@ public class RunCommands {
         }
 
         if (bidding.isRicheseCacheCardOutstanding()) {
-            discordGame.queueMessage("mod-info", "Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
+            discordGame.getModInfo().queueMessage("Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
             return false;
         }
         game.endBidding();
-        discordGame.queueMessage("mod-info", "Bidding phase ended. Run advance to start revivals.");
+        discordGame.getModInfo().queueMessage("Bidding phase ended. Run advance to start revivals.");
         return true;
     }
 
@@ -458,7 +458,7 @@ public class RunCommands {
 
             if (bidOrder.isEmpty()) {
                 discordGame.queueMessage("bidding-phase", "All hands are full.");
-                discordGame.queueMessage("mod-info", "All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+                discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
             } else {
                 if (bidding.isTreacheryDeckReshuffled()) {
                     turnSummary.queueMessage(MessageFormat.format(
@@ -798,9 +798,9 @@ public class RunCommands {
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {
                 if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.queueMessage("mod-info", faction.getEmoji() + " has Weather Control.");
+                    discordGame.getModInfo().queueMessage(faction.getEmoji() + " has Weather Control.");
                 } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.queueMessage("mod-info", faction.getEmoji() + " has Family Atomics.");
+                    discordGame.getModInfo().queueMessage(faction.getEmoji() + " has Family Atomics.");
                 }
             }
         }

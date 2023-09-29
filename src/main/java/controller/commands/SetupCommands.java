@@ -206,11 +206,11 @@ public class SetupCommands {
                 game.getSetupSteps().stream().map(SetupStep::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.queueMessage("mod-info", stringBuilder);
+        discordGame.getModInfo().queueMessage(stringBuilder);
     }
 
     public static StepStatus runSetupStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, SetupStep setupStep) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        discordGame.queueMessage("mod-info", "Starting step " + setupStep.name());
+        discordGame.getModInfo().queueMessage("Starting step " + setupStep.name());
 
         StepStatus stepStatus = StepStatus.STOP;
 
@@ -248,15 +248,15 @@ public class SetupCommands {
         String userName = player.getNickname();
 
         if (game.getTurn() != 0) {
-            discordGame.queueMessage("mod-info", "The game has already started, you can't add more factions!");
+            discordGame.getModInfo().queueMessage("The game has already started, you can't add more factions!");
             return;
         }
         if (game.getFactions().size() >= 6) {
-            discordGame.queueMessage("mod-info", "This game is already full!");
+            discordGame.getModInfo().queueMessage("This game is already full!");
             return;
         }
         if (game.hasFaction(factionName)) {
-            discordGame.queueMessage("mod-info", "This faction has already been taken!");
+            discordGame.getModInfo().queueMessage("This faction has already been taken!");
             return;
         }
         Faction faction;
@@ -301,7 +301,7 @@ public class SetupCommands {
                 game.getGameOptions().stream().map(GameOption::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.queueMessage("mod-info", stringBuilder);
+        discordGame.getModInfo().queueMessage(stringBuilder);
     }
 
     public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -483,11 +483,11 @@ public class SetupCommands {
             if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
                 game.drawCard("treachery deck", ixFaction.getName());
             }
-            discordGame.queueMessage("mod-info", Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
+            discordGame.getModInfo().queueMessage(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
             IxCommands.initialCard(discordGame, game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
-            discordGame.queueMessage("mod-info", Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
+            discordGame.getModInfo().queueMessage(Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
             return StepStatus.CONTINUE;
         }
     }
@@ -587,11 +587,11 @@ public class SetupCommands {
 
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
-            discordGame.queueMessage("mod-info", "Harkonnen can mulligan");
+            discordGame.getModInfo().queueMessage("Harkonnen can mulligan");
             discordGame.getHarkonnenChat().queueMessage(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
-            discordGame.queueMessage("mod-info", "Harkonnen cannot mulligan");
+            discordGame.getModInfo().queueMessage("Harkonnen cannot mulligan");
             return StepStatus.CONTINUE;
         }
     }
@@ -661,7 +661,7 @@ public class SetupCommands {
     }
 
     public static StepStatus ixHMSPlacementStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.queueMessage("mod-info", "Use /placehms to set the initial placement of the HMS then /setup advance.");
+        discordGame.getModInfo().queueMessage("Use /placehms to set the initial placement of the HMS then /setup advance.");
 
         return StepStatus.STOP;
     }
@@ -669,7 +669,7 @@ public class SetupCommands {
     public static StepStatus startGameStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.advanceTurn();
         game.setSetupFinished(true);
-        discordGame.queueMessage("mod-info", "The game has begun!");
+        discordGame.getModInfo().queueMessage("The game has begun!");
 
         return StepStatus.STOP;
     }
