@@ -19,10 +19,14 @@ import static controller.Initializers.getCSVFile;
 import static controller.Initializers.getJSONString;
 
 public class Game {
+    private String gameRole;
+    private int turn;
+    private int phase;
+    private int subPhase;
+    private Bidding bidding;
+    private Deque<String> turnOrder;
     private final List<Faction> factions;
     private final Map<String, Territory> territories;
-    private final LinkedList<TreacheryCard> treacheryDeck;
-    private final LinkedList<TreacheryCard> treacheryDiscard;
     private final LinkedList<SpiceCard> spiceDeck;
     private final LinkedList<SpiceCard> spiceDiscardA;
     private final LinkedList<SpiceCard> spiceDiscardB;
@@ -34,31 +38,31 @@ public class Game {
     private final LinkedList<Leader> leaderTanks;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
-    private String gameRole;
+    private final LinkedList<TreacheryCard> treacheryDeck;
+    private final LinkedList<TreacheryCard> treacheryDiscard;
     private String modRole;
     private Boolean mute;
-    private int turn;
     private Set<GameOption> gameOptions;
+    private String mod;
+    private String gameRoleMention;
+    private boolean shieldWallDestroyed;
+    private boolean sandtroutInPlay;
     private List<SetupStep> setupSteps;
     private boolean setupStarted;
     private boolean setupFinished;
-    private int phase;
-    private int subPhase;
     private int storm;
     private int stormMovement;
-    private Bidding bidding;
-    private String mod;
-    private String gameRoleMention;
-    private Deque<String> turnOrder;
     private boolean onHold;
-    private boolean shieldWallDestroyed;
-    private boolean sandtroutInPlay;
 
     public Game() throws IOException {
         super();
 
-        factions = new LinkedList<>();
+        this.turn = 0;
+        this.phase = 0;
+        this.subPhase = 0;
+        this.bidding = null;
         turnOrder = new LinkedList<>();
+        factions = new LinkedList<>();
         territories = new HashMap<>();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -66,28 +70,24 @@ public class Game {
         }
 
         this.gameOptions = new HashSet<>();
-        this.treacheryDeck = new LinkedList<>();
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();
         this.leaderSkillDeck = new LinkedList<>();
-        this.treacheryDiscard = new LinkedList<>();
         this.spiceDiscardA = new LinkedList<>();
         this.spiceDiscardB = new LinkedList<>();
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.nexusDeck = new LinkedList<>();
         this.nexusDiscard = new LinkedList<>();
-        this.turn = 0;
-        this.phase = 0;
-        this.subPhase = 0;
-        this.storm = 18;
-        this.stormMovement = 0;
+        this.homeworlds = new HashMap<>();
+        this.treacheryDeck = new LinkedList<>();
+        this.treacheryDiscard = new LinkedList<>();
         this.shieldWallDestroyed = false;
-        this.bidding = null;
         this.mod = "";
         this.gameRoleMention = "";
+        this.storm = 18;
+        this.stormMovement = 0;
         this.onHold = false;
-        this.homeworlds = new HashMap<>();
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
