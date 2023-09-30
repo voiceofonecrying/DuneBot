@@ -2,6 +2,7 @@ package enums;
 
 public enum GameOption {
     HOMEWORLDS,
+    DISCOVERY_TOKENS,
     LEADER_SKILLS,
     STRONGHOLD_SKILLS,
     TECH_TOKENS,
