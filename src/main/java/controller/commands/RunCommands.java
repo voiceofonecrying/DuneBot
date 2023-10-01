@@ -760,7 +760,7 @@ public class RunCommands {
                 CommandManager.spiceMessage(discordGame, 1, faction.getSpice(), faction.getName(),
                         "for Tuek's Sietch", true);
             }
-            if (territories.get("Cistern").hasActiveFaction(faction)) {
+            if (territories.get("Cistern") != null && territories.get("Cistern").hasActiveFaction(faction)) {
                 faction.addSpice(2);
                 CommandManager.spiceMessage(discordGame, 2, faction.getSpice(), faction.getName(),
                         "for Cistern", true);
