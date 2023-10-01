@@ -242,7 +242,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
-            int costPerForce = targetTerritory.isStronghold() ? 1 : 2;
+            int costPerForce = targetTerritory.isStronghold() || targetTerritory.getTerritoryName().matches("Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station") ? 1 : 2;
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
 
@@ -948,10 +948,27 @@ public class CommandManager extends ListenerAdapter {
             }
         }
 
-        if (game.getStorm() == drawn.sector())
-            message.append(" (blown away by the storm!)");
-        else
-            game.getTerritories().get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
+        if (game.getStorm() == drawn.sector()) message.append(" (blown away by the storm!)\n");
+        if (drawn.discoveryToken() == null) game.getTerritories().get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
+        else {
+            game.getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
+            if (!game.getTerritory(drawn.name()).getForces().isEmpty()) {
+                message.append("all forces in the territory were killed in the spice blow!\n");
+                for (Force force : game.getTerritory(drawn.name()).getForces()) {
+                    if (force.getName().contains("*")) removeForces(drawn.name(), game.getFaction(force.getFactionName()), 0, force.getStrength(),  true, game, discordGame);
+                    else removeForces(drawn.name(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
+                }
+            }
+            message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
+            if (drawn.discoveryToken().equals("Hiereg")) game.getTerritory(drawn.tokenLocation()).setDiscoveryToken(game.getHieregTokens().remove(0));
+            else game.getTerritory(drawn.tokenLocation()).setDiscoveryToken(game.getSmugglerTokens().remove(0));
+            game.getTerritory(drawn.tokenLocation()).setDiscovered(false);
+            if (game.hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) discordGame.getFactionChat("Guild")
+                    .queueMessage("The discovery token at " + drawn.tokenLocation() + " is a(n) " + game.getTerritory(drawn.tokenLocation()).getDiscoveryToken());
+            if (game.hasFaction("Fremen") && drawn.discoveryToken().equals("Hiereg")) discordGame.getFactionChat("Fremen")
+                    .queueMessage("The discovery token at " + drawn.tokenLocation() + " is a(n) " + game.getTerritory(drawn.tokenLocation()).getDiscoveryToken());
+        }
+        if (game.getStorm() == drawn.sector()) game.getTerritory(drawn.name()).setSpice(0);
 
         discordGame.pushGame();
         discordGame.getTurnSummary().queueMessage(message.toString());

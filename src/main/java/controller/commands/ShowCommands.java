@@ -155,6 +155,13 @@ public class ShowCommands {
             offset += 120;
         }
 
+        //Place Ornithopter token
+        if (faction.hasOrnithoperToken()) {
+            BufferedImage ornithopterImage = getResourceImage("Ornithopter");
+            ornithopterImage = resize(ornithopterImage, 250, 250);
+            table = overlay(table, ornithopterImage, new Point(1200 + offset, 200), 1);
+        }
+
         offset = 0;
 
         //Place leaders
@@ -385,8 +392,9 @@ public class ShowCommands {
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
-                    && !territory.isAftermathToken() && !territory.hasTerrorToken()) continue;
-            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+                    && !territory.isAftermathToken() && !territory.hasTerrorToken()
+                    && territory.getDiscoveryToken() == null) continue;
+            if (territory.getTerritoryName().matches("Hidden Mobile Stronghold|Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station")) continue;
             if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
             int offset = 0;
             int i = 0;
@@ -472,6 +480,29 @@ public class ShowCommands {
                 }
             }
             offset = 0;
+            if (territory.getDiscoveryToken() != null) {
+                getResourceImage(territory.getDiscoveryToken());
+                BufferedImage discoveryToken;
+                if (territory.isDiscovered()) {
+                    discoveryToken = getResourceImage(territory.getDiscoveryToken());
+                    discoveryToken = resize(discoveryToken, 500, 500);
+                    for (Force force : game.getTerritory(territory.getDiscoveryToken()).getForces()) {
+                        BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                        forceImage = resize(forceImage, 470, 290);
+                        Point forcePlacement = new Point(250, 150);
+                        Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                        discoveryToken = overlay(discoveryToken, forceImage, forcePlacementOffset, 1);
+                        offset += 100;
+                    }
+                }
+                else {
+                    if (territory.isRock()) discoveryToken = getResourceImage("Smuggler Token");
+                    else discoveryToken = getResourceImage("Hiereg Token");
+                }
+                discoveryToken = resize(discoveryToken, 40, 40);
+                board = overlay(board, discoveryToken, Initializers.getPoints(territory.getTerritoryName()).get(i), 1);
+                i++;
+            }
             for (Force force : territory.getForces()) {
                 if (force.getName().equals("Hidden Mobile Stronghold")) {
                     BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
@@ -728,10 +759,13 @@ public class ShowCommands {
         if (faction.getName().equalsIgnoreCase("Ix"))
             reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
 
+        StringBuilder ornithopter = new StringBuilder();
+        if (faction.hasOrnithoperToken()) ornithopter.append("\nOrnithopter Token\n");
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                         faction.getSpice() +
                         reservesString +
+                        ornithopter +
                         nexusCard +
                         factionSpecificString +
                         traitorString);

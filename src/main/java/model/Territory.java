@@ -21,6 +21,8 @@ public class Territory {
     private String ecazAmbassador;
     private String terrorToken;
     private boolean aftermathToken;
+    private String discoveryToken;
+    private boolean discovered;
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
         this.territoryName = territoryName;
@@ -186,5 +188,21 @@ public class Territory {
 
     public void setAftermathToken(boolean aftermathToken) {
         this.aftermathToken = aftermathToken;
+    }
+
+    public String getDiscoveryToken() {
+        return discoveryToken;
+    }
+
+    public void setDiscoveryToken(String discoveryToken) {
+        this.discoveryToken = discoveryToken;
+    }
+
+    public boolean isDiscovered() {
+        return discovered;
+    }
+
+    public void setDiscovered(boolean discovered) {
+        this.discovered = discovered;
     }
 }

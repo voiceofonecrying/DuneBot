@@ -54,6 +54,7 @@ public class Faction {
     private int allySpiceBidding;
     private int maxRevival;
     private boolean isHighThreshold;
+    private Boolean ornithoperToken;
     @Exclude
     private Game game;
 
@@ -86,6 +87,7 @@ public class Faction {
         this.nexusCard = null;
         this.maxRevival = 3;
         this.isHighThreshold = true;
+        this.ornithoperToken = false;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -586,5 +588,14 @@ public class Faction {
 
     public void setHighThreshold(boolean highThreshold) {
         isHighThreshold = highThreshold;
+    }
+
+    public boolean hasOrnithoperToken() {
+        if (ornithoperToken == null) this.ornithoperToken = false;
+        return ornithoperToken;
+    }
+
+    public void setOrnithoperToken(boolean ornithoperToken) {
+        this.ornithoperToken = ornithoperToken;
     }
 }
