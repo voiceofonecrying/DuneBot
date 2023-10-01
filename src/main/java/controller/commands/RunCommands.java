@@ -803,8 +803,10 @@ public class RunCommands {
                 altSpiceProductionTriggered = true;
             turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
-            turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +
-                    " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
+            if (orgizActive) {
+                turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +
+                        " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
+            }
         }
 
         for (Territory territory : territories.values()) {
