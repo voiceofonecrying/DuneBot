@@ -127,7 +127,7 @@ public class RunCommands {
                 }
             }
         }
-        if (game.getTerritory("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
+        if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
             Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).get(0);
             discordGame.getFactionChat(faction.getName()).queueMessage("What have the ecologists at the testing station discovered about the storm movement?",
                     List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
