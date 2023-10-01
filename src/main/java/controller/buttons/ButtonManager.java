@@ -53,7 +53,9 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
+            StormButtons.press(event, game, discordGame);
             ShipmentAndMovementButtons.press(event, game, discordGame);
+            SpiceCollectionButtons.press(event, game, discordGame);
             RevivalButtons.press(event, game, discordGame);
             IxButtons.press(event, game, discordGame);
             BTButtons.press(event, game, discordGame);

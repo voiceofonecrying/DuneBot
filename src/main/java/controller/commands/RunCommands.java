@@ -127,6 +127,11 @@ public class RunCommands {
                 }
             }
         }
+        if (game.getTerritory("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
+            Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).get(0);
+            discordGame.getFactionChat(faction.getName()).queueMessage("What have the ecologists at the testing station discovered about the storm movement?",
+                    List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
+        }
         if (atomicsEligible && nobodyHoldsAtomics) {
             boolean atomicsStillInGame = false;
             for (TreacheryCard card : game.getTreacheryDeck()) {
@@ -755,9 +760,25 @@ public class RunCommands {
                 CommandManager.spiceMessage(discordGame, 1, faction.getSpice(), faction.getName(),
                         "for Tuek's Sietch", true);
             }
+            if (territories.get("Cistern").hasActiveFaction(faction)) {
+                faction.addSpice(2);
+                CommandManager.spiceMessage(discordGame, 2, faction.getSpice(), faction.getName(),
+                        "for Cistern", true);
+                turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cistern");
+                faction.setHasMiningEquipment(true);
+            }
+
+            Territory homeworld = game.getTerritory(faction.getHomeworld());
+            if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
+                Faction occupyingFaction = homeworld.getActiveFactions(game).get(0);
+                turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " from " + faction.getHomeworld());
+                occupyingFaction.addSpice(faction.getOccupiedIncome());
+            }
         }
 
         boolean altSpiceProductionTriggered = false;
+        boolean orgizActive = territories.get("Orgiz Processing Station") != null && territories.get("Orgiz Processing Station").getActiveFactions(game).size() == 1;
+        Territory orgiz = territories.get("Orgiz Processing Station");
         for (Territory territory : territories.values()) {
             if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
             Faction faction = territory.getActiveFactions(game).get(0);
@@ -765,15 +786,34 @@ public class RunCommands {
             int spice = faction.getSpiceCollectedFromTerritory(territory);
 
             faction.addSpice(spice);
-            territory.setSpice(territory.getSpice() - spice);
-
             CommandManager.spiceMessage(discordGame, spice, faction.getSpice(), faction.getName(),
                     "for Spice Blow", true);
+            if (orgizActive) {
+                faction.subtractSpice(1);
+                CommandManager.spiceMessage(discordGame, 1, faction.getSpice(), faction.getName(), "for Orgiz Processing Station", false);
+                orgiz.getActiveFactions(game).get(0).addSpice(1);
+                CommandManager.spiceMessage(discordGame, 1, orgiz.getActiveFactions(game).get(0).getSpice(),
+                        orgiz.getActiveFactions(game).get(0).getName(), "for Orgiz Processing Station", true);
+                spice--;
+            }
+            territory.setSpice(territory.getSpice() - spice);
+
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
                     && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
                 altSpiceProductionTriggered = true;
             turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
+            turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +
+                    " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
+        }
+
+        for (Territory territory : territories.values()) {
+            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0) continue;
+            Faction faction = territory.getActiveFactions(game).get(0);
+            List<Button> buttons = new LinkedList<>();
+            buttons.add(Button.primary("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
+            buttons.add(Button.danger("don't-reveal-discovery-token", "No"));
+            discordGame.getFactionChat(faction.getName()).queueMessage("Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", buttons);
         }
 
         if (altSpiceProductionTriggered) {

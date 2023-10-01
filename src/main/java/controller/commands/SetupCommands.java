@@ -379,16 +379,18 @@ public class SetupCommands {
 
     public static StepStatus createDecks(Game game) throws IOException {
         if (game.hasGameOption(GameOption.SANDTROUT)) {
-            game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0));
+            game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0, null, null));
         }
 
         if (game.hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER)) {
-            SpiceCard spiceCard = game.getSpiceDeck().stream().filter((s) -> s.name().equals("Shai-Hulud"))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Shai-Hulud not found"));
+            game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0, null, null));
+        }
 
-            game.getSpiceDeck().remove(spiceCard);
-            game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0));
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS)) {
+            CSVParser csvParser = getCSVFile("DiscoverySpiceCards.csv");
+            for (CSVRecord csvRecord : csvParser) {
+                game.getSpiceDeck().add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), csvRecord.get(3), csvRecord.get(4)));
+            }
         }
 
         if (game.hasGameOption(GameOption.CHEAP_HERO_TRAITOR)) {

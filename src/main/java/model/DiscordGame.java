@@ -243,7 +243,7 @@ public class DiscordGame {
             List<Message> ml = h.getRetrievedHistory();
             String gameJson = getGameJson(ml.get(0));
             Game game = gameJsonToGame(gameJson);
-            if (game.getFactions().isEmpty() && game.getFactions().get(0).reserves != null) {
+            if (!game.getFactions().isEmpty() && game.getFactions().get(0).reserves != null) {
                 runHomeworldsMigration(game);
             } else GameCache.setGameJson(gameName, gameJson);
             this.game = game;

@@ -343,7 +343,10 @@ public class Initializers {
             case "Cielago North (West Sector)" -> points.add(new Point(410, 720));
             case "Cielago Depression (West Sector)" -> points.add(new Point(385, 785));
             case "Cielago West (South Sector)" -> points.add(new Point(330, 805));
-            case "Meridian (West Sector)" -> points.add(new Point(360, 890));
+            case "Meridian (West Sector)" -> {
+                points.add(new Point(325, 860));
+                points.add(new Point(370, 870));
+            }
             case "Polar Sink" -> {
                 points.add(new Point(460, 545));
                 points.add(new Point(465, 515));

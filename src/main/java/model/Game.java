@@ -38,6 +38,8 @@ public class Game {
     private final LinkedList<Leader> leaderTanks;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
+    private final List<String> hieregTokens;
+    private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
     private String modRole;
@@ -80,6 +82,8 @@ public class Game {
         this.nexusDeck = new LinkedList<>();
         this.nexusDiscard = new LinkedList<>();
         this.homeworlds = new HashMap<>();
+        this.hieregTokens = new LinkedList<>();
+        this.smugglerTokens = new LinkedList<>();
         this.treacheryDeck = new LinkedList<>();
         this.treacheryDiscard = new LinkedList<>();
         this.shieldWallDestroyed = false;
@@ -95,7 +99,7 @@ public class Game {
         }
         csvParser = getCSVFile("SpiceCards.csv");
         for (CSVRecord csvRecord : csvParser) {
-            spiceDeck.add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2))));
+            spiceDeck.add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), null, null));
         }
         csvParser = getCSVFile("LeaderSkillCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -106,7 +110,20 @@ public class Game {
         for (CSVRecord csvRecord : csvParser) {
             nexusDeck.add(new NexusCard(csvRecord.get(0)));
         }
+
+        smugglerTokens.add("Orgiz Processing Station");
+        smugglerTokens.add("Treachery Card Stash");
+        smugglerTokens.add("Spice Stash");
+        smugglerTokens.add("Ornithopter");
+
+        hieregTokens.add("Jacurutu Sietch");
+        hieregTokens.add("Cistern");
+        hieregTokens.add("Ecological Testing Station");
+        hieregTokens.add("Shrine");
+
         Collections.shuffle(nexusDeck);
+        Collections.shuffle(smugglerTokens);
+        Collections.shuffle(hieregTokens);
 
         String json = getJSONString("AdjacencyList.json");
         this.adjacencyList = new HashMap<>();
@@ -508,5 +525,13 @@ public class Game {
 
     public HashMap<String, String> getHomeworlds() {
         return homeworlds;
+    }
+
+    public List<String> getHieregTokens() {
+        return hieregTokens;
+    }
+
+    public List<String> getSmugglerTokens() {
+        return smugglerTokens;
     }
 }

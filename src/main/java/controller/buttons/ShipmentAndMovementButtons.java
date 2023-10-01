@@ -44,7 +44,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("moving-from-"))
             queueMovableTerritories(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("ornithopter-moving-from-"))
-            ornithopterMovement(event, game, discordGame);
+            ornithopterMovement(event, game, discordGame, false);
+        else if (event.getComponentId().startsWith("ornithopter-token-moving-from-"))
+            ornithopterMovement(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("move-sector-")) filterBySector(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("move-")) queueSectorButtons(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-no-field-ship-"))
@@ -57,6 +59,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "stronghold" -> queueStrongholdShippingButtons(game, discordGame);
             case "spice-blow" -> queueSpiceBlowShippingButtons(discordGame);
             case "homeworlds" -> queueHomeworldShippingButtons(event, game, discordGame);
+            case "discovery-tokens" -> queueDiscoveryShippingButtons(event, game, discordGame);
             case "rock" -> queueRockShippingButtons(discordGame);
             case "other" -> queueOtherShippingButtons(discordGame);
             case "reset-shipping-forces" -> resetForces(event, game, discordGame, true);
@@ -88,10 +91,16 @@ public class ShipmentAndMovementButtons implements Pressable {
         executeShipment(event, game, discordGame, true);
     }
 
-    private static void ornithopterMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void ornithopterMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isToken) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter to move 3 spaces with their move.");
+        if (isToken) {
+            faction.setOrnithoperToken(false);
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter Discovery Token to move 3 spaces with their move.");
+
+        } else {
+            game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter " + Emojis.TREACHERY + " to move 3 spaces with their move.");
+        }
         queueMovableTerritories(event, game, discordGame, true);
         discordGame.pushGame();
     }
@@ -485,7 +494,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!faction.getShipment().getCrossShipFrom().isEmpty())
                 territory = territory + " cross shipping from " + faction.getShipment().getCrossShipFrom();
 
-            if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() && !faction.getShipment().isToReserves())
+            if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() && !faction.getShipment().isToReserves()
+            && !game.getTerritory(faction.getShipment().getTerritoryName()).getTerritoryName().matches("Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station"))
                 spice *= 2;
 
             if (faction.getName().equals("Fremen")) spice = 0;
@@ -730,6 +740,20 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
+    private static void queueDiscoveryShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        List<Button> buttons = new ArrayList<>();
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.isDiscovered()) {
+                buttons.add(Button.primary("ship-" + game.getTerritory(territory.getDiscoveryToken()).getTerritoryName().toLowerCase(), territory.getDiscoveryToken()));
+            }
+        }
+        buttons.add(Button.secondary("reset-shipment", "back"));
+        buttons.add(Button.danger("pass-shipment", "Pass Shipment"));
+
+        discordGame.getFactionChat(ButtonManager.getButtonPresser(event, game).getName()).queueMessage("Which Discovery Token?", buttons);
+        discordGame.queueDeleteMessage();
+    }
+
     private static void queueStrongholdShippingButtons(Game game, DiscordGame discordGame) {
         MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
         List<Button> strongholds = List.of(Button.primary("ship-arrakeen", "Arrakeen"),
@@ -767,6 +791,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(Button.primary("spice-blow", "Spice Blow Territories"));
         buttons.add(Button.primary("rock", "Rock Territories"));
         if (game.hasGameOption(GameOption.HOMEWORLDS)) buttons.add(Button.primary("homeworlds", "Homeworlds"));
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS)) buttons.add(Button.primary("discovery-tokens", "Discovery Tokens"));
         buttons.add(Button.primary("other", "Somewhere else"));
         buttons.add(Button.danger("pass-shipment", "I don't want to ship."));
 
@@ -800,6 +825,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
                 if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
                     movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territory.getTerritoryName(), territory.getTerritoryName() + " (use Ornithopter)"));
+                if (faction.hasOrnithoperToken()) movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territory.getTerritoryName(), territory.getTerritoryName() + " (use Ornithopter Token)"));
             }
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));
