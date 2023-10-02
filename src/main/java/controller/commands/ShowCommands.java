@@ -421,13 +421,17 @@ public class ShowCommands {
                 board = overlay(board, ambassador, placementCorner, 1);
             }
 
-            if (territory.getTerrorToken() != null) {
-                BufferedImage terrorToken = getResourceImage("Terror Token");
-                terrorToken = resize(terrorToken, 40, 40);
-                Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
-                Point placementCorner = new Point(placement.x - 20, placement.y);
-                board = overlay(board, terrorToken, placementCorner, 1);
+            if (!territory.getTerrorTokens().isEmpty()) {
+                for (int j = 0; j < territory.getTerrorTokens().size(); j++) {
+                    BufferedImage terrorToken = getResourceImage("Terror Token");
+                    terrorToken = resize(terrorToken, 40, 40);
+                    Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
+                    Point placementCorner = new Point(placement.x - 20 + offset, placement.y);
+                    board = overlay(board, terrorToken, placementCorner, 1);
+                    offset += 20;
+                }
             }
+            offset = 0;
 
             if (territory.getSpice() != 0) {
                 i = 1;

@@ -38,6 +38,7 @@ public final class Emojis {
     public static final String HEIGHLINERS = "<:heighliners:991763495567769640>";
     public static final String SPICE_PRODUCTION = "<:spiceproduction:991763494267531304>";
     public static final String TRANSPARENT_WORM = "<:transparent_worm:991762942536187964>";
+    public static final String NO_FIELD = "No Field Token";
 
     private Emojis() {
     }

@@ -57,6 +57,7 @@ public class ButtonManager extends ListenerAdapter {
             ShipmentAndMovementButtons.press(event, game, discordGame);
             SpiceCollectionButtons.press(event, game, discordGame);
             RevivalButtons.press(event, game, discordGame);
+            EmperorButtons.press(event, game, discordGame);
             IxButtons.press(event, game, discordGame);
             BTButtons.press(event, game, discordGame);
             RicheseButtons.press(event, game, discordGame);

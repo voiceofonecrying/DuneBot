@@ -20,6 +20,14 @@ public class AtreidesCommands {
                             Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()
                     )
             );
+            if (game.getFaction("Atreides").isHomeworldOccupied()) {
+                discordGame.getFactionChat(game.getFaction("Atreides").getOccupier().getName()).queueMessage(
+                        MessageFormat.format(
+                                "Your " + Emojis.ATREIDES + " subjects in Caladan predict {0} {1} {0} is up for bid (R{2}:C{3}).",
+                                Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()
+                        )
+                );
+            }
         }
     }
 }

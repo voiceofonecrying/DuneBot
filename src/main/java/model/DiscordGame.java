@@ -500,6 +500,10 @@ public class DiscordGame {
         messageQueue.add(thread.sendMessage(message));
     }
 
+    public void queueMessageToLedger(String factionName, String message) throws ChannelNotFoundException {
+        queueMessage(factionName.toLowerCase() + "-info", "ledger", message);
+    }
+
     /**
      * Queues a message to be sent to the given channel.
      *

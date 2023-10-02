@@ -389,7 +389,11 @@ public class RicheseCommands {
         } else {
             message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
         }
-        discordGame.getRicheseChat().queueMessage(message, buttons);
+        if (!richeseFaction.isHomeworldOccupied()) discordGame.getRicheseChat().queueMessage(message, buttons);
+        else {
+            discordGame.getFactionChat(richeseFaction.getOccupier().getName()).queueMessage(message, buttons);
+            discordGame.getFactionChat(richeseFaction.getOccupier().getName()).queueMessage("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
+        }
     }
 
     public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException {

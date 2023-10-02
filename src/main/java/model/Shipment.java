@@ -6,6 +6,7 @@ import controller.commands.RicheseCommands;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 
 import java.io.IOException;
 
@@ -14,7 +15,7 @@ public class Shipment {
     private int specialForce;
     private String territoryName;
     private boolean hasShipped;
-    private boolean isNoField;
+    private int noField;
     private boolean toReserves;
     private String crossShipFrom;
 
@@ -23,13 +24,17 @@ public class Shipment {
 
     public void execute(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritory(territoryName);
-        if (isNoField) {
+        if (noField >= 0) {
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
-            territory.setRicheseNoField(force);
+            territory.setRicheseNoField(noField);
             int spice = territory.isStronghold() ? 1 : 2;
             faction.subtractSpice(spice);
             discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " ship a no-field to " + territoryName);
-        } else if (isToReserves()) {
+            if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
+                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);
+            }
+        }
+        if (isToReserves()) {
             CommandManager.removeForces(territoryName, faction, force, specialForce, false, game, discordGame);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice);
@@ -49,7 +54,7 @@ public class Shipment {
         this.force = 0;
         this.specialForce = 0;
         this.hasShipped = true;
-        this.isNoField = false;
+        this.noField = -1;
         this.toReserves = false;
         this.crossShipFrom = "";
     }
@@ -86,12 +91,12 @@ public class Shipment {
         this.hasShipped = hasShipped;
     }
 
-    public boolean isNoField() {
-        return isNoField;
+    public int getNoField() {
+        return noField;
     }
 
-    public void setNoField(boolean noField) {
-        isNoField = noField;
+    public void setNoField(int noField) {
+        this.noField = noField;
     }
 
     public boolean isToReserves() {

@@ -99,13 +99,40 @@ public class CommandManager extends ListenerAdapter {
             Faction paidToFaction = game.getFaction(paidToFactionName);
 
             if (paidToFaction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS)
-                    && !game.getFaction("Emperor").isHighThreshold()) {
+                    && !paidToFaction.isHighThreshold()) {
                 spicePaid = Math.ceilDiv(spentValue, 2);
-                if (game.getTerritory("Kaitain").getForces().stream().anyMatch(force -> !force.getName().equals("Emperor"))) {
-                    paidToFaction.addSpice(Math.floorDiv(spentValue, 2));
-                    spiceMessage(discordGame, Math.floorDiv(spentValue, 2), paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
+                if (paidToFaction.isHomeworldOccupied()) {
+                    Faction occupier = paidToFaction.getOccupier();
+                    occupier.addSpice(Math.floorDiv(spentValue, 2));
+                    spiceMessage(discordGame, Math.floorDiv(spentValue, 2), occupier.getSpice(), occupier.getName(), "Tribute from " + Emojis.EMPEROR + " for " + currentCard, true);
+                    turnSummary.queueMessage(
+                            MessageFormat.format(
+                                    "{0} is paid {1} {2} for {3} (homeworld occupied)",
+                                    paidToFaction.getOccupier().getEmoji(),
+                                    Math.floorDiv(spentValue, 2),
+                                    Emojis.SPICE,
+                                    currentCard
+                            )
+                    );
                 }
             }
+
+            if (paidToFaction.getName().equals("Richese") && paidToFaction.isHomeworldOccupied()) {
+                spicePaid = Math.ceilDiv(spentValue, 2);
+                Faction occupier = paidToFaction.getOccupier();
+                occupier.addSpice(Math.floorDiv(spentValue, 2));
+                spiceMessage(discordGame, Math.floorDiv(spentValue, 2), occupier.getSpice(), occupier.getName(), "Tribute from " + Emojis.EMPEROR + " for " + currentCard, true);
+                turnSummary.queueMessage(
+                        MessageFormat.format(
+                                "{0} is paid {1} {2} for {3} (homeworld occupied)",
+                                paidToFaction.getOccupier().getEmoji(),
+                                Math.floorDiv(spentValue, 2),
+                                Emojis.SPICE,
+                                currentCard
+                        )
+                );
+            }
+
             spiceMessage(discordGame, spicePaid, paidToFaction.getSpice(), paidToFaction.getName(), currentCard, true);
             game.getFaction(paidToFaction.getName()).addSpice(spicePaid);
 
@@ -202,22 +229,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
         String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
-        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
-            if (faction.getName().equals("Emperor")) {
-                EmperorFaction emperor = (EmperorFaction) faction;
-                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                    emperor.setHighThreshold(true);
-                }
-                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
-                    emperor.setSecundusHighThreshold(true);
-                }
-            } else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
-                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                faction.setHighThreshold(true);
-            }
-        }
+        RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
     }
 
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
@@ -341,14 +353,14 @@ public class CommandManager extends ListenerAdapter {
                 turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
             }
 
-            if (targetTerritory.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+            if (!targetTerritory.getTerrorTokens().isEmpty() && !targetFaction.getName().equals("Moritani")
                     && (!(game.getFaction("Moritani").hasAlly()
                     && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("moritani-trigger-terror-" + targetTerritory.getTerritoryName() + "-" + targetFaction.getName(), "Trigger"));
-                buttons.add(Button.secondary("moritani-don't-trigger-terror", "Don't Trigger"));
-                buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName(), "Offer alliance"));
-                turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
+                if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
+                    turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
+                } else {
+                    ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, targetTerritory, targetFaction);
+                }
             }
         }
         if (game.hasGameOption(GameOption.HOMEWORLDS) && (reserves.getStrength() + specialReserves.getStrength() < targetFaction.getHighThreshold()) && targetFaction.isHighThreshold()) {
@@ -459,13 +471,14 @@ public class CommandManager extends ListenerAdapter {
             turnSummary.queueMessage(message.toString());
         }
 
-        if (to.getTerrorToken() != null && !targetFaction.getName().equals("Moritani")
+        if (!to.getTerrorTokens().isEmpty() && !targetFaction.getName().equals("Moritani")
                 && !(game.getFaction("Moritani").hasAlly()
                 && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("moritani-trigger-terror-" + to.getTerrorToken() + "-" + targetFaction.getName(), "Trigger"));
-            buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
-            turnSummary.queueMessage(Emojis.MORITANI + " has an opportunity to trigger their terror token now." + game.getFaction("Moritani").getPlayer(), buttons);
+            if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
+                turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
+            } else {
+                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, to, targetFaction);
+            }
         }
     }
 
@@ -481,6 +494,14 @@ public class CommandManager extends ListenerAdapter {
             } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
                 homeworldFaction.setHighThreshold(false);
                 discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
+            }
+
+            if (territoryName.equals("Ecaz") && game.getFaction("Ecaz").isHomeworldOccupied()) {
+                for (Faction faction1 : game.getFactions()) {
+                    faction1.getLeaders().removeIf(leader1 -> leader1.name().equals("Duke Vidal"));
+                }
+                game.getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, null, false));
+                discordGame.getTurnSummary().queueMessage("Duke Vidal has left to work for " + game.getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }
     }
@@ -1011,10 +1032,17 @@ public class CommandManager extends ListenerAdapter {
         Faction faction = game.getFaction(factionName);
 
         String cardName = discordGame.required(card).getAsString();
+        TreacheryCard treacheryCard = faction.removeTreacheryCard(cardName);
 
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard(cardName));
+        game.getTreacheryDiscard().add(treacheryCard);
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + cardName);
         discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", cardName + " discarded from hand.");
+
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
+            game.getFaction("Ecaz").addSpice(3);
+            spiceMessage(discordGame, 3, game.getFaction("Ecaz").getSpice(), "Ecaz", "Poison weapon was discarded", true);
+            discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " gain 3 " + Emojis.SPICE + " for the discarded poison weapon");
+        }
         discordGame.pushGame();
     }
 
