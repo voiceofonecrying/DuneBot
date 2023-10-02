@@ -296,9 +296,10 @@ public class RunCommands {
         int choamGiven = 0;
         List<Faction> factions = game.getFactions();
         if (game.hasFaction("CHOAM")) {
+            int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("CHOAM").isHighThreshold()) ? 1 : 0;
             turnSummary.queueMessage(
                     game.getFaction("CHOAM").getEmoji() + " receives " +
-                            game.getFactions().size() * 2 * multiplier +
+                            ((game.getFactions().size() * 2 * multiplier) + plusOne) +
                             " " + Emojis.SPICE + " in dividends from their many investments."
             );
         }
@@ -308,7 +309,7 @@ public class RunCommands {
             if (faction.getName().equals("BG")) {
                 int charity = multiplier * 2;
                 choamGiven += charity;
-                if (!faction.isHighThreshold()) charity++;
+                if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
                 faction.addSpice(charity);
                 turnSummary.queueMessage(faction.getEmoji() + " have received " +
                         2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
@@ -331,7 +332,8 @@ public class RunCommands {
         }
         if (game.hasFaction("CHOAM")) {
             Faction choamFaction = game.getFaction("CHOAM");
-            choamFaction.addSpice((2 * factions.size() * multiplier) - choamGiven);
+            int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
+            choamFaction.addSpice(((2 * factions.size() * multiplier) + plusOne) - choamGiven);
             CommandManager.spiceMessage(discordGame, game.getFactions().size() * 2 * multiplier,
                     choamFaction.getSpice(), "choam", "CHOAM Charity", true);
             turnSummary.queueMessage(
