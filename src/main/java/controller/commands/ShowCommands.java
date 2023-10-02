@@ -182,6 +182,7 @@ public class ShowCommands {
             Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treacheryCard.name());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
+                cardImage = resize(cardImage, 988, 1376);
                 Point cardPoint = new Point(1250 + offset, 1250 + offsetY);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 900;

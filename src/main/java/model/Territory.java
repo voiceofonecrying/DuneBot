@@ -177,7 +177,7 @@ public class Territory {
     public List<String> getTerrorTokens() {
         if (terrorTokens == null) {
             LinkedList<String> tokens = new LinkedList<>();
-            tokens.add(terrorToken);
+            if (terrorToken != null) tokens.add(terrorToken);
             this.terrorTokens = tokens;
         }
         return terrorTokens;
@@ -193,7 +193,7 @@ public class Territory {
     }
 
     public boolean hasTerrorToken() {
-        return terrorTokens != null;
+        return getTerrorTokens().size() > 0;
     }
 
     public boolean isAftermathToken() {
