@@ -1,5 +1,6 @@
 package model;
 
+import helpers.Exclude;
 import model.factions.Faction;
 
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class Territory {
     private int spice;
     private Integer richeseNoField;
     private String ecazAmbassador;
+    private List<String> terrorTokens;
+    @Exclude
     private String terrorToken;
     private boolean aftermathToken;
     private String discoveryToken;
@@ -36,6 +39,7 @@ public class Territory {
         this.ecazAmbassador = null;
         this.adjacencyList = new LinkedList<>();
         this.aftermathToken = false;
+        this.terrorTokens = new LinkedList<>();
     }
 
     public String getTerritoryName() {
@@ -170,16 +174,26 @@ public class Territory {
         this.ecazAmbassador = ecazAmbassador;
     }
 
-    public String getTerrorToken() {
-        return terrorToken;
+    public List<String> getTerrorTokens() {
+        if (terrorTokens == null) {
+            LinkedList<String> tokens = new LinkedList<>();
+            tokens.add(terrorToken);
+            this.terrorTokens = tokens;
+        }
+        return terrorTokens;
     }
 
-    public void setTerrorToken(String terrorToken) {
-        this.terrorToken = terrorToken;
+    public void addTerrorToken(String terrorToken) {
+        if (terrorTokens == null) {
+            LinkedList<String> tokens = new LinkedList<>();
+            tokens.add(this.terrorToken);
+            this.terrorTokens = tokens;
+        }
+        this.terrorTokens.add(terrorToken);
     }
 
     public boolean hasTerrorToken() {
-        return terrorToken != null;
+        return terrorTokens != null;
     }
 
     public boolean isAftermathToken() {

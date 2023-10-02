@@ -100,8 +100,7 @@ public class MoritaniFaction extends Faction {
         }
 
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getTerrorToken() == null) continue;
-            if (territory.getTerrorToken().equals(terror)) territory.setTerrorToken(null);
+            territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
     }
 
@@ -115,7 +114,7 @@ public class MoritaniFaction extends Faction {
 
     public void placeTerrorToken(Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
-        territory.setTerrorToken(terror);
+        territory.addTerrorToken(terror);
     }
 
     public void getDukeVidal() {
@@ -133,11 +132,25 @@ public class MoritaniFaction extends Faction {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             Button stronghold = Button.primary("moritani-place-terror-" + territory.getTerritoryName(), "Place Terror Token in " + territory.getTerritoryName());
-            if (territory.getTerrorToken() != null || game.getStorm() == territory.getSector())
-                stronghold = stronghold.asDisabled();
+            if (!this.isHighThreshold() && (!territory.getTerrorTokens().isEmpty() || game.getStorm() == territory.getSector())) stronghold = stronghold.asDisabled();
+            else if (this.isHighThreshold() && !territory.getTerrorTokens().isEmpty()) {
+                for (String terror : territory.getTerrorTokens()) {
+                    buttons.add(Button.secondary("moritani-remove-terror-" + territory.getTerritoryName() + "-" + terror, "Remove " + terror + " Token from " + territory.getTerritoryName() + " (gain 4 " + Emojis.SPICE + ")"));
+                }
+            }
             buttons.add(stronghold);
         }
         discordGame.getMoritaniChat().queueMessage("Use these buttons to place Terror Tokens from your supply.", buttons);
+    }
+
+    public void sendTerrorTokenTriggerMessage(Game game, DiscordGame discordGame, Territory targetTerritory, Faction targetFaction) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        for (String terror : targetTerritory.getTerrorTokens()) {
+            buttons.add(Button.primary("moritani-trigger-terror-" + terror + "-" + targetFaction.getName(), "Trigger " + terror));
+            buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
+        }
+        buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
+        discordGame.getMoritaniChat().queueMessage("Will you trigger your terror token now?" + game.getFaction("Moritani").getPlayer(), buttons);
     }
 
     public List<String> getAssassinationTargets() {

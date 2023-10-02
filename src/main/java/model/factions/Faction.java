@@ -1,5 +1,6 @@
 package model.factions;
 
+import enums.GameOption;
 import enums.UpdateType;
 import helpers.Exclude;
 import model.*;
@@ -598,4 +599,16 @@ public class Faction {
     public void setOrnithoperToken(boolean ornithoperToken) {
         this.ornithoperToken = ornithoperToken;
     }
+
+    public boolean isHomeworldOccupied() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
+        return game.getTerritory(homeworld).countActiveFactions() == 1 && !game.getTerritory(homeworld).getActiveFactions(game).get(0).getName().equals(this.name);
+    }
+
+    public Faction getOccupier() {
+        if (isHomeworldOccupied()) return game.getTerritory(homeworld).getActiveFactions(game).get(0);
+        return null;
+    }
+
+
 }

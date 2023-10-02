@@ -430,6 +430,16 @@ public class RunCommands {
             discordGame.getModInfo().queueMessage("Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
             return false;
         }
+
+        if (game.hasFaction("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("Emperor").isHighThreshold()) {
+            Faction emperor = game.getFaction("Emperor");
+            List<Button> buttons = new LinkedList<>();
+            for (TreacheryCard card : emperor.getTreacheryHand()) {
+                buttons.add(Button.primary("emperor-discard-" + card.name(), card.name()));
+            }
+            buttons.add(Button.secondary("emperor-finished-discarding", "Done"));
+            discordGame.getEmperorChat().queueMessage("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", buttons);
+        }
         game.endBidding();
         discordGame.getModInfo().queueMessage("Bidding phase ended. Run advance to start revivals.");
         return true;
@@ -561,6 +571,12 @@ public class RunCommands {
                         && game.getForceFromTanks(faction.getName() + "*").getStrength() == 0) continue;
                 revived++;
                 if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0 && !revivedStar) {
+                    if (faction.getName().equals("Emperor") && !((EmperorFaction)faction).isSecundusHighThreshold()) {
+                        revived--;
+                        i++;
+                        revivedStar = true;
+                        continue;
+                    }
                     Force force = game.getForceFromTanks(faction.getName() + "*");
                     force.setStrength(force.getStrength() - 1);
                     revivedStar = true;
@@ -574,6 +590,9 @@ public class RunCommands {
             if (revived > 0) {
                 factionsWithRevivals++;
                 if (!faction.getName().equals("BT")) nonBTRevival = true;
+                else if (game.hasFaction("BT") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("BT").isHighThreshold()) {
+                    discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + game.getFaction("BT").getPlayer());
+                }
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) {
@@ -588,9 +607,10 @@ public class RunCommands {
                     discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals?", buttons);
                 }
             }
+
         }
 
-        if (factionsWithRevivals > 0 && game.hasFaction("BT")) {
+        if (factionsWithRevivals > 0 && game.hasFaction("BT") && game.getFaction("BT").isHighThreshold()) {
             Faction btFaction = game.getFaction("BT");
             btFaction.addSpice(factionsWithRevivals);
             message.append(btFaction.getEmoji())
@@ -601,6 +621,8 @@ public class RunCommands {
             CommandManager.spiceMessage(discordGame, factionsWithRevivals, btFaction.getSpice(), "BT",
                     "for free revivals", true);
         }
+
+        flipToHighThresholdIfApplicable(discordGame, game);
 
         if (!message.isEmpty()) {
             turnSummary.queueMessage(message.toString());
@@ -614,6 +636,26 @@ public class RunCommands {
         }
 
         ShowCommands.showBoard(discordGame, game);
+    }
+
+    public static void flipToHighThresholdIfApplicable(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        for (Faction faction : game.getFactions()) {
+            if (faction.getName().equals("Emperor")) {
+                EmperorFaction emperor = (EmperorFaction) faction;
+                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                    emperor.setHighThreshold(true);
+                }
+                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
+                    emperor.setSecundusHighThreshold(true);
+                }
+            } else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
+                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
+                faction.setHighThreshold(true);
+            }
+        }
     }
 
     public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
@@ -642,7 +684,7 @@ public class RunCommands {
             game.getTurnOrder().addFirst("Guild");
             ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame, game);
         } else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
-        if (game.hasFaction("Atreides")) {
+        if (game.hasFaction("Atreides") && game.getFaction("Atreides").isHighThreshold()) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null) {
                 discordGame.getAtreidesChat().queueMessage("You see visions of " + nextCard.name() + " in your future.");
@@ -691,7 +733,7 @@ public class RunCommands {
                 battles.add(new ImmutablePair<>(territory, factions));
             }
         }
-        if (dukeVidalCount >= 2 && game.getLeaderTanks().stream().noneMatch(leader -> leader.name().equals("Duke Vidal"))) {
+        if (dukeVidalCount >= 2 && game.getLeaderTanks().stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHomeworldOccupied())) {
             for (Faction faction : game.getFactions()) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
@@ -727,6 +769,7 @@ public class RunCommands {
 
     public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
+        if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.name().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
         turnSummary.queueMessage("Turn " + game.getTurn() + " Spice Harvest Phase:");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
