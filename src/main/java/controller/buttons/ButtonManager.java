@@ -53,6 +53,8 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
+            MoritaniButtons.press(event, game, discordGame);
+            event.getMessage().delete().complete();
             StormButtons.press(event, game, discordGame);
             ShipmentAndMovementButtons.press(event, game, discordGame);
             SpiceCollectionButtons.press(event, game, discordGame);
@@ -62,7 +64,6 @@ public class ButtonManager extends ListenerAdapter {
             BTButtons.press(event, game, discordGame);
             RicheseButtons.press(event, game, discordGame);
             EcazButtons.press(event, game, discordGame);
-            MoritaniButtons.press(event, game, discordGame);
             BGButtons.press(event, game, discordGame);
             switch (event.getComponentId()) {
                 case "graphic" -> {

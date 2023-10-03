@@ -506,7 +506,7 @@ public class ShowCommands {
                     discoveryToken = resize(discoveryToken, 500, 500);
                     for (Force force : game.getTerritory(territory.getDiscoveryToken()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
-                        forceImage = resize(forceImage, 470, 290);
+                        forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(250, 150);
                         Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
                         discoveryToken = overlay(discoveryToken, forceImage, forcePlacementOffset, 1);
@@ -517,7 +517,7 @@ public class ShowCommands {
                     if (territory.isRock()) discoveryToken = getResourceImage("Smuggler Token");
                     else discoveryToken = getResourceImage("Hiereg Token");
                 }
-                discoveryToken = resize(discoveryToken, 40, 40);
+                discoveryToken = resize(discoveryToken, 60, 60);
                 board = overlay(board, discoveryToken, Initializers.getPoints(territory.getTerritoryName()).get(i), 1);
                 i++;
             }
