@@ -2,19 +2,21 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
+import helpers.Exclude;
 import model.Force;
 import model.Game;
 import model.Territory;
 import model.TraitorCard;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
+
+    @Exclude
     private int revivalRatesSet;
+    private Set<String> factionRevivalRatesSet;
 
     public BTFaction(String player, String userName, Game game) throws IOException {
         super("BT", player, userName, game);
@@ -22,7 +24,7 @@ public class BTFaction extends Faction {
         setSpice(5);
         this.freeRevival = 2;
         this.emoji = Emojis.BT;
-        this.revivalRatesSet = 0;
+        this.factionRevivalRatesSet = new HashSet<>();
         this.highThreshold = 9;
         this.lowThreshold = 8;
         this.occupiedIncome = 2;
@@ -54,11 +56,18 @@ public class BTFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public int getRevivalRatesSet() {
-        return revivalRatesSet;
+    public void addRevivalRatesSet(String revivalRatesSet) {
+        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
+        this.factionRevivalRatesSet.add(revivalRatesSet);
     }
 
-    public void setRevivalRatesSet(int revivalRatesSet) {
-        this.revivalRatesSet = revivalRatesSet;
+    public boolean hasSetAllRevivalRates() {
+        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
+        return this.factionRevivalRatesSet.size() == getGame().getFactions().size() - 1;
+    }
+
+    public void clearRevivalRatesSet() {
+        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
+        this.factionRevivalRatesSet.clear();
     }
 }
