@@ -177,4 +177,7 @@ public class EcazFaction extends Faction {
         }
         return supply.toString();
     }
+    public List<String> getAmbassadorSupplyList() {
+        return this.ambassadorSupply;
+    }
 }

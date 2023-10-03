@@ -263,6 +263,26 @@ public class ShowCommands {
             }
         }
 
+        offset = 0;
+
+        //Ecaz ambassadors
+        if (faction.getName().equals("Ecaz")) {
+            for (String ambassador : ((EcazFaction)faction).getAmbassadorSupplyList()) {
+                BufferedImage ambassadorImage = getResourceImage(ambassador + " Ambassador");
+                table = overlay(table, resize(ambassadorImage, 300, 300), new Point(750 + offset, 2250), 1);
+                offset += 330;
+            }
+        }
+
+        //Moritani Terror Tokens
+        if (faction.getName().equals("Moritani")) {
+            for (String terrorToken : ((MoritaniFaction)faction).getTerrorTokens()) {
+                BufferedImage terrorTokenImage = getResourceImage(terrorToken);
+                table = overlay(table, resize(terrorTokenImage, 300, 300), new Point(750 + offset, 2250), 1);
+                offset += 330;
+            }
+        }
+
 
         ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
         ImageIO.write(table, "png", boardOutputStream);
@@ -409,14 +429,7 @@ public class ShowCommands {
             }
 
             if (territory.getEcazAmbassador() != null) {
-                BufferedImage ambassadorSigil = getResourceImage(territory.getEcazAmbassador() + " Sigil");
-                BufferedImage ambassadorBackground = getResourceImage("Ambassador");
-                BufferedImage ambassador = overlay(
-                        resize(ambassadorBackground, 40, 40),
-                        resize(ambassadorSigil, 22, 22),
-                        new Point(20, 20),
-                        1
-                );
+                BufferedImage ambassador = resize(getResourceImage(territory.getEcazAmbassador() + " Ambassador"), 40, 40);
                 Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
                 Point placementCorner = new Point(placement.x + 40, placement.y);
                 board = overlay(board, ambassador, placementCorner, 1);
