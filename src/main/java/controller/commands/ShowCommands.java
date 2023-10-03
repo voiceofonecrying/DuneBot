@@ -817,7 +817,7 @@ public class ShowCommands {
                 .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
     }
 
-    public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         MessageChannel frontOfShieldChannel = discordGame.getTextChannel("front-of-shield");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(frontOfShieldChannel).complete();
 
@@ -906,8 +906,9 @@ public class ShowCommands {
                 discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
         }
-//        Commented out until all changes to the map call refreshFrontOfShieldInfo
-//        discordGame.queueMessage("front-of-shield", "", drawGameBoard(discordGame, game));
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            discordGame.queueMessage("front-of-shield", "", drawGameBoard(game));
+        }
     }
 
     public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -934,6 +935,11 @@ public class ShowCommands {
 
             if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC) &&
                     updateTypes.contains(UpdateType.TREACHERY_CARDS)) {
+                frontOfShieldModified = true;
+            }
+
+            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD) &&
+                    updateTypes.contains(UpdateType.MAP)) {
                 frontOfShieldModified = true;
             }
         }
