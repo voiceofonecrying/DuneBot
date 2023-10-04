@@ -32,6 +32,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.faction;
 
@@ -907,7 +908,22 @@ public class ShowCommands {
             }
         }
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            discordGame.queueMessage("front-of-shield", "", drawGameBoard(game));
+            List<Message> msgsWithAttachments = messages.stream()
+                    .filter(m -> !m.getAttachments().isEmpty())
+                    .collect(Collectors.toList());
+            String mapFilename = "game-map.png";
+            Message mapMessage = msgsWithAttachments.stream()
+                    .filter(m -> m.getAttachments().get(0).getFileName().equals(mapFilename))
+                    .findFirst()
+                    .orElse(null);
+            List<FileUpload> uploads = new ArrayList<>();
+            FileUpload newMap = drawGameBoard(game).setName(mapFilename);
+            uploads.add(newMap);
+            if (mapMessage != null) {
+                discordGame.queueMessage(mapMessage.editMessage("").setFiles(uploads));
+            } else {
+                discordGame.queueMessage("front-of-shield", "", newMap);
+            }
         }
     }
 
