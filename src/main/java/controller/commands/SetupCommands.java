@@ -378,6 +378,9 @@ public class SetupCommands {
     }
 
     public static StepStatus createDecks(Game game) throws IOException {
+        // Temporary line to ensure all new games have separate turn summary threads per turn
+        game.addGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
+
         if (game.hasGameOption(GameOption.SANDTROUT)) {
             game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0, null, null));
         }
