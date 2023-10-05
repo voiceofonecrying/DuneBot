@@ -5,4 +5,5 @@ public enum UpdateType {
     TREACHERY_CARDS,
     MISC_FRONT_OF_SHIELD,
     MISC_BACK_OF_SHIELD,
+    MAP,
 }

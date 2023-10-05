@@ -19,4 +19,5 @@ public enum GameOption {
     SPICE_PUBLIC,
     IX_ONLY_1_CARD_PER_FACTION,
     SUMMARY_THREAD_PER_TURN,
+    MAP_IN_FRONT_OF_SHIELD,
 }

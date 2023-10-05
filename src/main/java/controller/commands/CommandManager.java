@@ -4,6 +4,7 @@ import constants.Emojis;
 import controller.Queue;
 import controller.channels.TurnSummary;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
@@ -230,6 +231,9 @@ public class CommandManager extends ListenerAdapter {
         String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
         RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            faction.setUpdated(UpdateType.MAP);
+        }
     }
 
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
