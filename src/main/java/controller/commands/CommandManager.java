@@ -765,7 +765,7 @@ public class CommandManager extends ListenerAdapter {
                         ChannelPermissions.readAndReactDeny
                 )
                 .complete();
-        fosChannel.createThreadChannel("turn-summary", true)
+        fosChannel.createThreadChannel("turn-0-summary", true)
                 .setInvitable(false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_3_DAYS)
                 .complete();
