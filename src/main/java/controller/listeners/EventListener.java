@@ -1,5 +1,6 @@
 package controller.listeners;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -66,6 +67,14 @@ public class EventListener extends ListenerAdapter {
             if (message.matches(".*@ " + faction.getEmoji().replaceAll("[0-9]", "") + ".*"))
                 event.getChannel().sendMessage(faction.getPlayer()).queue();
         }
+
+        if (message.matches(".*@ " + Emojis.MOD_EMPEROR.replaceAll("[0-9]", "") + ".*")) event.getChannel().sendMessage(game.getModRoleMention(event)).queue();
+        if (event.getMember().getRoles().stream().anyMatch(role -> role.getName().equals(game.getModRole()))) {
+            String emojiName = Emojis.MOD_EMPEROR.replace("<:", "").replaceAll(":.*>", "");
+            long id = Long.parseLong(Emojis.MOD_EMPEROR.replaceAll("<:.*:", "").replace(">", ""));
+            event.getMessage().addReaction(Emoji.fromCustom(emojiName, id, false)).queue();
+        }
+
     }
 
     public void sendTreacheryImage(MessageReceivedEvent event, String cardName) {
