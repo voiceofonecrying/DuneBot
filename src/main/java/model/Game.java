@@ -9,6 +9,7 @@ import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -261,6 +262,10 @@ public class Game {
 
     public String getGameRoleMention() {
         return gameRoleMention;
+    }
+
+    public String getModRoleMention(MessageReceivedEvent event) {
+        return event.getGuild().getRolesByName(getModRole(), true).get(0).getAsMention();
     }
 
     public void setGameRoleMention(String gameRoleMention) {

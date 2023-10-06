@@ -1,6 +1,7 @@
 package constants;
 
 public final class Emojis {
+    public static final String MOD_EMPEROR = "<:god_emperor:1150080256917655652>";
     public static final String ATREIDES = "<:atreides:991763327996923997>";
     public static final String ATREIDES_TROOP = "<:atreides_troop:998567375131652196>";
     public static final String BG = "<:bg:991763326830911519>";
