@@ -541,4 +541,11 @@ public class Initializers {
 
         return new Point(0, 0);
     }
+
+    public static Point calculateStormCoordinates(int sector) {
+        double r = ((3*Math.PI)/2) + ((sector - 1) * (Math.PI/9));
+        double x = 475 + (262*Math.cos(r));
+        double y = 528 - (262*Math.sin(r));
+        return new Point((int)Math.round(x), (int)Math.round(y));
+    }
 }

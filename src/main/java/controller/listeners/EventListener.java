@@ -68,7 +68,7 @@ public class EventListener extends ListenerAdapter {
                 event.getChannel().sendMessage(faction.getPlayer()).queue();
         }
 
-        if (message.matches(".*@ " + Emojis.MOD_EMPEROR.replaceAll("[0-9]", "") + ".*")) event.getChannel().sendMessage(game.getModRoleMention(event)).queue();
+        if (message.matches(".*@ " + Emojis.MOD_EMPEROR.replaceAll("[0-9]", "") + ".*")) event.getChannel().sendMessage(game.getMod()).queue();
         if (event.getMember().getRoles().stream().anyMatch(role -> role.getName().equals(game.getModRole()))) {
             String emojiName = Emojis.MOD_EMPEROR.replace("<:", "").replaceAll(":.*>", "");
             long id = Long.parseLong(Emojis.MOD_EMPEROR.replaceAll("<:.*:", "").replace(">", ""));

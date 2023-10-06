@@ -371,10 +371,6 @@ public class ShowCommands {
         phaseMarker = resize(phaseMarker, 50, 50);
         coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhase()));
         board = overlay(board, phaseMarker, coordinates, 1);
-        BufferedImage stormMarker = getResourceImage("storm");
-        stormMarker = resize(stormMarker, 172, 96);
-        stormMarker = rotateImageByDegrees(stormMarker, -(game.getStorm() * 20));
-        board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + game.getStorm()), 1);
 
         //Place Tech Tokens
         for (int i = 0; i < game.getFactions().size(); i++) {
@@ -391,23 +387,6 @@ public class ShowCommands {
             }
         }
 
-        //Place sigils
-        for (int i = 1; i <= game.getFactions().size(); i++) {
-            Faction faction = game.getFactions().get(i - 1);
-            BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
-            coordinates = Initializers.getDrawCoordinates("sigil " + i);
-            sigil = resize(sigil, 50, 50);
-            board = overlay(board, sigil, coordinates, 1);
-
-            // Check for alliances
-            if (faction.hasAlly()) {
-                BufferedImage allySigil =
-                        getResourceImage(faction.getAlly() + " Sigil");
-                coordinates = Initializers.getDrawCoordinates("ally " + i);
-                allySigil = resize(allySigil, 40, 40);
-                board = overlay(board, allySigil, coordinates, 1);
-            }
-        }
 
 
         //Place pieces in territories
@@ -554,6 +533,33 @@ public class ShowCommands {
                 Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
                         .get(i);
                 board = overlay(board, noFieldImage, noFieldPlacement, 1);
+            }
+
+            //Storm overlay
+            BufferedImage stormOverlay = getResourceImage("Storm Overlay");
+            stormOverlay = rotateImageByDegrees(stormOverlay, -(game.getStorm() * 20) + 20);
+            board = overlay(board, stormOverlay, Initializers.calculateStormCoordinates(game.getStorm()), .15F);
+            BufferedImage stormMarker = getResourceImage("storm");
+            stormMarker = resize(stormMarker, 172, 96);
+            stormMarker = rotateImageByDegrees(stormMarker, -(game.getStorm() * 20));
+            board = overlay(board, stormMarker, Initializers.getDrawCoordinates("storm " + game.getStorm()), 1);
+
+            //Place sigils
+            for (int k = 1; k <= game.getFactions().size(); k++) {
+                Faction faction = game.getFactions().get(k - 1);
+                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
+                coordinates = Initializers.getDrawCoordinates("sigil " + k);
+                sigil = resize(sigil, 50, 50);
+                board = overlay(board, sigil, coordinates, 1);
+
+                // Check for alliances
+                if (faction.hasAlly()) {
+                    BufferedImage allySigil =
+                            getResourceImage(faction.getAlly() + " Sigil");
+                    coordinates = Initializers.getDrawCoordinates("ally " + k);
+                    allySigil = resize(allySigil, 40, 40);
+                    board = overlay(board, allySigil, coordinates, 1);
+                }
             }
         }
 
