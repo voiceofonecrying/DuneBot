@@ -576,6 +576,7 @@ public class CommandManager extends ListenerAdapter {
                 case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
                 case "ix" -> IxCommands.runCommand(event, discordGame, game);
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
+                case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                 case "draw" -> drawCard(discordGame, game);
                 case "shuffle-treachery-deck" -> shuffleTreacheryDeck(discordGame, game);
@@ -692,6 +693,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(ChoamCommands.getCommands());
         commandData.addAll(IxCommands.getCommands());
         commandData.addAll(BGCommands.getCommands());
+        commandData.addAll(AtreidesCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
