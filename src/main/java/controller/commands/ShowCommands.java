@@ -168,7 +168,8 @@ public class ShowCommands {
         //Place leaders
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage = getResourceImage(leader.name());
-            leaderImage = resize(leaderImage, 500, 500);
+            if (!leader.name().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
+            else leaderImage = resize(leaderImage, 500, 301);
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
             offset += 450;
@@ -203,10 +204,54 @@ public class ShowCommands {
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
-                Point cardPoint = new Point(750 + offset, 3500);
+                Point cardPoint = new Point(1050 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
                 offset += 900;
             }
+        }
+
+        //Place KH counter card
+        if (faction.getName().equals("Atreides")) {
+            BufferedImage KHCounterImage = getResourceImage("KH Counter");
+            int x;
+            int y;
+            switch (((AtreidesFaction)faction).getForcesLost()) {
+                case 0 -> {
+                    x = 275;
+                    y = 575;
+                }
+                case 1 -> {
+                    x = 585;
+                    y = 575;
+                }
+                case 2 -> {
+                    x = 890;
+                    y = 575;
+                }
+                case 3 -> {
+                    x = 1195;
+                    y = 575;
+                }
+                case 4 -> {
+                    x = 275;
+                    y = 900;
+                }
+                case 5 -> {
+                    x = 585;
+                    y = 900;
+                }
+                case 6 -> {
+                    x = 890;
+                    y = 900;
+                }
+                default  -> {
+                    x = 1195;
+                    y = 900;
+                }
+            }
+            BufferedImage KHCounter = getResourceImage("KH token");
+            KHCounterImage = overlay(KHCounterImage, KHCounter, new Point(x, y), 1);
+            table = overlay(table, resize(KHCounterImage, 988, 1376), new Point(1100 + offset, 3500), 1);
         }
 
         //Place Homeworld Card
@@ -591,7 +636,8 @@ public class ShowCommands {
             } else {
                 leaderImage = getResourceImage(leader.name());
             }
-            leaderImage = resize(leaderImage, 70, 70);
+            if (!leader.name().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 70, 70);
+            else leaderImage = resize(leaderImage, 70, 42);
             Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
             Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
             board = overlay(board, leaderImage, tanksOffset, 1);

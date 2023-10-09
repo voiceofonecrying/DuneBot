@@ -584,6 +584,7 @@ public class Faction {
     }
 
     public boolean isHighThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return true;
         return isHighThreshold;
     }
 
