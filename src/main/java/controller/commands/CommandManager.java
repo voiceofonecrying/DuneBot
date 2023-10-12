@@ -1023,9 +1023,9 @@ public class CommandManager extends ListenerAdapter {
     public void drawCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         Faction faction = game.getFaction(factionName);
-        discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", game.getTreacheryDeck().peekFirst().name() + " drawn from deck.");
-        faction.addTreacheryCard(game.getTreacheryDeck().pollLast());
-        discordGame.pushGame();
+        TreacheryCard cardDrawn = game.getTreacheryDeck().pollLast();
+        discordGame.queueMessage(factionName.toLowerCase() + "-info", "ledger", cardDrawn.name() + " drawn from deck.");
+        faction.addTreacheryCard(cardDrawn);        discordGame.pushGame();
     }
 
     public void shuffleTreacheryDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
