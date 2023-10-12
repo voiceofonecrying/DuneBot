@@ -7,6 +7,7 @@ import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
+import helpers.Exclude;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -56,6 +57,8 @@ public class Game {
     private int storm;
     private int stormMovement;
     private boolean onHold;
+    @Exclude
+    private Set<UpdateType> updateTypes;
 
     public Game() throws IOException {
         super();
@@ -199,6 +202,16 @@ public class Game {
     public void setSetupFinished(boolean setupFinished) {
         this.setupFinished = setupFinished;
         this.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD));
+    }
+
+    public void setUpdated(UpdateType updateType) {
+        if (this.updateTypes == null) this.updateTypes = new HashSet<>();
+        this.updateTypes.add(updateType);
+    }
+
+    public Set<UpdateType> getUpdateTypes() {
+        if (this.updateTypes == null) this.updateTypes = new HashSet<>();
+        return this.updateTypes;
     }
 
     public boolean isOnHold() {

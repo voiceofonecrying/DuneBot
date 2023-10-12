@@ -5,6 +5,7 @@ import controller.buttons.ShipmentAndMovementButtons;
 import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -637,6 +638,9 @@ public class RunCommands {
             ecaz.sendAmbassadorLocationMessage(game, discordGame, 1);
         }
 
+        if (factionsWithRevivals > 0 && game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
         ShowCommands.showBoard(discordGame, game);
     }
 
