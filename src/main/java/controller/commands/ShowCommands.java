@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -65,6 +66,9 @@ public class ShowCommands {
     public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
         discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -986,7 +990,7 @@ public class ShowCommands {
             FileUpload newMap = drawGameBoard(game).setName(mapFilename);
             uploads.add(newMap);
             if (mapMessage != null) {
-                discordGame.queueMessage(mapMessage.editMessage("").setFiles(uploads));
+                discordGame.queueMessage(mapMessage.editMessage(MessageEditData.fromFiles(uploads)));
             } else {
                 discordGame.queueMessage("front-of-shield", "", newMap);
             }
@@ -1024,6 +1028,9 @@ public class ShowCommands {
                     updateTypes.contains(UpdateType.MAP)) {
                 frontOfShieldModified = true;
             }
+        }
+        if (game.getUpdateTypes().contains(UpdateType.MAP)) {
+            frontOfShieldModified = true;
         }
 
         if (frontOfShieldModified) {
