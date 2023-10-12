@@ -172,6 +172,10 @@ public class Faction {
     }
 
     public int getHandLimit() {
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")
+        && game.getFaction("CHOAM").isHomeworldOccupied() && !name.equals("CHOAM")
+        && (game.getTerritory("Tupile").getActiveFactionNames().contains(name)
+        || game.getTerritory("Tupile").getActiveFactionNames().contains(ally))) return handLimit + 1;
         return handLimit;
     }
 
@@ -191,7 +195,7 @@ public class Faction {
     }
 
     public void addTreacheryCard(TreacheryCard card) {
-        if (treacheryHand.size() >= handLimit) {
+        if (treacheryHand.size() >= getHandLimit()) {
             throw new IllegalStateException("Hand limit reached");
         }
 
