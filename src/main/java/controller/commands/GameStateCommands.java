@@ -1,6 +1,7 @@
 package controller.commands;
 
 import caches.GameCache;
+import controller.channels.DiscordChannel;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -32,7 +34,11 @@ public class GameStateCommands {
                         new SubcommandData(
                                 "refresh",
                                 "Refresh the current game state to match the current JSON file"
-                        )
+                        ),
+                        new SubcommandData(
+                                "create-button",
+                                "Create a button"
+                        ).addOptions(CommandOptions.buttonId, CommandOptions.buttonName)
                 )
         );
 
@@ -46,6 +52,7 @@ public class GameStateCommands {
         switch (name) {
             case "rewind" -> rewind(discordGame);
             case "refresh" -> refresh(discordGame);
+            case "create-button" -> createButton(event, discordGame);
         }
     }
 
@@ -77,5 +84,16 @@ public class GameStateCommands {
     public static void refresh(DiscordGame discordGame) {
         String gameName = discordGame.getGameCategory().getName();
         GameCache.clearGameJson(gameName);
+    }
+
+    public static void createButton(SlashCommandInteractionEvent event, DiscordGame discordGame) {
+        String buttonId = discordGame.required(CommandOptions.buttonId).getAsString();
+        String buttonName = discordGame.optional(CommandOptions.buttonName) != null ?
+                discordGame.required(CommandOptions.buttonName).getAsString() : buttonId;
+
+        DiscordChannel discordChannel = new DiscordChannel(discordGame, event.getChannel());
+
+        Button button = Button.primary(buttonId, buttonName);
+        discordChannel.queueMessage("", List.of(button));
     }
 }

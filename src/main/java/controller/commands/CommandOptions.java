@@ -182,6 +182,12 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "game-state", "Select a game state to rewind to.", true)
                     .setAutoComplete(true);
 
+    public static final OptionData buttonId =
+            new OptionData(OptionType.STRING, "button-id", "ID for the button", true);
+
+    public static final OptionData buttonName =
+            new OptionData(OptionType.STRING, "button-name", "Name for the button", false);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();

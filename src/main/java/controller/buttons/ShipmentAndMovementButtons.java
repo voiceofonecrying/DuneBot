@@ -882,7 +882,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(takeTurn);
         buttons.add(defer);
         buttons.add(last);
-        discordGame.getGuildChat().queueMessage("Use buttons to take your turn out of order.", buttons);
+        discordGame.getGuildChat().queueMessage("Use buttons to take your turn out of order. "
+                + game.getFaction("Guild").getPlayer(), buttons);
     }
 
     public static Comparator<Button> getButtonComparator() {

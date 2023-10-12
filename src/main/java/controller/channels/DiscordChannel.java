@@ -16,6 +16,11 @@ public class DiscordChannel {
         this.discordGame = discordGame;
     }
 
+    public DiscordChannel(DiscordGame discordGame, MessageChannel messageChannel) {
+        this.discordGame = discordGame;
+        this.messageChannel = messageChannel;
+    }
+
     public void queueMessage(String message) {
         discordGame.getMessageQueue().add(messageChannel.sendMessage(message));
     }
