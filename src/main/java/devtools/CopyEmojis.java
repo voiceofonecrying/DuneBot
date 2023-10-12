@@ -52,13 +52,15 @@ public class CopyEmojis {
                 System.out.println("Copying: " + emoji.getName());
                 InputStream inputStream = emoji.getImage().download().get();
                 testGuild.createEmoji(emoji.getName(), Icon.from(inputStream)).complete();
+                inputStream.close();
             }
         }
 
         System.out.println("Done");
 
-        mainJDA.shutdown();
-        testJDA.shutdown();
+        mainJDA.shutdownNow();
+        testJDA.shutdownNow();
+        System.exit(0);
     }
 
     private static JDA getJDA(String token) throws InterruptedException {

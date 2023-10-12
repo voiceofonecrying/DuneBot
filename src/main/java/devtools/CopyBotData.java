@@ -29,8 +29,11 @@ public class CopyBotData {
 
         System.out.println("Copying data from " + category);
 
-        DiscordGame mainDiscordGame = getDiscordGame(mainToken, mainGuildId, category);
-        DiscordGame testDiscordGame = getDiscordGame(testToken, testGuildId, category);
+        JDA mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+        JDA testJDA = JDABuilder.createDefault(testToken).build().awaitReady();
+
+        DiscordGame mainDiscordGame = getDiscordGame(mainJDA, mainGuildId, category);
+        DiscordGame testDiscordGame = getDiscordGame(testJDA, testGuildId, category);
 
         int copyOffset = Dotenv.configure().load().get("COPY_OFFSET") != null ?
                 Integer.parseInt(Dotenv.configure().load().get("COPY_OFFSET")) : 0;
@@ -54,12 +57,13 @@ public class CopyBotData {
 
         testDiscordGame.pushGame();
         testDiscordGame.sendAllMessages();
+
+        mainJDA.shutdownNow();
+        testJDA.shutdownNow();
+        System.exit(0);
     }
 
-    private static DiscordGame getDiscordGame(String token, String guildId, String category) throws InterruptedException, ChannelNotFoundException {
-        JDA jda = JDABuilder.createDefault(token)
-                .build();
-        jda.awaitReady();
+    private static DiscordGame getDiscordGame(JDA jda, String guildId, String category) throws InterruptedException, ChannelNotFoundException {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName(category, true);
