@@ -580,6 +580,15 @@ public class RunCommands {
                         revivedStar = true;
                         continue;
                     }
+                    if (faction.getName().equals("Fremen") && faction.isHighThreshold()) {
+                        List<Button> buttons = new LinkedList<>();
+                        for (Territory territory : game.getTerritories().values()) {
+                            if (!territory.getActiveFactionNames().contains("Fremen")) continue;
+                            buttons.add(Button.primary("fremen-ht-" + territory.getTerritoryName(), territory.getTerritoryName()));
+                        }
+                        buttons.add(Button.danger("fremen-cancel", "Don't use HT advantage"));
+                        discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
+                    }
                     Force force = game.getForceFromTanks(faction.getName() + "*");
                     force.setStrength(force.getStrength() - 1);
                     revivedStar = true;
@@ -820,6 +829,12 @@ public class RunCommands {
             Territory homeworld = game.getTerritory(faction.getHomeworld());
             if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
                 Faction occupyingFaction = homeworld.getActiveFactions(game).get(0);
+                if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction.getName().equals("Harkonnen") && occupyingFaction.isHighThreshold() && !((HarkonnenFaction)occupyingFaction).hasTriggeredHT()) {
+                    faction.addSpice(2);
+                    CommandManager.spiceMessage(discordGame, 2, faction.getSpice(), faction.getName(),
+                            "for High Threshold advantage", true);
+                    ((HarkonnenFaction)faction).setTriggeredHT(true);
+                }
                 turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " from " + faction.getHomeworld());
                 occupyingFaction.addSpice(faction.getOccupiedIncome());
             }
@@ -833,7 +848,14 @@ public class RunCommands {
             Faction faction = territory.getActiveFactions(game).get(0);
 
             int spice = faction.getSpiceCollectedFromTerritory(territory);
-
+            if (faction.getName().equals("Fremen") && faction.isHomeworldOccupied()) {
+                faction.getOccupier().addSpice(Math.floorDiv(spice, 2));
+                CommandManager.spiceMessage(discordGame, Math.floorDiv(spice, 2), faction.getOccupier().getSpice(), faction.getOccupier().getName(),
+                        "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).", true);
+                turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
+                        " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
+                spice = Math.ceilDiv(spice, 2);
+            }
             faction.addSpice(spice);
             CommandManager.spiceMessage(discordGame, spice, faction.getSpice(), faction.getName(),
                     "for Spice Blow", true);
@@ -852,11 +874,18 @@ public class RunCommands {
                 altSpiceProductionTriggered = true;
             turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && faction.getName().equals("Harkonnen") && faction.isHighThreshold() && !((HarkonnenFaction)faction).hasTriggeredHT()) {
+                faction.addSpice(2);
+                CommandManager.spiceMessage(discordGame, 2, faction.getSpice(), faction.getName(),
+                        "for High Threshold advantage", true);
+                ((HarkonnenFaction)faction).setTriggeredHT(true);
+            }
             if (orgizActive) {
                 turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +
                         " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
             }
         }
+        if (game.hasFaction("Harkonnen")) ((HarkonnenFaction)game.getFaction("Harkonnen")).setTriggeredHT(false);
 
         for (Territory territory : territories.values()) {
             if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0) continue;

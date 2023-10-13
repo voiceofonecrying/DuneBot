@@ -50,12 +50,12 @@ public class BGCommands {
 
     private static void adviseEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritory(discordGame.required(CommandOptions.territory).getAsString());
-        advise(discordGame, game, territory);
+        advise(discordGame, game, territory, 1);
     }
 
-    public static void advise(DiscordGame discordGame, Game game, Territory territory) throws ChannelNotFoundException, IOException {
+    public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException {
 
-        CommandManager.placeForceInTerritory(territory, game.getFaction("BG"), 1, false);
+        CommandManager.placeForceInTerritory(territory, game.getFaction("BG"), amount, false);
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));
