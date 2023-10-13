@@ -20,12 +20,13 @@ public class BGButtons implements Pressable {
         }
 
         if (event.getComponentId().startsWith("bg-advise-")) {
-            advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]));
-            discordGame.queueDeleteMessage();
+            advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]), 1);
         } else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-flip-")) bgFlip(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, game, discordGame);
-
+        else if (event.getComponentId().startsWith("bg-ht")) {
+            advise(discordGame, game, game.getTerritory("Polar Sink"), 2);
+        }
     }
 
     private static void bgFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {

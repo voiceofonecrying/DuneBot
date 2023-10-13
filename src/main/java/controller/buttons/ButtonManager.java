@@ -54,11 +54,11 @@ public class ButtonManager extends ListenerAdapter {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
             MoritaniButtons.press(event, game, discordGame);
-            event.getMessage().delete().complete();
             StormButtons.press(event, game, discordGame);
             ShipmentAndMovementButtons.press(event, game, discordGame);
             SpiceCollectionButtons.press(event, game, discordGame);
             RevivalButtons.press(event, game, discordGame);
+            FremenButtons.press(event, game, discordGame);
             EmperorButtons.press(event, game, discordGame);
             IxButtons.press(event, game, discordGame);
             BTButtons.press(event, game, discordGame);
@@ -79,6 +79,7 @@ public class ButtonManager extends ListenerAdapter {
                     ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
                 }
             }
+            event.getMessage().delete().complete();
             refreshChangedInfo(discordGame);
             discordGame.sendAllMessages();
         } catch (InvalidGameStateException e) {
