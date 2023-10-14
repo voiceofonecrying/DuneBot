@@ -37,7 +37,11 @@ public class ButtonManager extends ListenerAdapter {
     public static void deleteAllButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         for (Message message : messages) {
-            if (!message.getButtons().isEmpty()) message.delete().complete();
+            if (!message.getButtons().isEmpty()) {
+                try {
+                    message.delete().complete();
+                } catch (Exception ignore) {}
+            }
         }
     }
 
