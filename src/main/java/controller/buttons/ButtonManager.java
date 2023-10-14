@@ -79,9 +79,12 @@ public class ButtonManager extends ListenerAdapter {
                     ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
                 }
             }
-            event.getMessage().delete().complete();
+
             refreshChangedInfo(discordGame);
             discordGame.sendAllMessages();
+            try {
+                event.getMessage().delete().complete();
+            } catch (Exception ignored) {}
         } catch (InvalidGameStateException e) {
             event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
