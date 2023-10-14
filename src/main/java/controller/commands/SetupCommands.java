@@ -238,7 +238,9 @@ public class SetupCommands {
     }
 
     public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        TextChannel modInfo = discordGame.getTextChannel("mod-info");
+        // Temporary line to ensure all new games have separate turn summary threads per turn
+        game.addGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
+
         String factionName = discordGame.required(allFactions).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         Member player = discordGame.required(user).getAsMember();
