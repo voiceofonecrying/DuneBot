@@ -495,10 +495,21 @@ public class Game {
         return hasGameOption(GameOption.STRONGHOLD_SKILLS);
     }
 
+    public boolean drawTreacheryCard(String faction) {
+        boolean deckReplenished = false;
+        if (treacheryDeck.isEmpty()) {
+            deckReplenished = true;
+            treacheryDeck.addAll(treacheryDiscard);
+            treacheryDiscard.clear();
+        }
+        getFaction(faction).addTreacheryCard(getTreacheryDeck().pollLast());
+        return deckReplenished;
+    }
+
     public void drawCard(String deckName, String faction) {
         switch (deckName) {
             case "traitor deck" -> getFaction(faction).addTraitorCard(getTraitorDeck().pollLast());
-            case "treachery deck" -> getFaction(faction).addTreacheryCard(getTreacheryDeck().pollLast());
+            case "treachery deck" -> drawTreacheryCard(faction);
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
     }
