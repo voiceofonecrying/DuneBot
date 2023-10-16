@@ -685,6 +685,7 @@ public class RunCommands {
             faction.getMovement().clear();
             faction.getShipment().setShipped(false);
             faction.getMovement().setMoved(false);
+            faction.setAllySpiceShipment(0);
         }
         while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0)
             game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
