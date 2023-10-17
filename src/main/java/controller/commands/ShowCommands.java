@@ -64,7 +64,7 @@ public class ShowCommands {
     public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
         discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -971,7 +971,7 @@ public class ShowCommands {
                 discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
         }
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
             String mapFilename = "game-map.png";
             FileUpload newMap = drawGameBoard(game).setName(mapFilename);
             discordGame.queueMessage("front-of-shield", "", newMap);
@@ -1005,7 +1005,7 @@ public class ShowCommands {
                 frontOfShieldModified = true;
             }
 
-            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD) &&
+            if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD) &&
                     updateTypes.contains(UpdateType.MAP)) {
                 frontOfShieldModified = true;
             }
