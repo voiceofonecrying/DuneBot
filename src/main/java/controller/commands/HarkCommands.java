@@ -2,6 +2,8 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -149,7 +151,10 @@ public class HarkCommands {
         CommandManager.spiceMessage(discordGame, 2, harkonnenFaction.getSpice(),
                 "Harkonnen", "from the killed leader", true);
 
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
 
         discordGame.pushGame();
     }

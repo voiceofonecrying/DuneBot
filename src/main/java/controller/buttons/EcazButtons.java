@@ -4,6 +4,8 @@ import constants.Emojis;
 import controller.channels.FactionChat;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -115,7 +117,10 @@ public class EcazButtons implements Pressable {
         game.getFaction("Ecaz").setAlly(faction.getName());
         discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " and " + faction.getEmoji() + " have formed an alliance!");
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
 

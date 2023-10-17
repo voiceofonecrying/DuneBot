@@ -3,6 +3,8 @@ package controller.buttons;
 import constants.Emojis;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Game;
@@ -138,7 +140,10 @@ public class MoritaniButtons implements Pressable {
         moritani.getTerrorTokens().add(terror);
         game.getTerritory(event.getComponentId().split("-")[3]).getTerrorTokens().removeIf(t -> t.equals(terror));
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

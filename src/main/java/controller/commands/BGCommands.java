@@ -1,6 +1,8 @@
 package controller.commands;
 
 import constants.Emojis;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.DiscordGame;
 import model.Force;
@@ -61,7 +63,10 @@ public class BGCommands {
         territory.getForces().add(new Force("Advisor", fighters));
         discordGame.getTurnSummary().queueMessage(Emojis.BG + " advise to " + territory.getTerritoryName());
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     public static void flip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
@@ -86,6 +91,9 @@ public class BGCommands {
             return;
         }
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 }
