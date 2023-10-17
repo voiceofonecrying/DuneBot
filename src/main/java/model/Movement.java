@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.factions.Faction;
@@ -39,7 +40,9 @@ public class Movement {
             CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
         }
         clear();
-        ShowCommands.showBoard(discordGame, game);
+        if (!game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            ShowCommands.showBoard(discordGame, game);
+        }
     }
 
     public void clear() {

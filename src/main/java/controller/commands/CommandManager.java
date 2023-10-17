@@ -377,6 +377,9 @@ public class CommandManager extends ListenerAdapter {
             discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
             targetFaction.setHighThreshold(false);
         }
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     /**
@@ -489,6 +492,9 @@ public class CommandManager extends ListenerAdapter {
             } else {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, to, targetFaction);
             }
+        }
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
         }
     }
 
@@ -1146,7 +1152,9 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
         moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame, game);
-        ShowCommands.showBoard(discordGame, game);
+        if (!game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            ShowCommands.showBoard(discordGame, game);
+        }
         discordGame.pushGame();
     }
 
