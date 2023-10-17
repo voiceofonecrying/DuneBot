@@ -2,6 +2,8 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -135,7 +137,10 @@ public class IxCommands {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

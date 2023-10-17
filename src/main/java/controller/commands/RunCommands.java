@@ -267,6 +267,8 @@ public class RunCommands {
             if (!message.isEmpty()) {
                 turnSummary.queueMessage(message.toString());
             }
+            if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+                game.setUpdated(UpdateType.MAP);
             ShowCommands.showBoard(discordGame, game);
         }
 
@@ -650,7 +652,10 @@ public class RunCommands {
         if (factionsWithRevivals > 0 && game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     public static void flipToHighThresholdIfApplicable(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -902,7 +907,10 @@ public class RunCommands {
             TechToken.collectSpice(game, discordGame, "Spice Production");
         }
 
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
