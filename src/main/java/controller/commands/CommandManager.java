@@ -236,7 +236,7 @@ public class CommandManager extends ListenerAdapter {
         String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
         RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
             faction.setUpdated(UpdateType.MAP);
         }
     }
