@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -33,7 +32,6 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.faction;
 
@@ -894,6 +892,7 @@ public class ShowCommands {
 
         List<Message> messages = messageHistory.getRetrievedHistory();
 
+        messages.forEach(discordGame::queueDeleteMessage);
         for (Faction faction : game.getFactions()) {
             StringBuilder message = new StringBuilder();
             List<FileUpload> uploads = new ArrayList<>();
@@ -966,34 +965,16 @@ public class ShowCommands {
                 }
             }
 
-            Message foundMessage = messages.stream()
-                    .filter(m -> m.getContentRaw().contains(faction.getName() + " Info"))
-                    .findFirst()
-                    .orElse(null);
-
-            if (foundMessage != null) {
-                discordGame.queueMessage(foundMessage.editMessage(message).setFiles(uploads));
+            if (uploads.isEmpty()) {
+                discordGame.queueMessage("front-of-shield", message.toString());
             } else {
                 discordGame.queueMessage("front-of-shield", message.toString(), uploads);
             }
         }
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            List<Message> msgsWithAttachments = messages.stream()
-                    .filter(m -> !m.getAttachments().isEmpty())
-                    .collect(Collectors.toList());
             String mapFilename = "game-map.png";
-            Message mapMessage = msgsWithAttachments.stream()
-                    .filter(m -> m.getAttachments().get(0).getFileName().equals(mapFilename))
-                    .findFirst()
-                    .orElse(null);
-            List<FileUpload> uploads = new ArrayList<>();
             FileUpload newMap = drawGameBoard(game).setName(mapFilename);
-            uploads.add(newMap);
-            if (mapMessage != null) {
-                discordGame.queueMessage(mapMessage.editMessage(MessageEditData.fromFiles(uploads)));
-            } else {
-                discordGame.queueMessage("front-of-shield", "", newMap);
-            }
+            discordGame.queueMessage("front-of-shield", "", newMap);
         }
     }
 
