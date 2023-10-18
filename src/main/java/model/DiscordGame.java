@@ -558,7 +558,7 @@ public class DiscordGame {
     }
 
     public void queueMessageToLedger(String factionName, String message) throws ChannelNotFoundException {
-        queueMessage(factionName.toLowerCase() + "-info", "ledger", message);
+        getFactionLedger(factionName).queueMessage(message);
     }
 
     /**
