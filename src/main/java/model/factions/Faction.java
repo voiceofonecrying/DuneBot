@@ -203,6 +203,14 @@ public class Faction {
         setUpdated(UpdateType.TREACHERY_CARDS);
     }
 
+    /**
+     * Gets the most recently added treachery card from the Faction's hand.
+     * @return Treachery Card
+     */
+    public TreacheryCard getLastTreacheryCard() {
+        return treacheryHand.get(treacheryHand.size() - 1);
+    }
+
     public TreacheryCard removeTreacheryCard(String name) {
         return removeTreacheryCard(getTreacheryCard(name));
     }

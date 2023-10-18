@@ -178,16 +178,22 @@ public class CommandManager extends ListenerAdapter {
                     "{0} draws another card from the {1} deck.",
                     winner.getEmoji(), Emojis.TREACHERY
             ));
+
+            TreacheryCard addedCard = winner.getLastTreacheryCard();
+            discordGame.getHarkonnenLedger().queueMessage(
+                    "Received " + addedCard.name() + " as an extra card. (" + currentCard + ")"
+            );
+
         } else if (winner.getName().equals("Harkonnen") && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
-        discordGame.getModInfo().queueMessage("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
-        discordGame.getTurnSummary().queueMessage("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
-    } else if (winner.getName().equals("Harkonnen") && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
+            discordGame.getModInfo().queueMessage("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
+            discordGame.getTurnSummary().queueMessage("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
+        } else if (winner.getName().equals("Harkonnen") && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
             game.drawCard("treachery deck", winner.getOccupier().getName());
             turnSummary.queueMessage(MessageFormat.format(
                     "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
                     winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
             ));
-    }
+        }
 
         if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() - 1 && bidding.isRicheseCacheCardOutstanding()) {
             RicheseCommands.cacheCard(discordGame, game);
