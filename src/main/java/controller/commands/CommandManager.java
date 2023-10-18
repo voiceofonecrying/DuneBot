@@ -68,7 +68,7 @@ public class CommandManager extends ListenerAdapter {
         }
         Faction winner = game.getFaction(winnerName);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
-        if (winner.getSpice() < spentValue) {
+        if ((!winner.hasAlly() && winner.getSpice() < spentValue) || (winner.hasAlly() && winner.getSpice() + winner.getAllySpiceBidding() < spentValue)) {
             throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
         } else if (winnerHand.size() >= winner.getHandLimit()) {
             throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
@@ -79,21 +79,30 @@ public class CommandManager extends ListenerAdapter {
                 game.getTurn(),
                 bidding.getBidCardNumber()
         );
+        int allySupport = Math.min(winner.getAllySpiceBidding(), spentValue);
+
+        String allyString = winner.hasAlly() && winner.getAllySpiceBidding() > 0 ? "(" + allySupport + " from " + game.getFaction(winner.getAlly()).getEmoji() + ")" : "";
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage(
                 MessageFormat.format(
-                        "{0} wins {1} for {2} {3}",
+                        "{0} wins {1} for {2} {3} {4}",
                         winner.getEmoji(),
                         currentCard,
                         spentValue,
-                        Emojis.SPICE
+                        Emojis.SPICE,
+                        allyString
                 )
         );
 
         // Winner pays for the card
-        winner.subtractSpice(spentValue);
-        spiceMessage(discordGame, spentValue, winner.getSpice(), winner.getName(), currentCard, false);
+        winner.subtractSpice(spentValue - allySupport);
+        winner.setAllySpiceBidding(Math.max(winner.getAllySpiceBidding() - spentValue, 0));
+        spiceMessage(discordGame, spentValue - allySupport, winner.getSpice(), winner.getName(), currentCard, false);
+        if (winner.hasAlly()) {
+            game.getFaction(winner.getAlly()).subtractSpice(allySupport);
+            spiceMessage(discordGame, allySupport, game.getFaction(winner.getAlly()).getSpice(), winner.getAlly(), currentCard + " (ally support)", false);
+        }
 
         if (game.hasFaction(paidToFactionName)) {
             int spicePaid = spentValue;

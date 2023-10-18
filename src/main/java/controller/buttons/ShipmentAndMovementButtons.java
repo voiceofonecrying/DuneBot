@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -188,12 +189,18 @@ public class ShipmentAndMovementButtons implements Pressable {
                 buttonList.add(Button.primary("support-" + (i + 1), Integer.toString(i + 1)));
             }
             arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
+            return;
+        }  else if (event.getComponentId().equals("support-reset")) {
+            game.getFaction(faction.getAlly()).setAllySpiceShipment(0);
+            discordGame.queueMessage("Resetting shipping support.");
         } else {
             game.getFaction(faction.getAlly()).setAllySpiceShipment(Integer.parseInt(event.getComponentId().replace("support-", "")));
             discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
             discordGame.queueMessage("You have offered your ally " + event.getComponentId().replace("support-", "") + " " + Emojis.SPICE + " to ship with.");
             discordGame.pushGame();
         }
+        ButtonManager.deleteAllButtonsInChannel(event.getMessageChannel());
+        ShowCommands.sendInfoButtons(game, discordGame, faction);
     }
 
 
@@ -804,12 +811,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.getGuildChat().queueMessage("Special options for " + Emojis.GUILD + ":", guildButtons);
         }
 
-        if (faction.hasAlly()) {
-            List<Button> allyButtons = new LinkedList<>();
-            allyButtons.add(Button.primary("support-max", "Support ally (no limits)"));
-            allyButtons.add(Button.primary("support-number", "Support ally (specific amount)"));
-            discordGame.getFactionChat(faction.getAlly()).queueMessage("Use buttons below to support your ally's shipment", allyButtons);
-        }
         discordGame.queueDeleteMessage();
     }
 
@@ -834,7 +835,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         arrangeButtonsAndSend(message, movingFromButtons, discordGame);
     }
 
-    private static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {
+    static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {
         List<MessageCreateBuilder> messagesToQueue = new LinkedList<>();
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         messageCreateBuilder.setContent(message);
