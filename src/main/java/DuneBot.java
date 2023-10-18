@@ -1,5 +1,3 @@
-package controller;
-
 import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
 import controller.listeners.EventListener;

@@ -98,7 +98,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>controller.DuneBot</mainClass>
+                            <mainClass>DuneBot</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -123,7 +123,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>controller.DuneBot</mainClass>
+                                    <mainClass>DuneBot</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
