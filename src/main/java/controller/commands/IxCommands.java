@@ -94,7 +94,7 @@ public class IxCommands {
     public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(ixCard).getAsString();
         TreacheryCard newCard = game.getBidding().ixTechnology(game, cardName);
-        discordGame.queueMessage("ix-info", "ledger",
+        discordGame.getIxLedger().queueMessage(
                 MessageFormat.format("Received {0} and put {1} back as the next card for bid.",
                         newCard.name(), cardName)
         );
@@ -111,7 +111,7 @@ public class IxCommands {
         TreacheryCard cardToDiscard = bidding.getPreviousCard();
         TreacheryCard newCard = game.getBidding().ixAllyCardSwap(game);
         Faction ixAlly = game.getFaction(game.getFaction("Ix").getAlly());
-        discordGame.queueMessage(ixAlly.getName().toLowerCase() + "-info", "ledger",
+        discordGame.getFactionLedger(ixAlly).queueMessage(
                 MessageFormat.format("Received {0} from the {1} deck and discarded {2} with {3} ally power.",
                         newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
         );

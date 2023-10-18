@@ -66,7 +66,7 @@ public class SpiceCollectionButtons  implements Pressable{
                     if (faction.getTreacheryHand().size() > faction.getHandLimit()) {
                         discordGame.getFactionChat(faction.getName()).queueMessage("Your hand is over the limit. Please select a card to discard.");
                     }
-                    discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", card.name() + " found in " + territory.getTerritoryName());
+                    discordGame.getFactionLedger(faction).queueMessage(card.name() + " found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
@@ -81,7 +81,7 @@ public class SpiceCollectionButtons  implements Pressable{
                 }
                 case "Ornithopter" -> {
                     faction.setOrnithoperToken(true);
-                    discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "ledger", "Ornithopter found in " + territory.getTerritoryName());
+                    discordGame.getFactionLedger(faction).queueMessage("Ornithopter found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered an Ornithopter in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
