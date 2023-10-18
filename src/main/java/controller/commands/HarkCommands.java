@@ -75,10 +75,12 @@ public class HarkCommands {
             if (csvRecord.get(1).equals(returningLeader)) {
                 Faction faction = game.getFaction(csvRecord.get(0));
                 faction.addLeader(game.getFaction("Harkonnen").getLeader(returningLeader).orElseThrow());
+                discordGame.getFactionLedger(faction).queueMessage(returningLeader + " has been returned to you.");
                 break;
             }
         }
-        game.getFaction("Harkonnen").getLeaders().removeIf(l -> l.name().equals(returningLeader));
+        game.getFaction("Harkonnen").removeLeader(returningLeader);
+        discordGame.getHarkonnenLedger().queueMessage(returningLeader + " has returned to their original owner.");
         discordGame.getTurnSummary().queueMessage(returningLeader + " has returned to their original owner.");
         discordGame.pushGame();
     }
@@ -108,6 +110,11 @@ public class HarkCommands {
                     harkonnenFaction.getEmoji(), faction.getEmoji()
             ));
         }
+
+        discordGame.getHarkonnenLedger().queueMessage("You have captured " + leader.name());
+        discordGame.getFactionLedger(faction).queueMessage(
+                leader.name() + " has been captured by " + harkonnenFaction.getEmoji()
+        );
 
         discordGame.pushGame();
     }
@@ -148,6 +155,8 @@ public class HarkCommands {
         game.getLeaderTanks().add(killedLeader);
 
         discordGame.getFactionChat(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getFactionLedger(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.name());
         CommandManager.spiceMessage(discordGame, 2, harkonnenFaction.getSpice(),
                 "Harkonnen", "from the killed leader", true);
 

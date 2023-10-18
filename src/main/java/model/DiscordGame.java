@@ -6,6 +6,7 @@ import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import controller.channels.FactionChat;
+import controller.channels.FactionLedger;
 import controller.channels.ModInfo;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
@@ -214,6 +215,62 @@ public class DiscordGame {
 
     public FactionChat getRicheseChat() throws ChannelNotFoundException {
         return new FactionChat(this, "Richese");
+    }
+
+    public FactionLedger getFactionLedger(Faction faction) throws ChannelNotFoundException {
+        return getFactionLedger(faction.getName());
+    }
+
+    public FactionLedger getFactionLedger(String factionName) throws ChannelNotFoundException {
+        return new FactionLedger(this, factionName);
+    }
+
+    public FactionLedger getAtreidesLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Atreides");
+    }
+
+    public FactionLedger getBGLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "BG");
+    }
+
+    public FactionLedger getBTLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "BT");
+    }
+
+    public FactionLedger getCHOAMLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "CHOAM");
+    }
+
+    public FactionLedger getEcazLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Ecaz");
+    }
+
+    public FactionLedger getEmperorLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Emperor");
+    }
+
+    public FactionLedger getFremenLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Fremen");
+    }
+
+    public FactionLedger getGuildLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Guild");
+    }
+
+    public FactionLedger getHarkonnenLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Harkonnen");
+    }
+
+    public FactionLedger getIxLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Ix");
+    }
+
+    public FactionLedger getMoritaniLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Moritani");
+    }
+
+    public FactionLedger getRicheseLedger() throws ChannelNotFoundException {
+        return new FactionLedger(this, "Richese");
     }
 
     public GenericInteractionCreateEvent getEvent() {
