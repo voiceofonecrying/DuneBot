@@ -339,10 +339,23 @@ public class ShowCommands {
 
         discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "Faction Info", boardFileUpload);
 
+        sendInfoButtons(game, discordGame, faction);
+    }
+
+    public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
         discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("Use these buttons to take the corresponding actions.")
                 .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
 
-
+        if (faction.hasAlly()) {
+            if (game.getFaction(faction.getAlly()).getAllySpiceBidding() > faction.getSpice()) game.getFaction(faction.getAlly()).setAllySpiceBidding(faction.getSpice());
+            if (game.getFaction(faction.getAlly()).getAllySpiceShipment() > faction.getSpice()) game.getFaction(faction.getAlly()).setAllySpiceShipment(faction.getSpice());
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + " to your ally for shipping.\nSet ally shipping support:")
+                    .addActionRow(Button.primary("support-max", "Max support"),
+                            Button.secondary("support-number", "Pick a number"), Button.danger("support-reset", "Reset support")).build());
+            discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceBidding() + " " + Emojis.SPICE + " to your ally for bidding.\nSet ally bidding support:")
+                    .addActionRow(Button.primary("bid-support-max", "Max support"),
+                            Button.secondary("bid-support-number", "Pick a number"), Button.danger("bid-support-reset", "Reset support")).build());
+        }
     }
 
     private static FileUpload drawGameBoard(Game game) throws IOException {
@@ -882,8 +895,7 @@ public class ShowCommands {
 
         treacheryCardMessageBuilder.addContent(treacheryString.toString());
         discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("Use these buttons to take the corresponding actions.")
-                .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
+        sendInfoButtons(discordGame.getGame(), discordGame, faction);
     }
 
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
