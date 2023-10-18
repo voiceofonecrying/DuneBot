@@ -525,6 +525,9 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getTurnSummary().queueMessage("Duke Vidal has left to work for " + game.getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     @Override
@@ -600,11 +603,11 @@ public class CommandManager extends ListenerAdapter {
                 case "discard" -> discard(discordGame, game);
                 case "transfer-card" -> transferCard(discordGame, game);
                 case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
-                case "placeforces" -> placeForcesEventHandler(discordGame, game);
-                case "moveforces" -> moveForcesEventHandler(discordGame, game);
-                case "removeforces" -> removeForcesEventHandler(discordGame, game);
+                case "place-forces" -> placeForcesEventHandler(discordGame, game);
+                case "move-forces" -> moveForcesEventHandler(discordGame, game);
+                case "remove-forces" -> removeForcesEventHandler(discordGame, game);
                 case "display" -> displayGameState(discordGame, game);
-                case "reviveforces" -> revivalHandler(discordGame, game);
+                case "revive-forces" -> revivalHandler(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
                 case "kill-leader" -> killLeader(discordGame, game);
@@ -668,12 +671,12 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
-        commandData.add(Commands.slash("placeforces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
-        commandData.add(Commands.slash("moveforces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
-        commandData.add(Commands.slash("removeforces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
+        commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
+        commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
+        commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
-        commandData.add(Commands.slash("reviveforces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
+        commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
