@@ -344,11 +344,12 @@ public class CommandManager extends ListenerAdapter {
                     && !(game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("BG").isHighThreshold()
                     && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName()))) {
                 List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("bg-advise-" + targetTerritory.getTerritoryName(), "Advise"));
+                String territoryName = targetTerritory.getTerritoryName();
+                buttons.add(Button.primary("bg-advise-" + territoryName, "Advise"));
                 buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
                 buttons.add(Button.secondary("bg-ht", "Advise 2 to Polar Sink"));
-                buttons.add(Button.danger("bg-dont-advise-" + targetTerritory.getTerritoryName(), "No"));
-                discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territory.getName() + "?" + game.getFaction("BG").getPlayer(), buttons);
+                buttons.add(Button.danger("bg-dont-advise-" + territoryName, "No"));
+                discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "?" + game.getFaction("BG").getPlayer(), buttons);
             }
             turnSummary.queueMessage(message.toString());
 
