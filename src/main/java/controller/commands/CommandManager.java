@@ -202,21 +202,16 @@ public class CommandManager extends ListenerAdapter {
 
     public static void spiceMessage(DiscordGame discordGame, int amount, int newTotal, String faction, String message, boolean plus) throws ChannelNotFoundException {
         String plusSign = plus ? "+" : "-";
-        for (TextChannel channel : discordGame.getTextChannels()) {
-            if (channel.getName().equals(faction.toLowerCase() + "-info")) {
-                discordGame.queueMessage(channel.getName(),
-                        "ledger",
-                        MessageFormat.format(
-                                "{0}{1}{2} {3} = {4}{5}",
-                                plusSign,
-                                amount,
-                                Emojis.SPICE,
-                                message,
-                                newTotal,
-                                Emojis.SPICE
-                        ));
-            }
-        }
+        discordGame.getFactionLedger(faction).queueMessage(
+                MessageFormat.format(
+                        "{0}{1}{2} {3} = {4}{5}",
+                        plusSign,
+                        amount,
+                        Emojis.SPICE,
+                        message,
+                        newTotal,
+                        Emojis.SPICE
+                ));
     }
 
     public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
