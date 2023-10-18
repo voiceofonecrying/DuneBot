@@ -246,6 +246,7 @@ public class CommandManager extends ListenerAdapter {
         if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
             faction.setUpdated(UpdateType.MAP);
         }
+        discordGame.pushGame();
     }
 
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
@@ -1132,7 +1133,6 @@ public class CommandManager extends ListenerAdapter {
         boolean isPaid = discordGame.required(paid).getAsBoolean();
         int revivedValue = discordGame.required(revived).getAsInt();
         revival(star, targetFaction, isPaid, revivedValue, game, discordGame);
-        discordGame.pushGame();
     }
 
     /**
