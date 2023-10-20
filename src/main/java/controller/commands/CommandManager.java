@@ -14,6 +14,8 @@ import model.factions.Faction;
 import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -32,6 +34,7 @@ import templates.ChannelPermissions;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -540,12 +543,15 @@ public class CommandManager extends ListenerAdapter {
         List<Role> roles = member == null ? new ArrayList<>() : member.getRoles();
 
         try {
-            if (name.equals("newgame") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+            if (name.equals("new-game") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 newGame(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            } else if (name.equals("waitinglist")) {
+            } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
+            }  else if (name.equals("num-games")) {
+                    String result = playerGames(event);
+                    event.getHook().editOriginal(result).queue();
             } else {
                 String categoryName = DiscordGame.categoryFromEvent(event).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
@@ -613,7 +619,7 @@ public class CommandManager extends ListenerAdapter {
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
                 case "kill-leader" -> killLeader(discordGame, game);
                 case "revive-leader" -> reviveLeader(discordGame, game);
-                case "setstorm" -> setStorm(discordGame, game);
+                case "set-storm" -> setStorm(discordGame, game);
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
                 case "assign-tech-token" -> assignTechToken(discordGame, game);
@@ -666,7 +672,8 @@ public class CommandManager extends ListenerAdapter {
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("newgame", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
+        commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
+        commandData.add(Commands.slash("num-games", "Report on how many games players are in."));
         commandData.add(Commands.slash("draw-treachery-card", "Draw a card from the top of a deck.").addOptions(faction));
         commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
@@ -679,7 +686,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
-        commandData.add(Commands.slash("setstorm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
+        commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
@@ -723,7 +730,7 @@ public class CommandManager extends ListenerAdapter {
                 .collect(Collectors.toList());
 
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
-        commandDataWithPermissions.add(Commands.slash("waitinglist", "Add an entry to the waiting list")
+        commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
                 .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
 
         event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
@@ -838,6 +845,105 @@ public class CommandManager extends ListenerAdapter {
         discordGame.setGame(game);
         discordGame.pushGame();
         discordGame.sendAllMessages();
+    }
+
+    private class PlayerGame {
+        String player;
+        List<String> games;
+        int numGames;
+        boolean onWaitingList;
+    }
+
+    public String playerGames(SlashCommandInteractionEvent event) {
+        String message = "**Number of games players are in**\n";
+        HashMap<String, List<String>> playerGamesMap = new HashMap<>();
+        for (Category category : event.getGuild().getCategories()) {
+            String categoryName = category.getName();
+            if (categoryName.equalsIgnoreCase("staging area")) {
+                // get the waiting-list players
+                Optional<TextChannel> optChannel = category.getTextChannels().stream()
+                        .filter(c -> c.getName().equalsIgnoreCase("waiting-list"))
+                        .findFirst();
+                if (optChannel.isPresent()) {
+                    TextChannel waitingList = optChannel.get();
+                    MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
+                    List<Message> messages = messageHistory.getRetrievedHistory();
+                    for (Message m : messages) {
+                        int startChar = m.getContentRaw().indexOf("<@");
+                        if (startChar != -1) {
+                            int endChar = m.getContentRaw().substring(startChar).indexOf(">");
+                            if (endChar != -1) {
+                                List<String> games = new ArrayList<>();
+                                games.add("waiting-list");
+                                playerGamesMap.put(
+                                        m.getContentRaw().substring(startChar, startChar + endChar + 1),
+                                        games);
+                            }
+                        }
+                    }
+                }
+            } else {
+                try {
+                    DiscordGame discordGame = new DiscordGame(category, false);
+                    for (Faction faction : discordGame.getGame().getFactions()) {
+                        String player = faction.getPlayer();
+                        List<String> games = playerGamesMap.get(player);
+                        if (games == null) {
+                            games = new ArrayList<>();
+                            playerGamesMap.put(player, games);
+                        }
+                        games.add(categoryName);
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }
+        List<PlayerGame> sortablePlayerGames = new ArrayList<>();
+        for (Map.Entry<String, List<String>> entry : playerGamesMap.entrySet()) {
+            PlayerGame pg = new PlayerGame();
+            pg.player = entry.getKey();
+            pg.games = entry.getValue();
+            if (pg.games.get(0).equals("waiting-list")) {
+                pg.onWaitingList = true;
+                pg.games.remove(0);
+            }
+            pg.numGames = pg.games.size();
+            sortablePlayerGames.add(pg);
+        }
+        Collections.sort(sortablePlayerGames, new Comparator<>() {
+            @Override
+            public int compare(PlayerGame first, PlayerGame second) {
+                return (first.onWaitingList && !second.onWaitingList ? -1 : (!first.onWaitingList && second.onWaitingList ? 1:
+                        first.numGames > second.numGames ? 1 : (first.numGames < second.numGames) ? -1 : 0
+                ));
+            }
+        });
+        boolean notOnWaitingList = false;
+        if (sortablePlayerGames.get(0).onWaitingList) {
+            message += "On Waiting List:\n";
+        }
+        for (PlayerGame playerGame : sortablePlayerGames) {
+            if (!notOnWaitingList && !playerGame.onWaitingList) {
+                notOnWaitingList = true;
+                message += "Not on waiting list:\n";
+            }
+            message += "  " + playerGame.numGames + " - " + playerGame.player;
+            if (playerGame.numGames != 0) message += " (";
+            String comma = "";
+            for (String categoryName : playerGame.games) {
+                String printName = categoryName.substring(0, Math.min(5, categoryName.length()));
+                if (categoryName.startsWith("Discord ")) {
+                    try {
+                        printName = "D" +  new Scanner(categoryName).useDelimiter("\\D+").nextInt();
+                    } catch (Exception e) {}
+                }
+                message += comma + printName;
+                comma = ", ";
+            }
+            if (playerGame.numGames != 0) message += ")";
+            message += "\n";
+        }
+        return message;
     }
 
     /**

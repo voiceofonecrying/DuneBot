@@ -77,6 +77,11 @@ public class DiscordGame {
         this.gameCategory = category;
     }
 
+    public DiscordGame(Category category, boolean isNew) throws ChannelNotFoundException, IOException {
+        this.gameCategory = category;
+        if (!isNew) this.game = getGame();
+    }
+
     public static Category categoryFromEvent(@NotNull GenericInteractionCreateEvent event) {
         Channel channel = Objects.requireNonNull(event.getChannel());
         TextChannel textChannel = null;
