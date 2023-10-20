@@ -702,7 +702,7 @@ public class CommandManager extends ListenerAdapter {
             quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
             List<String> matched = new LinkedList<>();
 
-            for (int i = 0; i < quotes.size()/lines; i+=lines) {
+            for (int i = 0; i < quotes.size() - lines; i+=lines) {
                 StringBuilder candidate = new StringBuilder();
                 for (int j = 0; j < lines; j++) {
                     candidate.append(quotes.get(i + j));
