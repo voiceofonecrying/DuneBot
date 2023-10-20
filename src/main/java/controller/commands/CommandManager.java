@@ -716,7 +716,7 @@ public class CommandManager extends ListenerAdapter {
             Random random = new Random();
             int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() - 1 : random.nextInt(matched.size() - 1);
 
-            event.getMessageChannel().sendMessage(matched.get(start) + "\n (Match " + (start + 1) + " of " + matched.size() + ")").queue();
+            event.getMessageChannel().sendMessage(matched.get(start) + "\n (Match " + (start + 1) + " of " + matched.size() + " for search term: '" + search + "')").queue();
         }
     }
 
