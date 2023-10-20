@@ -638,17 +638,35 @@ public class DiscordGame {
     }
 
     /**
-     * Creates a thread in the parent channel with the given name and adds the given users to it.
+     * Creates a private thread in the parent channel with the given name and adds the given users to it.
      *
      * @param parentChannel The parent channel
      * @param threadName    The name of the thread to create
      * @param userIds       The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
-    public void createThread(TextChannel parentChannel, String threadName, List<String> userIds) {
+    public void createPrivateThread(TextChannel parentChannel, String threadName, List<String> userIds) {
         ThreadChannel threadChannel = parentChannel.createThreadChannel(threadName, true)
                 .setInvitable(false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
                 .complete();
+        addUsersToThread(threadChannel, userIds);
+    }
+
+    /**
+     * Creates a public thread in the parent channel with the given name and adds the given users to it.
+     *
+     * @param parentChannel The parent channel
+     * @param threadName    The name of the thread to create
+     * @param userIds       The ids of the users to add to the thread.  All non-numeric characters will be removed.
+     */
+    public void createPublicThread(TextChannel parentChannel, String threadName, List<String> userIds) {
+        ThreadChannel threadChannel = parentChannel.createThreadChannel(threadName, false)
+                .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
+                .complete();
+
+        try {
+            parentChannel.deleteMessageById(parentChannel.getLatestMessageId()).complete();
+        } catch (Exception ignore) {}
         addUsersToThread(threadChannel, userIds);
     }
 

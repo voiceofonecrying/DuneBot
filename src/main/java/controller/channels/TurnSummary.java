@@ -31,7 +31,7 @@ public class TurnSummary extends DiscordChannel {
                     userIds.add(faction.getPlayer());
                 }
                 userIds.add(game.getMod());
-                discordGame.createThread(frontOfShield, turnNumSummaryName, userIds);
+                discordGame.createPublicThread(frontOfShield, turnNumSummaryName, userIds);
                 optThread = frontOfShield.getThreadChannels().stream()
                         .filter(channel -> channel.getName().equals(turnNumSummaryName))
                         .findFirst();

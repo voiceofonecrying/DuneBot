@@ -291,9 +291,9 @@ public class SetupCommands {
                         ChannelPermissions.readWriteDeny
                 )
                 .complete();
-        discordGame.createThread(channel, "notes", List.of(playerName));
-        discordGame.createThread(channel, "chat", List.of(playerName, game.getMod()));
-        discordGame.createThread(channel, "ledger", List.of(playerName));
+        discordGame.createPrivateThread(channel, "notes", List.of(playerName));
+        discordGame.createPrivateThread(channel, "chat", List.of(playerName, game.getMod()));
+        discordGame.createPrivateThread(channel, "ledger", List.of(playerName));
         discordGame.getTurnSummary().addUser(playerName);
         discordGame.getTurnSummary().addUser(game.getMod());
     }
