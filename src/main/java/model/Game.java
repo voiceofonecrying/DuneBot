@@ -57,6 +57,8 @@ public class Game {
     private int storm;
     private int stormMovement;
     private boolean onHold;
+
+    private HashMap<Integer, List<String>> quotes;
     @Exclude
     private Set<UpdateType> updateTypes;
 
@@ -96,6 +98,7 @@ public class Game {
         this.storm = 18;
         this.stormMovement = 0;
         this.onHold = false;
+        this.quotes = new HashMap<>();
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
@@ -113,6 +116,12 @@ public class Game {
         csvParser = getCSVFile("NexusCards.csv");
         for (CSVRecord csvRecord : csvParser) {
             nexusDeck.add(new NexusCard(csvRecord.get(0)));
+        }
+
+        csvParser = getCSVFile("quotes.csv");
+        for (CSVRecord csvRecord : csvParser) {
+            quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), k -> new LinkedList<>());
+            quotes.get(Integer.valueOf(csvRecord.get(0))).add(csvRecord.get(1));
         }
 
         smugglerTokens.add("Orgiz Processing Station");
@@ -562,5 +571,17 @@ public class Game {
 
     public List<String> getSmugglerTokens() {
         return smugglerTokens;
+    }
+
+    public HashMap<Integer, List<String>> getQuotes() throws IOException {
+        if (quotes == null) {
+            this.quotes = new HashMap<>();
+            CSVParser csvParser = getCSVFile("quotes.csv");
+            for (CSVRecord csvRecord : csvParser) {
+                quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), k -> new LinkedList<>());
+                quotes.get(Integer.valueOf(csvRecord.get(0))).add(csvRecord.get(1));
+            }
+        }
+        return quotes;
     }
 }

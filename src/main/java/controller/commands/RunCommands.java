@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -23,6 +24,8 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static controller.Initializers.getCSVFile;
 
 public class RunCommands {
     public static List<CommandData> getCommands() {
@@ -56,6 +59,7 @@ public class RunCommands {
         }
         int phase = game.getPhase();
         int subPhase = game.getSubPhase();
+        sendQuote(discordGame, game, phase);
 
         if (phase == 1 && subPhase == 1) {
             startStormPhase(discordGame, game);
@@ -104,6 +108,12 @@ public class RunCommands {
         }
 
         discordGame.pushGame();
+    }
+
+    private static void sendQuote(DiscordGame discordGame, Game game, int phase) throws IOException, ChannelNotFoundException {
+        if (game.getSubPhase() != 1) return;
+        Collections.shuffle(game.getQuotes().get(phase));
+        discordGame.getTurnSummary().queueMessage(game.getQuotes().get(phase).remove(0));
     }
 
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
