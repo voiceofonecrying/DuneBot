@@ -664,26 +664,26 @@ public class CommandManager extends ListenerAdapter {
             InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
             List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
             Random random = new Random();
-            int start = random.nextInt(quotes.size() - lines + 1);
+            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
             StringBuilder quote = new StringBuilder();
 
             for (int i = 0; i < lines; i++) {
                 quote.append(quotes.get(start + i));
             }
-            event.getMessageChannel().sendMessage(quote.toString()).queue();
+            event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
 
         } else {
             InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
 
             List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
             Random random = new Random();
-            int start = random.nextInt(quotes.size() - lines + 1);
+            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
             StringBuilder quote = new StringBuilder();
 
             for (int i = 0; i < lines; i++) {
                 quote.append(quotes.get(start + i));
             }
-            event.getMessageChannel().sendMessage(quote.toString()).queue();
+            event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
         }
     }
 
@@ -745,7 +745,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book));
+        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());

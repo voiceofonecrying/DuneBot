@@ -31,6 +31,7 @@ public class CommandOptions {
             .addChoice("Chapterhouse: Dune", "Chapterhouse.txt");
 
     public static final OptionData lines = new OptionData(OptionType.INTEGER, "lines", "How many lines long the quotation will be.", true);
+    public static final OptionData startingLine = new OptionData(OptionType.INTEGER, "starting-line", "Where you want the quote to start (not random).");
 
     public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
     public static final OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
