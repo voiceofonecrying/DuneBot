@@ -660,30 +660,63 @@ public class CommandManager extends ListenerAdapter {
 
     private void randomDuneQuote(SlashCommandInteractionEvent event) throws IOException {
         int lines = event.getOption("lines").getAsInt();
-        if (event.getOption("book") == null) {
-            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
-            List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
-            Random random = new Random();
-            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
-            StringBuilder quote = new StringBuilder();
+        if (event.getOption("search") == null) {
+            if (event.getOption("book") == null) {
+                InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
+                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+                Random random = new Random();
+                int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
+                StringBuilder quote = new StringBuilder();
 
-            for (int i = 0; i < lines; i++) {
-                quote.append(quotes.get(start + i));
+                for (int i = 0; i < lines; i++) {
+                    quote.append(quotes.get(start + i));
+                }
+                event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
+
+            } else {
+                InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
+
+                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+                Random random = new Random();
+                int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
+                StringBuilder quote = new StringBuilder();
+
+                for (int i = 0; i < lines; i++) {
+                    quote.append(quotes.get(start + i));
+                }
+                event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
             }
-            event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
-
         } else {
-            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
+            String search = event.getOption("search").getAsString();
+            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
+            List<String> quotes = new ArrayList<>(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Messiah.txt");
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Children.txt");
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/GeoD.txt");
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Heretics.txt");
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Chapterhouse.txt");
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            List<String> matched = new LinkedList<>();
 
-            List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
-            Random random = new Random();
-            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
-            StringBuilder quote = new StringBuilder();
-
-            for (int i = 0; i < lines; i++) {
-                quote.append(quotes.get(start + i));
+            for (int i = 0; i < quotes.size()/lines; i+=lines) {
+                StringBuilder candidate = new StringBuilder();
+                for (int j = 0; j < lines; j++) {
+                    candidate.append(quotes.get(i + j));
+                }
+                if (candidate.toString().contains(search)) matched.add(candidate.toString());
             }
-            event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
+            if (matched.isEmpty()) {
+                event.getHook().sendMessage("No results.").queue();
+                return;
+            }
+            Random random = new Random();
+            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() - 1 : random.nextInt(matched.size() - 1);
+
+            event.getMessageChannel().sendMessage(matched.get(start) + "\n (Match " + (start + 1) + " of " + matched.size() + ")").queue();
         }
     }
 
@@ -745,7 +778,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine));
+        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
