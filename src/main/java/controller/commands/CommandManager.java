@@ -32,7 +32,11 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -552,6 +556,8 @@ public class CommandManager extends ListenerAdapter {
             }  else if (name.equals("num-games")) {
                     String result = playerGames(event);
                     event.getHook().editOriginal(result).queue();
+            } else if (name.equals("random-dune-quote")) {
+                randomDuneQuote(event);
             } else {
                 String categoryName = DiscordGame.categoryFromEvent(event).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
@@ -652,6 +658,35 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
+    private void randomDuneQuote(SlashCommandInteractionEvent event) throws IOException {
+        int lines = event.getOption("lines").getAsInt();
+        if (event.getOption("book") == null) {
+            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
+            List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+            Random random = new Random();
+            int start = random.nextInt(quotes.size() - lines + 1);
+            StringBuilder quote = new StringBuilder();
+
+            for (int i = 0; i < lines; i++) {
+                quote.append(quotes.get(start + i));
+            }
+            event.getMessageChannel().sendMessage(quote.toString()).queue();
+
+        } else {
+            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
+
+            List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+            Random random = new Random();
+            int start = random.nextInt(quotes.size() - lines + 1);
+            StringBuilder quote = new StringBuilder();
+
+            for (int i = 0; i < lines; i++) {
+                quote.append(quotes.get(start + i));
+            }
+            event.getMessageChannel().sendMessage(quote.toString()).queue();
+        }
+    }
+
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         CompletableFuture.runAsync(() -> runCommandAutoCompleteInteraction(event));
@@ -710,6 +745,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
+        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
