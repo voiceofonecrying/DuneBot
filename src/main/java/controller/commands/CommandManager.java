@@ -946,6 +946,7 @@ public class CommandManager extends ListenerAdapter {
             List<Message> messages = messageHistory.getRetrievedHistory();
             for (Message m : messages) {
                 int startChar = m.getContentRaw().indexOf("User:");
+                if (startChar == -1) continue;
                 for (String player : findPlayerTags(m.getContentRaw().substring(startChar))) {
                     List<String> games = playerGamesMap.get(player);
                     if (games == null) {
