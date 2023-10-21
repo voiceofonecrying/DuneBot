@@ -201,6 +201,8 @@ public class CommandOptions {
     public static final OptionData buttonName =
             new OptionData(OptionType.STRING, "button-name", "Name for the button", false);
 
+    public static final OptionData months = new OptionData(OptionType.INTEGER, "months", "List players from games that finished within this many months (default = 1)");
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
