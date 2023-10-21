@@ -922,7 +922,7 @@ public class CommandManager extends ListenerAdapter {
         boolean recentlyFinished;
     }
 
-    private List<String> findPlayerTags(String message) {
+    public static List<String> findPlayerTags(String message) {
         List<String> players = new ArrayList<>();
         int startChar = message.indexOf("<@");
         while (startChar != -1) {

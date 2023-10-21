@@ -10,6 +10,8 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -63,7 +65,7 @@ public class SetupCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
-            case "faction" -> addFaction(discordGame, game);
+            case "faction" -> addFaction(event, discordGame, game);
             case "show-game-options" -> showGameOptions(discordGame, game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
@@ -237,7 +239,7 @@ public class SetupCommands {
         return stepStatus;
     }
 
-    public static void addFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         // Temporary line to ensure all new games have separate turn summary threads per turn
         game.addGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
 
@@ -296,6 +298,18 @@ public class SetupCommands {
         discordGame.createPrivateThread(channel, "ledger", List.of(playerName));
         discordGame.getTurnSummary().addUser(playerName);
         discordGame.getTurnSummary().addUser(game.getMod());
+
+        TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).get(0);
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
+        List<Message> messagesToDelete = new ArrayList<>();
+        for (Message m : messageHistory.getRetrievedHistory()) {
+            for (String playerNameInWL : CommandManager.findPlayerTags(m.getContentRaw())) {
+                if (playerNameInWL.equalsIgnoreCase(playerName)) {
+                    messagesToDelete.add(m);
+                }
+            }
+        }
+        messagesToDelete.forEach(discordGame::queueDeleteMessage);
     }
 
     public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
