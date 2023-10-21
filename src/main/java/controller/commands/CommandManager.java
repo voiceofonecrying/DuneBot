@@ -552,7 +552,7 @@ public class CommandManager extends ListenerAdapter {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
             }  else if (name.equals("num-games-per-player")) {
-                    String result = playerGames(event);
+                    String result = numGamesPerPlayer(event);
                     event.getHook().editOriginal(result).queue();
             } else if (name.equals("random-dune-quote")) {
                 randomDuneQuote(event);
@@ -948,11 +948,9 @@ public class CommandManager extends ListenerAdapter {
                 int startChar = m.getContentRaw().indexOf("User:");
                 if (startChar == -1) continue;
                 for (String player : findPlayerTags(m.getContentRaw().substring(startChar))) {
-                    List<String> games = playerGamesMap.get(player);
-                    if (games == null) {
-                        games = new ArrayList<>();
+                    List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
+                    if (games.isEmpty()) {
                         games.add("waiting-list");
-                        playerGamesMap.put(player, games);
                     }
                 }
             }
@@ -973,11 +971,9 @@ public class CommandManager extends ListenerAdapter {
             List<Message> messages = messageHistory.getRetrievedHistory();
             for (Message m : messages) {
                 for (String player : findPlayerTags(m.getContentRaw())) {
-                    List<String> games = playerGamesMap.get(player);
-                    if (games == null) {
-                        games = new ArrayList<>();
+                    List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
+                    if (games.isEmpty()) {
                         games.add("recently-finished");
-                        playerGamesMap.put(player, games);
                     }
                 }
             }
@@ -993,47 +989,51 @@ public class CommandManager extends ListenerAdapter {
                 games.add(categoryName);
             }
         } catch (Exception e) {
+            // category is not a Dune game
         }
     }
 
     private String playerMessage(PlayerGame playerGame) {
-        String message = "    " + playerGame.numGames + " - " + playerGame.player;
-        if (playerGame.numGames != 0) message += " (";
+        StringBuilder message = new StringBuilder("    " + playerGame.numGames + " - " + playerGame.player);
+        if (playerGame.numGames != 0) message.append(" (");
         String comma = "";
         for (String categoryName : playerGame.games) {
             String printName = categoryName.substring(0, Math.min(5, categoryName.length()));
             if (categoryName.startsWith("Discord ")) {
                 try {
                     printName = "D" +  new Scanner(categoryName).useDelimiter("\\D+").nextInt();
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                    // category does not follow Discord N pattern
+                }
             }
-            message += comma + printName;
+            message.append(comma).append(printName);
             comma = ", ";
         }
-        if (playerGame.numGames != 0) message += ")";
-        message += "\n";
-        return message;
+        if (playerGame.numGames != 0) message.append(")");
+        message.append("\n");
+        return message.toString();
     }
 
     private String playerGamesMessage(List<PlayerGame> playerGames, String header) {
-        String message = "";
+        StringBuilder message = new StringBuilder();
         if (!playerGames.isEmpty()) {
             Comparator<PlayerGame> numGamesComparator = Comparator.comparingInt(playerGame -> playerGame.numGames);
             playerGames.sort(numGamesComparator);
-            message += header;
+            message.append(header);
             for (PlayerGame playerGame : playerGames) {
-                message += playerMessage(playerGame);
+                message.append(playerMessage(playerGame));
             }
         }
-        return message;
+        return message.toString();
     }
 
-    public String playerGames(SlashCommandInteractionEvent event) {
+    private String numGamesPerPlayer(SlashCommandInteractionEvent event) {
         String message = "**Number of games players are in**\n";
         HashMap<String, List<String>> playerGamesMap = new HashMap<>();
         OptionMapping optionMapping = event.getOption(months.getName());
         int monthsAgo = (optionMapping != null ? optionMapping.getAsInt() : 1);
-        for (Category category : event.getGuild().getCategories()) {
+        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        for (Category category : categories) {
             String categoryName = category.getName();
             if (categoryName.equalsIgnoreCase("staging area")) {
                 addWaitingListPlayers(playerGamesMap, category);
