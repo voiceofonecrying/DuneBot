@@ -131,7 +131,7 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -162,7 +162,7 @@ public class EcazFaction extends Faction {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }

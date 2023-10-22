@@ -45,7 +45,7 @@ public class Shipment {
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
         } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
-        if (!game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             ShowCommands.showBoard(discordGame, game);
         }
         clear();
