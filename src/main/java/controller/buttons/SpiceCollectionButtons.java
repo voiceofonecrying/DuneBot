@@ -2,6 +2,8 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.commands.CommandManager;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import model.DiscordGame;
@@ -89,6 +91,10 @@ public class SpiceCollectionButtons  implements Pressable{
             }
             discordGame.pushGame();
             discordGame.queueDeleteMessage();
+
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     private static void addDiscoveryTokenTerritory(Game game, Territory territory, Territory token) {

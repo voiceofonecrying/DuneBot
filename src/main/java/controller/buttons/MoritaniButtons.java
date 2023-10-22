@@ -99,7 +99,7 @@ public class MoritaniButtons implements Pressable {
         MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
         String terror = event.getComponentId().split("-")[3];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
-        moritaniFaction.placeTerrorToken(territory, terror);
+        moritaniFaction.placeTerrorToken(game, territory, terror);
         discordGame.getTurnSummary().queueMessage("A " + Emojis.MORITANI + " terror token has been placed in " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueMessage("The " + terror + " token has been sent to " + territory.getTerritoryName());

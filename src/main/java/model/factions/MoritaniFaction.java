@@ -4,6 +4,8 @@ import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -102,6 +104,9 @@ public class MoritaniFaction extends Faction {
         for (Territory territory : game.getTerritories().values()) {
             territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     public void sendTerrorTokenMessage(DiscordGame discordGame, String territory) throws ChannelNotFoundException {
@@ -112,9 +117,12 @@ public class MoritaniFaction extends Faction {
         discordGame.getMoritaniChat().queueMessage("Which terror token would you like to place?", buttons);
     }
 
-    public void placeTerrorToken(Territory territory, String terror) {
+    public void placeTerrorToken(Game game, Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     public void getDukeVidal() {

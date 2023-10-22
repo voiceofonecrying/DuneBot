@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import controller.commands.CommandManager;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -130,6 +131,9 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     public void sendAmbassadorLocationMessage(Game game, DiscordGame discordGame, int cost) throws ChannelNotFoundException {
@@ -154,10 +158,13 @@ public class EcazFaction extends Faction {
         discordGame.getEcazChat().queueMessage("Which ambassador would you like to send?", buttons);
     }
 
-    public void placeAmbassador(Territory territory, String ambassador) {
+    public void placeAmbassador(Game game, Territory territory, String ambassador) {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+            game.setUpdated(UpdateType.MAP);
+        }
     }
 
     public Leader getLoyalLeader() {
