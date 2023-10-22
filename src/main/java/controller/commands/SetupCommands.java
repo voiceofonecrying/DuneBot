@@ -309,7 +309,13 @@ public class SetupCommands {
                 }
             }
         }
-        messagesToDelete.forEach(discordGame::queueDeleteMessage);
+        for (Message mtd : messagesToDelete) {
+            try {
+                discordGame.queueDeleteMessage(mtd);
+            } catch (Exception e) {
+                // Message was already deleted
+            }
+        }
     }
 
     public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -499,7 +505,7 @@ public class SetupCommands {
         try {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
             ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
-            for (Faction faction : game.getFactions())
+            for (Faction ignored : game.getFactions())
                 game.drawCard("treachery deck", ixFaction.getName());
             if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
                 game.drawCard("treachery deck", ixFaction.getName());
@@ -520,9 +526,9 @@ public class SetupCommands {
             }
         }
         try {
-            Faction harkonnenFaction = game.getFaction("Harkonnen");
             game.drawCard("treachery deck", "Harkonnen");
         } catch (IllegalArgumentException e) {
+            // Harkonnen is not in the game
         }
 
         return StepStatus.CONTINUE;
