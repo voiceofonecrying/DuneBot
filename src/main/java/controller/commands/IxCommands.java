@@ -137,7 +137,7 @@ public class IxCommands {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
         discordGame.pushGame();
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);

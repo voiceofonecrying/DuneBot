@@ -278,7 +278,7 @@ public class RunCommands {
             if (!message.isEmpty()) {
                 turnSummary.queueMessage(message.toString());
             }
-            if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
                 game.setUpdated(UpdateType.MAP);
             ShowCommands.showBoard(discordGame, game);
         }
@@ -660,10 +660,10 @@ public class RunCommands {
             ecaz.sendAmbassadorLocationMessage(game, discordGame, 1);
         }
 
-        if (factionsWithRevivals > 0 && game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (factionsWithRevivals > 0 && game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);
@@ -918,7 +918,7 @@ public class RunCommands {
             TechToken.collectSpice(game, discordGame, "Spice Production");
         }
 
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);

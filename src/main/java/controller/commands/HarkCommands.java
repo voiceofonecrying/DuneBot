@@ -160,7 +160,7 @@ public class HarkCommands {
         CommandManager.spiceMessage(discordGame, 2, harkonnenFaction.getSpice(),
                 "Harkonnen", "from the killed leader", true);
 
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);

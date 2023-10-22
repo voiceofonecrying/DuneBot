@@ -40,7 +40,7 @@ public class Movement {
             CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
         }
         clear();
-        if (!game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             ShowCommands.showBoard(discordGame, game);
         }
     }

@@ -104,7 +104,7 @@ public class MoritaniFaction extends Faction {
         for (Territory territory : game.getTerritories().values()) {
             territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -120,7 +120,7 @@ public class MoritaniFaction extends Faction {
     public void placeTerrorToken(Game game, Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }

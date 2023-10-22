@@ -248,7 +248,7 @@ public class CommandManager extends ListenerAdapter {
         String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
         RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             faction.setUpdated(UpdateType.MAP);
         }
         discordGame.pushGame();
@@ -388,7 +388,7 @@ public class CommandManager extends ListenerAdapter {
             discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
             targetFaction.setHighThreshold(false);
         }
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -504,7 +504,7 @@ public class CommandManager extends ListenerAdapter {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, to, targetFaction);
             }
         }
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -531,7 +531,7 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getTurnSummary().queueMessage("Duke Vidal has left to work for " + game.getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
     }
@@ -1251,7 +1251,7 @@ public class CommandManager extends ListenerAdapter {
 
         discordGame.pushGame();
         discordGame.getTurnSummary().queueMessage(message.toString());
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);
@@ -1394,7 +1394,7 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
         moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame, game);
-        if (!game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             ShowCommands.showBoard(discordGame, game);
         discordGame.pushGame();
     }
@@ -1458,7 +1458,7 @@ public class CommandManager extends ListenerAdapter {
         }
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
     }
 
@@ -1475,7 +1475,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getTurnSummary().queueMessage(
                 discordGame.required(token).getAsString() + " has been transferred to " +
                         game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);
@@ -1563,7 +1563,10 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
-        ShowCommands.showBoard(discordGame, game);
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
     }
 
     public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -1586,7 +1589,7 @@ public class CommandManager extends ListenerAdapter {
                 factionOne.getPlayer(), factionTwo.getPlayer()
         ));
 
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }
@@ -1603,7 +1606,7 @@ public class CommandManager extends ListenerAdapter {
             game.getFaction(faction.getAlly()).removeAlly();
         }
         faction.removeAlly();
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
     }
 
@@ -1612,7 +1615,7 @@ public class CommandManager extends ListenerAdapter {
         int amountValue = discordGame.required(amount).getAsInt();
 
         game.getTerritories().get(territoryName).setSpice(amountValue);
-        if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }
@@ -1630,7 +1633,7 @@ public class CommandManager extends ListenerAdapter {
         } else {
             String message = game.breakShieldWall(factionWithAtomics);
             discordGame.getTurnSummary().queueMessage(message);
-            if (game.hasGameOption(GameOption.NOT_READY_MAP_IN_FRONT_OF_SHIELD))
+            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
                 game.setUpdated(UpdateType.MAP);
             discordGame.pushGame();
         }
