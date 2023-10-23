@@ -4,7 +4,7 @@ import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Bidding;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

@@ -5,7 +5,7 @@ import controller.commands.RicheseCommands;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 

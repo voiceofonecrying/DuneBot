@@ -3,7 +3,7 @@ package controller.buttons;
 import controller.commands.IxCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;

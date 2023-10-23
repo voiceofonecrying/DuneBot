@@ -6,7 +6,7 @@ import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.Territory;
 import model.TreacheryCard;

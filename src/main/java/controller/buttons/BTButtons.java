@@ -3,7 +3,7 @@ package controller.buttons;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.BTFaction;
 import model.factions.Faction;

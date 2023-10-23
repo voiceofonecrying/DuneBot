@@ -1,6 +1,6 @@
 package controller.buttons;
 
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 

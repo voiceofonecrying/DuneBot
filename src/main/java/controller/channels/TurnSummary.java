@@ -2,7 +2,7 @@ package controller.channels;
 
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;

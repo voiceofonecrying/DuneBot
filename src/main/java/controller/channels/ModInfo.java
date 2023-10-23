@@ -1,7 +1,7 @@
 package controller.channels;
 
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 
 public class ModInfo extends DiscordChannel {
     public ModInfo(DiscordGame discordGame) throws ChannelNotFoundException {

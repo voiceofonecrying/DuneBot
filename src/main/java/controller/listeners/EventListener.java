@@ -2,7 +2,7 @@ package controller.listeners;
 
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Guild;

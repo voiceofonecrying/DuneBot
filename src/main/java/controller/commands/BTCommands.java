@@ -1,7 +1,7 @@
 package controller.commands;
 
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.TraitorCard;
 import model.factions.Faction;

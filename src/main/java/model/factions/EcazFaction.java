@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import controller.DiscordGame;
 import controller.commands.CommandManager;
 import enums.GameOption;
 import enums.UpdateType;

@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import controller.DiscordGame;
 import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;

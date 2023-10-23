@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.DiscordGame;
 import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;

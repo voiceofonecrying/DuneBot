@@ -3,7 +3,7 @@ package controller.buttons;
 import constants.Emojis;
 import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.Territory;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;

@@ -4,7 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Force;
 import model.Game;
 import model.Territory;

@@ -3,7 +3,7 @@ package controller.buttons;
 import constants.Emojis;
 import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.TreacheryCard;
 import model.factions.Faction;

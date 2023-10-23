@@ -1,5 +1,6 @@
 package controller.commands;
 
+import controller.DiscordGame;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
