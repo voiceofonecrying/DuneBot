@@ -2,7 +2,7 @@ package controller.buttons;
 
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 

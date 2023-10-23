@@ -1,7 +1,7 @@
 package controller.channels;
 
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 

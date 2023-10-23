@@ -2,7 +2,7 @@ package controller.commands;
 
 import enums.ChoamInflationType;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import model.factions.ChoamFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

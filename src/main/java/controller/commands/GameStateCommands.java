@@ -3,7 +3,7 @@ package controller.commands;
 import caches.GameCache;
 import controller.channels.DiscordChannel;
 import exceptions.ChannelNotFoundException;
-import model.DiscordGame;
+import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;

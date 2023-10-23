@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import controller.DiscordGame;
 import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
 import controller.commands.ShowCommands;

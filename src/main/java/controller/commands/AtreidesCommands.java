@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;

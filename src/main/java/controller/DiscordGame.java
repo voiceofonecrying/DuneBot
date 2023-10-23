@@ -1,4 +1,4 @@
-package model;
+package controller;
 
 import caches.GameCache;
 import com.google.gson.ExclusionStrategy;
@@ -12,6 +12,9 @@ import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
+import model.Force;
+import model.Game;
+import model.Territory;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;

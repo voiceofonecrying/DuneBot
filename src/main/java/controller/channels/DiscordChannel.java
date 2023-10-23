@@ -1,6 +1,6 @@
 package controller.channels;
 
-import model.DiscordGame;
+import controller.DiscordGame;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
