@@ -493,7 +493,7 @@ public class CommandManager extends ListenerAdapter {
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
             buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-            turnSummary.queueMessage(message.toString());
+            turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
         }
 
         if (!to.getTerrorTokens().isEmpty() && !targetFaction.getName().equals("Moritani")
