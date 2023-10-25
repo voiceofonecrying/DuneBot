@@ -2,6 +2,8 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import controller.commands.CommandManager;
+import controller.commands.RicheseCommands;
 import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
@@ -10,8 +12,10 @@ import exceptions.InvalidOptionException;
 import controller.DiscordGame;
 import model.Game;
 import model.Movement;
+import model.Shipment;
 import model.Territory;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -131,13 +135,42 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     }
 
+    public static void executeFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidOptionException, IOException {
+        Movement movement = faction.getMovement();
+        String movingFrom = movement.getMovingFrom();
+        String movingTo = movement.getMovingTo();
+        boolean movingNoField = movement.isMovingNoField();
+        int force = movement.getForce();
+        int specialForce = movement.getSpecialForce();
+        int secondForce = movement.getSecondForce();
+        int secondSpecialForce = movement.getSecondSpecialForce();
+        String secondMovingFrom = movement.getSecondMovingFrom();
+        Territory from = game.getTerritory(movingFrom);
+        Territory to = game.getTerritory(movingTo);
+        if (movingNoField) {
+            to.setRicheseNoField(from.getRicheseNoField());
+            from.setRicheseNoField(null);
+            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
+        }
+        if (force != 0 || specialForce != 0)
+            CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
+        if (secondForce != 0 || secondSpecialForce != 0) {
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
+            CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
+        }
+        movement.clear();
+        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            ShowCommands.showBoard(discordGame, game);
+        }
+    }
+
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
         else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
         String hajrOrOrnithopter = hajr ? "Hajr" : "Ornithopter";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");
-        faction.getMovement().execute(discordGame, game, faction);
+        executeFactionMovement(discordGame, game, faction);
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
         faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -300,8 +333,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        Movement movement = faction.getMovement();
-        movement.execute(discordGame, game, faction);
+        executeFactionMovement(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
         if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild")) {
             game.getTurnOrder().addFirst("Guild");
@@ -357,6 +389,41 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
+    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException, IOException {
+        Shipment shipment = faction.getShipment();
+        String territoryName = shipment.getTerritoryName();
+        int noField = shipment.getNoField();
+        int force = shipment.getForce();
+        int specialForce = shipment.getSpecialForce();
+        String crossShipFrom = shipment.getCrossShipFrom();
+        Territory territory = game.getTerritory(territoryName);
+        if (noField >= 0) {
+            RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
+            territory.setRicheseNoField(noField);
+            int spice = territory.isStronghold() ? 1 : 2;
+            faction.subtractSpice(spice);
+            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " ship a no-field to " + territoryName);
+            if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
+                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);
+            }
+        }
+        if (shipment.isToReserves()) {
+            CommandManager.removeForces(territoryName, faction, force, specialForce, false, game, discordGame);
+            int spice = Math.ceilDiv(force, 2);
+            faction.subtractSpice(spice);
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+        } else if (!crossShipFrom.isEmpty()) {
+            CommandManager.removeForces(crossShipFrom, faction, force, 0, false, game, discordGame);
+            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
+        } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
+        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            ShowCommands.showBoard(discordGame, game);
+        }
+        shipment.clear();
+        discordGame.pushGame();
+    }
+
     private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
@@ -369,7 +436,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.queueMessage("You cannot afford this shipment.");
             return;
         }
-        faction.getShipment().execute(discordGame, game, faction, karama);
+        executeFactionShipment(discordGame, game, faction, karama);
         discordGame.queueMessage("Shipment complete.");
         deleteAllButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
