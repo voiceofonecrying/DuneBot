@@ -1,8 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import controller.commands.CommandManager;
-import enums.GameOption;
 import model.Force;
 import model.Game;
 import model.Territory;
