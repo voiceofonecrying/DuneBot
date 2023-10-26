@@ -297,6 +297,9 @@ public class DiscordGame {
 
             if (GameCache.hasGameJson(gameName)) {
                 this.game = gameJsonToGame(GameCache.getGameJson(gameName));
+                for (Faction f : game.getFactions()) {
+                    f.setLedger(getFactionLedger(f));
+                }
                 return this.game;
             }
 

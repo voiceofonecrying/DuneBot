@@ -207,17 +207,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public static void spiceMessage(DiscordGame discordGame, int amount, int newTotal, String faction, String message, boolean plus) throws ChannelNotFoundException {
-        String plusSign = plus ? "+" : "-";
-        discordGame.getFactionLedger(faction).queueMessage(
-                MessageFormat.format(
-                        "{0}{1}{2} {3} = {4}{5}",
-                        plusSign,
-                        amount,
-                        Emojis.SPICE,
-                        message,
-                        newTotal,
-                        Emojis.SPICE
-                ));
+        discordGame.getGame().getFaction(faction).spiceMessage(amount, newTotal, message, plus);
     }
 
     public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -1310,16 +1300,11 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void transferCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction giver = game.getFaction(discordGame.required(faction).getAsString());
-        Faction receiver = game.getFaction(discordGame.required(recipient).getAsString());
-        String cardName = discordGame.required(card).getAsString();
-
-        receiver.addTreacheryCard(
-                giver.removeTreacheryCard(cardName)
+        game.transferCard(
+                discordGame.required(faction).getAsString(),
+                discordGame.required(recipient).getAsString(),
+                discordGame.required(card).getAsString()
         );
-        discordGame.getFactionLedger(receiver).queueMessage("Received " + cardName + " from " + giver.getEmoji());
-        discordGame.getFactionLedger(giver).queueMessage("Sent " + cardName + " to " + receiver.getEmoji());
-
         discordGame.pushGame();
     }
 

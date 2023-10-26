@@ -372,31 +372,8 @@ public class SetupCommands {
         String factionName = discordGame.required(faction).getAsString();
         String traitorName = discordGame.required(traitor).getAsString();
         Faction faction = game.getFaction(factionName);
-        TraitorCard traitor = faction
-                .getTraitorHand().stream().filter(
-                        traitorCard -> traitorCard.name().toLowerCase()
-                                .contains(traitorName.toLowerCase())
-                ).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
-        for (TraitorCard card : faction.getTraitorHand()) {
-            if (card.equals(traitor)) continue;
-            game.getTraitorDeck().add(card);
-            discordGame.queueMessage(faction.getName().toLowerCase() + "-info",
-                    "ledger",
-                    card.name() + " was sent back to the Traitor Deck.");
-        }
-        faction.getTraitorHand().clear();
-        faction.addTraitorCard(traitor);
-
-        Collections.shuffle(game.getTraitorDeck());
-
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-info",
-                "ledger",
-                MessageFormat.format(
-                        "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
-                        traitor.name()
-                ));
-
+        faction.setLedger(discordGame.getFactionLedger(faction));
+        faction.selectTraitor(traitorName);
         discordGame.pushGame();
     }
 
