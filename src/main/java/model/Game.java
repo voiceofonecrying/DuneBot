@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
+import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.Faction;
@@ -583,5 +584,15 @@ public class Game {
             }
         }
         return quotes;
+    }
+
+    public void transferCard(String giverName, String receiverName, String cardName) {
+        Faction giver = getFaction(giverName);
+        Faction receiver = getFaction(receiverName);
+        receiver.addTreacheryCard(
+                giver.removeTreacheryCard(cardName)
+        );
+        receiver.getLedger().publish("Received " + cardName + " from " + giver.getEmoji());
+        giver.getLedger().publish("Sent " + cardName + " to " + receiver.getEmoji());
     }
 }

@@ -1,6 +1,7 @@
 package controller.channels;
 
 import controller.DiscordGame;
+import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -8,7 +9,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.util.List;
 
-public class DiscordChannel {
+public class DiscordChannel implements DuneTopic {
     DiscordGame discordGame;
     MessageChannel messageChannel;
 
@@ -19,6 +20,11 @@ public class DiscordChannel {
     public DiscordChannel(DiscordGame discordGame, MessageChannel messageChannel) {
         this.discordGame = discordGame;
         this.messageChannel = messageChannel;
+    }
+
+    @Override
+    public void publish(String message) {
+        queueMessage(message);
     }
 
     public void queueMessage(String message) {

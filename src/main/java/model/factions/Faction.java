@@ -1,9 +1,11 @@
 package model.factions;
 
+import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import helpers.Exclude;
 import model.*;
+import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -11,6 +13,7 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.MessageFormat;
 import java.util.*;
 
 public class Faction {
@@ -58,6 +61,8 @@ public class Faction {
     private Boolean ornithoperToken;
     @Exclude
     private Game game;
+    @Exclude
+    private DuneTopic ledger;
 
     public Faction(String name, String player, String userName, Game game) throws IOException {
         this.handLimit = 4;
@@ -623,5 +628,48 @@ public class Faction {
         return null;
     }
 
+    public void setLedger(DuneTopic ledger) {
+        this.ledger = ledger;
+    }
 
+    public DuneTopic getLedger() {
+        return ledger;
+    }
+
+    public void spiceMessage(int amount, int newTotal, String message, boolean plus) {
+        String plusSign = plus ? "+" : "-";
+        ledger.publish(
+                MessageFormat.format(
+                        "{0}{1}{2} {3} = {4}{5}",
+                        plusSign,
+                        amount,
+                        Emojis.SPICE,
+                        message,
+                        newTotal,
+                        Emojis.SPICE
+                ));
+    }
+
+    public void selectTraitor(String traitorName) {
+        TraitorCard traitor = traitorHand.stream().filter(
+                        traitorCard -> traitorCard.name().toLowerCase()
+                                .contains(traitorName.toLowerCase())
+                ).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
+        for (TraitorCard card : traitorHand) {
+            if (card.equals(traitor)) continue;
+            game.getTraitorDeck().add(card);
+            ledger.publish(card.name() + " was sent back to the Traitor Deck.");
+        }
+        traitorHand.clear();
+        addTraitorCard(traitor);
+
+        Collections.shuffle(game.getTraitorDeck());
+
+        ledger.publish(
+                MessageFormat.format(
+                        "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
+                        traitor.name()
+                ));
+    }
 }
