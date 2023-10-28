@@ -340,7 +340,7 @@ public class RunCommands {
                                 " in CHOAM Charity."
                 );
                 if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
-                    TechToken.addSpice(game, discordGame, "Spice Production");
+                    TechToken.addSpice(game, "Spice Production");
                 faction.spiceMessage(charity, "CHOAM Charity", true);
             }
         }
@@ -356,7 +356,7 @@ public class RunCommands {
             choamFaction.spiceMessage(choamGiven, "CHOAM Charity given", false);
         }
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
-            TechToken.collectSpice(game, discordGame, "Spice Production");
+            TechToken.collectSpice(game, "Spice Production");
     }
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -650,7 +650,7 @@ public class RunCommands {
             turnSummary.queueMessage(message.toString());
         }
         if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS))
-            TechToken.addSpice(game, discordGame, "Axlotl Tanks");
+            TechToken.addSpice(game, "Axlotl Tanks");
 
         if (game.hasFaction("Ecaz")) {
             EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
@@ -688,7 +688,7 @@ public class RunCommands {
 
     public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
 
-        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Axlotl Tanks");
+        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, "Axlotl Tanks");
 
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Shipment and Movement Phase:");
         game.getTurnOrder().clear();
@@ -733,7 +733,7 @@ public class RunCommands {
     }
 
     public static void startBattlePhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, discordGame, "Heighliners");
+        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, "Heighliners");
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Battle Phase:");
 
@@ -903,8 +903,8 @@ public class RunCommands {
         }
 
         if (altSpiceProductionTriggered) {
-            TechToken.addSpice(game, discordGame, "Spice Production");
-            TechToken.collectSpice(game, discordGame, "Spice Production");
+            TechToken.addSpice(game, "Spice Production");
+            TechToken.collectSpice(game, "Spice Production");
         }
 
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))

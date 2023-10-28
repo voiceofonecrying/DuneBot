@@ -423,6 +423,7 @@ public class SetupCommands {
 
     public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Collections.shuffle(game.getFactions());
+        game.setTurnSummary(discordGame.getTurnSummary());
         discordGame.getTurnSummary().queueMessage("__**Game Setup**__");
 
         ShowCommands.showBoard(discordGame, game);
