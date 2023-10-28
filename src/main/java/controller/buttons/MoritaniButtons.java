@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
@@ -48,7 +47,7 @@ public class MoritaniButtons implements Pressable {
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
 
         moritani.addSpice(4);
-        CommandManager.spiceMessage(discordGame, 4, moritani.getSpice(), "Moritani", "terror token returned to supply", true);
+        moritani.spiceMessage(4, "terror token returned to supply", true);
 
         moritani.getTerrorTokens().add(terror);
         territory.getTerrorTokens().removeIf(t -> t.equals(terror));
