@@ -10,6 +10,7 @@ import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
+import model.topics.DuneTopic;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -61,6 +62,8 @@ public class Game {
     private HashMap<Integer, List<String>> quotes;
     @Exclude
     private Set<UpdateType> updateTypes;
+    @Exclude
+    private DuneTopic turnSummary;
 
     public Game() throws IOException {
         super();
@@ -595,5 +598,13 @@ public class Game {
         );
         receiver.getLedger().publish("Received " + cardName + " from " + giver.getEmoji());
         giver.getLedger().publish("Sent " + cardName + " to " + receiver.getEmoji());
+    }
+
+    public DuneTopic getTurnSummary() {
+        return turnSummary;
+    }
+
+    public void setTurnSummary(DuneTopic turnSummary) {
+        this.turnSummary = turnSummary;
     }
 }

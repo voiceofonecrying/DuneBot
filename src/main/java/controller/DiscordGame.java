@@ -300,6 +300,7 @@ public class DiscordGame {
                 for (Faction f : game.getFactions()) {
                     f.setLedger(getFactionLedger(f));
                 }
+                game.setTurnSummary(getTurnSummary());
                 return this.game;
             }
 
