@@ -6,7 +6,6 @@ import com.google.gson.JsonParser;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
-import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.Faction;
@@ -159,6 +158,7 @@ public class Game {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");
             if (!faction.getTreacheryCardCache().isEmpty()) bidding.setRicheseCacheCardOutstanding(true);
         } catch (IllegalArgumentException e) {
+            // Richese not in the game
         }
     }
 
@@ -437,7 +437,7 @@ public class Game {
         phase++;
         subPhase = 1;
 
-        if (turn >= 1 && phase >= 10) {
+        if (turn >= 1 && phase > 10) {
             advanceTurn();
         }
     }
@@ -456,6 +456,7 @@ public class Game {
                 faction.getTreacheryCard("Family Atomics ");
                 return faction;
             } catch (IllegalArgumentException e) {
+                // faction does not hold Family Atomics
             }
         }
 
