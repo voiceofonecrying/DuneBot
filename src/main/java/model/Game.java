@@ -305,7 +305,7 @@ public class Game {
 
     private Optional<Faction> findFaction(String name) {
         return factions.stream()
-                .filter(f -> f.getName().equals(name))
+                .filter(f -> f.getName().equalsIgnoreCase(name))
                 .findFirst();
     }
 
