@@ -636,7 +636,7 @@ public class Faction {
         return ledger;
     }
 
-    public void spiceMessage(int amount, int newTotal, String message, boolean plus) {
+    public void spiceMessage(int amount, String message, boolean plus) {
         String plusSign = plus ? "+" : "-";
         ledger.publish(
                 MessageFormat.format(
@@ -645,7 +645,7 @@ public class Faction {
                         amount,
                         Emojis.SPICE,
                         message,
-                        newTotal,
+                        spice,
                         Emojis.SPICE
                 ));
     }

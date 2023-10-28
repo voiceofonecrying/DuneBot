@@ -157,8 +157,7 @@ public class HarkCommands {
         discordGame.getFactionChat(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         discordGame.getFactionLedger(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.name());
-        CommandManager.spiceMessage(discordGame, 2, harkonnenFaction.getSpice(),
-                "Harkonnen", "from the killed leader", true);
+        harkonnenFaction.spiceMessage(2, "from the killed leader", true);
 
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);

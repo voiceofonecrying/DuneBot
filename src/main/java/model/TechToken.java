@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import model.factions.Faction;
 
@@ -34,8 +33,7 @@ public class TechToken {
                 if (tt.getName().equals(techToken) && tt.spice > 0) {
                     faction.addSpice(tt.spice);
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
-                    CommandManager.spiceMessage(discordGame, tt.spice, faction.getSpice(), faction.getName(),
-                            "for " + Emojis.getTechTokenEmoji(techToken), true);
+                    faction.spiceMessage(tt.spice, "for " + Emojis.getTechTokenEmoji(techToken), true);
                     tt.spice = 0;
                     break;
                 }

@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import controller.commands.CommandManager;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -98,8 +97,7 @@ public class EcazFaction extends Faction {
                     discordGame.getModInfo().queueMessage("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
                 addSpice(5);
-                CommandManager.spiceMessage(discordGame, 5, getSpice(), "ecaz",
-                        Emojis.EMPEROR + " ambassador token", true);
+                spiceMessage(5, Emojis.EMPEROR + " ambassador token", true);
             }
             case "Fremen" ->
                     discordGame.getModInfo().queueMessage("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");

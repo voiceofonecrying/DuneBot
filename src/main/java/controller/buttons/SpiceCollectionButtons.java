@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.CommandManager;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -76,7 +75,7 @@ public class SpiceCollectionButtons  implements Pressable{
                 }
                 case "Spice Stash" -> {
                     faction.addSpice(7);
-                    CommandManager.spiceMessage(discordGame, 7, faction.getSpice() + 7, faction.getName(), Emojis.SPICE + " stash discovery token", true);
+                    faction.spiceMessage(7, Emojis.SPICE + " stash discovery token", true);
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.SPICE + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);

@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
@@ -34,7 +33,7 @@ public class EmperorButtons implements Pressable {
         game.getTreacheryDiscard().add(emperor.removeTreacheryCard(cardName));
         discordGame.queueMessageToLedger("Emperor", cardName + " discarded");
         emperor.subtractSpice(2);
-        CommandManager.spiceMessage(discordGame, 2, emperor.getSpice(), emperor.getName(), " paid to discard", false);
+        emperor.spiceMessage(2, " paid to discard", false);
         discordGame.queueDeleteMessage();
 
         List<Button> buttons = new LinkedList<>();
