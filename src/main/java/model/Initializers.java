@@ -1,4 +1,4 @@
-package controller;
+package model;
 
 import controller.buttons.ButtonManager;
 import org.apache.commons.csv.CSVFormat;

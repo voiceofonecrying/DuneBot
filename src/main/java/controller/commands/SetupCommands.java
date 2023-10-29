@@ -31,8 +31,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static controller.Initializers.getCSVFile;
 import static controller.commands.CommandOptions.*;
+import static model.Initializers.getCSVFile;
 
 public class SetupCommands {
     public static List<CommandData> getCommands() {

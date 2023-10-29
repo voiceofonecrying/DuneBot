@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import controller.Initializers;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
