@@ -1,6 +1,5 @@
-package controller;
+package model;
 
-import controller.buttons.ButtonManager;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
@@ -24,7 +23,7 @@ public class Initializers {
     }
 
     public static String getJSONString(String name) throws IOException {
-        InputStream inputStream = ButtonManager.class.getClassLoader().getResourceAsStream(name);
+        InputStream inputStream = Game.class.getClassLoader().getResourceAsStream(name);
         int size = inputStream.available();
         byte[] buffer = new byte[size];
         inputStream.read(buffer);

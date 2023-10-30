@@ -18,8 +18,8 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.util.*;
 
-import static controller.Initializers.getCSVFile;
-import static controller.Initializers.getJSONString;
+import static model.Initializers.getCSVFile;
+import static model.Initializers.getJSONString;
 
 public class Game {
     private String gameRole;
