@@ -21,7 +21,8 @@ public class TurnSummary extends DiscordChannel {
         Optional<ThreadChannel> optThread;
         thread = true;
         String turnNumSummaryName = "turn-" + game.getTurn() + "-summary";
-        if (game.hasGameOption(GameOption.SUMMARY_THREAD_PER_TURN)) {
+        if (true) {
+//        if (game.hasGameOption(GameOption.SUMMARY_THREAD_PER_TURN)) {
             optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(turnNumSummaryName)).findFirst();
             if (optThread.isPresent()) {
                 this.messageChannel = optThread.get();
