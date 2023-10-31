@@ -297,10 +297,14 @@ public class DiscordGame {
 
             if (GameCache.hasGameJson(gameName)) {
                 this.game = gameJsonToGame(GameCache.getGameJson(gameName));
-                for (Faction f : game.getFactions()) {
-                    f.setLedger(getFactionLedger(f));
+                try {
+                    for (Faction f : game.getFactions()) {
+                        f.setLedger(getFactionLedger(f));
+                    }
+                    game.setTurnSummary(getTurnSummary());
+                } catch (Exception e) {
+                    // Quick fix for new games
                 }
-                game.setTurnSummary(getTurnSummary());
                 return this.game;
             }
 
