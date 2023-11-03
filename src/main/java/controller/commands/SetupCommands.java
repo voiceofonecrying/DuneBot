@@ -241,9 +241,6 @@ public class SetupCommands {
     }
 
     public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        // Temporary line to ensure all new games have separate turn summary threads per turn
-        game.addGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
-
         String factionName = discordGame.required(allFactions).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         Member player = discordGame.required(user).getAsMember();
@@ -378,9 +375,6 @@ public class SetupCommands {
     }
 
     public static StepStatus createDecks(Game game) throws IOException {
-        // Temporary line to ensure all new games have separate turn summary threads per turn
-        game.addGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
-
         if (game.hasGameOption(GameOption.SANDTROUT)) {
             game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0, null, null));
         }
