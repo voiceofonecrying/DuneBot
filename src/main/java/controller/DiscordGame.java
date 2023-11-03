@@ -166,6 +166,10 @@ public class DiscordGame {
     }
 
     public TurnSummary getTurnSummary() throws ChannelNotFoundException {
+        return getTurnSummary(this.game);
+    }
+
+    public TurnSummary getTurnSummary(Game game) throws ChannelNotFoundException {
         return new TurnSummary(this, game);
     }
 
@@ -297,14 +301,7 @@ public class DiscordGame {
 
             if (GameCache.hasGameJson(gameName)) {
                 this.game = gameJsonToGame(GameCache.getGameJson(gameName));
-                try {
-                    for (Faction f : game.getFactions()) {
-                        f.setLedger(getFactionLedger(f));
-                    }
-                    game.setTurnSummary(getTurnSummary());
-                } catch (Exception e) {
-                    // Quick fix for new games
-                }
+
                 return this.game;
             }
 
@@ -366,7 +363,7 @@ public class DiscordGame {
      *
      * @return Game object representing the game state.
      */
-    public Game getGame(Message message) {
+    public Game getGame(Message message) throws ChannelNotFoundException {
         String gameJson = getGameJson(message);
         return gameJsonToGame(gameJson);
     }
@@ -385,11 +382,17 @@ public class DiscordGame {
         }
     }
 
-    public Game gameJsonToGame(String gameJson) {
+    public Game gameJsonToGame(String gameJson) throws ChannelNotFoundException {
         Gson gson = createGsonDeserializer();
-        Game returnGame = gson.fromJson(gameJson, Game.class);
-        addGameReferenceToFactions(returnGame);
-        return returnGame;
+        Game game = gson.fromJson(gameJson, Game.class);
+        addGameReferenceToFactions(game);
+
+        for (Faction f : game.getFactions()) {
+            f.setLedger(getFactionLedger(f));
+        }
+
+        game.setTurnSummary(getTurnSummary(game));
+        return game;
     }
 
     public void pushGame(Game game) throws ChannelNotFoundException {
