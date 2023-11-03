@@ -1415,37 +1415,9 @@ public class CommandManager extends ListenerAdapter {
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         int stormDialOne = discordGame.required(dialOne).getAsInt();
         int stormDialTwo = discordGame.required(dialTwo).getAsInt();
-        game.advanceStorm(stormDialOne + stormDialTwo);
-        discordGame.getTurnSummary().queueMessage("The storm has been initialized to sector " + game.getStorm() + " (" + stormDialOne + " + " + stormDialTwo + ")");
-        if (game.hasTechTokens()) {
-            List<TechToken> techTokens = new LinkedList<>();
-            if (game.hasFaction("BT")) {
-                game.getFaction("BT").getTechTokens().add(new TechToken("Axlotl Tanks"));
-            } else techTokens.add(new TechToken("Axlotl Tanks"));
-            if (game.hasFaction("Ix")) {
-                game.getFaction("Ix").getTechTokens().add(new TechToken("Heighliners"));
-            } else techTokens.add(new TechToken("Heighliners"));
-            if (game.hasFaction("Fremen")) {
-                game.getFaction("Fremen").getTechTokens().add(new TechToken("Spice Production"));
-            } else techTokens.add(new TechToken("Spice Production"));
-            if (!techTokens.isEmpty()) {
-                Collections.shuffle(techTokens);
-                for (int i = 0; i < techTokens.size(); i++) {
-                    int firstFactionIndex = (Math.ceilDiv(game.getStorm(), 3) + i) % 6;
-                    for (int j = 0; j < 6; j++) {
-                        Faction faction = game.getFactions().get((firstFactionIndex + j) % 6);
-                        if (faction.getTechTokens().isEmpty()) {
-                            faction.getTechTokens().add(techTokens.get(i));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        game.setInitialStorm(stormDialOne, stormDialTwo);
         discordGame.pushGame();
         ShowCommands.showBoard(discordGame, game);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
     }
 
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
