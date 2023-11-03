@@ -585,7 +585,7 @@ public class RunCommands {
                         && game.getForceFromTanks(faction.getName() + "*").getStrength() == 0) continue;
                 revived++;
                 if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0 && !revivedStar) {
-                    if (faction.getName().equals("Emperor") && !((EmperorFaction)faction).isSecundusHighThreshold()) {
+                    if (faction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && !((EmperorFaction)faction).isSecundusHighThreshold()) {
                         revived--;
                         i++;
                         revivedStar = true;
