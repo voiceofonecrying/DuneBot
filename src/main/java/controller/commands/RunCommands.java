@@ -51,6 +51,7 @@ public class RunCommands {
     }
 
     public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        game.removeGameOption(GameOption.SUMMARY_THREAD_PER_TURN);
         if (game.getTurn() == 0) {
             discordGame.getModInfo().queueMessage("Please complete setup first.");
             return;
