@@ -44,21 +44,12 @@ class GameTest {
         }
 
         @Test
-        void atreidesHoldsAtomics() {
-            Faction atreides = null;
-            try {
-                atreides = new AtreidesFaction("fakePlayer", "userName", game);
-            } catch (IOException e) {
-                fail();
-            }
+        void atreidesHoldsAtomics() throws IOException, NullPointerException {
+            Faction atreides = new AtreidesFaction("fakePlayer", "userName", game);
             game.addFaction(atreides);
             for (TreacheryCard card : game.getTreacheryDeck()) {
                 if (card.name().trim().equals("Family Atomics")) {
-                    try {
-                        atreides.addTreacheryCard(card);
-                    } catch (NullPointerException e) {
-                        fail();
-                    }
+                    atreides.addTreacheryCard(card);
                     break;
                 }
             }
@@ -73,12 +64,8 @@ class GameTest {
         TreacheryCard atomics = null;
 
         @BeforeEach
-        void setUpAddSpice() {
-            try {
-                atreides = new AtreidesFaction("fakePlayer", "userName", game);
-            } catch (IOException e) {
-                fail();
-            }
+        void setUpAddSpice() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer", "userName", game);
             game.addFaction(atreides);
             for (TreacheryCard card : game.getTreacheryDeck()) {
                 if (card.name().trim().equals("Family Atomics")) {
@@ -145,19 +132,15 @@ class GameTest {
         TurnSummaryTopic turnSummary;
 
         @BeforeEach
-        void setUp() {
-            try {
-                atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-                bg = new BGFaction("fakePlayer2", "userName2", game);
-                emperor = new EmperorFaction("fp3", "un3", game);
-                fremen = new FremenFaction("fp4", "un4", game);
-                guild = new GuildFaction("fp5", "un5", game);
-                harkonnen = new HarkonnenFaction("fp6", "un6", game);
-                bt = new BTFaction("fp7", "un7", game);
-                ix = new IxFaction("fp8", "un8", game);
-            } catch (IOException e) {
-                fail();
-            }
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            bt = new BTFaction("fp7", "un7", game);
+            ix = new IxFaction("fp8", "un8", game);
             turnSummary = new TurnSummaryTopic();
             game.setTurnSummary(turnSummary);
             game.addGameOption(GameOption.TECH_TOKENS);
