@@ -315,66 +315,66 @@ class GameTest {
         void dot1IsFirst() {
             List<Faction> expected = Arrays.asList(atreides, bg, emperor, fremen, guild, harkonnen);
             game.setStorm(16);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(17);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(18);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
         @Test
         void dot2IsFirst() {
             List<Faction> expected = Arrays.asList(bg, emperor, fremen, guild, harkonnen, atreides);
             game.setStorm(1);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(2);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(3);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
         @Test
         void dot3IsFirst() {
             List<Faction> expected = Arrays.asList(emperor, fremen, guild, harkonnen, atreides, bg);
             game.setStorm(5);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(5);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(5);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
         @Test
         void dot4IsFirst() {
             List<Faction> expected = Arrays.asList(fremen, guild, harkonnen, atreides, bg, emperor);
             game.setStorm(7);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(8);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(9);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
         @Test
         void dot5IsFirst() {
             List<Faction> expected = Arrays.asList(guild, harkonnen, atreides, bg, emperor, fremen);
             game.setStorm(10);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(11);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(12);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
         @Test
         void dot6IsFirst() {
             List<Faction> expected = Arrays.asList(harkonnen, atreides, bg, emperor, fremen, guild);
             game.setStorm(13);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(14);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(15);
-            assertArrayEquals(expected.toArray(), game.getStormOrderFactions().toArray());
+            assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
     }
 }

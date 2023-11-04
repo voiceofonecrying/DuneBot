@@ -605,7 +605,7 @@ public class Game {
         this.turnSummary = turnSummary;
     }
 
-    public List<Faction> getStormOrderFactions() {
+    public List<Faction> getFactionsInStormOrder() {
         int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
         List<Faction> stormOrderFactions = new ArrayList<>();
         stormOrderFactions.addAll(factions.subList(firstFactionIndex, factions.size()));
@@ -618,18 +618,21 @@ public class Game {
         turnSummary.publish("The storm has been initialized to sector " + storm + " (" + stormDialOne + " + " + stormDialTwo + ")");
         if (hasGameOption(GameOption.TECH_TOKENS)) {
             List<TechToken> techTokens = new LinkedList<>();
-            if (hasFaction("BT")) {
-                getFaction("BT").getTechTokens().add(new TechToken(TechToken.AXLOTL_TANKS));
-            } else techTokens.add(new TechToken(TechToken.AXLOTL_TANKS));
-            if (hasFaction("Ix")) {
-                getFaction("Ix").getTechTokens().add(new TechToken(TechToken.HEIGHLINERS));
-            } else techTokens.add(new TechToken(TechToken.HEIGHLINERS));
-            if (hasFaction("Fremen")) {
-                getFaction("Fremen").getTechTokens().add(new TechToken(TechToken.SPICE_PRODUCTION));
-            } else techTokens.add(new TechToken(TechToken.SPICE_PRODUCTION));
+            Map<String, TechToken> defaultAssignments = Map.of(
+                    "BT", new TechToken(TechToken.AXLOTL_TANKS),
+                    "Ix", new TechToken(TechToken.HEIGHLINERS),
+                    "Fremen", new TechToken(TechToken.SPICE_PRODUCTION)
+            );
+            defaultAssignments.forEach((k, v) -> {
+                try {
+                    getFaction(k).getTechTokens().add(v);
+                } catch (IllegalArgumentException e) {
+                    techTokens.add(v);
+                }
+            });
             Collections.shuffle(techTokens);
             for (TechToken techToken : techTokens) {
-                getStormOrderFactions().stream()
+                getFactionsInStormOrder().stream()
                         .filter(f -> f.getTechTokens().isEmpty()).findFirst()
                         .ifPresent(faction -> faction.getTechTokens().add(techToken));
             }
