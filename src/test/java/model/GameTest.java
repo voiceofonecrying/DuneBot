@@ -1,8 +1,8 @@
 package model;
 
 import enums.GameOption;
-import model.factions.AtreidesFaction;
-import model.factions.Faction;
+import model.factions.*;
+import model.topics.DuneTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,11 +49,16 @@ class GameTest {
             try {
                 atreides = new AtreidesFaction("fakePlayer", "userName", game);
             } catch (IOException e) {
+                fail();
             }
             game.addFaction(atreides);
             for (TreacheryCard card : game.getTreacheryDeck()) {
                 if (card.name().trim().equals("Family Atomics")) {
-                    atreides.addTreacheryCard(card);
+                    try {
+                        atreides.addTreacheryCard(card);
+                    } catch (NullPointerException e) {
+                        fail();
+                    }
                     break;
                 }
             }
@@ -72,6 +77,7 @@ class GameTest {
             try {
                 atreides = new AtreidesFaction("fakePlayer", "userName", game);
             } catch (IOException e) {
+                fail();
             }
             game.addFaction(atreides);
             for (TreacheryCard card : game.getTreacheryDeck()) {
@@ -118,6 +124,144 @@ class GameTest {
             assertFalse(game.getTerritory("Arrakeen").isRock());
             assertFalse(atreides.getTreacheryHand().contains(atomics));
             assertTrue(game.getTreacheryDiscard().contains(atomics));
+        }
+    }
+
+    static class TurnSummaryTopic implements DuneTopic {
+        public void publish(String message) {}
+    }
+
+    @Nested
+    @DisplayName("#initialStorm")
+    class InitialStorm {
+        Faction atreides;
+        Faction bg;
+        Faction emperor;
+        Faction fremen;
+        Faction harkonnen;
+        Faction guild;
+        Faction bt;
+        Faction ix;
+        TurnSummaryTopic turnSummary;
+
+        @BeforeEach
+        void setUp() {
+            try {
+                atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+                bg = new BGFaction("fakePlayer2", "userName2", game);
+                emperor = new EmperorFaction("fp3", "un3", game);
+                fremen = new FremenFaction("fp4", "un4", game);
+                guild = new GuildFaction("fp5", "un5", game);
+                harkonnen = new HarkonnenFaction("fp6", "un6", game);
+                bt = new BTFaction("fp7", "un7", game);
+                ix = new IxFaction("fp8", "un8", game);
+            } catch (IOException e) {
+                fail();
+            }
+            turnSummary = new TurnSummaryTopic();
+            game.setTurnSummary(turnSummary);
+            game.addGameOption(GameOption.TECH_TOKENS);
+        }
+
+        @Test
+        void o6FremenNotInFirstThreePositions() {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.setInitialStorm(0, 0);
+            assertEquals(18, game.getStorm());
+
+            assertEquals(1, atreides.getTechTokens().size());
+            assertEquals(1, bg.getTechTokens().size());
+            assertTrue(emperor.getTechTokens().isEmpty());
+            assertEquals(1, fremen.getTechTokens().size());
+            assertTrue(guild.getTechTokens().isEmpty());
+            assertTrue(harkonnen.getTechTokens().isEmpty());
+        }
+
+        @Test
+        void o6FremenInFirstThreePositions() {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.setInitialStorm(6, 3);
+            assertEquals(9, game.getStorm());
+
+            assertTrue(atreides.getTechTokens().isEmpty());
+            assertTrue(bg.getTechTokens().isEmpty());
+            assertTrue(emperor.getTechTokens().isEmpty());
+            assertEquals(1, fremen.getTechTokens().size());
+            assertEquals(1, guild.getTechTokens().size());
+            assertEquals(1, harkonnen.getTechTokens().size());
+        }
+
+        @Test
+        void expansion1InFirstThreePositions() {
+            game.addFaction(bt);
+            game.addFaction(ix);
+            game.addFaction(fremen);
+            game.addFaction(emperor);
+            game.addFaction(bg);
+            game.addFaction(atreides);
+
+            game.setInitialStorm(8, 10);
+            assertEquals(18, game.getStorm());
+
+            assertEquals(1, bt.getTechTokens().size());
+            assertEquals(1, ix.getTechTokens().size());
+            assertEquals(1, fremen.getTechTokens().size());
+            assertTrue(emperor.getTechTokens().isEmpty());
+            assertTrue(bg.getTechTokens().isEmpty());
+            assertTrue(atreides.getTechTokens().isEmpty());
+        }
+
+        @Test
+        void expansion1NotInFirstThreePositions() {
+            game.addFaction(bt);
+            game.addFaction(ix);
+            game.addFaction(fremen);
+            game.addFaction(emperor);
+            game.addFaction(bg);
+            game.addFaction(atreides);
+
+            game.setInitialStorm(13, 14);
+            assertEquals(9, game.getStorm());
+
+            assertEquals(1, bt.getTechTokens().size());
+            assertEquals(1, ix.getTechTokens().size());
+            assertEquals(1, fremen.getTechTokens().size());
+            assertTrue(emperor.getTechTokens().isEmpty());
+            assertTrue(bg.getTechTokens().isEmpty());
+            assertTrue(atreides.getTechTokens().isEmpty());
+        }
+
+        @Test
+        void techTokensNotInGame() {
+            game.removeGameOption(GameOption.TECH_TOKENS);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(bt);
+            game.addFaction(ix);
+            game.addFaction(fremen);
+
+            game.setInitialStorm(20, 20);
+            assertEquals(4, game.getStorm());
+
+            assertTrue(atreides.getTechTokens().isEmpty());
+            assertTrue(bg.getTechTokens().isEmpty());
+            assertTrue(emperor.getTechTokens().isEmpty());
+            assertTrue(bt.getTechTokens().isEmpty());
+            assertTrue(ix.getTechTokens().isEmpty());
+            assertTrue(fremen.getTechTokens().isEmpty());
         }
     }
 }
