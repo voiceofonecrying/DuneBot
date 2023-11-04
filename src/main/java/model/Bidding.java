@@ -278,14 +278,7 @@ public class Bidding {
 
     public void updateBidOrder(Game game) {
         if (bidOrder.isEmpty()) {
-            List<Faction> factions = game.getFactions();
-
-            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
-
-            List<Faction> bidOrderFactions = new ArrayList<>();
-
-            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
-            bidOrderFactions.addAll(factions.subList(0, firstBid));
+            List<Faction> bidOrderFactions = game.getFactionsInStormOrder();
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
         } else {
             bidOrder.add(bidOrder.remove(0));
