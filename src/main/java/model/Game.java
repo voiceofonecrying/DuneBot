@@ -11,7 +11,6 @@ import helpers.Exclude;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -27,7 +26,7 @@ public class Game {
     private int phase;
     private int subPhase;
     private Bidding bidding;
-    private Deque<String> turnOrder;
+    private final Deque<String> turnOrder;
     private final List<Faction> factions;
     private final Map<String, Territory> territories;
     private final LinkedList<SpiceCard> spiceDeck;
@@ -45,6 +44,7 @@ public class Game {
     private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
+    private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
     private Set<GameOption> gameOptions;
@@ -59,7 +59,6 @@ public class Game {
     private int stormMovement;
     private boolean onHold;
 
-    private HashMap<Integer, List<String>> quotes;
     @Exclude
     private Set<UpdateType> updateTypes;
     @Exclude
@@ -171,10 +170,6 @@ public class Game {
 
     public Set<GameOption> getGameOptions() {
         return gameOptions;
-    }
-
-    public void setGameOptions(Set<GameOption> gameOptions) {
-        this.gameOptions = gameOptions;
     }
 
     public boolean hasGameOption(GameOption gameOption) {
@@ -289,10 +284,6 @@ public class Game {
 
     public String getGameRoleMention() {
         return gameRoleMention;
-    }
-
-    public String getModRoleMention(MessageReceivedEvent event) {
-        return event.getGuild().getRolesByName(getModRole(), true).get(0).getAsMention();
     }
 
     public void setGameRoleMention(String gameRoleMention) {
@@ -549,10 +540,6 @@ public class Game {
 
     public Deque<String> getTurnOrder() {
         return turnOrder;
-    }
-
-    public void setTurnOrder(Deque<String> turnOrder) {
-        this.turnOrder = turnOrder;
     }
 
     public LinkedList<NexusCard> getNexusDeck() {
