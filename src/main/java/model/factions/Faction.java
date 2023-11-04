@@ -63,6 +63,8 @@ public class Faction {
     private Game game;
     @Exclude
     private DuneTopic ledger;
+    @Exclude
+    private DuneTopic chat;
 
     public Faction(String name, String player, String userName, Game game) throws IOException {
         this.handLimit = 4;
@@ -639,6 +641,14 @@ public class Faction {
 
     public DuneTopic getLedger() {
         return ledger;
+    }
+
+    public void setChat(DuneTopic chat) {
+        this.ledger = chat;
+    }
+
+    public DuneTopic getChat() {
+        return chat;
     }
 
     public void spiceMessage(int amount, String message, boolean plus) {

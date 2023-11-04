@@ -370,6 +370,7 @@ public class SetupCommands {
         String traitorName = discordGame.required(traitor).getAsString();
         Faction faction = game.getFaction(factionName);
         faction.setLedger(discordGame.getFactionLedger(faction));
+        faction.setChat(discordGame.getFactionChat(faction));
         faction.selectTraitor(traitorName);
         discordGame.pushGame();
     }
@@ -418,6 +419,7 @@ public class SetupCommands {
     public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Collections.shuffle(game.getFactions());
         game.setTurnSummary(discordGame.getTurnSummary());
+        game.setModInfo(discordGame.getModInfo());
         discordGame.getTurnSummary().queueMessage("__**Game Setup**__");
 
         ShowCommands.showBoard(discordGame, game);

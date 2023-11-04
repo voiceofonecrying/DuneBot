@@ -63,6 +63,8 @@ public class Game {
     private Set<UpdateType> updateTypes;
     @Exclude
     private DuneTopic turnSummary;
+    @Exclude
+    private DuneTopic modInfo;
 
     public Game() throws IOException {
         super();
@@ -590,6 +592,14 @@ public class Game {
 
     public void setTurnSummary(DuneTopic turnSummary) {
         this.turnSummary = turnSummary;
+    }
+
+    public DuneTopic getModInfo() {
+        return modInfo;
+    }
+
+    public void setModInfo(DuneTopic modInfo) {
+        this.modInfo = modInfo;
     }
 
     public List<Faction> getFactionsInStormOrder() {

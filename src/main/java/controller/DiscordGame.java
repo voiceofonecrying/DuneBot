@@ -177,6 +177,10 @@ public class DiscordGame {
         return new ModInfo(this);
     }
 
+    public FactionChat getFactionChat(Faction faction) throws ChannelNotFoundException {
+        return getFactionChat(faction.getName());
+    }
+
     public FactionChat getFactionChat(String factionName) throws ChannelNotFoundException {
         return new FactionChat(this, factionName);
     }
@@ -389,9 +393,11 @@ public class DiscordGame {
 
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));
+            f.setChat(getFactionChat(f));
         }
 
         game.setTurnSummary(getTurnSummary(game));
+        game.setModInfo(getModInfo());
         return game;
     }
 
