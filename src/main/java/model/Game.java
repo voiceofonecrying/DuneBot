@@ -611,14 +611,14 @@ public class Game {
         if (hasGameOption(GameOption.TECH_TOKENS)) {
             List<TechToken> techTokens = new LinkedList<>();
             if (hasFaction("BT")) {
-                getFaction("BT").getTechTokens().add(new TechToken("Axlotl Tanks"));
-            } else techTokens.add(new TechToken("Axlotl Tanks"));
+                getFaction("BT").getTechTokens().add(new TechToken(TechToken.AXLOTL_TANKS));
+            } else techTokens.add(new TechToken(TechToken.AXLOTL_TANKS));
             if (hasFaction("Ix")) {
-                getFaction("Ix").getTechTokens().add(new TechToken("Heighliners"));
-            } else techTokens.add(new TechToken("Heighliners"));
+                getFaction("Ix").getTechTokens().add(new TechToken(TechToken.HEIGHLINERS));
+            } else techTokens.add(new TechToken(TechToken.HEIGHLINERS));
             if (hasFaction("Fremen")) {
-                getFaction("Fremen").getTechTokens().add(new TechToken("Spice Production"));
-            } else techTokens.add(new TechToken("Spice Production"));
+                getFaction("Fremen").getTechTokens().add(new TechToken(TechToken.SPICE_PRODUCTION));
+            } else techTokens.add(new TechToken(TechToken.SPICE_PRODUCTION));
             if (!techTokens.isEmpty()) {
                 Collections.shuffle(techTokens);
                 for (int i = 0; i < techTokens.size(); i++) {

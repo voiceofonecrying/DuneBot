@@ -1,5 +1,7 @@
 package constants;
 
+import model.TechToken;
+
 public final class Emojis {
     public static final String MOD_EMPEROR = "<:god_emperor:1150080256917655652>";
     public static final String ATREIDES = "<:atreides:991763327996923997>";
@@ -91,13 +93,13 @@ public final class Emojis {
 
     public static String getTechTokenEmoji(String techToken) {
         switch (techToken) {
-            case "Axlotl Tanks" -> {
+            case TechToken.AXLOTL_TANKS -> {
                 return AXLOTL_TANKS;
             }
-            case "Heighliners" -> {
+            case TechToken.HEIGHLINERS -> {
                 return HEIGHLINERS;
             }
-            case "Spice Production" -> {
+            case TechToken.SPICE_PRODUCTION -> {
                 return SPICE_PRODUCTION;
             }
         }

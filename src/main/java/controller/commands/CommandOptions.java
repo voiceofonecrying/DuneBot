@@ -98,9 +98,9 @@ public class CommandOptions {
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
     public static final OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
     public static final OptionData token = new OptionData(OptionType.STRING, "token", "The Tech Token", true)
-            .addChoice("Heighliners", "Heighliners")
-            .addChoice("Spice Production", "Spice Production")
-            .addChoice("Axlotl Tanks", "Axlotl Tanks");
+            .addChoice(TechToken.HEIGHLINERS, TechToken.HEIGHLINERS)
+            .addChoice(TechToken.SPICE_PRODUCTION, TechToken.SPICE_PRODUCTION)
+            .addChoice(TechToken.AXLOTL_TANKS, TechToken.AXLOTL_TANKS);
     public static final OptionData factionLeader = new OptionData(OptionType.STRING, "factionleader", "The leader.", true).setAutoComplete(true);
     public static final OptionData nonHarkLeader = new OptionData(OptionType.STRING, "returning", "Leader to return.", true).setAutoComplete(true);
     public static final OptionData factionLeaderSkill =

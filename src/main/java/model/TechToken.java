@@ -4,6 +4,10 @@ import constants.Emojis;
 import model.factions.Faction;
 
 public class TechToken {
+    public static final String AXLOTL_TANKS = "Axlotl Tanks";
+    public static final String HEIGHLINERS = "Heighliners";
+    public static final String SPICE_PRODUCTION = "Spice Production";
+
     private final String name;
     private int spice;
 

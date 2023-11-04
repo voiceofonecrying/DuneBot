@@ -324,7 +324,7 @@ public class CommandManager extends ListenerAdapter {
                             !targetFaction.getName().equalsIgnoreCase("Fremen") &&
                             game.hasGameOption(GameOption.TECH_TOKENS)
             ) {
-                TechToken.addSpice(game, "Heighliners");
+                TechToken.addSpice(game, TechToken.HEIGHLINERS);
             }
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
