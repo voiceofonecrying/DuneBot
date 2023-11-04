@@ -605,6 +605,14 @@ public class Game {
         this.turnSummary = turnSummary;
     }
 
+    public List<Faction> getStormOrderFactions() {
+        int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
+        List<Faction> stormOrderFactions = new ArrayList<>();
+        stormOrderFactions.addAll(factions.subList(firstFactionIndex, factions.size()));
+        stormOrderFactions.addAll(factions.subList(0, firstFactionIndex));
+        return stormOrderFactions;
+    }
+
     public void setInitialStorm(int stormDialOne, int stormDialTwo) {
         advanceStorm(stormDialOne + stormDialTwo);
         turnSummary.publish("The storm has been initialized to sector " + storm + " (" + stormDialOne + " + " + stormDialTwo + ")");
@@ -619,18 +627,11 @@ public class Game {
             if (hasFaction("Fremen")) {
                 getFaction("Fremen").getTechTokens().add(new TechToken(TechToken.SPICE_PRODUCTION));
             } else techTokens.add(new TechToken(TechToken.SPICE_PRODUCTION));
-            if (!techTokens.isEmpty()) {
-                Collections.shuffle(techTokens);
-                for (int i = 0; i < techTokens.size(); i++) {
-                    int firstFactionIndex = (Math.ceilDiv(storm, 3) + i) % 6;
-                    for (int j = 0; j < 6; j++) {
-                        Faction faction = factions.get((firstFactionIndex + j) % 6);
-                        if (faction.getTechTokens().isEmpty()) {
-                            faction.getTechTokens().add(techTokens.get(i));
-                            break;
-                        }
-                    }
-                }
+            Collections.shuffle(techTokens);
+            for (TechToken techToken : techTokens) {
+                getStormOrderFactions().stream()
+                        .filter(f -> f.getTechTokens().isEmpty()).findFirst()
+                        .ifPresent(faction -> faction.getTechTokens().add(techToken));
             }
         }
         if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
