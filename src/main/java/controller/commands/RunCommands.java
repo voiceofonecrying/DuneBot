@@ -56,12 +56,15 @@ public class RunCommands {
             discordGame.getModInfo().queueMessage("Please complete setup first.");
             return;
         }
-        int phase = game.getPhase();
-        int subPhase = game.getSubPhase();
-        if (phase == 10) {
+
+        if (game.getPhase() == 10) {
             game.advanceTurn();
             discordGame.getTurnSummary();
         }
+
+        int phase = game.getPhase();
+        int subPhase = game.getSubPhase();
+
         sendQuote(discordGame, game, phase);
 
         if (phase == 1 && subPhase == 1) {
