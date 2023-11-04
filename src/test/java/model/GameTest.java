@@ -176,9 +176,12 @@ class GameTest {
             assertEquals(18, game.getStorm());
 
             assertEquals(1, atreides.getTechTokens().size());
+            assertNotEquals("Spice Production", atreides.getTechTokens().get(0).getName());
             assertEquals(1, bg.getTechTokens().size());
+            assertNotEquals("Spice Production", bg.getTechTokens().get(0).getName());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertEquals(1, fremen.getTechTokens().size());
+            assertEquals("Spice Production", fremen.getTechTokens().get(0).getName());
             assertTrue(guild.getTechTokens().isEmpty());
             assertTrue(harkonnen.getTechTokens().isEmpty());
         }
@@ -199,8 +202,11 @@ class GameTest {
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertEquals(1, fremen.getTechTokens().size());
+            assertEquals("Spice Production", fremen.getTechTokens().get(0).getName());
             assertEquals(1, guild.getTechTokens().size());
+            assertNotEquals("Spice Production", guild.getTechTokens().get(0).getName());
             assertEquals(1, harkonnen.getTechTokens().size());
+            assertNotEquals("Spice Production", harkonnen.getTechTokens().get(0).getName());
         }
 
         @Test
@@ -216,8 +222,11 @@ class GameTest {
             assertEquals(18, game.getStorm());
 
             assertEquals(1, bt.getTechTokens().size());
+            assertEquals("Axlotl Tanks", bt.getTechTokens().get(0).getName());
             assertEquals(1, ix.getTechTokens().size());
+            assertEquals("Heighliners", ix.getTechTokens().get(0).getName());
             assertEquals(1, fremen.getTechTokens().size());
+            assertEquals("Spice Production", fremen.getTechTokens().get(0).getName());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(atreides.getTechTokens().isEmpty());
@@ -236,9 +245,35 @@ class GameTest {
             assertEquals(9, game.getStorm());
 
             assertEquals(1, bt.getTechTokens().size());
+            assertEquals("Axlotl Tanks", bt.getTechTokens().get(0).getName());
             assertEquals(1, ix.getTechTokens().size());
+            assertEquals("Heighliners", ix.getTechTokens().get(0).getName());
             assertEquals(1, fremen.getTechTokens().size());
+            assertEquals("Spice Production", fremen.getTechTokens().get(0).getName());
             assertTrue(emperor.getTechTokens().isEmpty());
+            assertTrue(bg.getTechTokens().isEmpty());
+            assertTrue(atreides.getTechTokens().isEmpty());
+        }
+
+        @Test
+        void expansion1NoFremen() {
+            game.addFaction(bt);
+            game.addFaction(ix);
+            game.addFaction(harkonnen);
+            game.addFaction(emperor);
+            game.addFaction(bg);
+            game.addFaction(atreides);
+
+            game.setInitialStorm(9, 18);
+            assertEquals(9, game.getStorm());
+
+            assertEquals(1, bt.getTechTokens().size());
+            assertEquals("Axlotl Tanks", bt.getTechTokens().get(0).getName());
+            assertEquals(1, ix.getTechTokens().size());
+            assertEquals("Heighliners", ix.getTechTokens().get(0).getName());
+            assertTrue(harkonnen.getTechTokens().isEmpty());
+            assertEquals(1, emperor.getTechTokens().size());
+            assertEquals("Spice Production", emperor.getTechTokens().get(0).getName());
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(atreides.getTechTokens().isEmpty());
         }
