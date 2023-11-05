@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -60,9 +61,17 @@ public class BTCommands {
 
             traitorDeck.add(traitorCard);
             Collections.shuffle(traitorDeck);
-            faction.addTraitorCard(traitorDeck.pollLast());
+            TraitorCard newFD = traitorDeck.pop();
+            faction.addTraitorCard(newFD);
 
             discordGame.pushGame();
+            discordGame.getBTLedger().queueMessage(
+                    MessageFormat.format(
+                            "{0} {1} is your new Face Dancer. You have swapped out {2} {3}.",
+                            game.getFaction(newFD.factionName()).getEmoji(), newFD.name(),
+                            game.getFaction(traitorCard.factionName()).getEmoji(), traitorCard.name()
+                    )
+            );
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
         }
     }
