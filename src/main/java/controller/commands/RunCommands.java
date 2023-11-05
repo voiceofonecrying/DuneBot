@@ -59,7 +59,7 @@ public class RunCommands {
 
         if (game.getPhase() == 10) {
             game.advanceTurn();
-            discordGame.getTurnSummary();
+            game.setTurnSummary(discordGame.getTurnSummary());
         }
 
         int phase = game.getPhase();
