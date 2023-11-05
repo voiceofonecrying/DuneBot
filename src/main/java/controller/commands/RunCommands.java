@@ -67,10 +67,19 @@ public class RunCommands {
 
         sendQuote(discordGame, game, phase);
 
+        if (phase == 1 && subPhase == 1 &&
+                (game.getTurn() == 1 || !game.hasFaction("Ix"))) {
+            game.advanceSubPhase();
+            subPhase = game.getSubPhase();
+        }
+
         if (phase == 1 && subPhase == 1) {
-            startStormPhase(discordGame, game);
+            IxCommands.hmsSubPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
+            startStormPhase(discordGame, game);
+            game.advanceSubPhase();
+        } else if (phase == 1 && subPhase == 3) {
             endStormPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 2) {

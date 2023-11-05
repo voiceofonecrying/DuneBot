@@ -134,6 +134,18 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
+    public static void hmsSubPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+        int cyborgsInHMS = hms.getForce("Ix*").getStrength();
+        int suboidsInHMS = hms.getForce("Ix").getStrength();
+        if (cyborgsInHMS + suboidsInHMS == 0) {
+            discordGame.getTurnSummary().queueMessage(Emojis.IX + " do not control the HMS. It cannot be moved.");
+        } else {
+            discordGame.getTurnSummary().queueMessage(Emojis.IX + " to decide if they want to move the HMS. " + game.getFaction("Ix").getPlayer());
+            discordGame.getIxChat().queueMessage(game.getFaction("Ix").getPlayer() + " will you move the Hidden Mobile Stronghold?");
+        }
+    }
+
     public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
