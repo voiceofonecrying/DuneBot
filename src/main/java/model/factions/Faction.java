@@ -644,7 +644,7 @@ public class Faction {
     }
 
     public void setChat(DuneTopic chat) {
-        this.ledger = chat;
+        this.chat = chat;
     }
 
     public DuneTopic getChat() {
