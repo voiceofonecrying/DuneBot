@@ -124,64 +124,14 @@ public class RunCommands {
     }
 
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage("Turn " + game.getTurn() + " Storm Phase:");
-        boolean atomicsEligible = false;
-        boolean nobodyHoldsAtomics = true;
-        for (Faction faction : game.getFactions()) {
-            boolean isNearShieldWall = false;
-            if (faction.isNearShieldWall()) {
-                isNearShieldWall = true;
-                atomicsEligible = true;
-            }
-            for (TreacheryCard card : faction.getTreacheryHand()) {
-                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " will you play Weather Control?");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    nobodyHoldsAtomics = false;
-                    if (isNearShieldWall) {
-                        discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " will you play Family Atomics?");
-                    }
-                }
-            }
-        }
+        game.startStormPhase();
+
         if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
             Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).get(0);
             discordGame.getFactionChat(faction.getName()).queueMessage("What have the ecologists at the testing station discovered about the storm movement?",
                     List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
         }
-        if (atomicsEligible && nobodyHoldsAtomics) {
-            boolean atomicsStillInGame = false;
-            for (TreacheryCard card : game.getTreacheryDeck()) {
-                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    atomicsStillInGame = true;
-                    break;
-                }
-            }
-            for (TreacheryCard card : game.getTreacheryDiscard()) {
-                if (atomicsStillInGame) {
-                    break;
-                }
-                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    atomicsStillInGame = true;
-                    break;
-                }
-            }
-            if (!atomicsStillInGame) {
-                atomicsEligible = false;
-            }
-        }
-        if (game.getTurn() != 1) {
-            turnSummary.queueMessage(
-                    "The storm would move " +
-                            game.getStormMovement() +
-                            " sectors this turn. Weather Control " +
-                            (atomicsEligible ? "and Family Atomics " : "") +
-                            "may be played at this time.");
-            if (atomicsEligible && game.getStorm() >= 5 && game.getStorm() <= 9) {
-                turnSummary.queueMessage("(Check if storm position prevents use of Family Atomics.)");
-            }
-        } else {
+        if (game.getTurn() == 1) {
             discordGame.getModInfo().queueMessage("Run advance to complete turn 1 storm phase.");
         }
     }

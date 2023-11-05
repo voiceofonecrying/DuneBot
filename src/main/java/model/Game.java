@@ -637,4 +637,59 @@ public class Game {
         if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             setUpdated(UpdateType.MAP);
     }
+
+    public void startStormPhase() {
+        turnSummary.publish("Turn " + turn + " Storm Phase:");
+        boolean atomicsEligible = false;
+        boolean nobodyHoldsAtomics = true;
+        for (Faction faction : getFactions()) {
+            boolean isNearShieldWall = false;
+            if (faction.isNearShieldWall()) {
+                isNearShieldWall = true;
+                atomicsEligible = true;
+            }
+            for (TreacheryCard card : faction.getTreacheryHand()) {
+                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
+                    faction.getChat().publish(faction.getPlayer() + " will you play Weather Control?");
+                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    nobodyHoldsAtomics = false;
+                    if (isNearShieldWall) {
+                        faction.getChat().publish(faction.getPlayer() + " will you play Family Atomics?");
+                    }
+                }
+            }
+        }
+        if (atomicsEligible && nobodyHoldsAtomics) {
+            boolean atomicsStillInGame = false;
+            for (TreacheryCard card : treacheryDeck) {
+                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    atomicsStillInGame = true;
+                    break;
+                }
+            }
+            for (TreacheryCard card : treacheryDiscard) {
+                if (atomicsStillInGame) {
+                    break;
+                }
+                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
+                    atomicsStillInGame = true;
+                    break;
+                }
+            }
+            if (!atomicsStillInGame) {
+                atomicsEligible = false;
+            }
+        }
+        if (turn != 1) {
+            turnSummary.publish(
+                    "The storm would move " +
+                            stormMovement +
+                            " sectors this turn. Weather Control " +
+                            (atomicsEligible ? "and Family Atomics " : "") +
+                            "may be played at this time.");
+            if (atomicsEligible && storm >= 5 && storm <= 9) {
+                turnSummary.publish("(Check if storm position prevents use of Family Atomics.)");
+            }
+        }
+    }
 }
