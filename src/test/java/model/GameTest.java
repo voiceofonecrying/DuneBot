@@ -377,4 +377,54 @@ class GameTest {
             assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
     }
+
+    @Nested
+    @DisplayName("#ixCanMoveHMS")
+    class IxCanMoveHMS {
+        Faction atreides;
+        Faction bg;
+        Faction emperor;
+        Faction fremen;
+        Faction harkonnen;
+        Faction guild;
+        Faction ix;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+        }
+
+        @Test
+        void ixNotInGame() throws IOException {
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(harkonnen);
+            assertFalse(game.ixCanMoveHMS());
+        }
+
+        @Test
+        void ixInGameInHMS() throws IOException {
+            ix = new IxFaction("fp6", "un6", game);
+            game.addFaction(ix);
+            assertTrue(game.ixCanMoveHMS());
+        }
+
+        @Test
+        void ixInGameNotInHMS() throws IOException {
+            ix = new IxFaction("fp6", "un6", game);
+            game.addFaction(ix);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            hms.getForce("Ix*").setStrength(0);
+            hms.getForce("Ix").setStrength(0);
+            assertFalse(game.ixCanMoveHMS());
+        }
+    }
 }

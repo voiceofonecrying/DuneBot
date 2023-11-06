@@ -67,10 +67,15 @@ public class RunCommands {
 
         sendQuote(discordGame, game, phase);
 
+        boolean ixInGame = game.hasFaction("Ix");
+        boolean ixCanMoveHMS = game.ixCanMoveHMS();
         if (phase == 1 && subPhase == 1 &&
-                (game.getTurn() == 1 || !game.hasFaction("Ix"))) {
+                (game.getTurn() == 1 || !ixCanMoveHMS)) {
             game.advanceSubPhase();
             subPhase = game.getSubPhase();
+            if (ixInGame && !ixCanMoveHMS) {
+                discordGame.getTurnSummary().queueMessage(Emojis.IX + " do not control the HMS. It cannot be moved.");
+            }
         }
 
         if (phase == 1 && subPhase == 1) {

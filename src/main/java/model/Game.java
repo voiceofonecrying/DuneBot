@@ -692,4 +692,14 @@ public class Game {
             }
         }
     }
+
+    public boolean ixCanMoveHMS() {
+        if (hasFaction("Ix")) {
+            Territory hms = getTerritory("Hidden Mobile Stronghold");
+            int cyborgsInHMS = hms.getForce("Ix*").getStrength();
+            int suboidsInHMS = hms.getForce("Ix").getStrength();
+            return (cyborgsInHMS + suboidsInHMS > 0);
+        }
+        return false;
+    }
 }
