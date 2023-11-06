@@ -688,11 +688,15 @@ public class RunCommands {
             }
         }
         if (game.hasFaction("BG")) {
-            String bgPlayer = game.getFaction("BG").getPlayer();
+            Faction bgFaction = game.getFaction("BG");
+            String bgPlayer = bgFaction.getPlayer();
             for (Territory territory : game.getTerritories().values()) {
                 if (territory.getTerritoryName().equals("Polar Sink")) continue;
                 StringBuilder message = new StringBuilder();
                 if (territory.getForce("Advisor").getStrength() > 0) {
+                    String bgAllyName = bgFaction.getAlly();
+                    if ((territory.getForce(bgAllyName).getStrength() > 0 || territory.getForce(bgAllyName + "*").getStrength() > 0)
+                            && !bgAllyName.equals("Ecaz")) continue;
                     if (territory.getSector() == game.getStorm()) {
                         discordGame.queueMessage("game-actions", territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
                         continue;
