@@ -934,6 +934,15 @@ public class ShowCommands {
                         .append("\n");
             }
 
+            if (faction.getName().equalsIgnoreCase("BT") && !((BTFaction)faction).getRevealedFaceDancers().isEmpty()) {
+                message.append("Revealed Face Dancers:");
+                for (TraitorCard faceDancer : ((BTFaction)faction).getRevealedFaceDancers())
+                    message.append(MessageFormat.format(
+                            "\n  {0} {1}",
+                            game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
+                    ));
+            }
+
             if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction) faction).hasFrontOfShieldNoField()) {
                 message.append(((RicheseFaction) faction).getFrontOfShieldNoField())
                         .append(" No-Field Token\n");

@@ -1,9 +1,11 @@
 package controller.commands;
 
+import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
 import model.TraitorCard;
+import model.factions.BTFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -26,6 +28,10 @@ public class BTCommands {
                         new SubcommandData(
                                 "swap-face-dancer",
                                 "Swaps a BT Face Dancer."
+                        ).addOptions(btFaceDancer),
+                        new SubcommandData(
+                                "reveal-face-dancer",
+                                "Reveals a BT Face Dancer."
                         ).addOptions(btFaceDancer)
                 )
         );
@@ -39,6 +45,8 @@ public class BTCommands {
 
         if (name.equals("swap-face-dancer")) {
             swapBTFaceDancer(discordGame, game);
+        } else if (name.equals("reveal-face-dancer")) {
+            revealBTFaceDancer(discordGame, game);
         } else {
             throw new IllegalArgumentException("Invalid command name: " + name);
         }
@@ -74,5 +82,22 @@ public class BTCommands {
             );
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
         }
+    }
+
+    public static void revealBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        BTFaction btFaction = (BTFaction)game.getFaction("BT");
+        String faceDancer = discordGame.required(btFaceDancer).getAsString();
+        List<TraitorCard> btFaceDancerHand = btFaction.getTraitorHand();
+        TraitorCard traitorCard = btFaceDancerHand.stream()
+                .filter(t -> t.name().equalsIgnoreCase(faceDancer))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
+        int fdsRemaining = btFaction.getTraitorHand().size();
+        btFaction.revealFaceDancer(traitorCard, game);
+        discordGame.getTurnSummary().queueMessage(btFaction.getEmoji() + " revealed " + faceDancer + " as a Face Dancer!");
+        if (fdsRemaining == 1 && btFaction.getTraitorHand().size() == 3) {
+            discordGame.getTurnSummary().queueMessage(Emojis.BT + " revealed all of their Face Dancers and have drawn a new set of 3.");
+        }
+        discordGame.pushGame();
     }
 }

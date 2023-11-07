@@ -44,7 +44,7 @@ public class BTFaction extends Faction {
     /**
      * @param revealedFaceDancer the revealed Face Dancer to add
      */
-    public void addRevealedFaceDancer(TraitorCard revealedFaceDancer) {
+    public void revealFaceDancer(TraitorCard revealedFaceDancer, Game game) {
         if (!getTraitorHand().remove(revealedFaceDancer)) {
             throw new IllegalArgumentException("Revealed face dancer must be in traitor hand");
         }
@@ -53,7 +53,16 @@ public class BTFaction extends Faction {
             revealedFaceDancers = new HashSet<>();
         }
         revealedFaceDancers.add(revealedFaceDancer);
+        if (getTraitorHand().isEmpty()) {
+            revealedFaceDancers.forEach(fd -> game.getTraitorDeck().add(fd));
+            revealedFaceDancers = null;
+            Collections.shuffle(game.getTraitorDeck());
+            game.drawCard("traitor deck", "BT");
+            game.drawCard("traitor deck", "BT");
+            game.drawCard("traitor deck", "BT");
+        }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void addRevivalRatesSet(String revivalRatesSet) {

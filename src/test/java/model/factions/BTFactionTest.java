@@ -74,7 +74,7 @@ class BTFactionTest extends FactionTestTemplate {
         TraitorCard revealedTraitor = game.getTraitorDeck().get(0);
         faction.getTraitorHand().add(revealedTraitor);
         faction.getTraitorHand().add(game.getTraitorDeck().get(1));
-        faction.addRevealedFaceDancer(revealedTraitor);
+        faction.revealFaceDancer(revealedTraitor, game);
         assertEquals(faction.getRevealedFaceDancers().size(), 1);
         assertEquals(faction.getRevealedFaceDancers().stream().toList().get(0), revealedTraitor);
         assertEquals(faction.getTraitorHand().size(), 1);
@@ -84,7 +84,7 @@ class BTFactionTest extends FactionTestTemplate {
     @Test
     public void testInvalidFaceDancerRevealEmptyTraitorHand() {
         TraitorCard revealedTraitor = game.getTraitorDeck().get(0);
-        assertThrows(IllegalArgumentException.class, () -> faction.addRevealedFaceDancer(revealedTraitor));
+        assertThrows(IllegalArgumentException.class, () -> faction.revealFaceDancer(revealedTraitor, game));
     }
 
     @Test
@@ -92,7 +92,7 @@ class BTFactionTest extends FactionTestTemplate {
         TraitorCard revealedTraitor = game.getTraitorDeck().get(0);
         faction.getTraitorHand().add(game.getTraitorDeck().get(1));
         faction.getTraitorHand().add(game.getTraitorDeck().get(2));
-        assertThrows(IllegalArgumentException.class, () -> faction.addRevealedFaceDancer(revealedTraitor));
+        assertThrows(IllegalArgumentException.class, () -> faction.revealFaceDancer(revealedTraitor, game));
     }
 
 }
