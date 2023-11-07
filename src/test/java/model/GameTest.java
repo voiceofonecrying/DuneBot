@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,10 +18,33 @@ import static org.junit.jupiter.api.Assertions.*;
 class GameTest {
 
     private Game game;
+    private TreacheryCard familyAtomics;
+    private TreacheryCard weatherControl;
+    private Faction atreides;
+    private Faction bg;
+    private Faction emperor;
+    private Faction fremen;
+    private Faction guild;
+    private Faction harkonnen;
+    private Faction bt;
+    private Faction ix;
+    private TestTopic turnSummary;
+    private TestTopic guildChat;
+    private TestTopic fremenChat;
+
 
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
+        weatherControl = game.getTreacheryDeck().stream()
+                .filter(t -> t.name().equals("Weather Control "))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
+
+        familyAtomics = game.getTreacheryDeck().stream()
+                .filter(t -> t.name().equals("Family Atomics "))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
     }
 
     @Nested
@@ -47,14 +71,9 @@ class GameTest {
 
         @Test
         void atreidesHoldsAtomics() throws IOException, NullPointerException {
-            Faction atreides = new AtreidesFaction("fakePlayer", "userName", game);
+            atreides = new AtreidesFaction("fakePlayer", "userName", game);
             game.addFaction(atreides);
-            for (TreacheryCard card : game.getTreacheryDeck()) {
-                if (card.name().trim().equals("Family Atomics")) {
-                    atreides.addTreacheryCard(card);
-                    break;
-                }
-            }
+            atreides.addTreacheryCard(familyAtomics);
             assertEquals(game.getFactionWithAtomics().getName(), "Atreides");
         }
     }
@@ -62,20 +81,11 @@ class GameTest {
     @Nested
     @DisplayName("#breakShieldWall")
     class BreakShieldWall {
-        Faction atreides = null;
-        TreacheryCard atomics = null;
-
         @BeforeEach
-        void setUpAddSpice() throws IOException {
+        void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer", "userName", game);
             game.addFaction(atreides);
-            for (TreacheryCard card : game.getTreacheryDeck()) {
-                if (card.name().trim().equals("Family Atomics")) {
-                    atreides.addTreacheryCard(card);
-                    break;
-                }
-            }
-            atomics = atreides.getTreacheryCard("Family Atomics ");
+            atreides.addTreacheryCard(familyAtomics);
         }
 
         @Test
@@ -85,15 +95,15 @@ class GameTest {
             assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertNotNull(atomics);
+            assertNotNull(familyAtomics);
             game.breakShieldWall(atreides);
             assertFalse(game.getTerritory("Carthag").isRock());
             assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertFalse(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atreides.getTreacheryHand().contains(atomics));
-            assertFalse(game.getTreacheryDiscard().contains(atomics));
+            assertFalse(atreides.getTreacheryHand().contains(familyAtomics));
+            assertFalse(game.getTreacheryDiscard().contains(familyAtomics));
         }
 
         @Test
@@ -104,35 +114,29 @@ class GameTest {
             assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertNotNull(atomics);
+            assertNotNull(familyAtomics);
             game.breakShieldWall(atreides);
             assertFalse(game.getTerritory("Carthag").isRock());
             assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertFalse(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atreides.getTreacheryHand().contains(atomics));
-            assertTrue(game.getTreacheryDiscard().contains(atomics));
+            assertFalse(atreides.getTreacheryHand().contains(familyAtomics));
+            assertTrue(game.getTreacheryDiscard().contains(familyAtomics));
         }
     }
 
-    static class TurnSummaryTopic implements DuneTopic {
-        public void publish(String message) {}
+    static class TestTopic implements DuneTopic {
+        List<String> messages = new ArrayList<>();
+
+        public void publish(String message) {
+            messages.add(message);
+        }
     }
 
     @Nested
     @DisplayName("#initialStorm")
     class InitialStorm {
-        Faction atreides;
-        Faction bg;
-        Faction emperor;
-        Faction fremen;
-        Faction harkonnen;
-        Faction guild;
-        Faction bt;
-        Faction ix;
-        TurnSummaryTopic turnSummary;
-
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
@@ -143,7 +147,7 @@ class GameTest {
             harkonnen = new HarkonnenFaction("fp6", "un6", game);
             bt = new BTFaction("fp7", "un7", game);
             ix = new IxFaction("fp8", "un8", game);
-            turnSummary = new TurnSummaryTopic();
+            turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             game.addGameOption(GameOption.TECH_TOKENS);
         }
@@ -288,13 +292,6 @@ class GameTest {
     @Nested
     @DisplayName("#stormOrderFactions")
     class StormOrderFactions {
-        Faction atreides;
-        Faction bg;
-        Faction emperor;
-        Faction fremen;
-        Faction harkonnen;
-        Faction guild;
-
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
@@ -381,14 +378,6 @@ class GameTest {
     @Nested
     @DisplayName("#ixCanMoveHMS")
     class IxCanMoveHMS {
-        Faction atreides;
-        Faction bg;
-        Faction emperor;
-        Faction fremen;
-        Faction harkonnen;
-        Faction guild;
-        Faction ix;
-
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
@@ -425,6 +414,173 @@ class GameTest {
             hms.getForce("Ix*").setStrength(0);
             hms.getForce("Ix").setStrength(0);
             assertFalse(game.ixCanMoveHMS());
+        }
+    }
+
+    @Nested
+    @DisplayName("#startStormPhase")
+    class StartStormPhase {
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
+            guildChat = new TestTopic();
+            guild.setChat(guildChat);
+        }
+
+        @Test
+        void turn1FremenHasWeatherControl() {
+            game.advanceTurn();
+            assertEquals(1, game.getTurn());
+
+            game.getTreacheryDeck().remove(weatherControl);
+            fremen.addTreacheryCard(weatherControl);
+
+            game.startStormPhase();
+            assertEquals(1, turnSummary.messages.size());
+            assertEquals("Turn 1 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals(1, fremenChat.messages.size());
+            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.get(0));
+        }
+
+        @Test
+        void turn2NoFactionNearShieldWall() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            game.setStormMovement(1);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
+            assertEquals(0, fremenChat.messages.size());
+        }
+
+        @Test
+        void turn2FremenHasWeatherControl() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            game.getTreacheryDeck().remove(weatherControl);
+            fremen.addTreacheryCard(weatherControl);
+
+            game.setStormMovement(1);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
+            assertEquals(1, fremenChat.messages.size());
+            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.get(0));
+        }
+
+        @Test
+        void turn2GuildNearShieldWallStormAt3() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Guild", 1);
+
+            game.setStorm(3);
+            game.setStormMovement(5);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
+        }
+
+        @Test
+        void turn2GuildNearShieldWallEmperorHasAtomics() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Guild", 1);
+            game.getTreacheryDeck().remove(familyAtomics);
+            emperor.addTreacheryCard(familyAtomics);
+
+            game.setStorm(3);
+            game.setStormMovement(5);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
+            assertEquals(0, guildChat.messages.size());
+        }
+
+        @Test
+        void turn2GuildNearShieldWallAndHasAtomics() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Guild", 1);
+            game.getTreacheryDeck().remove(familyAtomics);
+            guild.addTreacheryCard(familyAtomics);
+
+            game.setStorm(3);
+            game.setStormMovement(5);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
+            assertEquals(1, guildChat.messages.size());
+            assertEquals("fp5 will you play Family Atomics?", guildChat.messages.get(0));
+        }
+
+        @Test
+        void turn2GuildNearShieldWallStormAt8() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Guild", 1);
+
+            game.setStorm(8);
+            game.setStormMovement(5);
+            game.startStormPhase();
+            assertEquals(3, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
+            assertEquals("(Check if storm position prevents use of Family Atomics.)", turnSummary.messages.get(2));
+        }
+
+        @Test
+        void turn2GuildNearShieldWallStormAt8AtomicsRemovedFromGame() {
+            game.advanceTurn();
+            game.advanceTurn();
+            assertEquals(2, game.getTurn());
+
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Guild", 1);
+            game.getTreacheryDeck().remove(familyAtomics);
+
+            game.setStorm(8);
+            game.setStormMovement(2);
+            game.startStormPhase();
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("The storm would move 2 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
         }
     }
 }
