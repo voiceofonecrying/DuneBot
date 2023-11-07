@@ -3,6 +3,7 @@ package model.factions;
 import model.Force;
 import model.Game;
 import model.Territory;
+import model.TreacheryCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -156,7 +157,7 @@ abstract class FactionTestTemplate {
         String forceName;
 
         @BeforeEach
-        void setUpRemoveSpice() {
+        void setUp() {
             faction = getFaction();
 
             territory = game.getTerritories().get("Arrakeen");
@@ -266,6 +267,34 @@ abstract class FactionTestTemplate {
             territory = game.getTerritories().get("Gara Kulon");
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
+        }
+    }
+
+    @Nested
+    @DisplayName("#hasTreacheryCard")
+    class HasTreacheryCard {
+        Faction faction;
+        TreacheryCard familyAtomics;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+
+            familyAtomics = game.getTreacheryDeck().stream()
+                    .filter(t -> t.name().equals("Family Atomics "))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
+        }
+
+        @Test
+        void hasFamilyAtomics() {
+            faction.addTreacheryCard(familyAtomics);
+            assertTrue(faction.hasTreacheryCard("Family Atomics "));
+        }
+
+        @Test
+        void doesNotHaveFamilyAtomics() {
+            assertFalse(faction.hasTreacheryCard("Family Atomics "));
         }
     }
 }

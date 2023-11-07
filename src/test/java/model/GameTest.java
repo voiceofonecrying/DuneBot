@@ -19,6 +19,7 @@ class GameTest {
 
     private Game game;
     private TreacheryCard familyAtomics;
+    private TreacheryCard shield;
     private TreacheryCard weatherControl;
     private Faction atreides;
     private Faction bg;
@@ -36,15 +37,16 @@ class GameTest {
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
-        weatherControl = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Weather Control "))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
 
         familyAtomics = game.getTreacheryDeck().stream()
                 .filter(t -> t.name().equals("Family Atomics "))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
+        weatherControl = game.getTreacheryDeck().stream()
+                .filter(t -> t.name().equals("Weather Control "))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
+
     }
 
     @Nested
@@ -418,6 +420,41 @@ class GameTest {
     }
 
     @Nested
+    @DisplayName("#getFactionsWithTreacheryCard")
+    class GetFactionsWithTreacheryCard {
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            shield = game.getTreacheryDeck().stream()
+                    .filter(t -> t.name().equals("Shield "))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Shield not found"));
+        }
+
+        @Test
+        void fremenAndGuldHaveShields() {
+            fremen.addTreacheryCard(shield);
+            guild.addTreacheryCard(shield);
+            List<Faction> factionsWithShield = game.getFactionsWithTreacheryCard("Shield ");
+            assertEquals(2, factionsWithShield.size());
+            assertTrue(factionsWithShield.stream().anyMatch(f -> f.getName().equals("Fremen")));
+            assertTrue(factionsWithShield.stream().anyMatch(f -> f.getName().equals("Guild")));
+            assertFalse(factionsWithShield.stream().anyMatch(f -> f.getName().equals("Emperor")));
+        }
+    }
+
+    @Nested
     @DisplayName("#startStormPhase")
     class StartStormPhase {
         @BeforeEach
@@ -453,8 +490,7 @@ class GameTest {
             game.startStormPhase();
             assertEquals(1, turnSummary.messages.size());
             assertEquals("Turn 1 Storm Phase:", turnSummary.messages.get(0));
-            assertEquals(1, fremenChat.messages.size());
-            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.get(0));
+            assertEquals(0, fremenChat.messages.size());
         }
 
         @Test

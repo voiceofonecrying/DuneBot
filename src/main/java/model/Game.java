@@ -15,7 +15,9 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
@@ -602,6 +604,11 @@ public class Game {
         this.modInfo = modInfo;
     }
 
+    public List<Faction> getFactionsWithTreacheryCard(String cardName) {
+        return factions.stream().filter(f -> f.hasTreacheryCard(cardName))
+                .collect(Collectors.toList());
+    }
+
     public List<Faction> getFactionsInStormOrder() {
         int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
         List<Faction> stormOrderFactions = new ArrayList<>();
@@ -640,53 +647,39 @@ public class Game {
 
     public void startStormPhase() {
         turnSummary.publish("Turn " + turn + " Storm Phase:");
-        boolean atomicsEligible = false;
-        boolean nobodyHoldsAtomics = true;
-        for (Faction faction : getFactions()) {
-            boolean isNearShieldWall = false;
-            if (faction.isNearShieldWall()) {
-                isNearShieldWall = true;
-                atomicsEligible = true;
-            }
-            for (TreacheryCard card : faction.getTreacheryHand()) {
-                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    faction.getChat().publish(faction.getPlayer() + " will you play Weather Control?");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    nobodyHoldsAtomics = false;
-                    if (isNearShieldWall) {
-                        faction.getChat().publish(faction.getPlayer() + " will you play Family Atomics?");
-                    }
-                }
-            }
+
+        Faction factionWithAtomics = null;
+        try {
+            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics ").get(0);
+        } catch (IndexOutOfBoundsException e) {
+            // No faction has Family Atomics
         }
-        if (atomicsEligible && nobodyHoldsAtomics) {
-            boolean atomicsStillInGame = false;
-            for (TreacheryCard card : treacheryDeck) {
-                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    atomicsStillInGame = true;
-                    break;
-                }
-            }
-            for (TreacheryCard card : treacheryDiscard) {
-                if (atomicsStillInGame) {
-                    break;
-                }
-                if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    atomicsStillInGame = true;
-                    break;
-                }
-            }
-            if (!atomicsStillInGame) {
-                atomicsEligible = false;
-            }
+        if (factionWithAtomics != null && factionWithAtomics.isNearShieldWall()) {
+            factionWithAtomics.getChat().publish(factionWithAtomics.getPlayer() + " will you play Family Atomics?");
+        }
+
+        Faction factionWithWeatherControl = null;
+        try {
+            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control ").get(0);
+        } catch (IndexOutOfBoundsException e) {
+            // No faction has Weather Control
+        }
+        if (factionWithWeatherControl != null && turn != 1) {
+            factionWithWeatherControl.getChat().publish(factionWithWeatherControl.getPlayer() + " will you play Weather Control?");
+        }
+
+        boolean atomicsEligible = factions.stream().anyMatch(Faction::isNearShieldWall);
+        if (atomicsEligible && factionWithAtomics == null) {
+            boolean atomicsInDeck = treacheryDeck.stream().anyMatch(c -> c.name().equals("Family Atomics "));
+            boolean atomicsInDiscard = treacheryDiscard.stream().anyMatch(c -> c.name().equals("Family Atomics "));
+            if (!atomicsInDeck && !atomicsInDiscard) atomicsEligible = false;
         }
         if (turn != 1) {
             turnSummary.publish(
-                    "The storm would move " +
-                            stormMovement +
-                            " sectors this turn. Weather Control " +
-                            (atomicsEligible ? "and Family Atomics " : "") +
-                            "may be played at this time.");
+                    MessageFormat.format(
+                            "The storm would move {0} sectors this turn. Weather Control {1}may be played at this time.",
+                            stormMovement, (atomicsEligible ? "and Family Atomics " : ""))
+            );
             if (atomicsEligible && storm >= 5 && storm <= 9) {
                 turnSummary.publish("(Check if storm position prevents use of Family Atomics.)");
             }

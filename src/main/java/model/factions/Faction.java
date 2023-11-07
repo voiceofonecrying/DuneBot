@@ -228,6 +228,10 @@ public class Faction {
         return card;
     }
 
+    public boolean hasTreacheryCard(String cardName) {
+        return treacheryHand.stream().anyMatch(c -> c.name().equals(cardName));
+    }
+
     public void addTraitorCard(TraitorCard card) {
         traitorHand.add(card);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
