@@ -1,6 +1,7 @@
 package model;
 
 import enums.GameOption;
+import exceptions.ChannelNotFoundException;
 import model.factions.*;
 import model.topics.DuneTopic;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,15 +24,17 @@ class GameTest {
     private TreacheryCard weatherControl;
     private Faction atreides;
     private Faction bg;
-    private Faction emperor;
+    private EmperorFaction emperor;
     private Faction fremen;
     private Faction guild;
     private Faction harkonnen;
     private Faction bt;
     private Faction ix;
     private TestTopic turnSummary;
-    private TestTopic guildChat;
+    private TestTopic bgChat;
+    private TestTopic emperorChat;
     private TestTopic fremenChat;
+    private TestTopic guildChat;
 
 
     @BeforeEach
@@ -617,6 +620,184 @@ class GameTest {
             assertEquals(2, turnSummary.messages.size());
             assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
             assertEquals("The storm would move 2 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
+        }
+    }
+
+    @Nested
+    @DisplayName("#rempveForces")
+    class RemoveForces {
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
+        }
+
+        @Test
+        void removeEmperorTroopAndSardaukarToTanks() throws ChannelNotFoundException {
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Emperor", 3);
+            territory.setForceStrength("Emperor*", 5);
+            assertEquals(3, territory.getForce("Emperor").getStrength());
+            assertEquals(5, territory.getForce("Emperor*").getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+
+            game.removeForces("Sihaya Ridge", emperor, 1, 1, true);
+            assertEquals(2, territory.getForce("Emperor").getStrength());
+            assertEquals(4, territory.getForce("Emperor*").getStrength());
+            assertEquals(1, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(1, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+            assertEquals(0, turnSummary.messages.size());
+            assertEquals(0, emperorChat.messages.size());
+        }
+
+        @Test
+        void removeEmperorTroopAndSardaukarToReserves() throws ChannelNotFoundException {
+            // Change to placeForces after placeForces moves to Game
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Emperor", 3);
+            territory.setForceStrength("Emperor*", 5);
+            assertEquals(3, territory.getForce("Emperor").getStrength());
+            assertEquals(5, territory.getForce("Emperor*").getStrength());
+            // Change to 12 after placeForces is used instead of setForceStrength
+            assertEquals(15, emperor.getReserves().getStrength());
+            // Change to 0 after placeForces is used instead of setForceStrength
+            assertEquals(5, emperor.getSpecialReserves().getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+
+            game.removeForces("Sihaya Ridge", emperor, 1, 1, false);
+            assertEquals(2, territory.getForce("Emperor").getStrength());
+            assertEquals(4, territory.getForce("Emperor*").getStrength());
+            // Change to 13 after placeForces is used instead of setForceStrength
+            assertEquals(16, emperor.getReserves().getStrength());
+            // Change to 1 after placeForces is used instead of setForceStrength
+            // assertEquals(6, emperor.getSpecialReserves().getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+            assertEquals(0, turnSummary.messages.size());
+            assertEquals(0, emperorChat.messages.size());
+        }
+
+        @Test
+        void removeEmperorTroopAndSardaukarFromHomeworlds() throws ChannelNotFoundException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            // Change to placeForces after placeForces moves to Game
+            Territory kaitain = game.getTerritory("Kaitain");
+            Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+            kaitain.setForceStrength("Emperor", 15);
+            salusaSecundus.setForceStrength("Emperor*", 5);
+            assertEquals(15, kaitain.getForce("Emperor").getStrength());
+            assertEquals(5, salusaSecundus.getForce("Emperor*").getStrength());
+            // Change to 12 after placeForces is used instead of setForceStrength
+            assertEquals(15, emperor.getReserves().getStrength());
+            // Change to 0 after placeForces is used instead of setForceStrength
+            assertEquals(5, emperor.getSpecialReserves().getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+            assertTrue(emperor.isHighThreshold());
+            assertTrue(emperor.isSecundusHighThreshold());
+
+            assertTrue(emperor.isHighThreshold());
+            assertEquals(5, emperor.getHighThreshold());
+            assertEquals(2, emperor.getSecundusHighThreshold());
+            assertEquals(15, kaitain.getForce("Emperor").getStrength());
+            assertEquals(5, salusaSecundus.getForce("Emperor*").getStrength());
+            assertEquals(0, kaitain.getForce("Emperor*").getStrength());
+            game.removeForces("Kaitain", emperor, 0, 0, true);
+//            assertEquals(5, kaitain.getForce("Emperor").getStrength());
+//            assertEquals(5, emperor.getReserves().getStrength());
+//            assertTrue(emperor.isHighThreshold());
+            assertEquals(1, turnSummary.messages.size());
+            assertEquals("Kaitain has flipped to low threshold.", turnSummary.messages.get(0));
+
+            game.removeForces("Salusa Secundus", emperor, 0, 3, true);
+            assertEquals(2, salusaSecundus.getForce("Emperor*").getStrength());
+            assertEquals(2, emperor.getSpecialReserves().getStrength());
+            assertTrue(emperor.isSecundusHighThreshold());
+            assertFalse(emperor.isHighThreshold());
+            game.removeForces("Salusa Secundus", emperor, 0, 1, true);
+            assertEquals(1, salusaSecundus.getForce("Emperor*").getStrength());
+            assertEquals(1, emperor.getSpecialReserves().getStrength());
+            assertFalse(emperor.isSecundusHighThreshold());
+            assertEquals(2, turnSummary.messages.size());
+            assertEquals("Salusa Secundus has flipped to low threshold.", turnSummary.messages.get(1));
+        }
+
+        @Test
+        void removeFremenTroopAndFedaykinToReserves() throws ChannelNotFoundException {
+            // Change to placeForces after placeForces moves to Game
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Fremen", 3);
+            territory.setForceStrength("Fremen*", 3);
+            assertEquals(3, territory.getForce("Fremen").getStrength());
+            assertEquals(3, territory.getForce("Fremen*").getStrength());
+            // Change to 14 after placeForces is used instead of setForceStrength
+            assertEquals(17, fremen.getReserves().getStrength());
+            // Change to 0 after placeForces is used instead of setForceStrength
+            assertEquals(3, fremen.getSpecialReserves().getStrength());
+            assertEquals(0, game.getForceFromTanks(fremen.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(fremen.getName() + "*").getStrength());
+
+            game.removeForces("Sihaya Ridge", fremen, 1, 1, false);
+            assertEquals(2, territory.getForce("Fremen").getStrength());
+            assertEquals(2, territory.getForce("Fremen*").getStrength());
+            // Change to 13 after placeForces is used instead of setForceStrength
+            assertEquals(18, fremen.getReserves().getStrength());
+            // Change to 1 after placeForces is used instead of setForceStrength
+            assertEquals(4, fremen.getSpecialReserves().getStrength());
+            assertEquals(0, game.getForceFromTanks(fremen.getName()).getStrength());
+            assertEquals(0, game.getForceFromTanks(fremen.getName() + "*").getStrength());
+            assertEquals(0, turnSummary.messages.size());
+            assertEquals(0, fremenChat.messages.size());
+        }
+
+        @Test
+        void removeBGAdvisorToTanks() throws ChannelNotFoundException {
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Advisor", 1);
+            assertEquals(1, territory.getForce("Advisor").getStrength());
+
+            game.removeForces("Sihaya Ridge", bg, 1, 0, true);
+            assertEquals(0, territory.getForce("Advisor").getStrength());
+            assertEquals(0, turnSummary.messages.size());
+            assertEquals(0, bgChat.messages.size());
+        }
+
+        @Test
+        void removeSpecialFailsForBG() {
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Advisor", 1);
+            assertEquals(1, territory.getForce("Advisor").getStrength());
+
+            assertThrows(IllegalArgumentException.class, () -> game.removeForces("Sihaya Ridge", bg, 1, 1, true));
+        }
+
+        @Test
+        void removeTooManyBG() {
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Advisor", 1);
+            assertEquals(1, territory.getForce("Advisor").getStrength());
+
+            assertThrows(IllegalArgumentException.class, () -> game.removeForces("Sihaya Ridge", bg, 2, 0, true));
         }
     }
 }

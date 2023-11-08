@@ -408,12 +408,12 @@ public class ShipmentAndMovementButtons implements Pressable {
             }
         }
         if (shipment.isToReserves()) {
-            CommandManager.removeForces(territoryName, faction, force, specialForce, false, game, discordGame);
+            game.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice);
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else if (!crossShipFrom.isEmpty()) {
-            CommandManager.removeForces(crossShipFrom, faction, force, 0, false, game, discordGame);
+            game.removeForces(crossShipFrom, faction, force, 0, false);
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
         } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);

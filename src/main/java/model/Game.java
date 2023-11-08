@@ -6,8 +6,10 @@ import com.google.gson.JsonParser;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
+import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
+import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
@@ -19,6 +21,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static controller.commands.CommandOptions.faction;
 import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
@@ -694,5 +697,39 @@ public class Game {
             return (cyborgsInHMS + suboidsInHMS > 0);
         }
         return false;
+    }
+
+    public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) throws ChannelNotFoundException {
+        targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
+        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
+            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
+            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
+                ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
+                turnSummary.publish("Salusa Secundus has flipped to low threshold.");
+
+            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > getTerritory(territoryName).getForce(faction.getName()).getStrength() + getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
+                System.out.println(
+                        MessageFormat.format(
+                                "isHigh = {0}\ngetHigh = {1}\ngetForce = {2}\ngetSpecial = {3}",
+                                homeworldFaction.isHighThreshold(),homeworldFaction.getHighThreshold(),
+                                getTerritory(territoryName).getForce(faction.getName()).getStrength(), getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()
+                        )
+                );
+                homeworldFaction.setHighThreshold(false);
+                turnSummary.publish(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
+            }
+
+            if (territoryName.equals("Ecaz") && getFaction("Ecaz").isHomeworldOccupied()) {
+                for (Faction faction1 : factions) {
+                    faction1.getLeaders().removeIf(leader1 -> leader1.name().equals("Duke Vidal"));
+                }
+                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, null, false));
+                turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
+            }
+        }
+        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+            setUpdated(UpdateType.MAP);
+        }
     }
 }

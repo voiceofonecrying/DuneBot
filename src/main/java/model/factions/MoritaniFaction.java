@@ -3,7 +3,6 @@ package model.factions;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.TurnSummary;
-import controller.commands.CommandManager;
 import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
@@ -57,10 +56,10 @@ public class MoritaniFaction extends Faction {
                 this.handLimit = 3;
                 location.setAftermathToken(true);
                 for (Force force : location.getForces()) {
-                    if (force.getName().contains("*")) CommandManager
-                            .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true, game, discordGame);
+                    if (force.getName().contains("*")) game
+                            .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true);
                     else
-                        CommandManager.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
+                        game.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true);
                 }
             }
             case "Extortion" -> {

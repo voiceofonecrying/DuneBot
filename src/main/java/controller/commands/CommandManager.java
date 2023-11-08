@@ -10,7 +10,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
-import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.Permission;
@@ -493,33 +492,6 @@ public class CommandManager extends ListenerAdapter {
                 turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
             } else {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, to, targetFaction);
-            }
-        }
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
-    }
-
-    public static void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
-        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.getHomeworlds().containsValue(territoryName)) {
-            Faction homeworldFaction = game.getFactions().stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
-            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
-                ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
-                discordGame.getTurnSummary().queueMessage("Salusa Secundus has flipped to low threshold.");
-
-            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > game.getTerritory(territoryName).getForce(faction.getName()).getStrength() + game.getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
-                homeworldFaction.setHighThreshold(false);
-                discordGame.getTurnSummary().queueMessage(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
-            }
-
-            if (territoryName.equals("Ecaz") && game.getFaction("Ecaz").isHomeworldOccupied()) {
-                for (Faction faction1 : game.getFactions()) {
-                    faction1.getLeaders().removeIf(leader1 -> leader1.name().equals("Duke Vidal"));
-                }
-                game.getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, null, false));
-                discordGame.getTurnSummary().queueMessage("Duke Vidal has left to work for " + game.getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
@@ -1225,8 +1197,8 @@ public class CommandManager extends ListenerAdapter {
             if (!game.getTerritory(drawn.name()).getForces().isEmpty()) {
                 message.append("all forces in the territory were killed in the spice blow!\n");
                 for (Force force : game.getTerritory(drawn.name()).getForces()) {
-                    if (force.getName().contains("*")) removeForces(drawn.name(), game.getFaction(force.getFactionName()), 0, force.getStrength(),  true, game, discordGame);
-                    else removeForces(drawn.name(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, game, discordGame);
+                    if (force.getName().contains("*")) game.removeForces(drawn.name(), game.getFaction(force.getFactionName()), 0, force.getStrength(),  true);
+                    else game.removeForces(drawn.name(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true);
                 }
             }
             message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
@@ -1392,7 +1364,7 @@ public class CommandManager extends ListenerAdapter {
         int specialAmount = discordGame.required(starredAmount).getAsInt();
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
-        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks, game, discordGame);
+        game.removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
         discordGame.pushGame();
     }
 
