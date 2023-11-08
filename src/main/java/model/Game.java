@@ -3,6 +3,7 @@ package model;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import constants.Emojis;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
@@ -527,20 +528,6 @@ public class Game {
         Collections.shuffle(getTreacheryDeck());
     }
 
-    /**
-     * @return true if a Sandtrout was drawn and not canceled by a worm
-     */
-    public boolean isSandtroutInPlay() {
-        return sandtroutInPlay;
-    }
-
-    /**
-     * @param sandtroutInPlay true if a Sandtrout was drawn and not canceled by a worm
-     */
-    public void setSandtroutInPlay(boolean sandtroutInPlay) {
-        this.sandtroutInPlay = sandtroutInPlay;
-    }
-
     public HashMap<String, List<String>> getAdjacencyList() {
         return adjacencyList;
     }
@@ -559,14 +546,6 @@ public class Game {
 
     public HashMap<String, String> getHomeworlds() {
         return homeworlds;
-    }
-
-    public List<String> getHieregTokens() {
-        return hieregTokens;
-    }
-
-    public List<String> getSmugglerTokens() {
-        return smugglerTokens;
     }
 
     public HashMap<Integer, List<String>> getQuotes() throws IOException {
@@ -648,6 +627,16 @@ public class Game {
             setUpdated(UpdateType.MAP);
     }
 
+    public boolean ixCanMoveHMS() {
+        if (hasFaction("Ix")) {
+            Territory hms = getTerritory("Hidden Mobile Stronghold");
+            int cyborgsInHMS = hms.getForce("Ix*").getStrength();
+            int suboidsInHMS = hms.getForce("Ix").getStrength();
+            return (cyborgsInHMS + suboidsInHMS > 0);
+        }
+        return false;
+    }
+
     public void startStormPhase() {
         turnSummary.publish("Turn " + turn + " Storm Phase:");
 
@@ -689,14 +678,115 @@ public class Game {
         }
     }
 
-    public boolean ixCanMoveHMS() {
-        if (hasFaction("Ix")) {
-            Territory hms = getTerritory("Hidden Mobile Stronghold");
-            int cyborgsInHMS = hms.getForce("Ix*").getStrength();
-            int suboidsInHMS = hms.getForce("Ix").getStrength();
-            return (cyborgsInHMS + suboidsInHMS > 0);
+    public void drawSpiceBlow(String spiceBlowDeckName) throws ChannelNotFoundException {
+        LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
+                spiceDiscardA : spiceDiscardB;
+        LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
+
+        StringBuilder message = new StringBuilder();
+
+        SpiceCard drawn;
+
+        message.append("**Spice Deck ").append(spiceBlowDeckName).append("**\n");
+
+        boolean shaiHuludSpotted = false;
+        int spiceMultiplier = 1;
+
+        do {
+            if (spiceDeck.isEmpty()) {
+                spiceDeck.addAll(spiceDiscardA);
+                spiceDeck.addAll(spiceDiscardB);
+                Collections.shuffle(spiceDeck);
+                spiceDiscardA.clear();
+                spiceDiscardB.clear();
+                message.append("The Spice Deck is empty, and will be recreated from the Discard piles.\n");
+            }
+
+            drawn = spiceDeck.pop();
+            boolean saveWormForReshuffle = false;
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud") || drawn.name().equalsIgnoreCase("Great Maker")) {
+                if (turn <= 1) {
+                    saveWormForReshuffle = true;
+                    message.append(drawn.name())
+                            .append(" will be reshuffled back into deck.\n");
+                } else if (!discard.isEmpty() && !shaiHuludSpotted) {
+                    shaiHuludSpotted = true;
+
+                    if (sandtroutInPlay) {
+                        spiceMultiplier = 2;
+                        sandtroutInPlay = false;
+                        message.append(drawn.name())
+                                .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                    } else {
+                        SpiceCard lastCard = discard.getLast();
+                        message.append(drawn.name())
+                                .append(" has been spotted in ").append(lastCard.name()).append("!\n");
+                        int spice = territories.get(lastCard.name()).getSpice();
+                        if (spice > 0) {
+                            message.append(spice);
+                            message.append(Emojis.SPICE);
+                            message.append(" is eaten by the worm!\n");
+                            territories.get(lastCard.name()).setSpice(0);
+                        }
+                    }
+
+                } else {
+                    shaiHuludSpotted = true;
+                    spiceMultiplier = 1;
+                    message.append(drawn.name())
+                            .append(" has been spotted!\n");
+                }
+            } else if (drawn.name().equalsIgnoreCase("Sandtrout")) {
+                shaiHuludSpotted = true;
+                message.append("Sandtrout has been spotted, and all alliances have ended!\n");
+                factions.forEach(Faction::removeAlly);
+                sandtroutInPlay = true;
+            } else {
+                message.append("Spice has been spotted in ");
+                message.append(drawn.name());
+                message.append("!\n");
+            }
+            if (saveWormForReshuffle) {
+                wormsToReshuffle.add(drawn);
+            } else if (!drawn.name().equalsIgnoreCase("Sandtrout")) {
+                discard.add(drawn);
+            }
+        } while (drawn.name().equalsIgnoreCase("Shai-Hulud") ||
+                drawn.name().equalsIgnoreCase("Great Maker") ||
+                drawn.name().equalsIgnoreCase("Sandtrout"));
+
+        while (!wormsToReshuffle.isEmpty()) {
+            spiceDeck.add(wormsToReshuffle.pop());
+            if (wormsToReshuffle.isEmpty()) {
+                Collections.shuffle(spiceDeck);
+            }
         }
-        return false;
+
+        if (storm == drawn.sector()) message.append(" (blown away by the storm!)\n");
+        if (drawn.discoveryToken() == null) territories.get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
+        else {
+            getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
+            if (!getTerritory(drawn.name()).getForces().isEmpty()) {
+                message.append("all forces in the territory were killed in the spice blow!\n");
+                for (Force force : getTerritory(drawn.name()).getForces()) {
+                    if (force.getName().contains("*")) removeForces(drawn.name(), getFaction(force.getFactionName()), 0, force.getStrength(),  true);
+                    else removeForces(drawn.name(), getFaction(force.getFactionName()), force.getStrength(), 0, true);
+                }
+            }
+            message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
+            if (drawn.discoveryToken().equals("Hiereg")) getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.remove(0));
+            else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.remove(0));
+            getTerritory(drawn.tokenLocation()).setDiscovered(false);
+            if (hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) getFaction("Guild").getChat()
+                    .publish("The discovery token at " + drawn.tokenLocation() + " is a(n) " + getTerritory(drawn.tokenLocation()).getDiscoveryToken());
+            if (hasFaction("Fremen") && drawn.discoveryToken().equals("Hiereg")) getFaction("Fremen").getChat()
+                    .publish("The discovery token at " + drawn.tokenLocation() + " is a(n) " + getTerritory(drawn.tokenLocation()).getDiscoveryToken());
+        }
+        if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
+
+        turnSummary.publish(message.toString());
+        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            setUpdated(UpdateType.MAP);
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) throws ChannelNotFoundException {
