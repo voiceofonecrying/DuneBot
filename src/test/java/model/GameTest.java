@@ -635,7 +635,7 @@ class GameTest {
         SpiceCard greatMaker;
 
         @BeforeEach
-        void setUp() throws IOException, ChannelNotFoundException {
+        void setUp() throws IOException {
             emperor = new EmperorFaction("fp3", "un3", game);
             fremen = new FremenFaction("fp4", "un4", game);
             game.addFaction(emperor);

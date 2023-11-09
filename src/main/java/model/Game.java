@@ -14,7 +14,6 @@ import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
-import net.dv8tion.jda.api.entities.Message;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -813,7 +812,7 @@ public class Game {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
-            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().get();
+            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
             if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
                 ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
                 turnSummary.publish("Salusa Secundus has flipped to low threshold.");
