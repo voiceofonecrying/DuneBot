@@ -632,6 +632,7 @@ class GameTest {
         Territory sihayaRidge;
         SpiceCard lastBlow;
         SpiceCard shaiHulud;
+        SpiceCard greatMaker;
 
         @BeforeEach
         void setUp() throws IOException, ChannelNotFoundException {
@@ -650,12 +651,14 @@ class GameTest {
             assertEquals(lastBlow, game.getSpiceDiscardA().getLast());
 
             shaiHulud = game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow();
-            game.getSpiceDeck().addFirst(shaiHulud);
-            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+            greatMaker = new SpiceCard("Great Maker", 0, 0, null, null);
         }
 
         @Test
         void shaiHuludDevoursTroops() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+
             sihayaRidge.setForceStrength("Emperor", 3);
             sihayaRidge.setForceStrength("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
@@ -674,6 +677,9 @@ class GameTest {
 
         @Test
         void shaiHuludDoesNotDevourFremen() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+
             sihayaRidge.setForceStrength("Fremen", 5);
             sihayaRidge.setForceStrength("Fremen*", 3);
             assertEquals(3, sihayaRidge.getForce("Fremen*").getStrength());
@@ -691,6 +697,9 @@ class GameTest {
 
         @Test
         void shaiHuludDoesNotDevourFremenAlly() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+
             emperor.setAlly("Fremen");
             fremen.setAlly("Emperor");
             sihayaRidge.setForceStrength("Emperor", 3);
@@ -701,6 +710,69 @@ class GameTest {
             game.drawSpiceBlow("A");
             assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
             assertEquals(shaiHulud, game.getSpiceDiscardA().get(1));
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
+            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+        }
+
+        @Test
+        void greatMakerDevoursTroops() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(greatMaker);
+            assertEquals(greatMaker, game.getSpiceDeck().getFirst());
+
+            sihayaRidge.setForceStrength("Emperor", 3);
+            sihayaRidge.setForceStrength("Emperor*", 5);
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(greatMaker, game.getSpiceDiscardA().get(1));
+            assertEquals(0, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(0, sihayaRidge.getForce("Emperor").getStrength());
+            assertEquals(5, game.getForceFromTanks("Emperor*").getStrength());
+            assertEquals(3, game.getForceFromTanks("Emperor").getStrength());
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} devoured by Great Maker", Emojis.EMPEROR_SARDAUKAR)));
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} devoured by Great Maker", Emojis.EMPEROR_TROOP)));
+        }
+
+        @Test
+        void greatMakerDoesNotDevourFremen() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(greatMaker);
+            assertEquals(greatMaker, game.getSpiceDeck().getFirst());
+
+            sihayaRidge.setForceStrength("Fremen", 5);
+            sihayaRidge.setForceStrength("Fremen*", 3);
+            assertEquals(3, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(greatMaker, game.getSpiceDiscardA().get(1));
+            assertEquals(3, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
+            assertEquals(0, game.getForceFromTanks("Fremen*").getStrength());
+            assertEquals(0, game.getForceFromTanks("Fremen").getStrength());
+            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+        }
+
+        @Test
+        void greatMakerDoesNotDevourFremenAlly() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(greatMaker);
+            assertEquals(greatMaker, game.getSpiceDeck().getFirst());
+
+            emperor.setAlly("Fremen");
+            fremen.setAlly("Emperor");
+            sihayaRidge.setForceStrength("Emperor", 3);
+            sihayaRidge.setForceStrength("Emperor*", 5);
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(greatMaker, game.getSpiceDiscardA().get(1));
             assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
             assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());

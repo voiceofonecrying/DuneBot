@@ -735,9 +735,9 @@ public class Game {
                                 if (force.getName().contains("Fremen")) continue;
                                 Faction fremen = getFaction("Fremen");
                                 if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
-                                message.append(MessageFormat.format("{0} {1} devoured by Shai-Hulud\n",
-                                        force.getStrength(), Emojis.getForceEmoji(force.getName()
-                                )));
+                                message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
+                                        force.getStrength(), Emojis.getForceEmoji(force.getName()), drawn.name()
+                                ));
                                 forcesToRemove.add(force);
                             }
                             for (Force force : forcesToRemove) {
