@@ -730,18 +730,14 @@ public class Game {
                             territories.get(lastCard.name()).setSpice(0);
                         }
                         if (!getTerritory(lastCard.name()).getForces().isEmpty()) {
-                            message.append("all forces in the territory were killed in the spice blow!\n");
                             List<Force> forcesToRemove = new ArrayList<>();
                             for (Force force : getTerritory(lastCard.name()).getForces()) {
                                 if (force.getName().contains("Fremen")) continue;
                                 Faction fremen = getFaction("Fremen");
                                 if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
-                                boolean specialTroops = force.getName().contains("*");
-                                message.append(MessageFormat.format(
-                                        "{0} {1}{2} troops devoured by Shai-Hulud\n",
-                                        force.getStrength(), getFaction(force.getFactionName()).getEmoji(),
-                                        specialTroops ? " special" : ""
-                                ));
+                                message.append(MessageFormat.format("{0} {1} devoured by Shai-Hulud\n",
+                                        force.getStrength(), Emojis.getForceEmoji(force.getName()
+                                )));
                                 forcesToRemove.add(force);
                             }
                             for (Force force : forcesToRemove) {

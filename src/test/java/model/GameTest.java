@@ -668,8 +668,8 @@ class GameTest {
             assertEquals(0, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(5, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(3, game.getForceFromTanks("Emperor").getStrength());
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} special troops devoured by Shai-Hulud", Emojis.EMPEROR)));
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} troops devoured by Shai-Hulud", Emojis.EMPEROR)));
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} devoured by Shai-Hulud", Emojis.EMPEROR_SARDAUKAR)));
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} devoured by Shai-Hulud", Emojis.EMPEROR_TROOP)));
         }
 
         @Test
