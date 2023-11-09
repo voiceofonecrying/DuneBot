@@ -172,6 +172,10 @@ public class Faction {
 
     public void removeAlly() {
         ally = null;
+        allySpiceBidding = 0;
+        allySpiceShipment = 0;
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public boolean hasAlly() {
