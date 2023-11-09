@@ -14,6 +14,7 @@ import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
+import net.dv8tion.jda.api.entities.Message;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
@@ -727,6 +728,29 @@ public class Game {
                             message.append(Emojis.SPICE);
                             message.append(" is eaten by the worm!\n");
                             territories.get(lastCard.name()).setSpice(0);
+                        }
+                        if (!getTerritory(lastCard.name()).getForces().isEmpty()) {
+                            message.append("all forces in the territory were killed in the spice blow!\n");
+                            List<Force> forcesToRemove = new ArrayList<>();
+                            for (Force force : getTerritory(lastCard.name()).getForces()) {
+                                if (force.getName().contains("Fremen")) continue;
+                                Faction fremen = getFaction("Fremen");
+                                if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
+                                boolean specialTroops = force.getName().contains("*");
+                                message.append(MessageFormat.format(
+                                        "{0} {1}{2} troops devoured by Shai-Hulud\n",
+                                        force.getStrength(), getFaction(force.getFactionName()).getEmoji(),
+                                        specialTroops ? " special" : ""
+                                ));
+                                forcesToRemove.add(force);
+                            }
+                            for (Force force : forcesToRemove) {
+                                if (force.getName().contains("*")) {
+                                    removeForces(lastCard.name(), getFaction(force.getFactionName()), 0, force.getStrength(),  true);
+                                } else {
+                                    removeForces(lastCard.name(), getFaction(force.getFactionName()), force.getStrength(), 0, true);
+                                }
+                            }
                         }
                     }
 

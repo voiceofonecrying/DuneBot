@@ -1,5 +1,6 @@
 package model;
 
+import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import model.factions.*;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -620,6 +622,90 @@ class GameTest {
             assertEquals(2, turnSummary.messages.size());
             assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
             assertEquals("The storm would move 2 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
+        }
+    }
+
+
+    @Nested
+    @DisplayName("#drawSpiceBlow")
+    class DrawSpiceBlow {
+        Territory sihayaRidge;
+        SpiceCard lastBlow;
+        SpiceCard shaiHulud;
+
+        @BeforeEach
+        void setUp() throws IOException, ChannelNotFoundException {
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.advanceTurn();
+            game.advanceTurn();
+            sihayaRidge = game.getTerritory("Sihaya Ridge");
+            lastBlow = game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow();
+            game.getSpiceDiscardA().add(lastBlow);
+            assertEquals(lastBlow, game.getSpiceDiscardA().getLast());
+
+            shaiHulud = game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow();
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+        }
+
+        @Test
+        void shaiHuludDevoursTroops() throws ChannelNotFoundException {
+            sihayaRidge.setForceStrength("Emperor", 3);
+            sihayaRidge.setForceStrength("Emperor*", 5);
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(shaiHulud, game.getSpiceDiscardA().get(1));
+            assertEquals(0, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(0, sihayaRidge.getForce("Emperor").getStrength());
+            assertEquals(5, game.getForceFromTanks("Emperor*").getStrength());
+            assertEquals(3, game.getForceFromTanks("Emperor").getStrength());
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} special troops devoured by Shai-Hulud", Emojis.EMPEROR)));
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} troops devoured by Shai-Hulud", Emojis.EMPEROR)));
+        }
+
+        @Test
+        void shaiHuludDoesNotDevourFremen() throws ChannelNotFoundException {
+            sihayaRidge.setForceStrength("Fremen", 5);
+            sihayaRidge.setForceStrength("Fremen*", 3);
+            assertEquals(3, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(shaiHulud, game.getSpiceDiscardA().get(1));
+            assertEquals(3, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
+            assertEquals(0, game.getForceFromTanks("Fremen*").getStrength());
+            assertEquals(0, game.getForceFromTanks("Fremen").getStrength());
+            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+        }
+
+        @Test
+        void shaiHuludDoesNotDevourFremenAlly() throws ChannelNotFoundException {
+            emperor.setAlly("Fremen");
+            fremen.setAlly("Emperor");
+            sihayaRidge.setForceStrength("Emperor", 3);
+            sihayaRidge.setForceStrength("Emperor*", 5);
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(shaiHulud, game.getSpiceDiscardA().get(1));
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
+            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
         }
     }
 
