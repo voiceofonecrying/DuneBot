@@ -65,7 +65,7 @@ public class CardImages {
 
     public static Optional<FileUpload> getHomeworldImage(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
-                ".*" + Pattern.quote(cardName.trim()) + ".*",
+                Pattern.quote(cardName.trim()) + ".*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
