@@ -748,7 +748,6 @@ public class Game {
                             }
                         }
                     }
-
                 } else {
                     shaiHuludSpotted = true;
                     spiceMultiplier = 1;

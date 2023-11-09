@@ -633,6 +633,7 @@ class GameTest {
         SpiceCard lastBlow;
         SpiceCard shaiHulud;
         SpiceCard greatMaker;
+        SpiceCard sandtrout;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -652,6 +653,7 @@ class GameTest {
 
             shaiHulud = game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow();
             greatMaker = new SpiceCard("Great Maker", 0, 0, null, null);
+            sandtrout = new SpiceCard("Sandtrout", 0, 0, null, null);
         }
 
         @Test
@@ -773,6 +775,27 @@ class GameTest {
             game.drawSpiceBlow("A");
             assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
             assertEquals(greatMaker, game.getSpiceDiscardA().get(1));
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
+            assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
+            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+        }
+
+        @Test
+        void shaiHuludAfterSandtroutDoesNotDevourTroops() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(shaiHulud);
+            game.getSpiceDeck().addFirst(sandtrout);
+            assertEquals(sandtrout, game.getSpiceDeck().getFirst());
+
+            sihayaRidge.setForceStrength("Emperor", 3);
+            sihayaRidge.setForceStrength("Emperor*", 5);
+            assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
+            assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(shaiHulud, game.getSpiceDiscardA().get(1));
             assertEquals(5, sihayaRidge.getForce("Emperor*").getStrength());
             assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
