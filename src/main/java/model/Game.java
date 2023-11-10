@@ -740,11 +740,7 @@ public class Game {
                                 forcesToRemove.add(force);
                             }
                             for (Force force : forcesToRemove) {
-                                if (force.getName().contains("*")) {
-                                    removeForces(lastCard.name(), getFaction(force.getFactionName()), 0, force.getStrength(),  true);
-                                } else {
-                                    removeForces(lastCard.name(), getFaction(force.getFactionName()), force.getStrength(), 0, true);
-                                }
+                                removeForces(lastCard.name(), getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
                             }
                         }
                     }
@@ -788,8 +784,7 @@ public class Game {
                 message.append("all forces in the territory were killed in the spice blow!\n");
                 List<Force> forcesToRemove = new ArrayList<>(getTerritory(drawn.name()).getForces());
                 for (Force force : forcesToRemove) {
-                    if (force.getName().contains("*")) removeForces(drawn.name(), getFaction(force.getFactionName()), 0, force.getStrength(),  true);
-                    else removeForces(drawn.name(), getFaction(force.getFactionName()), force.getStrength(), 0, true);
+                    removeForces(drawn.name(), getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
                 }
             }
             message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
@@ -806,6 +801,10 @@ public class Game {
         turnSummary.publish(message.toString());
         if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             setUpdated(UpdateType.MAP);
+    }
+
+    public void removeForces(String territoryName, Faction targetFaction, int amountValue, boolean special, boolean isToTanks) throws ChannelNotFoundException {
+        removeForces(territoryName, targetFaction, (special ? 0 : amountValue), (special ? amountValue : 0), isToTanks);
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) throws ChannelNotFoundException {
