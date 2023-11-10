@@ -786,7 +786,8 @@ public class Game {
             getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
             if (!getTerritory(drawn.name()).getForces().isEmpty()) {
                 message.append("all forces in the territory were killed in the spice blow!\n");
-                for (Force force : getTerritory(drawn.name()).getForces()) {
+                List<Force> forcesToRemove = new ArrayList<>(getTerritory(drawn.name()).getForces());
+                for (Force force : forcesToRemove) {
                     if (force.getName().contains("*")) removeForces(drawn.name(), getFaction(force.getFactionName()), 0, force.getStrength(),  true);
                     else removeForces(drawn.name(), getFaction(force.getFactionName()), force.getStrength(), 0, true);
                 }
