@@ -754,6 +754,7 @@ public class DiscordGame {
     }
 
     public String getEmojiTag(String emojiName) {
-        return getEmoji(emojiName).getFormatted();
+        RichCustomEmoji emoji = getEmoji(emojiName);
+        return emoji == null ? ":" + emojiName + ":" : emoji.getFormatted();
     }
 }
