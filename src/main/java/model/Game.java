@@ -840,4 +840,28 @@ public class Game {
             setUpdated(UpdateType.MAP);
         }
     }
+
+    public void putTerritoryInAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
+        String insertedName = insertedTerritory.getTerritoryName();
+        String containingName = containingTerritory.getTerritoryName().replaceAll("\\(.*\\)", "").strip();
+        territories.putIfAbsent(insertedName, insertedTerritory);
+        adjacencyList.putIfAbsent(insertedName, new ArrayList<>());
+        adjacencyList.get(insertedName).add(containingName);
+        adjacencyList.get(containingName).add(insertedName);
+    }
+
+    public void removeTerritoryFromAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
+        String insertedName = insertedTerritory.getTerritoryName();
+        String containingName = containingTerritory.getTerritoryName().replaceAll("\\(.*\\)", "").strip();
+        try {
+            adjacencyList.get(insertedName).remove(containingName);
+        } catch (NullPointerException e) {
+            // containing was not adjacent to inserted
+        }
+        try {
+            adjacencyList.get(containingName).remove(insertedName);
+        } catch (NullPointerException e) {
+            // inserted was not adjacent to containing
+        }
+    }
 }

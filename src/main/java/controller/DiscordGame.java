@@ -391,6 +391,13 @@ public class DiscordGame {
         Game game = gson.fromJson(gameJson, Game.class);
         addGameReferenceToFactions(game);
 
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory.hasForce("Hidden Mobile Stronghold")) {
+                Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+                game.putTerritoryInAnotherTerritory(hms, territory);
+            }
+        }
+
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));

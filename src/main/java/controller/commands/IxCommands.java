@@ -142,6 +142,8 @@ public class IxCommands {
     public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
+        game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
+        System.out.println(game.getAdjacencyList().get("Hidden Mobile Strongold"));
         discordGame.pushGame();
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
@@ -152,6 +154,7 @@ public class IxCommands {
     public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         for (Territory territory : game.getTerritories().values()) {
             territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
+            game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territory);
         }
         placeHMS(discordGame, game);
     }

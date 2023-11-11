@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -979,6 +980,72 @@ class GameTest {
             assertEquals(1, territory.getForce("Advisor").getStrength());
 
             assertThrows(IllegalArgumentException.class, () -> game.removeForces("Sihaya Ridge", bg, 2, 0, true));
+        }
+    }
+
+    @Nested
+    @DisplayName("#putTerritoryInAnotherTerritory")
+    class PutTerritoryInAnotherTerritory {
+        Territory hms;
+        String hmsName = "Hidden Mobile Stronghold";
+        Territory shieldWallNorth;
+        String shieldWallNorthName = "Shield Wall (North Sector)";
+        String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
+
+        @BeforeEach
+        void setUp() {
+            hms = game.getTerritory("Hidden Mobile Stronghold");
+            shieldWallNorth = game.getTerritory(shieldWallNorthName);
+        }
+
+        @Test
+        void putHMSInShieldWallNorth() {
+            HashMap<String, List<String>> adjacencyList = game.getAdjacencyList();
+            assertNull(adjacencyList.get(hmsName));
+            List<String> shieldWallAdjacency = adjacencyList.get(shieldWallName);
+            assertEquals(7, shieldWallAdjacency.size());
+            game.putTerritoryInAnotherTerritory(hms, shieldWallNorth);
+            List<String> hmsAdjacency = adjacencyList.get(hmsName);
+            assertEquals(1, hmsAdjacency.size());
+            assertTrue(hmsAdjacency.contains(shieldWallName));
+            assertEquals(8, shieldWallAdjacency.size());
+            assertTrue(shieldWallAdjacency.contains(hmsName));
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeTerritoryFromAnotherTerritory")
+    class RemoveTerritoryFromAnotherTerritory {
+        Territory hms;
+        String hmsName = "Hidden Mobile Stronghold";
+        Territory shieldWallNorth;
+        String shieldWallNorthName = "Shield Wall (North Sector)";
+        String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
+
+        @BeforeEach
+        void setUp() {
+            hms = game.getTerritory("Hidden Mobile Stronghold");
+            shieldWallNorth = game.getTerritory(shieldWallNorthName);
+        }
+
+        @Test
+        void removeHMSFromShieldWallNorth() {
+            HashMap<String, List<String>> adjacencyList = game.getAdjacencyList();
+            assertNull(adjacencyList.get(hmsName));
+            assertEquals(7, adjacencyList.get(shieldWallName).size());
+            game.putTerritoryInAnotherTerritory(hms, shieldWallNorth);
+            List<String> hmsAdjacency = adjacencyList.get(hmsName);
+            assertEquals(1, hmsAdjacency.size());
+            assertTrue(hmsAdjacency.contains(shieldWallName));
+            List<String> shieldWallAdjacency = adjacencyList.get(shieldWallName);
+            assertEquals(8, shieldWallAdjacency.size());
+            assertTrue(shieldWallAdjacency.contains(hmsName));
+
+            game.removeTerritoryFromAnotherTerritory(hms, shieldWallNorth);
+            assertEquals(0, adjacencyList.get(hmsName).size());
+            assertFalse(hmsAdjacency.contains(shieldWallName));
+            assertEquals(7, adjacencyList.get(shieldWallName).size());
+            assertFalse(shieldWallAdjacency.contains(hmsName));
         }
     }
 }
