@@ -250,8 +250,8 @@ public class RunCommands {
             }
             if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
                 game.setUpdated(UpdateType.MAP);
-            ShowCommands.showBoard(discordGame, game);
         }
+        ShowCommands.showBoard(discordGame, game);
 
         game.setStormMovement(new Random().nextInt(6) + 1);
         if (game.hasFaction("Fremen")) {
