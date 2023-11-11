@@ -865,7 +865,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(Button.primary("spice-blow", "Spice Blow Territories"));
         buttons.add(Button.primary("rock", "Rock Territories"));
         if (game.hasGameOption(GameOption.HOMEWORLDS)) buttons.add(Button.primary("homeworlds", "Homeworlds"));
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS)) buttons.add(Button.primary("discovery-tokens", "Discovery Tokens"));
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().filter(t -> t.isDiscovered()).findAny().isPresent();
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap) buttons.add(Button.primary("discovery-tokens", "Discovery Tokens"));
         buttons.add(Button.primary("other", "Somewhere else"));
         buttons.add(Button.danger("pass-shipment", "I don't want to ship."));
 
