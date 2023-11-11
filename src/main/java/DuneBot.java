@@ -1,8 +1,10 @@
+import caches.EmojiCache;
 import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
 import controller.listeners.EventListener;
 import io.github.cdimascio.dotenv.Dotenv;
 import io.github.cdimascio.dotenv.DotenvException;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -20,17 +22,23 @@ public class DuneBot {
         try {
             String token = Dotenv.configure().load().get("TOKEN");
 
-            JDABuilder.createDefault(token)
+            JDA jda = JDABuilder.createDefault(token)
                     .setStatus(OnlineStatus.ONLINE)
                     .setActivity(Activity.playing("Dune"))
                     .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                     .build()
-                    .addEventListener(new EventListener(), new CommandManager(), new ButtonManager());
+                    .awaitReady();
+
+            jda.getGuilds().forEach((guild) -> EmojiCache.setEmojis(guild.getId(), guild.getEmojis()));
+
+            jda.addEventListener(new EventListener(), new CommandManager(), new ButtonManager());
         } catch (DotenvException e) {
             System.err.println("Dotenv file or Token not found.");
             throw new RuntimeException(e);
         } catch (InvalidTokenException e) {
             System.err.println("Invalid Token");
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

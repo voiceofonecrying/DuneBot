@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.EmojiNames;
 import constants.Emojis;
 import controller.DiscordGame;
 import enums.GameOption;
@@ -883,7 +884,7 @@ public class ShowCommands {
         StringBuilder treacheryString = new StringBuilder();
         treacheryString.append("\n__Treachery Cards:__\n");
         for (TreacheryCard treachery : treacheryCards) {
-            treacheryString.append(Emojis.TREACHERY)
+            treacheryString.append(discordGame.getEmojiTag(EmojiNames.TREACHERY))
                     .append(" ")
                     .append(treachery.name())
                     .append("\n");

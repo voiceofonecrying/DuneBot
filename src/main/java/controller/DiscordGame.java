@@ -1,5 +1,6 @@
 package controller;
 
+import caches.EmojiCache;
 import caches.GameCache;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -26,6 +27,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -46,10 +48,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -60,29 +59,35 @@ public class DiscordGame {
     private List<TextChannel> textChannelList;
     private Game game;
     private GenericInteractionCreateEvent event;
+    private final Map<String, RichCustomEmoji> emojis;
 
     public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
         this.event = event;
+        emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
+        emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
         this.gameCategory = categoryFromEvent(event);
+        emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(Category category) {
         this.gameCategory = category;
+        emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
     }
 
     public DiscordGame(Category category, boolean isNew) throws ChannelNotFoundException, IOException {
         this.gameCategory = category;
         if (!isNew) this.game = getGame();
+        emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
     }
 
     public static Category categoryFromEvent(@NotNull GenericInteractionCreateEvent event) {
@@ -742,5 +747,13 @@ public class DiscordGame {
         String optionName = optionData.getName();
         SlashCommandInteractionEvent newEvent = (SlashCommandInteractionEvent) event;
         return newEvent.getOption(optionName);
+    }
+
+    public RichCustomEmoji getEmoji(String emojiName) {
+        return emojis.get(emojiName);
+    }
+
+    public String getEmojiTag(String emojiName) {
+        return getEmoji(emojiName).getFormatted();
     }
 }
