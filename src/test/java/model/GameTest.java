@@ -631,7 +631,9 @@ class GameTest {
     @DisplayName("#drawSpiceBlow")
     class DrawSpiceBlow {
         Territory sihayaRidge;
+        Territory funeralPlain;
         SpiceCard lastBlow;
+        SpiceCard nextBlow;
         SpiceCard shaiHulud;
         SpiceCard greatMaker;
         SpiceCard sandtrout;
@@ -648,7 +650,9 @@ class GameTest {
             game.advanceTurn();
             game.advanceTurn();
             sihayaRidge = game.getTerritory("Sihaya Ridge");
+            funeralPlain = game.getTerritory("Funeral Plain");
             lastBlow = game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow();
+            nextBlow = new SpiceCard("Funeral Plain",14,6,"Smuggler","Pasty Mesa (North Sector)");
             game.getSpiceDiscardA().add(lastBlow);
             assertEquals(lastBlow, game.getSpiceDiscardA().getLast());
 
@@ -802,6 +806,26 @@ class GameTest {
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
             assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+        }
+
+        @Test
+        void discoverySpiceBlowKillsTropps() throws ChannelNotFoundException {
+            game.getSpiceDeck().addFirst(nextBlow);
+            assertEquals(nextBlow, game.getSpiceDeck().getFirst());
+
+            funeralPlain.setForceStrength("Fremen", 5);
+            funeralPlain.setForceStrength("Fremen*", 3);
+            assertEquals(3, funeralPlain.getForce("Fremen*").getStrength());
+            assertEquals(5, funeralPlain.getForce("Fremen").getStrength());
+
+            game.drawSpiceBlow("A");
+            assertEquals(lastBlow, game.getSpiceDiscardA().get(0));
+            assertEquals(nextBlow, game.getSpiceDiscardA().get(1));
+            assertEquals(0, funeralPlain.getForce("Fremen*").getStrength());
+            assertEquals(0, funeralPlain.getForce("Fremen").getStrength());
+            assertEquals(3, game.getForceFromTanks("Fremen*").getStrength());
+            assertEquals(5, game.getForceFromTanks("Fremen").getStrength());
+            assertNotEquals(-1, turnSummary.messages.get(0).indexOf("all forces in the territory were killed in the spice blow!\n"));
         }
     }
 
