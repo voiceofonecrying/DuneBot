@@ -401,6 +401,10 @@ public class DiscordGame {
                 Territory hms = game.getTerritory("Hidden Mobile Stronghold");
                 game.putTerritoryInAnotherTerritory(hms, territory);
             }
+            if (territory.isDiscovered()) {
+                Territory revealedTerritory = game.getTerritory(territory.getDiscoveryToken());
+                game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
+            }
         }
 
         for (Faction f : game.getFactions()) {
