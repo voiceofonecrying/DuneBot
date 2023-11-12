@@ -890,7 +890,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Territory territory : game.getTerritories().values()) {
             if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
             if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))
-                    || (faction.getName().equals("Richese") && !game.hasGameOption (GameOption.HOMEWORLDS) || (game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) && territory.hasRicheseNoField())
+                    || (faction.getName().equals("Richese")
+                            && (!game.hasGameOption (GameOption.HOMEWORLDS) || (game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()))
+                            && territory.hasRicheseNoField())
                     || (faction.getName().equals("BG") && territory.hasForce("Advisor"))) {
                 movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
                 if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
