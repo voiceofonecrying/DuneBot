@@ -185,7 +185,6 @@ public class Game {
     }
 
     public void addGameOption(GameOption gameOption) {
-        if (gameOption == GameOption.SUMMARY_THREAD_PER_TURN) return;
         if (this.gameOptions == null) {
             this.gameOptions = new HashSet<>();
         }
