@@ -13,7 +13,6 @@ import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class SpiceCollectionButtons  implements Pressable{
 
@@ -37,27 +36,32 @@ public class SpiceCollectionButtons  implements Pressable{
 
             switch (token) {
                 case "Jacurutu Sietch" -> {
-                    addDiscoveryTokenTerritory(game, territory, new Territory("Jacurutu Sietch", territory.getSector(), true, true, false));
+                    Territory jacurutuSietch = new Territory("Jacurutu Sietch", territory.getSector(), true, true, false);
+                    game.putTerritoryInAnotherTerritory(jacurutuSietch, territory);
                     discordGame.getTurnSummary().queueMessage("Jacurutu Sietch has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Cistern" -> {
-                    addDiscoveryTokenTerritory(game, territory, new Territory("Cistern", territory.getSector(), true, false, false));
+                    Territory cistern = new Territory("Cistern", territory.getSector(), true, false, false);
+                    game.putTerritoryInAnotherTerritory(cistern, territory);
                     discordGame.getTurnSummary().queueMessage("A Cistern has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Ecological Testing Station" -> {
-                    addDiscoveryTokenTerritory(game, territory, new Territory("Ecological Testing Station", territory.getSector(), true, false, false));
+                    Territory ecologicalTestingStation = new Territory("Ecological Testing Station", territory.getSector(), true, false, false);
+                    game.putTerritoryInAnotherTerritory(ecologicalTestingStation, territory);
                     discordGame.getTurnSummary().queueMessage("An Ecological Testing Station has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Shrine" -> {
-                    addDiscoveryTokenTerritory(game, territory, new Territory("Shrine", territory.getSector(), true, false, false));
+                    Territory shrine = new Territory("Shrine", territory.getSector(), true, false, false);
+                    game.putTerritoryInAnotherTerritory(shrine, territory);
                     discordGame.getTurnSummary().queueMessage("A Shrine has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Orgiz Processing Station" -> {
-                    addDiscoveryTokenTerritory(game, territory, new Territory("Orgiz Processing Station", territory.getSector(), true, true, false));
+                    Territory orgizProcessingStation = new Territory("Orgiz Processing Station", territory.getSector(), true, true, false);
+                    game.putTerritoryInAnotherTerritory(orgizProcessingStation, territory);
                     discordGame.getTurnSummary().queueMessage("The Orgiz Processing Station has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
@@ -94,12 +98,5 @@ public class SpiceCollectionButtons  implements Pressable{
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
         }
-    }
-
-    private static void addDiscoveryTokenTerritory(Game game, Territory territory, Territory token) {
-            game.getTerritories().put(token.getTerritoryName(), token);
-            game.getAdjacencyList().put(token.getTerritoryName(), new ArrayList<>());
-            game.getAdjacencyList().get(territory.getTerritoryName().replaceAll("\\(.*\\)", "").strip()).add(token.getTerritoryName());
-            game.getAdjacencyList().get(token.getTerritoryName()).add(territory.getTerritoryName());
     }
 }
