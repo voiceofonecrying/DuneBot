@@ -159,9 +159,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
         }
         movement.clear();
-        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
             ShowCommands.showBoard(discordGame, game);
-        }
     }
 
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException, IOException {
@@ -417,9 +418,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
         } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
-        if (!game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
             ShowCommands.showBoard(discordGame, game);
-        }
         shipment.clear();
         discordGame.pushGame();
     }

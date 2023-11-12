@@ -2,6 +2,8 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -242,6 +244,8 @@ public class RicheseCommands {
 
         Territory territory = game.getTerritories().get(territoryName);
         territory.setRicheseNoField(noField);
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
     }
@@ -252,6 +256,8 @@ public class RicheseCommands {
                 .findFirst();
 
         territory.ifPresent(value -> value.setRicheseNoField(null));
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
     }
