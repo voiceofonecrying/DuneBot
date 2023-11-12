@@ -117,8 +117,8 @@ public class IxCommands {
                         newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
         );
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                "{0} as {1} ally discarded the card just won and took the {2} deck top card.",
-                ixAlly.getEmoji(), Emojis.IX, Emojis.TREACHERY
+                "{0} as {1} ally discarded {2}and took the {3} deck top card.",
+                ixAlly.getEmoji(), Emojis.IX, cardToDiscard.name(), Emojis.TREACHERY
         ));
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (bidding.isTreacheryDeckReshuffled()) {
@@ -127,10 +127,6 @@ public class IxCommands {
                     Emojis.TREACHERY
             ));
         }
-        turnSummary.queueMessage(MessageFormat.format(
-                "{0} as {1} ally discarded the card just won and took the {2} deck top card.",
-                ixAlly.getEmoji(), Emojis.IX, Emojis.TREACHERY
-        ));
         discordGame.pushGame();
     }
 
