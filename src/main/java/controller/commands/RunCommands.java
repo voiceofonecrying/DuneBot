@@ -875,7 +875,7 @@ public class RunCommands {
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
             buttons.add(Button.danger("don't-reveal-discovery-token", "No"));
-            discordGame.getFactionChat(faction.getName()).queueMessage("Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", buttons);
+            discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + "Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", buttons);
         }
 
         if (altSpiceProductionTriggered) {
