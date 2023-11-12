@@ -6,6 +6,7 @@ import model.Game;
 import model.Territory;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 public class EmperorFaction extends Faction {
     private final int secundusHighThreshold;
@@ -83,5 +84,16 @@ public class EmperorFaction extends Faction {
     public Force getSpecialReserves() {
         if (this.specialReserves != null) return this.specialReserves;
         return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
+    }
+
+    public void kaitainHighDiscard(String cardName) {
+        getGame().getTreacheryDiscard().add(removeTreacheryCard(cardName));
+        getLedger().publish(cardName + " discarded");
+        subtractSpice(2);
+        spiceMessage(2, " paid to discard", false);
+        getGame().getTurnSummary().publish(MessageFormat.format(
+                "{0} paid 2 {1} to discard {2} (Kaitain High Threshold ability)",
+                Emojis.EMPEROR, Emojis.SPICE, cardName.trim()
+        ));
     }
 }

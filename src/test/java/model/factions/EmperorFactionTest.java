@@ -2,13 +2,14 @@ package model.factions;
 
 import constants.Emojis;
 import model.Territory;
+import model.TestTopic;
+import model.TreacheryCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EmperorFactionTest extends FactionTestTemplate {
     private EmperorFaction faction;
@@ -64,5 +65,29 @@ class EmperorFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
+    }
+
+    @Test
+    public void testKaitainHighDiscard() {
+        TestTopic turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
+        TestTopic emperorLedger = new TestTopic();
+        faction.setLedger(emperorLedger);
+        TreacheryCard kulon = game.getTreacheryDeck().stream()
+                .filter(t -> t.name().equals("Kulon "))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Kulon not found"));
+        faction.addTreacheryCard(kulon);
+        assertEquals(10, faction.getSpice());
+        assertTrue(faction.hasTreacheryCard("Kulon "));
+        assertTrue(turnSummary.getMessages().isEmpty());
+
+        faction.kaitainHighDiscard("Kulon ");
+
+        assertEquals(8, faction.getSpice());
+        assertFalse(faction.hasTreacheryCard("Kulon "));
+        assertEquals(Emojis.EMPEROR + " paid 2 " + Emojis.SPICE + " to discard Kulon (Kaitain High Threshold ability)",
+                turnSummary.getMessages().get(0)
+        );
     }
 }

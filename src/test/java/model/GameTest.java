@@ -4,7 +4,6 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import model.factions.*;
-import model.topics.DuneTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -131,14 +129,6 @@ class GameTest {
             assertFalse(game.getTerritory("Arrakeen").isRock());
             assertFalse(atreides.getTreacheryHand().contains(familyAtomics));
             assertTrue(game.getTreacheryDiscard().contains(familyAtomics));
-        }
-    }
-
-    static class TestTopic implements DuneTopic {
-        List<String> messages = new ArrayList<>();
-
-        public void publish(String message) {
-            messages.add(message);
         }
     }
 

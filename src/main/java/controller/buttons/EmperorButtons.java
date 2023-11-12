@@ -5,7 +5,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
 import model.TreacheryCard;
-import model.factions.Faction;
+import model.factions.EmperorFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -28,12 +28,8 @@ public class EmperorButtons implements Pressable {
 
     private static void discardCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String cardName = event.getComponentId().split("-")[2];
-        Faction emperor = game.getFaction("Emperor");
-
-        game.getTreacheryDiscard().add(emperor.removeTreacheryCard(cardName));
-        discordGame.queueMessageToLedger("Emperor", cardName + " discarded");
-        emperor.subtractSpice(2);
-        emperor.spiceMessage(2, " paid to discard", false);
+        EmperorFaction emperor = (EmperorFaction)game.getFaction("Emperor");
+        emperor.kaitainHighDiscard(cardName);
         discordGame.queueDeleteMessage();
 
         List<Button> buttons = new LinkedList<>();
