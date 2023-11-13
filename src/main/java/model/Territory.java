@@ -222,6 +222,28 @@ public class Territory {
         this.discovered = discovered;
     }
 
+    public String stormTroopsFremen(List<Force> forces, Game game) {
+        StringBuilder message = new StringBuilder();
+
+        int totalTroops = forces.stream().mapToInt(Force::getStrength).sum();
+        int totalLostTroops = Math.ceilDiv(totalTroops, 2);
+
+        Force regularForce = getForce("Fremen");
+        Force fedaykin = getForce("Fremen*");
+
+        int lostRegularForces = Math.min(regularForce.getStrength(), totalLostTroops);
+        totalLostTroops -= lostRegularForces;
+        int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
+
+        if (lostRegularForces > 0)
+            message.append(stormRemoveTroops(regularForce, lostRegularForces, game));
+
+        if (lostFedaykin > 0)
+            message.append(stormRemoveTroops(fedaykin, lostFedaykin, game));
+
+        return message.toString();
+    }
+
     public String stormRemoveTroops(Force force, int strength, Game game) {
         setForceStrength(force.getName(), force.getStrength() - strength);
         game.addToTanks(force.getName(), strength);

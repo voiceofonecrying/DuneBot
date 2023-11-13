@@ -161,33 +161,11 @@ public class RunCommands {
                 .toList();
 
         if (!fremenForces.isEmpty())
-            message.append(stormTroopsFremen(territory, fremenForces, game));
+            message.append(territory.stormTroopsFremen(fremenForces, game));
 
         for (Force force : nonFremenForces) {
-            territory.stormRemoveTroops(force, force.getStrength(), game);
+            message.append(territory.stormRemoveTroops(force, force.getStrength(), game));
         }
-
-        return message.toString();
-    }
-
-    public static String stormTroopsFremen(Territory territory, List<Force> forces, Game game) {
-        StringBuilder message = new StringBuilder();
-
-        int totalTroops = forces.stream().mapToInt(Force::getStrength).sum();
-        int totalLostTroops = Math.ceilDiv(totalTroops, 2);
-
-        Force regularForce = territory.getForce("Fremen");
-        Force fedaykin = territory.getForce("Fremen*");
-
-        int lostRegularForces = Math.min(regularForce.getStrength(), totalLostTroops);
-        totalLostTroops -= lostRegularForces;
-        int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
-
-        if (lostRegularForces > 0)
-            territory.stormRemoveTroops(regularForce, lostRegularForces, game);
-
-        if (lostFedaykin > 0)
-            territory.stormRemoveTroops(fedaykin, lostFedaykin, game);
 
         return message.toString();
     }
