@@ -28,7 +28,7 @@ public class DiscordChannel implements DuneTopic {
     }
 
     public void queueMessage(String message) {
-        discordGame.getMessageQueue().add(messageChannel.sendMessage(message));
+        discordGame.queueMessage(messageChannel.sendMessage(message));
     }
 
     public void queueMessage(String message, List<Button> buttons) {
@@ -42,21 +42,21 @@ public class DiscordChannel implements DuneTopic {
         if (i < buttons.size()) {
             messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
         }
-        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+        discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
     }
 
     public void queueMessage(MessageCreateBuilder messageCreateBuilder) {
-        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+        discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
     }
 
     public void queueMessage(String message, FileUpload fileUpload) {
-        discordGame.getMessageQueue().add(messageChannel.sendMessage(message).addFiles(fileUpload));
+        discordGame.queueMessage(messageChannel.sendMessage(message).addFiles(fileUpload));
     }
 
     public void queueMessage(FileUpload fileUpload) {
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                 .addFiles(fileUpload);
-        discordGame.getMessageQueue().add(messageChannel.sendMessage(messageCreateBuilder.build()));
+        discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
 
     }
 }

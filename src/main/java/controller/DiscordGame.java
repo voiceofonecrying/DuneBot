@@ -11,6 +11,7 @@ import controller.channels.FactionLedger;
 import controller.channels.ModInfo;
 import controller.channels.TurnSummary;
 import exceptions.ChannelNotFoundException;
+import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
 import model.Force;
@@ -54,8 +55,7 @@ import java.util.concurrent.ExecutionException;
 
 public class DiscordGame {
     private final Category gameCategory;
-    @SuppressWarnings("rawtypes")
-    private final List<RestAction> messageQueue = new ArrayList<>();
+    private final List<DiscordRequest> discordRequests = new ArrayList<>();
     private List<TextChannel> textChannelList;
     private Game game;
     private GenericInteractionCreateEvent event;
@@ -463,11 +463,6 @@ public class DiscordGame {
         return channel.sendMessage(message);
     }
 
-    @SuppressWarnings("rawtypes")
-    public List<RestAction> getMessageQueue() {
-        return messageQueue;
-    }
-
     /**
      * Queues a message to be sent to the given channel.
      *
@@ -477,7 +472,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        messageQueue.add(channel.sendMessage(message));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(message)));
     }
 
     /**
@@ -489,7 +484,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, MessageCreateData message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        messageQueue.add(channel.sendMessage(message));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(message)));
     }
 
     /**
@@ -502,7 +497,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message, FileUpload fileUpload) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        messageQueue.add(channel.sendMessage(message).addFiles(fileUpload));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(message).addFiles(fileUpload)));
     }
 
     /**
@@ -515,7 +510,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        messageQueue.add(channel.sendMessage(message).addFiles(fileUploads));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(message).addFiles(fileUploads)));
     }
 
     /**
@@ -529,7 +524,7 @@ public class DiscordGame {
         TextChannel channel = getTextChannel(channelName);
         MessageCreateBuilder messageCreateBuilder =
                 (new MessageCreateBuilder()).addFiles(fileUpload);
-        messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(messageCreateBuilder.build())));
     }
 
     /**
@@ -541,7 +536,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        messageQueue.add(channel.sendMessage(messageCreateBuilder.build()));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(messageCreateBuilder.build())));
     }
 
     /**
@@ -550,17 +545,7 @@ public class DiscordGame {
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
-        messageQueue.add(messageCreateAction);
-    }
-
-    /**
-     * Queues a message to be sent to the given channel.
-     *
-     * @param messageEditRequest Message to send.
-     * @throws ChannelNotFoundException Thrown if the channel is not found.
-     */
-    public void queueMessage(MessageEditRequest messageEditRequest) throws ChannelNotFoundException {
-        messageQueue.add((RestAction) messageEditRequest);
+        discordRequests.add(new DiscordRequest(messageCreateAction));
     }
 
     /**
@@ -569,7 +554,7 @@ public class DiscordGame {
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(MessageCreateAction messageCreateAction) {
-        messageQueue.add(messageCreateAction);
+        discordRequests.add(new DiscordRequest(messageCreateAction));
     }
 
     /**
@@ -578,7 +563,7 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessage(String message) {
-        messageQueue.add(getHook().sendMessage(message));
+        discordRequests.add(new DiscordRequest(getHook().sendMessage(message)));
     }
 
     /**
@@ -587,17 +572,13 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessage(MessageCreateBuilder message) {
-        messageQueue.add(getHook().sendMessage(message.build()));
+        discordRequests.add(new DiscordRequest(getHook().sendMessage(message.build())));
     }
 
     public void queueMessage(String parentChannel, String threadChannel, String message) throws ChannelNotFoundException {
         TextChannel parent = getTextChannel(parentChannel);
         ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadChannel)).findFirst().get();
-        messageQueue.add(thread.sendMessage(message));
-    }
-
-    public void queueMessageToLedger(String factionName, String message) throws ChannelNotFoundException {
-        getFactionLedger(factionName).queueMessage(message);
+        discordRequests.add(new DiscordRequest(thread.sendMessage(message)));
     }
 
     /**
@@ -611,7 +592,7 @@ public class DiscordGame {
     public void queueMessage(String channelName, String threadName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
         TextChannel parent = getTextChannel(channelName);
         ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadName)).findFirst().get();
-        messageQueue.add(thread.sendMessage(messageCreateBuilder.build()));
+        discordRequests.add(new DiscordRequest(thread.sendMessage(messageCreateBuilder.build())));
     }
 
     /**
@@ -620,7 +601,7 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessageToEphemeral(String message) {
-        messageQueue.add(getHook().sendMessage(message).setEphemeral(true));
+        discordRequests.add(new DiscordRequest(getHook().sendMessage(message).setEphemeral(true)));
     }
 
     /**
@@ -628,7 +609,7 @@ public class DiscordGame {
      */
     public void queueDeleteMessage() {
         if (event instanceof ButtonInteractionEvent) {
-            messageQueue.add(((ButtonInteractionEvent) event).getMessage().delete());
+            discordRequests.add(new DiscordRequest(((ButtonInteractionEvent) event).getMessage().delete()));
         } else {
             throw new IllegalArgumentException("Unknown event type");
         }
@@ -640,7 +621,7 @@ public class DiscordGame {
      * @param message Message to delete.
      */
     public void queueDeleteMessage(Message message) {
-        messageQueue.add(message.delete());
+        discordRequests.add(new DiscordRequest(message.delete()));
     }
 
     /**
@@ -663,14 +644,14 @@ public class DiscordGame {
     @SuppressWarnings("rawtypes")
     public void sendAllMessages() {
         if (this.game.getMute()) return;
-        for (RestAction restAction : messageQueue) {
+        for (DiscordRequest discordRequest : discordRequests) {
             try {
-                restAction.complete();
+                discordRequest.complete();
             } catch (Exception e) {
-                restAction.submit();
+                e.printStackTrace();
             }
         }
-        messageQueue.clear();
+        discordRequests.clear();
     }
 
     /**
