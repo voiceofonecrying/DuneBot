@@ -222,6 +222,18 @@ public class Territory {
         this.discovered = discovered;
     }
 
+    public String stormRemoveTroops(Force force, int strength, Game game) {
+        setForceStrength(force.getName(), force.getStrength() - strength);
+        game.addToTanks(force.getName(), strength);
+
+        return MessageFormat.format(
+                "{0} lose {1} {2} to the storm in {3}\n",
+                game.getFaction(force.getFactionName()).getEmoji(),
+                strength, Emojis.getForceEmoji(force.getName()),
+                territoryName
+        );
+    }
+
     public String stormRemoveSpice() {
         String message = MessageFormat.format(
                 "{0} {1} in {2} was blown away by the storm\n",

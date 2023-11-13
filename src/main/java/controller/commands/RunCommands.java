@@ -164,7 +164,7 @@ public class RunCommands {
             message.append(stormTroopsFremen(territory, fremenForces, game));
 
         for (Force force : nonFremenForces) {
-            message.append(stormRemoveTroops(territory, force, force.getStrength(), game));
+            territory.stormRemoveTroops(force, force.getStrength(), game);
         }
 
         return message.toString();
@@ -184,24 +184,12 @@ public class RunCommands {
         int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
 
         if (lostRegularForces > 0)
-            message.append(stormRemoveTroops(territory, regularForce, lostRegularForces, game));
+            territory.stormRemoveTroops(regularForce, lostRegularForces, game);
 
         if (lostFedaykin > 0)
-            message.append(stormRemoveTroops(territory, fedaykin, lostFedaykin, game));
+            territory.stormRemoveTroops(fedaykin, lostFedaykin, game);
 
         return message.toString();
-    }
-
-    public static String stormRemoveTroops(Territory territory, Force force, int strength, Game game) {
-        territory.setForceStrength(force.getName(), force.getStrength() - strength);
-        game.addToTanks(force.getName(), strength);
-
-        return MessageFormat.format(
-                "{0} lose {1} {2} to the storm in {3}\n",
-                game.getFaction(force.getFactionName()).getEmoji(),
-                strength, Emojis.getForceEmoji(force.getName()),
-                territory.getTerritoryName()
-        );
     }
 
     public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
