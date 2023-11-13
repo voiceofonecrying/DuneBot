@@ -1,8 +1,10 @@
 package model;
 
+import constants.Emojis;
 import helpers.Exclude;
 import model.factions.Faction;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -218,5 +220,14 @@ public class Territory {
 
     public void setDiscovered(boolean discovered) {
         this.discovered = discovered;
+    }
+
+    public String stormRemoveSpice() {
+        String message = MessageFormat.format(
+                "{0} {1} in {2} was blown away by the storm\n",
+                spice, Emojis.SPICE, territoryName
+        );
+        spice = 0;
+        return message;
     }
 }

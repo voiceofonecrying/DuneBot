@@ -204,15 +204,6 @@ public class RunCommands {
         );
     }
 
-    public static String stormRemoveSpice(Territory territory) {
-        String message = MessageFormat.format(
-                "{0} {1} in {2} was blown away by the storm\n",
-                territory.getSpice(), Emojis.SPICE, territory.getTerritoryName()
-        );
-        territory.setSpice(0);
-        return message;
-    }
-
     public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Map<String, Territory> territories = game.getTerritories();
         if (game.getTurn() != 1) {
@@ -239,9 +230,7 @@ public class RunCommands {
                     message.append(stormTroops(territory, game));
                 }
 
-                for (Territory territory : territoriesWithSpice) {
-                    message.append(stormRemoveSpice(territory));
-                }
+                territoriesWithSpice.stream().map(Territory::stormRemoveSpice).forEach(message::append);
             }
 
             if (!message.isEmpty()) {
