@@ -876,6 +876,7 @@ public class Game {
         List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
         int dukeVidalCount = 0;
         for (Territory territory : getTerritories().values()) {
+            if (territory.getSector() == storm) continue;
             List<Force> forces = territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
