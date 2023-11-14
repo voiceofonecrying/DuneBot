@@ -894,9 +894,14 @@ public class Game {
                     .map(this::getFaction)
                     .toList();
 
-            if (factions.size() > 1 && !territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) {
-                battles.add(new ImmutablePair<>(territory, factions));
+            boolean addBattle = factions.size() > 1;
+            if (addBattle && territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) addBattle = false;
+            if (addBattle && factions.size() == 2 &&
+                    (factions.get(0).getName().equals("Ecaz") && factions.get(1).getAlly().equals("Ecaz") ||
+                            factions.get(0).getAlly().equals("Ecaz") && factions.get(1).getName().equals("Ecaz"))) {
+                addBattle = false;
             }
+            if (addBattle) battles.add(new ImmutablePair<>(territory, factions));
         }
         if (dukeVidalCount >= 2 && leaderTanks.stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
             for (Faction faction : factions) {

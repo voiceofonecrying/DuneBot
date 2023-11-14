@@ -141,24 +141,63 @@ public class GameBattlePhaseTest {
             assertTrue(moritaniChat.messages.isEmpty());
         }
 
-//        @Test
-//        void testEcazWithAllyNotABattle() throws IOException {
-//            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
-//            game.addFaction(ecaz);
-//            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-//            game.addFaction(harkonnen);
-//            ecaz.setAlly("Harkonnen");
-//            fremen.setAlly("Ecaz");
-//            Territory carthag = game.getTerritory("Carthag");
-//            carthag.addForce(new Force("Ecaz", 6));
-//            carthag.addForce(new Force("Harkonnen", 7));
-//            carthag.addForce(new Force("Advisor", 1));
-//            TestTopic turnSummary = new TestTopic();
-//            game.setTurnSummary(turnSummary);
-//
-//            game.startBattlePhase();
-//
-//            assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
-//        }
+        @Test
+        void testEcazWithAllyNotABattle() throws IOException {
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            game.addFaction(ecaz);
+            ecaz.setAlly("Fremen");
+            fremen.setAlly("Ecaz");
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.addForce(new Force("Ecaz", 6));
+            carthag.addForce(new Force("Fremen", 7));
+            carthag.addForce(new Force("Advisor", 1));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
+        }
+
+        @Test
+        void testAllyWithEcazNotABattle() throws IOException {
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            game.addFaction(ecaz);
+            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            game.addFaction(moritani);
+            ecaz.setAlly("Moritani");
+            moritani.setAlly("Ecaz");
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.addForce(new Force("Ecaz", 6));
+            carthag.addForce(new Force("Moritani", 7));
+            carthag.addForce(new Force("Advisor", 1));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
+        }
+
+        @Test
+        void testEcazAllyAndThirdHaveABattle() throws IOException {
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            game.addFaction(ecaz);
+            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            game.addFaction(moritani);
+            ecaz.setAlly("Moritani");
+            moritani.setAlly("Ecaz");
+            game.addFaction(fremen);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.addForce(new Force("Ecaz", 6));
+            carthag.addForce(new Force("Moritani", 7));
+            carthag.addForce(new Force("Fremen", 1));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+        }
     }
 }
