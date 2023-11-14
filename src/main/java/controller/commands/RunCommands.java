@@ -17,8 +17,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -664,66 +662,7 @@ public class RunCommands {
     }
 
     public static void startBattlePhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.HEIGHLINERS);
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage("Turn " + game.getTurn() + " Battle Phase:");
-
-        // Get list of territories with multiple factions
-        List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
-        int dukeVidalCount = 0;
-        for (Territory territory : game.getTerritories().values()) {
-            List<Force> forces = territory.getForces();
-            Set<String> factionNames = forces.stream()
-                    .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
-                    .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
-                    .map(Force::getFactionName)
-                    .collect(Collectors.toSet());
-
-            if (game.hasFaction("Richese") && territory.hasRicheseNoField())
-                factionNames.add("Richese");
-            if (game.hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
-                    && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
-
-            List<Faction> factions = factionNames.stream()
-                    .sorted(Comparator.comparingInt(game::getFactionTurnIndex))
-                    .map(game::getFaction)
-                    .toList();
-
-            if (factions.size() > 1 && !territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) {
-                battles.add(new ImmutablePair<>(territory, factions));
-            }
-        }
-        if (dukeVidalCount >= 2 && game.getLeaderTanks().stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHomeworldOccupied())) {
-            for (Faction faction : game.getFactions()) {
-                if (faction.getLeader("Duke Vidal").isEmpty()) continue;
-                faction.removeLeader("Duke Vidal");
-                if (faction.getName().equals("Ecaz")) {
-                    discordGame.getEcazChat().queueMessage("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
-                }
-                if (faction.getName().equals("Harkonnen")) {
-                    discordGame.getHarkonnenChat().queueMessage("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
-                }
-            }
-            ((MoritaniFaction) game.getFaction("Moritani")).getDukeVidal();
-            discordGame.getMoritaniChat().queueMessage("Duke Vidal has come to fight for you!");
-        }
-
-        if (!battles.isEmpty()) {
-            String battleMessages = battles.stream()
-                    .sorted(Comparator
-                            .comparingInt(o -> game.getFactionTurnIndex(o.getRight().get(0).getName()))
-                    ).map((battle) ->
-                            MessageFormat.format("{0} in {1}",
-                                    battle.getRight().stream()
-                                            .map(Faction::getEmoji)
-                                            .collect(Collectors.joining(" vs ")),
-                                    battle.getLeft().getTerritoryName()
-                            )
-                    ).collect(Collectors.joining("\n"));
-            turnSummary.queueMessage("The following battles will take place this turn:\n" + battleMessages);
-        } else {
-            turnSummary.queueMessage("There are no battles this turn.");
-        }
+        game.startBattlePhase();
         ShowCommands.showBoard(discordGame, game);
     }
 

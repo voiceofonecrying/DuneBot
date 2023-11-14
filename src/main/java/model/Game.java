@@ -12,10 +12,13 @@ import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -787,7 +790,8 @@ public class Game {
                 }
             }
             message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
-            if (drawn.discoveryToken().equals("Hiereg")) getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.remove(0));
+            if (drawn.discoveryToken().equals("Hiereg"))
+                getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.remove(0));
             else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.remove(0));
             getTerritory(drawn.tokenLocation()).setDiscovered(false);
             if (hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) getFaction("Guild").getChat()
@@ -819,7 +823,7 @@ public class Game {
                 System.out.println(
                         MessageFormat.format(
                                 "isHigh = {0}\ngetHigh = {1}\ngetForce = {2}\ngetSpecial = {3}",
-                                homeworldFaction.isHighThreshold(),homeworldFaction.getHighThreshold(),
+                                homeworldFaction.isHighThreshold(), homeworldFaction.getHighThreshold(),
                                 getTerritory(territoryName).getForce(faction.getName()).getStrength(), getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()
                         )
                 );
@@ -862,5 +866,69 @@ public class Game {
         } catch (NullPointerException e) {
             // inserted was not adjacent to containing
         }
+    }
+
+    public void startBattlePhase() {
+        if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
+        turnSummary.publish("Turn " + turn + " Battle Phase:");
+
+        // Get list of territories with multiple factions
+        List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
+        int dukeVidalCount = 0;
+        for (Territory territory : getTerritories().values()) {
+            List<Force> forces = territory.getForces();
+            Set<String> factionNames = forces.stream()
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
+                    .map(Force::getFactionName)
+                    .collect(Collectors.toSet());
+
+            if (hasFaction("Richese") && territory.hasRicheseNoField())
+                factionNames.add("Richese");
+            if (hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
+                    && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
+
+            List<Faction> factions = factionNames.stream()
+                    .sorted(Comparator.comparingInt(this::getFactionTurnIndex))
+                    .map(this::getFaction)
+                    .toList();
+
+            if (factions.size() > 1 && !territory.getTerritoryName().equalsIgnoreCase("Polar Sink")) {
+                battles.add(new ImmutablePair<>(territory, factions));
+            }
+        }
+        if (dukeVidalCount >= 2 && leaderTanks.stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
+            for (Faction faction : factions) {
+                if (faction.getLeader("Duke Vidal").isEmpty()) continue;
+                faction.removeLeader("Duke Vidal");
+                if (faction.getName().equals("Ecaz")) {
+                    faction.getChat().publish("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
+                }
+                if (faction.getName().equals("Harkonnen")) {
+                    faction.getChat().publish("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
+                }
+            }
+            ((MoritaniFaction) getFaction("Moritani")).getDukeVidal();
+            getFaction("Moritani").getChat().publish("Duke Vidal has come to fight for you!");
+        }
+
+        if (!battles.isEmpty()) {
+            String battleMessages = battles.stream()
+                    .sorted(Comparator
+                            .comparingInt(o -> getFactionTurnIndex(o.getRight().get(0).getName()))
+                    ).map((battle) ->
+                            MessageFormat.format("{0} in {1}",
+                                    battle.getRight().stream()
+                                            .map(Faction::getEmoji)
+                                            .collect(Collectors.joining(" vs ")),
+                                    battle.getLeft().getTerritoryName()
+                            )
+                    ).collect(Collectors.joining("\n"));
+            turnSummary.publish("The following battles will take place this turn:\n" + battleMessages);
+        } else {
+            turnSummary.publish("There are no battles this turn.");
+        }
+        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            setUpdated(UpdateType.MAP);
     }
 }
