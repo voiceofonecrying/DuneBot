@@ -417,7 +417,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else if (!crossShipFrom.isEmpty()) {
             game.removeForces(crossShipFrom, faction, force, 0, false);
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
-            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " cross shipped from " + crossShipFrom + " to " + territoryName);
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
         } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
