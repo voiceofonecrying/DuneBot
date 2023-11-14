@@ -876,10 +876,11 @@ public class Game {
         List<Pair<Territory, List<Faction>>> battles = new ArrayList<>();
         int dukeVidalCount = 0;
         for (Territory territory : getTerritories().values()) {
-            List<Force> forces = territory.getForces();
-            Set<String> factionNames = forces.stream()
+            List<Force> forces = territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
+                    .toList();
+            Set<String> factionNames = forces.stream()
                     .map(Force::getFactionName)
                     .collect(Collectors.toSet());
 
