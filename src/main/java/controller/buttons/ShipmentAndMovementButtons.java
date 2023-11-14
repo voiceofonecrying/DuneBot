@@ -81,7 +81,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "guild-wait-last" -> guildWaitLast(game, discordGame);
             case "guild-defer" -> guildDefer(game, discordGame);
             case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
-            case "guild-cross-ship" -> crossShip(game, discordGame);
+            case "guild-cross-ship" -> crossShip(event, game, discordGame);
             case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
             case "hajr" -> hajr(event, game, discordGame, true);
             case "Ornithopter" -> hajr(event, game, discordGame, false);
@@ -198,10 +198,11 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void crossShip(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void crossShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
         TreeSet<Button> buttons = new TreeSet<>(getButtonComparator());
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.hasForce("Guild"))
+            if (territory.getActiveFactions(game).contains(faction))
                 buttons.add(Button.primary("cross-ship-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
         arrangeButtonsAndSend("Where would you like to ship from?", buttons, discordGame);
@@ -552,7 +553,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
 
         if (!faction.getShipment().getCrossShipFrom().isEmpty()) {
-            buttonLimitForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce("Guild").getStrength() - faction.getShipment().getForce();
+            buttonLimitForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce(faction.getName()).getStrength() - faction.getShipment().getForce();
+            buttonLimitSpecialForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce(faction.getName() + "*").getStrength() - faction.getShipment().getSpecialForce();
         }
 
         for (int i = 0; i < buttonLimitForces; i++) {
@@ -867,7 +869,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(Button.primary("spice-blow", "Spice Blow Territories"));
         buttons.add(Button.primary("rock", "Rock Territories"));
         if (game.hasGameOption(GameOption.HOMEWORLDS)) buttons.add(Button.primary("homeworlds", "Homeworlds"));
-        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().filter(t -> t.isDiscovered()).findAny().isPresent();
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap) buttons.add(Button.primary("discovery-tokens", "Discovery Tokens"));
         buttons.add(Button.primary("other", "Somewhere else"));
         buttons.add(Button.danger("pass-shipment", "I don't want to ship."));
@@ -879,6 +881,11 @@ public class ShipmentAndMovementButtons implements Pressable {
             guildButtons.add(Button.primary("guild-cross-ship", "Cross ship"));
             guildButtons.add(Button.primary("guild-ship-to-reserves", "Ship to reserves"));
             discordGame.getGuildChat().queueMessage("Special options for " + Emojis.GUILD + ":", guildButtons);
+        }
+        if (faction.getAlly().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
+            List<Button> guildButtons = new LinkedList<>();
+            guildButtons.add(Button.primary("guild-cross-ship", "Cross ship"));
+            discordGame.getFactionChat(faction).queueMessage("Special option for " + Emojis.GUILD + " ally :", guildButtons);
         }
 
         discordGame.queueDeleteMessage();
