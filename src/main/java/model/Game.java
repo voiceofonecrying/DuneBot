@@ -37,7 +37,7 @@ public class Game {
     private Bidding bidding;
     private final Deque<String> turnOrder;
     private final List<Faction> factions;
-    private final Map<String, Territory> territories;
+    private final Territories territories;
     private final LinkedList<SpiceCard> spiceDeck;
     private final LinkedList<SpiceCard> spiceDiscardA;
     private final LinkedList<SpiceCard> spiceDiscardB;
@@ -84,7 +84,7 @@ public class Game {
         this.bidding = null;
         turnOrder = new LinkedList<>();
         factions = new LinkedList<>();
-        territories = new HashMap<>();
+        territories = new Territories();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
             territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3)), Boolean.parseBoolean(csvRecord.get(4))));
@@ -250,7 +250,7 @@ public class Game {
         return factions;
     }
 
-    public Map<String, Territory> getTerritories() {
+    public Territories getTerritories() {
         return territories;
     }
 

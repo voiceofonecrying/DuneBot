@@ -5,10 +5,7 @@ import helpers.Exclude;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Territory {
