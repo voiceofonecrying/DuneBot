@@ -19,11 +19,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class TerritoryTest {
     private Game game;
     Territory sihayaRidge;
+    Territory cielagoNorth_westSector;
+    Territory cielagoNorth_middleSector;
 
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
         sihayaRidge = game.getTerritory("Sihaya Ridge");
+        cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
+        cielagoNorth_middleSector = game.getTerritory("Cielago North (Center Sector)");
     }
 
     @Nested
@@ -102,6 +106,25 @@ public class TerritoryTest {
 
             assertEquals(0, sihayaRidge.getSpice());
             assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm\n", Emojis.SPICE), response);
+        }
+    }
+
+    @Nested
+    @DisplayName("#getAggregateTerritoryName")
+    class GetAggregateTerritoryName {
+        @Test
+        void testSihayaRidge() {
+            assertEquals("Sihaya Ridge", sihayaRidge.getAggregateTerritoryName());
+        }
+
+        @Test
+        void testCielagoNorth_westSector() {
+            assertEquals("Cielago North", cielagoNorth_westSector.getAggregateTerritoryName());
+        }
+
+        @Test
+        void testCielagoSectorsMatch() {
+            assertEquals(cielagoNorth_westSector.getAggregateTerritoryName(), cielagoNorth_middleSector.getAggregateTerritoryName());
         }
     }
 }

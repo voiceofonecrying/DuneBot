@@ -264,4 +264,10 @@ public class Territory {
         spice = 0;
         return message;
     }
+
+    public String getAggregateTerritoryName() {
+        int endLocation = territoryName.indexOf(" (");
+        if (endLocation == -1) return territoryName;
+        return territoryName.substring(0, endLocation);
+    }
 }
