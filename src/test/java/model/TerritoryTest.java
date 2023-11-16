@@ -21,6 +21,8 @@ public class TerritoryTest {
     Territory sihayaRidge;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_middleSector;
+    Territory windPassNorth_northSector;
+    Territory windPass_northSector;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -28,6 +30,8 @@ public class TerritoryTest {
         sihayaRidge = game.getTerritory("Sihaya Ridge");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
         cielagoNorth_middleSector = game.getTerritory("Cielago North (Center Sector)");
+        windPassNorth_northSector = game.getTerritory("Wind Pass North (North Sector)");
+        windPass_northSector = game.getTerritory("Wind Pass (North Sector)");
     }
 
     @Nested
@@ -124,7 +128,12 @@ public class TerritoryTest {
 
         @Test
         void testCielagoSectorsMatch() {
-            assertEquals(cielagoNorth_westSector.getAggregateTerritoryName(), cielagoNorth_middleSector.getAggregateTerritoryName());
+            assertEquals("Wind Pass North", windPassNorth_northSector.getAggregateTerritoryName());
+        }
+
+        @Test
+        void testWindPassNorth() {
+            assertEquals("Wind Pass", windPass_northSector.getAggregateTerritoryName());
         }
     }
 }

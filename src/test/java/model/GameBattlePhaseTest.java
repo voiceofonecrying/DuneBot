@@ -2,12 +2,15 @@ package model;
 
 import constants.Emojis;
 import model.factions.*;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -50,6 +53,22 @@ public class GameBattlePhaseTest {
             assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.BG));
             assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.FREMEN));
             assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+        }
+
+        @Test
+        void testBattleInWindPassNorth() {
+            game.setStorm(14);
+            Territory windPassNorthNorth = game.getTerritory("Wind Pass North (North Sector)");
+            windPassNorthNorth.addForce(new Force("BG", 6));
+            windPassNorthNorth.addForce(new Force("Fremen", 7));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Wind Pass North"));
+            assertEquals(1, StringUtils.countMatches(turnSummary.messages.get(1),"Wind Pass"));
         }
 
         @Test

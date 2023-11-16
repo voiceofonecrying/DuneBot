@@ -27,7 +27,8 @@ public class Territories extends HashMap<String, Territory> {
     }
 
     public List<Territory> getTerritorySectors(String aggregateTerritoryName){
-        return values().stream().filter(t -> t.getTerritoryName().indexOf(aggregateTerritoryName) == 0).toList();
+        if (aggregateTerritoryName.equals("Wind Pass")) return values().stream().filter(t -> t.getTerritoryName().indexOf("Wind Pass (") == 0).toList();
+        else return values().stream().filter(t -> t.getTerritoryName().indexOf(aggregateTerritoryName) == 0).toList();
     }
 
     public List<List<Territory>> getTerritorySectorsForBattle(String aggregateTerritoryName, int storm) {
@@ -61,8 +62,6 @@ public class Territories extends HashMap<String, Territory> {
                     .toList()
             );
             if (territory.hasRicheseNoField()) addRichese = true;
-//            if (hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
-//                    && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
         }
         Set<String> factionNames = forces.stream()
                 .map(Force::getFactionName)

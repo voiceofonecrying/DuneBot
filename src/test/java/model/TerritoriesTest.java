@@ -41,6 +41,26 @@ public class TerritoriesTest {
     }
 
     @Test
+    void getTerritorySectorsWindPass() {
+        List<Territory> territorySectorsList = territories.getTerritorySectors("Wind Pass");
+        assertEquals(4, territorySectorsList.size());
+    }
+
+    @Test
+    void getTerritorySectorsForBattleWindPassNorthNoStorm() {
+        List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Wind Pass North", 10);
+        assertEquals(1, territorySectorsList.size());
+        assertEquals(2, territorySectorsList.get(0).size());
+    }
+
+    @Test
+    void getTerritorySectorsForBattleWindPassNoStorm() {
+        List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Wind Pass", 10);
+        assertEquals(1, territorySectorsList.size());
+        assertEquals(4, territorySectorsList.get(0).size());
+    }
+
+    @Test
     void getTerritorySectorsForBattleCielagoNoStorm() {
         List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Cielago North", 10);
         assertEquals(1, territorySectorsList.size());
