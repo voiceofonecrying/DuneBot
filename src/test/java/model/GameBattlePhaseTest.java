@@ -1,6 +1,8 @@
 package model;
 
+import constants.Emojis;
 import model.factions.*;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,10 +17,12 @@ public class GameBattlePhaseTest {
     private EcazFaction ecaz;
     private FremenFaction fremen;
     private MoritaniFaction moritani;
+    private Leader dukeVidal;
 
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
+        dukeVidal = new Leader("Duke Vidal", 6, null, false);
     }
 
     @Nested
@@ -44,6 +48,44 @@ public class GameBattlePhaseTest {
             game.startBattlePhase();
 
             assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.BG));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.FREMEN));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+        }
+
+        @Test
+        void testBattleInWindPassNorth() {
+            game.setStorm(14);
+            Territory windPassNorthNorth = game.getTerritory("Wind Pass North (North Sector)");
+            windPassNorthNorth.addForce(new Force("BG", 6));
+            windPassNorthNorth.addForce(new Force("Fremen", 7));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Wind Pass North"));
+            assertEquals(1, StringUtils.countMatches(turnSummary.messages.get(1),"Wind Pass"));
+        }
+
+        @Test
+        void testBattleWithNoField() throws IOException {
+            game.setStorm(14);
+            RicheseFaction richeseFaction = new RicheseFaction("rPlayer", "rName", game);
+            game.addFaction(richeseFaction);
+            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+            eastCielagoNorth.addForce(new Force("BG", 6));
+            eastCielagoNorth.setRicheseNoField(5);
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.BG));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.RICHESE));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
         }
 
         @Test
@@ -88,36 +130,118 @@ public class GameBattlePhaseTest {
             assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
         }
 
-//        @Test
-//        void testBattleAcrossSectors() {
-//            game.setStorm(10);
-//            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-//            westCielagoNorth.addForce(new Force("BG", 6));
-//            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-//            eastCielagoNorth.addForce(new Force("Fremen", 7));
-//            TestTopic turnSummary = new TestTopic();
-//            game.setTurnSummary(turnSummary);
-//
-//            game.startBattlePhase();
-//
-//            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
-//        }
-//
-//        @Test
-//        void testNoBattleAcrossSectorsDueToStorm() {
-//            game.setStorm(1);
-//            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-//            westCielagoNorth.addForce(new Force("BG", 6));
-//            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-//            eastCielagoNorth.addForce(new Force("Fremen", 7));
-//            TestTopic turnSummary = new TestTopic();
-//            game.setTurnSummary(turnSummary);
-//
-//            game.startBattlePhase();
-//
-//            assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
-//        }
-//
+        @Test
+        void testBattleAcrossSectors() {
+            game.setStorm(10);
+            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+            westCielagoNorth.addForce(new Force("BG", 6));
+            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+        }
+
+        @Test
+        void testNoBattleAcrossSectorsDueToStorm() {
+            game.setStorm(1);
+            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+            westCielagoNorth.addForce(new Force("BG", 6));
+            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertEquals("There are no battles this turn.", turnSummary.messages.get(1));
+        }
+
+        @Test
+        void testMoritaniInTwoStronholdBattlesGetsVidal() throws IOException {
+            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            game.addFaction(moritani);
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            Territory tueksSietch = game.getTerritory("Tuek's Sietch");
+            arrakeen.addForce(new Force("Moritani", 6));
+            arrakeen.addForce(new Force("BG", 1));
+            tueksSietch.addForce(new Force("Moritani", 6));
+            tueksSietch.addForce(new Force("BG", 1));
+            TestTopic moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+        }
+
+        @Test
+        void testMoritaniTakesVidalFromEcaz() throws IOException {
+            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            game.addFaction(moritani);
+            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            game.addFaction(ecaz);
+            ecaz.addLeader(dukeVidal);
+            assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            Territory tueksSietch = game.getTerritory("Tuek's Sietch");
+            arrakeen.addForce(new Force("Moritani", 6));
+            arrakeen.addForce(new Force("BG", 1));
+            tueksSietch.addForce(new Force("Moritani", 6));
+            tueksSietch.addForce(new Force("BG", 1));
+            TestTopic moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            TestTopic ecazChat = new TestTopic();
+            ecaz.setChat(ecazChat);
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertFalse(ecaz.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!", ecazChat.messages.get(0));
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+        }
+
+        @Test
+        void testMoritaniTakesVidalFromHarkonnen() throws IOException {
+            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            game.addFaction(moritani);
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ePlayer", "eUser", game);
+            game.addFaction(harkonnen);
+            harkonnen.addLeader(dukeVidal);
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            Territory tueksSietch = game.getTerritory("Tuek's Sietch");
+            arrakeen.addForce(new Force("Moritani", 6));
+            arrakeen.addForce(new Force("BG", 1));
+            tueksSietch.addForce(new Force("Moritani", 6));
+            tueksSietch.addForce(new Force("BG", 1));
+            TestTopic moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            TestTopic harkonnenChat = new TestTopic();
+            harkonnen.setChat(harkonnenChat);
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.startBattlePhase();
+
+            assertFalse(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!", harkonnenChat.messages.get(0));
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+        }
+
         @Test
         void testMoritaniWithAdvisorsDoesNotGetVidal() throws IOException {
             moritani = new MoritaniFaction("mPlayer", "mUser", game);
