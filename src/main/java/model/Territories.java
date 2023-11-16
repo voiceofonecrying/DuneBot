@@ -49,4 +49,25 @@ public class Territories extends HashMap<String, Territory> {
         if (!sectorsAfterStorm.isEmpty()) returnList.add(sectorsAfterStorm);
         return returnList;
     }
+
+    public Set<String> getFighterNamesInAggTerritory(List<Territory> territorySectors) {
+        List<Force> forces = new ArrayList<>();
+//        if (territorySectors.get(0).getTerritoryName().equals("Polar Sink")) continue;
+        boolean addRichese = false;
+        for (Territory territory : territorySectors) {
+            forces.addAll(territory.getForces().stream()
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
+                    .toList()
+            );
+            if (territory.hasRicheseNoField()) addRichese = true;
+//            if (hasFaction("Moritani") && territory.isStronghold() && forces.size() > 1 && forces.stream().anyMatch(force -> force.getFactionName().equals("Moritani"))
+//                    && forces.stream().noneMatch(force -> force.getFactionName().equals("Ecaz"))) dukeVidalCount++;
+        }
+        Set<String> factionNames = forces.stream()
+                .map(Force::getFactionName)
+                .collect(Collectors.toSet());
+        if (addRichese) factionNames.add("Richese");
+        return factionNames;
+    }
 }
