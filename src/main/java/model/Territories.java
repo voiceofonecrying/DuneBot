@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 public class Territories extends HashMap<String, Territory> {
 
     /**
-     * Returns the territory with the given name.
+     * Returns the territory sector with the given name.
      *
-     * @param name The territory's name.
-     * @return The territory with the given name.
+     * @param name The territory sector's name.
+     * @return The territory sector with the given name.
      */
     public Territory getTerritory(String name) {
         Territory territory = get(name);
@@ -52,9 +52,9 @@ public class Territories extends HashMap<String, Territory> {
 
     public Set<String> getFighterNamesInAggTerritory(List<Territory> territorySectors) {
         List<Force> forces = new ArrayList<>();
-//        if (territorySectors.get(0).getTerritoryName().equals("Polar Sink")) continue;
         boolean addRichese = false;
         for (Territory territory : territorySectors) {
+            if (territorySectors.get(0).getTerritoryName().equals("Polar Sink")) continue;
             forces.addAll(territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
