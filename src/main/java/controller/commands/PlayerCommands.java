@@ -50,6 +50,7 @@ public class PlayerCommands {
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
+            case "holdgame" -> responseMessage = holdGame(event, discordGame, game);
         }
         discordGame.pushGame();
         return responseMessage;

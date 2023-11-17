@@ -587,6 +587,7 @@ public class CommandManager extends ListenerAdapter {
                 case "kill-leader" -> killLeader(discordGame, game);
                 case "revive-leader" -> reviveLeader(discordGame, game);
                 case "set-storm" -> setStorm(discordGame, game);
+                case "set-storm-movement" -> setStormMovement(discordGame, game);
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
                 case "assign-tech-token" -> assignTechToken(discordGame, game);
@@ -595,7 +596,7 @@ public class CommandManager extends ListenerAdapter {
                 case "remove-alliance" -> removeAlliance(discordGame, game);
                 case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
                 case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
-                case "weather-control-storm" -> weatherControlStorm(discordGame, game);
+                case "weather-control-storm" -> setStormMovement(discordGame, game);
                 case "add-spice" -> addSpice(discordGame, game);
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
@@ -715,6 +716,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
+        commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
         commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
@@ -729,7 +731,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-spice-in-territory", "Set the spice amount for a territory")
                 .addOptions(territory, amount));
         commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
-        commandData.add(Commands.slash("weather-control-storm", "Override the storm movement").addOptions(sectors));
+        commandData.add(Commands.slash("weather-control-storm", "/set-storm-movement will replace this command").addOptions(sectors));
 
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
@@ -767,7 +769,7 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
-        event.getGuild().updateCommands().addCommands(getAllCommands()).queue();
+        event.getGuild().updateCommands().addCommands(getAllCommands()).complete();
     }
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
@@ -1287,6 +1289,13 @@ public class CommandManager extends ListenerAdapter {
         ShowCommands.showBoard(discordGame, game);
     }
 
+    public void setStormMovement(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        int stormMovement = discordGame.required(sectors).getAsInt();
+        game.setStormMovement(stormMovement);
+
+        discordGame.pushGame();
+    }
+
     public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         for (Faction f : game.getFactions()) {
             if (f.getTechTokens().removeIf(
@@ -1461,13 +1470,6 @@ public class CommandManager extends ListenerAdapter {
                 game.setUpdated(UpdateType.MAP);
             discordGame.pushGame();
         }
-    }
-
-    public void weatherControlStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        int wcStormMovement = discordGame.required(sectors).getAsInt();
-        game.setStormMovement(wcStormMovement);
-
-        discordGame.pushGame();
     }
 
     public void reassignFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
