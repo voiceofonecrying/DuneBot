@@ -148,8 +148,8 @@ public class CommandManager extends ListenerAdapter {
                 );
             }
 
+            paidToFaction.addSpice(spicePaid);
             paidToFaction.spiceMessage(spicePaid, currentCard, true);
-            game.getFaction(paidToFaction.getName()).addSpice(spicePaid);
 
             turnSummary.queueMessage(
                     MessageFormat.format(
