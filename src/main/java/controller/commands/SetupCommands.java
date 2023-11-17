@@ -233,7 +233,7 @@ public class SetupCommands {
             case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
             case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(discordGame, game);
             case STORM_SELECTION -> stepStatus = stormSelectionStep(discordGame, game);
-            case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(discordGame, game);
+            case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(discordGame);
             case START_GAME -> stepStatus = startGameStep(discordGame, game);
         }
 
@@ -662,8 +662,8 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixHMSPlacementStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getModInfo().queueMessage("Use /placehms to set the initial placement of the HMS then /setup advance.");
+    public static StepStatus ixHMSPlacementStep(DiscordGame discordGame) throws ChannelNotFoundException {
+        discordGame.getModInfo().queueMessage("Use /ix place-hms to set the initial placement of the HMS then /setup advance.");
 
         return StepStatus.STOP;
     }

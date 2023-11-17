@@ -27,12 +27,12 @@ Running "Start Storm Phase" will automatically remove troops and spice blow in t
 need to be brought back if someone uses Weather Control.
 
 Here are some commands that could be helpful during this phase:
-* `/removeforces`
-* `/placeforces` - remember to set isShippment to false to stop them from getting charged.
+* `/remove-forces`
+* `/place-forces` - remember to set isShippment to false to stop them from getting charged.
 * `/set-spice-in-territory`
 * `/destroy-shield-wall`
 * `/discard`
-* `/reviveforces` - remember to set paid to false to stop them from getting charged.
+* `/revive-forces` - remember to set paid to false to stop them from getting charged.
 
 
 ## Spice Blow
@@ -50,7 +50,8 @@ Here are some commands that could be helpful during this phase:
 This phase should run without much mod intervention (CHOAM isn't supported yet). BG automatically gets CHOAM Charity.
 
 Here are some commands that could be helpful during this phase:
-* `/resourceaddorsubtract` - For the resource, type in "spice". If the amount is negative then the spice is removed. Don't forget to type in a message.
+* `/add-spice` - Don't forget to type in a message.
+* `/remove-spice` - Don't forget to type in a message.
 * `/discard`
 
 ## Bidding Phase
@@ -97,8 +98,8 @@ The bot will also take care of paying BT for the free revivals and paying the ho
 end of the phase.
 
 Use the following commands to do paid revivals:
-* `/reviveforces` - Revive forces from the tanks to player reserves. Set Paid to true to charge for the revival and pay BT.
-* `/reviveleader` - Revive a leader.  This can also be used for BT to revive a different faction's leader.
+* `/revive-forces` - Revive forces from the tanks to player reserves. Set Paid to true to charge for the revival and pay BT.
+* `/revive-leader` - Revive a leader.  This can also be used for BT to revive a different faction's leader.
 * `/add-spice`
 * `/remove-spice`
 
@@ -109,9 +110,9 @@ The bot will show buttons to each faction during the shipping and movement phase
 using commands.
 
 The following commands can be useful during the Shipping/Movement phase:
-* `/placeforces` - Place forces on the board.  Set isShipment to true to charge for the shipment, and pay Guild.
-* `/moveforces` - Move forces from one place to another on the board.
-* `/removeforces` - Remove forces to tanks or reserve.
+* `/place-forces` - Place forces on the board.  Set isShipment to true to charge for the shipment, and pay Guild.
+* `/move-forces` - Move forces from one place to another on the board.
+* `/remove-forces` - Remove forces to tanks or reserve.
 * `/bg flip` - Flip a BG force.
 * `/bg advise` - Place a BG advisor.
 * `/richese no-fields-to-front-of-shield` - Remove a no-fields token from the board and place it in front of the Richese shield.  The mod has to manually place the troops.
@@ -126,8 +127,8 @@ will take place, in storm order.  The mod asks players to create their battle pl
 sends commands to the bot to remove the appropriate forces, cards, spice, etc...
 
 The following commands can be useful during the battle phase:
-* `/removeforces` - Remove forces from a territory and optionally send them to the tanks.
-* `/killleader` - Send a leader to the tanks.
+* `/remove-forces` - Remove forces from a territory and optionally send them to the tanks.
+* `/kill-leader` - Send a leader to the tanks.
 * `/richese no-fields-to-front-of-shield` - Remove a no-fields token from the board and place it in front of the Richese shield.  The mod has to manually place the troops.
 * `/discard` - Discard a card from a player's hand.
 * `/add-spice`

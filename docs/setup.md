@@ -1,7 +1,7 @@
 # Game Setup
 
 ## New Game
-The `/newgame` command sets up a new channel category for the game.
+The `/new-game` command sets up a new channel category for the game.
 You should probably use a different player role and mod role for each game.
 
 ## Expansion Choices
@@ -34,10 +34,10 @@ To select the leader skill cards you will need to run `/setup leader-skill`.
 
 ### Place forces
 Some forces will be placed automatically.
-If any need to be manually places (Fremen) use the `/placeforces` command, setting `isShipment`
+If any need to be manually places (Fremen) use the `/place-forces` command, setting `isShipment`
 to `false` to avoid charging the player.
 
 After placing the forces you can then run `/show board` to show the board in the turn summary.
 
 ### Storm Selection
-To select the storm location run `/setstorm`, with the total storm movement.
+To select the storm location run `/set-storm`, with the total storm movement.

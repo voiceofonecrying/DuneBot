@@ -28,7 +28,7 @@ public class PlayerCommands {
                 new SubcommandData("bid", "Place a bid during bidding phase (silent auction will be exact bid only).").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
-                new SubcommandData("holdgame", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
+                new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
         return commandData;
