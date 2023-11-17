@@ -697,8 +697,7 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    @Override
-    public void onGuildReady(@NotNull GuildReadyEvent event) {
+    public static List<CommandData> getAllCommands() {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
@@ -763,7 +762,12 @@ public class CommandManager extends ListenerAdapter {
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
                 .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
 
-        event.getGuild().updateCommands().addCommands(commandDataWithPermissions).queue();
+        return commandDataWithPermissions;
+    }
+
+    @Override
+    public void onGuildReady(@NotNull GuildReadyEvent event) {
+        event.getGuild().updateCommands().addCommands(getAllCommands()).queue();
     }
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {

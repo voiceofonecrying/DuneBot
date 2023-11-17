@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 public class DuneBot {
 
     public static void main(String[] args) {
+        System.out.println("There are " + CommandManager.getAllCommands().size() + " commands in Dunebot.");
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         try {
             String token = Dotenv.configure().load().get("TOKEN");
