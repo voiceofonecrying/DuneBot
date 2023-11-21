@@ -27,12 +27,13 @@ public class DuneBot {
                     .setStatus(OnlineStatus.ONLINE)
                     .setActivity(Activity.playing("Dune"))
                     .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
-                    .build()
-                    .awaitReady();
-
-            jda.getGuilds().forEach((guild) -> EmojiCache.setEmojis(guild.getId(), guild.getEmojis()));
+                    .build();
 
             jda.addEventListener(new EventListener(), new CommandManager(), new ButtonManager());
+
+            jda.awaitReady();
+
+            jda.getGuilds().forEach((guild) -> EmojiCache.setEmojis(guild.getId(), guild.getEmojis()));
         } catch (DotenvException e) {
             System.err.println("Dotenv file or Token not found.");
             throw new RuntimeException(e);
