@@ -30,6 +30,7 @@ public class RunCommands {
                 Commands.slash("run", "Commands related to playing through phases and turns.").addSubcommands(
                         new SubcommandData("advance", "Continue to the next phase of the game."),
                         new SubcommandData("bidding", "Run a regular bidding for a card"),
+                        new SubcommandData("battle", "Run the next battle"),
                         new SubcommandData("update-stronghold-skills", "Updates the Stronghold skill cards.")
                 )
         );
@@ -44,6 +45,7 @@ public class RunCommands {
         switch (name) {
             case "advance" -> advance(discordGame, game);
             case "bidding" -> bidding(discordGame, game);
+            case "battle" -> battle(discordGame, game);
             case "update-stronghold-skills" -> updateStrongholdSkillsCommand(discordGame, game);
         }
     }
@@ -431,6 +433,17 @@ public class RunCommands {
         }
     }
 
+    public static void battle(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Battles battles = game.getBattles();
+        if (battles.aggressorMustChooseBattle()) {
+            // replace with buttons for aggressor to choose battle
+            battles.nextBattle(game);
+        } else {
+            battles.nextBattle(game);
+        }
+//        discordGame.pushGame();
+    }
+
     public static void createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         createBidMessage(discordGame, game, true);
     }
@@ -667,6 +680,7 @@ public class RunCommands {
     }
 
     public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        game.endBattlePhase();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.name().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
         turnSummary.queueMessage("Turn " + game.getTurn() + " Spice Harvest Phase:");

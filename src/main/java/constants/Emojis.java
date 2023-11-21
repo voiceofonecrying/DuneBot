@@ -46,6 +46,48 @@ public final class Emojis {
     private Emojis() {
     }
 
+    public static String getFactionEmoji(String factionName) {
+        switch (factionName) {
+            case "Fremen" -> {
+                return FREMEN;
+            }
+            case "Atreides" -> {
+                return ATREIDES;
+            }
+            case "Harkonnen" -> {
+                return HARKONNEN;
+            }
+            case "BG" -> {
+                return BG;
+            }
+            case "Guild" -> {
+                return GUILD;
+            }
+            case "Emperor" -> {
+                return EMPEROR;
+            }
+            case "CHOAM" -> {
+                return CHOAM;
+            }
+            case "BT" -> {
+                return BT;
+            }
+            case "Richese" -> {
+                return RICHESE;
+            }
+            case "Ix" -> {
+                return IX;
+            }
+            case "Ecaz" -> {
+                return ECAZ;
+            }
+            case "Moritani" -> {
+                return MORITANI;
+            }
+        }
+        return " force ";
+    }
+
     public static String getForceEmoji(String forceName) {
         switch (forceName) {
             case "Fremen" -> {
@@ -81,11 +123,20 @@ public final class Emojis {
             case "Richese" -> {
                 return RICHESE_TROOP;
             }
+            case "NoField" -> {
+                return NO_FIELD;
+            }
             case "Ix" -> {
                 return IX_SUBOID;
             }
             case "Ix*" -> {
                 return IX_CYBORG;
+            }
+            case "Ecaz" -> {
+                return ECAZ_TROOP;
+            }
+            case "Moritani" -> {
+                return MORITANI_TROOP;
             }
         }
         return " force ";

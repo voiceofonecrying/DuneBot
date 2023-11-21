@@ -17,8 +17,6 @@ import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -35,6 +33,7 @@ public class Game {
     private int phase;
     private int subPhase;
     private Bidding bidding;
+    private Battles battles;
     private final Deque<String> turnOrder;
     private final List<Faction> factions;
     private final Territories territories;
@@ -244,6 +243,11 @@ public class Game {
     public Bidding getBidding() throws InvalidGameStateException {
         if (bidding == null) throw new InvalidGameStateException("Game is not in bidding phase.");
         return bidding;
+    }
+
+    public Battles getBattles() throws InvalidGameStateException {
+        if (battles == null) throw new InvalidGameStateException("Game is not in battle phase.");
+        return battles;
     }
 
     public List<Faction> getFactions() {
@@ -873,30 +877,9 @@ public class Game {
         turnSummary.publish("Turn " + turn + " Battle Phase:");
 
         // Get list of aggregate territory names with multiple factions
-        List<Pair<String, List<Faction>>> battles = new ArrayList<>();
-        int dukeVidalCount = 0;
-        for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> territorySectorsForBattle = territories.getTerritorySectorsForBattle(aggregateTerritoryName, storm);
-            Set<String> factionNames;
-            for (List<Territory> territorySectors : territorySectorsForBattle) {
-                factionNames = territories.getFighterNamesInAggTerritory(territorySectors);
-                if (hasFaction("Moritani") && territorySectors.get(0).isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani")
-                        && !factionNames.contains("Ecaz")) dukeVidalCount++;
-                List<Faction> factions = factionNames.stream()
-                        .sorted(Comparator.comparingInt(this::getFactionTurnIndex))
-                        .map(this::getFaction)
-                        .toList();
-
-                boolean addBattle = factions.size() > 1;
-                if (addBattle && factions.size() == 2 &&
-                        (factions.get(0).getName().equals("Ecaz") && factions.get(1).getAlly().equals("Ecaz") ||
-                                factions.get(0).getAlly().equals("Ecaz") && factions.get(1).getName().equals("Ecaz"))) {
-                    addBattle = false;
-                }
-                if (addBattle) battles.add(new ImmutablePair<>(aggregateTerritoryName, factions));
-            }
-        }
-        if (dukeVidalCount >= 2 && leaderTanks.stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
+        battles = new Battles();
+        battles.startBattlePhase(this);
+        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
             for (Faction faction : factions) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
@@ -911,16 +894,13 @@ public class Game {
             getFaction("Moritani").getChat().publish("Duke Vidal has come to fight for you!");
         }
 
-        if (!battles.isEmpty()) {
-            String battleMessages = battles.stream()
-                    .sorted(Comparator
-                            .comparingInt(o -> getFactionTurnIndex(o.getRight().get(0).getName()))
-                    ).map((battle) ->
+        List<Battle> battleTerritories = battles.getBattles(this);
+        if (!battleTerritories.isEmpty()) {
+            String battleMessages = battleTerritories.stream()
+                    .map((battle) ->
                             MessageFormat.format("{0} in {1}",
-                                    battle.getRight().stream()
-                                            .map(Faction::getEmoji)
-                                            .collect(Collectors.joining(" vs ")),
-                                    battle.getLeft()
+                                    battle.getFactionsMessage(),
+                                    battle.getWholeTerritoryName()
                             )
                     ).collect(Collectors.joining("\n"));
             turnSummary.publish("The following battles will take place this turn:\n" + battleMessages);
@@ -929,5 +909,9 @@ public class Game {
         }
         if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             setUpdated(UpdateType.MAP);
+    }
+
+    public void endBattlePhase() {
+        battles = null;
     }
 }

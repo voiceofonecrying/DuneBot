@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,10 +48,7 @@ public class GameBattlePhaseTest {
 
             game.startBattlePhase();
 
-            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.BG));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.FREMEN));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+            assertEquals("The following battles will take place this turn:\n" + Emojis.FREMEN + " vs " + Emojis.BG + " in Cielago North", turnSummary.messages.get(1));
         }
 
         @Test
@@ -64,8 +62,7 @@ public class GameBattlePhaseTest {
 
             game.startBattlePhase();
 
-            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Wind Pass North"));
+            assertEquals("The following battles will take place this turn:\n" + Emojis.FREMEN + " vs " + Emojis.BG + " in Wind Pass North", turnSummary.messages.get(1));
             assertEquals(1, StringUtils.countMatches(turnSummary.messages.get(1),"Wind Pass"));
         }
 
@@ -82,10 +79,7 @@ public class GameBattlePhaseTest {
 
             game.startBattlePhase();
 
-            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.BG));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf(Emojis.RICHESE));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+            assertEquals("The following battles will take place this turn:\n" + Emojis.RICHESE + " vs " + Emojis.BG + " in Cielago North", turnSummary.messages.get(1));
         }
 
         @Test
@@ -142,8 +136,7 @@ public class GameBattlePhaseTest {
 
             game.startBattlePhase();
 
-            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
-            assertNotEquals(-1, turnSummary.messages.get(1).indexOf("Cielago North"));
+            assertEquals("The following battles will take place this turn:\n" + Emojis.BG + " vs " + Emojis.FREMEN + " in Cielago North", turnSummary.messages.get(1));
         }
 
         @Test
@@ -343,7 +336,44 @@ public class GameBattlePhaseTest {
 
             game.startBattlePhase();
 
-            assertEquals(0, turnSummary.messages.get(1).indexOf("The following battles will take place this turn:"));
+            assertEquals(MessageFormat.format(
+                    "The following battles will take place this turn:\n{0} vs {1}{2} in Carthag",
+                    Emojis.FREMEN, Emojis.ECAZ, Emojis.MORITANI),
+                    turnSummary.messages.get(1)
+            );
+        }
+
+        @Test
+        void testEcazAllyAndThirdHaveABattle2() throws IOException {
+            TestTopic turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            ecaz = new EcazFaction("aPlayer", "aUser", game);
+            EmperorFaction emperor = new EmperorFaction("ePlayer", "eUser", game);
+            HarkonnenFaction harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            game.addFaction(ecaz);
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            game.addFaction(richese);
+
+            game.setStorm(10);
+            ecaz.setAlly("Fremen");
+            fremen.setAlly("Ecaz");
+            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+            westCielagoNorth.addForce(new Force("BG", 6));
+            westCielagoNorth.addForce(new Force("Emperor*", 1));
+            westCielagoNorth.addForce(new Force("Ecaz", 1));
+            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForce(new Force("Fremen*", 2));
+
+            game.startBattlePhase();
+
+            assertEquals(MessageFormat.format(
+                    "The following battles will take place this turn:\n{0} vs {1}{2} vs {3} in Cielago North",
+                    Emojis.BG, Emojis.FREMEN, Emojis.ECAZ, Emojis.EMPEROR),
+                    turnSummary.messages.get(1)
+            );
         }
     }
 }
