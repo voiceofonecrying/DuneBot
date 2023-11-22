@@ -574,7 +574,19 @@ public class ShowCommands {
                         forceOffset += 30;
                     }
                     Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
-                    Point forcePlacementOffset = new Point(forcePlacement.x - 55, forcePlacement.y + offset + 5);
+                    int hmsRotation = game.getHmsRotation();
+                    int xOffset = -55;
+                    int yOffset = offset + 5;
+                    if (hmsRotation == 180) xOffset = 55;
+                    else if (hmsRotation == 90) {
+                        xOffset = 0;
+                        yOffset = offset - 55;
+                    } else if (hmsRotation == 270) {
+                        xOffset = 0;
+                        yOffset = offset + 55;
+                    }
+                    Point forcePlacementOffset = new Point(forcePlacement.x +xOffset, forcePlacement.y + yOffset);
+                    hms = rotateImageByDegrees(hms, hmsRotation);
                     board = overlay(board, hms, forcePlacementOffset, 1);
                     continue;
                 }

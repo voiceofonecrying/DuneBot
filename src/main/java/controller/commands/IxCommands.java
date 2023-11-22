@@ -50,7 +50,11 @@ public class IxCommands {
                         new SubcommandData(
                                 "move-hms",
                                 "Move Hidden Mobile Stronghold to another territory"
-                        ).addOptions(CommandOptions.territory)
+                        ).addOptions(CommandOptions.territory),
+                        new SubcommandData(
+                                "rotate-hms",
+                                "Rotate presentation of HMS by 90 degrees"
+                        )
                 )
         );
 
@@ -67,6 +71,7 @@ public class IxCommands {
             case "ally-card-swap" -> allyCardSwap(discordGame, game);
             case "place-hms" -> placeHMS(discordGame, game);
             case "move-hms" -> moveHMS(discordGame, game);
+            case "rotate-hms" -> rotateHMSGraphic(discordGame, game);
         }
     }
 
@@ -153,6 +158,15 @@ public class IxCommands {
             game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territory);
         }
         placeHMS(discordGame, game);
+    }
+
+    public static void rotateHMSGraphic(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        game.rotateHMS90degrees();
+        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
+            game.setUpdated(UpdateType.MAP);
+        else
+            ShowCommands.showBoard(discordGame, game);
+        discordGame.pushGame();
     }
 
     public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

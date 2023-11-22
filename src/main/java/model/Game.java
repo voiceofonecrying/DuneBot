@@ -52,6 +52,7 @@ public class Game {
     private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
+    private int hmsRotation = 0;
     private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
@@ -230,6 +231,14 @@ public class Game {
     public Set<UpdateType> getUpdateTypes() {
         if (this.updateTypes == null) this.updateTypes = new HashSet<>();
         return this.updateTypes;
+    }
+
+    public void rotateHMS90degrees() {
+        hmsRotation = (hmsRotation + 90) % 360;
+    }
+
+    public int getHmsRotation() {
+        return hmsRotation;
     }
 
     public boolean isOnHold() {
