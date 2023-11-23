@@ -50,7 +50,7 @@ public class IxCommands {
                         new SubcommandData(
                                 "move-hms",
                                 "Move Hidden Mobile Stronghold to another territory"
-                        ).addOptions(CommandOptions.territory),
+                        ).addOptions(CommandOptions.hmsTerritory),
                         new SubcommandData(
                                 "rotate-hms",
                                 "Rotate presentation of HMS by 90 degrees"
@@ -70,7 +70,7 @@ public class IxCommands {
             case "technology" -> technology(discordGame, game);
             case "ally-card-swap" -> allyCardSwap(discordGame, game);
             case "place-hms" -> placeHMS(discordGame, game);
-            case "move-hms" -> moveHMS(discordGame, game);
+            case "hms-move" -> moveHMS(discordGame, game);
             case "rotate-hms" -> rotateHMSGraphic(discordGame, game);
         }
     }

@@ -76,6 +76,7 @@ public class CommandOptions {
     public static final OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
     public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData hmsTerritory = new OptionData(OptionType.STRING, "hms-territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
     public static final OptionData dialTwo = new OptionData(OptionType.INTEGER, "dial-two", "The dial of the second player", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
@@ -214,6 +215,7 @@ public class CommandOptions {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" ->
                     choices = factions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
+            case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
             case "card-discard" -> choices = cardsInDiscard(event, game, searchValue);
@@ -251,6 +253,18 @@ public class CommandOptions {
                 .map(territoryName -> new Command.Choice(territoryName, territoryName))
                 .limit(25)
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> hmsTerritories(@NotNull Game game, String searchValue) {
+        List<Command.Choice> returnlist = new ArrayList<>();
+        game.getTerritories().values().stream().filter(t1 -> t1.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().ifPresent(t1 -> returnlist.add(new Command.Choice(t1.getTerritoryName() + " - Current location", t1.getTerritoryName())));
+        returnlist.addAll(game.getTerritories().values().stream()
+                .map(Territory::getTerritoryName)
+                .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(territoryName -> new Command.Choice(territoryName, territoryName))
+                .limit(24)
+                .toList());
+        return returnlist;
     }
 
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
