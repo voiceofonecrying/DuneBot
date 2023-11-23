@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class Battle {
-    String wholeTerritoryName;
-    List<Territory> territorySectors;
-    List<Faction> factions;
-    List<Force> forces;
+    private final String wholeTerritoryName;
+    private final List<Territory> territorySectors;
+    private final List<Faction> factions;
+    private List<Force> forces;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = wholeTerritoryName;
@@ -30,6 +30,10 @@ public class Battle {
 
     public List<Faction> getFactions() {
         return factions;
+    }
+
+    public List<Force> getForces() {
+        return forces;
     }
 
     public List<Force> aggregateForces() {

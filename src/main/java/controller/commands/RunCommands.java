@@ -45,7 +45,7 @@ public class RunCommands {
         switch (name) {
             case "advance" -> advance(discordGame, game);
             case "bidding" -> bidding(discordGame, game);
-            case "battle" -> battle(discordGame, game);
+            case "battle" -> BattleCommands.setupBattle(discordGame, game);
             case "update-stronghold-skills" -> updateStrongholdSkillsCommand(discordGame, game);
         }
     }
@@ -431,17 +431,6 @@ public class RunCommands {
                 discordGame.pushGame();
             }
         }
-    }
-
-    public static void battle(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Battles battles = game.getBattles();
-        if (battles.aggressorMustChooseBattle()) {
-            // replace with buttons for aggressor to choose battle
-            battles.nextBattle(game);
-        } else {
-            battles.nextBattle(game);
-        }
-//        discordGame.pushGame();
     }
 
     public static void createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

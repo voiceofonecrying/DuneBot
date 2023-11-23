@@ -197,6 +197,61 @@ public class BattlesTest {
     }
 
     @Test
+    void testSetOpponent() throws InvalidGameStateException {
+        game.addFaction(atreides);
+        game.addFaction(bg);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(guild);
+        game.addFaction(harkonnen);
+
+        game.setStorm(10);
+        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+        westCielagoNorth.addForce(new Force("BG", 6));
+        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForce(new Force("Atreides", 4));
+
+        game.startBattlePhase();
+        battles = game.getBattles();
+        battles.setTerritoryByIndex(0);
+        battles.setOpponent("Fremen");
+        Battle currentBattle = battles.getCurrentBattle();
+        assertEquals(2, currentBattle.getFactions().size());
+        assertTrue(currentBattle.getForces().stream().noneMatch(f -> f.getName().equals("BG")));
+        assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Atreides")));
+        assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Fremen")));
+    }
+
+    @Test
+    void testSetOpponent2() throws InvalidGameStateException {
+        game.addFaction(emperor);
+        game.addFaction(guild);
+        game.addFaction(atreides);
+        game.addFaction(fremen);
+        game.addFaction(bg);
+        game.addFaction(harkonnen);
+
+        game.setStorm(5);
+        Territory northWindPassNorth = game.getTerritory("Wind Pass North (North Sector)");
+        northWindPassNorth.addForce(new Force("Fremen", 3));
+        northWindPassNorth.addForce(new Force("Emperor", 2));
+        northWindPassNorth.addForce(new Force("Emperor*", 1));
+        Territory southWindPassNorth = game.getTerritory("Wind Pass North (South Sector)");
+        southWindPassNorth.addForce(new Force("Atreides", 1));
+
+        game.startBattlePhase();
+        battles = game.getBattles();
+        battles.setTerritoryByIndex(0);
+        battles.setOpponent("Emperor");
+        Battle currentBattle = battles.getCurrentBattle();
+        assertEquals(2, currentBattle.getFactions().size());
+        assertTrue(currentBattle.getForces().stream().noneMatch(f -> f.getName().equals("Fremen")));
+        assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Atreides")));
+        assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Emperor")));
+    }
+
+    @Test
     void nextBattle() throws InvalidGameStateException {
         game.addFaction(atreides);
         game.addFaction(bg);

@@ -1,6 +1,8 @@
 package model;
 
 import exceptions.InvalidGameStateException;
+import model.factions.AtreidesFaction;
+import model.factions.BGFaction;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
@@ -54,6 +56,14 @@ public class Battles {
         return battles;
     }
 
+    public Faction getAggressor() {
+        return battles.get(0).getFactions().get(0);
+    }
+
+    public List<Battle> getAggressorsBattles() {
+        return battles.stream().filter(b -> b.getFactions().get(0) == battles.get(0).getFactions().get(0)).toList();
+    }
+
     boolean isMoritaniCanTakeVidal() {
         return moritaniCanTakeVidal;
     }
@@ -71,6 +81,20 @@ public class Battles {
     public boolean aggressorMustChooseOpponent() {
         if (battles.isEmpty()) return false;
         return battles.get(0).getFactions().size() > 2;
+    }
+
+    public void setTerritoryByIndex(int territoryIndex) {
+        currentBattle = battles.get(territoryIndex);
+        Battle battle = battles.remove(territoryIndex);
+        battles.add(0, battle);
+    }
+
+    public void setOpponent(String opponent) {
+        currentBattle = new Battle(currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
+                currentBattle.getFactions().stream().filter(
+                        f -> f.getName().equals(opponent) || (f == currentBattle.getFactions().get(0))
+                ).toList()
+        );
     }
 
     public Battle getCurrentBattle() {
@@ -101,5 +125,27 @@ public class Battles {
         }
         game.getTurnSummary().publish(nextBattle.toString());
 //        currentBattle = battleTerritories.
+    }
+
+    public void callBattleActions(Game game) {
+        String message = "Battle in " + currentBattle.getWholeTerritoryName() + ": ";
+        message += currentBattle.getForcesMessage() + "\n";
+        Faction aggressor = currentBattle.getFactions().get(0);
+        Faction opponent = currentBattle.getFactions().get(1);
+        int step = 1;
+        if (aggressor instanceof BGFaction || aggressor.getAlly().equals("BG"))
+            message += step++ + ". " + aggressor.getEmoji() + " use the Voice.\n";
+        else if (opponent instanceof BGFaction || opponent.getAlly().equals("BG"))
+            message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
+
+        if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides"))
+            message += step++ + ". " + aggressor.getEmoji() + " ask the Prescience question.\n";
+        else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides"))
+            message += step++ + ". " + opponent.getEmoji() + " ask the Prescience question.\n";
+
+        if (step != 1) message += step + ". ";
+        message += aggressor.getEmoji() + " and " + opponent.getEmoji() + " submit battle plans.\n";
+        message += aggressor.getPlayer() + " " + opponent.getPlayer();
+        game.getGameActions().publish(message);
     }
 }

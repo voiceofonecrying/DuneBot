@@ -6,10 +6,7 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import controller.channels.FactionChat;
-import controller.channels.FactionLedger;
-import controller.channels.ModInfo;
-import controller.channels.TurnSummary;
+import controller.channels.*;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -37,13 +34,11 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import net.dv8tion.jda.api.utils.messages.MessageEditRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -178,6 +173,10 @@ public class DiscordGame {
 
     public TurnSummary getTurnSummary(Game game) throws ChannelNotFoundException {
         return new TurnSummary(this, game);
+    }
+
+    public GameActions getGameActions() throws ChannelNotFoundException {
+        return new GameActions(this);
     }
 
     public ModInfo getModInfo() throws ChannelNotFoundException {
@@ -415,6 +414,7 @@ public class DiscordGame {
         }
 
         game.setTurnSummary(getTurnSummary(game));
+        game.setGameActions(getGameActions());
         game.setModInfo(getModInfo());
         return game;
     }

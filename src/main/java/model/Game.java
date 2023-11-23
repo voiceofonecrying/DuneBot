@@ -73,6 +73,8 @@ public class Game {
     @Exclude
     private DuneTopic turnSummary;
     @Exclude
+    private DuneTopic gameActions;
+    @Exclude
     private DuneTopic modInfo;
 
     public Game() throws IOException {
@@ -591,6 +593,14 @@ public class Game {
 
     public void setTurnSummary(DuneTopic turnSummary) {
         this.turnSummary = turnSummary;
+    }
+
+    public DuneTopic getGameActions() {
+        return gameActions;
+    }
+
+    public void setGameActions(DuneTopic gameActions) {
+        this.gameActions = gameActions;
     }
 
     public DuneTopic getModInfo() {
