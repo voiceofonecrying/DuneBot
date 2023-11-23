@@ -52,6 +52,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DiscordGame {
     private final Category gameCategory;
@@ -472,7 +474,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        discordRequests.add(new DiscordRequest(channel.sendMessage(message)));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(tagEmojis(message))));
     }
 
     /**
@@ -483,8 +485,11 @@ public class DiscordGame {
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, MessageCreateData message) throws ChannelNotFoundException {
+        MessageCreateData updatedMessage = MessageCreateBuilder.from(message)
+                .setContent(tagEmojis(message.getContent()))
+                .build();
         TextChannel channel = getTextChannel(channelName);
-        discordRequests.add(new DiscordRequest(channel.sendMessage(message)));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(updatedMessage)));
     }
 
     /**
@@ -497,7 +502,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message, FileUpload fileUpload) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        discordRequests.add(new DiscordRequest(channel.sendMessage(message).addFiles(fileUpload)));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(tagEmojis(message)).addFiles(fileUpload)));
     }
 
     /**
@@ -510,7 +515,7 @@ public class DiscordGame {
      */
     public void queueMessage(String channelName, String message, List<FileUpload> fileUploads) throws ChannelNotFoundException {
         TextChannel channel = getTextChannel(channelName);
-        discordRequests.add(new DiscordRequest(channel.sendMessage(message).addFiles(fileUploads)));
+        discordRequests.add(new DiscordRequest(channel.sendMessage(tagEmojis(message)).addFiles(fileUploads)));
     }
 
     /**
@@ -535,6 +540,7 @@ public class DiscordGame {
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
+        messageCreateBuilder.setContent(tagEmojis(messageCreateBuilder.getContent()));
         TextChannel channel = getTextChannel(channelName);
         discordRequests.add(new DiscordRequest(channel.sendMessage(messageCreateBuilder.build())));
     }
@@ -545,6 +551,7 @@ public class DiscordGame {
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(WebhookMessageCreateAction<Message> messageCreateAction) {
+        messageCreateAction.setContent(tagEmojis(messageCreateAction.getContent()));
         discordRequests.add(new DiscordRequest(messageCreateAction));
     }
 
@@ -554,6 +561,7 @@ public class DiscordGame {
      * @param messageCreateAction Message to send.
      */
     public void queueMessage(MessageCreateAction messageCreateAction) {
+        messageCreateAction.setContent(tagEmojis(messageCreateAction.getContent()));
         discordRequests.add(new DiscordRequest(messageCreateAction));
     }
 
@@ -563,7 +571,7 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessage(String message) {
-        discordRequests.add(new DiscordRequest(getHook().sendMessage(message)));
+        discordRequests.add(new DiscordRequest(getHook().sendMessage(tagEmojis(message))));
     }
 
     /**
@@ -572,13 +580,16 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessage(MessageCreateBuilder message) {
+        message.setContent(tagEmojis(message.getContent()));
         discordRequests.add(new DiscordRequest(getHook().sendMessage(message.build())));
     }
 
     public void queueMessage(String parentChannel, String threadChannel, String message) throws ChannelNotFoundException {
         TextChannel parent = getTextChannel(parentChannel);
-        ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadChannel)).findFirst().get();
-        discordRequests.add(new DiscordRequest(thread.sendMessage(message)));
+        ThreadChannel thread = parent.getThreadChannels().stream()
+                .filter(channel -> channel.getName().equals(threadChannel))
+                .findFirst().orElseThrow(() -> new ChannelNotFoundException("Thread not found"));
+        discordRequests.add(new DiscordRequest(thread.sendMessage(tagEmojis(message))));
     }
 
     /**
@@ -590,8 +601,11 @@ public class DiscordGame {
      * @throws ChannelNotFoundException Thrown if the channel is not found.
      */
     public void queueMessage(String channelName, String threadName, MessageCreateBuilder messageCreateBuilder) throws ChannelNotFoundException {
+        messageCreateBuilder.setContent(tagEmojis(messageCreateBuilder.getContent()));
         TextChannel parent = getTextChannel(channelName);
-        ThreadChannel thread = parent.getThreadChannels().stream().filter(channel -> channel.getName().equals(threadName)).findFirst().get();
+        ThreadChannel thread = parent.getThreadChannels().stream()
+                .filter(channel -> channel.getName().equals(threadName))
+                .findFirst().orElseThrow(() -> new ChannelNotFoundException("Thread not found"));
         discordRequests.add(new DiscordRequest(thread.sendMessage(messageCreateBuilder.build())));
     }
 
@@ -601,7 +615,7 @@ public class DiscordGame {
      * @param message Message to send.
      */
     public void queueMessageToEphemeral(String message) {
-        discordRequests.add(new DiscordRequest(getHook().sendMessage(message).setEphemeral(true)));
+        discordRequests.add(new DiscordRequest(getHook().sendMessage(tagEmojis(message)).setEphemeral(true)));
     }
 
     /**
@@ -652,6 +666,48 @@ public class DiscordGame {
             }
         }
         discordRequests.clear();
+    }
+
+    /**
+     * Remove Guild-specific information from emojis
+     * @param message String to remove tags from
+     * @return String with tags removed
+     */
+    public String untagEmojis(String message) {
+        Pattern pattern = Pattern.compile("<(:[a-zA-Z0-9_]+:)\\d+>");
+        Matcher matcher = pattern.matcher(message);
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while (matcher.find()) {
+            matcher.appendReplacement(stringBuilder, matcher.group(1));
+        }
+
+        matcher.appendTail(stringBuilder);
+
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Tag emojis with guild-specific information
+     * @param message String to tag emojis in
+     * @return String with tags added
+     */
+    public String tagEmojis(String message) {
+        String untaggedMessage = untagEmojis(message);
+        Pattern pattern = Pattern.compile("(?<!<):([a-zA-Z0-9_]+):(?!\\d+>)");
+        Matcher matcher = pattern.matcher(untaggedMessage);
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+
+        while (matcher.find()) {
+            matcher.appendReplacement(stringBuilder, getEmojiTag(matcher.group(1)));
+        }
+
+        matcher.appendTail(stringBuilder);
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -735,11 +791,11 @@ public class DiscordGame {
     }
 
     public RichCustomEmoji getEmoji(String emojiName) {
-        return emojis.get(emojiName);
+        return emojis.get(emojiName.replace(":", ""));
     }
 
     public String getEmojiTag(String emojiName) {
         RichCustomEmoji emoji = getEmoji(emojiName);
-        return emoji == null ? ":" + emojiName + ":" : emoji.getFormatted();
+        return emoji == null ? ":" + emojiName.replace(":", "") + ":" : emoji.getFormatted();
     }
 }
