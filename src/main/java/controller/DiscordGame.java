@@ -57,6 +57,8 @@ public class DiscordGame {
     private Game game;
     private GenericInteractionCreateEvent event;
     private final Map<String, RichCustomEmoji> emojis;
+    private static final Pattern taggedEmojis = Pattern.compile("<(:[a-zA-Z0-9_]+:)\\d+>");
+    private static final Pattern untaggedEmojis = Pattern.compile("(?<!<):([a-zA-Z0-9_]+):(?!\\d+>)");
 
     public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
         this.gameCategory = categoryFromEvent(event);
@@ -674,8 +676,7 @@ public class DiscordGame {
      * @return String with tags removed
      */
     public String untagEmojis(String message) {
-        Pattern pattern = Pattern.compile("<(:[a-zA-Z0-9_]+:)\\d+>");
-        Matcher matcher = pattern.matcher(message);
+        Matcher matcher = taggedEmojis.matcher(message);
 
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -695,8 +696,7 @@ public class DiscordGame {
      */
     public String tagEmojis(String message) {
         String untaggedMessage = untagEmojis(message);
-        Pattern pattern = Pattern.compile("(?<!<):([a-zA-Z0-9_]+):(?!\\d+>)");
-        Matcher matcher = pattern.matcher(untaggedMessage);
+        Matcher matcher = untaggedEmojis.matcher(untaggedMessage);
 
         StringBuilder stringBuilder = new StringBuilder();
 

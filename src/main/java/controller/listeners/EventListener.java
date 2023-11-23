@@ -23,10 +23,10 @@ import java.util.regex.Pattern;
 
 public class EventListener extends ListenerAdapter {
 
-    final Pattern cardPattern = Pattern
-            .compile(":(treachery|weirding|worm|transparent_worm):([^:]*):(treachery|weirding|worm|transparent_worm):");
+    private static final Pattern cardPattern = Pattern
+            .compile(":(treachery|weirding|worm|transparent_worm):([^:]*):\\1:");
 
-    final Pattern mentionPattern = Pattern.compile("@\\s*(:[a-zA-Z0-9_]+:)");
+    private static final Pattern mentionPattern = Pattern.compile("@\\s*(:[a-zA-Z0-9_]+:)");
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
