@@ -13,10 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import utils.CardImages;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +21,7 @@ import java.util.regex.Pattern;
 public class EventListener extends ListenerAdapter {
 
     private static final Pattern cardPattern = Pattern
-            .compile(":(treachery|weirding|worm|transparent_worm):([^:]*):\\1:");
+            .compile(":(treachery|leader|stronghold|nexus):([^:]*):\\1:");
 
     private static final Pattern mentionPattern = Pattern.compile("@\\s*(:[a-zA-Z0-9_]+:)");
 
@@ -34,20 +31,27 @@ public class EventListener extends ListenerAdapter {
     }
 
     public void runOnMessageReceived(@NotNull MessageReceivedEvent event) {
+        Guild guild = event.getGuild();
         String message = event.getMessage().getContentStripped();
 
         Matcher cardMatcher = cardPattern.matcher(message);
+
+        List<FileUpload> fileUploads = new ArrayList<>();
 
         while (cardMatcher.find()) {
             String cardName = cardMatcher.group(2).strip();
             String cardType = cardMatcher.group(1);
 
             switch (cardType) {
-                case "treachery" -> sendTreacheryImage(event, cardName);
-                case "weirding" -> sendLeaderSkillImage(event, cardName);
-                case "worm" -> sendStrongholdImage(event, cardName);
-                case "transparent_worm" -> sendNexusImage(event, cardName);
+                case "treachery" -> CardImages.getTreacheryCardImage(guild, cardName).ifPresent(fileUploads::add);
+                case "leader" -> CardImages.getLeaderSkillImage(guild, cardName).ifPresent(fileUploads::add);
+                case "stronghold" -> CardImages.getStrongholdImage(guild, cardName).ifPresent(fileUploads::add);
+                case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
             }
+        }
+
+        if (!fileUploads.isEmpty()) {
+            event.getChannel().sendFiles(fileUploads).queue();
         }
 
         if (Objects.requireNonNull(event.getMember()).getUser().isBot()) return;
@@ -93,41 +97,5 @@ public class EventListener extends ListenerAdapter {
         }
 
         event.getChannel().sendMessage(StringUtils.join(mentionedPlayers, " ")).queue();
-    }
-
-    public void sendTreacheryImage(MessageReceivedEvent event, String cardName) {
-        Guild guild = event.getGuild();
-        Optional<FileUpload> fileUpload = CardImages.getTreacheryCardImage(guild, cardName);
-
-        if (fileUpload.isEmpty()) return;
-        sendImage(event, fileUpload.get());
-    }
-
-    public void sendLeaderSkillImage(MessageReceivedEvent event, String cardName) {
-        Guild guild = event.getGuild();
-        Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(guild, cardName);
-
-        if (fileUpload.isEmpty()) return;
-        sendImage(event, fileUpload.get());
-    }
-
-    public void sendStrongholdImage(MessageReceivedEvent event, String cardName) {
-        Guild guild = event.getGuild();
-        Optional<FileUpload> fileUpload = CardImages.getStrongholdImage(guild, cardName);
-
-        if (fileUpload.isEmpty()) return;
-        sendImage(event, fileUpload.get());
-    }
-
-    public void sendNexusImage(MessageReceivedEvent event, String cardName) {
-        Guild guild = event.getGuild();
-        Optional<FileUpload> fileUpload = CardImages.getNexusImage(guild, cardName);
-
-        if (fileUpload.isEmpty()) return;
-        sendImage(event, fileUpload.get());
-    }
-
-    private void sendImage(MessageReceivedEvent event, FileUpload fileUpload) {
-        event.getChannel().sendFiles(fileUpload).queue();
     }
 }
