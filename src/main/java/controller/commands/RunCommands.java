@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import controller.buttons.IxButtons;
 import controller.buttons.ShipmentAndMovementButtons;
 import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
@@ -78,7 +79,7 @@ public class RunCommands {
         }
 
         if (phase == 1 && subPhase == 1) {
-            IxCommands.hmsSubPhase(discordGame, game);
+            IxButtons.hmsSubPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
             startStormPhase(discordGame, game);
