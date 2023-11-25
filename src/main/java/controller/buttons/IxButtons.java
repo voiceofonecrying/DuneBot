@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static controller.buttons.ButtonManager.deleteAllButtonsInChannel;
 
@@ -54,6 +55,7 @@ public class IxButtons implements Pressable {
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.getTurnSummary().queueMessage(Emojis.IX + " does not move the HMS.");
         discordGame.queueMessage("You are not moving the HMS.");
+        game.setIxHMSActionRequired(false);
         deleteAllButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
     }
@@ -76,6 +78,15 @@ public class IxButtons implements Pressable {
         discordGame.pushGame();
     }
 
+    public static boolean isStronghold(Game game, String wholeTerritoryName){
+        try {
+            if (game.getTerritory(wholeTerritoryName).isStronghold()) return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return false;
+    }
+
     //    private static void hmsQueueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
     public static void hmsQueueMovableTerritories(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
 //        Faction faction = ButtonManager.getButtonPresser(event, game);
@@ -92,7 +103,8 @@ public class IxButtons implements Pressable {
             spacesCanMove = 3;
 //        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist") && spacesCanMove < 3)
 //            spacesCanMove++;
-        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
+        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
+                .stream().filter(t -> !isStronghold(game, t)).collect(Collectors.toSet());
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
         moveToButtons.add(Button.danger("hms-pass-movement", "No move"));
@@ -101,7 +113,7 @@ public class IxButtons implements Pressable {
         }
 
 //        discordGame.getIxChat().queueMessage("Where will you move the HMS?", moveToButtons);
-        arrangeButtonsAndSend("Where will your forces move to?", moveToButtons, discordGame);
+        arrangeButtonsAndSend("Where will you move the HMS?", moveToButtons, discordGame);
 
 //        discordGame.pushGame();
     }
@@ -113,8 +125,10 @@ public class IxButtons implements Pressable {
         discordGame.queueMessage("You selected " + territoryName);
 //        Faction faction = ButtonManager.getButtonPresser(event, game);
         Faction faction = game.getFaction("Ix");
-        List<Territory> territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^\\)]*\\)\\s*", "").equalsIgnoreCase(
-                territoryName)
+        List<Territory> territory = game.getTerritories().values().stream()
+                .filter(t -> t.getSector() != game.getStorm())
+                .filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^\\)]*\\)\\s*", "")
+                .equalsIgnoreCase(territoryName)
         ).toList();
 
         if (territory.size() == 1) {
@@ -191,6 +205,7 @@ public class IxButtons implements Pressable {
             Territory targetTerritory = to;
             targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
             game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
+            game.setIxHMSActionRequired(false);
             discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
             discordGame.pushGame();
         }

@@ -68,20 +68,36 @@ public class RunCommands {
         sendQuote(discordGame, game, phase);
 
         boolean ixInGame = game.hasFaction("Ix");
-        boolean ixCanMoveHMS = game.ixCanMoveHMS();
-        if (phase == 1 && subPhase == 1 &&
-                (game.getTurn() == 1 || !ixCanMoveHMS)) {
-            game.advanceSubPhase();
-            subPhase = game.getSubPhase();
-            if (ixInGame && !ixCanMoveHMS) {
-                discordGame.getTurnSummary().queueMessage(Emojis.IX + " do not control the HMS. It cannot be moved.");
+        boolean hmsUnderStorm = game.getTerritories().values().stream().anyMatch(territory -> territory.getForces().stream().filter(force -> force.getName().equals("Hidden Mobile Stronghold")).anyMatch(force -> territory.getSector() == game.getStorm()));
+        for (Territory territory : game.getTerritories().values()) {
+            for (Force force : territory.getForces()) {
+                if (force.getName().equals("Hidden Mobile Stronghold")) {
+                    if (territory.getSector() == game.getStorm()) hmsUnderStorm = true;
+                }
             }
         }
+        boolean ixCanMoveHMS = game.ixCanMoveHMS();
+        boolean ixHMSActionRequired = game.isIxHMSActionRequired();
+        if (phase == 1 && subPhase == 1) {
+            if (game.getTurn() == 1 || !ixCanMoveHMS || hmsUnderStorm) {
+                game.advanceSubPhase();
+                subPhase = game.getSubPhase();
+                if (ixInGame && !ixCanMoveHMS) {
+                    discordGame.getTurnSummary().queueMessage(Emojis.IX + " do not control the HMS. It cannot be moved.");
+                } else if (hmsUnderStorm) {
+                    discordGame.getTurnSummary().queueMessage("The HMS is under the storm and cannot be moved.");
+                }
+            } else {
+                ixHMSActionRequired = true;
+            }
+        }
+        game.setIxHMSActionRequired(ixHMSActionRequired);
 
         if (phase == 1 && subPhase == 1) {
             IxButtons.hmsSubPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
+            if (game.isIxHMSActionRequired()) throw new InvalidGameStateException(Emojis.IX + " must choose to move the HMS before advancing.");
             startStormPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 3) {

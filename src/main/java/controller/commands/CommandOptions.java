@@ -1,6 +1,8 @@
 package controller.commands;
 
 import controller.DiscordGame;
+import controller.buttons.IxButtons;
+import controller.buttons.ShipmentAndMovementButtons;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -257,8 +259,22 @@ public class CommandOptions {
 
     private static List<Command.Choice> hmsTerritories(@NotNull Game game, String searchValue) {
         List<Command.Choice> returnlist = new ArrayList<>();
-        game.getTerritories().values().stream().filter(t1 -> t1.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().ifPresent(t1 -> returnlist.add(new Command.Choice(t1.getTerritoryName() + " - Current location", t1.getTerritoryName())));
-        returnlist.addAll(game.getTerritories().values().stream()
+        game.getTerritories().values().stream().filter(t1 -> t1.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().ifPresent(t1 -> returnlist.add(new Command.Choice(t1.getTerritoryName() + " - Current, select for no move", t1.getTerritoryName())));
+
+        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames("Hidden Mobile Stronghold", 3, game)
+                .stream().filter(t -> !IxButtons.isStronghold(game, t)).collect(Collectors.toSet());
+        List<Territory> territories = new ArrayList<>();
+        for (String territoryName : moveableTerritories) {
+            territories.addAll(game.getTerritories().values().stream()
+                    .filter(t -> t.getSector() != game.getStorm())
+                    .filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^\\)]*\\)\\s*", "")
+                            .equalsIgnoreCase(territoryName)
+                    ).toList());
+        }
+
+        returnlist.addAll(territories.stream()
+                .filter(t -> !t.isStronghold())
+                .filter(t -> t.getSector() != game.getStorm())
                 .map(Territory::getTerritoryName)
                 .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(territoryName -> new Command.Choice(territoryName, territoryName))

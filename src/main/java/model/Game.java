@@ -28,6 +28,7 @@ import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
 public class Game {
+    private boolean ixHMSActionRequired;
     private String gameRole;
     private int turn;
     private int phase;
@@ -241,6 +242,14 @@ public class Game {
 
     public int getHmsRotation() {
         return hmsRotation;
+    }
+
+    public boolean isIxHMSActionRequired() {
+        return ixHMSActionRequired;
+    }
+
+    public void setIxHMSActionRequired(boolean ixHMSActionRequired) {
+        this.ixHMSActionRequired = ixHMSActionRequired;
     }
 
     public boolean isOnHold() {
