@@ -146,7 +146,7 @@ public class IxCommands {
     }
 
     public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().filter(force -> force.getName().equals("Hidden Mobile Stronghold")).findFirst().isPresent()).findFirst().orElse(null);
+        Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElse(null);
         for (Territory territory : game.getTerritories().values()) {
             territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
             game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territory);

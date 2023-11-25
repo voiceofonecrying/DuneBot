@@ -28,7 +28,6 @@ import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
 public class Game {
-    private boolean ixHMSActionRequired;
     private String gameRole;
     private int turn;
     private int phase;
@@ -54,6 +53,7 @@ public class Game {
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
     private int hmsRotation = 0;
+    private boolean ixHMSActionRequired;
     private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
