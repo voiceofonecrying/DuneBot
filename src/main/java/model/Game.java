@@ -766,8 +766,10 @@ public class Game {
                             List<Force> forcesToRemove = new ArrayList<>();
                             for (Force force : getTerritory(lastCard.name()).getForces()) {
                                 if (force.getName().contains("Fremen")) continue;
-                                Faction fremen = getFaction("Fremen");
-                                if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
+                                if (hasFaction("Fremen")) {
+                                    Faction fremen = getFaction("Fremen");
+                                    if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
+                                }
                                 message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
                                         force.getStrength(), Emojis.getForceEmoji(force.getName()), drawn.name()
                                 ));
