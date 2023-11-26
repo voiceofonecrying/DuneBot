@@ -207,6 +207,11 @@ public class CommandOptions {
 
     public static final OptionData months = new OptionData(OptionType.INTEGER, "months", "List players from games that finished within this many months (default = 1)");
 
+    public static final OptionData clockDirection =
+            new OptionData(OptionType.STRING, "clock-direction", "Clockwise is default", false)
+                    .addChoice("Clockwise", "CW")
+                    .addChoice("Counterclockwise", "CCW");
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
