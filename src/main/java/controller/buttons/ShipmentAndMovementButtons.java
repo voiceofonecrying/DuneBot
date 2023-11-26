@@ -914,7 +914,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         arrangeButtonsAndSend(message, movingFromButtons, discordGame);
     }
 
-    static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {
+    public static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {
         List<MessageCreateBuilder> messagesToQueue = new LinkedList<>();
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
         messageCreateBuilder.setContent(message);

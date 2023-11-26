@@ -53,6 +53,7 @@ public class Game {
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
     private int hmsRotation = 0;
+    private boolean ixHMSActionRequired;
     private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
@@ -241,6 +242,14 @@ public class Game {
 
     public int getHmsRotation() {
         return hmsRotation;
+    }
+
+    public boolean isIxHMSActionRequired() {
+        return ixHMSActionRequired;
+    }
+
+    public void setIxHMSActionRequired(boolean ixHMSActionRequired) {
+        this.ixHMSActionRequired = ixHMSActionRequired;
     }
 
     public boolean isOnHold() {

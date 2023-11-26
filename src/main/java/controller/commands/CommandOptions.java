@@ -1,6 +1,8 @@
 package controller.commands;
 
 import controller.DiscordGame;
+import controller.buttons.IxButtons;
+import controller.buttons.ShipmentAndMovementButtons;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -76,6 +78,7 @@ public class CommandOptions {
     public static final OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
     public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData hmsTerritory = new OptionData(OptionType.STRING, "hms-territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
     public static final OptionData dialTwo = new OptionData(OptionType.INTEGER, "dial-two", "The dial of the second player", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
@@ -214,9 +217,10 @@ public class CommandOptions {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" ->
                     choices = factions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
+            case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
-            case "card-discard" -> choices = cardsInDiscard(event, game, searchValue);
+            case "card-discard" -> choices = cardsInDiscard(game, searchValue);
             case "ixcard" -> choices = ixCardsInHand(game, searchValue);
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
             case "from" -> choices = fromTerritories(event, game, searchValue);
@@ -229,7 +233,7 @@ public class CommandOptions {
             case "richese-black-market-card" -> choices = richeseBlackMarketCard(game, searchValue);
             case "add-game-option" -> choices = getAddGameOptions(game, searchValue);
             case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
-            case "returning" -> choices = nonHarkLeaders(event, game, searchValue);
+            case "returning" -> choices = nonHarkLeaders(game, searchValue);
             case "game-state" -> choices = getGameStates(discordGame, searchValue);
         }
 
@@ -251,6 +255,32 @@ public class CommandOptions {
                 .map(territoryName -> new Command.Choice(territoryName, territoryName))
                 .limit(25)
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> hmsTerritories(@NotNull Game game, String searchValue) {
+        List<Command.Choice> returnlist = new ArrayList<>();
+        game.getTerritories().values().stream().filter(t1 -> t1.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().ifPresent(t1 -> returnlist.add(new Command.Choice(t1.getTerritoryName() + " - Current, select for no move", t1.getTerritoryName())));
+
+        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames("Hidden Mobile Stronghold", 3, game)
+                .stream().filter(t -> IxButtons.isNotStronghold(game, t)).collect(Collectors.toSet());
+        List<Territory> territories = new ArrayList<>();
+        for (String territoryName : moveableTerritories) {
+            territories.addAll(game.getTerritories().values().stream()
+                    .filter(t -> t.getSector() != game.getStorm())
+                    .filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "")
+                            .equalsIgnoreCase(territoryName)
+                    ).toList());
+        }
+
+        returnlist.addAll(territories.stream()
+                .filter(t -> !t.isStronghold())
+                .filter(t -> t.getSector() != game.getStorm())
+                .map(Territory::getTerritoryName)
+                .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(territoryName -> new Command.Choice(territoryName, territoryName))
+                .limit(24)
+                .toList());
+        return returnlist;
     }
 
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
@@ -280,7 +310,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> cardsInDiscard(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+    private static List<Command.Choice> cardsInDiscard(Game game, String searchValue) {
         return game.getTreacheryDiscard().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
@@ -319,7 +349,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> nonHarkLeaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+    private static List<Command.Choice> nonHarkLeaders(Game game, String searchValue) {
         Faction faction = game.getFaction("Harkonnen");
         List<String> harkLeaders = new LinkedList<>();
         harkLeaders.add("Feyd Rautha");
