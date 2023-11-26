@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.channels.FactionChat;
 import controller.commands.CommandManager;
 import controller.commands.IxCommands;
 import controller.commands.ShowCommands;
@@ -39,6 +38,7 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().equals("ix-reset-card-selection")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-reset")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
+        else if (event.getComponentId().startsWith("hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
         else if (event.getComponentId().startsWith("hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
         else if (event.getComponentId().startsWith("hms-move-")) queueSectorButtons(event, game, discordGame);
         switch (event.getComponentId()) {
@@ -52,7 +52,7 @@ public class IxButtons implements Pressable {
         Faction faction = game.getFaction("Ix");
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        hmsQueueMovableTerritories(game, discordGame);
+        hmsQueueMovableTerritories(game, discordGame, 0);
     }
 
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -68,7 +68,7 @@ public class IxButtons implements Pressable {
         Faction faction = game.getFaction("Ix");
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        hmsQueueMovableTerritories(game, discordGame);
+        hmsQueueMovableTerritories(game, discordGame, 0);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -83,33 +83,44 @@ public class IxButtons implements Pressable {
     }
 
     //    private static void hmsQueueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
-    public static void hmsQueueMovableTerritories(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    public static void hmsQueueMovableTerritories(Game game, DiscordGame discordGame, int startingIndex) throws ChannelNotFoundException {
         Faction faction = game.getFaction("Ix");
         Territory from = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
 
         faction.getMovement().setMovingFrom(from.getTerritoryName());
-        int spacesCanMove = 3;
+        int spacesCanMove = 6;
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
                 .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
+        moveableTerritories.stream().map(territory -> Button.primary("hms-move-" + territory, territory)).forEach(moveToButtons::add);
 
-        moveToButtons.add(Button.danger("hms-pass-movement", "No move"));
-        for (String territory : moveableTerritories) {
-            moveToButtons.add(Button.primary("hms-move-" + territory, territory));
+        List<Button> buttonsToShow = new ArrayList<>();
+        int maxButtons = 24;
+        if (moveToButtons.size() - startingIndex > maxButtons) {
+            int nextStartingIndex = startingIndex + maxButtons - 1; // Take one out for the "More choices" button
+            buttonsToShow.addAll(moveToButtons.stream().toList().subList(startingIndex, nextStartingIndex));
+            String buttonId = "hms-move-more-choices-" + nextStartingIndex;
+            buttonsToShow.add(Button.secondary(buttonId, "More choices"));
+        } else {
+            buttonsToShow.addAll(moveToButtons.stream().toList().subList(startingIndex, moveToButtons.size()));
         }
+        if (startingIndex == 0) buttonsToShow.add(Button.danger("hms-pass-movement", "No move"));
+        else buttonsToShow.add(Button.secondary("hms-reset-movement", "Start over"));
+        discordGame.getIxChat().queueMessage("Where will you move the HMS?", buttonsToShow);
+    }
 
-//        discordGame.getIxChat().queueMessage("Where will you move the HMS?", moveToButtons);
-        arrangeButtonsAndSend("Where will you move the HMS?", moveToButtons, discordGame);
-
-//        discordGame.pushGame();
+    private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String moreChoices = "hms-move-more-choices-";
+        int startingIndex = Integer.parseInt(event.getComponentId().replace(moreChoices, "").replace("-", " "));
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("Getting more choices");
+        hmsQueueMovableTerritories(game, discordGame, startingIndex);
     }
 
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
-//        String shipmentOrMovement = isShipment ? "ship-" : "move-";
-        String shipmentOrMovement = "hms-move-";
-        String territoryName = event.getComponentId().replace(shipmentOrMovement, "").replace("-", " ");
+        String hmsMoveString = "hms-move-";
+        String territoryName = event.getComponentId().replace(hmsMoveString, "").replace("-", " ");
         discordGame.queueMessage("You selected " + territoryName);
-//        Faction faction = ButtonManager.getButtonPresser(event, game);
         Faction faction = game.getFaction("Ix");
         List<Territory> territory = game.getTerritories().values().stream()
                 .filter(t -> t.getSector() != game.getStorm())
@@ -128,9 +139,9 @@ public class IxButtons implements Pressable {
 
         for (Territory sector : territory) {
             if (sector.getSpice() > 0)
-                buttons.add(Button.primary(shipmentOrMovement + "sector-" + sector.getTerritoryName(), sector.getSector() + " (spice sector)"));
+                buttons.add(Button.primary(hmsMoveString + "sector-" + sector.getTerritoryName(), sector.getSector() + " (spice sector)"));
             else
-                buttons.add(Button.primary(shipmentOrMovement + "sector-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
+                buttons.add(Button.primary(hmsMoveString + "sector-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
         }
         buttons.sort(ShipmentAndMovementButtons.getButtonComparator());
         String backButtonId = "hms-reset-movement";
@@ -138,7 +149,7 @@ public class IxButtons implements Pressable {
         discordGame.queueMessage(new MessageCreateBuilder()
                 .setContent("Which sector?")
                 .addActionRow(buttons)
-                .addActionRow(Button.secondary(backButtonId, "back"))
+                .addActionRow(Button.secondary(backButtonId, "Start Over"))
         );
     }
 
@@ -146,7 +157,6 @@ public class IxButtons implements Pressable {
         String hmsMoveString = "hms-move-";
         String sector = event.getComponentId().replace(hmsMoveString + "sector-", "").replace("-", " ");
         discordGame.queueMessage("You selected sector " + sector);
-//        Faction faction = ButtonManager.getButtonPresser(event, game);
         Faction faction = game.getFaction("Ix");
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().contains(
                 sector)
@@ -182,37 +192,11 @@ public class IxButtons implements Pressable {
             CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), targetTerritory, secondForce, secondSpecialForce, discordGame, game);
         }
         movement.clear();
-        deleteAllButtonsInChannel(event.getMessageChannel());
+//        deleteAllButtonsInChannel(event.getMessageChannel());
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
             ShowCommands.showBoard(discordGame, game);
-    }
-
-    public static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) throws ChannelNotFoundException {
-        List<MessageCreateBuilder> messagesToQueue = new LinkedList<>();
-        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder();
-        messageCreateBuilder.setContent(message);
-        int count = 0;
-        while (!buttons.isEmpty()) {
-            List<Button> actionRow = new LinkedList<>();
-            for (int i = 0; i < 5; i++) {
-                if (!buttons.isEmpty()) actionRow.add(buttons.pollFirst());
-            }
-            messageCreateBuilder.addActionRow(actionRow);
-            count++;
-            if (count == 5 || buttons.isEmpty()) {
-                messagesToQueue.add(messageCreateBuilder);
-                messageCreateBuilder = new MessageCreateBuilder()
-                        .addContent("cont.");
-                count = 0;
-            }
-        }
-
-        FactionChat ixChat = discordGame.getIxChat();
-        for (MessageCreateBuilder mcb : messagesToQueue) {
-            ixChat.queueMessage(mcb);
-        }
     }
 
     private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
