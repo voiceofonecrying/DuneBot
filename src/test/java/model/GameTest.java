@@ -820,6 +820,40 @@ class GameTest {
     }
 
     @Nested
+    @DisplayName("#drawSpiceBlowNoFremen")
+    class DrawSpiceBlowNoFremen {
+        @Test
+        void shaiHuludWithNoFremenDoesNotThrowException() throws IOException {
+            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            bg = new BGFaction("bgPlayer", "bgUser", game);
+            bt = new BTFaction("btPlayer", "btUser", game);
+            emperor = new EmperorFaction("ePlayer", "eUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            ix = new IxFaction("iPlayer", "iUser", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(bt);
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            game.addFaction(ix);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+
+            game.advanceTurn();
+            game.advanceTurn();
+            game.advanceTurn();
+            Territory shaiHuludTerritory = game.getTerritory("Cielago North (East Sector)");
+            shaiHuludTerritory.setForceStrength("Atreides", 3);
+            SpiceCard lastBlow = game.getSpiceDeck().stream().filter(c -> c.name().equals("Cielago North (East Sector)")).findFirst().orElseThrow();
+            game.getSpiceDiscardA().add(lastBlow);
+
+            SpiceCard shaiHulud = game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow();
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertDoesNotThrow(() -> game.drawSpiceBlow("A"));
+        }
+    }
+
+    @Nested
     @DisplayName("#rempveForces")
     class RemoveForces {
         @BeforeEach
