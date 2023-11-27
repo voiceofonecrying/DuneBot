@@ -47,7 +47,7 @@ public class IxCommands {
                         new SubcommandData(
                                 "move-hms",
                                 "Move Hidden Mobile Stronghold to another territory"
-                        ).addOptions(CommandOptions.hmsTerritory),
+                        ).addOptions(CommandOptions.territory),
                         new SubcommandData(
                                 "reposition-hms",
                                 "Rotate presentation of HMS by 90 degrees"
@@ -133,7 +133,7 @@ public class IxCommands {
     }
 
     public static Territory placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        Territory targetTerritory = game.getTerritories().get(discordGame.required(hmsTerritory).getAsString());
+        Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
