@@ -43,7 +43,7 @@ public class IxCommands {
                         new SubcommandData(
                                 "place-hms",
                                 "Place the HMS in a territory."
-                        ).addOptions(territory),
+                        ).addOptions(CommandOptions.hmsTerritory),
                         new SubcommandData(
                                 "move-hms",
                                 "Move Hidden Mobile Stronghold to another territory"
