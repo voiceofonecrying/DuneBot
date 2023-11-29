@@ -325,7 +325,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.pushGame();
             return;
         }
-        if (game.getTurnOrder().size() > 1 && game.getTurnOrder().peekLast().equals("Guild")) {
+        if (game.getTurnOrder().size() > 1 && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild")) {
             turnSummary.queueMessage(Emojis.GUILD + " does not ship at this time");
         }
 
@@ -347,7 +347,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.pushGame();
             return;
         }
-        if (!game.getTurnOrder().isEmpty() && game.getTurnOrder().peekLast().equals("Guild") && game.getTurnOrder().size() > 1) {
+        if (!game.getTurnOrder().isEmpty() && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild") && game.getTurnOrder().size() > 1) {
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time");
         }
         deleteAllButtonsInChannel(event.getMessageChannel());
@@ -404,6 +404,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             territory.setRicheseNoField(noField);
             int spice = territory.isStronghold() ? 1 : 2;
             faction.subtractSpice(spice);
+            faction.spiceMessage(spice, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
             discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " ship a no-field to " + territoryName);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);
@@ -413,6 +414,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             game.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice);
+            faction.spiceMessage(spice, "shipment from " + territory.getTerritoryName() + " back to reserves", false);
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else if (!crossShipFrom.isEmpty()) {
             game.removeForces(crossShipFrom, faction, force, 0, false);
@@ -699,7 +701,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        List<Territory> territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^\\)]*\\)\\s*", "").equalsIgnoreCase(
+        List<Territory> territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(
                 event.getComponentId().replace(shipmentOrMovement, "").replace("-", " "))
         ).toList();
 
