@@ -63,13 +63,10 @@ public class MoritaniFaction extends Faction {
                 }
             }
             case "Extortion" -> {
+                game.setExtortionTokenRevealed(true);
                 addFrontOfShieldSpice(5);
                 ShowCommands.refreshChangedInfo(discordGame);
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("moritani-pay-extortion", "Pay to remove"));
-                buttons.add(Button.secondary("moritani-pass-extortion", "Don't pay to remove"));
-                turnSummary.queueMessage("The Extortion token will be returned unless someone " +
-                        "pays 3 " + Emojis.SPICE + " to remove it from the game.", buttons);
+                turnSummary.queueMessage("During Mentat Pause, any faction in storm order may pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
             }
             case "Robbery" -> {
                 List<Button> buttons = new LinkedList<>();

@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.factions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,8 @@ class GameTest {
     private Faction harkonnen;
     private Faction bt;
     private Faction ix;
+    private Faction richese;
+    private Faction moritani;
     private TestTopic turnSummary;
     private TestTopic bgChat;
     private TestTopic emperorChat;
@@ -1094,6 +1097,123 @@ class GameTest {
             assertFalse(hmsAdjacency.contains(shieldWallName));
             assertEquals(7, adjacencyList.get(shieldWallName).size());
             assertFalse(shieldWallAdjacency.contains(hmsName));
+        }
+    }
+
+    @Nested
+    @DisplayName("#extortion")
+    class Extortion {
+        TestTopic moritaniLedger = new TestTopic();
+        TestTopic richeseLedger = new TestTopic();
+        TestTopic guildLedger = new TestTopic();
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("fp4", "un4", game);
+            game.addFaction(fremen);
+
+            ix = new IxFaction("fp2", "un2", game);
+            game.addFaction(ix);
+
+            moritani = new MoritaniFaction("fp3", "un3", game);
+            game.addFaction(moritani);
+            moritani.setLedger(moritaniLedger);
+
+            richese = new RicheseFaction("fp6", "un6", game);
+            game.addFaction(richese);
+            richese.setLedger(richeseLedger);
+
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            game.addFaction(atreides);
+
+            guild = new GuildFaction("fp1", "un5", game);
+            game.addFaction(guild);
+            guild.setLedger(guildLedger);
+
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            game.advanceTurn();
+            game.advanceTurn();
+            game.setStorm(14);
+            game.setExtortionTokenRevealed(true);
+            game.startMentatPause();
+        }
+
+        @Test
+        void firstPlayerPays() throws InvalidGameStateException {
+            game.startMentatPause();
+            game.getMentatPause().factionWouldPayExtortion(game, guild);
+            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(2, guild.getSpice());
+            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals(15, moritani.getSpice());
+            assertEquals("+3" + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+        }
+
+        @Test
+        void fourthOffersToPayThenfirstPlayerPays() throws InvalidGameStateException {
+            fremen.setSpice(0);
+            game.startMentatPause();
+            game.getMentatPause().factionWouldPayExtortion(game, richese);
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+            game.getMentatPause().factionWouldPayExtortion(game, guild);
+            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(2, guild.getSpice());
+            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals(15, moritani.getSpice());
+            assertEquals("+3" + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+        }
+
+        @Test
+        void fourthPlayerPays() throws InvalidGameStateException {
+            fremen.setSpice(0);
+            game.startMentatPause();
+            game.getMentatPause().factionWouldPayExtortion(game, richese);
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+            game.getMentatPause().factionDeclinesExtortion(game, guild);
+            assertEquals(Emojis.RICHESE + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(2, richese.getSpice());
+            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, richeseLedger.messages.get(0));
+            assertEquals(15, moritani.getSpice());
+            assertEquals("+3" + Emojis.SPICE + " " + Emojis.RICHESE + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+        }
+
+        @Test
+        void allDecline() throws InvalidGameStateException {
+            game.startMentatPause();
+            game.getMentatPause().factionDeclinesExtortion(game, fremen);
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+            game.getMentatPause().factionDeclinesExtortion(game, richese);
+            game.getMentatPause().factionDeclinesExtortion(game, atreides);
+            game.getMentatPause().factionDeclinesExtortion(game, guild);
+            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
+            assertEquals(12, moritani.getSpice());
+            assertTrue(moritaniLedger.messages.isEmpty());
+        }
+
+        @Test
+        void allButOneDeclineMoritaniPoor() throws InvalidGameStateException {
+            moritani.setSpice(2);
+            game.startMentatPause();
+            game.getMentatPause().factionDeclinesExtortion(game, fremen);
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+            game.getMentatPause().factionDeclinesExtortion(game, richese);
+            game.getMentatPause().factionDeclinesExtortion(game, atreides);
+            assertTrue(turnSummary.messages.isEmpty());
+        }
+
+        @Test
+        void allDeclineFremenHas0Spice() throws InvalidGameStateException {
+            fremen.setSpice(0);
+            game.startMentatPause();
+            game.getMentatPause().factionDeclinesExtortion(game, ix);
+            game.getMentatPause().factionDeclinesExtortion(game, richese);
+            game.getMentatPause().factionDeclinesExtortion(game, atreides);
+            game.getMentatPause().factionDeclinesExtortion(game, guild);
+            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
+            assertEquals(12, moritani.getSpice());
+            assertTrue(moritaniLedger.messages.isEmpty());
         }
     }
 }

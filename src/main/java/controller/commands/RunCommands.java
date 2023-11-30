@@ -4,6 +4,7 @@ import constants.Emojis;
 import controller.DiscordGame;
 import controller.buttons.IxButtons;
 import controller.buttons.ShipmentAndMovementButtons;
+import controller.channels.DiscordChannel;
 import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import enums.GameOption;
@@ -58,6 +59,7 @@ public class RunCommands {
         }
 
         if (game.getPhase() == 10) {
+            game.endMentatPause();
             game.advanceTurn();
             game.setTurnSummary(discordGame.getTurnSummary());
         }
@@ -804,6 +806,7 @@ public class RunCommands {
     }
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        game.startMentatPause();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Mentat Pause Phase:");
         for (Faction faction : game.getFactions()) {
@@ -821,7 +824,28 @@ public class RunCommands {
                     discordGame.getModInfo().queueMessage(faction.getEmoji() + " has Family Atomics.");
                 }
             }
+            if (game.isExtortionTokenRevealed()) {
+                if (!(faction instanceof MoritaniFaction)) {
+                    DiscordChannel factionChat = discordGame.getFactionChat(faction);
+                    if (faction.getSpice() >= 3) {
+                        List<Button> buttons = new ArrayList<>();
+                        buttons.add(Button.primary("extortion-pay", "Yes"));
+                        buttons.add(Button.primary("extortion-dont-pay", "No"));
+                        factionChat.queueMessage(MessageFormat.format(
+                                "Will you pay {0} 3 {1} to remove the Extortion token from the game? " + faction.getPlayer(),
+                                Emojis.MORITANI, Emojis.SPICE), buttons
+                        );
+                    } else {
+                        factionChat.queueMessage("You do not have enough spice to pay Extortion.");
+                    }
+                }
+            }
         }
+        if (game.isExtortionTokenRevealed())
+            turnSummary.queueMessage(MessageFormat.format(
+                    "The Extortion token will be returned to {0} unless someone pays 3 {1} to remove it from the game.",
+                    Emojis.MORITANI, Emojis.SPICE
+            ));
         if (game.hasFaction("Moritani")) {
             MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
             moritani.sendTerrorTokenLocationMessage(game, discordGame);

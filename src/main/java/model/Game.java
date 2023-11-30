@@ -34,6 +34,7 @@ public class Game {
     private int subPhase;
     private Bidding bidding;
     private Battles battles;
+    private MentatPause mentatPause;
     private final Deque<String> turnOrder;
     private final List<Faction> factions;
     private final Territories territories;
@@ -52,6 +53,7 @@ public class Game {
     private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
+    private boolean extortionTokenRevealed;
     private int hmsRotation = 0;
     private boolean ixHMSActionRequired;
     private HashMap<Integer, List<String>> quotes;
@@ -234,6 +236,14 @@ public class Game {
     public Set<UpdateType> getUpdateTypes() {
         if (this.updateTypes == null) this.updateTypes = new HashSet<>();
         return this.updateTypes;
+    }
+
+    public boolean isExtortionTokenRevealed() {
+        return extortionTokenRevealed;
+    }
+
+    public void setExtortionTokenRevealed(boolean extortionTokenRevealed) {
+        this.extortionTokenRevealed = extortionTokenRevealed;
     }
 
     public void rotateHMS90degrees() {
@@ -943,5 +953,19 @@ public class Game {
 
     public void endBattlePhase() {
         battles = null;
+    }
+
+    public MentatPause getMentatPause() {
+        return mentatPause;
+    }
+
+    public void startMentatPause() {
+        mentatPause = new MentatPause(this);
+    }
+
+    public void endMentatPause() throws InvalidGameStateException {
+        mentatPause.endPhase();
+        mentatPause = null;
+        extortionTokenRevealed = false;
     }
 }

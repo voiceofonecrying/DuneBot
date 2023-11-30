@@ -5,6 +5,7 @@ import controller.commands.ShowCommands;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.Game;
+import model.MentatPause;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -24,9 +25,9 @@ public class ButtonManager extends ListenerAdapter {
             return game.getFactions().stream()
                     .filter(f -> f.getPlayer().contains(Objects.requireNonNull(event.getMember()).getUser().getId()))
                     .findAny()
-                    .get();
+                    .orElseThrow();
         } catch (Exception e) {
-            System.out.println(event.getMember().getUser().getId());
+            System.out.println(Objects.requireNonNull(event.getMember()).getUser().getId());
             for (Faction faction : game.getFactions()) {
                 System.out.println(faction.getPlayer());
             }
@@ -83,6 +84,30 @@ public class ButtonManager extends ListenerAdapter {
                     discordGame.queueMessage("Text mode active");
                     discordGame.pushGame();
                     ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                }
+                case "extortion-pay" -> {
+                    MentatPause mentatPause = game.getMentatPause();
+                    if (mentatPause == null || !mentatPause.isExtortionActive())
+                        discordGame.queueMessage("Extortion has already been resolved. You were willing to pay.");
+                    else if (getButtonPresser(event, game).getSpice() >= 3) {
+                        game.getMentatPause().factionWouldPayExtortion(game, getButtonPresser(event, game));
+                        discordGame.queueMessage("You are willing to pay Extortion.");
+                        discordGame.pushGame();
+                    } else {
+                        game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
+                        discordGame.queueMessage("You are willing to pay Extortion but do not have enough spice.");
+                        discordGame.pushGame();
+                    }
+                }
+                case "extortion-dont-pay" -> {
+                    MentatPause mentatPause = game.getMentatPause();
+                    if (mentatPause == null || !mentatPause.isExtortionActive())
+                        discordGame.queueMessage("Extortion has already been resolved. You were not willing to pay.");
+                    else {
+                        game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
+                        discordGame.queueMessage("You will not pay Extortion.");
+                        discordGame.pushGame();
+                    }
                 }
             }
 
