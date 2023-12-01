@@ -288,12 +288,13 @@ public class RunCommands {
         if (game.hasFaction("CHOAM")) {
             Faction choamFaction = game.getFaction("CHOAM");
             int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
-            choamFaction.addSpice(((2 * factions.size() * multiplier) + plusOne) - choamGiven);
+            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne);
             choamFaction.spiceMessage(game.getFactions().size() * 2 * multiplier, "CHOAM Charity", true);
             turnSummary.queueMessage(
                     choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
             );
+            choamFaction.subtractSpice(choamGiven);
             choamFaction.spiceMessage(choamGiven, "CHOAM Charity given", false);
         }
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
