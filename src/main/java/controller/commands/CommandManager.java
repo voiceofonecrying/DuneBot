@@ -264,7 +264,8 @@ public class CommandManager extends ListenerAdapter {
 
             if (targetFaction.getName().equalsIgnoreCase("Guild") || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama) {
                 cost = Math.ceilDiv(baseCost, 2);
-            } else if (targetFaction.getName().equalsIgnoreCase("Fremen")) {
+            } else if (targetFaction.getName().equalsIgnoreCase("Fremen") &&
+                    !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())) {
                 cost = 0;
             } else {
                 cost = baseCost;
