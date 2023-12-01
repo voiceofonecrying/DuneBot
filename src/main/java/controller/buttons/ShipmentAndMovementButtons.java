@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
 
 import static controller.buttons.ButtonManager.deleteAllButtonsInChannel;
@@ -404,8 +405,17 @@ public class ShipmentAndMovementButtons implements Pressable {
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
             territory.setRicheseNoField(noField);
             int spice = territory.isStronghold() ? 1 : 2;
-            faction.subtractSpice(spice);
             turnSummaryMessage += " for " + spice + " " + Emojis.SPICE;
+            int support = 0;
+            if (faction.getAllySpiceShipment() > 0) {
+                support = Math.min(faction.getAllySpiceShipment(), spice);
+                Faction allyFaction = game.getFaction(faction.getAlly());
+                allyFaction.subtractSpice(support);
+                allyFaction.spiceMessage(support, faction.getEmoji() + " shipment support", false);
+                turnSummaryMessage += MessageFormat.format(" ({0} from {1})", support, game.getFaction(faction.getAlly()).getEmoji());
+                faction.setAllySpiceShipment(0);
+            }
+            faction.subtractSpice(spice);
             faction.spiceMessage(spice, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
             if (game.hasFaction("Guild") && !karama) {
                 turnSummaryMessage += " paid to " + Emojis.GUILD;
@@ -428,7 +438,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             game.removeForces(crossShipFrom, faction, force, 0, false);
             CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
-        } else CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
+        } else if (force > 0 || specialForce > 0)
+            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
         else
