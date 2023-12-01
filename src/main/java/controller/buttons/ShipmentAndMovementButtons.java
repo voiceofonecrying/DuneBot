@@ -415,8 +415,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                 turnSummaryMessage += MessageFormat.format(" ({0} from {1})", support, game.getFaction(faction.getAlly()).getEmoji());
                 faction.setAllySpiceShipment(0);
             }
-            faction.subtractSpice(spice);
-            faction.spiceMessage(spice, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
+            faction.subtractSpice(spice - support);
+            faction.spiceMessage(spice - support, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
             if (game.hasFaction("Guild") && !karama) {
                 turnSummaryMessage += " paid to " + Emojis.GUILD;
                 Faction guildFaction = game.getFaction("Guild");
