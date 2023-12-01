@@ -400,12 +400,20 @@ public class ShipmentAndMovementButtons implements Pressable {
         String crossShipFrom = shipment.getCrossShipFrom();
         Territory territory = game.getTerritory(territoryName);
         if (noField >= 0) {
+            String turnSummaryMessage = Emojis.RICHESE + " ship a no-field to " + territoryName;
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
             territory.setRicheseNoField(noField);
             int spice = territory.isStronghold() ? 1 : 2;
             faction.subtractSpice(spice);
+            turnSummaryMessage += " for " + spice + " " + Emojis.SPICE;
             faction.spiceMessage(spice, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
-            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " ship a no-field to " + territoryName);
+            if (game.hasFaction("Guild") && !karama) {
+                turnSummaryMessage += " paid to " + Emojis.GUILD;
+                Faction guildFaction = game.getFaction("Guild");
+                guildFaction.addSpice(spice);
+                guildFaction.spiceMessage(spice, faction.getEmoji() + " shipment", true);
+            }
+            discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);
             }
