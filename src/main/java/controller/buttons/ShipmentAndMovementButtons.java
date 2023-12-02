@@ -932,9 +932,11 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(Button.primary("other", "Somewhere else"));
         buttons.add(Button.danger("pass-shipment", "I don't want to ship."));
 
-        discordGame.queueMessage(new MessageCreateBuilder()
-                .setContent("What part of Arrakis would you like to ship to?")
-                .addActionRow(buttons));
+
+        discordGame.getFactionChat(faction.getName()).queueMessage("What part of Arrakis would you like to ship to?", buttons);
+//        discordGame.queueMessage(new MessageCreateBuilder()
+//                .setContent("What part of Arrakis would you like to ship to?")
+//                .addActionRow(buttons));
 
         if (faction.getName().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
             List<Button> guildButtons = new LinkedList<>();
