@@ -644,7 +644,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!forcesButtons.isEmpty()) {
                 arrangeButtonsAndSend(message, forcesButtons, discordGame);
             } else {
-                discordGame.queueMessage(message);
+                discordGame.queueMessage("You have no troops in reserves to ship.");
             }
 
             if (faction.getName().equals("Richese")) {
@@ -1006,6 +1006,12 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     public static void sendShipmentMessage(String factionName, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction faction = game.getFaction(factionName);
+        if (faction.getReserves().getStrength() == 0 && faction.getSpecialReserves().getStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese")) {
+            List<Button> passButton = List.of(Button.danger("pass-shipment", "Pass shipment"));
+            discordGame.getFactionChat(factionName).queueMessage("You have no troops in reserves to ship.", passButton);
+            return;
+        }
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("shipment", "Begin a ship action"));
         buttons.add(Button.danger("pass-shipment", "Pass shipment"));
