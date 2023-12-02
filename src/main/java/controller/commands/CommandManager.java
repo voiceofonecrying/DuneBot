@@ -345,7 +345,7 @@ public class CommandManager extends ListenerAdapter {
                 }
 
                 buttons.add(Button.danger("bg-dont-advise-" + territoryName, "No"));
-                discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "?" + game.getFaction("BG").getPlayer(), buttons);
+                discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "? " + game.getFaction("BG").getPlayer(), buttons);
             }
             turnSummary.queueMessage(message.toString());
 

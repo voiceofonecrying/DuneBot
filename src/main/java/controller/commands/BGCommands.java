@@ -61,7 +61,8 @@ public class BGCommands {
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));
-        discordGame.getTurnSummary().queueMessage(Emojis.BG + " advise to " + territory.getTerritoryName());
+        discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         discordGame.pushGame();
         if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
             game.setUpdated(UpdateType.MAP);
