@@ -613,10 +613,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
 
         for (int i = 0; i < buttonLimitForces; i++) {
-            forcesButtons.add(Button.primary("add-force-" + shipOrMove + "-" + (i + 1), "+" + (i + 1) + " regular"));
+            forcesButtons.add(Button.primary("add-force-" + shipOrMove + "-" + (i + 1), "Add " + (i + 1) + " troop"));
         }
         for (int i = 0; i < buttonLimitSpecialForces; i++) {
-            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + "-" + (i + 1), "+" + (i + 1) + " starred"));
+            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + "-" + (i + 1), "Add " + (i + 1) + " * troop"));
         }
 
         if (isShipment) {
@@ -638,9 +638,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             String specialForces = faction.getSpecialReserves().getName().isEmpty() ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
             String noFieldMessage = faction.getShipment().getNoField() >= 0 ? "\n" + faction.getShipment().getNoField() + " " + Emojis.NO_FIELD + "\n": "";
             String message = "Use buttons below to add forces to your shipment." +
-                    "\n**Currently shipping:\n" + faction.getShipment().getForce() + " " + Emojis.getForceEmoji(faction.getName())
-                    + specialForces + noFieldMessage + "\n to " + territory + "\n for " + spice + " " + Emojis.SPICE + "\n\nYou have " +
-                    faction.getSpice() + " " + Emojis.SPICE + " to spend.**";
+                    " Currently shipping:\n**" + faction.getShipment().getForce() + " " + Emojis.getForceEmoji(faction.getName())
+                    + specialForces + noFieldMessage + "** to " + territory + " for " + spice + " " + Emojis.SPICE + "\n\nYou have " +
+                    faction.getSpice() + " " + Emojis.SPICE + " to spend.";
             if (!forcesButtons.isEmpty()) {
                 arrangeButtonsAndSend(message, forcesButtons, discordGame);
             } else {
@@ -667,7 +667,6 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             Button execute = Button.success("execute-shipment", "Confirm Shipment");
 
-
             if (faction.getShipment().hasShipped()) execute = execute.asDisabled();
             finalizeButtons.add(execute);
             finalizeButtons.add(Button.danger("reset-shipping-forces", "Reset forces"));
@@ -679,20 +678,23 @@ public class ShipmentAndMovementButtons implements Pressable {
                     .setContent("Finalize or start over:")
                     .addActionRow(finalizeButtons));
         } else {
+            Movement movement = faction.getMovement();
             if (faction.getName().equals("Richese") && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
                 forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token"));
-            String specialForces = faction.getSpecialReserves().getName().isEmpty() ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            String specialForces = faction.getSpecialReserves().getStrength() == 0 ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
 
             String message = "Use buttons below to add forces to your movement." +
-                    "\n**Currently moving:\n" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "\n to " + faction.getMovement().getMovingTo() + "**";
+                    " Currently moving:\n**" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "** to " + faction.getMovement().getMovingTo();
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Hajr ")))
                 forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
                 forcesButtons.add(Button.secondary("Ornithopter", "Confirm Movement and play Ornithopter"));
 
-            forcesButtons.add(Button.success("execute-movement", "Confirm Movement"));
-            forcesButtons.add(Button.danger("reset-moving-forces", "Reset forces"));
+            if (movement.isMovingNoField() || movement.getForce() != 0 || movement.getSpecialForce() != 0 || movement.getSecondForce() != 0 || movement.getSecondSpecialForce() != 0) {
+                forcesButtons.add(Button.success("execute-movement", "Confirm Movement"));
+                forcesButtons.add(Button.danger("reset-moving-forces", "Reset forces"));
+            }
             forcesButtons.add(Button.danger("reset-movement", "Start Over"));
 
             arrangeButtonsAndSend(message, forcesButtons, discordGame);
@@ -724,10 +726,10 @@ public class ShipmentAndMovementButtons implements Pressable {
                     }
 
                     for (int i = 0; i < secondForcesButtonLimit; i++) {
-                        secondForcesButtons.add(Button.primary("planetologist-add-force-" + territory.getTerritoryName() + "-" + (i + 1), "+" + (i + 1) + " regular"));
+                        secondForcesButtons.add(Button.primary("planetologist-add-force-" + territory.getTerritoryName() + "-" + (i + 1), "Add " + (i + 1) + " troop"));
                     }
                     for (int i = 0; i < secondSpecialForcesButtonLimit; i++) {
-                        secondForcesButtons.add(Button.primary("planetologist-add-special-force-" + territory.getTerritoryName() + "-" + (i + 1), "+" + (i + 1) + " starred"));
+                        secondForcesButtons.add(Button.primary("planetologist-add-special-force-" + territory.getTerritoryName() + "-" + (i + 1), "Add " + (i + 1) + " * troop"));
                     }
 
                     arrangeButtonsAndSend("Second force that can move from " + territory.getTerritoryName() + " using Planetologist ability.", secondForcesButtons, discordGame);
