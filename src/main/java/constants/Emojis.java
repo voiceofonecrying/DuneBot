@@ -85,7 +85,7 @@ public final class Emojis {
                 return MORITANI;
             }
         }
-        return " force ";
+        return "faction";
     }
 
     public static String getForceEmoji(String forceName) {
@@ -104,6 +104,9 @@ public final class Emojis {
             }
             case "BG" -> {
                 return BG_FIGHTER;
+            }
+            case "Advisor" -> {
+                return BG_ADVISOR;
             }
             case "Guild" -> {
                 return GUILD_TROOP;
@@ -139,7 +142,7 @@ public final class Emojis {
                 return MORITANI_TROOP;
             }
         }
-        return " force ";
+        return "force";
     }
 
     public static String getTechTokenEmoji(String techToken) {
