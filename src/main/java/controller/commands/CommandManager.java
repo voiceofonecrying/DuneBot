@@ -11,6 +11,7 @@ import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.Faction;
+import model.factions.IxFaction;
 import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -209,10 +210,11 @@ public class CommandManager extends ListenerAdapter {
         String star = starred ? "*" : "";
 
         int revivalCost;
-
         if (faction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
         else if (faction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
+        else if ((faction instanceof IxFaction) && starred) revivalCost = revivedValue * 3;
         else revivalCost = revivedValue * 2;
+        if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
 
         if (star.isEmpty()) faction.addReserves(revivedValue);
         else faction.addSpecialReserves(revivedValue);
