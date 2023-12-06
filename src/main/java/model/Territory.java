@@ -88,6 +88,18 @@ public class Territory {
     }
 
     public Force getForce(String name) {
+        List<Force> forceObjects = forces.stream().filter(force -> force.getName().equals(name)).toList();
+        if (forceObjects.size() > 1) {
+            // Combine same name Forces if they got split
+            int totalStrength = forceObjects.stream().mapToInt(Force::getStrength).sum();
+            String factionName = forceObjects.get(0).getFactionName();
+            forces.removeAll(forceObjects);
+            if (totalStrength > 0)
+                forces.add(new Force(name, totalStrength, factionName));
+        } else if (forceObjects.size() == 1 && forceObjects.get(0).getStrength() == 0) {
+            // Remove 0 strength Force
+            forces.remove(forceObjects.get(0));
+        }
         return forces.stream().filter(force -> force.getName().equals(name)).findFirst().orElse(new Force(name, 0));
     }
 

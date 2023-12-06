@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Force;
 import model.Game;
 import model.Territory;
@@ -84,6 +85,17 @@ public class EmperorFaction extends Faction {
     public Force getSpecialReserves() {
         if (this.specialReserves != null) return this.specialReserves;
         return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
+    }
+
+    @Override
+    public void addSpecialReserves(int amount) {
+        if (specialReserves != null) {
+            getSpecialReserves().addStrength(amount);
+        } else {
+            Territory territory = getGame().getTerritory(getSecondHomeworld());
+            territory.setForceStrength("Emperor*", territory.getForce("Emperor*").getStrength() + amount);
+        }
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void kaitainHighDiscard(String cardName) {

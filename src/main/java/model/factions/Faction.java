@@ -316,7 +316,12 @@ public class Faction {
     }
 
     public void addSpecialReserves(int amount) {
-        getSpecialReserves().addStrength(amount);
+        if (specialReserves != null) {
+            getSpecialReserves().addStrength(amount);
+        } else {
+            Territory territory = game.getTerritory(homeworld);
+            territory.setForceStrength(name, territory.getForce(name + "*").getStrength() + amount);
+        }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
