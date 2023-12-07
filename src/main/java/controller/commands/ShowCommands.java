@@ -821,7 +821,7 @@ public class ShowCommands {
         List<TraitorCard> traitors = faction.getTraitorHand();
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
-        String nexusCard = faction.getNexusCard() == null ? "" : "\nNexus Card:\n" + Emojis.NEXUS + faction.getNexusCard().name() + Emojis.NEXUS;
+        String nexusCard = faction.getNexusCard() == null ? "" : "\nNexus Card:\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
         if (faction.getName().equalsIgnoreCase("bg")) {
             BGFaction bg = (BGFaction) faction;
