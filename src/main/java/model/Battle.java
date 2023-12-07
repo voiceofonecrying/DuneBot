@@ -87,8 +87,8 @@ public class Battle {
         if (optForce.isPresent()) specialForces = optForce.get().getStrength();
         boolean hasNoField = factionName.equals("Richese") && forces.stream().anyMatch(force -> force.getName().equals("NoField"));
         if (hasNoField) message += "1 " + Emojis.NO_FIELD + " ";
-        if (specialForces > 0) message += specialForces + " " + Emojis.getForceEmoji(factionName + "*") + " ";
         if (regularForces > 0) message += regularForces + " " + Emojis.getForceEmoji(factionName) + " ";
+        if (specialForces > 0) message += specialForces + " " + Emojis.getForceEmoji(factionName + "*") + " ";
         return message;
     }
 

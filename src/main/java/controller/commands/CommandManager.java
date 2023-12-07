@@ -1205,8 +1205,11 @@ public class CommandManager extends ListenerAdapter {
 
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
-        game.getLeaderTanks().add(targetFaction.removeLeader(discordGame.required(leader).getAsString()));
-        discordGame.getFactionLedger(targetFaction).queueMessage(discordGame.required(leader).getAsString() + " was sent to the tanks.");
+        String leaderName = discordGame.required(leader).getAsString();
+        game.getLeaderTanks().add(targetFaction.removeLeader(leaderName));
+        String message = leaderName + " was sent to the tanks.";
+        discordGame.getFactionLedger(targetFaction).queueMessage(message);
+        discordGame.getTurnSummary().queueMessage(message);
         discordGame.pushGame();
     }
 
@@ -1257,14 +1260,24 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String territoryName = discordGame.required(fromTerritory).getAsString();
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int specialAmount = discordGame.required(starredAmount).getAsInt();
+        if (amountValue < 0 || specialAmount < 0)
+            throw new InvalidGameStateException("Negative numbers are invalid.");
+        if (amountValue == 0 && specialAmount == 0)
+            throw new InvalidGameStateException("Both force amounts cannot be 0.");
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
         game.removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        String forcesString = "";
+        if (amountValue > 0) forcesString += MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName()));
+        if (specialAmount > 0) forcesString += MessageFormat.format("{0} {1} ", specialAmount, Emojis.getForceEmoji(targetFaction.getName() + "*"));
+        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
+                "{0}in {1} were sent to {2}.", forcesString, territoryName, (isToTanks ? "the tanks" : "reserves")
+        ));
         discordGame.pushGame();
     }
 
