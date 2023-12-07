@@ -40,8 +40,10 @@ public final class Emojis {
     public static final String AXLOTL_TANKS = ":axlotltanks:";
     public static final String HEIGHLINERS = ":heighliners:";
     public static final String SPICE_PRODUCTION = ":spiceproduction:";
-    public static final String TRANSPARENT_WORM = ":transparent_worm:";
     public static final String NO_FIELD = ":no_field:";
+    public static final String LEADER = ":leader:";
+    public static final String STRONGHOLD = ":stronghold:";
+    public static final String NEXUS = ":nexus:";
 
     private Emojis() {
     }
