@@ -279,12 +279,14 @@ public class Faction {
 
     public void addSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
         this.spice += spice;
         setUpdated(UpdateType.SPICE_BACK);
     }
 
     public void subtractSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
         setUpdated(UpdateType.SPICE_BACK);
@@ -384,12 +386,14 @@ public class Faction {
 
     public void addFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
         this.frontOfShieldSpice += spice;
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void subtractFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
         this.frontOfShieldSpice -= spice;
         if (this.frontOfShieldSpice < 0)
             throw new IllegalStateException("Faction cannot spend more spice than they have.");
@@ -665,6 +669,7 @@ public class Faction {
     }
 
     public void spiceMessage(int amount, String message, boolean plus) {
+        if (amount == 0) return;
         String plusSign = plus ? "+" : "-";
         ledger.publish(
                 MessageFormat.format(
