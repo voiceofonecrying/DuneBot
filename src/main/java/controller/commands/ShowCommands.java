@@ -960,7 +960,7 @@ public class ShowCommands {
                         .append(" No-Field Token\n");
             }
 
-            if (faction.getName().equalsIgnoreCase("Ecaz")) {
+            if (faction instanceof EcazFaction && ((EcazFaction) faction).getLoyalLeader() != null) {
                 message.append(((EcazFaction) faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
             }
 
