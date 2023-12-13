@@ -21,9 +21,9 @@ public class BGButtons implements Pressable {
 
         if (event.getComponentId().startsWith("bg-advise-")) {
             advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]), 1);
-        } else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, game, discordGame);
+        } else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, discordGame);
         else if (event.getComponentId().startsWith("bg-flip-")) bgFlip(event, game, discordGame);
-        else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, game, discordGame);
+        else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, discordGame);
         else if (event.getComponentId().startsWith("bg-ht")) {
             advise(discordGame, game, game.getTerritory("Polar Sink"), 2);
         }
@@ -36,13 +36,13 @@ public class BGButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void dontFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage(Emojis.BG + " Don't flip in " + event.getComponentId().split("-")[3]);
+    private static void dontFlip(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " don't flip in " + event.getComponentId().split("-")[3]);
         discordGame.queueMessageToEphemeral("You will not flip.");
         discordGame.queueDeleteMessage();
     }
 
-    private static void dontAdvise(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+    private static void dontAdvise(ButtonInteractionEvent event, DiscordGame discordGame) {
         discordGame.queueMessage(Emojis.BG + " Don't advise in " + event.getComponentId().split("-")[3]);
         discordGame.queueDeleteMessage();
     }

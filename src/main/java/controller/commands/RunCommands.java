@@ -674,8 +674,9 @@ public class RunCommands {
                         discordGame.queueMessage("game-actions", territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
                         continue;
                     }
-                    discordGame.queueMessage("game-actions", new MessageCreateBuilder().setContent(
-                                    message.append(game.getFaction("BG").getEmoji()).append(" to decide whether to flip their advisors in ").append(territory.getTerritoryName()).append("\n").append(bgPlayer).toString())
+                    discordGame.getTurnSummary().queueMessage(game.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
+                    discordGame.getBGChat().queueMessage(new MessageCreateBuilder().setContent(
+                                    message.append("Will you flip to fighters in ").append(territory.getTerritoryName()).append("? ").append(bgPlayer).toString())
                             .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));
                 }
             }

@@ -330,6 +330,13 @@ public class CommandManager extends ListenerAdapter {
             }
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
+            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+                List<Button> buttons = new LinkedList<>();
+                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
+                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
+                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName());
+                discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
+            }
             if (game.hasFaction("BG")
                     && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
                     && !(
@@ -351,12 +358,6 @@ public class CommandManager extends ListenerAdapter {
             }
             turnSummary.queueMessage(message.toString());
 
-            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
-                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
-                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
-            }
             if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                     && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
@@ -476,7 +477,8 @@ public class CommandManager extends ListenerAdapter {
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
             buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
-            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + game.getFaction("BG").getPlayer(), buttons);
+            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName());
+            discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
         }
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
