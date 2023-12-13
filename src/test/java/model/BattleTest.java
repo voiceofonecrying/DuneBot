@@ -15,6 +15,7 @@ class BattleTest {
     Game game;
     Battles battles;
     TestTopic turnSummary;
+    AtreidesFaction atreides;
     EcazFaction ecaz;
     BGFaction bg;
     EmperorFaction emperor;
@@ -325,6 +326,143 @@ class BattleTest {
                             "1 {0} vs 7 {1} 2 {2} 1 {3} vs 6 {4}", Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.ECAZ_TROOP, Emojis.BG_FIGHTER),
                     battles.getBattles(game).get(0).getForcesMessage()
             );
+        }
+    }
+
+    @Nested
+    @DisplayName("#battlePlans")
+    class BattlePlans {
+        Leader duncanIdaho;
+        TreacheryCard cheapHero;
+        TreacheryCard crysknife;
+        TreacheryCard shield;
+        Territory arrakeen;
+        Battle battle1;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            game = new Game();
+            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            fremen = new FremenFaction("fPlayer", "fUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            arrakeen = game.getTerritory("Arrakeen");
+            arrakeen.setForceStrength("Harkonnen", 1);
+            battle1 = new Battle("Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
+
+            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero ")). findFirst().orElseThrow();
+            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife ")). findFirst().orElseThrow();
+            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield ")). findFirst().orElseThrow();
+        }
+
+        @Test
+        void testBattlePlanLeaderAvailable() {
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false, 3, null, null));
+        }
+
+        @Test
+        void testBattlePlanLeaderInTanks() {
+            atreides.removeLeader(duncanIdaho.name());
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanNoLeaderWithCheapHero() {
+            atreides.addTreacheryCard(cheapHero);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, cheapHero, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanNoLeaderValid() {
+            atreides.removeLeader("Duncan Idaho");
+            atreides.removeLeader("Lady Jessica");
+            atreides.removeLeader("Gurney Halleck");
+            atreides.removeLeader("Thufir Hawat");
+            atreides.removeLeader("Dr. Yueh");
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, null, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanNoLeaderInvalid() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, null, null, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanOtherFactionLeaderInvalid() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanHarkonnenCapturedLeader() {
+            harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, false, 1, false,1, null, null));
+        }
+
+        @Test
+        void testBattlePlanFactionNotInvolved() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(fremen, null, cheapHero, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanNotEnoughSpice() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 11, false,11, null, null));
+        }
+
+        @Test
+        void testBattlePlanHasWeapon() {
+            atreides.addTreacheryCard(crysknife);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
+        }
+
+        @Test
+        void testBattlePlanHasDefense() {
+            atreides.addTreacheryCard(shield);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, shield));
+        }
+
+        @Test
+        void testBattlePlanDoesntHaveWeapon() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
+        }
+
+        @Test
+        void testBattlePlanDoesntHaveDefense() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, shield));
+        }
+
+        @Test
+        void testBattlePlanDoesntHaveCheapHero() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, null, cheapHero, false, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanSpendingTooMuch() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 1, true,5, null, null));
+        }
+
+        @Test
+        void testBattlePlanAtreidesHasKH() {
+            atreides.setForcesLost(7);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, true, 4, false, 3, null, null));
+        }
+
+        @Test
+        void testBattlePlanNoLeaderWithCheapHeroAndKH() {
+            atreides.addTreacheryCard(cheapHero);
+            atreides.setForcesLost(10);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, cheapHero, true, 4, false,3, null, null));
+        }
+
+        @Test
+        void testBattlePlanAtreidesDoesNotHaveKH() {
+            atreides.setForcesLost(6);
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, true, 4, false, 3, null, null));
+        }
+
+        @Test
+        void testBattlePlanHarkonnenCannotPlayKH() {
+            harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, true, 1, false,1, null, null));
         }
     }
 }

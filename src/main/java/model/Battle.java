@@ -1,6 +1,8 @@
 package model;
 
 import constants.Emojis;
+import exceptions.InvalidGameStateException;
+import model.factions.AtreidesFaction;
 import model.factions.Faction;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ public class Battle {
     private final List<Territory> territorySectors;
     private final List<Faction> factions;
     private List<Force> forces;
+    private BattlePlan aggressorBattlePlan;
+    private BattlePlan defenderBattlePlan;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = wholeTerritoryName;
@@ -30,6 +34,15 @@ public class Battle {
 
     public List<Faction> getFactions() {
         return factions;
+    }
+
+    public Faction getAggressor() {
+        return factions.get(0);
+    }
+
+    public Faction getDefender() {
+        if (factions.size() != 2) return null;
+        return factions.get(1);
     }
 
     public List<Force> getForces() {
@@ -112,5 +125,77 @@ public class Battle {
             vs = "vs ";
         }
         return message.toString().trim();
+    }
+
+    public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
+        boolean planIsForAggressor = false;
+        if (!factions.isEmpty() && factions.get(0).getName().equals(faction.getName()))
+            planIsForAggressor = true;
+        else if (factions.size() != 2)
+            throw new InvalidGameStateException("Combatants not determined yet.");
+        else if (!factions.get(1).getName().equals(faction.getName()))
+            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+
+        if (leader != null && cheapHero != null)
+            throw new InvalidGameStateException(faction.getEmoji() + " cannot both a leader and " + cheapHero.name());
+        if (leader != null && !faction.getLeaders().contains(leader))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + leader);
+        if (cheapHero != null && !faction.hasTreacheryCard(cheapHero.name()))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + cheapHero.name());
+        if (leader == null && cheapHero == null && !faction.getLeaders().stream().filter(l -> !l.name().equals("Kwisatz Haderach")).toList().isEmpty())
+            throw new InvalidGameStateException(faction.getEmoji() + " must play a leader or a Cheap Hero");
+        if (kwisatzHaderach) {
+            if (leader == null && cheapHero == null)
+                throw new InvalidGameStateException("A leader or Cheap Hero must be played to use the Kwisatz Haderach");
+            if (!(faction instanceof AtreidesFaction))
+                throw new InvalidGameStateException("Only " + Emojis.ATREIDES + " can have the Kwisatz Haderach");
+            if (!((AtreidesFaction) faction).isHasKH())
+                throw new InvalidGameStateException("Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. 7 required for Kwisatz Haderach");
+        }
+
+        if (spice > (faction.getSpice() + faction.getAllySpiceShipment()))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + spice + " " + Emojis.SPICE);
+        if (weapon != null && !faction.hasTreacheryCard(weapon.name()))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + weapon.name());
+        if (defense != null && !faction.hasTreacheryCard(defense.name()))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
+
+        String factionName = faction.getName();
+        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
+        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        int spiceUsed = 0;
+        int dialUsed = 0;
+        int specialStrengthUsed = 0;
+        int regularStrengthUsed = 0;
+        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
+            dialUsed += 2;
+            spiceUsed++;
+            specialStrengthUsed++;
+        }
+        while (spice - spiceUsed == 0 && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+            dialUsed++;
+            specialStrengthUsed++;
+        }
+        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
+            dialUsed++;
+            spiceUsed++;
+            regularStrengthUsed++;
+        }
+        if ((wholeNumberDial - dialUsed > 1) || plusHalfDial) {
+            int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
+            regularStrengthUsed += troopsNeeded;
+        }
+        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
+        if (spice > spiceUsed)
+            throw new InvalidGameStateException(faction.getEmoji() + " is spending more spice than necessary. Only " + spiceUsed + " is required.");
+
+        BattlePlan battlePlan = new BattlePlan(leader, cheapHero, kwisatzHaderach, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        if (planIsForAggressor) {
+            aggressorBattlePlan = battlePlan;
+        } else {
+            defenderBattlePlan = battlePlan;
+        }
+        return battlePlan;
     }
 }

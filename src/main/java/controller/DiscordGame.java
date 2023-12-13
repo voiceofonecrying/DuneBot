@@ -759,7 +759,7 @@ public class DiscordGame {
         );
     }
 
-    public Faction getFactionByPlayer(String user) throws ChannelNotFoundException, IOException {
+    public Faction getFactionByPlayer(String user) throws ChannelNotFoundException {
         return getGame().getFactions().stream()
                 .filter(f ->
                         f.getPlayer()

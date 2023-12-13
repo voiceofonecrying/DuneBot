@@ -3,9 +3,9 @@ package controller.commands;
 import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.Bidding;
+import model.*;
 import controller.DiscordGame;
-import model.Game;
+import model.factions.AtreidesFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -28,6 +28,7 @@ public class PlayerCommands {
                 new SubcommandData("bid", "Place a bid during bidding phase (silent auction will be exact bid only).").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
+                new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, combatDial, combatSpice, weapon, defense, kwisatzHaderach),
                 new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
@@ -49,14 +50,64 @@ public class PlayerCommands {
             case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
+            case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
-            case "holdgame" -> responseMessage = holdGame(event, discordGame, game);
         }
         discordGame.pushGame();
         return responseMessage;
     }
 
-    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private static String battlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String returnString = "";
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        if (currentBattle == null)
+            throw new InvalidGameStateException("There is no current battle.");
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        if (!currentBattle.getAggressor().getName().equals(faction.getName()) && !currentBattle.getDefender().getName().equals(faction.getName()))
+            throw new InvalidGameStateException("You are not in the current battle.");
+        String leaderName = discordGame.required(combatLeader).getAsString();
+        Leader leader = null;
+        TreacheryCard cheapHero = null;
+        if (leaderName.startsWith("Cheap"))
+            cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
+        else if (!leaderName.equals("None"))
+            leader = faction.getLeaders().stream().filter(l -> l.name().equals(leaderName)).findFirst().orElseThrow();
+        String dial = discordGame.required(combatDial).getAsString();
+        int decimalPoint = dial.indexOf(".");
+        int wholeNumberDial;
+        boolean plusHalfDial = false;
+        if (decimalPoint == -1)
+            wholeNumberDial = Integer.parseInt(dial);
+        else {
+            wholeNumberDial = Integer.parseInt(dial.substring(0, decimalPoint));
+            if (dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
+                plusHalfDial = true;
+            else
+                throw new InvalidGameStateException(dial + " is not a valid dial");
+        }
+        int spice = Integer.parseInt(discordGame.required(combatSpice).getAsString());
+        String weaponName = discordGame.required(weapon).getAsString();
+        TreacheryCard weapon = null;
+        if (!weaponName.equals("None")) {
+            weapon = faction.getTreacheryHand().stream().filter(c -> c.name().equals(weaponName)).findFirst().orElseThrow();
+        }
+        String defenseName = discordGame.required(defense).getAsString();
+        TreacheryCard defense = null;
+        if (!defenseName.equals("None")) {
+            defense = faction.getTreacheryHand().stream().filter(c -> c.name().equals(defenseName)).findFirst().orElseThrow();
+        }
+        boolean isKH = (faction instanceof AtreidesFaction) && discordGame.required(kwisatzHaderach).getAsBoolean();
+        if (isKH && leader == null && cheapHero == null) {
+            isKH = false;
+            returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
+        }
+        BattlePlan battlePlan = currentBattle.setBattlePlan(faction, leader, cheapHero, isKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
+        discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
+        return returnString;
+    }
+
+    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setMaxBid(-1);
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " passed their bid.");
@@ -66,7 +117,7 @@ public class PlayerCommands {
         return "You will pass one time.";
     }
 
-    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         faction.setAutoBid(enabled);
@@ -80,7 +131,7 @@ public class PlayerCommands {
         return responseMessage;
     }
 
-    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         boolean silentAuction = game.getBidding().isSilentAuction();
         boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
@@ -246,7 +297,7 @@ public class PlayerCommands {
         } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
     }
 
-    private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String reason = discordGame.required(holdgameReason).getAsString();
         game.setOnHold(true);
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());

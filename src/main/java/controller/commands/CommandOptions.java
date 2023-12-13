@@ -96,6 +96,12 @@ public class CommandOptions {
     public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
+    public static final OptionData combatLeader = new OptionData(OptionType.STRING, "combat-leader", "The leader or None.", true).setAutoComplete(true);
+    public static final OptionData combatDial = new OptionData(OptionType.STRING, "combat-dial", "The dial on the battle wheel.", true);
+    public static final OptionData combatSpice = new OptionData(OptionType.INTEGER, "combat-spice", "Spice used for backing troops", true);
+    public static final OptionData weapon = new OptionData(OptionType.STRING, "weapon", "Weapon or Worthless.", true).setAutoComplete(true);
+    public static final OptionData defense = new OptionData(OptionType.STRING, "defense", "Defense or Worthless.", true).setAutoComplete(true);
+    public static final OptionData kwisatzHaderach = new OptionData(OptionType.BOOLEAN, "kwisatch-haderach", "Use KH in this battle. (Ignored for non-Atreides)", true);
     public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
@@ -232,6 +238,9 @@ public class CommandOptions {
             case "bgterritories" -> choices = bgTerritories(game, searchValue);
             case "leadertokill", "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
+            case "combat-leader" -> choices = combatLeaders(event, discordGame, searchValue);
+            case "weapon" -> choices = weapon(event, discordGame, searchValue);
+            case "defense" -> choices = defense(event, discordGame, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, game, searchValue);
             case "richese-card" -> choices = richeseCard(game, searchValue);
             case "bt-face-dancer" -> choices = btFaceDancers(game, searchValue);
@@ -348,7 +357,6 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-
     private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
         return faction.getLeaders().stream().map(Leader::name)
@@ -385,6 +393,68 @@ public class CommandOptions {
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        List<Command.Choice> choices = new ArrayList<>();
+        if (faction.getLeaders().stream().filter(leader -> !leader.name().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
+        choices.addAll(faction.getLeaders().stream().map(Leader::name)
+                .filter(leader -> !leader.equals("Kwisatz Haderach"))
+                .filter(leader -> leader.matches(searchRegex(searchValue)))
+                .map(leader -> new Command.Choice(leader, leader))
+                .toList()
+        );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .map(TreacheryCard::name)
+                .filter(card -> card.startsWith("Cheap Hero"))
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+        );
+        return choices;
+    }
+
+    private static List<Command.Choice> weapon(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        List<Command.Choice> choices = new ArrayList<>();
+        choices.add(new Command.Choice("None", "None"));
+        choices.addAll(faction.getTreacheryHand().stream()
+                .filter(c -> c.type().startsWith(" Weapon"))
+                .map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+        );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .filter(c -> c.type().equals(" Worthless Card"))
+                .map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+        );
+        return choices;
+    }
+
+    private static List<Command.Choice> defense(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        List<Command.Choice> choices = new ArrayList<>();
+        choices.add(new Command.Choice("None", "None"));
+        choices.addAll(faction.getTreacheryHand().stream()
+                .filter(c -> c.type().startsWith(" Defense"))
+                .map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+        );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .filter(c -> c.type().equals(" Worthless Card"))
+                .map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+        );
+        return choices;
     }
 
     private static List<Command.Choice> bgTerritories(Game game, String searchValue) {
