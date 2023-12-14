@@ -821,7 +821,7 @@ public class ShowCommands {
         List<TraitorCard> traitors = faction.getTraitorHand();
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
-        String nexusCard = faction.getNexusCard() == null ? "" : "\nNexus Card:\n" + Emojis.NEXUS + faction.getNexusCard().name();
+        String nexusCard = faction.getNexusCard() == null ? "" : "\n__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
         if (faction.getName().equalsIgnoreCase("bg")) {
             BGFaction bg = (BGFaction) faction;
@@ -835,6 +835,9 @@ public class ShowCommands {
         } else if (faction.getName().equalsIgnoreCase("moritani")) {
             MoritaniFaction moritani = (MoritaniFaction) faction;
             factionSpecificString.append(moritani.getTerrorTokenMessage());
+        } else if (faction instanceof AtreidesFaction atreides) {
+            factionSpecificString.append("\n__KH Counter:__ ");
+            factionSpecificString.append(Math.min(7, atreides.getForcesLost()));
         }
         StringBuilder traitorString = new StringBuilder();
         if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
