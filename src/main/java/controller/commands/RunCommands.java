@@ -261,9 +261,9 @@ public class RunCommands {
             );
         }
         for (Faction faction : factions) {
-            if (faction.getName().equals("CHOAM")) continue;
+            if (faction instanceof ChoamFaction) continue;
             int spice = faction.getSpice();
-            if (faction.getName().equals("BG")) {
+            if (faction instanceof BGFaction) {
                 int charity = multiplier * 2;
                 choamGiven += charity;
                 if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
@@ -498,7 +498,7 @@ public class RunCommands {
         btChat.queueMessage("Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
 
         for (Faction faction : game.getFactions()) {
-            if (faction.getName().equals("BT")) continue;
+            if (faction instanceof BTFaction) continue;
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-3", "3"));
             buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-4", "4"));
@@ -527,13 +527,13 @@ public class RunCommands {
                         && game.getForceFromTanks(faction.getName() + "*").getStrength() == 0) continue;
                 revived++;
                 if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0 && !revivedStar) {
-                    if (faction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && !((EmperorFaction)faction).isSecundusHighThreshold()) {
+                    if (faction instanceof EmperorFaction emperorFaction && game.hasGameOption(GameOption.HOMEWORLDS) && !emperorFaction.isSecundusHighThreshold()) {
                         revived--;
                         i++;
                         revivedStar = true;
                         continue;
                     }
-                    if (faction.getName().equals("Fremen") && faction.isHighThreshold()) {
+                    if (faction instanceof FremenFaction && faction.isHighThreshold()) {
                         List<Button> buttons = new LinkedList<>();
                         for (Territory territory : game.getTerritories().values()) {
                             if (!territory.getActiveFactionNames().contains("Fremen")) continue;
@@ -554,17 +554,17 @@ public class RunCommands {
             }
             if (revived > 0) {
                 factionsWithRevivals++;
-                if (!faction.getName().equals("BT")) nonBTRevival = true;
-                else if (game.hasFaction("BT") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("BT").isHighThreshold()) {
-                    discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + game.getFaction("BT").getPlayer());
-                }
+                if (faction instanceof BTFaction btFaction) {
+                    if (game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
+                        discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
+                } else nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) {
                     List<Button> buttons = new LinkedList<>();
                     for (int i = 0; i <= faction.getMaxRevival() - revived; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
-                        if ((!(faction.getName().equals("BT") || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
+                        if ((!(faction instanceof BTFaction || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
                             button = button.asDisabled();
                         buttons.add(button);
                     }
@@ -611,8 +611,7 @@ public class RunCommands {
     public static void flipToHighThresholdIfApplicable(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
         for (Faction faction : game.getFactions()) {
-            if (faction.getName().equals("Emperor")) {
-                EmperorFaction emperor = (EmperorFaction) faction;
+            if (faction instanceof EmperorFaction emperor) {
                 if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
                     discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
                     emperor.setHighThreshold(true);
@@ -733,10 +732,10 @@ public class RunCommands {
             Territory homeworld = game.getTerritory(faction.getHomeworld());
             if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
                 Faction occupyingFaction = homeworld.getActiveFactions(game).get(0);
-                if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction.getName().equals("Harkonnen") && occupyingFaction.isHighThreshold() && !((HarkonnenFaction)occupyingFaction).hasTriggeredHT()) {
+                if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
                     faction.addSpice(2);
                     faction.spiceMessage(2, "for High Threshold advantage", true);
-                    ((HarkonnenFaction)faction).setTriggeredHT(true);
+                    harkonnenFaction.setTriggeredHT(true);
                 }
                 turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " from " + faction.getHomeworld());
                 occupyingFaction.addSpice(faction.getOccupiedIncome());
@@ -751,7 +750,7 @@ public class RunCommands {
             Faction faction = territory.getActiveFactions(game).get(0);
 
             int spice = faction.getSpiceCollectedFromTerritory(territory);
-            if (faction.getName().equals("Fremen") && faction.isHomeworldOccupied()) {
+            if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
                 faction.getOccupier().addSpice(Math.floorDiv(spice, 2));
                 faction.getOccupier().spiceMessage(Math.floorDiv(spice, 2),
                         "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).", true);
@@ -771,14 +770,14 @@ public class RunCommands {
             territory.setSpice(territory.getSpice() - spice);
 
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
-                    && (!faction.getName().equals("Fremen") || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
+                    && (!(faction instanceof FremenFaction) || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
                 altSpiceProductionTriggered = true;
             turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && faction.getName().equals("Harkonnen") && faction.isHighThreshold() && !((HarkonnenFaction)faction).hasTriggeredHT()) {
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
                 faction.addSpice(2);
                 faction.spiceMessage(2, "for High Threshold advantage", true);
-                ((HarkonnenFaction)faction).setTriggeredHT(true);
+                harkonnenFaction.setTriggeredHT(true);
             }
             if (orgizActive) {
                 turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +

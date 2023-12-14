@@ -10,9 +10,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import model.*;
-import model.factions.Faction;
-import model.factions.IxFaction;
-import model.factions.MoritaniFaction;
+import model.factions.*;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -114,7 +112,7 @@ public class CommandManager extends ListenerAdapter {
             int spicePaid = spentValue;
             Faction paidToFaction = game.getFaction(paidToFactionName);
 
-            if (paidToFaction.getName().equals("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS)
+            if (paidToFaction instanceof EmperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)
                     && !paidToFaction.isHighThreshold()) {
                 spicePaid = Math.ceilDiv(spentValue, 2);
                 if (paidToFaction.isHomeworldOccupied()) {
@@ -133,7 +131,7 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
 
-            if (paidToFaction.getName().equals("Richese") && paidToFaction.isHomeworldOccupied()) {
+            if (paidToFaction instanceof RicheseFaction && paidToFaction.isHomeworldOccupied()) {
                 spicePaid = Math.ceilDiv(spentValue, 2);
                 Faction occupier = paidToFaction.getOccupier();
                 occupier.addSpice(Math.floorDiv(spentValue, 2));
@@ -170,7 +168,7 @@ public class CommandManager extends ListenerAdapter {
         bidding.clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
-        if (winner.getName().equals("Harkonnen") && winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
+        if (winner instanceof HarkonnenFaction && winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
             if (game.drawTreacheryCard("Harkonnen")) {
                 turnSummary.queueMessage(MessageFormat.format(
                         "The {0} deck was empty and has been replenished from the discard pile.",
@@ -188,10 +186,10 @@ public class CommandManager extends ListenerAdapter {
                     "Received " + addedCard.name() + " as an extra card. (" + currentCard + ")"
             );
 
-        } else if (winner.getName().equals("Harkonnen") && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
+        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
             discordGame.getModInfo().queueMessage("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
             discordGame.getTurnSummary().queueMessage("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
-        } else if (winner.getName().equals("Harkonnen") && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
+        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
             game.drawCard("treachery deck", winner.getOccupier().getName());
             turnSummary.queueMessage(MessageFormat.format(
                     "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
@@ -210,8 +208,8 @@ public class CommandManager extends ListenerAdapter {
         String star = starred ? "*" : "";
 
         int revivalCost;
-        if (faction.getName().equalsIgnoreCase("CHOAM")) revivalCost = revivedValue;
-        else if (faction.getName().equalsIgnoreCase("BT")) revivalCost = revivedValue;
+        if (faction instanceof ChoamFaction) revivalCost = revivedValue;
+        else if (faction instanceof BTFaction) revivalCost = revivedValue;
         else if ((faction instanceof IxFaction) && starred) revivalCost = revivedValue * 3;
         else revivalCost = revivedValue * 2;
         if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
@@ -225,7 +223,7 @@ public class CommandManager extends ListenerAdapter {
         if (isPaid) {
             faction.subtractSpice(revivalCost);
             faction.spiceMessage(revivalCost, "Revivals", false);
-            if (game.hasFaction("BT") && !faction.getName().equalsIgnoreCase("BT")) {
+            if (game.hasFaction("BT") && !(faction instanceof BTFaction)) {
                 Faction btFaction = game.getFaction("BT");
                 btFaction.addSpice(revivalCost);
                 btFaction.spiceMessage(revivalCost, faction.getEmoji() + " revivals", true);
@@ -264,9 +262,9 @@ public class CommandManager extends ListenerAdapter {
             int baseCost = costPerForce * (amountValue + starredAmountValue);
             int cost;
 
-            if (targetFaction.getName().equalsIgnoreCase("Guild") || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama) {
+            if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama) {
                 cost = Math.ceilDiv(baseCost, 2);
-            } else if (targetFaction.getName().equalsIgnoreCase("Fremen") &&
+            } else if (targetFaction instanceof FremenFaction &&
                     !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())) {
                 cost = 0;
             } else {
@@ -311,7 +309,7 @@ public class CommandManager extends ListenerAdapter {
                 targetFaction.subtractSpice(cost - support);
                 targetFaction.spiceMessage(cost - support, "shipment to " + targetTerritory.getTerritoryName(), false);
 
-                if (game.hasFaction("Guild") && !targetFaction.getName().equals("Guild") && !karama) {
+                if (game.hasFaction("Guild") && !(targetFaction instanceof GuildFaction) && !karama) {
                     Faction guildFaction = game.getFaction("Guild");
                     guildFaction.addSpice(cost);
                     message.append(" paid to ")
@@ -322,15 +320,15 @@ public class CommandManager extends ListenerAdapter {
             }
 
             if (
-                    !targetFaction.getName().equalsIgnoreCase("Guild") &&
-                            !targetFaction.getName().equalsIgnoreCase("Fremen") &&
+                    !(targetFaction instanceof GuildFaction) &&
+                            !(targetFaction instanceof FremenFaction) &&
                             game.hasGameOption(GameOption.TECH_TOKENS)
             ) {
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
             }
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
-            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
                 List<Button> buttons = new LinkedList<>();
                 buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
                 buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
@@ -338,7 +336,7 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
             }
             if (game.hasFaction("BG")
-                    && !(targetFaction.getName().equals("BG") || targetFaction.getName().equals("Fremen"))
+                    && !(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
                     && !(
                             game.hasGameOption(GameOption.HOMEWORLDS)
                             && !game.getFaction("BG").isHighThreshold()
@@ -358,7 +356,7 @@ public class CommandManager extends ListenerAdapter {
             }
             turnSummary.queueMessage(message.toString());
 
-            if (targetTerritory.getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+            if (targetTerritory.getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
                     && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
                     && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
@@ -368,7 +366,7 @@ public class CommandManager extends ListenerAdapter {
                 turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
             }
 
-            if (!targetTerritory.getTerrorTokens().isEmpty() && !targetFaction.getName().equals("Moritani")
+            if (!targetTerritory.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
                     && (!(game.getFaction("Moritani").hasAlly()
                     && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
                 if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
@@ -404,7 +402,7 @@ public class CommandManager extends ListenerAdapter {
         } else {
             faction.removeReserves(amount);
             forceName = faction.getReserves().getName();
-            if (faction.getName().equals("BG") && territory.hasForce("Advisor")) {
+            if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
                 int advisors = territory.getForce("Advisor").getStrength();
                 territory.getForces().add(new Force("BG", advisors));
                 territory.removeForce("Advisor");
@@ -417,7 +415,7 @@ public class CommandManager extends ListenerAdapter {
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
 
         int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
-        if (targetFaction.getName().equals("BG") && from.getForce("Advisor").getStrength() > 0)
+        if (targetFaction instanceof BGFaction && from.getForce("Advisor").getStrength() > 0)
             fromForceStrength = from.getForce("Advisor").getStrength();
         int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
 
@@ -425,8 +423,8 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidOptionException("Not enough forces in territory.");
         }
         if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
-                (!(targetFaction.getName().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
-                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals("Ecaz"))))) {
+                (!(targetFaction instanceof EcazFaction && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
+                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction)))) {
             throw new InvalidOptionException("You cannot move into a territory with your ally.");
         }
 
@@ -438,7 +436,7 @@ public class CommandManager extends ListenerAdapter {
         if (amountValue > 0) {
             String forceName = targetFaction.getName();
             String targetForceName = targetFaction.getName();
-            if (targetFaction.getName().equals("BG") && from.hasForce("Advisor")) {
+            if (targetFaction instanceof BGFaction && from.hasForce("Advisor")) {
                 forceName = "Advisor";
                 if (to.hasForce("Advisor")) targetForceName = "Advisor";
             }
@@ -473,14 +471,14 @@ public class CommandManager extends ListenerAdapter {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage(message.toString());
 
-        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !targetFaction.getName().equals("BG")) {
+        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
             buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
             turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName());
             discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
         }
-        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !targetFaction.getName().equals("Ecaz")
+        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
                 && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
@@ -490,7 +488,7 @@ public class CommandManager extends ListenerAdapter {
             turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
         }
 
-        if (!to.getTerrorTokens().isEmpty() && !targetFaction.getName().equals("Moritani")
+        if (!to.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
                 && !(game.getFaction("Moritani").hasAlly()
                 && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
             if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {

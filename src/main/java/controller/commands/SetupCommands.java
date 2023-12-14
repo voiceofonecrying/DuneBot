@@ -628,11 +628,11 @@ public class SetupCommands {
 
     public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
-            if (!faction.getName().equals("BT") && faction.getTraitorHand().isEmpty()) {
+            if (!(faction instanceof BTFaction) && faction.getTraitorHand().isEmpty()) {
                 for (int j = 0; j < 4; j++) {
                     game.drawCard("traitor deck", faction.getName());
                 }
-                if (!faction.getName().equalsIgnoreCase("Harkonnen")) {
+                if (!(faction instanceof HarkonnenFaction)) {
                     discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " please select your traitor.");
                 }
             }
