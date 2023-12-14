@@ -105,8 +105,8 @@ public class ShowCommands {
 
         Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage(faction.getHomeworld());
-        if (factionName.equals("Emperor")) {
-            table = getResourceImage(((EmperorFaction) faction).getSecondHomeworld());
+        if (faction instanceof EmperorFaction emperorFaction) {
+            table = getResourceImage(emperorFaction.getSecondHomeworld());
         }
         table = resize(table, 5000, 5000);
 
@@ -213,11 +213,11 @@ public class ShowCommands {
         }
 
         //Place KH counter card
-        if (faction.getName().equals("Atreides")) {
+        if (faction instanceof AtreidesFaction atreidesFaction) {
             BufferedImage KHCounterImage = getResourceImage("KH Counter");
             int x;
             int y;
-            switch (((AtreidesFaction)faction).getForcesLost()) {
+            switch (atreidesFaction.getForcesLost()) {
                 case 0 -> {
                     x = 275;
                     y = 575;
@@ -266,8 +266,7 @@ public class ShowCommands {
                 Point cardPoint = new Point(4500, 750);
                 table = overlay(table, cardImage, cardPoint, 1);
             }
-            if (factionName.equals("Emperor")) {
-                EmperorFaction emperor = (EmperorFaction) faction;
+            if (faction instanceof EmperorFaction emperor) {
                 lowHigh = emperor.isSecundusHighThreshold() ? "High" : "Low";
                 image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), emperor.getSecondHomeworld() + " " + lowHigh);
                 if (image.isPresent()) {
@@ -292,9 +291,9 @@ public class ShowCommands {
         }
 
         //BG Prediction
-        if (faction.getName().equals("BG")) {
+        if (faction instanceof BGFaction bgFaction) {
             offset += 900;
-            Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + ((BGFaction) faction).getPredictionRound());
+            Optional<FileUpload> image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), "Turn " + bgFaction.getPredictionRound());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -302,7 +301,7 @@ public class ShowCommands {
                 table = overlay(table, cardImage, cardPoint, 1);
             }
             offset += 900;
-            image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), ((BGFaction) faction).getPredictionFactionName());
+            image = CardImages.getPredictionImage(discordGame.getEvent().getGuild(), bgFaction.getPredictionFactionName());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -314,8 +313,8 @@ public class ShowCommands {
         offset = 0;
 
         //Ecaz ambassadors
-        if (faction.getName().equals("Ecaz")) {
-            for (String ambassador : ((EcazFaction)faction).getAmbassadorSupplyList()) {
+        if (faction instanceof EcazFaction ecazFaction) {
+            for (String ambassador : ecazFaction.getAmbassadorSupplyList()) {
                 BufferedImage ambassadorImage = getResourceImage(ambassador + " Ambassador");
                 table = overlay(table, resize(ambassadorImage, 300, 300), new Point(750 + offset, 2250), 1);
                 offset += 330;
@@ -323,8 +322,8 @@ public class ShowCommands {
         }
 
         //Moritani Terror Tokens
-        if (faction.getName().equals("Moritani")) {
-            for (String terrorToken : ((MoritaniFaction)faction).getTerrorTokens()) {
+        if (faction instanceof MoritaniFaction moritaniFaction) {
+            for (String terrorToken : moritaniFaction.getTerrorTokens()) {
                 BufferedImage terrorTokenImage = getResourceImage(terrorToken);
                 table = overlay(table, resize(terrorTokenImage, 300, 300), new Point(750 + offset, 2250), 1);
                 offset += 330;
@@ -387,9 +386,9 @@ public class ShowCommands {
                 }
                 offset = 0;
                 homeworlds = concatenateHorizontally(homeworlds, homeworld);
-                if (faction.getName().equals("Emperor")) {
+                if (faction instanceof EmperorFaction emperorFaction) {
                     BufferedImage salusa = getResourceImage("Salusa Secundus");
-                    for (Force force : game.getTerritory(((EmperorFaction) faction).getSecondHomeworld()).getForces()) {
+                    for (Force force : game.getTerritory(emperorFaction.getSecondHomeworld()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                         forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(500, 200 + offset);
@@ -823,24 +822,21 @@ public class ShowCommands {
         StringBuilder factionSpecificString = new StringBuilder();
         String nexusCard = faction.getNexusCard() == null ? "" : "\n__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
-        if (faction.getName().equalsIgnoreCase("bg")) {
-            BGFaction bg = (BGFaction) faction;
+        if (faction instanceof BGFaction bg) {
             factionSpecificString.append("\n__Prediction:__ ")
                     .append(bg.getPredictionFactionName())
                     .append(" Turn ")
                     .append(bg.getPredictionRound());
-        } else if (faction.getName().equalsIgnoreCase("ecaz")) {
-            EcazFaction ecaz = (EcazFaction) faction;
+        } else if (faction instanceof EcazFaction ecaz) {
             factionSpecificString.append(ecaz.getAmbassadorSupply());
-        } else if (faction.getName().equalsIgnoreCase("moritani")) {
-            MoritaniFaction moritani = (MoritaniFaction) faction;
+        } else if (faction instanceof MoritaniFaction moritani) {
             factionSpecificString.append(moritani.getTerrorTokenMessage());
         } else if (faction instanceof AtreidesFaction atreides) {
             factionSpecificString.append("\n__KH Counter:__ ");
             factionSpecificString.append(Math.min(7, atreides.getForcesLost()));
         }
         StringBuilder traitorString = new StringBuilder();
-        if (faction.getName().equals("BT")) traitorString.append("\n__Face Dancers:__\n");
+        if (faction instanceof BTFaction) traitorString.append("\n__Face Dancers:__\n");
         else traitorString.append("\n__Traitors:__\n");
         for (TraitorCard traitor : traitors) {
             if (traitor.name().equals("Cheap Hero")) {
@@ -853,11 +849,11 @@ public class ShowCommands {
         }
         StringBuilder reservesString = new StringBuilder();
         reservesString.append("\n__Reserves:__ ").append(faction.getReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Fremen"))
+        if (faction instanceof FremenFaction)
             reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Emperor"))
+        if (faction instanceof EmperorFaction)
             reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction.getName().equalsIgnoreCase("Ix"))
+        if (faction instanceof IxFaction)
             reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
 
         StringBuilder ornithopter = new StringBuilder();
@@ -884,8 +880,8 @@ public class ShowCommands {
             homeworld.append(faction.getHomeworld());
             String lowHigh = faction.isHighThreshold() ? "High" : "Low";
             homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh).get());
-            if (faction.getName().equals("Emperor")) {
-                lowHigh = ((EmperorFaction) faction).isSecundusHighThreshold() ? "High" : "Low";
+            if (faction instanceof EmperorFaction emperorFaction) {
+                lowHigh = emperorFaction.isSecundusHighThreshold() ? "High" : "Low";
                 homeworldMessageBuilder.addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), "Salusa Secundus " + lowHigh).get());
             }
             discordGame.queueMessage(infoChannelName, homeworldMessageBuilder);
@@ -949,26 +945,26 @@ public class ShowCommands {
                         .append("\n");
             }
 
-            if (faction.getName().equalsIgnoreCase("BT") && !((BTFaction)faction).getRevealedFaceDancers().isEmpty()) {
+            if (faction instanceof BTFaction btFaction && !btFaction.getRevealedFaceDancers().isEmpty()) {
                 message.append("Revealed Face Dancers:");
-                for (TraitorCard faceDancer : ((BTFaction)faction).getRevealedFaceDancers())
+                for (TraitorCard faceDancer : btFaction.getRevealedFaceDancers())
                     message.append(MessageFormat.format(
                             "\n  {0} {1}",
                             game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
                     ));
             }
 
-            if (faction.getName().equalsIgnoreCase("Richese") && ((RicheseFaction) faction).hasFrontOfShieldNoField()) {
-                message.append(((RicheseFaction) faction).getFrontOfShieldNoField())
+            if (faction instanceof RicheseFaction richeseFaction && richeseFaction.hasFrontOfShieldNoField()) {
+                message.append(richeseFaction.getFrontOfShieldNoField())
                         .append(" No-Field Token\n");
             }
 
-            if (faction instanceof EcazFaction && ((EcazFaction) faction).getLoyalLeader() != null) {
-                message.append(((EcazFaction) faction).getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
+            if (faction instanceof EcazFaction ecazFaction && ecazFaction.getLoyalLeader() != null) {
+                message.append(ecazFaction.getLoyalLeader().name()).append(" is loyal to " + Emojis.ECAZ + "\n");
             }
 
-            if (faction.getName().equalsIgnoreCase("Moritani")) {
-                message.append("Assassinated targets:\n").append(((MoritaniFaction) faction).getAssassinationTargets().toString());
+            if (faction instanceof MoritaniFaction moritaniFaction) {
+                message.append("Assassinated targets:\n").append(moritaniFaction.getAssassinationTargets().toString());
             }
 
             if (game.hasLeaderSkills()) {
