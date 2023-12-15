@@ -601,7 +601,6 @@ public class CommandManager extends ListenerAdapter {
                 case "remove-alliance" -> removeAlliance(discordGame, game);
                 case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
                 case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
-                case "weather-control-storm" -> setStormMovement(discordGame, game);
                 case "add-spice" -> addSpice(discordGame, game);
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
@@ -630,7 +629,7 @@ public class CommandManager extends ListenerAdapter {
         if (event.getOption("search") == null) {
             if (event.getOption("book") == null) {
                 InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
-                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList();
                 Random random = new Random();
                 int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
                 StringBuilder quote = new StringBuilder();
@@ -643,7 +642,7 @@ public class CommandManager extends ListenerAdapter {
             } else {
                 InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
 
-                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList();
+                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList();
                 Random random = new Random();
                 int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
                 StringBuilder quote = new StringBuilder();
@@ -656,17 +655,17 @@ public class CommandManager extends ListenerAdapter {
         } else {
             String search = event.getOption("search").getAsString();
             InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
-            List<String> quotes = new ArrayList<>(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            List<String> quotes = new ArrayList<>(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Messiah.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Children.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             stream = getClass().getClassLoader().getResourceAsStream("Dune Books/GeoD.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Heretics.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Chapterhouse.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=\\.|\\?|!))")).toList());
+            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
             List<String> matched = new LinkedList<>();
 
             for (int i = 0; i < quotes.size() - lines; i+=lines) {
@@ -736,7 +735,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-spice-in-territory", "Set the spice amount for a territory")
                 .addOptions(territory, amount));
         commandData.add(Commands.slash("destroy-shield-wall", "Destroy the shield wall"));
-        commandData.add(Commands.slash("weather-control-storm", "/set-storm-movement will replace this command").addOptions(sectors));
 
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
