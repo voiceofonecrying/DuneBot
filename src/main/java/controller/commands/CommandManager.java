@@ -239,6 +239,22 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    private static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("bg-flip-" + territoryName, "Flip"));
+        buttons.add(Button.secondary("bg-dont-flip-" + territoryName, "Don't Flip"));
+        discordGame.getTurnSummary().queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName);
+        discordGame.getBGChat().queueMessage("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), buttons);
+    }
+
+    private static void ecazTriggerMessageAndButtons(DiscordGame discordGame, Game game, String ambassador, Faction targetFaction, String territoryName) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        buttons.add(Button.primary("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
+        buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " ambassador.");
+        discordGame.getEcazChat().queueMessage("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + territoryName + "? " + game.getFaction("Ecaz").getPlayer(), buttons);
+    }
+
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
 
         Force reserves = targetFaction.getReserves();
@@ -329,11 +345,7 @@ public class CommandManager extends ListenerAdapter {
 
             TurnSummary turnSummary = discordGame.getTurnSummary();
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("bg-flip-" + targetTerritory.getTerritoryName(), "Flip"));
-                buttons.add(Button.secondary("bg-dont-flip-" + targetTerritory.getTerritoryName(), "Don't Flip"));
-                turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName());
-                discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
+                bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
             }
             if (game.hasFaction("BG")
                     && !(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
@@ -360,10 +372,7 @@ public class CommandManager extends ListenerAdapter {
                     && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
                     && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("ecaz-trigger-ambassador-" + targetTerritory.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
-                buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-                turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
+                ecazTriggerMessageAndButtons(discordGame, game, targetTerritory.getEcazAmbassador(), targetFaction, targetTerritory.getTerritoryName());
             }
 
             if (!targetTerritory.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
@@ -472,20 +481,13 @@ public class CommandManager extends ListenerAdapter {
         turnSummary.queueMessage(message.toString());
 
         if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("bg-flip-" + to.getTerritoryName(), "Flip"));
-            buttons.add(Button.secondary("bg-dont-flip-" + to.getTerritoryName(), "Don't Flip"));
-            turnSummary.queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName());
-            discordGame.getBGChat().queueMessage("Do you want to flip to " + Emojis.BG_ADVISOR + " in " + to.getTerritoryName() + "? " + game.getFaction("BG").getPlayer(), buttons);
+            bgFlipMessageAndButtons(discordGame, game, to.getTerritoryName());
         }
         if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
                 && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
                 && !(game.getFaction("Ecaz").hasAlly()
                 && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("ecaz-trigger-ambassador-" + to.getEcazAmbassador() + "-" + targetFaction.getName(), "Trigger"));
-            buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-            turnSummary.queueMessage(Emojis.ECAZ + " has an opportunity to trigger their ambassador now." + game.getFaction("Ecaz").getPlayer(), buttons);
+            ecazTriggerMessageAndButtons(discordGame, game, to.getEcazAmbassador(), targetFaction, to.getTerritoryName());
         }
 
         if (!to.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)

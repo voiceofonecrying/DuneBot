@@ -65,8 +65,9 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Game game, DiscordGame discordGame, Faction triggeringFaction, String ambassador) throws ChannelNotFoundException {
-
-        discordGame.queueMessage("The " + ambassador + " ambassador has been triggered!");
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You have triggered your " + ambassador + " ambassador!");
+        discordGame.getTurnSummary().queueMessage("The " + ambassador + " ambassador has been triggered!");
 
         switch (ambassador) {
             case "Ecaz" -> {

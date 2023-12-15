@@ -48,9 +48,10 @@ public class EcazButtons implements Pressable {
         ButtonManager.deleteAllButtonsInChannel(event.getChannel());
     }
 
-    private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+    private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         if (!(ButtonManager.getButtonPresser(event, game) instanceof EcazFaction)) return;
-        discordGame.queueMessage(Emojis.ECAZ + " Do not trigger their ambassador token.");
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " do not trigger their ambassador token.");
+        discordGame.queueMessage("You will not trigger your ambassador token.");
         discordGame.queueDeleteMessage();
     }
 
