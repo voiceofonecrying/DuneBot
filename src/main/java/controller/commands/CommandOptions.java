@@ -7,6 +7,7 @@ import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.factions.BGFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.entities.Message;
@@ -347,7 +348,7 @@ public class CommandOptions {
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForce(faction.getName()).getStrength() > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
-                    || (faction.getName().equals("BG") && territory.getForce("Advisor").getStrength() > 0)) {
+                    || (faction instanceof BGFaction && territory.getForce("Advisor").getStrength() > 0)) {
                 territories.add(territory);
             }
         }

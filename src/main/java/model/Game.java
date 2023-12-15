@@ -10,10 +10,7 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
-import model.factions.EmperorFaction;
-import model.factions.Faction;
-import model.factions.MoritaniFaction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -923,10 +920,10 @@ public class Game {
             for (Faction faction : factions) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
-                if (faction.getName().equals("Ecaz")) {
+                if (faction instanceof EcazFaction) {
                     faction.getChat().publish("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
                 }
-                if (faction.getName().equals("Harkonnen")) {
+                if (faction instanceof HarkonnenFaction) {
                     faction.getChat().publish("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
                 }
             }
