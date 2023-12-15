@@ -22,7 +22,7 @@ public class MoritaniButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
 
-        if (event.getComponentId().startsWith("moritani-offer-alliance-")) offerAlliance(event, game, discordGame);
+        if (event.getComponentId().startsWith("moritani-offer-alliance-")) offerAlliance(event, discordGame);
         else if (event.getComponentId().startsWith("moritani-place-terror-"))
             queueTerrorButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-terror-selected-"))
@@ -78,13 +78,13 @@ public class MoritaniButtons implements Pressable {
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        if (!ButtonManager.getButtonPresser(event, game).getName().equals("Moritani")) return;
+        if (!(ButtonManager.getButtonPresser(event, game) instanceof MoritaniFaction)) return;
         discordGame.queueMessage(Emojis.MORITANI + " Do not trigger their terror token.");
         discordGame.queueDeleteMessage();
     }
 
     private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        if (!ButtonManager.getButtonPresser(event, game).getName().equals("Moritani")) return;
+        if (!(ButtonManager.getButtonPresser(event, game) instanceof MoritaniFaction)) return;
         String terror = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
@@ -145,7 +145,7 @@ public class MoritaniButtons implements Pressable {
             ShowCommands.showBoard(discordGame, game);
     }
 
-    private static void offerAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         String factionName = event.getComponentId().split("-")[3];
         String territory = event.getComponentId().split("-")[4];
         String terror = event.getComponentId().split("-")[5];

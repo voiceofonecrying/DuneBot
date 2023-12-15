@@ -4,6 +4,7 @@ import constants.Emojis;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
+import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ import static controller.commands.BGCommands.flip;
 public class BGButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        if (event.getComponentId().startsWith("bg") && !ButtonManager.getButtonPresser(event, game).getName().equals("BG")) {
+        if (event.getComponentId().startsWith("bg") && !(ButtonManager.getButtonPresser(event, game) instanceof BGFaction)) {
             discordGame.queueMessageToEphemeral("You are not the " + Emojis.BG);
             return;
         }
