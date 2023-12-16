@@ -412,7 +412,9 @@ public class ShipmentAndMovementButtons implements Pressable {
     public static Set<String> getAdjacentTerritoryNames(String territory, int spacesAway, Game game) {
         if (spacesAway == 0) return new HashSet<>();
 
-        Set<String> adjacentTerritories = new HashSet<>(game.getAdjacencyList().get(territory));
+        List<String> adjacency = game.getAdjacencyList().get(territory);
+        if (adjacency == null) return new HashSet<>();
+        Set<String> adjacentTerritories = new HashSet<>(adjacency);
         Set<String> second = new HashSet<>();
         for (String adjacentTerritory : adjacentTerritories) {
             second.addAll(getAdjacentTerritoryNames(adjacentTerritory, spacesAway - 1, game));
