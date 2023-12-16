@@ -1,0 +1,8 @@
+Name,Description
+Assassination,Choose a random leader from that player and send it to the Tanks. Collect spice for the killed leader (3 for Zoal).
+Atomics,"All forces in the territory go to the Tanks. Place the Atomics Aftermath token in the territory. No forces may ever ship into this territory (even Fremen).
+From this turn forward, your hand limit is reduced by 1 (as well as your ally’s), discarding a random card if a hand exceeds the limit."
+Extortion,"Gain 5 spice from the Spice Bank, placed in front of your shield. Collect it in the Mentat Pause, then regain this Terror token unless any one player in storm order pays you 3 spice."
+Robbery,Steal half the spice (rounded up) from that player or take the top card of the Treachery Deck (then discarding a card of your choice if you exceed your hand size).
+Sabotage,Draw a random Treachery Card from that player and discard it if possible. Then you may give that player a Treachery Card of your choice from your hand.
+Sneak Attack,"Send up to 5 of your forces in reserves into that territory at no cost (subject to storm and occupancy rules), even if the Atomics Aftermath token is there."
