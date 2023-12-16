@@ -114,8 +114,8 @@ public class Bidding {
     public int moveMarketToDeck(Game game) {
         int numCardsReturned = market.size() + 1;
         Iterator<TreacheryCard> marketIterator = market.descendingIterator();
-        while (marketIterator.hasNext()) game.getTreacheryDeck().addFirst(marketIterator.next());
-        game.getTreacheryDeck().addFirst(bidCard);
+        while (marketIterator.hasNext()) game.getTreacheryDeck().add(marketIterator.next());
+        game.getTreacheryDeck().add(bidCard);
         clearBidCardInfo(null);
         numCardsForBid -= numCardsReturned;
         return numCardsReturned;

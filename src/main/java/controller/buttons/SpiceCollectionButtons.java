@@ -13,18 +13,19 @@ import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class SpiceCollectionButtons  implements Pressable{
 
         public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidOptionException {
 
             if (event.getComponentId().startsWith("reveal-discovery-token-")) revealDiscoveryToken(event, game, discordGame);
-            else if (event.getComponentId().equals("don't-reveal-discovery-token")) dontRevealDiscoveryToken(event, game, discordGame);
+            else if (event.getComponentId().equals("don't-reveal-discovery-token")) dontRevealDiscoveryToken(discordGame);
 
 
         }
 
-    private static void dontRevealDiscoveryToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+    private static void dontRevealDiscoveryToken(DiscordGame discordGame) {
             discordGame.queueMessage("You won't reveal the discovery token.");
             discordGame.queueDeleteMessage();
     }
@@ -66,12 +67,12 @@ public class SpiceCollectionButtons  implements Pressable{
                     territory.setDiscovered(true);
                 }
                 case "Treachery Card Stash" -> {
-                    TreacheryCard card = game.getTreacheryDeck().pollFirst();
+                    TreacheryCard card = game.getTreacheryDeck().pollLast();
                     faction.addTreacheryCard(card);
                     if (faction.getTreacheryHand().size() > faction.getHandLimit()) {
                         discordGame.getFactionChat(faction.getName()).queueMessage("Your hand is over the limit. Please select a card to discard.");
                     }
-                    discordGame.getFactionLedger(faction).queueMessage(card.name() + " found in " + territory.getTerritoryName());
+                    discordGame.getFactionLedger(faction).queueMessage(Objects.requireNonNull(card).name() + " found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
