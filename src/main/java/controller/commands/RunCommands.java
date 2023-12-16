@@ -533,7 +533,7 @@ public class RunCommands {
                         revivedStar = true;
                         continue;
                     }
-                    if (faction instanceof FremenFaction && faction.isHighThreshold()) {
+                    if (faction instanceof FremenFaction && game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) {
                         List<Button> buttons = new LinkedList<>();
                         for (Territory territory : game.getTerritories().values()) {
                             if (!territory.getActiveFactionNames().contains("Fremen")) continue;
