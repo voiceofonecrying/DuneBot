@@ -325,6 +325,14 @@ public class Bidding {
         if (marketShownToIx) ixRejectOutstanding = true;
     }
 
+    public void blockIxBiddingAdvantage(Game game) throws InvalidGameStateException {
+        this.marketShownToIx = true;
+        TreacheryCard card = market.pollLast();
+        if (card == null)
+            throw new InvalidGameStateException("There are no cards in the bidding market.");
+        game.getTreacheryDeck().add(card);
+    }
+
     public boolean isIxRejectOutstanding() {
         return ixRejectOutstanding;
     }

@@ -33,6 +33,10 @@ public class IxCommands {
                                 "Send one treachery card to the top or bottom of the deck."
                         ).addOptions(CommandOptions.putBackCard, CommandOptions.topOrBottom),
                         new SubcommandData(
+                                "block-bidding-advantage",
+                                "Prevent Ix from seeing the cards up for bid."
+                        ),
+                        new SubcommandData(
                                 "technology",
                                 "Swap a card in hand for the next card up for bid."
                         ).addOptions(CommandOptions.ixCard),
@@ -64,6 +68,7 @@ public class IxCommands {
 
         switch (name) {
             case "put-card-back" -> sendCardBackToDeck(discordGame, game);
+            case "block-bidding-advantage" -> blockBiddingAdvantage(discordGame, game);
             case "technology" -> technology(discordGame, game);
             case "ally-card-swap" -> allyCardSwap(discordGame, game);
             case "place-hms" -> placeHMS(discordGame, game);
@@ -92,6 +97,18 @@ public class IxCommands {
 
     public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String cardName, String location) throws ChannelNotFoundException, InvalidGameStateException {
         sendCardBackToDeck(event, discordGame, game, true, cardName, location);
+    }
+
+    public static void blockBiddingAdvantage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        bidding.blockIxBiddingAdvantage(game);
+        discordGame.getTurnSummary().queueMessage(
+                MessageFormat.format(
+                        "{0} have been blocked from using their bidding advantage.\n{1} cards will be pulled from the {2} deck for bidding.",
+                        Emojis.IX, bidding.getMarket().size(), Emojis.TREACHERY
+                )
+        );
+        discordGame.pushGame();
     }
 
     public static void technology(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
