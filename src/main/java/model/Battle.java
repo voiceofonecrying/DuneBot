@@ -127,6 +127,38 @@ public class Battle {
         return message.toString().trim();
     }
 
+    private void validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+        String factionName = faction.getName();
+        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
+        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        int spiceUsed = 0;
+        int dialUsed = 0;
+        int specialStrengthUsed = 0;
+        int regularStrengthUsed = 0;
+        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
+            dialUsed += 2;
+            spiceUsed++;
+            specialStrengthUsed++;
+        }
+        while (spice - spiceUsed == 0 && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+            dialUsed++;
+            specialStrengthUsed++;
+        }
+        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
+            dialUsed++;
+            spiceUsed++;
+            regularStrengthUsed++;
+        }
+        if ((wholeNumberDial > dialUsed) || plusHalfDial) {
+            int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
+            regularStrengthUsed += troopsNeeded;
+        }
+        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
+        if (spice > spiceUsed)
+            throw new InvalidGameStateException(faction.getEmoji() + " is spending more spice than necessary. Only " + spiceUsed + " is required.");
+    }
+
     public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
         boolean planIsForAggressor = false;
         if (!factions.isEmpty() && factions.get(0).getName().equals(faction.getName()))
@@ -160,35 +192,7 @@ public class Battle {
         if (defense != null && !faction.hasTreacheryCard(defense.name()))
             throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
 
-        String factionName = faction.getName();
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        int spiceUsed = 0;
-        int dialUsed = 0;
-        int specialStrengthUsed = 0;
-        int regularStrengthUsed = 0;
-        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
-            dialUsed += 2;
-            spiceUsed++;
-            specialStrengthUsed++;
-        }
-        while (spice - spiceUsed == 0 && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-            dialUsed++;
-            specialStrengthUsed++;
-        }
-        while (spice - spiceUsed > 0 && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-            dialUsed++;
-            spiceUsed++;
-            regularStrengthUsed++;
-        }
-        if ((wholeNumberDial - dialUsed > 1) || plusHalfDial) {
-            int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-            regularStrengthUsed += troopsNeeded;
-        }
-        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
-        if (spice > spiceUsed)
-            throw new InvalidGameStateException(faction.getEmoji() + " is spending more spice than necessary. Only " + spiceUsed + " is required.");
+        validateDial(faction, wholeNumberDial, plusHalfDial, spice);
 
         BattlePlan battlePlan = new BattlePlan(leader, cheapHero, kwisatzHaderach, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         if (planIsForAggressor) {

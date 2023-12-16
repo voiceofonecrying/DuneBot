@@ -345,6 +345,7 @@ class BattleTest {
             atreides = new AtreidesFaction("aPlayer", "aUser", game);
             fremen = new FremenFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            ecaz = new EcazFaction("ePlayer", "eUser", game);
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.setForceStrength("Harkonnen", 1);
             battle1 = new Battle("Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
@@ -463,6 +464,11 @@ class BattleTest {
         void testBattlePlanHarkonnenCannotPlayKH() {
             harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
             assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, true, 1, false,1, null, null));
+        }
+
+        @Test
+        void testBattlePlanNotEnoughTroops() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 11, false,10, null, null));
         }
     }
 }
