@@ -920,7 +920,7 @@ public class ShowCommands {
 
             message.append(
                     MessageFormat.format(
-                            "{0}{1} Info{0}\n",
+                            "{0} {1} Info {0}\n",
                             faction.getEmoji(), faction.getName()
                     )
             );
