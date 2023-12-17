@@ -38,8 +38,14 @@ public class EcazButtons implements Pressable {
             case "ecaz-deny-offer" -> denyAlliance(discordGame);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
             case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(event, discordGame);
+            case "ecaz-reset-ambassadors" -> resetAmbassadors(discordGame);
         }
 
+    }
+
+    private static void resetAmbassadors(DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction ecazFaction = (EcazFaction) discordGame.getGame().getFaction("Ecaz");
+        ecazFaction.sendAmbassadorLocationMessage(discordGame.getGame(), discordGame, 1);
     }
 
     private static void noMoreAmbassadors(ButtonInteractionEvent event, DiscordGame discordGame) {
