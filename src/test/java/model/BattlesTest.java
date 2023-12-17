@@ -21,6 +21,7 @@ public class BattlesTest {
     FremenFaction fremen;
     GuildFaction guild;
     HarkonnenFaction harkonnen;
+    EcazFaction ecaz;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -170,6 +171,41 @@ public class BattlesTest {
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertTrue(battles.aggressorMustChooseOpponent());
+    }
+
+
+    @Test
+    void aggressorMustChooseOpponentFalseWithEcazAlly() throws InvalidGameStateException, IOException {
+        game = new Game();
+        turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
+        atreides = new AtreidesFaction("aPlayer", "aUser", game);
+        ecaz = new EcazFaction("bgPlayer", "bgUser", game);
+        emperor = new EmperorFaction("ePlayer", "eUser", game);
+        fremen = new FremenFaction("fPlayer", "fUser", game);
+        guild = new GuildFaction("gPlayer", "gUser", game);
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+        game.addFaction(atreides);
+        game.addFaction(ecaz);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(guild);
+        game.addFaction(harkonnen);
+        atreides.setAlly("Ecaz");
+        ecaz.setAlly("Atreides");
+
+        game.setStorm(10);
+        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+        westCielagoNorth.addForce(new Force("Ecaz", 6));
+        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForce(new Force("Atreides", 4));
+
+        game.startBattlePhase();
+        battles = game.getBattles();
+        assertFalse(battles.noBattlesRemaining(game));
+        assertFalse(battles.aggressorMustChooseBattle());
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
