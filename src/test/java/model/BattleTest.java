@@ -25,6 +25,7 @@ class BattleTest {
     Territory carthag;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_eastSector;
+    Territory garaKulon;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -46,6 +47,7 @@ class BattleTest {
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
+        garaKulon = game.getTerritory("Gara Kulon");
     }
 
     @AfterEach
@@ -78,11 +80,39 @@ class BattleTest {
                 game.getTerritory("Cielago North (Center Sector)"),
                 game.getTerritory("Cielago North (East Sector)")
         );
-        Battle battle = new Battle("Carthag", cielagoNorthSectors, List.of(emperor, harkonnen, richese));
+        Battle battle = new Battle("Cielago North", cielagoNorthSectors, List.of(emperor, harkonnen, richese));
         Force emperorTroops = new Force("Emperor", 4);
         Force noFieldForce = new Force("NoField", 1, "Richese");
         List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops, noFieldForce);
         assertEquals(expectedResult, battle.aggregateForces());
+    }
+
+    @Test
+    void testAggressorMustChooseOpponentFalse() {
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
+        assertFalse(battle.aggressorMustChooseOpponent());
+    }
+
+    @Test
+    void testAggressorMustChooseOpponentTrue() {
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertTrue(battle.aggressorMustChooseOpponent());
+    }
+
+    @Test
+    void testAggressorMustChooseOpponentEcazAlly() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertFalse(battle.aggressorMustChooseOpponent());
     }
 
     @Nested

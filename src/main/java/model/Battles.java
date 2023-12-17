@@ -3,7 +3,6 @@ package model;
 import exceptions.InvalidGameStateException;
 import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
-import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
@@ -80,13 +79,7 @@ public class Battles {
     }
 
     public boolean aggressorMustChooseOpponent() {
-        if (battles.isEmpty()) return false;
-        List<Faction> factions = battles.get(0).getFactions();
-        int numFactions = factions.size();
-        if (factions.stream().anyMatch(f -> f instanceof EcazFaction)
-                && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz")))
-            numFactions--;
-        return numFactions > 2;
+        return !battles.isEmpty() && battles.get(0).aggressorMustChooseOpponent();
     }
 
     public void setTerritoryByIndex(int territoryIndex) {

@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import model.factions.AtreidesFaction;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.util.ArrayList;
@@ -43,6 +44,14 @@ public class Battle {
     public Faction getDefender() {
         if (factions.size() != 2) return null;
         return factions.get(1);
+    }
+
+    public boolean aggressorMustChooseOpponent() {
+        int numFactions = factions.size();
+        if (factions.stream().anyMatch(f -> f instanceof EcazFaction)
+                && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz")))
+            numFactions--;
+        return numFactions > 2;
     }
 
     public List<Force> getForces() {
