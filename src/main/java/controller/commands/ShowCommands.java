@@ -561,6 +561,7 @@ public class ShowCommands {
                 i++;
             }
             for (Force force : territory.getForces()) {
+                if (territory.getTerritoryName().equals("Jacurutu Sietch")) continue;
                 if (force.getName().equals("Hidden Mobile Stronghold")) {
                     BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
                     hms = resize(hms, 150, 100);
