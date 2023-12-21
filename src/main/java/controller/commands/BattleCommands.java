@@ -6,6 +6,7 @@ import exceptions.InvalidGameStateException;
 import model.Battle;
 import model.Battles;
 import model.Game;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -33,23 +34,34 @@ public class BattleCommands {
     public static void setBattleIndex(DiscordGame discordGame, Game game, int battleIndex) throws InvalidGameStateException, ChannelNotFoundException {
         Battles battles = game.getBattles();
         battles.setTerritoryByIndex(battleIndex);
-        if (battles.aggressorMustChooseOpponent()) opponentButtons(discordGame, battles);
+        Battle currentBattle = battles.getCurrentBattle();
+        if (battles.aggressorMustChooseOpponent()) opponentButtons(discordGame, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }
 
-    public static void opponentButtons(DiscordGame discordGame, Battles battles) throws ChannelNotFoundException {
-        Faction aggressor = battles.getAggressor();
+    public static void opponentButtons(DiscordGame discordGame, Battle battle) throws ChannelNotFoundException {
+        Faction aggressor = battle.getAggressor();
         List<Button> buttons = new LinkedList<>();
-        for (Faction faction : battles.getCurrentBattle().getFactions()) {
+        boolean ecazAndAllyIdentified = false;
+        for (Faction faction : battle.getFactions()) {
+            String opponentName = faction.getName();
             if (faction == aggressor) continue;
-            buttons.add(Button.primary("chooseopponent-" + faction.getName(), faction.getName()));
+            else if (battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))) {
+                if (ecazAndAllyIdentified) continue;
+                ecazAndAllyIdentified = true;
+                opponentName = faction.getName() + " and " + faction.getAlly();
+            }
+            buttons.add(Button.primary("chooseopponent-" + opponentName, opponentName));
         }
-        discordGame.getFactionChat(aggressor.getName()).queueMessage("Whom would you like to battle? " + aggressor.getPlayer(), buttons);
+        discordGame.getFactionChat(aggressor.getName()).queueMessage("Whom would you like to battle first? " + aggressor.getPlayer(), buttons);
+        discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
     }
 
     public static void setOpponent(DiscordGame discordGame, Game game, String factionName) throws ChannelNotFoundException, InvalidGameStateException {
         Battles battles = game.getBattles();
+        int space = factionName.indexOf(" ");
+        if (space != -1) factionName = factionName.substring(0, space);
         battles.setOpponent(factionName);
         battles.callBattleActions(game);
         discordGame.pushGame();

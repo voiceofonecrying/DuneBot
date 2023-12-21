@@ -105,8 +105,8 @@ public class Battles {
             throw new InvalidGameStateException("There are no more battles");
 
         StringBuilder nextBattle = new StringBuilder();
+        Faction aggressor = battles.get(0).getAggressor();
         if (aggressorMustChooseBattle()) {
-            Faction aggressor = battles.get(0).getFactions().get(0);
             nextBattle.append(aggressor.getEmoji()).append(" must choose where they will fight:");
             for (Battle battle : battles) {
                 if (aggressor != battle.getFactions().get(0)) break;
@@ -117,7 +117,7 @@ public class Battles {
             }
         } else {
             Battle battle = battles.get(0);
-            nextBattle = new StringBuilder(MessageFormat.format("Next battle: {0} in {1}",
+            nextBattle.append(MessageFormat.format("Next battle: {0} in {1}",
                     battle.getForcesMessage(),
                     battle.getWholeTerritoryName()
             ));

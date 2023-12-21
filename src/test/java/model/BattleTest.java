@@ -105,7 +105,7 @@ class BattleTest {
     }
 
     @Test
-    void testAggressorMustChooseOpponentEcazAlly() {
+    void testAggressorMustChooseOpponentEcazAllyFalse() {
         emperor.setAlly("Ecaz");
         ecaz.setAlly("Emperor");
         garaKulon.addForce(new Force("Harkonnen", 10));
@@ -113,6 +113,47 @@ class BattleTest {
         garaKulon.addForce(new Force("Ecaz", 3));
         Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
         assertFalse(battle.aggressorMustChooseOpponent());
+    }
+
+    @Test
+    void testAggressorMustChooseOpponentEcazAllyTrue() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Fremen", 1));
+        garaKulon.addForce(new Force("Fremen*", 1));
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(fremen, harkonnen, emperor, ecaz));
+        assertTrue(battle.aggressorMustChooseOpponent());
+    }
+
+    @Test
+    void testEcazMustChooseBattleFactionFalseNoEcaz() {
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
+        assertFalse(battle.hasEcazAndAlly());
+    }
+
+    @Test
+    void testEcazMustChooseBattleFactionFalseWithEcaz() {
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertFalse(battle.hasEcazAndAlly());
+    }
+
+    @Test
+    void testEcazMustChooseBattleFactionTrue() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertTrue(battle.hasEcazAndAlly());
     }
 
     @Nested

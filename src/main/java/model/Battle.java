@@ -46,10 +46,14 @@ public class Battle {
         return factions.get(1);
     }
 
+    public boolean hasEcazAndAlly() {
+        return factions.stream().anyMatch(f -> f instanceof EcazFaction)
+                && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
+    }
+
     public boolean aggressorMustChooseOpponent() {
         int numFactions = factions.size();
-        if (factions.stream().anyMatch(f -> f instanceof EcazFaction)
-                && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz")))
+        if (hasEcazAndAlly())
             numFactions--;
         return numFactions > 2;
     }
