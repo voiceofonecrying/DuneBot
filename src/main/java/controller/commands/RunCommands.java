@@ -688,7 +688,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         game.endBattlePhase();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.name().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");

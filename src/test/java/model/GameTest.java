@@ -56,6 +56,39 @@ class GameTest {
 
     }
 
+
+    @Nested
+    @DisplayName("#battlePhase")
+    class BattlePhase {
+        Territory garaKulon;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            emperor = new EmperorFaction("ePlayer", "eUser", game);
+            emperor.setAlly("Ecaz");
+            EcazFaction ecaz = new EcazFaction("aPlayer", "aUser", game);
+            ecaz.setAlly("Emperor");
+            game.addFaction(emperor);
+            game.addFaction(ecaz);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            game.addFaction(harkonnen);
+            garaKulon = game.getTerritory("Gara Kulon");
+            garaKulon.addForce(new Force("Harkonnen", 10));
+            garaKulon.addForce(new Force("Emperor", 5));
+            garaKulon.addForce(new Force("Ecaz", 3));
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+        }
+
+        @Test
+        void testEndBattlePhase() {
+            game.startBattlePhase();
+            assertThrows(InvalidGameStateException.class, () -> game.endBattlePhase());
+            garaKulon.removeForce("Harkonnen");
+            assertDoesNotThrow(() -> game.endBattlePhase());
+        }
+    }
+
     @Nested
     @DisplayName("#getTerritory")
     class GetTerritory {

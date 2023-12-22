@@ -948,7 +948,9 @@ public class Game {
             setUpdated(UpdateType.MAP);
     }
 
-    public void endBattlePhase() {
+    public void endBattlePhase() throws InvalidGameStateException {
+        if (!battles.noBattlesRemaining(this))
+            throw new InvalidGameStateException("There are battles remaining to be resolved.");
         battles = null;
     }
 
