@@ -19,12 +19,14 @@ public class Battle {
     private BattlePlan aggressorBattlePlan;
     private Faction defender;
     private BattlePlan defenderBattlePlan;
+    private boolean ecazAllyToBeChosen;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = wholeTerritoryName;
         this.territorySectors = territorySectors;
         this.factions = battleFactionsInStormOrder;
         this.forces = aggregateForces();
+        this.ecazAllyToBeChosen = hasEcazAndAlly();
     }
 
     public String getWholeTerritoryName() {
@@ -49,7 +51,8 @@ public class Battle {
     }
 
     public Faction getDefender() {
-        return defender;
+        if (defender != null) return defender;
+        return factions.get(1);
     }
 
     public void setDefender(Faction defender) {
@@ -59,6 +62,14 @@ public class Battle {
     public boolean hasEcazAndAlly() {
         return factions.stream().anyMatch(f -> f instanceof EcazFaction)
                 && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
+    }
+
+    public boolean isEcazAllyToBeChosen() {
+        return ecazAllyToBeChosen;
+    }
+
+    public void setEcazAllyToBeChosen(boolean ecazAllyToBeChosen) {
+        this.ecazAllyToBeChosen = ecazAllyToBeChosen;
     }
 
     public boolean aggressorMustChooseOpponent() {
@@ -151,7 +162,7 @@ public class Battle {
     }
 
     private void validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        String factionName = faction.getName();
+        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
@@ -183,12 +194,16 @@ public class Battle {
     }
 
     public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
-        boolean planIsForAggressor = false;
-        if (!factions.isEmpty() && factions.get(0).getName().equals(faction.getName()))
-            planIsForAggressor = true;
-        else if (factions.size() != 2)
+        int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
+        if (factions.size() != numFactionsExpected)
             throw new InvalidGameStateException("Combatants not determined yet.");
-        else if (!factions.get(1).getName().equals(faction.getName()))
+//        if (ecazAllyToBeChosen && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
+//            throw new InvalidGameStateException("Ecaz must choose their alliance combatant.");
+
+        boolean planIsForAggressor = false;
+        if (getAggressor().getName().equals(faction.getName()))
+            planIsForAggressor = true;
+        else if (!getDefender().getName().equals(faction.getName()))
             throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
 
         if (leader != null && cheapHero != null)

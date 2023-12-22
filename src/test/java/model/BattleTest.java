@@ -156,6 +156,32 @@ class BattleTest {
         assertTrue(battle.hasEcazAndAlly());
     }
 
+    @Test
+    void testEcazAllyFighting() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor));
+        battle.setAggressor(emperor);
+        Leader burseg = emperor.getLeader("Burseg").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(emperor, burseg, null, false, 5, false, 5, null, null));
+    }
+
+    @Test
+    void testEcazFighting() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        battle.setDefender(ecaz);
+        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+    }
+
     @Nested
     @DisplayName("#twoFactionsNoSpecials")
     class TwoFactionsNoSpecials {

@@ -111,6 +111,7 @@ public class Battles {
             currentBattle.setDefender(combatantFaction);
         else if (currentBattle.getDefender().getAlly().equals("Ecaz") && ecazIsCombatant)
             currentBattle.setDefender(combatantFaction);
+        currentBattle.setEcazAllyToBeChosen(false);
     }
 
     public Battle getCurrentBattle() {
