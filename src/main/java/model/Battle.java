@@ -15,7 +15,9 @@ public class Battle {
     private final List<Territory> territorySectors;
     private final List<Faction> factions;
     private List<Force> forces;
+    private Faction aggressor;
     private BattlePlan aggressorBattlePlan;
+    private Faction defender;
     private BattlePlan defenderBattlePlan;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
@@ -38,12 +40,20 @@ public class Battle {
     }
 
     public Faction getAggressor() {
+        if (aggressor != null) return aggressor;
         return factions.get(0);
     }
 
+    public void setAggressor(Faction aggressor) {
+        this.aggressor = aggressor;
+    }
+
     public Faction getDefender() {
-        if (factions.size() != 2) return null;
-        return factions.get(1);
+        return defender;
+    }
+
+    public void setDefender(Faction defender) {
+        this.defender = defender;
     }
 
     public boolean hasEcazAndAlly() {

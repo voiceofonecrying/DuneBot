@@ -3,6 +3,7 @@ package model;
 import exceptions.InvalidGameStateException;
 import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
@@ -60,7 +61,7 @@ public class Battles {
         return battles.get(0).getFactions().get(0);
     }
 
-    public List<Battle> getAggressorsBattles() {
+    public List<Battle> getDefaultAggressorsBattles() {
         return battles.stream().filter(b -> b.getFactions().get(0) == battles.get(0).getFactions().get(0)).toList();
     }
 
@@ -89,11 +90,27 @@ public class Battles {
     }
 
     public void setOpponent(String opponent) {
+        Faction aggressor = currentBattle.getAggressor();
         currentBattle = new Battle(currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
                 currentBattle.getFactions().stream().filter(
-                        f -> f.getName().equals(opponent) || (f == currentBattle.getFactions().get(0))
+                        f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
+                                || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
                 ).toList()
         );
+        currentBattle.setDefender(currentBattle.getFactions().stream().filter(f -> f.getName().equals(opponent)).findFirst().orElseThrow());
+    }
+
+    public void setEcazCombatant(String combatant) {
+        Faction combatantFaction = currentBattle.getFactions().stream().filter(f -> f.getName().equals(combatant)).findFirst().orElseThrow();
+        boolean ecazIsCombatant = combatant.equals("Ecaz");
+        if (currentBattle.getAggressor() instanceof EcazFaction && !combatantFaction.getName().equals("Ecaz"))
+            currentBattle.setAggressor(combatantFaction);
+        else if (currentBattle.getAggressor().getAlly().equals("Ecaz") && ecazIsCombatant)
+            currentBattle.setAggressor(combatantFaction);
+        else if (currentBattle.getDefender() instanceof EcazFaction && !combatantFaction.getName().equals("Ecaz"))
+            currentBattle.setDefender(combatantFaction);
+        else if (currentBattle.getDefender().getAlly().equals("Ecaz") && ecazIsCombatant)
+            currentBattle.setDefender(combatantFaction);
     }
 
     public Battle getCurrentBattle() {
@@ -129,8 +146,8 @@ public class Battles {
     public void callBattleActions(Game game) {
         String message = "Battle in " + currentBattle.getWholeTerritoryName() + ": ";
         message += currentBattle.getForcesMessage() + "\n";
-        Faction aggressor = currentBattle.getFactions().get(0);
-        Faction opponent = currentBattle.getFactions().get(1);
+        Faction aggressor = currentBattle.getAggressor();
+        Faction opponent = currentBattle.getDefender();
         int step = 1;
         if (aggressor instanceof BGFaction || aggressor.getAlly().equals("BG"))
             message += step++ + ". " + aggressor.getEmoji() + " use the Voice.\n";

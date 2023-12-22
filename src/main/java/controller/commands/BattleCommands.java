@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -25,7 +26,7 @@ public class BattleCommands {
         Faction aggressor = battles.getAggressor();
         List<Button> buttons = new LinkedList<>();
         int i = 0;
-        for (Battle battle : battles.getAggressorsBattles()) {
+        for (Battle battle : battles.getDefaultAggressorsBattles()) {
             buttons.add(Button.primary("chooseterritory-" + i++, battle.getWholeTerritoryName()));
         }
         discordGame.getFactionChat(aggressor.getName()).queueMessage("Where would you like to battle? " + aggressor.getPlayer(), buttons);
@@ -35,7 +36,8 @@ public class BattleCommands {
         Battles battles = game.getBattles();
         battles.setTerritoryByIndex(battleIndex);
         Battle currentBattle = battles.getCurrentBattle();
-        if (battles.aggressorMustChooseOpponent()) opponentButtons(discordGame, currentBattle);
+        if (currentBattle.aggressorMustChooseOpponent()) opponentButtons(discordGame, currentBattle);
+        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }
@@ -58,12 +60,23 @@ public class BattleCommands {
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
     }
 
+    public static void ecazAllyButtons(DiscordGame discordGame, Battle battle) throws ChannelNotFoundException {
+        List<Button> buttons = new LinkedList<>();
+        Faction ecaz = battle.getFactions().stream().filter(f -> f instanceof EcazFaction).findFirst().orElseThrow();
+        buttons.add(Button.primary("choosecombatant-Ecaz", "You - Ecaz"));
+        buttons.add(Button.primary("choosecombatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly()));
+        discordGame.getEcazChat().queueMessage("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), buttons);
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " must choose who will fight for their alliance.");
+    }
+
     public static void setOpponent(DiscordGame discordGame, Game game, String factionName) throws ChannelNotFoundException, InvalidGameStateException {
         Battles battles = game.getBattles();
         int space = factionName.indexOf(" ");
         if (space != -1) factionName = factionName.substring(0, space);
         battles.setOpponent(factionName);
-        battles.callBattleActions(game);
+        Battle currentBattle = battles.getCurrentBattle();
+        if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, currentBattle);
+        else battles.callBattleActions(game);
         discordGame.pushGame();
     }
 }
