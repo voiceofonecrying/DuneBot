@@ -182,6 +182,31 @@ class BattleTest {
         assertDoesNotThrow(() -> battle.setBattlePlan(ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
     }
 
+    @Test
+    void testBattleResolved() {
+        Force emperorTroops = new Force("Emperor", 5);
+        carthag.addForce(emperorTroops);
+        Force sardaukar = new Force("Emperor*", 2);
+        carthag.addForce(sardaukar);
+        Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen));
+        assertFalse(battle.isResolved());
+        carthag.removeForce("Harkonnen");
+        assertTrue(battle.isResolved());
+    }
+
+    @Test
+    void testBattleResolvedEcazAlly() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 5));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertFalse(battle.isResolved());
+        garaKulon.removeForce("Harkonnen");
+        assertTrue(battle.isResolved());
+    }
+
     @Nested
     @DisplayName("#twoFactionsNoSpecials")
     class TwoFactionsNoSpecials {

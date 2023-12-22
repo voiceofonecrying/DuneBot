@@ -6,9 +6,7 @@ import model.factions.AtreidesFaction;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Battle {
     private final String wholeTerritoryName;
@@ -81,6 +79,14 @@ public class Battle {
 
     public List<Force> getForces() {
         return forces;
+    }
+
+    public boolean isResolved() {
+        aggregateForces();
+        int numIfResolved = hasEcazAndAlly() ? 2 : 1;
+        Set<String> factionNamesRemaining = new HashSet<>();
+        forces.stream().forEach(f -> factionNamesRemaining.add(f.getFactionName()));
+        return numIfResolved == factionNamesRemaining.size();
     }
 
     public List<Force> aggregateForces() {
