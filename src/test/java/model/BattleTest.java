@@ -189,9 +189,9 @@ class BattleTest {
         Force sardaukar = new Force("Emperor*", 2);
         carthag.addForce(sardaukar);
         Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen));
-        assertFalse(battle.isResolved());
+        assertFalse(battle.isResolved(game));
         carthag.removeForce("Harkonnen");
-        assertTrue(battle.isResolved());
+        assertTrue(battle.isResolved(game));
     }
 
     @Test
@@ -202,9 +202,9 @@ class BattleTest {
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
         Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        assertFalse(battle.isResolved());
+        assertFalse(battle.isResolved(game));
         garaKulon.removeForce("Harkonnen");
-        assertTrue(battle.isResolved());
+        assertTrue(battle.isResolved(game));
     }
 
     @Nested

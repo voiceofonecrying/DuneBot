@@ -7,6 +7,7 @@ import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Battle {
     private final String wholeTerritoryName;
@@ -81,12 +82,28 @@ public class Battle {
         return forces;
     }
 
-    public boolean isResolved() {
-        aggregateForces();
-        int numIfResolved = hasEcazAndAlly() ? 2 : 1;
-        Set<String> factionNamesRemaining = new HashSet<>();
-        forces.stream().forEach(f -> factionNamesRemaining.add(f.getFactionName()));
-        return numIfResolved == factionNamesRemaining.size();
+    public boolean isResolved(Game game) {
+        List<Force> forces = new ArrayList<>();
+        boolean addRichese = false;
+        for (Territory t : territorySectors) {
+            Territory territory = game.getTerritory(t.getTerritoryName());
+            forces.addAll(territory.getForces().stream()
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                    .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
+                    .toList()
+            );
+            if (territory.hasRicheseNoField()) addRichese = true;
+        }
+        Set<String> factionNames = forces.stream()
+                .map(Force::getFactionName)
+                .collect(Collectors.toSet());
+        if (addRichese) factionNames.add("Richese");
+
+        if (factionNames.size() <= 1) return true;
+        List<String> namesList = factionNames.stream().toList();
+        return factionNames.size() == 2 && hasEcazAndAlly()
+                && (namesList.get(0).equals("Ecaz") && namesList.get(1).equals(game.getFaction("Ecaz").getAlly())
+                || namesList.get(0).equals(game.getFaction("Ecaz").getAlly()) && namesList.get(1).equals("Ecaz"));
     }
 
     public List<Force> aggregateForces() {
