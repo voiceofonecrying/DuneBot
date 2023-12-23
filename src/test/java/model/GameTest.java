@@ -890,7 +890,7 @@ class GameTest {
     }
 
     @Nested
-    @DisplayName("#rempveForces")
+    @DisplayName("#removeForces")
     class RemoveForces {
         @BeforeEach
         void setUp() throws IOException {
@@ -988,10 +988,10 @@ class GameTest {
             assertEquals(15, kaitain.getForce("Emperor").getStrength());
             assertEquals(5, salusaSecundus.getForce("Emperor*").getStrength());
             assertEquals(0, kaitain.getForce("Emperor*").getStrength());
-            game.removeForces("Kaitain", emperor, 0, 0, true);
-//            assertEquals(5, kaitain.getForce("Emperor").getStrength());
-//            assertEquals(5, emperor.getReserves().getStrength());
-//            assertTrue(emperor.isHighThreshold());
+            game.removeForces("Kaitain", emperor, 14, 0, true);
+            assertEquals(1, kaitain.getForce("Emperor").getStrength());
+            assertEquals(1, emperor.getReserves().getStrength());
+            assertFalse(emperor.isHighThreshold());
             assertEquals(1, turnSummary.messages.size());
             assertEquals("Kaitain has flipped to low threshold.", turnSummary.messages.get(0));
 

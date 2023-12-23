@@ -20,7 +20,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static controller.commands.CommandOptions.faction;
 import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
@@ -852,22 +851,21 @@ public class Game {
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) throws ChannelNotFoundException {
+        String factionName = targetFaction.getName();
+        Territory territory = getTerritory(territoryName);
+
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
             Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
-            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > getTerritory("Salusa Secundus").getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
+            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > territory.getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
                 ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
                 turnSummary.publish("Salusa Secundus has flipped to low threshold.");
 
-            } else if (homeworldFaction.isHighThreshold() && homeworldFaction.getHighThreshold() > getTerritory(territoryName).getForce(faction.getName()).getStrength() + getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()) {
-                System.out.println(
-                        MessageFormat.format(
-                                "isHigh = {0}\ngetHigh = {1}\ngetForce = {2}\ngetSpecial = {3}",
-                                homeworldFaction.isHighThreshold(), homeworldFaction.getHighThreshold(),
-                                getTerritory(territoryName).getForce(faction.getName()).getStrength(), getTerritory(territoryName).getForce(faction.getName() + "*").getStrength()
-                        )
-                );
+            } else if (homeworldFaction.isHighThreshold() &&
+                    homeworldFaction.getHighThreshold() >
+                            territory.getForce(factionName).getStrength() + territory.getForce(factionName + "*").getStrength()
+            ) {
                 homeworldFaction.setHighThreshold(false);
                 turnSummary.publish(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
             }
