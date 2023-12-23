@@ -21,12 +21,12 @@ public class BattleCommands {
         if (currentBattle != null && !currentBattle.isResolved(game))
             discordGame.getModInfo().queueMessage("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
         battles.nextBattle(game);
-        if (battles.aggressorMustChooseBattle()) territoryButtons(discordGame, battles);
+        if (battles.aggressorMustChooseBattle()) territoryButtons(discordGame, game, battles);
         else setBattleIndex(discordGame, game, 0);
     }
 
-    public static void territoryButtons(DiscordGame discordGame, Battles battles) throws ChannelNotFoundException {
-        Faction aggressor = battles.getAggressor();
+    public static void territoryButtons(DiscordGame discordGame, Game game, Battles battles) throws ChannelNotFoundException {
+        Faction aggressor = battles.getAggressor(game);
         List<Button> buttons = new LinkedList<>();
         int i = 0;
         for (Battle battle : battles.getDefaultAggressorsBattles()) {
@@ -39,20 +39,20 @@ public class BattleCommands {
         Battles battles = game.getBattles();
         battles.setTerritoryByIndex(battleIndex);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.aggressorMustChooseOpponent()) opponentButtons(discordGame, currentBattle);
-        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, currentBattle);
+        if (currentBattle.aggressorMustChooseOpponent(game)) opponentButtons(discordGame, game, currentBattle);
+        else if (currentBattle.hasEcazAndAlly(game)) ecazAllyButtons(discordGame, game, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }
 
-    public static void opponentButtons(DiscordGame discordGame, Battle battle) throws ChannelNotFoundException {
-        Faction aggressor = battle.getAggressor();
+    public static void opponentButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
+        Faction aggressor = battle.getAggressor(game);
         List<Button> buttons = new LinkedList<>();
         boolean ecazAndAllyIdentified = false;
-        for (Faction faction : battle.getFactions()) {
+        for (Faction faction : battle.getFactions(game)) {
             String opponentName = faction.getName();
             if (faction == aggressor) continue;
-            else if (battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))) {
+            else if (battle.hasEcazAndAlly(game) && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))) {
                 if (ecazAndAllyIdentified) continue;
                 ecazAndAllyIdentified = true;
                 opponentName = faction.getName() + " and " + faction.getAlly();
@@ -63,9 +63,9 @@ public class BattleCommands {
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
     }
 
-    public static void ecazAllyButtons(DiscordGame discordGame, Battle battle) throws ChannelNotFoundException {
+    public static void ecazAllyButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
-        Faction ecaz = battle.getFactions().stream().filter(f -> f instanceof EcazFaction).findFirst().orElseThrow();
+        Faction ecaz = battle.getFactions(game).stream().filter(f -> f instanceof EcazFaction).findFirst().orElseThrow();
         buttons.add(Button.primary("choosecombatant-Ecaz", "You - Ecaz"));
         buttons.add(Button.primary("choosecombatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly()));
         discordGame.getEcazChat().queueMessage("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), buttons);
@@ -76,9 +76,9 @@ public class BattleCommands {
         Battles battles = game.getBattles();
         int space = factionName.indexOf(" ");
         if (space != -1) factionName = factionName.substring(0, space);
-        battles.setOpponent(factionName);
+        battles.setOpponent(game, factionName);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, currentBattle);
+        if (currentBattle.hasEcazAndAlly(game)) ecazAllyButtons(discordGame, game, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }

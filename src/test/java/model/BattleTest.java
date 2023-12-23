@@ -60,10 +60,10 @@ class BattleTest {
         carthag.addForce(emperorTroops);
         Force sardaukar = new Force("Emperor*", 2);
         carthag.addForce(sardaukar);
-        Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen));
+        Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen));
         Force harkonnenTroops = carthag.getForce("Harkonnen");
         List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops);
-        assertEquals(expectedResult, battle.aggregateForces());
+        assertEquals(expectedResult, battle.aggregateForces(game));
     }
 
     @Test
@@ -80,19 +80,19 @@ class BattleTest {
                 game.getTerritory("Cielago North (Center Sector)"),
                 game.getTerritory("Cielago North (East Sector)")
         );
-        Battle battle = new Battle("Cielago North", cielagoNorthSectors, List.of(emperor, harkonnen, richese));
+        Battle battle = new Battle(game, "Cielago North", cielagoNorthSectors, List.of(emperor, harkonnen, richese));
         Force emperorTroops = new Force("Emperor", 4);
         Force noFieldForce = new Force("NoField", 1, "Richese");
         List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops, noFieldForce);
-        assertEquals(expectedResult, battle.aggregateForces());
+        assertEquals(expectedResult, battle.aggregateForces(game));
     }
 
     @Test
     void testAggressorMustChooseOpponentFalse() {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
-        assertFalse(battle.aggressorMustChooseOpponent());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
+        assertFalse(battle.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -100,8 +100,8 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        assertTrue(battle.aggressorMustChooseOpponent());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertTrue(battle.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -111,8 +111,8 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        assertFalse(battle.aggressorMustChooseOpponent());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertFalse(battle.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -124,16 +124,16 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(fremen, harkonnen, emperor, ecaz));
-        assertTrue(battle.aggressorMustChooseOpponent());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, harkonnen, emperor, ecaz));
+        assertTrue(battle.aggressorMustChooseOpponent(game));
     }
 
     @Test
     void testEcazMustChooseBattleFactionFalseNoEcaz() {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
-        assertFalse(battle.hasEcazAndAlly());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor));
+        assertFalse(battle.hasEcazAndAlly(game));
     }
 
     @Test
@@ -141,8 +141,8 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        assertFalse(battle.hasEcazAndAlly());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertFalse(battle.hasEcazAndAlly(game));
     }
 
     @Test
@@ -152,8 +152,8 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        assertTrue(battle.hasEcazAndAlly());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        assertTrue(battle.hasEcazAndAlly(game));
     }
 
     @Test
@@ -163,10 +163,10 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor));
-        battle.setAggressor(emperor);
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor));
+        battle.setAggressor(emperor.getName());
         Leader burseg = emperor.getLeader("Burseg").orElseThrow();
-        assertDoesNotThrow(() -> battle.setBattlePlan(emperor, burseg, null, false, 5, false, 5, null, null));
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
     }
 
     @Test
@@ -176,10 +176,10 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        battle.setDefender(ecaz);
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        battle.setDefender(ecaz.getName());
         Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-        assertDoesNotThrow(() -> battle.setBattlePlan(ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
     }
 
     @Test
@@ -188,7 +188,7 @@ class BattleTest {
         carthag.addForce(emperorTroops);
         Force sardaukar = new Force("Emperor*", 2);
         carthag.addForce(sardaukar);
-        Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen));
+        Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen));
         assertFalse(battle.isResolved(game));
         carthag.removeForce("Harkonnen");
         assertTrue(battle.isResolved(game));
@@ -201,7 +201,7 @@ class BattleTest {
         garaKulon.addForce(new Force("Harkonnen", 10));
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
-        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
         assertFalse(battle.isResolved(game));
         garaKulon.removeForce("Harkonnen");
         assertTrue(battle.isResolved(game));
@@ -226,7 +226,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -234,7 +234,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                     "6 {0} vs 7 {1}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -259,7 +259,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -267,7 +267,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 7 {1} 2 {2}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -293,7 +293,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -301,7 +301,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 1 {1} vs 7 {2} 2 {3}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -327,7 +327,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.RICHESE, Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -335,7 +335,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} vs 6 {1} vs 7 {2} 2 {3}", Emojis.NO_FIELD, Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -364,7 +364,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0}{1} vs {2} vs {3}", Emojis.ECAZ, Emojis.FREMEN, Emojis.BG, Emojis.EMPEROR),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -372,7 +372,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} 7 {1} 2 {2} vs 6 {3} vs 1 {4}", Emojis.ECAZ_TROOP, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -401,7 +401,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.ECAZ),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -409,7 +409,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 1 {1} vs 1 {2}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.ECAZ_TROOP),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -438,7 +438,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}{2} vs {3}", Emojis.EMPEROR, Emojis.FREMEN, Emojis.ECAZ, Emojis.BG),
-                    battles.getBattles(game).get(0).getFactionsMessage()
+                    battles.getBattles(game).get(0).getFactionsMessage(game)
             );
         }
 
@@ -446,7 +446,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} vs 7 {1} 2 {2} 1 {3} vs 6 {4}", Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.ECAZ_TROOP, Emojis.BG_FIGHTER),
-                    battles.getBattles(game).get(0).getForcesMessage()
+                    battles.getBattles(game).get(0).getForcesMessage(game)
             );
         }
     }
@@ -468,9 +468,11 @@ class BattleTest {
             fremen = new FremenFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
             ecaz = new EcazFaction("ePlayer", "eUser", game);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.setForceStrength("Harkonnen", 1);
-            battle1 = new Battle("Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
+            battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
             cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero ")). findFirst().orElseThrow();
@@ -480,19 +482,19 @@ class BattleTest {
 
         @Test
         void testBattlePlanLeaderAvailable() {
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false, 3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanLeaderInTanks() {
             atreides.removeLeader(duncanIdaho.name());
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanNoLeaderWithCheapHero() {
             atreides.addTreacheryCard(cheapHero);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, cheapHero, false, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, false, 4, false,3, null, null));
         }
 
         @Test
@@ -502,95 +504,95 @@ class BattleTest {
             atreides.removeLeader("Gurney Halleck");
             atreides.removeLeader("Thufir Hawat");
             atreides.removeLeader("Dr. Yueh");
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, null, false, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, null, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanNoLeaderInvalid() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, null, null, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, null, null, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanOtherFactionLeaderInvalid() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanHarkonnenCapturedLeader() {
             harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
-            assertDoesNotThrow(() -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, false, 1, false,1, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 1, false,1, null, null));
         }
 
         @Test
         void testBattlePlanFactionNotInvolved() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(fremen, null, cheapHero, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, fremen, null, cheapHero, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanNotEnoughSpice() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
         }
 
         @Test
         void testBattlePlanHasWeapon() {
             atreides.addTreacheryCard(crysknife);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
         }
 
         @Test
         void testBattlePlanHasDefense() {
             atreides.addTreacheryCard(shield);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, shield));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, shield));
         }
 
         @Test
         void testBattlePlanDoesntHaveWeapon() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
         }
 
         @Test
         void testBattlePlanDoesntHaveDefense() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 4, false,3, null, shield));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, shield));
         }
 
         @Test
         void testBattlePlanDoesntHaveCheapHero() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, null, cheapHero, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, null, cheapHero, false, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanSpendingTooMuch() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 1, true,5, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true,5, null, null));
         }
 
         @Test
         void testBattlePlanAtreidesHasKH() {
             atreides.setForcesLost(7);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, duncanIdaho, null, true, 4, false, 3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, true, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanNoLeaderWithCheapHeroAndKH() {
             atreides.addTreacheryCard(cheapHero);
             atreides.setForcesLost(10);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(atreides, null, cheapHero, true, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, true, 4, false,3, null, null));
         }
 
         @Test
         void testBattlePlanAtreidesDoesNotHaveKH() {
             atreides.setForcesLost(6);
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, true, 4, false, 3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, true, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanHarkonnenCannotPlayKH() {
             harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(harkonnen, duncanIdaho, null, true, 1, false,1, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, true, 1, false,1, null, null));
         }
 
         @Test
         void testBattlePlanNotEnoughTroops() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(atreides, duncanIdaho, null, false, 11, false,10, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,10, null, null));
         }
     }
 }

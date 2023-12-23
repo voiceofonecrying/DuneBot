@@ -934,7 +934,7 @@ public class Game {
             String battleMessages = battleTerritories.stream()
                     .map((battle) ->
                             MessageFormat.format("{0} in {1}",
-                                    battle.getFactionsMessage(),
+                                    battle.getFactionsMessage(this),
                                     battle.getWholeTerritoryName()
                             )
                     ).collect(Collectors.joining("\n"));

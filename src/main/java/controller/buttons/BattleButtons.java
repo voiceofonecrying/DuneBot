@@ -22,7 +22,7 @@ public class BattleButtons implements Pressable {
         int battleIndex = Integer.parseInt(event.getComponentId().split("-")[1]);
         String territory = battles.getBattles(game).get(battleIndex).getWholeTerritoryName();
         discordGame.queueMessage("You selected " + territory + ".");
-        discordGame.getTurnSummary().queueMessage(battles.getAggressor().getEmoji() + " will battle in " + territory + ".");
+        discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle in " + territory + ".");
         BattleCommands.setBattleIndex(discordGame, game, battleIndex);
     }
 
@@ -31,7 +31,7 @@ public class BattleButtons implements Pressable {
         Battles battles = game.getBattles();
         String opponent = event.getComponentId().split("-")[1];
         discordGame.queueMessage("You selected " + opponent + ".");
-        discordGame.getTurnSummary().queueMessage(battles.getAggressor().getEmoji() + " will battle against " + opponent + ".");
+        discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
         BattleCommands.setOpponent(discordGame, game, opponent);
     }
 
@@ -41,7 +41,7 @@ public class BattleButtons implements Pressable {
         String battleFaction = event.getComponentId().split("-")[1];
         discordGame.queueMessage("You selected " + battleFaction + ".");
         discordGame.getTurnSummary().queueMessage(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
-        battles.setEcazCombatant(battleFaction);
+        battles.setEcazCombatant(game, battleFaction);
         battles.callBattleActions(game);
     }
 }

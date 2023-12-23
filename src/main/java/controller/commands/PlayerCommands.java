@@ -63,7 +63,7 @@ public class PlayerCommands {
         if (currentBattle == null)
             throw new InvalidGameStateException("There is no current battle.");
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        if (!currentBattle.getAggressor().getName().equals(faction.getName()) && !currentBattle.getDefender().getName().equals(faction.getName()))
+        if (!currentBattle.getAggressorName().equals(faction.getName()) && !currentBattle.getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException("You are not in the current battle.");
         String leaderName = discordGame.required(combatLeader).getAsString();
         Leader leader = null;
@@ -101,7 +101,7 @@ public class PlayerCommands {
             isKH = false;
             returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
         }
-        BattlePlan battlePlan = currentBattle.setBattlePlan(faction, leader, cheapHero, isKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, isKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
         discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
         return returnString;

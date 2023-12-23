@@ -73,7 +73,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -96,7 +96,7 @@ public class BattlesTest {
         westCielagoNorth.removeForce("BG");
         assertTrue(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -121,7 +121,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertTrue(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class BattlesTest {
         sietchTabr.removeForce("BG");
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -170,7 +170,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertTrue(battles.aggressorMustChooseOpponent());
+        assertTrue(battles.aggressorMustChooseOpponent(game));
     }
 
 
@@ -205,7 +205,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -229,7 +229,7 @@ public class BattlesTest {
         eastCielagoNorth.removeForce("Atreides");
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent());
+        assertFalse(battles.aggressorMustChooseOpponent(game));
     }
 
     @Test
@@ -251,9 +251,9 @@ public class BattlesTest {
         game.startBattlePhase();
         battles = game.getBattles();
         battles.setTerritoryByIndex(0);
-        battles.setOpponent("Fremen");
+        battles.setOpponent(game, "Fremen");
         Battle currentBattle = battles.getCurrentBattle();
-        assertEquals(2, currentBattle.getFactions().size());
+        assertEquals(2, currentBattle.getFactions(game).size());
         assertTrue(currentBattle.getForces().stream().noneMatch(f -> f.getName().equals("BG")));
         assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Atreides")));
         assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Fremen")));
@@ -279,9 +279,9 @@ public class BattlesTest {
         game.startBattlePhase();
         battles = game.getBattles();
         battles.setTerritoryByIndex(0);
-        battles.setOpponent("Emperor");
+        battles.setOpponent(game, "Emperor");
         Battle currentBattle = battles.getCurrentBattle();
-        assertEquals(2, currentBattle.getFactions().size());
+        assertEquals(2, currentBattle.getFactions(game).size());
         assertTrue(currentBattle.getForces().stream().noneMatch(f -> f.getName().equals("Fremen")));
         assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Atreides")));
         assertTrue(currentBattle.getForces().stream().anyMatch(f -> f.getName().equals("Emperor")));

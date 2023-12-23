@@ -12,20 +12,19 @@ import java.util.stream.Collectors;
 public class Battle {
     private final String wholeTerritoryName;
     private final List<Territory> territorySectors;
-    private final List<Faction> factions;
+    private final List<Faction> factions = null;
+    private final List<String> factionNames;
     private List<Force> forces;
-    private Faction aggressor;
+    private String aggressor;
     private BattlePlan aggressorBattlePlan;
-    private Faction defender;
+    private String defender;
     private BattlePlan defenderBattlePlan;
-    private boolean ecazAllyToBeChosen;
 
-    public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
+    public Battle(Game game, String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = wholeTerritoryName;
         this.territorySectors = territorySectors;
-        this.factions = battleFactionsInStormOrder;
-        this.forces = aggregateForces();
-        this.ecazAllyToBeChosen = hasEcazAndAlly();
+        this.factionNames = battleFactionsInStormOrder.stream().map(Faction::getName).toList();
+        this.forces = aggregateForces(game);
     }
 
     public String getWholeTerritoryName() {
@@ -36,44 +35,65 @@ public class Battle {
         return territorySectors;
     }
 
-    public List<Faction> getFactions() {
-        return factions;
+    public List<String> getFactionNames() {
+        if (factions != null)
+            return factions.stream().map(Faction::getName).toList();
+        return factionNames;
     }
 
-    public Faction getAggressor() {
+    public List<Faction> getFactions(Game game) {
+        if (factions != null)
+            return factions;
+        return factionNames.stream().map(game::getFaction).toList();
+    }
+
+    public String getAggressorName() {
         if (aggressor != null) return aggressor;
-        return factions.get(0);
+        if (factions != null)
+            return factions.get(0).getName();
+        return factionNames.get(0);
     }
 
-    public void setAggressor(Faction aggressor) {
+    public Faction getAggressor(Game game) {
+        if (aggressor != null) return game.getFaction(aggressor);
+        if (factions != null)
+            return factions.get(0);
+        return game.getFaction(factionNames.get(0));
+    }
+
+    public void setAggressor(String aggressor) {
         this.aggressor = aggressor;
     }
 
-    public Faction getDefender() {
+    public String getDefenderName() {
         if (defender != null) return defender;
-        return factions.get(1);
+        if (factions != null)
+            return factions.get(1).getName();
+        return factionNames.get(1);
     }
 
-    public void setDefender(Faction defender) {
+    public Faction getDefender(Game game) {
+        if (defender != null) return game.getFaction(defender);
+        if (factions != null)
+            return factions.get(1);
+        return game.getFaction(factionNames.get(1));
+    }
+
+    public void setDefender(String defender) {
         this.defender = defender;
     }
 
-    public boolean hasEcazAndAlly() {
-        return factions.stream().anyMatch(f -> f instanceof EcazFaction)
-                && factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
+    public boolean hasEcazAndAlly(Game game) {
+        List<Faction> battleFactions = factions;
+        if (factions == null)
+            battleFactions = factionNames.stream().map(game::getFaction).toList();
+        return battleFactions.stream().anyMatch(f -> f instanceof EcazFaction)
+                && battleFactions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
     }
 
-    public boolean isEcazAllyToBeChosen() {
-        return ecazAllyToBeChosen;
-    }
-
-    public void setEcazAllyToBeChosen(boolean ecazAllyToBeChosen) {
-        this.ecazAllyToBeChosen = ecazAllyToBeChosen;
-    }
-
-    public boolean aggressorMustChooseOpponent() {
-        int numFactions = factions.size();
-        if (hasEcazAndAlly())
+    public boolean aggressorMustChooseOpponent(Game game) {
+        int numFactions = factions == null ? factionNames.size() : factions.size();
+        if (hasEcazAndAlly(game))
             numFactions--;
         return numFactions > 2;
     }
@@ -101,14 +121,14 @@ public class Battle {
 
         if (factionNames.size() <= 1) return true;
         List<String> namesList = factionNames.stream().toList();
-        return factionNames.size() == 2 && hasEcazAndAlly()
+        return factionNames.size() == 2 && hasEcazAndAlly(game)
                 && (namesList.get(0).equals("Ecaz") && namesList.get(1).equals(game.getFaction("Ecaz").getAlly())
                 || namesList.get(0).equals(game.getFaction("Ecaz").getAlly()) && namesList.get(1).equals("Ecaz"));
     }
 
-    public List<Force> aggregateForces() {
+    public List<Force> aggregateForces(Game game) {
         forces = new ArrayList<>();
-        for (Faction f: factions) {
+        for (Faction f: getFactions(game)) {
             Optional<Integer> optInt;
             optInt = territorySectors.stream().map(t -> t.getForce(f.getName() + "*").getStrength()).reduce(Integer::sum);
             int totalSpecialStrength = optInt.orElse(0);
@@ -124,13 +144,13 @@ public class Battle {
         return forces;
     }
 
-    public String getFactionsMessage() {
+    public String getFactionsMessage(Game game) {
         StringBuilder message = new StringBuilder();
         String vs = "";
-        boolean ecazInBattle = factions.stream().anyMatch(f -> f.getName().equals("Ecaz"));
-        boolean ecazAllyInBattle = factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
+        boolean ecazInBattle = factionNames.stream().anyMatch(f -> f.equals("Ecaz"));
+        boolean ecazAllyInBattle = getFactions(game).stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
         boolean ecazAllyComplete = false;
-        for (Faction f : factions) {
+        for (Faction f : getFactions(game)) {
             if (ecazAllyComplete && (f.getName().equals("Ecaz") || f.getAlly().equals("Ecaz"))) continue;
             message.append(vs);
             message.append(f.getEmoji());
@@ -162,13 +182,13 @@ public class Battle {
         return message;
     }
 
-    public String getForcesMessage() {
+    public String getForcesMessage(Game game) {
         StringBuilder message = new StringBuilder();
         String vs = "";
-        boolean ecazInBattle = factions.stream().anyMatch(f -> f.getName().equals("Ecaz"));
-        boolean ecazAllyInBattle = factions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
+        boolean ecazInBattle = factionNames.stream().anyMatch(f -> f.equals("Ecaz"));
+        boolean ecazAllyInBattle = getFactions(game).stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
         boolean ecazAllyComplete = false;
-        for (Faction f : factions) {
+        for (Faction f : getFactions(game)) {
             if (ecazAllyComplete && (f.getName().equals("Ecaz") || f.getAlly().equals("Ecaz"))) continue;
             message.append(vs);
             message.append(getFactionForceMessage(f.getName()));
@@ -184,8 +204,8 @@ public class Battle {
         return message.toString().trim();
     }
 
-    private void validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
+    private void validateDial(Game game, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+        String factionName = (hasEcazAndAlly(game) && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
@@ -216,17 +236,18 @@ public class Battle {
             throw new InvalidGameStateException(faction.getEmoji() + " is spending more spice than necessary. Only " + spiceUsed + " is required.");
     }
 
-    public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
-        int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
-        if (factions.size() != numFactionsExpected)
+    public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
+        int actualSize = factions == null ? factionNames.size() : factions.size();
+        int numFactionsExpected = hasEcazAndAlly(game) ? 3 : 2;
+        if (actualSize != numFactionsExpected)
             throw new InvalidGameStateException("Combatants not determined yet.");
 //        if (ecazAllyToBeChosen && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
 //            throw new InvalidGameStateException("Ecaz must choose their alliance combatant.");
 
         boolean planIsForAggressor = false;
-        if (getAggressor().getName().equals(faction.getName()))
+        if (getAggressorName().equals(faction.getName()))
             planIsForAggressor = true;
-        else if (!getDefender().getName().equals(faction.getName()))
+        else if (!getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
 
         if (leader != null && cheapHero != null)
@@ -253,7 +274,7 @@ public class Battle {
         if (defense != null && !faction.hasTreacheryCard(defense.name()))
             throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
 
-        validateDial(faction, wholeNumberDial, plusHalfDial, spice);
+        validateDial(game, faction, wholeNumberDial, plusHalfDial, spice);
 
         BattlePlan battlePlan = new BattlePlan(leader, cheapHero, kwisatzHaderach, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         if (planIsForAggressor) {
