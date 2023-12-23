@@ -878,10 +878,14 @@ public class ShowCommands {
         if (faction.getGame().hasGameOption(GameOption.HOMEWORLDS)) {
             MessageCreateBuilder homeworldMessageBuilder = new MessageCreateBuilder();
             String lowHigh = faction.isHighThreshold() ? "High" : "Low";
-            homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh).orElseThrow());
+            Optional<FileUpload> cardImage = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh);
+            if (cardImage.isPresent()) homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(cardImage.get());
+            else homeworldMessageBuilder.addContent(faction.getHomeworld() + " " + lowHigh);
             if (faction instanceof EmperorFaction emperorFaction) {
                 lowHigh = emperorFaction.isSecundusHighThreshold() ? "High" : "Low";
-                homeworldMessageBuilder.addFiles(CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), "Salusa Secundus " + lowHigh).orElseThrow());
+                cardImage = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), "Salusa Secundus " + lowHigh);
+                if (cardImage.isPresent()) homeworldMessageBuilder.addFiles(cardImage.get());
+                else homeworldMessageBuilder.addContent("Salusa Secundus " + lowHigh);
             }
             discordGame.queueMessage(infoChannelName, homeworldMessageBuilder);
         }

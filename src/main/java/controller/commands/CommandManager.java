@@ -1278,6 +1278,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0}in {1} were sent to {2}.", forcesString, territoryName, (isToTanks ? "the tanks" : "reserves")
         ));
+        RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
         discordGame.pushGame();
     }
 
