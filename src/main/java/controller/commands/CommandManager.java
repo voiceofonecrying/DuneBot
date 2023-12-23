@@ -1267,8 +1267,12 @@ public class CommandManager extends ListenerAdapter {
         int specialAmount = discordGame.required(starredAmount).getAsInt();
         if (amountValue < 0 || specialAmount < 0)
             throw new InvalidGameStateException("Negative numbers are invalid.");
-        if (amountValue == 0 && specialAmount == 0)
-            throw new InvalidGameStateException("Both force amounts cannot be 0.");
+        if (amountValue == 0 && specialAmount == 0) {
+//            throw new InvalidGameStateException("Both force amounts cannot be 0.");
+            RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
+            discordGame.pushGame();
+            return;
+        }
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
         game.removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
