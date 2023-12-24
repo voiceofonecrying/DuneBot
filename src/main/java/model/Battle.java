@@ -233,7 +233,7 @@ public class Battle {
         if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
         if (spice > spiceUsed)
-            throw new InvalidGameStateException(faction.getEmoji() + " is spending more spice than necessary. Only " + spiceUsed + " is required.");
+            faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
     }
 
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {

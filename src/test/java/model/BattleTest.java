@@ -562,7 +562,10 @@ class BattleTest {
 
         @Test
         void testBattlePlanSpendingTooMuch() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true,5, null, null));
+            TestTopic atreidesChat = new TestTopic();
+            atreides.setChat(atreidesChat);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true,5, null, null));
+            assertEquals(1, atreidesChat.messages.size());
         }
 
         @Test
