@@ -281,7 +281,7 @@ abstract class FactionTestTemplate {
             faction = getFaction();
 
             familyAtomics = game.getTreacheryDeck().stream()
-                    .filter(t -> t.name().equals("Family Atomics "))
+                    .filter(t -> t.name().equals("Family Atomics"))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
         }
@@ -289,12 +289,12 @@ abstract class FactionTestTemplate {
         @Test
         void hasFamilyAtomics() {
             faction.addTreacheryCard(familyAtomics);
-            assertTrue(faction.hasTreacheryCard("Family Atomics "));
+            assertTrue(faction.hasTreacheryCard("Family Atomics"));
         }
 
         @Test
         void doesNotHaveFamilyAtomics() {
-            assertFalse(faction.hasTreacheryCard("Family Atomics "));
+            assertFalse(faction.hasTreacheryCard("Family Atomics"));
         }
     }
 }

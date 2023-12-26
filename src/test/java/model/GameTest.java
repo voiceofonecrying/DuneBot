@@ -46,11 +46,11 @@ class GameTest {
         game = new Game();
 
         familyAtomics = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Family Atomics "))
+                .filter(t -> t.name().equals("Family Atomics"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
         weatherControl = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Weather Control "))
+                .filter(t -> t.name().equals("Weather Control"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
 
@@ -469,7 +469,7 @@ class GameTest {
             game.addFaction(guild);
             game.addFaction(harkonnen);
             shield = game.getTreacheryDeck().stream()
-                    .filter(t -> t.name().equals("Shield "))
+                    .filter(t -> t.name().equals("Shield"))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Shield not found"));
         }
@@ -478,7 +478,7 @@ class GameTest {
         void fremenAndGuldHaveShields() {
             fremen.addTreacheryCard(shield);
             guild.addTreacheryCard(shield);
-            List<Faction> factionsWithShield = game.getFactionsWithTreacheryCard("Shield ");
+            List<Faction> factionsWithShield = game.getFactionsWithTreacheryCard("Shield");
             assertEquals(2, factionsWithShield.size());
             assertTrue(factionsWithShield.stream().anyMatch(f -> f.getName().equals("Fremen")));
             assertTrue(factionsWithShield.stream().anyMatch(f -> f.getName().equals("Guild")));

@@ -363,9 +363,9 @@ public class Battle {
 
     private boolean leaderSurvives(TreacheryCard weapon, TreacheryCard defense) {
         if (weapon != null) {
-            if (weapon.type().equals(" Weappn - Poison") && !defense.type().equals(" Defense - Poison"))
+            if (weapon.type().equals("Weapon - Poison") && !defense.type().equals("Defense - Poison"))
                 return false;
-            else if (weapon.type().equals(" Weapon = Projectile") && !defense.type().equals(" Defense - Projectile"))
+            else if (weapon.type().equals("Weapon - Projectile") && defense != null && !defense.type().equals("Defense - Projectile"))
                 return false;
             else return defense != null;
         }

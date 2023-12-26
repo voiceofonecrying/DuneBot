@@ -2,18 +2,17 @@ package controller;
 
 import caches.EmojiCache;
 import caches.GameCache;
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import controller.channels.*;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
+import io.gsonfire.PreProcessor;
 import model.Force;
 import model.Game;
 import model.Territory;
+import model.TreacheryCard;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;
@@ -140,7 +139,16 @@ public class DiscordGame {
      */
     public static Gson createGsonDeserializer() {
         GsonFireBuilder builder = new GsonFireBuilder()
-                .registerTypeSelector(Faction.class, new FactionTypeSelector());
+                .registerTypeSelector(Faction.class, new FactionTypeSelector())
+                .registerPreProcessor(TreacheryCard.class, new PreProcessor<TreacheryCard>() {
+                    @Override
+                    public void preDeserialize(Class<? extends TreacheryCard> clazz, JsonElement src, Gson gson) {
+                        JsonObject jsonObject = src.getAsJsonObject();
+                        jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
+                        jsonObject.addProperty("type", jsonObject.get("type").getAsString().trim());
+                    }
+                })
+                ;
         return builder.createGson();
     }
 

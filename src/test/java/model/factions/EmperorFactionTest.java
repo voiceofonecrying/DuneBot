@@ -74,18 +74,18 @@ class EmperorFactionTest extends FactionTestTemplate {
         TestTopic emperorLedger = new TestTopic();
         faction.setLedger(emperorLedger);
         TreacheryCard kulon = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Kulon "))
+                .filter(t -> t.name().equals("Kulon"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Kulon not found"));
         faction.addTreacheryCard(kulon);
         assertEquals(10, faction.getSpice());
-        assertTrue(faction.hasTreacheryCard("Kulon "));
+        assertTrue(faction.hasTreacheryCard("Kulon"));
         assertTrue(turnSummary.getMessages().isEmpty());
 
-        faction.kaitainHighDiscard("Kulon ");
+        faction.kaitainHighDiscard("Kulon");
 
         assertEquals(8, faction.getSpice());
-        assertFalse(faction.hasTreacheryCard("Kulon "));
+        assertFalse(faction.hasTreacheryCard("Kulon"));
         assertEquals(Emojis.EMPEROR + " paid 2 " + Emojis.SPICE + " to discard Kulon (Kaitain High Threshold ability)",
                 turnSummary.getMessages().get(0)
         );

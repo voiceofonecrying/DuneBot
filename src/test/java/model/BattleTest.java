@@ -484,9 +484,9 @@ class BattleTest {
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz));
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
-            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero ")). findFirst().orElseThrow();
-            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife ")). findFirst().orElseThrow();
-            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield ")). findFirst().orElseThrow();
+            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
+            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
+            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
         }
 
         @Test

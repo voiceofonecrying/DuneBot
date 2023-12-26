@@ -488,7 +488,7 @@ public class Game {
     public Faction getFactionWithAtomics() {
         for (Faction faction : getFactions()) {
             try {
-                faction.getTreacheryCard("Family Atomics ");
+                faction.getTreacheryCard("Family Atomics");
                 return faction;
             } catch (IllegalArgumentException e) {
                 // faction does not hold Family Atomics
@@ -507,7 +507,7 @@ public class Game {
         territories.get("Arrakeen").setRock(false);
 
         String message = "The Shield Wall has been destroyed. ";
-        TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics ");
+        TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics");
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             getTreacheryDiscard().add(familyAtomics);
             message += "Family Atomics has been moved to the discard pile.";
@@ -682,7 +682,7 @@ public class Game {
 
         Faction factionWithAtomics = null;
         try {
-            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics ").get(0);
+            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics").get(0);
         } catch (IndexOutOfBoundsException e) {
             // No faction has Family Atomics
         }
@@ -692,7 +692,7 @@ public class Game {
 
         Faction factionWithWeatherControl = null;
         try {
-            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control ").get(0);
+            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control").get(0);
         } catch (IndexOutOfBoundsException e) {
             // No faction has Weather Control
         }
@@ -702,8 +702,8 @@ public class Game {
 
         boolean atomicsEligible = factions.stream().anyMatch(Faction::isNearShieldWall);
         if (atomicsEligible && factionWithAtomics == null) {
-            boolean atomicsInDeck = treacheryDeck.stream().anyMatch(c -> c.name().equals("Family Atomics "));
-            boolean atomicsInDiscard = treacheryDiscard.stream().anyMatch(c -> c.name().equals("Family Atomics "));
+            boolean atomicsInDeck = treacheryDeck.stream().anyMatch(c -> c.name().equals("Family Atomics"));
+            boolean atomicsInDiscard = treacheryDiscard.stream().anyMatch(c -> c.name().equals("Family Atomics"));
             if (!atomicsInDeck && !atomicsInDiscard) atomicsEligible = false;
         }
         if (turn != 1) {

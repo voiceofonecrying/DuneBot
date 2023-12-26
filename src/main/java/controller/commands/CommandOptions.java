@@ -421,14 +421,14 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
         choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().startsWith(" Weapon"))
+                .filter(c -> c.type().startsWith("Weapon"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().equals(" Worthless Card"))
+                .filter(c -> c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
@@ -442,14 +442,14 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
         choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().startsWith(" Defense"))
+                .filter(c -> c.type().startsWith("Defense"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().equals(" Worthless Card"))
+                .filter(c -> c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
