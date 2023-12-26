@@ -608,6 +608,7 @@ public class CommandManager extends ListenerAdapter {
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
+                case "review-battle-resolution" -> reviewBattleResolution(discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -743,6 +744,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
+        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review"));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
@@ -1300,6 +1302,94 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " have assassinated " + assassinated + "!");
         moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
         discordGame.pushGame();
+    }
+
+    private String factionBattleResults(Game game, Battle currentBattle, boolean isAggressor) throws InvalidGameStateException {
+        String resolution = "";
+        Faction faction = isAggressor ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
+        String factionName = faction.getName();
+        BattlePlan battlePlan = isAggressor ? currentBattle.getAggressorBattlePlan() : currentBattle.getDefenderBattlePlan();
+        String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
+        boolean loser = isAggressor != currentBattle.isAggressorWin();
+        boolean leaderAlive = isAggressor ? currentBattle.isAggressorLeaderAlive() : currentBattle.isDefenderLeaderAlive();
+
+        if (!leaderAlive)
+            resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
+        List<Force> forcesDialed = currentBattle.getForcesDialed(game, faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
+        int regularForces = forcesDialed.get(0).getStrength();
+        int specialForces = forcesDialed.get(1).getStrength();
+        if (loser) {
+            resolution += emojis + " loses ";
+            int regularStrength = currentBattle.getForces().stream()
+                    .filter(f -> f.getName().equals(factionName))
+                    .mapToInt(Force::getStrength).findFirst().orElse(0);
+            if (regularStrength > 0)
+                resolution += regularStrength + " " + Emojis.getForceEmoji(factionName);
+            int specialStrength = currentBattle.getForces().stream()
+                    .filter(f -> f.getName().equals(factionName + "*"))
+                    .mapToInt(Force::getStrength).findFirst().orElse(0);
+            if (specialStrength > 0)
+                resolution += specialStrength + " " + Emojis.getForceEmoji(factionName + "*");
+            resolution += " to the tanks\n";
+        } else if (regularForces > 0 || specialForces > 0) {
+            resolution += emojis + " loses";
+            if (regularForces > 0)
+                resolution += " " + regularForces + " " + Emojis.getForceEmoji(factionName);
+            if (specialForces > 0)
+                resolution += " " + specialForces + " " + Emojis.getForceEmoji(factionName + "*");
+            resolution += " to the tanks\n";
+        }
+        if (battlePlan.getCheapHero() != null)
+            resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
+        if (currentBattle.isWeaponDiscarded(true))
+            resolution += emojis + " discards " + battlePlan.getWeaponString() + "\n";
+        if (currentBattle.isDefenseDiscarded(true))
+            resolution += emojis + " discards " + battlePlan.getDefenseString() + "\n";
+        if (battlePlan.getSpice() > 0)
+            resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";
+        if (loser) {
+            List<TechToken> techTokens = faction.getTechTokens();
+            if (techTokens.size() == 1)
+                resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.get(0).getName());
+            else if (techTokens.size() > 1) {
+                resolution += emojis + " loses a Tech Token (";
+                for (TechToken techToken : techTokens) {
+                    resolution += Emojis.getTechTokenEmoji(techToken.getName());
+                }
+                resolution += ")\n";
+            }
+        } else {
+            int combatWater = 0;
+            if (!currentBattle.isAggressorLeaderAlive())
+                combatWater += currentBattle.getAggressorBattlePlan().getLeaderStrength();
+            if (!currentBattle.isDefenderLeaderAlive())
+                combatWater += currentBattle.getDefenderBattlePlan().getLeaderStrength();
+            resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+        }
+
+        if (!resolution.isEmpty()) resolution = "\n" + resolution;
+        return resolution;
+    }
+
+    public void reviewBattleResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
+        BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
+        if (aggressorPlan != null && defenderPlan != null) {
+            String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
+                    currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
+            );
+            resolution += currentBattle.getAggressorEmojis(game) + "\n";
+            resolution += aggressorPlan.getPlanMessage() + "\n\n";
+            resolution += currentBattle.getDefenderEmojis(game) + "\n";
+            resolution += defenderPlan.getPlanMessage() + "\n\n";
+            resolution += MessageFormat.format("{0} **win {1} - {2}**\n",
+                    currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
+            );
+            resolution += factionBattleResults(game, currentBattle, true);
+            resolution += factionBattleResults(game, currentBattle, false);
+            discordGame.getModInfo().queueMessage(resolution);
+        }
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

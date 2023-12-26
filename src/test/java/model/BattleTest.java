@@ -177,7 +177,7 @@ class BattleTest {
         garaKulon.addForce(new Force("Emperor", 5));
         garaKulon.addForce(new Force("Ecaz", 3));
         Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-        battle.setDefender(ecaz.getName());
+        battle.setDefenderName(ecaz.getName());
         Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
         assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
     }
@@ -459,7 +459,9 @@ class BattleTest {
         TreacheryCard crysknife;
         TreacheryCard shield;
         Territory arrakeen;
+        Territory carthag;
         Battle battle1;
+        Battle battle2;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -470,9 +472,16 @@ class BattleTest {
             ecaz = new EcazFaction("ePlayer", "eUser", game);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
+            game.addFaction(ecaz);
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.setForceStrength("Harkonnen", 1);
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
+            ecaz.setAlly("Atreides");
+            atreides.setAlly("Ecaz");
+            carthag = game.getTerritory("Carthag");
+            carthag.setForceStrength("Ecaz", 5);
+            carthag.setForceStrength("Atreides", 1);
+            battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz));
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
             cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero ")). findFirst().orElseThrow();
@@ -596,6 +605,68 @@ class BattleTest {
         @Test
         void testBattlePlanNotEnoughTroops() {
             assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,10, null, null));
+        }
+
+        @Test
+        void testBattlePlanResolution() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
+            assertEquals("2.5", battle1.getWinnerStrengthString(game));
+            assertEquals("1", battle1.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionLeaderKilled() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            harkonnen.addTreacheryCard(crysknife);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            assertEquals(Emojis.HARKONNEN, battle1.getWinnerEmojis(game));
+            assertEquals("1", battle1.getWinnerStrengthString(game));
+            assertEquals("0.5", battle1.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionAggressorWinsTies() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            harkonnen.addTreacheryCard(crysknife);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false,0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
+            assertEquals("1", battle1.getWinnerStrengthString(game));
+            assertEquals("1", battle1.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionAllyEcaz() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            battle2.setAggressor("Atreides");
+            battle2.setDefenderName("Harkonnen");
+            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
+            assertEquals("5.5", battle2.getWinnerStrengthString(game));
+            assertEquals("1", battle2.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionEcazAlly() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            battle2.setAggressor("Ecaz");
+            battle2.setDefenderName("Harkonnen");
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
+            assertEquals("7.5", battle2.getWinnerStrengthString(game));
+            assertEquals("1", battle2.getLoserStrengthString(game));
         }
     }
 }

@@ -1,14 +1,14 @@
 package model;
 
 public class BattlePlan {
-    Leader leader;
-    TreacheryCard cheapHero;
-    boolean kwisatzHaderach;
-    int wholeNumberDial;
-    boolean plusHalfDial;
-    int spice;
-    TreacheryCard weapon;
-    TreacheryCard defense;
+    private final Leader leader;
+    private final TreacheryCard cheapHero;
+    private final boolean kwisatzHaderach;
+    private final int wholeNumberDial;
+    private final boolean plusHalfDial;
+    private final int spice;
+    private final TreacheryCard weapon;
+    private final TreacheryCard defense;
 
     public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
         this.leader = leader;
@@ -21,16 +21,70 @@ public class BattlePlan {
         this.defense = defense;
     }
 
-    public String getPlanMessage() {
-        String khString = (kwisatzHaderach ? " + KH (2)" : "");
+    public TreacheryCard getCheapHero() {
+        return cheapHero;
+    }
+    public int getWholeNumberDial() {
+        return wholeNumberDial;
+    }
+
+    public boolean getPlusHalfDial() {
+        return plusHalfDial;
+    }
+
+    public int getSpice() {
+        return spice;
+    }
+
+    public TreacheryCard getWeapon() {
+        return weapon;
+    }
+
+    public TreacheryCard getDefense() {
+        return defense;
+    }
+
+    public int getLeaderStrength() {
+        return leader == null ? 0 : leader.value();
+    }
+
+    public int getLeaderStrengthWithKH() {
+        return getLeaderStrength() + (kwisatzHaderach ? 2 : 0);
+    }
+
+    public String getLeaderString() {
+        String khString = kwisatzHaderach ? " + KH (2)" : "";
         String leaderString = "-";
         if (leader != null) leaderString = leader.name() + " (" + leader.value() + ")" + khString;
         else if (cheapHero != null) leaderString = cheapHero.name() + "(0)" + khString;
+        return "Leader: " + leaderString;
+    }
 
-        return "Leader: " + leaderString + "\n"
-                + "Weapon: " + (weapon == null ? "-" : weapon.name()) + "\n"
-                + "Defense: " + (defense == null ? "-" : defense.name()) + "\n"
-                + "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "") + "\n"
-                + "Spice: " + spice;
+    public String getKilledLeaderString() {
+        return leader == null ? "" : leader.name();
+    }
+
+    public String getWeaponString() {
+        return "Weapon: " + (weapon == null ? "-" : weapon.name());
+    }
+
+    public String getDefenseString() {
+        return "Defense: " + (defense == null ? "-" : defense.name());
+    }
+
+    public String getDialString() {
+        return "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
+    }
+
+    public String getSpiceString() {
+        return "Spice: " + spice;
+    }
+
+    public String getPlanMessage() {
+        return getLeaderString() + "\n"
+                + getWeaponString() + "\n"
+                + getDefenseString() + "\n"
+                + getDialString() + "\n"
+                + getSpiceString();
     }
 }

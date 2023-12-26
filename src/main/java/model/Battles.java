@@ -97,7 +97,7 @@ public class Battles {
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
                 ).toList()
         );
-        currentBattle.setDefender(opponent);
+        currentBattle.setDefenderName(opponent);
     }
 
     public void setEcazCombatant(Game game, String combatant) {
@@ -108,9 +108,9 @@ public class Battles {
         else if (currentBattle.getAggressor(game).getAlly().equals("Ecaz") && ecazIsCombatant)
             currentBattle.setAggressor(combatantFaction.getName());
         else if (currentBattle.getDefender(game) instanceof EcazFaction && !combatantFaction.getName().equals("Ecaz"))
-            currentBattle.setDefender(combatantFaction.getName());
+            currentBattle.setDefenderName(combatantFaction.getName());
         else if (currentBattle.getDefender(game).getAlly().equals("Ecaz") && ecazIsCombatant)
-            currentBattle.setDefender(combatantFaction.getName());
+            currentBattle.setDefenderName(combatantFaction.getName());
     }
 
     public Battle getCurrentBattle() {
