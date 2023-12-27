@@ -307,10 +307,18 @@ public class Battle {
 
         if (spice > (faction.getSpice() + faction.getAllySpiceShipment()))
             throw new InvalidGameStateException(faction.getEmoji() + " does not have " + spice + " " + Emojis.SPICE);
-        if (weapon != null && !faction.hasTreacheryCard(weapon.name()))
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + weapon.name());
-        if (defense != null && !faction.hasTreacheryCard(defense.name()))
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
+        if (weapon != null) {
+            if (!faction.hasTreacheryCard(weapon.name()))
+                throw new InvalidGameStateException(faction.getEmoji() + " does not have " + weapon.name());
+            else if (weapon.name().equals("Chemistry") && (defense == null || !defense.type().equals("Defense - Poison")))
+                throw new InvalidGameStateException("Chemistry can only be played as a weapon when playing a Poison Defense");
+        }
+        if (defense != null) {
+            if (!faction.hasTreacheryCard(defense.name()))
+                throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
+            else if (defense.name().equals("Weirding Way") && (weapon == null || !weapon.type().equals("Weapon - Projectile")))
+                throw new InvalidGameStateException("Weirding Way can only be played as a defense when playing a Projectile Weapon");
+        }
 
         validateDial(game, faction, wholeNumberDial, plusHalfDial, spice);
 
@@ -363,11 +371,14 @@ public class Battle {
 
     private boolean leaderSurvives(TreacheryCard weapon, TreacheryCard defense) {
         if (weapon != null) {
-            if (weapon.type().equals("Weapon - Poison") && !defense.type().equals("Defense - Poison"))
+            if (defense == null)
                 return false;
-            else if (weapon.type().equals("Weapon - Projectile") && defense != null && !defense.type().equals("Defense - Projectile"))
+            else if ((weapon.type().equals("Weapon - Poison") || weapon.name().equals("Chemistry"))
+                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry")))
                 return false;
-            else return defense != null;
+            else if ((weapon.type().equals("Weapon - Projectile") || weapon.name().equals("Weirding Way"))
+                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way")))
+                return false;
         }
         return true;
     }
@@ -395,7 +406,7 @@ public class Battle {
 
         int doubleDefenderStrength = 2 * defenderBattlePlan.getWholeNumberDial();
         if (defenderBattlePlan.getPlusHalfDial()) doubleDefenderStrength++;
-        if (isDefenderLeaderAlive()) doubleAggressorStrength += 2 * defenderBattlePlan.getLeaderStrengthWithKH();
+        if (isDefenderLeaderAlive()) doubleDefenderStrength += 2 * defenderBattlePlan.getLeaderStrengthWithKH();
 
         return doubleAggressorStrength >= doubleDefenderStrength;
     }

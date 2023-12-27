@@ -1,14 +1,18 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 
+import static model.Initializers.getCSVFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BattleTest {
@@ -487,6 +491,65 @@ class BattleTest {
             cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
             crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
             shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
+        }
+
+        @Test
+        void testWeirdingWayValidDefense() throws IOException {
+            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
+            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
+                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+                for (CSVRecord csvRecord : csvParser) {
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                }
+            }
+            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
+            atreides.addTreacheryCard(crysknife);
+            atreides.addTreacheryCard(weirdingWay);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, crysknife, weirdingWay));
+        }
+
+        @Test
+        void testWeirdingWayInvalidDefense() throws IOException {
+            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
+            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
+                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+                for (CSVRecord csvRecord : csvParser) {
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                }
+            }
+            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
+            atreides.addTreacheryCard(weirdingWay);
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, weirdingWay));
+        }
+
+        @Test
+        void testChemistryValidWeapon() throws IOException {
+            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
+            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
+                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+                for (CSVRecord csvRecord : csvParser) {
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                }
+            }
+            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
+            atreides.addTreacheryCard(chemistry);
+            TreacheryCard snooper = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Snooper")). findFirst().orElseThrow();
+            atreides.addTreacheryCard(snooper);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, snooper));
+        }
+
+        @Test
+        void testChemistryInvalidWeapon() throws IOException {
+            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
+            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
+                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
+                for (CSVRecord csvRecord : csvParser) {
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                }
+            }
+            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
+            atreides.addTreacheryCard(chemistry);
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, null));
         }
 
         @Test

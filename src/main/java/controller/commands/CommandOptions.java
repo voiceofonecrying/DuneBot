@@ -421,17 +421,17 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
         choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().startsWith("Weapon"))
+                .filter(c -> c.type().startsWith("Weapon") || c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
+                .filter(name -> name.equals("Chemistry"))
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice(card, card))
+                .map(card -> new Command.Choice("Chemistry (only with Poison Defense)", card))
                 .toList()
         );
         return choices;
@@ -442,17 +442,17 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
         choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().startsWith("Defense"))
+                .filter(c -> c.type().startsWith("Defense") || c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()
-                .filter(c -> c.type().equals("Worthless Card"))
                 .map(TreacheryCard::name)
+                .filter(name -> name.equals("Weirding Way"))
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice(card, card))
+                .map(card -> new Command.Choice("Weirding Way (only with Projectile Weapon)", card))
                 .toList()
         );
         return choices;
