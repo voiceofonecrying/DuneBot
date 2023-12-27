@@ -709,6 +709,21 @@ class BattleTest {
         void testBattlePlanResolutionAllyEcaz() throws InvalidGameStateException {
             game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
+            harkonnen.addTreacheryCard(crysknife);
+            battle2.setAggressor("Atreides");
+            battle2.setDefenderName("Harkonnen");
+            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
+            assertTrue(battle2.isAggressorWin(game));
+            assertEquals("3.5", battle2.getWinnerStrengthString(game));
+            assertEquals("1", battle2.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionAllyEcaz2() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
             battle2.setAggressor("Atreides");
             battle2.setDefenderName("Harkonnen");
             battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
@@ -720,6 +735,22 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionEcazAlly() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            harkonnen.addTreacheryCard(cheapHero);
+            harkonnen.addTreacheryCard(crysknife);
+            battle2.setAggressor("Ecaz");
+            battle2.setDefenderName("Harkonnen");
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
+            assertTrue(battle2.isAggressorWin(game));
+            assertEquals("3.5", battle2.getWinnerStrengthString(game));
+            assertEquals("1", battle2.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testBattlePlanResolutionEcazAlly2() throws InvalidGameStateException {
             game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
             battle2.setAggressor("Ecaz");

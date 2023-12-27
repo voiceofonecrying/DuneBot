@@ -1310,7 +1310,7 @@ public class CommandManager extends ListenerAdapter {
         String factionName = faction.getName();
         BattlePlan battlePlan = isAggressor ? currentBattle.getAggressorBattlePlan() : currentBattle.getDefenderBattlePlan();
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
-        boolean loser = isAggressor != currentBattle.isAggressorWin();
+        boolean loser = isAggressor != currentBattle.isAggressorWin(game);
         boolean leaderAlive = isAggressor ? currentBattle.isAggressorLeaderAlive() : currentBattle.isDefenderLeaderAlive();
 
         if (!leaderAlive)
@@ -1341,9 +1341,9 @@ public class CommandManager extends ListenerAdapter {
         }
         if (battlePlan.getCheapHero() != null)
             resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
-        if (currentBattle.isWeaponDiscarded(true))
+        if (currentBattle.isWeaponDiscarded(game, true))
             resolution += emojis + " discards " + battlePlan.getWeaponString() + "\n";
-        if (currentBattle.isDefenseDiscarded(true))
+        if (currentBattle.isDefenseDiscarded(game, true))
             resolution += emojis + " discards " + battlePlan.getDefenseString() + "\n";
         if (battlePlan.getSpice() > 0)
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";

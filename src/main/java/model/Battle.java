@@ -396,66 +396,61 @@ public class Battle {
 
     }
 
-    public boolean isAggressorWin() throws InvalidGameStateException {
+    private int getDoubleBattleStrength(Faction faction, BattlePlan battlePlan, boolean isLeaderAlive) {
+        int doubleBattleStrength = 2 * battlePlan.getWholeNumberDial();
+        if (battlePlan.getPlusHalfDial()) doubleBattleStrength++;
+        if (isLeaderAlive) doubleBattleStrength += 2 * battlePlan.getLeaderStrengthWithKH();
+        int ecazStrength = 0;
+        if (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))
+            ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
+        doubleBattleStrength += 2 * Math.ceilDiv(ecazStrength, 2);
+        return doubleBattleStrength;
+    }
+
+    public boolean isAggressorWin(Game game) throws InvalidGameStateException {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
 
-        int doubleAggressorStrength = 2 * aggressorBattlePlan.getWholeNumberDial();
-        if (aggressorBattlePlan.getPlusHalfDial()) doubleAggressorStrength++;
-        if (isAggressorLeaderAlive()) doubleAggressorStrength += 2 * aggressorBattlePlan.getLeaderStrengthWithKH();
-
-        int doubleDefenderStrength = 2 * defenderBattlePlan.getWholeNumberDial();
-        if (defenderBattlePlan.getPlusHalfDial()) doubleDefenderStrength++;
-        if (isDefenderLeaderAlive()) doubleDefenderStrength += 2 * defenderBattlePlan.getLeaderStrengthWithKH();
-
+        int doubleAggressorStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan, isAggressorLeaderAlive());
+        int doubleDefenderStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan, isDefenderLeaderAlive());
         return doubleAggressorStrength >= doubleDefenderStrength;
     }
 
     public String getWinnerEmojis(Game game) throws InvalidGameStateException {
-        return isAggressorWin() ? getAggressorEmojis(game) : getDefenderEmojis(game);
+        return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 
     public String getAggressorStrengthString(Game game) throws InvalidGameStateException {
-        int wholeNumber = aggressorBattlePlan.getWholeNumberDial();
-        if (isAggressorLeaderAlive()) wholeNumber += aggressorBattlePlan.getLeaderStrengthWithKH();
-        Faction aggressor = getAggressor(game);
-        int ecazStrength = 0;
-        if (aggressor instanceof EcazFaction || aggressor.getAlly().equals("Ecaz"))
-            ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        wholeNumber += Math.ceilDiv(ecazStrength, 2);
+        int doubleBattleStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan, isAggressorLeaderAlive());
+        int wholeNumber = doubleBattleStrength / 2;
         return MessageFormat.format("{0}{1}", wholeNumber, aggressorBattlePlan.getPlusHalfDial() ? ".5" : "");
     }
 
     public String getDefenderStrengthString(Game game) throws InvalidGameStateException {
-        int wholeNumber = defenderBattlePlan.getWholeNumberDial();
-        if (isDefenderLeaderAlive()) wholeNumber += defenderBattlePlan.getLeaderStrengthWithKH();
-        Faction defender = getDefender(game);
-        int ecazStrength = 0;
-        if (defender instanceof EcazFaction || defender.getAlly().equals("Ecaz"))
-            ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        wholeNumber += Math.ceilDiv(ecazStrength, 2);
+        int doubleBattleStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan, isDefenderLeaderAlive());
+        int wholeNumber = doubleBattleStrength / 2;
         return MessageFormat.format("{0}{1}", wholeNumber, defenderBattlePlan.getPlusHalfDial() ? ".5" : "");
     }
 
     public String getWinnerStrengthString(Game game) throws InvalidGameStateException {
-        if (isAggressorWin()) return getAggressorStrengthString(game);
+        if (isAggressorWin(game)) return getAggressorStrengthString(game);
         return getDefenderStrengthString(game);
     }
 
     public String getLoserStrengthString(Game game) throws InvalidGameStateException {
-        if (!isAggressorWin()) return getAggressorStrengthString(game);
+        if (!isAggressorWin(game)) return getAggressorStrengthString(game);
         return getDefenderStrengthString(game);
     }
 
-    public boolean isWeaponDiscarded(boolean isAggressor) throws InvalidGameStateException {
+    public boolean isWeaponDiscarded(Game game, boolean isAggressor) throws InvalidGameStateException {
         BattlePlan battlePlan = isAggressor ? aggressorBattlePlan : defenderBattlePlan;
-        boolean isLoser = isAggressor != isAggressorWin();
+        boolean isLoser = isAggressor != isAggressorWin(game);
         return isLoser && !(battlePlan.getWeapon() == null);
     }
 
-    public boolean isDefenseDiscarded(boolean isAggressor) throws InvalidGameStateException {
+    public boolean isDefenseDiscarded(Game game, boolean isAggressor) throws InvalidGameStateException {
         BattlePlan battlePlan = isAggressor ? aggressorBattlePlan : defenderBattlePlan;
-        boolean isLoser = isAggressor != isAggressorWin();
+        boolean isLoser = isAggressor != isAggressorWin(game);
         return isLoser && !(battlePlan.getDefense() == null);
     }
 }
