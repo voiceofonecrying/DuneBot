@@ -4,6 +4,7 @@ import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import model.factions.AtreidesFaction;
 import model.factions.EcazFaction;
+import model.factions.EmperorFaction;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
@@ -312,12 +313,20 @@ public class Battle {
                 throw new InvalidGameStateException(faction.getEmoji() + " does not have " + weapon.name());
             else if (weapon.name().equals("Chemistry") && (defense == null || !defense.type().equals("Defense - Poison")))
                 throw new InvalidGameStateException("Chemistry can only be played as a weapon when playing a Poison Defense");
+            else if (weapon.name().equals("Harass and Withdraw") && (faction.getHomeworld().equals(wholeTerritoryName) || (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))))
+                throw new InvalidGameStateException("Harass and Withdraw cannot be used on Homeworld");
+            else if (weapon.name().equals("Reinforcements") && (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() < 3))
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
         if (defense != null) {
             if (!faction.hasTreacheryCard(defense.name()))
                 throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
             else if (defense.name().equals("Weirding Way") && (weapon == null || !weapon.type().equals("Weapon - Projectile")))
                 throw new InvalidGameStateException("Weirding Way can only be played as a defense when playing a Projectile Weapon");
+            else if (defense.name().equals("Harass and Withdraw") && (faction.getHomeworld().equals(wholeTerritoryName) || (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))))
+                throw new InvalidGameStateException("Harass and Withdraw cannot be used on Homeworld");
+            else if (defense.name().equals("Reinforcements") && (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() < 3))
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
 
         validateDial(game, faction, wholeNumberDial, plusHalfDial, spice);

@@ -7,9 +7,7 @@ import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
-import model.factions.BGFaction;
-import model.factions.Faction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -434,6 +432,21 @@ public class CommandOptions {
                 .map(card -> new Command.Choice("Chemistry (only with Poison Defense)", card))
                 .toList()
         );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .map(TreacheryCard::name)
+                .filter(name -> name.equals("Harass and Withdraw"))
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
+                .toList()
+        );
+        if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+            choices.addAll(faction.getTreacheryHand().stream()
+                    .map(TreacheryCard::name)
+                    .filter(name -> name.equals("Reinforcements"))
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .toList()
+            );
         return choices;
     }
 
@@ -455,6 +468,21 @@ public class CommandOptions {
                 .map(card -> new Command.Choice("Weirding Way (only with Projectile Weapon)", card))
                 .toList()
         );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .map(TreacheryCard::name)
+                .filter(name -> name.equals("Harass and Withdraw"))
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
+                .toList()
+        );
+        if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+            choices.addAll(faction.getTreacheryHand().stream()
+                    .map(TreacheryCard::name)
+                    .filter(name -> name.equals("Reinforcements"))
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .toList()
+            );
         return choices;
     }
 
