@@ -22,6 +22,7 @@ class BattleTest {
     AtreidesFaction atreides;
     EcazFaction ecaz;
     BGFaction bg;
+    BTFaction bt;
     EmperorFaction emperor;
     FremenFaction fremen;
     HarkonnenFaction harkonnen;
@@ -464,8 +465,10 @@ class BattleTest {
         TreacheryCard shield;
         Territory arrakeen;
         Territory carthag;
+        Territory habbanyaSietch;
         Battle battle1;
         Battle battle2;
+        Battle battle3;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -474,9 +477,12 @@ class BattleTest {
             fremen = new FremenFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
             ecaz = new EcazFaction("ePlayer", "eUser", game);
+            bt = new BTFaction("btPlayer", "btUser", game);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
+            game.addFaction(bt);
+            game.addFaction(emperor);
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.setForceStrength("Harkonnen", 1);
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen));
@@ -486,6 +492,11 @@ class BattleTest {
             carthag.setForceStrength("Ecaz", 5);
             carthag.setForceStrength("Atreides", 1);
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz));
+            habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            habbanyaSietch.setForceStrength("BT", 6);
+            habbanyaSietch.setForceStrength("Emperor", 6);
+            habbanyaSietch.setForceStrength("Emperor*", 5);
+            battle3 = new Battle(game, "Habbanya Sietch", List.of(habbanyaSietch), List.of(bt, emperor));
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
             cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
@@ -761,6 +772,36 @@ class BattleTest {
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
             assertEquals("7.5", battle2.getWinnerStrengthString(game));
             assertEquals("1", battle2.getLoserStrengthString(game));
+        }
+
+        @Test
+        void testZoalHasOpposingLeaderValue() throws InvalidGameStateException {
+            TestTopic emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            Leader zoal = bt.getLeader("Zoal").orElseThrow();
+            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
+            bt.addTreacheryCard(crysknife);
+            BattlePlan btPlan = battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
+            BattlePlan empPlan = battle3.setBattlePlan(game, emperor, burseg, null, false, 7, false, 5, null, null);
+            btPlan.setOpponentLeader(empPlan.getLeader());
+            empPlan.setOpponentLeader(btPlan.getLeader());
+            assertEquals("8", battle3.getWinnerStrengthString(game));
+            assertEquals(Emojis.BT, battle3.getWinnerEmojis(game));
+        }
+
+        @Test
+        void testZoalHasNoValue() throws InvalidGameStateException {
+            TestTopic emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            Leader zoal = bt.getLeader("Zoal").orElseThrow();
+            bt.addTreacheryCard(crysknife);
+            emperor.addTreacheryCard(cheapHero);
+            BattlePlan btPlan = battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
+            BattlePlan empPlan = battle3.setBattlePlan(game, emperor, null, cheapHero, false, 7, false, 5, null, null);
+            btPlan.setOpponentLeader(empPlan.getLeader());
+            empPlan.setOpponentLeader(btPlan.getLeader());
+            assertEquals(Emojis.EMPEROR, battle3.getWinnerEmojis(game));
+            assertEquals("5", battle3.getLoserStrengthString(game));
         }
     }
 }

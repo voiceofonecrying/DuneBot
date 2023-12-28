@@ -1376,6 +1376,8 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
+            aggressorPlan.setOpponentLeader(defenderPlan.getLeader());
+            defenderPlan.setOpponentLeader(aggressorPlan.getLeader());
             String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                     currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
             );
@@ -1389,7 +1391,8 @@ public class CommandManager extends ListenerAdapter {
             resolution += factionBattleResults(game, currentBattle, true);
             resolution += factionBattleResults(game, currentBattle, false);
             discordGame.getModInfo().queueMessage(resolution);
-        }
+        } else
+            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

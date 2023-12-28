@@ -1,5 +1,7 @@
 package model;
 
+import java.text.MessageFormat;
+
 public class BattlePlan {
     private final Leader leader;
     private final TreacheryCard cheapHero;
@@ -9,6 +11,7 @@ public class BattlePlan {
     private final int spice;
     private final TreacheryCard weapon;
     private final TreacheryCard defense;
+    private Leader opponentLeader;
 
     public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
         this.leader = leader;
@@ -21,9 +24,14 @@ public class BattlePlan {
         this.defense = defense;
     }
 
+    public Leader getLeader() {
+        return leader;
+    }
+
     public TreacheryCard getCheapHero() {
         return cheapHero;
     }
+
     public int getWholeNumberDial() {
         return wholeNumberDial;
     }
@@ -45,6 +53,8 @@ public class BattlePlan {
     }
 
     public int getLeaderStrength() {
+        if (leader != null && leader.name().equals("Zoal"))
+            return opponentLeader == null ? 0 : opponentLeader.value();
         return leader == null ? 0 : leader.value();
     }
 
@@ -55,7 +65,8 @@ public class BattlePlan {
     public String getLeaderString() {
         String khString = kwisatzHaderach ? " + KH (2)" : "";
         String leaderString = "-";
-        if (leader != null) leaderString = leader.name() + " (" + leader.value() + ")" + khString;
+        if (leader != null) leaderString = MessageFormat.format("{0} ({1}){2}",
+                leader.name(), leader.name().equals("Zoal") ? "X" : leader.value(), khString);
         else if (cheapHero != null) leaderString = cheapHero.name() + "(0)" + khString;
         return "Leader: " + leaderString;
     }
@@ -86,5 +97,9 @@ public class BattlePlan {
                 + getDefenseString() + "\n"
                 + getDialString() + "\n"
                 + getSpiceString();
+    }
+
+    public void setOpponentLeader(Leader opponentLeader) {
+        this.opponentLeader = opponentLeader;
     }
 }
