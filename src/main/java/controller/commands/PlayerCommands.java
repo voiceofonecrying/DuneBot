@@ -28,7 +28,8 @@ public class PlayerCommands {
                 new SubcommandData("bid", "Place a bid during bidding phase (silent auction will be exact bid only).").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
-                new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, combatDial, combatSpice, weapon, defense, kwisatzHaderach),
+                new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
+                new SubcommandData("battle-plan-kh", "Submit your plan using Kwisatz-Haderach for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
                 new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
@@ -50,14 +51,19 @@ public class PlayerCommands {
             case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
-            case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game);
+            case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game, false);
+            case "battle-plan-kh" -> responseMessage = battlePlanKH(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
         }
         discordGame.pushGame();
         return responseMessage;
     }
 
-    private static String battlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static String battlePlanKH(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        return battlePlan(event, discordGame, game, true);
+    }
+
+    private static String battlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, boolean withKH) throws ChannelNotFoundException, InvalidGameStateException {
         String returnString = "";
         Battle currentBattle = game.getBattles().getCurrentBattle();
         if (currentBattle == null)
@@ -96,12 +102,19 @@ public class PlayerCommands {
         if (!defenseName.equals("None")) {
             defense = faction.getTreacheryHand().stream().filter(c -> c.name().equals(defenseName)).findFirst().orElseThrow();
         }
-        boolean isKH = (faction instanceof AtreidesFaction) && discordGame.required(kwisatzHaderach).getAsBoolean();
-        if (isKH && leader == null && cheapHero == null) {
-            isKH = false;
-            returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
+        if (faction instanceof AtreidesFaction atreidesFaction) {
+            if (withKH && atreidesFaction.getForcesLost() < 7) {
+                withKH = false;
+                returnString += "Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
+            } else if (withKH && leader == null && cheapHero == null) {
+                withKH = false;
+                returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
+            }
+        } else if (withKH) {
+            withKH = false;
+            returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
         }
-        BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, isKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
         discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
         return returnString;
