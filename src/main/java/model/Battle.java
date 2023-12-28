@@ -337,6 +337,10 @@ public class Battle {
         } else {
             defenderBattlePlan = battlePlan;
         }
+        if (aggressorBattlePlan != null && defenderBattlePlan != null) {
+            aggressorBattlePlan.setOpponentWeaponAndLeader(defenderBattlePlan.getWeapon(), defenderBattlePlan.getLeader());
+            defenderBattlePlan.setOpponentWeaponAndLeader(aggressorBattlePlan.getWeapon(), aggressorBattlePlan.getLeader());
+        }
         return battlePlan;
     }
 
@@ -378,37 +382,10 @@ public class Battle {
         return defenderBattlePlan;
     }
 
-    private boolean leaderSurvives(TreacheryCard weapon, TreacheryCard defense) {
-        if (weapon != null) {
-            if (defense == null)
-                return false;
-            else if ((weapon.type().equals("Weapon - Poison") || weapon.name().equals("Chemistry"))
-                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry")))
-                return false;
-            else if ((weapon.type().equals("Weapon - Projectile") || weapon.name().equals("Weirding Way"))
-                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way")))
-                return false;
-        }
-        return true;
-    }
-
-    public boolean isAggressorLeaderAlive() throws InvalidGameStateException {
-        if (isNotResolvable())
-            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-        return leaderSurvives(defenderBattlePlan.getWeapon(), aggressorBattlePlan.getDefense());
-    }
-
-    public boolean isDefenderLeaderAlive() throws InvalidGameStateException {
-        if (isNotResolvable())
-            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-        return leaderSurvives(aggressorBattlePlan.getWeapon(), defenderBattlePlan.getDefense());
-
-    }
-
-    private int getDoubleBattleStrength(Faction faction, BattlePlan battlePlan, boolean isLeaderAlive) {
+    private int getDoubleBattleStrength(Faction faction, BattlePlan battlePlan) {
         int doubleBattleStrength = 2 * battlePlan.getWholeNumberDial();
         if (battlePlan.getPlusHalfDial()) doubleBattleStrength++;
-        if (isLeaderAlive) doubleBattleStrength += 2 * battlePlan.getLeaderStrengthWithKH();
+        if (battlePlan.isLeaderAlive()) doubleBattleStrength += 2 * battlePlan.getLeaderStrengthWithKH();
         int ecazStrength = 0;
         if (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))
             ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
@@ -420,8 +397,8 @@ public class Battle {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
 
-        int doubleAggressorStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan, isAggressorLeaderAlive());
-        int doubleDefenderStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan, isDefenderLeaderAlive());
+        int doubleAggressorStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan);
+        int doubleDefenderStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan);
         return doubleAggressorStrength >= doubleDefenderStrength;
     }
 
@@ -429,14 +406,14 @@ public class Battle {
         return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 
-    public String getAggressorStrengthString(Game game) throws InvalidGameStateException {
-        int doubleBattleStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan, isAggressorLeaderAlive());
+    public String getAggressorStrengthString(Game game) {
+        int doubleBattleStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan);
         int wholeNumber = doubleBattleStrength / 2;
         return MessageFormat.format("{0}{1}", wholeNumber, aggressorBattlePlan.getPlusHalfDial() ? ".5" : "");
     }
 
-    public String getDefenderStrengthString(Game game) throws InvalidGameStateException {
-        int doubleBattleStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan, isDefenderLeaderAlive());
+    public String getDefenderStrengthString(Game game) {
+        int doubleBattleStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan);
         int wholeNumber = doubleBattleStrength / 2;
         return MessageFormat.format("{0}{1}", wholeNumber, defenderBattlePlan.getPlusHalfDial() ? ".5" : "");
     }

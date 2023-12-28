@@ -1308,12 +1308,13 @@ public class CommandManager extends ListenerAdapter {
         String resolution = "";
         Faction faction = isAggressor ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
         String factionName = faction.getName();
-        BattlePlan battlePlan = isAggressor ? currentBattle.getAggressorBattlePlan() : currentBattle.getDefenderBattlePlan();
+        BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
+        BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
+        BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
         boolean loser = isAggressor != currentBattle.isAggressorWin(game);
-        boolean leaderAlive = isAggressor ? currentBattle.isAggressorLeaderAlive() : currentBattle.isDefenderLeaderAlive();
 
-        if (!leaderAlive)
+        if (!battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         List<Force> forcesDialed = currentBattle.getForcesDialed(game, faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
         int regularForces = forcesDialed.get(0).getStrength();
@@ -1359,11 +1360,7 @@ public class CommandManager extends ListenerAdapter {
                 resolution += ")\n";
             }
         } else {
-            int combatWater = 0;
-            if (!currentBattle.isAggressorLeaderAlive())
-                combatWater += currentBattle.getAggressorBattlePlan().getLeaderStrength();
-            if (!currentBattle.isDefenderLeaderAlive())
-                combatWater += currentBattle.getDefenderBattlePlan().getLeaderStrength();
+            int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
             resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
         }
 
@@ -1376,8 +1373,6 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
-            aggressorPlan.setOpponentLeader(defenderPlan.getLeader());
-            defenderPlan.setOpponentLeader(aggressorPlan.getLeader());
             String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                     currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
             );

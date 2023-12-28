@@ -781,12 +781,10 @@ class BattleTest {
             Leader zoal = bt.getLeader("Zoal").orElseThrow();
             Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             bt.addTreacheryCard(crysknife);
-            BattlePlan btPlan = battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
-            BattlePlan empPlan = battle3.setBattlePlan(game, emperor, burseg, null, false, 7, false, 5, null, null);
-            btPlan.setOpponentLeader(empPlan.getLeader());
-            empPlan.setOpponentLeader(btPlan.getLeader());
-            assertEquals("8", battle3.getWinnerStrengthString(game));
+            battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
+            battle3.setBattlePlan(game, emperor, burseg, null, false, 7, false, 5, null, null);
             assertEquals(Emojis.BT, battle3.getWinnerEmojis(game));
+            assertEquals("8", battle3.getWinnerStrengthString(game));
         }
 
         @Test
@@ -796,10 +794,8 @@ class BattleTest {
             Leader zoal = bt.getLeader("Zoal").orElseThrow();
             bt.addTreacheryCard(crysknife);
             emperor.addTreacheryCard(cheapHero);
-            BattlePlan btPlan = battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
-            BattlePlan empPlan = battle3.setBattlePlan(game, emperor, null, cheapHero, false, 7, false, 5, null, null);
-            btPlan.setOpponentLeader(empPlan.getLeader());
-            empPlan.setOpponentLeader(btPlan.getLeader());
+            battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
+            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 7, false, 5, null, null);
             assertEquals(Emojis.EMPEROR, battle3.getWinnerEmojis(game));
             assertEquals("5", battle3.getLoserStrengthString(game));
         }

@@ -11,6 +11,7 @@ public class BattlePlan {
     private final int spice;
     private final TreacheryCard weapon;
     private final TreacheryCard defense;
+    private TreacheryCard opponentWeapon;
     private Leader opponentLeader;
 
     public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
@@ -71,6 +72,24 @@ public class BattlePlan {
         return "Leader: " + leaderString;
     }
 
+    public boolean isLeaderAlive() {
+        if (opponentWeapon != null) {
+            if (defense == null)
+                return false;
+            else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
+                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry")))
+                return false;
+            else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
+                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way")))
+                return false;
+        }
+        return true;
+    }
+
+    public int combatWater() {
+        return isLeaderAlive() ? 0 : getLeaderStrength();
+    }
+
     public String getKilledLeaderString() {
         return leader == null ? "" : leader.name();
     }
@@ -99,7 +118,8 @@ public class BattlePlan {
                 + getSpiceString();
     }
 
-    public void setOpponentLeader(Leader opponentLeader) {
+    public void setOpponentWeaponAndLeader(TreacheryCard opponentWeapon, Leader opponentLeader) {
+        this.opponentWeapon = opponentWeapon;
         this.opponentLeader = opponentLeader;
     }
 }
