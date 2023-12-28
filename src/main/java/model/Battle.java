@@ -427,16 +427,4 @@ public class Battle {
         if (!isAggressorWin(game)) return getAggressorStrengthString(game);
         return getDefenderStrengthString(game);
     }
-
-    public boolean isWeaponDiscarded(Game game, boolean isAggressor) throws InvalidGameStateException {
-        BattlePlan battlePlan = isAggressor ? aggressorBattlePlan : defenderBattlePlan;
-        boolean isLoser = isAggressor != isAggressorWin(game);
-        return isLoser && !(battlePlan.getWeapon() == null);
-    }
-
-    public boolean isDefenseDiscarded(Game game, boolean isAggressor) throws InvalidGameStateException {
-        BattlePlan battlePlan = isAggressor ? aggressorBattlePlan : defenderBattlePlan;
-        boolean isLoser = isAggressor != isAggressorWin(game);
-        return isLoser && !(battlePlan.getDefense() == null);
-    }
 }

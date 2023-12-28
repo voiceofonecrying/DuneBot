@@ -14,6 +14,7 @@ public class BattlePlanTest {
     TreacheryCard crysknife;
     TreacheryCard shield;
     TreacheryCard snooper;
+    TreacheryCard lasgun;
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
@@ -21,6 +22,7 @@ public class BattlePlanTest {
         crysknife = new TreacheryCard("Crysknife", "Weapon - Projectile");
         shield = new TreacheryCard("Shield", "Defense - Projectile");
         snooper = new TreacheryCard("Snooper", "Defense - Poison");
+        lasgun = new TreacheryCard("Lasgun", "Weapon - Special");
     }
 
     @Test
@@ -47,21 +49,53 @@ public class BattlePlanTest {
 
     @Test
     void testZoalHasNoValue() {
-        BattlePlan plan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
-        assertEquals(0, plan.getLeaderStrength());
-        assertEquals("Leader: Zoal (X)", plan.getLeaderString());
-        assertEquals("Zoal", plan.getKilledLeaderString());
-        assertEquals(0, plan.combatWater());
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
+        assertEquals(0, battlePlan.getLeaderStrength());
+        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
+        assertEquals("Zoal", battlePlan.getKilledLeaderString());
+        assertEquals(0, battlePlan.combatWater());
     }
 
     @Test
     void testZoalHasOpponentLeaderValue() {
-        BattlePlan plan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
-        plan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
-        assertEquals(2, plan.getLeaderStrength());
-        assertEquals("Leader: Zoal (X)", plan.getLeaderString());
-        assertEquals("Zoal", plan.getKilledLeaderString());
-        assertEquals(2, plan.combatWater());
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
+        battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
+        assertEquals(2, battlePlan.getLeaderStrength());
+        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
+        assertEquals("Zoal", battlePlan.getKilledLeaderString());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLasgunWithShield() {
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, lasgun, shield);
+        battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
+        assertTrue(battlePlan.isLasgunShieldExplosion());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testOpponentLasgunWithShield() {
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, shield);
+        battlePlan.setOpponentWeaponAndLeader(lasgun, duncanIdaho);
+        assertTrue(battlePlan.isLasgunShieldExplosion());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLasgunNoShield() {
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, lasgun, snooper);
+        battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
+        assertFalse(battlePlan.isLasgunShieldExplosion());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testShieldNoLasgun() {
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, shield);
+        battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
+        assertFalse(battlePlan.isLasgunShieldExplosion());
+        assertEquals(0, battlePlan.combatWater());
     }
 
     @AfterEach

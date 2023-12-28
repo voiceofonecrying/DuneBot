@@ -122,4 +122,8 @@ public class BattlePlan {
         this.opponentWeapon = opponentWeapon;
         this.opponentLeader = opponentLeader;
     }
+
+    public boolean isLasgunShieldExplosion() {
+        return (defense != null && defense.name().equals("Shield") && (weapon != null && weapon.name().equals("Lasgun") || opponentWeapon != null && opponentWeapon.name().equals("Lasgun")));
+    }
 }

@@ -1310,11 +1310,12 @@ public class CommandManager extends ListenerAdapter {
         String factionName = faction.getName();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
+        boolean isLasgunShieldExplosion = aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
-        boolean loser = isAggressor != currentBattle.isAggressorWin(game);
+        boolean loser = isAggressor != currentBattle.isAggressorWin(game) || isLasgunShieldExplosion;
 
-        if (!battlePlan.isLeaderAlive())
+        if (!battlePlan.isLeaderAlive() || isLasgunShieldExplosion)
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         List<Force> forcesDialed = currentBattle.getForcesDialed(game, faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
         int regularForces = forcesDialed.get(0).getStrength();
@@ -1342,13 +1343,13 @@ public class CommandManager extends ListenerAdapter {
         }
         if (battlePlan.getCheapHero() != null)
             resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
-        if (currentBattle.isWeaponDiscarded(game, true))
+        if (loser && battlePlan.getWeapon() != null)
             resolution += emojis + " discards " + battlePlan.getWeaponString() + "\n";
-        if (currentBattle.isDefenseDiscarded(game, true))
+        if (loser && battlePlan.getDefense() != null)
             resolution += emojis + " discards " + battlePlan.getDefenseString() + "\n";
         if (battlePlan.getSpice() > 0)
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";
-        if (loser) {
+        if (loser && !isLasgunShieldExplosion) {
             List<TechToken> techTokens = faction.getTechTokens();
             if (techTokens.size() == 1)
                 resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.get(0).getName());
@@ -1361,7 +1362,8 @@ public class CommandManager extends ListenerAdapter {
             }
         } else {
             int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
-            resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+            if (combatWater > 0)
+                resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
         }
 
         if (!resolution.isEmpty()) resolution = "\n" + resolution;
@@ -1380,9 +1382,12 @@ public class CommandManager extends ListenerAdapter {
             resolution += aggressorPlan.getPlanMessage() + "\n\n";
             resolution += currentBattle.getDefenderEmojis(game) + "\n";
             resolution += defenderPlan.getPlanMessage() + "\n\n";
-            resolution += MessageFormat.format("{0} **win {1} - {2}**\n",
-                    currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
-            );
+            if (aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion())
+                resolution += "**KABOOM!**\n";
+            else
+                resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
+                        currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
+                );
             resolution += factionBattleResults(game, currentBattle, true);
             resolution += factionBattleResults(game, currentBattle, false);
             discordGame.getModInfo().queueMessage(resolution);
