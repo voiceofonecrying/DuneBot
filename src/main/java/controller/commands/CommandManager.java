@@ -1343,10 +1343,10 @@ public class CommandManager extends ListenerAdapter {
         }
         if (battlePlan.getCheapHero() != null)
             resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
-        if (loser && battlePlan.getWeapon() != null)
-            resolution += emojis + " discards " + battlePlan.getWeaponString() + "\n";
-        if (loser && battlePlan.getDefense() != null)
-            resolution += emojis + " discards " + battlePlan.getDefenseString() + "\n";
+        if (battlePlan.weaponMustBeDiscarded(loser))
+            resolution += emojis + " discards " + battlePlan.getWeapon().name() + "\n";
+        if (battlePlan.defenseMustBeDiscarded(loser))
+            resolution += emojis + " discards " + battlePlan.getDefense().name() + "\n";
         if (battlePlan.getSpice() > 0)
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";
         if (!isLasgunShieldExplosion) {

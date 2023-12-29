@@ -140,4 +140,20 @@ public class BattlePlan {
         return (defense != null && (defense.name().equals("Shield") || defense.name().equals("Shield Snooper"))
                 && (weapon != null && weapon.name().equals("Lasgun") || opponentWeapon != null && opponentWeapon.name().equals("Lasgun")));
     }
+
+    private boolean cardMustBeDiscarded(TreacheryCard card) {
+        if (card != null) {
+            if (card.type().equals("Worthless Card")) return true;
+            if (card.name().equals("Artillery Strike")) return true;
+        }
+        return false;
+    }
+
+    public boolean weaponMustBeDiscarded(boolean loser) {
+        return weapon != null & (loser || cardMustBeDiscarded(weapon));
+    }
+
+    public boolean defenseMustBeDiscarded(boolean loser) {
+        return defense != null && (loser || cardMustBeDiscarded(defense));
+    }
 }
