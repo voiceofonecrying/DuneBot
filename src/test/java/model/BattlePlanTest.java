@@ -13,22 +13,28 @@ public class BattlePlanTest {
     Leader duncanIdaho;
     TreacheryCard cheapHero;
     TreacheryCard crysknife;
+    TreacheryCard chaumas;
     TreacheryCard shield;
     TreacheryCard snooper;
     TreacheryCard lasgun;
     TreacheryCard artilleryStrike;
     TreacheryCard weirdingWay;
+    TreacheryCard poisonBlade;
+    TreacheryCard shieldSnooper;
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
         duncanIdaho = new Leader("Duncan Idaho", 2, null, false);
         cheapHero = new TreacheryCard("Cheap Hero", "Special");
         crysknife = new TreacheryCard("Crysknife", "Weapon - Projectile");
+        chaumas = new TreacheryCard("Chaumas", "Weapon - Poison");
         shield = new TreacheryCard("Shield", "Defense - Projectile");
         snooper = new TreacheryCard("Snooper", "Defense - Poison");
         lasgun = new TreacheryCard("Lasgun", "Weapon - Special");
         artilleryStrike = new TreacheryCard("Artillery Strike", "Weapon - Special");
         weirdingWay = new TreacheryCard("Weirding Way", "Weapon - Defense - Special");
+        poisonBlade = new TreacheryCard("Poison Blade","Weapon - Special");
+        shieldSnooper = new TreacheryCard("Shield Snooper", "Defense - Special");
     }
 
     @Test
@@ -161,6 +167,64 @@ public class BattlePlanTest {
         battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
         assertFalse(battlePlan.isLasgunShieldExplosion());
         assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testPoisonBladeAgainstShield () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shield);
+        battlePlan.setOpponentWeaponAndLeader(poisonBlade, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testPoisonBladeAgainstSnooper () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, snooper);
+        battlePlan.setOpponentWeaponAndLeader(poisonBlade, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testPoisonBladeAgainstShieldSnooper () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shieldSnooper);
+        battlePlan.setOpponentWeaponAndLeader(poisonBlade, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testShieldSnooperAgainstProjectileWeapon () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shieldSnooper);
+        battlePlan.setOpponentWeaponAndLeader(crysknife, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testShieldSnooperAgainstPoisonWeapon () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shieldSnooper);
+        battlePlan.setOpponentWeaponAndLeader(chaumas, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testShieldSnooperAgainstLasgun () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shieldSnooper);
+        battlePlan.setOpponentWeaponAndLeader(lasgun, null);
+        assertTrue(battlePlan.isLasgunShieldExplosion());
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testWeirdingWayAgainstLasgun () {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, weirdingWay);
+        battlePlan.setOpponentWeaponAndLeader(lasgun, null);
+        assertFalse(battlePlan.isLasgunShieldExplosion());
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
     }
 
     @AfterEach

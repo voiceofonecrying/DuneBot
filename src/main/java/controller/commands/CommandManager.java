@@ -1360,7 +1360,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 resolution += ")\n";
             }
-        } else {
+        } else if (!isLasgunShieldExplosion) {
             int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
             if (combatWater > 0)
                 resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";

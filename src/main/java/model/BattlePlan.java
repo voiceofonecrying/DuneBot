@@ -85,18 +85,22 @@ public class BattlePlan {
         if (opponentWeapon != null) {
             if (defense == null)
                 return false;
+            else if (opponentWeapon.name().equals("Lasgun"))
+                return false;
+            else if (opponentWeapon.name().equals("Poison Blade") && !defense.name().equals("Shield Snooper"))
+                return false;
             else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
-                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry")))
+                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry") || defense.name().equals("Shield Snooper")))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
-                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way")))
+                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way") || defense.name().equals("Shield Snooper")))
                 return false;
         }
         return true;
     }
 
     public int combatWater() {
-        return isLeaderAlive() || artilleryStrike() ? 0 : getLeaderValue();
+        return isLeaderAlive() || isLasgunShieldExplosion() || artilleryStrike() ? 0 : getLeaderValue();
     }
 
     public String getKilledLeaderString() {
@@ -133,6 +137,7 @@ public class BattlePlan {
     }
 
     public boolean isLasgunShieldExplosion() {
-        return (defense != null && defense.name().equals("Shield") && (weapon != null && weapon.name().equals("Lasgun") || opponentWeapon != null && opponentWeapon.name().equals("Lasgun")));
+        return (defense != null && (defense.name().equals("Shield") || defense.name().equals("Shield Snooper"))
+                && (weapon != null && weapon.name().equals("Lasgun") || opponentWeapon != null && opponentWeapon.name().equals("Lasgun")));
     }
 }
