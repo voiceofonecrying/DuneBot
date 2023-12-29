@@ -428,7 +428,7 @@ public class CommandOptions {
                 .map(TreacheryCard::name)
                 .filter(name -> name.equals("Chemistry"))
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice("Chemistry (only with Poison Defense)", card))
+                .map(card -> new Command.Choice("Chemistry (only with another Defense)", card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()
@@ -464,7 +464,7 @@ public class CommandOptions {
                 .map(TreacheryCard::name)
                 .filter(name -> name.equals("Weirding Way"))
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice("Weirding Way (only with Projectile Weapon)", card))
+                .map(card -> new Command.Choice("Weirding Way (only with another Weapon)", card))
                 .toList()
         );
         choices.addAll(faction.getTreacheryHand().stream()

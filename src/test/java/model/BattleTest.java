@@ -462,6 +462,7 @@ class BattleTest {
         Leader duncanIdaho;
         TreacheryCard cheapHero;
         TreacheryCard crysknife;
+        TreacheryCard chaumas;
         TreacheryCard shield;
         Territory arrakeen;
         Territory carthag;
@@ -501,6 +502,7 @@ class BattleTest {
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
             cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
             crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
+            chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
             shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
         }
 
@@ -520,9 +522,9 @@ class BattleTest {
                 }
             }
             TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
-            atreides.addTreacheryCard(crysknife);
+            atreides.addTreacheryCard(chaumas);
             atreides.addTreacheryCard(weirdingWay);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, crysknife, weirdingWay));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chaumas, weirdingWay));
         }
 
         @Test
@@ -550,9 +552,8 @@ class BattleTest {
             }
             TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
             atreides.addTreacheryCard(chemistry);
-            TreacheryCard snooper = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Snooper")). findFirst().orElseThrow();
-            atreides.addTreacheryCard(snooper);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, snooper));
+            atreides.addTreacheryCard(shield);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, shield));
         }
 
         @Test
