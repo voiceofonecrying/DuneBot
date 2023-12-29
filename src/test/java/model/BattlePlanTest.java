@@ -11,24 +11,31 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BattlePlanTest {
     Leader zoal;
     Leader duncanIdaho;
+    TreacheryCard cheapHero;
     TreacheryCard crysknife;
     TreacheryCard shield;
     TreacheryCard snooper;
     TreacheryCard lasgun;
+    TreacheryCard artilleryStrike;
+    TreacheryCard weirdingWay;
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
         duncanIdaho = new Leader("Duncan Idaho", 2, null, false);
+        cheapHero = new TreacheryCard("Cheap Hero", "Special");
         crysknife = new TreacheryCard("Crysknife", "Weapon - Projectile");
         shield = new TreacheryCard("Shield", "Defense - Projectile");
         snooper = new TreacheryCard("Snooper", "Defense - Poison");
         lasgun = new TreacheryCard("Lasgun", "Weapon - Special");
+        artilleryStrike = new TreacheryCard("Artillery Strike", "Weapon - Special");
+        weirdingWay = new TreacheryCard("Weirding Way", "Weapon - Defense - Special");
     }
 
     @Test
     void testLeaderSurvivesNoWeapon() {
-        BattlePlan battlePlan = new BattlePlan(null, null, false, 0, false, 0, null, null);
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, null);
         assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.getLeaderContribution());
     }
 
     @Test
@@ -48,9 +55,67 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testLeaderSurvivesWithKH() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, true, 0, false, 0, null, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(4, battlePlan.getLeaderContribution());
+    }
+
+    @Test
+    void testKHWithCheapHero() {
+        BattlePlan battlePlan = new BattlePlan(null, cheapHero, true, 0, false, 0, null, snooper);
+        battlePlan.setOpponentWeaponAndLeader(null, null);
+        assertEquals(2, battlePlan.getLeaderContribution());
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderDiesArtilleryStrikeWithWrongDefense() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, snooper);
+        battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderSurvivesArtilleryStrikeWithCorrectDefense() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shield);
+        battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+        assertEquals(2, battlePlan.getLeaderValue());
+    }
+
+    @Test
+    void testWeirdingWayDoesNotProtectAgainstArtilleryStrike() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, weirdingWay);
+        battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderDiesFromTheirOwnArtilleryStrike() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, artilleryStrike, snooper);
+        battlePlan.setOpponentWeaponAndLeader(null, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderSurvivesTheirOwnArtilleryStrike() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, artilleryStrike, shield);
+        battlePlan.setOpponentWeaponAndLeader(null, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+        assertEquals(2, battlePlan.getLeaderValue());
+    }
+
+    @Test
     void testZoalHasNoValue() {
         BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
-        assertEquals(0, battlePlan.getLeaderStrength());
+        assertEquals(0, battlePlan.getLeaderValue());
         assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
         assertEquals("Zoal", battlePlan.getKilledLeaderString());
         assertEquals(0, battlePlan.combatWater());
@@ -60,7 +125,7 @@ public class BattlePlanTest {
     void testZoalHasOpponentLeaderValue() {
         BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
         battlePlan.setOpponentWeaponAndLeader(crysknife, duncanIdaho);
-        assertEquals(2, battlePlan.getLeaderStrength());
+        assertEquals(2, battlePlan.getLeaderValue());
         assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
         assertEquals("Zoal", battlePlan.getKilledLeaderString());
         assertEquals(2, battlePlan.combatWater());

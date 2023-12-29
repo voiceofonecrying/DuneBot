@@ -53,14 +53,16 @@ public class BattlePlan {
         return defense;
     }
 
-    public int getLeaderStrength() {
+    public int getLeaderValue() {
         if (leader != null && leader.name().equals("Zoal"))
             return opponentLeader == null ? 0 : opponentLeader.value();
         return leader == null ? 0 : leader.value();
     }
 
-    public int getLeaderStrengthWithKH() {
-        return getLeaderStrength() + (kwisatzHaderach ? 2 : 0);
+    public int getLeaderContribution() {
+        if (artilleryStrike() || !isLeaderAlive())
+            return 0;
+        return getLeaderValue() + (kwisatzHaderach ? 2 : 0);
     }
 
     public String getLeaderString() {
@@ -72,7 +74,14 @@ public class BattlePlan {
         return "Leader: " + leaderString;
     }
 
+    private boolean artilleryStrike() {
+        return opponentWeapon != null && opponentWeapon.name().equals("Artillery Strike")
+                || weapon != null && weapon.name().equals("Artillery Strike");
+    }
+
     public boolean isLeaderAlive() {
+        if (artilleryStrike() && !defense.name().equals("Shield"))
+            return false;
         if (opponentWeapon != null) {
             if (defense == null)
                 return false;
@@ -87,7 +96,7 @@ public class BattlePlan {
     }
 
     public int combatWater() {
-        return isLeaderAlive() ? 0 : getLeaderStrength();
+        return isLeaderAlive() || artilleryStrike() ? 0 : getLeaderValue();
     }
 
     public String getKilledLeaderString() {
