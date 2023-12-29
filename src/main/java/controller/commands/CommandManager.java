@@ -1349,21 +1349,21 @@ public class CommandManager extends ListenerAdapter {
             resolution += emojis + " discards " + battlePlan.getDefenseString() + "\n";
         if (battlePlan.getSpice() > 0)
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";
-        if (loser && !isLasgunShieldExplosion) {
-            List<TechToken> techTokens = faction.getTechTokens();
-            if (techTokens.size() == 1)
-                resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.get(0).getName());
-            else if (techTokens.size() > 1) {
-                resolution += emojis + " loses a Tech Token (";
-                for (TechToken techToken : techTokens) {
-                    resolution += Emojis.getTechTokenEmoji(techToken.getName());
+        if (!isLasgunShieldExplosion) {
+            if (loser) {
+                List<TechToken> techTokens = faction.getTechTokens();
+                if (techTokens.size() == 1)
+                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.get(0).getName());
+                else if (techTokens.size() > 1) {
+                    resolution += emojis + " loses a Tech Token: ";
+                    resolution += techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).reduce("", String::concat);
+                    resolution += "\n";
                 }
-                resolution += ")\n";
+            } else {
+                int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
+                if (combatWater > 0)
+                    resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
             }
-        } else if (!isLasgunShieldExplosion) {
-            int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
-            if (combatWater > 0)
-                resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
         }
 
         if (!resolution.isEmpty()) resolution = "\n" + resolution;
