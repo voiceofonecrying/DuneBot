@@ -97,20 +97,6 @@ public class Battles {
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
                 ).toList()
         );
-        currentBattle.setDefenderName(opponent);
-    }
-
-    public void setEcazCombatant(Game game, String combatant) {
-        Faction combatantFaction = currentBattle.getFactions(game).stream().filter(f -> f.getName().equals(combatant)).findFirst().orElseThrow();
-        boolean ecazIsCombatant = combatant.equals("Ecaz");
-        if (currentBattle.getAggressor(game) instanceof EcazFaction && !combatantFaction.getName().equals("Ecaz"))
-            currentBattle.setAggressor(combatantFaction.getName());
-        else if (currentBattle.getAggressor(game).getAlly().equals("Ecaz") && ecazIsCombatant)
-            currentBattle.setAggressor(combatantFaction.getName());
-        else if (currentBattle.getDefender(game) instanceof EcazFaction && !combatantFaction.getName().equals("Ecaz"))
-            currentBattle.setDefenderName(combatantFaction.getName());
-        else if (currentBattle.getDefender(game).getAlly().equals("Ecaz") && ecazIsCombatant)
-            currentBattle.setDefenderName(combatantFaction.getName());
     }
 
     public Battle getCurrentBattle() {

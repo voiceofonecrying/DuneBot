@@ -14,18 +14,16 @@ import java.util.stream.Collectors;
 public class Battle {
     private final String wholeTerritoryName;
     private final List<Territory> territorySectors;
-    private final List<Faction> factions = null;
     private final List<String> factionNames;
     private List<Force> forces;
-    private String aggressorName;
     private BattlePlan aggressorBattlePlan;
-    private String defenderName;
     private BattlePlan defenderBattlePlan;
 
     public Battle(Game game, String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = wholeTerritoryName;
         this.territorySectors = territorySectors;
-        this.factionNames = battleFactionsInStormOrder.stream().map(Faction::getName).toList();
+        this.factionNames = new ArrayList<>();
+        battleFactionsInStormOrder.forEach(f -> factionNames.add(f.getName()));
         this.forces = aggregateForces(game);
     }
 
@@ -38,63 +36,48 @@ public class Battle {
     }
 
     public List<String> getFactionNames() {
-        if (factions != null)
-            return factions.stream().map(Faction::getName).toList();
         return factionNames;
     }
 
     public List<Faction> getFactions(Game game) {
-        if (factions != null)
-            return factions;
         return factionNames.stream().map(game::getFaction).toList();
     }
 
     public String getAggressorName() {
-        if (aggressorName != null) return aggressorName;
-        if (factions != null)
-            return factions.get(0).getName();
         return factionNames.get(0);
     }
 
     public Faction getAggressor(Game game) {
-        if (aggressorName != null) return game.getFaction(aggressorName);
-        if (factions != null)
-            return factions.get(0);
         return game.getFaction(factionNames.get(0));
     }
 
-    public void setAggressor(String aggressor) {
-        this.aggressorName = aggressor;
+    public void setEcazCombatant(Game game, String combatant) {
+        Faction combatantFaction = game.getFaction(combatant);
+        if (combatantFaction != null) {
+            String ally = combatantFaction.getAlly();
+            if (combatantFaction instanceof EcazFaction || ally.equals("Ecaz")) {
+                factionNames.remove(ally);
+                factionNames.add(ally);
+            }
+        }
     }
 
     public String getDefenderName() {
-        if (defenderName != null) return defenderName;
-        if (factions != null)
-            return factions.get(1).getName();
         return factionNames.get(1);
     }
 
     public Faction getDefender(Game game) {
-        if (defenderName != null) return game.getFaction(defenderName);
-        if (factions != null)
-            return factions.get(1);
         return game.getFaction(factionNames.get(1));
     }
 
-    public void setDefenderName(String defenderName) {
-        this.defenderName = defenderName;
-    }
-
     public boolean hasEcazAndAlly(Game game) {
-        List<Faction> battleFactions = factions;
-        if (factions == null)
-            battleFactions = factionNames.stream().map(game::getFaction).toList();
+        List<Faction> battleFactions = factionNames.stream().map(game::getFaction).toList();
         return battleFactions.stream().anyMatch(f -> f instanceof EcazFaction)
                 && battleFactions.stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
     }
 
     public boolean aggressorMustChooseOpponent(Game game) {
-        int numFactions = factions == null ? factionNames.size() : factions.size();
+        int numFactions = factionNames.size();
         if (hasEcazAndAlly(game))
             numFactions--;
         return numFactions > 2;
@@ -276,7 +259,7 @@ public class Battle {
     }
 
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
-        int actualSize = factions == null ? factionNames.size() : factions.size();
+        int actualSize = factionNames.size();
         int numFactionsExpected = hasEcazAndAlly(game) ? 3 : 2;
         if (actualSize != numFactionsExpected)
             throw new InvalidGameStateException("Combatants not determined yet.");
