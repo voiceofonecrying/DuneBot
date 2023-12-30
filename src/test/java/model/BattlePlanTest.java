@@ -21,6 +21,7 @@ public class BattlePlanTest {
     TreacheryCard lasgun;
     TreacheryCard artilleryStrike;
     TreacheryCard weirdingWay;
+    TreacheryCard chemistry;
     TreacheryCard poisonBlade;
     TreacheryCard poisonTooth;
     TreacheryCard shieldSnooper;
@@ -38,6 +39,7 @@ public class BattlePlanTest {
         lasgun = new TreacheryCard("Lasgun", "Weapon - Special");
         artilleryStrike = new TreacheryCard("Artillery Strike", "Weapon - Special");
         weirdingWay = new TreacheryCard("Weirding Way", "Weapon - Defense - Special");
+        chemistry = new TreacheryCard("Chemistry", "Defense - Weapon - Special");
         poisonBlade = new TreacheryCard("Poison Blade","Weapon - Special");
         poisonTooth = new TreacheryCard("Poison Tooth","Weapon - Poison - Special");
         shieldSnooper = new TreacheryCard("Shield Snooper", "Defense - Special");
@@ -137,6 +139,14 @@ public class BattlePlanTest {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderSurvivesPoisonToothWithChemistry() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, chemistry);
+        battlePlan.setOpponentWeaponAndLeader(poisonTooth, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
     }
 
     @Test

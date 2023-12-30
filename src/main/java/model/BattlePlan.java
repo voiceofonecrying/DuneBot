@@ -88,7 +88,7 @@ public class BattlePlan {
     public boolean isLeaderAlive() {
         if (artilleryStrike() && !defense.name().equals("Shield"))
             return false;
-        if (poisonTooth())
+        if (poisonTooth() && !defense.name().equals("Chemistry"))
             return false;
         if (opponentWeapon != null) {
             if (defense == null)
