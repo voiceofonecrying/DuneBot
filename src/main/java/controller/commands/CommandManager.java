@@ -744,7 +744,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review"));
+        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(removePoisonTooth));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
@@ -1370,27 +1370,53 @@ public class CommandManager extends ListenerAdapter {
         return resolution;
     }
 
+    private void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
+        String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
+                currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
+        );
+        resolution += currentBattle.getAggressorEmojis(game) + "\n";
+        resolution += aggressorPlan.getPlanMessage() + "\n\n";
+        resolution += currentBattle.getDefenderEmojis(game) + "\n";
+        resolution += defenderPlan.getPlanMessage() + "\n\n";
+        if (aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion())
+            resolution += "**KABOOM!**\n";
+        else
+            resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
+                    currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
+            );
+        resolution += factionBattleResults(game, currentBattle, true);
+        resolution += factionBattleResults(game, currentBattle, false);
+        discordGame.getModInfo().queueMessage(resolution);
+    }
+
     public void reviewBattleResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Battle currentBattle = game.getBattles().getCurrentBattle();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
-            String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
-                    currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
-            );
-            resolution += currentBattle.getAggressorEmojis(game) + "\n";
-            resolution += aggressorPlan.getPlanMessage() + "\n\n";
-            resolution += currentBattle.getDefenderEmojis(game) + "\n";
-            resolution += defenderPlan.getPlanMessage() + "\n\n";
-            if (aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion())
-                resolution += "**KABOOM!**\n";
-            else
-                resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
-                        currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
-                );
-            resolution += factionBattleResults(game, currentBattle, true);
-            resolution += factionBattleResults(game, currentBattle, false);
-            discordGame.getModInfo().queueMessage(resolution);
+            boolean noPoisonTooth = discordGame.optional(removePoisonTooth) != null && discordGame.required(removePoisonTooth).getAsBoolean();
+            boolean aggressorPlanHasPoisonTooth = false;
+            boolean defenderPlanHasPoisonTooth = false;
+            if (noPoisonTooth) {
+                aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
+                if (aggressorPlanHasPoisonTooth)
+                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getWeapon(), aggressorPlan.getLeader());
+                else {
+                    defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
+                    if (defenderPlanHasPoisonTooth)
+                        aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getWeapon(), defenderPlan.getLeader());
+                }
+            }
+            printBattleResolution(discordGame, game, currentBattle, aggressorPlan, defenderPlan);
+            if (noPoisonTooth) {
+                if (aggressorPlanHasPoisonTooth) {
+                    aggressorPlan.restorePoisonTooth();
+                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getWeapon(), aggressorPlan.getLeader());
+                } else if (defenderPlanHasPoisonTooth) {
+                    defenderPlan.restorePoisonTooth();
+                    aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getWeapon(), defenderPlan.getLeader());
+                }
+            }
         } else
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
     }

@@ -9,8 +9,9 @@ public class BattlePlan {
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
-    private final TreacheryCard weapon;
-    private final TreacheryCard defense;
+    private TreacheryCard weapon;
+    private TreacheryCard defense;
+    private TreacheryCard savedPoisonTooth;
     private TreacheryCard opponentWeapon;
     private Leader opponentLeader;
 
@@ -79,8 +80,15 @@ public class BattlePlan {
                 || weapon != null && weapon.name().equals("Artillery Strike");
     }
 
+    private boolean poisonTooth() {
+        return opponentWeapon != null && opponentWeapon.name().equals("Poison Tooth")
+                || weapon != null && weapon.name().equals("Poison Tooth");
+    }
+
     public boolean isLeaderAlive() {
         if (artilleryStrike() && !defense.name().equals("Shield"))
+            return false;
+        if (poisonTooth())
             return false;
         if (opponentWeapon != null) {
             if (defense == null)
@@ -143,8 +151,9 @@ public class BattlePlan {
 
     private boolean cardMustBeDiscarded(TreacheryCard card) {
         if (card != null) {
-            if (card.type().equals("Worthless Card")) return true;
             if (card.name().equals("Artillery Strike")) return true;
+            if (card.name().equals("Poison Tooth")) return true;
+            if (card.type().equals("Worthless Card")) return true;
         }
         return false;
     }
@@ -155,5 +164,27 @@ public class BattlePlan {
 
     public boolean defenseMustBeDiscarded(boolean loser) {
         return defense != null && (loser || cardMustBeDiscarded(defense));
+    }
+
+    public boolean revokePoisonTooth() {
+        if (weapon != null && weapon.name().equals("Poison Tooth")) {
+            savedPoisonTooth = weapon;
+            weapon = null;
+            if (defense != null && defense.name().equals("Weirding Way")) {
+                weapon = defense;
+                defense = null;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public void restorePoisonTooth() {
+        if (savedPoisonTooth != null) {
+            if (weapon != null && weapon.name().equals("Weirding Way"))
+                defense = weapon;
+            weapon = savedPoisonTooth;
+            savedPoisonTooth = null;
+        }
     }
 }

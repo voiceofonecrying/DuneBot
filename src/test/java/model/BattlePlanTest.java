@@ -22,6 +22,7 @@ public class BattlePlanTest {
     TreacheryCard artilleryStrike;
     TreacheryCard weirdingWay;
     TreacheryCard poisonBlade;
+    TreacheryCard poisonTooth;
     TreacheryCard shieldSnooper;
     @BeforeEach
     void setUp() throws IOException {
@@ -38,6 +39,7 @@ public class BattlePlanTest {
         artilleryStrike = new TreacheryCard("Artillery Strike", "Weapon - Special");
         weirdingWay = new TreacheryCard("Weirding Way", "Weapon - Defense - Special");
         poisonBlade = new TreacheryCard("Poison Blade","Weapon - Special");
+        poisonTooth = new TreacheryCard("Poison Tooth","Weapon - Poison - Special");
         shieldSnooper = new TreacheryCard("Shield Snooper", "Defense - Special");
     }
 
@@ -120,6 +122,21 @@ public class BattlePlanTest {
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
         assertEquals(2, battlePlan.getLeaderValue());
+    }
+
+    @Test
+    void testLeaderDiesPoisonToothWithSnooper() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, snooper);
+        battlePlan.setOpponentWeaponAndLeader(poisonTooth, null);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderDiesWithOwnPoisonTooth() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
     }
 
     @Test
@@ -250,6 +267,12 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testPoisonToothMustBeDiscarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, null);
+        assertTrue(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
     void testWorthlessWeaponMustBeDiscarded() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, kulon, null);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
@@ -269,8 +292,47 @@ public class BattlePlanTest {
 
     @Test
     void testLosersDefenseMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, kulon, chaumas);
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, kulon, snooper);
         assertTrue(battlePlan.defenseMustBeDiscarded(true));
+    }
+
+    @Test
+    void testRevokePoisonToothFalse() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, artilleryStrike, snooper);
+        assertFalse(battlePlan.revokePoisonTooth());
+        assertNotNull(battlePlan.getWeapon());
+    }
+
+    @Test
+    void testRevokePoisonToothTrue() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        assertTrue(battlePlan.revokePoisonTooth());
+        assertNull(battlePlan.getWeapon());
+    }
+
+    @Test
+    void testRestorePoisonTooth() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        battlePlan.revokePoisonTooth();
+        battlePlan.restorePoisonTooth();
+        assertEquals("Poison Tooth", battlePlan.getWeapon().name());
+    }
+
+    @Test
+    void testRevokePoisonToothWithWeirdingWay() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, weirdingWay);
+        assertTrue(battlePlan.revokePoisonTooth());
+        assertEquals("Weirding Way", battlePlan.getWeapon().name());
+        assertNull(battlePlan.getDefense());
+    }
+
+    @Test
+    void testRestorePoisonToothWithWeirdingWay() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, weirdingWay);
+        battlePlan.revokePoisonTooth();
+        battlePlan.restorePoisonTooth();
+        assertEquals("Poison Tooth", battlePlan.getWeapon().name());
+        assertEquals("Weirding Way", battlePlan.getDefense().name());
     }
 
     @AfterEach
