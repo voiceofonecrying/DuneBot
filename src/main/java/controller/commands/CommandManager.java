@@ -744,7 +744,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(removePoisonTooth));
+        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(dontUsePoisonTooth, addPortableSnooper));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
@@ -1394,7 +1394,15 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
-            boolean noPoisonTooth = discordGame.optional(removePoisonTooth) != null && discordGame.required(removePoisonTooth).getAsBoolean();
+            boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
+            boolean aggressorPlanAddedPortableSnooper = false;
+            boolean defenderPlanAddedPortableSnooper = false;
+            if (portableSnooper && currentBattle.getAggressor(game).hasTreacheryCard("Portable Snooper")) {
+                aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
+            } else if (portableSnooper && currentBattle.getDefender(game).hasTreacheryCard("Portable Snooper")) {
+                defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
+            }
+            boolean noPoisonTooth = discordGame.optional(dontUsePoisonTooth) != null && discordGame.required(dontUsePoisonTooth).getAsBoolean();
             boolean aggressorPlanHasPoisonTooth = false;
             boolean defenderPlanHasPoisonTooth = false;
             if (noPoisonTooth) {
@@ -1417,6 +1425,8 @@ public class CommandManager extends ListenerAdapter {
                     aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getEffectiveWeapon(), defenderPlan.getLeader());
                 }
             }
+            if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
+            if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
         } else
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
     }

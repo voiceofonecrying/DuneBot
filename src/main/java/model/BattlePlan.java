@@ -10,10 +10,11 @@ public class BattlePlan {
     private final boolean plusHalfDial;
     private final int spice;
     private final TreacheryCard weapon;
-    private final TreacheryCard defense;
+    private TreacheryCard defense;
     private TreacheryCard opponentWeapon;
     private Leader opponentLeader;
     private boolean inactivePoisonTooth;
+    private boolean portableSnooperAdded;
 
     public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
         this.leader = leader;
@@ -184,5 +185,16 @@ public class BattlePlan {
 
     public boolean isInactivePoisonTooth() {
         return inactivePoisonTooth;
+    }
+
+    public boolean addPortableSnooper() {
+        if (defense != null) return false;
+        defense = new TreacheryCard("Portable Snooper");
+        portableSnooperAdded = true;
+        return true;
+    }
+
+    public void removePortableSnooper() {
+        if (portableSnooperAdded) defense = null;
     }
 }

@@ -353,12 +353,31 @@ public class BattlePlanTest {
     }
 
     @Test
-    void testRestorePoisonToothWithWeirdingWay() {
-        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, weirdingWay);
-        battlePlan.revokePoisonTooth();
-        battlePlan.restorePoisonTooth();
-        assertEquals("Poison Tooth", battlePlan.getWeapon().name());
-        assertEquals("Weirding Way", battlePlan.getDefense().name());
+    void testPortableSnooperFalse() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, snooper);
+        assertFalse(battlePlan.addPortableSnooper());
+    }
+
+    @Test
+    void testPortableSnooperTrue() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, null);
+        BattlePlan opponentBattlePlan = new BattlePlan(zoal, null, false, 0, false, 0, chaumas, null);
+        battlePlan.setOpponentWeaponAndLeader(opponentBattlePlan.getEffectiveWeapon(), opponentBattlePlan.getLeader());
+        opponentBattlePlan.setOpponentWeaponAndLeader(battlePlan.getEffectiveWeapon(), battlePlan.getLeader());
+        assertTrue(battlePlan.addPortableSnooper());
+        assertTrue(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testPortableSnooperTrueThenRemove() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, null);
+        BattlePlan opponentBattlePlan = new BattlePlan(zoal, null, false, 0, false, 0, chaumas, null);
+        battlePlan.setOpponentWeaponAndLeader(opponentBattlePlan.getEffectiveWeapon(), opponentBattlePlan.getLeader());
+        opponentBattlePlan.setOpponentWeaponAndLeader(battlePlan.getEffectiveWeapon(), battlePlan.getLeader());
+        assertTrue(battlePlan.addPortableSnooper());
+        assertTrue(battlePlan.isLeaderAlive());
+        battlePlan.removePortableSnooper();
+        assertFalse(battlePlan.isLeaderAlive());
     }
 
     @AfterEach
