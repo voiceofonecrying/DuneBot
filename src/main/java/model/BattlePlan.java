@@ -157,8 +157,13 @@ public class BattlePlan {
     private boolean cardMustBeDiscarded(TreacheryCard card) {
         if (card != null) {
             if (card.name().equals("Artillery Strike")) return true;
-            if (card.name().equals("Poison Tooth")) return true;
-            if (card.type().equals("Worthless Card")) return true;
+            if (card.name().equals("Mirror Weapon")) return true;
+            if (card.name().equals("Poison Tooth") && !inactivePoisonTooth) return true;
+            if (card.name().equals("Portable Snooper")) return true;
+            if (card.name().equals("Stone Burner")) return true;
+            if (card.name().equals("Harass and Withdraw")) return true;
+            if (card.name().equals("Reinforcements")) return true;
+            return card.type().equals("Worthless Card");
         }
         return false;
     }

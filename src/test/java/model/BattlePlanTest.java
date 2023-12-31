@@ -22,9 +22,13 @@ public class BattlePlanTest {
     TreacheryCard artilleryStrike;
     TreacheryCard weirdingWay;
     TreacheryCard chemistry;
+    TreacheryCard mirrorWeapon;
     TreacheryCard poisonBlade;
     TreacheryCard poisonTooth;
     TreacheryCard shieldSnooper;
+    TreacheryCard stoneBurner;
+    TreacheryCard harassAndWithdraw;
+    TreacheryCard reinforcements;
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
@@ -40,9 +44,13 @@ public class BattlePlanTest {
         artilleryStrike = new TreacheryCard("Artillery Strike");
         weirdingWay = new TreacheryCard("Weirding Way");
         chemistry = new TreacheryCard("Chemistry");
+        mirrorWeapon = new TreacheryCard("Mirror Weapon");
         poisonBlade = new TreacheryCard("Poison Blade");
         poisonTooth = new TreacheryCard("Poison Tooth");
         shieldSnooper = new TreacheryCard("Shield Snooper");
+        stoneBurner = new TreacheryCard("Stone Burner");
+        harassAndWithdraw = new TreacheryCard("Harass and Withdraw");
+        reinforcements = new TreacheryCard("Reinforcements");
     }
 
     @Test
@@ -277,9 +285,47 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testMirrorWeaponMustBeDiscarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, mirrorWeapon, null);
+        assertTrue(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
     void testPoisonToothMustBeDiscarded() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, null);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
+    void testPoisonToothNotDiscardedIfNotUsed() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, null);
+        battlePlan.revokePoisonTooth();
+        assertFalse(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
+    void testPortableSnooperMustBeDiscarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, null);
+        battlePlan.addPortableSnooper();
+        assertTrue(battlePlan.defenseMustBeDiscarded(false));
+    }
+
+    @Test
+    void testStoneBurnerMustBeDisarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, stoneBurner, null);
+        assertTrue(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
+    void testHarassAndWithdrawMustBeDiscarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, harassAndWithdraw, null);
+        assertTrue(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
+    void testReinforcementsMustBeDiscarded() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, kulon, reinforcements);
+        assertTrue(battlePlan.defenseMustBeDiscarded(false));
     }
 
     @Test
