@@ -1,5 +1,6 @@
 package model.factions;
 
+import constants.Colors;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
@@ -10,11 +11,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.List;
 
 public class Faction {
     private final String name;
@@ -143,6 +146,9 @@ public class Faction {
 
     public String getEmoji() {
         return emoji;
+    }
+    public Color getColor() {
+        return Colors.getFactionColor(getName());
     }
 
     public String getPlayer() {

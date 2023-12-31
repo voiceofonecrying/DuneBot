@@ -9,10 +9,7 @@ import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
 import io.gsonfire.PreProcessor;
-import model.Force;
-import model.Game;
-import model.Territory;
-import model.TreacheryCard;
+import model.*;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;
@@ -149,7 +146,9 @@ public class DiscordGame {
                     }
                 })
                 ;
-        return builder.createGson();
+        GsonBuilder gsonBuilder = builder.createGsonBuilder();
+
+        return gsonBuilder.create();
     }
 
     public Category getGameCategory() {

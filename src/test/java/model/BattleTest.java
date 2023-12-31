@@ -518,7 +518,7 @@ class BattleTest {
             if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
                 CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
                 for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
             TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
@@ -533,7 +533,7 @@ class BattleTest {
             if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
                 CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
                 for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
             TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
@@ -547,7 +547,7 @@ class BattleTest {
             if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
                 CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
                 for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
             TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
@@ -562,7 +562,7 @@ class BattleTest {
             if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
                 CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
                 for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
             TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();

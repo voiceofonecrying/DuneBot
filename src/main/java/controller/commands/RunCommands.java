@@ -872,6 +872,7 @@ public class RunCommands {
             for (Territory stronghold : strongholds) {
                 Faction faction = stronghold.getActiveFactions(game).get(0);
                 faction.addStrongholdCard(new StrongholdCard(stronghold.getTerritoryName()));
+
                 discordGame.getTurnSummary().queueMessage(MessageFormat.format("{0} controls {1}{2}{1}",
                         stronghold.getActiveFactions(game).get(0).getEmoji(), Emojis.WORM,
                         stronghold.getTerritoryName()));

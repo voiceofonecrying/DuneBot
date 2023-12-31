@@ -398,14 +398,14 @@ public class SetupCommands {
         if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
             CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
             for (CSVRecord csvRecord : csvParser) {
-                game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
             }
         }
 
         if (game.hasGameOption(GameOption.EM_EXPANSION_TREACHERY_CARDS)) {
             CSVParser csvParser = getCSVFile("EmExpansionTreacheryCards.csv");
             for (CSVRecord csvRecord : csvParser) {
-                game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+                game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
             }
         }
 

@@ -1,5 +1,6 @@
 package model;
 
+import caches.LeaderSkillCardsCache;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -116,16 +117,15 @@ public class Game {
 
         csvParser = getCSVFile("TreacheryCards.csv");
         for (CSVRecord csvRecord : csvParser) {
-            treacheryDeck.add(new TreacheryCard(csvRecord.get(0), csvRecord.get(1)));
+            treacheryDeck.add(new TreacheryCard(csvRecord.get(0)));
         }
+
         csvParser = getCSVFile("SpiceCards.csv");
         for (CSVRecord csvRecord : csvParser) {
             spiceDeck.add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), null, null));
         }
-        csvParser = getCSVFile("LeaderSkillCards.csv");
-        for (CSVRecord csvRecord : csvParser) {
-            leaderSkillDeck.add(new LeaderSkillCard(csvRecord.get(0)));
-        }
+
+        LeaderSkillCardsCache.getNames().forEach(name -> leaderSkillDeck.add(new LeaderSkillCard(name)));
 
         csvParser = getCSVFile("NexusCards.csv");
         for (CSVRecord csvRecord : csvParser) {

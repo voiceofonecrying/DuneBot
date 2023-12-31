@@ -35,16 +35,16 @@ public class RicheseFaction extends Faction {
         this.behindShieldNoField.add(5);
 
         treacheryCardCache = new ArrayList<>();
-        treacheryCardCache.add(new TreacheryCard("Ornithopter", "Special - Movement"));
-        treacheryCardCache.add(new TreacheryCard("Residual Poison", "Special"));
-        treacheryCardCache.add(new TreacheryCard("Semuta Drug", "Special"));
-        treacheryCardCache.add(new TreacheryCard("Stone Burner", "Weapon - Special"));
-        treacheryCardCache.add(new TreacheryCard("Mirror Weapon", "Weapon - Special"));
-        treacheryCardCache.add(new TreacheryCard("Portable Snooper", "Defense - Poison"));
-        treacheryCardCache.add(new TreacheryCard("Distrans", "Special"));
-        treacheryCardCache.add(new TreacheryCard("Juice of Sapho", "Special"));
-        treacheryCardCache.add(new TreacheryCard("Karama", "Special"));
-        treacheryCardCache.add(new TreacheryCard("Nullentropy Box", "Special"));
+        treacheryCardCache.add(new TreacheryCard("Ornithopter"));
+        treacheryCardCache.add(new TreacheryCard("Residual Poison"));
+        treacheryCardCache.add(new TreacheryCard("Semuta Drug"));
+        treacheryCardCache.add(new TreacheryCard("Stone Burner"));
+        treacheryCardCache.add(new TreacheryCard("Mirror Weapon"));
+        treacheryCardCache.add(new TreacheryCard("Portable Snooper"));
+        treacheryCardCache.add(new TreacheryCard("Distrans"));
+        treacheryCardCache.add(new TreacheryCard("Juice of Sapho"));
+        treacheryCardCache.add(new TreacheryCard("Karama"));
+        treacheryCardCache.add(new TreacheryCard("Nullentropy Box"));
     }
 
     public boolean hasFrontOfShieldNoField() {

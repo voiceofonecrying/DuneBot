@@ -29,20 +29,20 @@ public class BattlePlanTest {
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
         duncanIdaho = new Leader("Duncan Idaho", 2, null, false);
-        cheapHero = new TreacheryCard("Cheap Hero", "Special");
-        kulon = new TreacheryCard("Kulon", "Worthless Card");
-        baliset = new TreacheryCard("Baliset", "Worthless Card");
-        crysknife = new TreacheryCard("Crysknife", "Weapon - Projectile");
-        chaumas = new TreacheryCard("Chaumas", "Weapon - Poison");
-        shield = new TreacheryCard("Shield", "Defense - Projectile");
-        snooper = new TreacheryCard("Snooper", "Defense - Poison");
-        lasgun = new TreacheryCard("Lasgun", "Weapon - Special");
-        artilleryStrike = new TreacheryCard("Artillery Strike", "Weapon - Special");
-        weirdingWay = new TreacheryCard("Weirding Way", "Weapon - Defense - Special");
-        chemistry = new TreacheryCard("Chemistry", "Defense - Weapon - Special");
-        poisonBlade = new TreacheryCard("Poison Blade","Weapon - Special");
-        poisonTooth = new TreacheryCard("Poison Tooth","Weapon - Poison - Special");
-        shieldSnooper = new TreacheryCard("Shield Snooper", "Defense - Special");
+        cheapHero = new TreacheryCard("Cheap Hero");
+        kulon = new TreacheryCard("Kulon");
+        baliset = new TreacheryCard("Baliset");
+        crysknife = new TreacheryCard("Crysknife");
+        chaumas = new TreacheryCard("Chaumas");
+        shield = new TreacheryCard("Shield");
+        snooper = new TreacheryCard("Snooper");
+        lasgun = new TreacheryCard("Lasgun");
+        artilleryStrike = new TreacheryCard("Artillery Strike");
+        weirdingWay = new TreacheryCard("Weirding Way");
+        chemistry = new TreacheryCard("Chemistry");
+        poisonBlade = new TreacheryCard("Poison Blade");
+        poisonTooth = new TreacheryCard("Poison Tooth");
+        shieldSnooper = new TreacheryCard("Shield Snooper");
     }
 
     @Test
