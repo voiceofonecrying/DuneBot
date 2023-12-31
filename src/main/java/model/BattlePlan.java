@@ -9,11 +9,11 @@ public class BattlePlan {
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
-    private TreacheryCard weapon;
-    private TreacheryCard defense;
-    private TreacheryCard savedPoisonTooth;
+    private final TreacheryCard weapon;
+    private final TreacheryCard defense;
     private TreacheryCard opponentWeapon;
     private Leader opponentLeader;
+    private boolean inactivePoisonTooth;
 
     public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
         this.leader = leader;
@@ -50,6 +50,10 @@ public class BattlePlan {
         return weapon;
     }
 
+    public TreacheryCard getEffectiveWeapon() {
+        return inactivePoisonTooth ? null : weapon;
+    }
+
     public TreacheryCard getDefense() {
         return defense;
     }
@@ -82,13 +86,13 @@ public class BattlePlan {
 
     private boolean poisonTooth() {
         return opponentWeapon != null && opponentWeapon.name().equals("Poison Tooth")
-                || weapon != null && weapon.name().equals("Poison Tooth");
+                || weapon != null && !inactivePoisonTooth && weapon.name().equals("Poison Tooth");
     }
 
     public boolean isLeaderAlive() {
-        if (artilleryStrike() && !defense.name().equals("Shield"))
+        if (artilleryStrike() && (defense != null && !defense.name().equals("Shield")))
             return false;
-        if (poisonTooth() && !defense.name().equals("Chemistry"))
+        if (poisonTooth() && (defense != null && !defense.name().equals("Chemistry")))
             return false;
         if (opponentWeapon != null) {
             if (defense == null)
@@ -116,7 +120,7 @@ public class BattlePlan {
     }
 
     public String getWeaponString() {
-        return "Weapon: " + (weapon == null ? "-" : weapon.name());
+        return "Weapon: " + (weapon == null ? "-" : weapon.name()) + (inactivePoisonTooth ? " (not used)" : "");
     }
 
     public String getDefenseString() {
@@ -168,23 +172,17 @@ public class BattlePlan {
 
     public boolean revokePoisonTooth() {
         if (weapon != null && weapon.name().equals("Poison Tooth")) {
-            savedPoisonTooth = weapon;
-            weapon = null;
-            if (defense != null && defense.name().equals("Weirding Way")) {
-                weapon = defense;
-                defense = null;
-            }
+            inactivePoisonTooth = true;
             return true;
         }
         return false;
     }
 
     public void restorePoisonTooth() {
-        if (savedPoisonTooth != null) {
-            if (weapon != null && weapon.name().equals("Weirding Way"))
-                defense = weapon;
-            weapon = savedPoisonTooth;
-            savedPoisonTooth = null;
-        }
+        inactivePoisonTooth = false;
+    }
+
+    public boolean isInactivePoisonTooth() {
+        return inactivePoisonTooth;
     }
 }

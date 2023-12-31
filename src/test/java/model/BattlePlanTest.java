@@ -310,14 +310,28 @@ public class BattlePlanTest {
     void testRevokePoisonToothFalse() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, artilleryStrike, snooper);
         assertFalse(battlePlan.revokePoisonTooth());
-        assertNotNull(battlePlan.getWeapon());
     }
 
     @Test
     void testRevokePoisonToothTrue() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
         assertTrue(battlePlan.revokePoisonTooth());
-        assertNull(battlePlan.getWeapon());
+        assertNotNull(battlePlan.getWeapon());
+        assertEquals("Weapon: Poison Tooth (not used)", battlePlan.getWeaponString());
+        assertTrue(battlePlan.isInactivePoisonTooth());
+        assertTrue(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testOpponentRevokesPoisonTooth() {
+        BattlePlan opponentBattlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, null, null);
+        assertTrue(opponentBattlePlan.revokePoisonTooth());
+        opponentBattlePlan.setOpponentWeaponAndLeader(battlePlan.getEffectiveWeapon(), battlePlan.getLeader());
+        battlePlan.setOpponentWeaponAndLeader(opponentBattlePlan.getEffectiveWeapon(), opponentBattlePlan.getLeader());
+        assertEquals("Weapon: Poison Tooth (not used)", opponentBattlePlan.getWeaponString());
+        assertTrue(opponentBattlePlan.isInactivePoisonTooth());
+        assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
@@ -325,15 +339,17 @@ public class BattlePlanTest {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
         battlePlan.revokePoisonTooth();
         battlePlan.restorePoisonTooth();
-        assertEquals("Poison Tooth", battlePlan.getWeapon().name());
+        assertEquals("Weapon: Poison Tooth", battlePlan.getWeaponString());
+        assertFalse(battlePlan.isInactivePoisonTooth());
+        assertFalse(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testRevokePoisonToothWithWeirdingWay() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, weirdingWay);
         assertTrue(battlePlan.revokePoisonTooth());
-        assertEquals("Weirding Way", battlePlan.getWeapon().name());
-        assertNull(battlePlan.getDefense());
+        assertEquals("Weirding Way", battlePlan.getDefense().name());
+        assertNotNull(battlePlan.getDefense());
     }
 
     @Test

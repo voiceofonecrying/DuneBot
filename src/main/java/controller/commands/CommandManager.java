@@ -1400,21 +1400,21 @@ public class CommandManager extends ListenerAdapter {
             if (noPoisonTooth) {
                 aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
                 if (aggressorPlanHasPoisonTooth)
-                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getWeapon(), aggressorPlan.getLeader());
+                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getEffectiveWeapon(), aggressorPlan.getLeader());
                 else {
                     defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
                     if (defenderPlanHasPoisonTooth)
-                        aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getWeapon(), defenderPlan.getLeader());
+                        aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getEffectiveWeapon(), defenderPlan.getLeader());
                 }
             }
             printBattleResolution(discordGame, game, currentBattle, aggressorPlan, defenderPlan);
             if (noPoisonTooth) {
                 if (aggressorPlanHasPoisonTooth) {
                     aggressorPlan.restorePoisonTooth();
-                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getWeapon(), aggressorPlan.getLeader());
+                    defenderPlan.setOpponentWeaponAndLeader(aggressorPlan.getEffectiveWeapon(), aggressorPlan.getLeader());
                 } else if (defenderPlanHasPoisonTooth) {
                     defenderPlan.restorePoisonTooth();
-                    aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getWeapon(), defenderPlan.getLeader());
+                    aggressorPlan.setOpponentWeaponAndLeader(defenderPlan.getEffectiveWeapon(), defenderPlan.getLeader());
                 }
             }
         } else
