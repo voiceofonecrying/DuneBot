@@ -142,7 +142,6 @@ public class DiscordGame {
                     public void preDeserialize(Class<? extends TreacheryCard> clazz, JsonElement src, Gson gson) {
                         JsonObject jsonObject = src.getAsJsonObject();
                         jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
-                        jsonObject.addProperty("type", jsonObject.get("type").getAsString().trim());
                     }
                 })
                 ;
