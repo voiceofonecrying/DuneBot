@@ -105,8 +105,9 @@ public class BattlePlanTest {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shield);
         battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
         assertTrue(battlePlan.isLeaderAlive());
-        assertEquals(0, battlePlan.combatWater());
+        assertEquals(0, battlePlan.getLeaderContribution());
         assertEquals(2, battlePlan.getLeaderValue());
+        assertEquals(0, battlePlan.combatWater());
     }
 
     @Test
@@ -114,6 +115,16 @@ public class BattlePlanTest {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, weirdingWay);
         battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
         assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testShieldSnooperDoesProtectAgainstArtilleryStrike() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shieldSnooper);
+        battlePlan.setOpponentWeaponAndLeader(artilleryStrike, null);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.getLeaderContribution());
+        assertEquals(2, battlePlan.getLeaderValue());
         assertEquals(0, battlePlan.combatWater());
     }
 
