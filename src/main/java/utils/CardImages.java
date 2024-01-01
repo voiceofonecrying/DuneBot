@@ -81,6 +81,15 @@ public class CardImages {
         return getCardImage(guild, "bg-prediction-cards", pattern, cardName);
     }
 
+    public static String getHomeworldImageLink(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getCardImageLink(guild, "homeworld-images", pattern, cardName);
+    }
+
     private static List<Message> getChannelMessages(Guild guild, String channelName) {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);
@@ -107,7 +116,7 @@ public class CardImages {
         }
     }
 
-    private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
+    private static Optional<Message.Attachment> getCardImageAttachment(Guild guild, String channelName, Pattern pattern, String cardName ) {
         List<Message> messages = getChannelMessages(guild, channelName);
 
         Optional<Message> message = messages.stream()
@@ -121,6 +130,24 @@ public class CardImages {
         if (attachments.isEmpty()) return Optional.empty();
 
         Message.Attachment attachment = attachments.get(0);
+        return Optional.of(attachment);
+    }
+
+    private static String getCardImageLink(Guild guild, String channelName, Pattern pattern, String cardName) {
+        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern, cardName);
+
+        if (optionalAttachment.isEmpty()) return "";
+
+        Message.Attachment attachment = optionalAttachment.get();
+        return attachment.getUrl();
+    }
+
+    private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
+        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern, cardName);
+
+        if (optionalAttachment.isEmpty()) return Optional.empty();
+
+        Message.Attachment attachment = optionalAttachment.get();
         CompletableFuture<InputStream> future = attachment.getProxy().download();
 
         try {

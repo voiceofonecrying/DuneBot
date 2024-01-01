@@ -1110,7 +1110,9 @@ public class ShowCommands {
     public static MessageEmbed getHomeworldEmbed(DiscordGame discordGame, Faction faction, HomeworldCard homeworldCard, boolean isHighThreshold) {
         EmbedBuilder homeworldBuilder = new EmbedBuilder()
                 .setTitle(homeworldCard.name() + " Homeworld")
-                .setColor(faction.getColor());
+                .setColor(faction.getColor())
+                .setThumbnail(CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
+                ;
 
         if (isHighThreshold) {
             homeworldBuilder.addField(
