@@ -921,6 +921,10 @@ public class ShowCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
 
         messages.forEach(discordGame::queueDeleteMessage);
+
+        FileUpload newMap = drawGameBoard(game).setName("game-map.png");
+        discordGame.queueMessage("front-of-shield", "", newMap);
+
         for (Faction faction : game.getFactions()) {
             Color factionColor = faction.getColor();
 
@@ -1100,11 +1104,6 @@ public class ShowCommands {
             }
 
             discordGame.queueMessage("front-of-shield", builder);
-        }
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            String mapFilename = "game-map.png";
-            FileUpload newMap = drawGameBoard(game).setName(mapFilename);
-            discordGame.queueMessage("front-of-shield", "", newMap);
         }
     }
 
