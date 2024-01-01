@@ -18,7 +18,7 @@ public class CardCache {
 
         cardMaps.put(
                 name,
-                csvParser.stream().map(CSVRecord::toMap).collect(Collectors.toMap(v -> v.get("Name"), v -> v))
+                csvParser.stream().map(CSVRecord::toMap).collect(Collectors.toMap(v -> v.get("Name").toLowerCase(), v -> v))
         );
 
         csvParser.close();
@@ -28,7 +28,7 @@ public class CardCache {
         return cardMaps.get(name);
     }
     public static Map<String, String> getCardInfo(String name, String cardName) {
-        return getCardMap(name).getOrDefault(cardName, new HashMap<>());
+        return getCardMap(name).getOrDefault(cardName.toLowerCase(), new HashMap<>());
     }
 
     public static List<String> getNames(String name) {
