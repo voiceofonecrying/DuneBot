@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +39,73 @@ public class BattlesTest {
 
     @AfterEach
     void tearDown() {
+    }
+
+    @Test
+    void testAggregateForces() throws IOException, InvalidGameStateException {
+        game = new Game();
+        game.setTurnSummary(turnSummary);
+        ecaz = new EcazFaction("aPlayer", "aUser", game);
+        bg = new BGFaction("bgPlayer", "bgUser", game);
+        emperor = new EmperorFaction("ePlayer", "eUser", game);
+        fremen = new FremenFaction("fPlayer", "fUser", game);
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+        game.addFaction(ecaz);
+        game.addFaction(bg);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(harkonnen);
+        game.addFaction(richese);
+        Territory carthag = game.getTerritory("Carthag");
+        Force emperorTroops = new Force("Emperor", 5);
+        carthag.addForce(emperorTroops);
+        Force sardaukar = new Force("Emperor*", 2);
+        carthag.addForce(sardaukar);
+        game.startBattlePhase();
+        Battles battles = game.getBattles();
+//        Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), null);
+        Force harkonnenTroops = carthag.getForce("Harkonnen");
+        List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops);
+        assertEquals(expectedResult, battles.aggregateForces(List.of(carthag), List.of(emperor, harkonnen)));
+    }
+
+    @Test
+    void aggregateForcesMultipleSectorsPlusNoField() throws IOException, InvalidGameStateException {
+        game = new Game();
+        game.setTurnSummary(turnSummary);
+        ecaz = new EcazFaction("aPlayer", "aUser", game);
+        bg = new BGFaction("bgPlayer", "bgUser", game);
+        emperor = new EmperorFaction("ePlayer", "eUser", game);
+        fremen = new FremenFaction("fPlayer", "fUser", game);
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+        game.addFaction(ecaz);
+        game.addFaction(bg);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(harkonnen);
+        game.addFaction(richese);
+        Territory cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
+        Territory cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
+        Force harkonnenTroops = new Force("Harkonnen", 3);
+        cielagoNorth_eastSector.addForce(new Force("Emperor", 2));
+        cielagoNorth_eastSector.addForce(harkonnenTroops);
+        Force sardaukar = new Force("Emperor*", 2);
+        cielagoNorth_westSector.addForce(new Force("Emperor", 2));
+        cielagoNorth_westSector.addForce(sardaukar);
+        cielagoNorth_westSector.setRicheseNoField(5);
+        List<Territory> cielagoNorthSectors = List.of(
+                game.getTerritory("Cielago North (West Sector)"),
+                game.getTerritory("Cielago North (Center Sector)"),
+                game.getTerritory("Cielago North (East Sector)")
+        );
+        game.startBattlePhase();
+        Battles battles = game.getBattles();
+        Force emperorTroops = new Force("Emperor", 4);
+        Force noFieldForce = new Force("NoField", 1, "Richese");
+        List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops, noFieldForce);
+        assertEquals(expectedResult, battles.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese)));
     }
 
     @Test
@@ -73,7 +141,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
@@ -96,7 +164,7 @@ public class BattlesTest {
         westCielagoNorth.removeForce("BG");
         assertTrue(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
@@ -121,7 +189,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertTrue(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
@@ -147,7 +215,7 @@ public class BattlesTest {
         sietchTabr.removeForce("BG");
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
@@ -170,7 +238,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertTrue(battles.aggressorMustChooseOpponent(game));
+        assertTrue(battles.aggressorMustChooseOpponent());
     }
 
 
@@ -205,7 +273,7 @@ public class BattlesTest {
         battles = game.getBattles();
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test
@@ -229,7 +297,7 @@ public class BattlesTest {
         eastCielagoNorth.removeForce("Atreides");
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
-        assertFalse(battles.aggressorMustChooseOpponent(game));
+        assertFalse(battles.aggressorMustChooseOpponent());
     }
 
     @Test

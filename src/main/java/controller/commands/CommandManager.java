@@ -1317,7 +1317,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (!battlePlan.isLeaderAlive() || isLasgunShieldExplosion)
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
-        List<Force> forcesDialed = currentBattle.getForcesDialed(game, faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
+        List<Force> forcesDialed = currentBattle.getForcesDialed(faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
         int regularForces = forcesDialed.get(0).getStrength();
         int specialForces = forcesDialed.get(1).getStrength();
         if (loser) {

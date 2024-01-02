@@ -39,8 +39,8 @@ public class BattleCommands {
         Battles battles = game.getBattles();
         battles.setTerritoryByIndex(battleIndex);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.aggressorMustChooseOpponent(game)) opponentButtons(discordGame, game, currentBattle);
-        else if (currentBattle.hasEcazAndAlly(game)) ecazAllyButtons(discordGame, game, currentBattle);
+        if (currentBattle.aggressorMustChooseOpponent()) opponentButtons(discordGame, game, currentBattle);
+        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, game, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }
@@ -52,7 +52,7 @@ public class BattleCommands {
         for (Faction faction : battle.getFactions(game)) {
             String opponentName = faction.getName();
             if (faction == aggressor) continue;
-            else if (battle.hasEcazAndAlly(game) && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))) {
+            else if (battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))) {
                 if (ecazAndAllyIdentified) continue;
                 ecazAndAllyIdentified = true;
                 opponentName = faction.getName() + " and " + faction.getAlly();
@@ -78,7 +78,7 @@ public class BattleCommands {
         if (space != -1) factionName = factionName.substring(0, space);
         battles.setOpponent(game, factionName);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.hasEcazAndAlly(game)) ecazAllyButtons(discordGame, game, currentBattle);
+        if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, game, currentBattle);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }

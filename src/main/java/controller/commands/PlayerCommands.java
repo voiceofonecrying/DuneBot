@@ -114,7 +114,7 @@ public class PlayerCommands {
             withKH = false;
             returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
         }
-        BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        BattlePlan battlePlan = currentBattle.setBattlePlan(faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
         discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
         return returnString;

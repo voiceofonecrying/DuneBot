@@ -7,10 +7,7 @@ import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Battles {
     List<Battle> battles;
@@ -23,6 +20,24 @@ public class Battles {
 
     public void startBattlePhase(Game game) {
         getBattles(game);
+    }
+
+    public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
+        List<Force> forces = new ArrayList<>();
+        for (Faction f: factions) {
+            Optional<Integer> optInt;
+            optInt = territorySectors.stream().map(t -> t.getForce(f.getName() + "*").getStrength()).reduce(Integer::sum);
+            int totalSpecialStrength = optInt.orElse(0);
+            if (totalSpecialStrength > 0) forces.add(new Force(f.getName() + "*", totalSpecialStrength));
+            optInt  = territorySectors.stream().map(t -> t.getForce(f.getName()).getStrength()).reduce(Integer::sum);
+            int totalForceStrength = optInt.orElse(0);
+            if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
+            boolean hasNoField = territorySectors.stream().anyMatch(Territory::hasRicheseNoField);
+            if (hasNoField && f.getName().equals("Richese")) {
+                forces.add(new Force("NoField", 1, "Richese"));
+            }
+        }
+        return forces;
     }
 
     public List<Battle> getBattles(Game game) {
@@ -48,7 +63,9 @@ public class Battles {
                                 factions.get(0).getAlly().equals("Ecaz") && factions.get(1).getName().equals("Ecaz"))) {
                     addBattle = false;
                 }
-                if (addBattle) battles.add(new Battle(game, aggregateTerritoryName, territorySectors, factions));
+                String ecazAllyName = factions.stream().filter(f -> f instanceof EcazFaction).map(Faction::getAlly).findFirst().orElse(null);
+                List<Force> forces = aggregateForces(territorySectors, factions);
+                if (addBattle) battles.add(new Battle(aggregateTerritoryName, territorySectors, factions, forces, ecazAllyName));
             }
         }
         if (dukeVidalCount >= 2) moritaniCanTakeVidal = true;
@@ -79,8 +96,8 @@ public class Battles {
         else return battles.get(0).getFactionNames().get(0).equals(battles.get(1).getFactionNames().get(0));
     }
 
-    public boolean aggressorMustChooseOpponent(Game game) {
-        return !battles.isEmpty() && battles.get(0).aggressorMustChooseOpponent(game);
+    public boolean aggressorMustChooseOpponent() {
+        return !battles.isEmpty() && battles.get(0).aggressorMustChooseOpponent();
     }
 
     public void setTerritoryByIndex(int territoryIndex) {
@@ -91,11 +108,25 @@ public class Battles {
 
     public void setOpponent(Game game, String opponent) {
         Faction aggressor = currentBattle.getAggressor(game);
-        currentBattle = new Battle(game, currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
+        String ecazAlly = null;
+        if (currentBattle.hasEcazAndAlly())
+            ecazAlly = game.getFaction("Ecaz").getAlly();
+        boolean opponentIsEcazAlly = ecazAlly != null && ecazAlly.equals(opponent);
+        boolean aggressorIsEcazAlly = ecazAlly != null && ecazAlly.equals(aggressor.getName());
+        List<Force> newForces = new ArrayList<>();
+        for (Force f : currentBattle.getForces()) {
+            if (f.getFactionName().equals(opponent)) newForces.add(f);
+            else if (f.getFactionName().equals("Ecaz") && opponentIsEcazAlly) newForces.add(f);
+            else if (f.getFactionName().equals(aggressor.getName())) newForces.add(f);
+            else if (f.getFactionName().equals("Ecaz") && aggressorIsEcazAlly) newForces.add(f);
+        }
+        currentBattle = new Battle(currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
-                ).toList()
+                ).toList(),
+                newForces,
+                currentBattle.getEcazAllyName()
         );
     }
 
