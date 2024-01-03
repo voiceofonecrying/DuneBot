@@ -91,11 +91,13 @@ public class BattlePlan {
     }
 
     public boolean isLeaderAlive() {
-        if (artilleryStrike() && (defense != null && !defense.name().equals("Shield") && !defense.name().equals("Shield Snooper")))
+        if (isLasgunShieldExplosion()) {
             return false;
-        if (poisonTooth() && (defense != null && !defense.name().equals("Chemistry")))
-            return false;
-        if (opponentWeapon != null) {
+        } else if (artilleryStrike()) {
+            return defense != null && (defense.name().equals("Shield") || defense.name().equals("Shield Snooper"));
+        } else if (poisonTooth()) {
+            return defense != null && defense.name().equals("Chemistry");
+        } else if (opponentWeapon != null) {
             if (defense == null)
                 return false;
             else if (opponentWeapon.name().equals("Lasgun"))

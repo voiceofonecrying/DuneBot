@@ -117,6 +117,14 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testLeaderDiesWthOwnArtilleryStrikeNoDefense() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, artilleryStrike, null);
+        battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
     void testLeaderSurvivesArtilleryStrikeWithCorrectDefense() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, shield);
         battlePlan.revealOpponentBattlePlan(artilleryStrikePlan);
@@ -172,6 +180,13 @@ public class BattlePlanTest {
     @Test
     void testLeaderDiesWithOwnPoisonTooth() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderDiesWithOwnPoisonToothNoDefense() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, null);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
     }
