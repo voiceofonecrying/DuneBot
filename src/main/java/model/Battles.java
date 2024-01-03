@@ -106,8 +106,10 @@ public class Battles {
         battles.add(0, battle);
     }
 
-    public void setOpponent(Game game, String opponent) {
+    public void setOpponent(Game game, String opponent) throws InvalidGameStateException {
         Faction aggressor = currentBattle.getAggressor(game);
+        if (opponent.equals(aggressor.getName()))
+            throw new InvalidGameStateException("Cannot set aggressor's opponent to be the aggressor");
         String ecazAlly = null;
         if (currentBattle.hasEcazAndAlly())
             ecazAlly = game.getFaction("Ecaz").getAlly();

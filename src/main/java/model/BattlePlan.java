@@ -12,6 +12,7 @@ public class BattlePlan {
     private final TreacheryCard weapon;
     private TreacheryCard defense;
     private TreacheryCard opponentWeapon;
+    private TreacheryCard opponentDefense;
     private Leader opponentLeader;
     private boolean inactivePoisonTooth;
     private boolean portableSnooperAdded;
@@ -94,7 +95,7 @@ public class BattlePlan {
         if (isLasgunShieldExplosion()) {
             return false;
         } else if (artilleryStrike()) {
-            return defense != null && (defense.name().equals("Shield") || defense.name().equals("Shield Snooper"));
+            return defense != null && defense.servesAsShield();
         } else if (poisonTooth()) {
             return defense != null && defense.name().equals("Chemistry");
         } else if (opponentWeapon != null) {
@@ -105,10 +106,10 @@ public class BattlePlan {
             else if (opponentWeapon.name().equals("Poison Blade") && !defense.name().equals("Shield Snooper"))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
-                    && !(defense.type().equals("Defense - Poison") || defense.name().equals("Chemistry") || defense.name().equals("Shield Snooper")))
+                    && !(defense.servesAsSnooper() || defense.name().equals("Chemistry")))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
-                    && !(defense.type().equals("Defense - Projectile") || defense.name().equals("Weirding Way") || defense.name().equals("Shield Snooper")))
+                    && !(defense.servesAsShield() || defense.name().equals("Weirding Way")))
                 return false;
         }
         return true;
@@ -147,12 +148,13 @@ public class BattlePlan {
     }
 
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
-        this.opponentWeapon = opponentPlan.getWeapon();
         this.opponentLeader = opponentPlan.getLeader();
+        this.opponentWeapon = opponentPlan.getWeapon();
+        this.opponentDefense = opponentPlan.getDefense();
     }
 
     public boolean isLasgunShieldExplosion() {
-        return (defense != null && (defense.name().equals("Shield") || defense.name().equals("Shield Snooper"))
+        return ((defense != null && defense.servesAsShield() || opponentDefense != null && opponentDefense.servesAsShield())
                 && (weapon != null && weapon.name().equals("Lasgun") || opponentWeapon != null && opponentWeapon.name().equals("Lasgun")));
     }
 

@@ -37,6 +37,7 @@ public class BattlePlanTest {
     BattlePlan artilleryStrikePlan;
     BattlePlan poisonToothPlan;
     BattlePlan poisonBladePlan;
+    BattlePlan shieldPlan;
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
@@ -67,6 +68,7 @@ public class BattlePlanTest {
         artilleryStrikePlan = new BattlePlan(null, null, false, 0, false, 0, artilleryStrike, null);
         poisonToothPlan = new BattlePlan(null, null, false, 0, false, 0, poisonTooth, null);
         poisonBladePlan = new BattlePlan(null, null, false, 0, false, 0, poisonBlade, null);
+        shieldPlan = new BattlePlan(null, null, false, 0, false, 0, null, shield);
     }
 
     @Test
@@ -222,6 +224,14 @@ public class BattlePlanTest {
     void testLasgunWithShield() {
         BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, lasgun, shield);
         battlePlan.revealOpponentBattlePlan(duncanCrysknifePlan);
+        assertTrue(battlePlan.isLasgunShieldExplosion());
+        assertEquals(0, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLasgunWithOpponentShield() {
+        BattlePlan battlePlan = new BattlePlan(zoal, null, false, 0, false, 0, lasgun, null);
+        battlePlan.revealOpponentBattlePlan(shieldPlan);
         assertTrue(battlePlan.isLasgunShieldExplosion());
         assertEquals(0, battlePlan.combatWater());
     }

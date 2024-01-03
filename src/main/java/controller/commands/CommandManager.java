@@ -1310,12 +1310,12 @@ public class CommandManager extends ListenerAdapter {
         String factionName = faction.getName();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
-        boolean isLasgunShieldExplosion = aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
+        boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion();
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
         boolean loser = isAggressor != currentBattle.isAggressorWin(game) || isLasgunShieldExplosion;
 
-        if (!battlePlan.isLeaderAlive() || isLasgunShieldExplosion)
+        if (!battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         List<Force> forcesDialed = currentBattle.getForcesDialed(faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
         int regularForces = forcesDialed.get(0).getStrength();
@@ -1378,7 +1378,7 @@ public class CommandManager extends ListenerAdapter {
         resolution += aggressorPlan.getPlanMessage() + "\n\n";
         resolution += currentBattle.getDefenderEmojis(game) + "\n";
         resolution += defenderPlan.getPlanMessage() + "\n\n";
-        if (aggressorPlan.isLasgunShieldExplosion() || defenderPlan.isLasgunShieldExplosion())
+        if (aggressorPlan.isLasgunShieldExplosion())
             resolution += "**KABOOM!**\n";
         else
             resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
