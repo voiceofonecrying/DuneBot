@@ -180,10 +180,25 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testLeaderSurvivesInactivatedPoisonTooth() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, null, snooper);
+        poisonToothPlan.revokePoisonTooth();
+        battlePlan.revealOpponentBattlePlan(poisonToothPlan);
+        assertTrue(battlePlan.isLeaderAlive());
+    }
+
+    @Test
     void testLeaderDiesWithOwnPoisonTooth() {
         BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
+    void testLeaderSurvivesOwnInactivePoisonTooth() {
+        BattlePlan battlePlan = new BattlePlan(duncanIdaho, null, false, 0, false, 0, poisonTooth, snooper);
+        battlePlan.revokePoisonTooth();
+        assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test

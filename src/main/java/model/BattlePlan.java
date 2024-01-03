@@ -149,7 +149,7 @@ public class BattlePlan {
 
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
         this.opponentLeader = opponentPlan.getLeader();
-        this.opponentWeapon = opponentPlan.getWeapon();
+        this.opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
         this.opponentDefense = opponentPlan.getDefense();
     }
 
