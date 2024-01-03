@@ -144,9 +144,9 @@ public class BattlePlan {
                 + getSpiceString();
     }
 
-    public void setOpponentWeaponAndLeader(TreacheryCard opponentWeapon, Leader opponentLeader) {
-        this.opponentWeapon = opponentWeapon;
-        this.opponentLeader = opponentLeader;
+    public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
+        this.opponentWeapon = opponentPlan.getWeapon();
+        this.opponentLeader = opponentPlan.getLeader();
     }
 
     public boolean isLasgunShieldExplosion() {

@@ -306,8 +306,8 @@ public class Battle {
             defenderBattlePlan = battlePlan;
         }
         if (aggressorBattlePlan != null && defenderBattlePlan != null) {
-            aggressorBattlePlan.setOpponentWeaponAndLeader(defenderBattlePlan.getEffectiveWeapon(), defenderBattlePlan.getLeader());
-            defenderBattlePlan.setOpponentWeaponAndLeader(aggressorBattlePlan.getEffectiveWeapon(), aggressorBattlePlan.getLeader());
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+            defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         }
         return battlePlan;
     }
