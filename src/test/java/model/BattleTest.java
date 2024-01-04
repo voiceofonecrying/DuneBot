@@ -481,6 +481,25 @@ class BattleTest {
         }
 
         @Test
+        void testEcazAloneTroopStrength() throws InvalidGameStateException {
+            Territory tueksSietch = new Territory("Habbanya Sietch", 16, false, true, false);
+            TreacheryCard hunterSeeker = new TreacheryCard("Hunter Seeker");
+            TreacheryCard weirdingWay = new TreacheryCard("Weirding Way");
+            Force atreidesForce = new Force("Atreides", 11);
+            Force ecazForce = new Force("Ecaz", 10);
+            Battle ecazBattle = new Battle("Tuek's Sietch", List.of(tueksSietch), List.of(atreides, ecaz), List.of(atreidesForce, ecazForce), null);
+            atreides.addTreacheryCard(hunterSeeker);
+            atreides.addTreacheryCard(weirdingWay);
+            ecazBattle.setBattlePlan(atreides, new Leader("Lady Jessica", 5, null, false), null, false, 6, false, 4, hunterSeeker, weirdingWay);
+            ecazBattle.setBattlePlan(ecaz, new Leader("Bindikk Narvi", 2, null, false), null, false, 5, false, 0, null, null);
+            BattlePlan atreidesPlan = ecazBattle.getAggressorBattlePlan();
+            BattlePlan ecazPlan = ecazBattle.getDefenderBattlePlan();
+            atreidesPlan.revealOpponentBattlePlan(ecazPlan);
+            ecazPlan.revealOpponentBattlePlan(atreidesPlan);
+            assertEquals("5", ecazBattle.getDefenderStrengthString(game));
+        }
+
+        @Test
         void testWeirdingWayValidDefense() throws IOException {
             game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
             if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {

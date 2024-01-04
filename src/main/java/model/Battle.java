@@ -355,7 +355,7 @@ public class Battle {
         if (battlePlan.getPlusHalfDial()) doubleBattleStrength++;
         doubleBattleStrength += 2 * battlePlan.getLeaderContribution();
         int ecazStrength = 0;
-        if (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"))
+        if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
             ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
         doubleBattleStrength += 2 * Math.ceilDiv(ecazStrength, 2);
         return doubleBattleStrength;
