@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -29,8 +30,11 @@ public class CopyCardChannel {
 
         System.out.println("Copying data from " + channelName);
 
-        TextChannel mainChannel = getChannel(mainToken, mainGuildId, channelName);
-        TextChannel testChannel = getChannel(testToken, testGuildId, channelName);
+        JDA mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+        JDA testJDA = JDABuilder.createDefault(testToken).build().awaitReady();
+
+        TextChannel mainChannel = getChannel(mainJDA, mainGuildId, channelName);
+        TextChannel testChannel = getChannel(testJDA, testGuildId, channelName);
 
         MessageHistory messageHistory = mainChannel.getHistory();
 
@@ -41,18 +45,22 @@ public class CopyCardChannel {
         System.out.println("Number of cards: " + messages.size());
 
         for (Message message : messages) {
-            MessageCreateData data = new MessageCreateBuilder()
-                    .addContent(message.getContentRaw())
-                    .addFiles(FileUpload.fromData(message.getAttachments().get(0).getProxy().download().get(), "card.png"))
-                    .build();
-            testChannel.sendMessage(data).complete();
+            MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
+                    .addContent(message.getContentRaw());
+
+            for (Message.Attachment attachment : message.getAttachments()) {
+                messageCreateBuilder = messageCreateBuilder.addFiles(FileUpload.fromData(attachment.getProxy().download().get(), "card.png"));
+            }
+
+            testChannel.sendMessage(messageCreateBuilder.build()).complete();
         }
+
+        mainJDA.shutdownNow();
+        testJDA.shutdownNow();
+        System.exit(0);
     }
 
-    private static TextChannel getChannel(String token, String guildId, String channelName) throws InterruptedException, ChannelNotFoundException {
-        JDA jda = JDABuilder.createDefault(token)
-                .build();
-        jda.awaitReady();
+    private static TextChannel getChannel(JDA jda, String guildId, String channelName) throws ChannelNotFoundException {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName("Game Resources", true);
