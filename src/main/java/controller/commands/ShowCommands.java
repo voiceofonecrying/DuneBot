@@ -1070,6 +1070,7 @@ public class ShowCommands {
                                                             Emojis.LEADER, leader.name(), leaderSkillCard.name()
                                                     )))
                                     .setColor(factionColor)
+                                    .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                                     .addField(
                                             "Always",
                                             leaderSkillCard.description(),
@@ -1098,6 +1099,7 @@ public class ShowCommands {
                                     )
                                     .setDescription(strongholdCard.description())
                                     .setColor(factionColor)
+                                    .setUrl(CardImages.getStrongholdCardLink(discordGame.getEvent().getGuild(), strongholdCard.name()))
                                     .build()
                     );
                 }

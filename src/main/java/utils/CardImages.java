@@ -87,7 +87,25 @@ public class CardImages {
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
-        return getCardImageLink(guild, "homeworld-images", pattern, cardName);
+        return getCardImageLink(guild, "homeworld-images", pattern);
+    }
+
+    public static String getStrongholdCardLink(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getMessageLink(guild, "stronghold-cards", pattern);
+    }
+
+    public static String getLeaderSkillCardLink(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getMessageLink(guild, "leader-skills", pattern);
     }
 
     private static List<Message> getChannelMessages(Guild guild, String channelName) {
@@ -116,13 +134,8 @@ public class CardImages {
         }
     }
 
-    private static Optional<Message.Attachment> getCardImageAttachment(Guild guild, String channelName, Pattern pattern, String cardName ) {
-        List<Message> messages = getChannelMessages(guild, channelName);
-
-        Optional<Message> message = messages.stream()
-                .filter(m -> pattern.matcher(m.getContentRaw()).matches())
-                .findFirst();
-
+    private static Optional<Message.Attachment> getCardImageAttachment(Guild guild, String channelName, Pattern pattern ) {
+        Optional<Message> message = getCardMessage(guild, channelName, pattern);
         if (message.isEmpty()) return Optional.empty();
 
         List<Message.Attachment> attachments = message.get().getAttachments();
@@ -133,8 +146,22 @@ public class CardImages {
         return Optional.of(attachment);
     }
 
-    private static String getCardImageLink(Guild guild, String channelName, Pattern pattern, String cardName) {
-        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern, cardName);
+    private static Optional<Message> getCardMessage(Guild guild, String channelName, Pattern pattern) {
+        List<Message> messages = getChannelMessages(guild, channelName);
+
+        return messages.stream()
+                .filter(m -> pattern.matcher(m.getContentRaw()).matches())
+                .findFirst();
+    }
+
+    private static String getMessageLink(Guild guild, String channelName, Pattern pattern) {
+        Optional<Message> optionalMessage = getCardMessage(guild, channelName, pattern);
+
+        return optionalMessage.map(Message::getJumpUrl).orElse("");
+    }
+
+    private static String getCardImageLink(Guild guild, String channelName, Pattern pattern) {
+        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern);
 
         if (optionalAttachment.isEmpty()) return "";
 
@@ -143,7 +170,7 @@ public class CardImages {
     }
 
     private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
-        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern, cardName);
+        Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern);
 
         if (optionalAttachment.isEmpty()) return Optional.empty();
 
