@@ -3,12 +3,15 @@ package model;
 import java.text.MessageFormat;
 
 public class BattlePlan {
+    private final boolean aggressor;
     private final Leader leader;
     private final TreacheryCard cheapHero;
     private final boolean kwisatzHaderach;
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
+    private final int troopsNotDialed;
+    private final int ecazTroopsForAlly;
     private final TreacheryCard weapon;
     private TreacheryCard defense;
     private TreacheryCard opponentWeapon;
@@ -16,16 +19,22 @@ public class BattlePlan {
     private Leader opponentLeader;
     private boolean inactivePoisonTooth;
     private boolean portableSnooperAdded;
+    private boolean stoneBurnerNoKill;
+    private boolean opponentStoneBurnerNoKill;
 
-    public BattlePlan(Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) {
+    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly) {
+        this.aggressor = aggressor;
         this.leader = leader;
         this.cheapHero = cheapHero;
         this.kwisatzHaderach = kwisatzHaderach;
         this.wholeNumberDial = wholeNumberDial;
         this.plusHalfDial = plusHalfDial;
         this.spice = spice;
+        this.troopsNotDialed = troopsNotDialed;
+        this.ecazTroopsForAlly = ecazTroopsForAlly;
         this.weapon = weapon;
         this.defense = defense;
+        this.stoneBurnerNoKill = false;
     }
 
     public Leader getLeader() {
@@ -52,12 +61,12 @@ public class BattlePlan {
         return weapon;
     }
 
-    public TreacheryCard getEffectiveWeapon() {
-        return inactivePoisonTooth ? null : weapon;
-    }
-
     public TreacheryCard getDefense() {
         return defense;
+    }
+
+    public boolean isStoneBurnerNoKill() {
+        return stoneBurnerNoKill;
     }
 
     public int getLeaderValue() {
@@ -81,6 +90,21 @@ public class BattlePlan {
         return "Leader: " + leaderString;
     }
 
+    public int getDoubleBattleStrength() {
+        if (stoneBurnerForTroops())
+            return 2 * troopsNotDialed + 2 * Math.floorDiv(ecazTroopsForAlly, 2);
+        int doubleBattleStrength = 2 * wholeNumberDial;
+        if (plusHalfDial) doubleBattleStrength++;
+        doubleBattleStrength += 2 * getLeaderContribution();
+        doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
+        return doubleBattleStrength;
+    }
+
+    public String getTotalStrengthString() {
+        int wholeNumber = getDoubleBattleStrength() / 2;
+        return MessageFormat.format("{0}{1}", wholeNumber, plusHalfDial ? ".5" : "");
+    }
+
     private boolean artilleryStrike() {
         return opponentWeapon != null && opponentWeapon.name().equals("Artillery Strike")
                 || weapon != null && weapon.name().equals("Artillery Strike");
@@ -91,14 +115,41 @@ public class BattlePlan {
                 || weapon != null && !inactivePoisonTooth && weapon.name().equals("Poison Tooth");
     }
 
+    private boolean stoneBurnerForTroops() {
+        if (aggressor && weapon != null && weapon.name().equals("Artillery Strike")
+                || !aggressor && opponentWeapon != null && opponentWeapon.name().equals("Artillery Strike"))
+            return false;
+        return opponentWeapon != null && opponentWeapon.name().equals("Stone Burner")
+                || weapon != null && weapon.name().equals("Stone Burner");
+    }
+
+    private boolean stoneBurnerKills() {
+        return opponentWeapon != null && !opponentStoneBurnerNoKill && opponentWeapon.name().equals("Stone Burner")
+                || weapon != null && !stoneBurnerNoKill && weapon.name().equals("Stone Burner");
+    }
+
+    public boolean dontKillWithStoneBurner() {
+        if (weapon != null && weapon.name().equals("Stone Burner")) {
+            stoneBurnerNoKill = true;
+            return true;
+        }
+        return false;
+    }
+
+    public void restoreKillWithStoneBurner() {
+        stoneBurnerNoKill = false;
+    }
+
     public boolean isLeaderAlive() {
         if (isLasgunShieldExplosion()) {
+            return false;
+        } else if (stoneBurnerKills()) {
             return false;
         } else if (artilleryStrike()) {
             return defense != null && defense.servesAsShield();
         } else if (poisonTooth()) {
             return defense != null && defense.name().equals("Chemistry");
-        } else if (opponentWeapon != null) {
+        } else if (opponentWeapon != null && !opponentWeapon.name().equals("Stone Burner")) {
             if (defense == null)
                 return false;
             else if (opponentWeapon.name().equals("Lasgun"))
@@ -124,7 +175,8 @@ public class BattlePlan {
     }
 
     public String getWeaponString() {
-        return "Weapon: " + (weapon == null ? "-" : weapon.name()) + (inactivePoisonTooth ? " (not used)" : "");
+        return "Weapon: " + (weapon == null ? "-"
+                : weapon.name()) + (inactivePoisonTooth ? " (not used)" : stoneBurnerNoKill ? " (leaders not killed)" : "");
     }
 
     public String getDefenseString() {
@@ -151,6 +203,7 @@ public class BattlePlan {
         this.opponentLeader = opponentPlan.getLeader();
         this.opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
         this.opponentDefense = opponentPlan.getDefense();
+        this.opponentStoneBurnerNoKill = opponentPlan.isStoneBurnerNoKill();
     }
 
     public boolean isLasgunShieldExplosion() {

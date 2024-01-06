@@ -744,7 +744,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(dontUsePoisonTooth, addPortableSnooper));
+        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
@@ -1313,7 +1313,7 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
         boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion();
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
-        boolean loser = isAggressor != currentBattle.isAggressorWin(game) || isLasgunShieldExplosion;
+        boolean loser = isAggressor != currentBattle.isAggressorWin() || isLasgunShieldExplosion;
 
         if (!battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
@@ -1380,10 +1380,13 @@ public class CommandManager extends ListenerAdapter {
         resolution += defenderPlan.getPlanMessage() + "\n\n";
         if (aggressorPlan.isLasgunShieldExplosion())
             resolution += "**KABOOM!**\n";
-        else
+        else {
+            BattlePlan winnerPlan = currentBattle.isAggressorWin() ? aggressorPlan : defenderPlan;
+            BattlePlan loswerPlan = currentBattle.isAggressorWin() ? defenderPlan : aggressorPlan;
             resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
-                    currentBattle.getWinnerEmojis(game), currentBattle.getWinnerStrengthString(game), currentBattle.getLoserStrengthString(game)
+                    currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loswerPlan.getTotalStrengthString()
             );
+        }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
         discordGame.getModInfo().queueMessage(resolution);
@@ -1394,39 +1397,41 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
+            boolean killerStoneBurner = discordGame.optional(stoneBurnerKills) != null && discordGame.required(stoneBurnerKills).getAsBoolean();
+            boolean stoneBurnerNoKill = !killerStoneBurner;
+            boolean aggressorNoKillStoneBurner = false;
+            boolean defenderNoKillStoneBurner = false;
+            if (stoneBurnerNoKill) {
+                aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
+                defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
+                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+                defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+            }
             boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
             boolean aggressorPlanAddedPortableSnooper = false;
             boolean defenderPlanAddedPortableSnooper = false;
-            if (portableSnooper && currentBattle.getAggressor(game).hasTreacheryCard("Portable Snooper")) {
+            if (portableSnooper) {
                 aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
-            } else if (portableSnooper && currentBattle.getDefender(game).hasTreacheryCard("Portable Snooper")) {
                 defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
+                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+                defenderPlan.revealOpponentBattlePlan(aggressorPlan);
             }
-            boolean noPoisonTooth = discordGame.optional(dontUsePoisonTooth) != null && discordGame.required(dontUsePoisonTooth).getAsBoolean();
+            boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
             boolean aggressorPlanHasPoisonTooth = false;
             boolean defenderPlanHasPoisonTooth = false;
             if (noPoisonTooth) {
                 aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
-                if (aggressorPlanHasPoisonTooth)
-                    defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-                else {
-                    defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
-                    if (defenderPlanHasPoisonTooth)
-                        aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-                }
+                defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
+                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+                defenderPlan.revealOpponentBattlePlan(aggressorPlan);
             }
             printBattleResolution(discordGame, game, currentBattle, aggressorPlan, defenderPlan);
-            if (noPoisonTooth) {
-                if (aggressorPlanHasPoisonTooth) {
-                    aggressorPlan.restorePoisonTooth();
-                    defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-                } else if (defenderPlanHasPoisonTooth) {
-                    defenderPlan.restorePoisonTooth();
-                    aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-                }
-            }
+            if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
+            else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
             if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
-            if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
+            else if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
+            if (aggressorNoKillStoneBurner) aggressorPlan.restoreKillWithStoneBurner();
+            else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
         } else
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
     }

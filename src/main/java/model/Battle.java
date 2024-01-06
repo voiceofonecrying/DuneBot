@@ -7,7 +7,6 @@ import model.factions.EcazFaction;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
 
-import java.text.MessageFormat;
 import java.util.*;
 
 public class Battle {
@@ -211,7 +210,7 @@ public class Battle {
         return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
     }
 
-    private void validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+    private int validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
@@ -241,6 +240,7 @@ public class Battle {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
         if (spice > spiceUsed)
             faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
+        return specialStrength - specialStrengthUsed + regularStrength - regularStrengthUsed;
     }
 
     public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
@@ -297,9 +297,12 @@ public class Battle {
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
 
-        validateDial(faction, wholeNumberDial, plusHalfDial, spice);
+        int troopsNotDialed = validateDial(faction, wholeNumberDial, plusHalfDial, spice);
 
-        BattlePlan battlePlan = new BattlePlan(leader, cheapHero, kwisatzHaderach, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        int ecazTroops = 0;
+        if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
+            ecazTroops = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
+        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops);
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {
@@ -350,49 +353,13 @@ public class Battle {
         return defenderBattlePlan;
     }
 
-    private int getDoubleBattleStrength(Faction faction, BattlePlan battlePlan) {
-        int doubleBattleStrength = 2 * battlePlan.getWholeNumberDial();
-        if (battlePlan.getPlusHalfDial()) doubleBattleStrength++;
-        doubleBattleStrength += 2 * battlePlan.getLeaderContribution();
-        int ecazStrength = 0;
-        if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
-            ecazStrength = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        doubleBattleStrength += 2 * Math.ceilDiv(ecazStrength, 2);
-        return doubleBattleStrength;
-    }
-
-    public boolean isAggressorWin(Game game) throws InvalidGameStateException {
+    public boolean isAggressorWin() throws InvalidGameStateException {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-
-        int doubleAggressorStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan);
-        int doubleDefenderStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan);
-        return doubleAggressorStrength >= doubleDefenderStrength;
+        return aggressorBattlePlan.getDoubleBattleStrength() >= defenderBattlePlan.getDoubleBattleStrength();
     }
 
     public String getWinnerEmojis(Game game) throws InvalidGameStateException {
-        return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
-    }
-
-    public String getAggressorStrengthString(Game game) {
-        int doubleBattleStrength = getDoubleBattleStrength(getAggressor(game), aggressorBattlePlan);
-        int wholeNumber = doubleBattleStrength / 2;
-        return MessageFormat.format("{0}{1}", wholeNumber, aggressorBattlePlan.getPlusHalfDial() ? ".5" : "");
-    }
-
-    public String getDefenderStrengthString(Game game) {
-        int doubleBattleStrength = getDoubleBattleStrength(getDefender(game), defenderBattlePlan);
-        int wholeNumber = doubleBattleStrength / 2;
-        return MessageFormat.format("{0}{1}", wholeNumber, defenderBattlePlan.getPlusHalfDial() ? ".5" : "");
-    }
-
-    public String getWinnerStrengthString(Game game) throws InvalidGameStateException {
-        if (isAggressorWin(game)) return getAggressorStrengthString(game);
-        return getDefenderStrengthString(game);
-    }
-
-    public String getLoserStrengthString(Game game) throws InvalidGameStateException {
-        if (!isAggressorWin(game)) return getAggressorStrengthString(game);
-        return getDefenderStrengthString(game);
+        return isAggressorWin() ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 }

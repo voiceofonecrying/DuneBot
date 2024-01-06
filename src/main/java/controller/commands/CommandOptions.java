@@ -100,8 +100,9 @@ public class CommandOptions {
     public static final OptionData combatSpice = new OptionData(OptionType.INTEGER, "combat-spice", "Spice used for backing troops", true);
     public static final OptionData weapon = new OptionData(OptionType.STRING, "weapon", "Weapon or Worthless.", true).setAutoComplete(true);
     public static final OptionData defense = new OptionData(OptionType.STRING, "defense", "Defense or Worthless.", true).setAutoComplete(true);
-    public static final OptionData dontUsePoisonTooth = new OptionData(OptionType.BOOLEAN, "dont-use-poison-tooth", "Allow battle plan resolution with Poison Tooth not used", false);
-    public static final OptionData addPortableSnooper = new OptionData(OptionType.BOOLEAN, "add-portable-snooper", "Allow battle plan resolution with Portable Snooper added", false);
+    public static final OptionData deactivatePoisonTooth = new OptionData(OptionType.BOOLEAN, "deactivate-poison-tooth", "Allow battle plan resolution with Poison Tooth not used (default = False)", false);
+    public static final OptionData addPortableSnooper = new OptionData(OptionType.BOOLEAN, "add-portable-snooper", "Allow battle plan resolution with Portable Snooper added (default = False)", false);
+    public static final OptionData stoneBurnerKills = new OptionData(OptionType.BOOLEAN, "stone-burner-kills", "Select whether Stone Burner kills leaders (default = False)", false);
     public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);

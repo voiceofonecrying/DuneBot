@@ -496,7 +496,7 @@ class BattleTest {
             BattlePlan ecazPlan = ecazBattle.getDefenderBattlePlan();
             atreidesPlan.revealOpponentBattlePlan(ecazPlan);
             ecazPlan.revealOpponentBattlePlan(atreidesPlan);
-            assertEquals("5", ecazBattle.getDefenderStrengthString(game));
+            assertEquals("5", ecazPlan.getTotalStrengthString());
         }
 
         @Test
@@ -682,8 +682,8 @@ class BattleTest {
             battle1.setBattlePlan(atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle1.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, null, null);
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
-            assertEquals("2.5", battle1.getWinnerStrengthString(game));
-            assertEquals("1", battle1.getLoserStrengthString(game));
+            assertEquals("2.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -694,8 +694,8 @@ class BattleTest {
             battle1.setBattlePlan(atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle1.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.HARKONNEN, battle1.getWinnerEmojis(game));
-            assertEquals("1", battle1.getWinnerStrengthString(game));
-            assertEquals("0.5", battle1.getLoserStrengthString(game));
+            assertEquals("0.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -706,8 +706,8 @@ class BattleTest {
             battle1.setBattlePlan(atreides, duncanIdaho, null, false, 1, false,0, null, null);
             battle1.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
-            assertEquals("1", battle1.getWinnerStrengthString(game));
-            assertEquals("1", battle1.getLoserStrengthString(game));
+            assertEquals("1", battle1.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -719,9 +719,9 @@ class BattleTest {
             battle2.setBattlePlan(atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
-            assertTrue(battle2.isAggressorWin(game));
-            assertEquals("3.5", battle2.getWinnerStrengthString(game));
-            assertEquals("1", battle2.getLoserStrengthString(game));
+            assertTrue(battle2.isAggressorWin());
+            assertEquals("3.5", battle2.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -732,8 +732,8 @@ class BattleTest {
             battle2.setBattlePlan(atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, null, null);
             assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
-            assertEquals("5.5", battle2.getWinnerStrengthString(game));
-            assertEquals("1", battle2.getLoserStrengthString(game));
+            assertEquals("5.5", battle2.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -746,9 +746,9 @@ class BattleTest {
             battle2.setBattlePlan(ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
-            assertFalse(battle2.isAggressorWin(game));
-            assertEquals("3.5", battle2.getWinnerStrengthString(game));
-            assertEquals("1", battle2.getLoserStrengthString(game));
+            assertFalse(battle2.isAggressorWin());
+            assertEquals("1", battle2.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("3.5", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -760,8 +760,8 @@ class BattleTest {
             battle2.setBattlePlan(ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(harkonnen, null, cheapHero, false, 1, false,1, null, null);
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
-            assertEquals("7.5", battle2.getWinnerStrengthString(game));
-            assertEquals("1", battle2.getLoserStrengthString(game));
+            assertEquals("1", battle2.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("7.5", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -774,7 +774,7 @@ class BattleTest {
             battle3.setBattlePlan(bt, zoal, null, false, 5, false, 5, crysknife, null);
             battle3.setBattlePlan(emperor, burseg, null, false, 7, false, 5, null, null);
             assertEquals(Emojis.BT, battle3.getWinnerEmojis(game));
-            assertEquals("8", battle3.getWinnerStrengthString(game));
+            assertEquals("8", battle3.getAggressorBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -787,7 +787,7 @@ class BattleTest {
             battle3.setBattlePlan(bt, zoal, null, false, 5, false, 5, crysknife, null);
             battle3.setBattlePlan(emperor, null, cheapHero, false, 7, false, 5, null, null);
             assertEquals(Emojis.EMPEROR, battle3.getWinnerEmojis(game));
-            assertEquals("5", battle3.getLoserStrengthString(game));
+            assertEquals("5", battle3.getAggressorBattlePlan().getTotalStrengthString());
         }
     }
 }
