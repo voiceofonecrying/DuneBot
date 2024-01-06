@@ -108,6 +108,15 @@ public class CardImages {
         return getMessageLink(guild, "leader-skills", pattern);
     }
 
+    public static String getHomeworldCardLink(Guild guild, String cardName) {
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(cardName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getMessageLink(guild, "homeworld-cards", pattern);
+    }
+
     private static List<Message> getChannelMessages(Guild guild, String channelName) {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);

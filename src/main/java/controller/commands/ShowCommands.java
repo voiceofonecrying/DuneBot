@@ -1114,6 +1114,7 @@ public class ShowCommands {
                 .setTitle(homeworldCard.name() + " Homeworld")
                 .setColor(faction.getColor())
                 .setThumbnail(CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
+                .setUrl(CardImages.getHomeworldCardLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
                 ;
 
         if (isHighThreshold) {
