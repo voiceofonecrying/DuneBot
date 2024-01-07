@@ -53,6 +53,10 @@ public class BattlePlan {
         return plusHalfDial;
     }
 
+    public int getEcazTroopsForAlly() {
+        return ecazTroopsForAlly;
+    }
+
     public int getSpice() {
         return spice;
     }
