@@ -1307,7 +1307,7 @@ public class CommandManager extends ListenerAdapter {
     private String factionBattleResults(Game game, Battle currentBattle, boolean isAggressor) throws InvalidGameStateException {
         String resolution = "";
         Faction faction = isAggressor ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
-        String factionName = faction.getName();
+        String factionName = currentBattle.hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
@@ -1344,7 +1344,7 @@ public class CommandManager extends ListenerAdapter {
         if (currentBattle.hasEcazAndAlly() && factionName.equals(game.getFaction("Ecaz").getAlly())) {
             resolution += Emojis.getFactionEmoji("Ecaz") + " loses ";
             resolution += loser ? battlePlan.getEcazTroopsForAlly() : Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
-            resolution += Emojis.getForceEmoji("Ecaz");
+            resolution += " " + Emojis.ECAZ_TROOP;
             resolution += " to the tanks\n";
         }
         if (battlePlan.getCheapHero() != null)

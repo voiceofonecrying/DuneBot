@@ -43,5 +43,6 @@ public class BattleButtons implements Pressable {
         discordGame.getTurnSummary().queueMessage(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
         battles.getCurrentBattle().setEcazCombatant(game, battleFaction);
         battles.callBattleActions(game);
+        discordGame.pushGame();
     }
 }
