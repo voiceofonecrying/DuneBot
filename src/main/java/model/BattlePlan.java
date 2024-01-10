@@ -206,6 +206,8 @@ public class BattlePlan {
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
         this.opponentLeader = opponentPlan.getLeader();
         this.opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
+        if (opponentWeapon != null && opponentWeapon.name().equals("Mirror Weapon"))
+            this.opponentWeapon = weapon;
         this.opponentDefense = opponentPlan.getDefense();
         this.opponentStoneBurnerNoKill = opponentPlan.isStoneBurnerNoKill();
     }

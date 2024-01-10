@@ -37,7 +37,9 @@ public class BattlePlanTest {
     BattlePlan artilleryStrikePlan;
     BattlePlan poisonToothPlan;
     BattlePlan poisonBladePlan;
+    BattlePlan mirrorWeaponPlan;
     BattlePlan shieldPlan;
+
     @BeforeEach
     void setUp() throws IOException {
         zoal = new Leader("Zoal", -1, null, false);
@@ -68,6 +70,7 @@ public class BattlePlanTest {
         artilleryStrikePlan = new BattlePlan(false,null, null, false, artilleryStrike, null, 0, false, 0, 0, 0);
         poisonToothPlan = new BattlePlan(false,null, null, false, poisonTooth, null, 0, false, 0, 0, 0);
         poisonBladePlan = new BattlePlan(false,null, null, false, poisonBlade, null, 0, false, 0, 0, 0);
+        mirrorWeaponPlan = new BattlePlan(false,null, null, false, mirrorWeapon, null, 0, false, 0, 0, 0);
         shieldPlan = new BattlePlan(false,null, null, false, null, shield, 0, false, 0, 0, 0);
     }
 
@@ -489,6 +492,41 @@ public class BattlePlanTest {
         assertTrue(battlePlan.isLeaderAlive());
         battlePlan.removePortableSnooper();
         assertFalse(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testMirrorWeaponNoWeapon() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
+        assertTrue(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testMirrorWeaponWithWeapon() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
+        assertFalse(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testMirrorWeaponWithWeaponDefended() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
+        assertTrue(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testMirrorWeaponWithPoisonBlade() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shield, 0, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
+        assertFalse(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testMirrorWeaponWithPoisonBladeDefended() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shieldSnooper, 0, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
+        assertTrue(battlePlan.isLeaderAlive());
     }
 
     @AfterEach
