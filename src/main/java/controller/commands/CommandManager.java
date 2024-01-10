@@ -1307,7 +1307,8 @@ public class CommandManager extends ListenerAdapter {
     private String factionBattleResults(Game game, Battle currentBattle, boolean isAggressor) throws InvalidGameStateException {
         String resolution = "";
         Faction faction = isAggressor ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
-        String factionName = currentBattle.hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
+        String troopFactionName = currentBattle.hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
+        String troopFactionEmoji = Emojis.getFactionEmoji(troopFactionName);
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
@@ -1315,34 +1316,34 @@ public class CommandManager extends ListenerAdapter {
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
         boolean loser = isAggressor != currentBattle.isAggressorWin() || isLasgunShieldExplosion;
 
-        if (!battlePlan.isLeaderAlive())
+        if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         List<Force> forcesDialed = currentBattle.getForcesDialed(faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
         int regularForces = forcesDialed.get(0).getStrength();
         int specialForces = forcesDialed.get(1).getStrength();
         if (loser) {
-            resolution += emojis + " loses ";
+            resolution += troopFactionEmoji + " loses ";
             int regularStrength = currentBattle.getForces().stream()
-                    .filter(f -> f.getName().equals(factionName))
+                    .filter(f -> f.getName().equals(troopFactionName))
                     .mapToInt(Force::getStrength).findFirst().orElse(0);
             if (regularStrength > 0)
-                resolution += regularStrength + " " + Emojis.getForceEmoji(factionName);
+                resolution += regularStrength + " " + Emojis.getForceEmoji(troopFactionName);
             int specialStrength = currentBattle.getForces().stream()
-                    .filter(f -> f.getName().equals(factionName + "*"))
+                    .filter(f -> f.getName().equals(troopFactionName + "*"))
                     .mapToInt(Force::getStrength).findFirst().orElse(0);
             if (specialStrength > 0)
-                resolution += specialStrength + " " + Emojis.getForceEmoji(factionName + "*");
+                resolution += specialStrength + " " + Emojis.getForceEmoji(troopFactionName + "*");
             resolution += " to the tanks\n";
         } else if (regularForces > 0 || specialForces > 0) {
-            resolution += emojis + " loses";
+            resolution += troopFactionEmoji + " loses";
             if (regularForces > 0)
-                resolution += " " + regularForces + " " + Emojis.getForceEmoji(factionName);
+                resolution += " " + regularForces + " " + Emojis.getForceEmoji(troopFactionName);
             if (specialForces > 0)
-                resolution += " " + specialForces + " " + Emojis.getForceEmoji(factionName + "*");
+                resolution += " " + specialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
             resolution += " to the tanks\n";
         }
-        if (currentBattle.hasEcazAndAlly() && factionName.equals(game.getFaction("Ecaz").getAlly())) {
-            resolution += Emojis.getFactionEmoji("Ecaz") + " loses ";
+        if (currentBattle.hasEcazAndAlly() && (loser || battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+            resolution += Emojis.ECAZ + " loses ";
             resolution += loser ? battlePlan.getEcazTroopsForAlly() : Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
             resolution += " " + Emojis.ECAZ_TROOP;
             resolution += " to the tanks\n";

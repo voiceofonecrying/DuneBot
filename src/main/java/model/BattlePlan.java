@@ -96,7 +96,7 @@ public class BattlePlan {
 
     public int getDoubleBattleStrength() {
         if (stoneBurnerForTroops())
-            return 2 * troopsNotDialed + 2 * Math.floorDiv(ecazTroopsForAlly, 2);
+            return 2 * troopsNotDialed;
         int doubleBattleStrength = 2 * wholeNumberDial;
         if (plusHalfDial) doubleBattleStrength++;
         doubleBattleStrength += 2 * getLeaderContribution();
@@ -119,7 +119,7 @@ public class BattlePlan {
                 || weapon != null && !inactivePoisonTooth && weapon.name().equals("Poison Tooth");
     }
 
-    private boolean stoneBurnerForTroops() {
+    public boolean stoneBurnerForTroops() {
         if (aggressor && weapon != null && weapon.name().equals("Artillery Strike")
                 || !aggressor && opponentWeapon != null && opponentWeapon.name().equals("Artillery Strike"))
             return false;
