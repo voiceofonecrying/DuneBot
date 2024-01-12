@@ -1,11 +1,9 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
-import model.factions.AtreidesFaction;
-import model.factions.EcazFaction;
-import model.factions.EmperorFaction;
-import model.factions.Faction;
+import model.factions.*;
 
 import java.util.*;
 
@@ -245,7 +243,19 @@ public class Battle {
         return specialStrength - specialStrengthUsed + regularStrength - regularStrengthUsed;
     }
 
-    public BattlePlan setBattlePlan(Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
+    public int homeworldDialAdvantage(Game game, Territory territory, Faction faction) {
+        String territoryName = territory.getTerritoryName();
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            if (faction.getHomeworld().equals(territoryName))
+                return (faction instanceof EmperorFaction && !faction.isHighThreshold() || faction instanceof BGFaction && faction.isHighThreshold())
+                        ? 3 : 2;
+            else if (faction instanceof EmperorFaction emperorFaction && territoryName.equals("Salusa Secundus"))
+                return emperorFaction.isSecundusHighThreshold() ? 3 : 2;
+        }
+        return 0;
+    }
+
+    public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
         int actualSize = factionNames.size();
         int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
         if (actualSize != numFactionsExpected)
@@ -304,7 +314,7 @@ public class Battle {
         int ecazTroops = 0;
         if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
             ecazTroops = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops);
+        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, homeworldDialAdvantage(game, territorySectors.get(0), faction));
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {

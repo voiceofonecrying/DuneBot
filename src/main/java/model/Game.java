@@ -857,7 +857,7 @@ public class Game {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
-            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f.getName().equals("Emperor") && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
+            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f instanceof EmperorFaction && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
             if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > territory.getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
                 ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
                 turnSummary.publish("Salusa Secundus has flipped to low threshold.");

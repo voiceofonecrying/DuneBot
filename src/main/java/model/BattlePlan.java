@@ -7,13 +7,14 @@ public class BattlePlan {
     private final Leader leader;
     private final TreacheryCard cheapHero;
     private final boolean kwisatzHaderach;
+    private final TreacheryCard weapon;
+    private TreacheryCard defense;
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
     private final int troopsNotDialed;
     private final int ecazTroopsForAlly;
-    private final TreacheryCard weapon;
-    private TreacheryCard defense;
+    private final int homeworldDialAdvantage;
     private TreacheryCard opponentWeapon;
     private TreacheryCard opponentDefense;
     private Leader opponentLeader;
@@ -22,18 +23,19 @@ public class BattlePlan {
     private boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
 
-    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly) {
+    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, int homeworldDialAdvantage) {
         this.aggressor = aggressor;
         this.leader = leader;
         this.cheapHero = cheapHero;
         this.kwisatzHaderach = kwisatzHaderach;
+        this.weapon = weapon;
+        this.defense = defense;
         this.wholeNumberDial = wholeNumberDial;
         this.plusHalfDial = plusHalfDial;
         this.spice = spice;
         this.troopsNotDialed = troopsNotDialed;
         this.ecazTroopsForAlly = ecazTroopsForAlly;
-        this.weapon = weapon;
-        this.defense = defense;
+        this.homeworldDialAdvantage = homeworldDialAdvantage;
         this.stoneBurnerNoKill = false;
     }
 
@@ -96,8 +98,8 @@ public class BattlePlan {
 
     public int getDoubleBattleStrength() {
         if (stoneBurnerForTroops())
-            return 2 * troopsNotDialed;
-        int doubleBattleStrength = 2 * wholeNumberDial;
+            return 2 * troopsNotDialed + 2 * homeworldDialAdvantage;
+        int doubleBattleStrength = 2 * wholeNumberDial + 2 * homeworldDialAdvantage;
         if (plusHalfDial) doubleBattleStrength++;
         doubleBattleStrength += 2 * getLeaderContribution();
         doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
@@ -156,8 +158,6 @@ public class BattlePlan {
         } else if (opponentWeapon != null && !opponentWeapon.name().equals("Stone Burner")) {
             if (defense == null)
                 return false;
-            else if (opponentWeapon.name().equals("Lasgun"))
-                return false;
             else if (opponentWeapon.name().equals("Poison Blade") && !defense.name().equals("Shield Snooper"))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
@@ -166,6 +166,8 @@ public class BattlePlan {
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
                     && !(defense.servesAsShield() || defense.name().equals("Weirding Way")))
                 return false;
+            else
+                return !opponentWeapon.name().equals("Lasgun");
         }
         return true;
     }
@@ -188,7 +190,10 @@ public class BattlePlan {
     }
 
     public String getDialString() {
-        return "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
+        String dialString = "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
+        if (homeworldDialAdvantage != 0)
+            dialString += "\nHomeworld advantage: " + homeworldDialAdvantage;
+        return dialString;
     }
 
     public String getSpiceString() {
