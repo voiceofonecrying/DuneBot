@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
@@ -1247,6 +1248,121 @@ class GameTest {
             assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#createAlliance")
+    class CreateAlliance {
+        TestTopic fremenLedger = new TestTopic();
+        TestTopic guildLedger = new TestTopic();
+        TestTopic btLedger = new TestTopic();
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("p1", "un1", game);
+            game.addFaction(fremen);
+            fremen.setLedger(fremenLedger);
+
+            guild = new GuildFaction("p2", "un2", game);
+            game.addFaction(guild);
+            guild.setLedger(guildLedger);
+
+            bt = new BTFaction("p3", "un3", game);
+            game.addFaction(bt);
+            bt.setLedger(btLedger);
+
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+        }
+
+        @Test
+        void noCurrentAlliance() {
+            game.createAlliance(fremen, guild);
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.get(0));
+            assertEquals("Guild", fremen.getAlly());
+            assertEquals("Fremen", guild.getAlly());
+            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().get(0));
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().get(0));
+
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void withCurrentAlliance() {
+            game.createAlliance(fremen, guild);
+            turnSummary = new TestTopic();
+            fremenLedger = new TestTopic();
+            guildLedger = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            fremen.setLedger(fremenLedger);
+            guild.setLedger(guildLedger);
+            game.getUpdateTypes().clear();
+
+            game.createAlliance(fremen, bt);
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " are no longer allies.", turnSummary.messages.get(0));
+            assertEquals(Emojis.FREMEN + " and " + Emojis.BT + " have formed an alliance.", turnSummary.messages.get(1));
+
+            assertEquals("BT", fremen.getAlly());
+            assertEquals("", guild.getAlly());
+            assertEquals("Fremen", bt.getAlly());
+
+            assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().get(0));
+            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().get(0));
+
+            assertEquals("You are now allies with " + Emojis.BT + "!", fremenLedger.getMessages().get(1));
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", btLedger.getMessages().get(0));
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeAlliance")
+    class RemoveAlliance {
+        TestTopic fremenLedger = new TestTopic();
+        TestTopic guildLedger = new TestTopic();
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("p1", "un1", game);
+            game.addFaction(fremen);
+            fremen.setLedger(fremenLedger);
+
+            guild = new GuildFaction("p2", "un2", game);
+            game.addFaction(guild);
+            guild.setLedger(guildLedger);
+
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+        }
+        @Test
+        void noAlliance() {
+            game.removeAlliance(fremen);
+            assertEquals(0, turnSummary.messages.size());
+            assertEquals("", fremen.getAlly());
+            assertEquals(0, fremenLedger.getMessages().size());
+
+            assertTrue(game.getUpdateTypes().isEmpty());
+        }
+
+        @Test
+        void withAlliance() {
+            game.createAlliance(fremen, guild);
+            turnSummary = new TestTopic();
+            fremenLedger = new TestTopic();
+            guildLedger = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            fremen.setLedger(fremenLedger);
+            guild.setLedger(guildLedger);
+            game.getUpdateTypes().clear();
+
+            game.removeAlliance(fremen);
+            assertEquals("", fremen.getAlly());
+            assertEquals("", guild.getAlly());
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " are no longer allies.", turnSummary.messages.get(0));
+            assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().get(0));
+            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().get(0));
+
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
     }
 }

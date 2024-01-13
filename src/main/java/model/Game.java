@@ -15,6 +15,7 @@ import model.factions.*;
 import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -965,4 +966,42 @@ public class Game {
         mentatPause = null;
         extortionTokenRevealed = false;
     }
+
+    /**
+     * Create an alliance between two factions.
+     * @param faction1 The first faction.
+     * @param faction2 The second faction.
+     */
+    public void createAlliance(Faction faction1, Faction faction2) {
+        removeAlliance(faction1);
+        removeAlliance(faction2);
+
+        faction1.setAlly(faction2.getName());
+        faction2.setAlly(faction1.getName());
+
+        turnSummary.publish(faction1.getEmoji() + " and " + faction2.getEmoji() + " have formed an alliance.");
+        faction1.getLedger().publish("You are now allies with " + faction2.getEmoji() + "!");
+        faction2.getLedger().publish("You are now allies with " + faction1.getEmoji() + "!");
+
+        setUpdated(UpdateType.MAP);
+    }
+
+    /**
+     * Remove an alliance between two factions.
+     * @param faction The faction to remove the alliance from.
+     */
+    public void removeAlliance(@NotNull Faction faction) {
+        if (faction.hasAlly()) {
+            Faction allyFaction = getFaction(faction.getAlly());
+            faction.removeAlly();
+            allyFaction.removeAlly();
+            turnSummary.publish(faction.getEmoji() + " and " + allyFaction.getEmoji() + " are no longer allies.");
+            faction.getLedger().publish("Your alliance with " + allyFaction.getEmoji() + " has been dissolved!");
+            allyFaction.getLedger().publish("Your alliance with " + faction.getEmoji() + " has been dissolved!");
+
+            setUpdated(UpdateType.MAP);
+        }
+    }
+
+
 }

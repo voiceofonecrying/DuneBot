@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.Alliance;
 import controller.DiscordGame;
 import controller.Queue;
 import controller.channels.TurnSummary;
@@ -1565,45 +1566,22 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction factionOne = game.getFaction(discordGame.required(faction).getAsString());
-        Faction factionTwo = game.getFaction(discordGame.required(otherFaction).getAsString());
+        Faction faction1 = game.getFaction(discordGame.required(faction).getAsString());
+        Faction faction2 = game.getFaction(discordGame.required(otherFaction).getAsString());
 
-        removeAlliance(game, factionOne);
-        removeAlliance(game, factionTwo);
+        Alliance.createAlliance(discordGame, faction1, faction2);
 
-        factionOne.setAlly(factionTwo.getName());
-        factionTwo.setAlly(factionOne.getName());
-
-        String threadName = MessageFormat.format(
-                "{0} {1} Alliance",
-                factionOne.getName(),
-                factionTwo.getName()
-        );
-
-        discordGame.createPrivateThread(discordGame.getTextChannel("chat"), threadName, Arrays.asList(
-                factionOne.getPlayer(), factionTwo.getPlayer()
-        ));
-
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }
 
     public void removeAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
-        removeAlliance(game, targetFaction);
+
+        game.removeAlliance(targetFaction);
 
         discordGame.pushGame();
     }
 
-    private void removeAlliance(Game game, Faction faction) {
-        if (faction.hasAlly()) {
-            game.getFaction(faction.getAlly()).removeAlly();
-        }
-        faction.removeAlly();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-    }
 
     public void setSpiceInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(territory).getAsString();

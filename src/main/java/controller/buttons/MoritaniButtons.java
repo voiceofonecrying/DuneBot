@@ -1,9 +1,7 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.ShowCommands;
-import enums.GameOption;
-import enums.UpdateType;
+import controller.Alliance;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
@@ -126,23 +124,13 @@ public class MoritaniButtons implements Pressable {
         discordGame.queueMessage("You have sent the emissary away with news of their new alliance!");
         discordGame.queueDeleteMessage();
         String terror = event.getComponentId().split("-")[4];
-
-        String oldAlly = faction.getAlly();
-        String moritaniOldAlly = game.getFaction("Moritani").getAlly();
-
-        faction.setAlly("Moritani");
-        game.getFaction("Moritani").setAlly(faction.getName());
-        if (oldAlly != null) game.getFaction(oldAlly).setAlly(null);
-        if (moritaniOldAlly != null) game.getFaction(moritaniOldAlly).setAlly(null);
-        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " and " + faction.getEmoji() + " have forsaken former political ties and formed an alliance!");
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+
+        Alliance.createAlliance(discordGame, moritani, faction);
+
         moritani.getTerrorTokens().add(terror);
         game.getTerritory(event.getComponentId().split("-")[3]).getTerrorTokens().removeIf(t -> t.equals(terror));
         discordGame.pushGame();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
     }
 
     private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
