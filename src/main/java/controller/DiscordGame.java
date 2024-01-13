@@ -162,13 +162,63 @@ public class DiscordGame {
         return this.textChannelList;
     }
 
+    /**
+     * Gets the text channel with the given name.
+     *
+     * @param name Name of the text channel to get.
+     * @return Text channel with the given name.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
     public TextChannel getTextChannel(String name) throws ChannelNotFoundException {
         for (TextChannel channel : this.getTextChannels()) {
             if (channel.getName().equals(name)) {
                 return channel;
             }
         }
-        throw new ChannelNotFoundException("The channel was not found");
+        throw new ChannelNotFoundException("Channel not found : " + name);
+    }
+
+    /**
+     * Gets a thread with the given name.
+     *
+     * @param channelName Name of the text channel which contains the thread.
+     * @param threadName  Name of the thread to get.
+     * @return Text channel with the given name.
+     * @throws ChannelNotFoundException Thrown if the channel or thread is not found.
+     */
+    public ThreadChannel getThreadChannel(String channelName, String threadName) throws ChannelNotFoundException {
+        Optional<ThreadChannel> threadChannel = getOptionalThreadChannel(channelName, threadName);
+        if (threadChannel.isPresent()) return threadChannel.get();
+
+        throw new ChannelNotFoundException("Thread not found: " + threadName + " in channel " + channelName);
+    }
+
+    /**
+     * Gets an optional thread with the given name.
+     *
+     * @param channelName Name of the text channel which contains the thread.
+     * @param threadName  Name of the thread to get.
+     * @return Optional Thread channel with the given name.
+     * @throws ChannelNotFoundException Thrown if the channel is not found.
+     */
+    public Optional<ThreadChannel> getOptionalThreadChannel(String channelName, String threadName) throws ChannelNotFoundException {
+        TextChannel channel = getTextChannel(channelName);
+        Optional<ThreadChannel> thread = channel.getThreadChannels().stream().filter(c -> c.getName().equals(threadName)).findFirst();
+        if (thread.isPresent()) return thread;
+
+        thread = channel
+                .retrieveArchivedPublicThreadChannels().complete().stream()
+                .filter(c -> c.getName().equals(threadName))
+                .findFirst();
+
+        if (thread.isPresent()) return thread;
+
+        thread = channel
+                .retrieveArchivedPrivateThreadChannels().complete().stream()
+                .filter(c -> c.getName().equals(threadName))
+                .findFirst();
+
+        return thread;
     }
 
     public TextChannel getBotDataChannel() throws ChannelNotFoundException {

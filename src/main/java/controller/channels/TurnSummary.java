@@ -17,10 +17,10 @@ public class TurnSummary extends DiscordChannel {
     public TurnSummary(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         super(discordGame);
         TextChannel frontOfShield = discordGame.getTextChannel("front-of-shield");
-        Optional<ThreadChannel> optThread;
+
         thread = true;
         String turnNumSummaryName = "turn-" + game.getTurn() + "-summary";
-        optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(turnNumSummaryName)).findFirst();
+        Optional<ThreadChannel> optThread = discordGame.getOptionalThreadChannel("front-of-shield", turnNumSummaryName);
         if (optThread.isPresent()) {
             this.messageChannel = optThread.get();
         } else {
@@ -36,7 +36,7 @@ public class TurnSummary extends DiscordChannel {
             optThread.ifPresent(threadChannel -> this.messageChannel = threadChannel);
         }
         String prevTurnSummaryName = "turn-" + (game.getTurn() - 1) + "-summary";
-        optThread = frontOfShield.getThreadChannels().stream().filter(channel -> channel.getName().equals(prevTurnSummaryName)).findFirst();
+        optThread = discordGame.getOptionalThreadChannel("front-of-shield", prevTurnSummaryName);
         optThread.ifPresent(threadChannel -> threadChannel.getManager().setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_24_HOURS).queue());
     }
 
