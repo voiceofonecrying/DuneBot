@@ -63,7 +63,7 @@ public class CopyBotData {
         System.exit(0);
     }
 
-    private static DiscordGame getDiscordGame(JDA jda, String guildId, String category) throws InterruptedException, ChannelNotFoundException {
+    private static DiscordGame getDiscordGame(JDA jda, String guildId, String category) throws ChannelNotFoundException {
         Guild guild = jda.getGuildById(guildId);
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName(category, true);

@@ -1,6 +1,5 @@
 package devtools;
 
-import exceptions.ChannelNotFoundException;
 import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class DeleteCategory {
-    public static void main(String[] args) throws ChannelNotFoundException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
         String testToken = Dotenv.configure().load().get("TEST_TOKEN");
         String testGuildId = Dotenv.configure().load().get("TEST_GUILD_ID");
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestTopic implements DuneTopic {
-    List<String> messages = new ArrayList<>();
+    final List<String> messages = new ArrayList<>();
 
     public List<String> getMessages() {
         return messages;

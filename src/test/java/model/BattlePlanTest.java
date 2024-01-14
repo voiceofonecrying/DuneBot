@@ -4,8 +4,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BattlePlanTest {
@@ -41,7 +39,7 @@ public class BattlePlanTest {
     BattlePlan shieldPlan;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         zoal = new Leader("Zoal", -1, null, false);
         duncanIdaho = new Leader("Duncan Idaho", 2, null, false);
         cheapHero = new TreacheryCard("Cheap Hero");

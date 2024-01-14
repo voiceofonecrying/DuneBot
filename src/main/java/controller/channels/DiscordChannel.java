@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import java.util.List;
 
 public class DiscordChannel implements DuneTopic {
-    DiscordGame discordGame;
+    final DiscordGame discordGame;
     MessageChannel messageChannel;
 
     DiscordChannel(DiscordGame discordGame) {

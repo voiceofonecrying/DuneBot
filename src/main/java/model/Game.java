@@ -8,7 +8,6 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.SetupStep;
 import enums.UpdateType;
-import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.*;
@@ -719,7 +718,7 @@ public class Game {
         }
     }
 
-    public void drawSpiceBlow(String spiceBlowDeckName) throws ChannelNotFoundException {
+    public void drawSpiceBlow(String spiceBlowDeckName) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
         LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
@@ -847,11 +846,11 @@ public class Game {
             setUpdated(UpdateType.MAP);
     }
 
-    public void removeForces(String territoryName, Faction targetFaction, int amountValue, boolean special, boolean isToTanks) throws ChannelNotFoundException {
+    public void removeForces(String territoryName, Faction targetFaction, int amountValue, boolean special, boolean isToTanks) {
         removeForces(territoryName, targetFaction, (special ? 0 : amountValue), (special ? amountValue : 0), isToTanks);
     }
 
-    public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) throws ChannelNotFoundException {
+    public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
         String factionName = targetFaction.getName();
         Territory territory = getTerritory(territoryName);
 

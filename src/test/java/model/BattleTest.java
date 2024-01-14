@@ -479,7 +479,7 @@ class BattleTest {
         @Test
         void testEcazAllyChoiceMakesOpponentAggressor() {
             battle2.setEcazCombatant(game, "Ecaz");
-            assertTrue(battle2.getAggressor(game) instanceof HarkonnenFaction);
+            assertInstanceOf(HarkonnenFaction.class, battle2.getAggressor(game));
         }
 
         @Test

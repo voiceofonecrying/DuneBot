@@ -4,7 +4,6 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidOptionException;
 import controller.DiscordGame;
 import model.Game;
 import model.Territory;
@@ -12,12 +11,11 @@ import model.TreacheryCard;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
-import java.io.IOException;
 import java.util.Objects;
 
 public class SpiceCollectionButtons  implements Pressable{
 
-        public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidOptionException {
+        public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
 
             if (event.getComponentId().startsWith("reveal-discovery-token-")) revealDiscoveryToken(event, game, discordGame);
             else if (event.getComponentId().equals("don't-reveal-discovery-token")) dontRevealDiscoveryToken(discordGame);

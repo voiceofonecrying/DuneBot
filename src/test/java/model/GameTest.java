@@ -3,7 +3,6 @@ package model;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
-import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -689,7 +688,7 @@ class GameTest {
         }
 
         @Test
-        void shaiHuludDevoursTroops() throws ChannelNotFoundException {
+        void shaiHuludDevoursTroops() {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
@@ -710,7 +709,7 @@ class GameTest {
         }
 
         @Test
-        void shaiHuludDoesNotDevourFremen() throws ChannelNotFoundException {
+        void shaiHuludDoesNotDevourFremen() {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
@@ -730,7 +729,7 @@ class GameTest {
         }
 
         @Test
-        void shaiHuludDoesNotDevourFremenAlly() throws ChannelNotFoundException {
+        void shaiHuludDoesNotDevourFremenAlly() {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
@@ -752,7 +751,7 @@ class GameTest {
         }
 
         @Test
-        void greatMakerDevoursTroops() throws ChannelNotFoundException {
+        void greatMakerDevoursTroops() {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
@@ -773,7 +772,7 @@ class GameTest {
         }
 
         @Test
-        void greatMakerDoesNotDevourFremen() throws ChannelNotFoundException {
+        void greatMakerDoesNotDevourFremen() {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
@@ -793,7 +792,7 @@ class GameTest {
         }
 
         @Test
-        void greatMakerDoesNotDevourFremenAlly() throws ChannelNotFoundException {
+        void greatMakerDoesNotDevourFremenAlly() {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
@@ -815,7 +814,7 @@ class GameTest {
         }
 
         @Test
-        void shaiHuludAfterSandtroutDoesNotDevourTroops() throws ChannelNotFoundException {
+        void shaiHuludAfterSandtroutDoesNotDevourTroops() {
             game.getSpiceDeck().addFirst(shaiHulud);
             game.getSpiceDeck().addFirst(sandtrout);
             assertEquals(sandtrout, game.getSpiceDeck().getFirst());
@@ -836,7 +835,7 @@ class GameTest {
         }
 
         @Test
-        void discoverySpiceBlowKillsTropps() throws ChannelNotFoundException {
+        void discoverySpiceBlowKillsTropps() {
             game.getSpiceDeck().addFirst(nextBlow);
             assertEquals(nextBlow, game.getSpiceDeck().getFirst());
 
@@ -918,7 +917,7 @@ class GameTest {
         }
 
         @Test
-        void removeEmperorTroopAndSardaukarToTanks() throws ChannelNotFoundException {
+        void removeEmperorTroopAndSardaukarToTanks() {
             Territory territory = game.getTerritory("Sihaya Ridge");
             territory.setForceStrength("Emperor", 3);
             territory.setForceStrength("Emperor*", 5);
@@ -937,7 +936,7 @@ class GameTest {
         }
 
         @Test
-        void removeEmperorTroopAndSardaukarToReserves() throws ChannelNotFoundException {
+        void removeEmperorTroopAndSardaukarToReserves() {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
             territory.setForceStrength("Emperor", 3);
@@ -965,7 +964,7 @@ class GameTest {
         }
 
         @Test
-        void removeEmperorTroopAndSardaukarFromHomeworlds() throws ChannelNotFoundException {
+        void removeEmperorTroopAndSardaukarFromHomeworlds() {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
@@ -1010,7 +1009,7 @@ class GameTest {
         }
 
         @Test
-        void removeFremenTroopAndFedaykinToReserves() throws ChannelNotFoundException {
+        void removeFremenTroopAndFedaykinToReserves() {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
             territory.setForceStrength("Fremen", 3);
@@ -1038,7 +1037,7 @@ class GameTest {
         }
 
         @Test
-        void removeBGAdvisorToTanks() throws ChannelNotFoundException {
+        void removeBGAdvisorToTanks() {
             Territory territory = game.getTerritory("Sihaya Ridge");
             territory.setForceStrength("Advisor", 1);
             assertEquals(1, territory.getForce("Advisor").getStrength());
@@ -1072,10 +1071,10 @@ class GameTest {
     @DisplayName("#putTerritoryInAnotherTerritory")
     class PutTerritoryInAnotherTerritory {
         Territory hms;
-        String hmsName = "Hidden Mobile Stronghold";
+        final String hmsName = "Hidden Mobile Stronghold";
         Territory shieldWallNorth;
-        String shieldWallNorthName = "Shield Wall (North Sector)";
-        String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
+        final String shieldWallNorthName = "Shield Wall (North Sector)";
+        final String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
 
         @BeforeEach
         void setUp() {
@@ -1102,10 +1101,10 @@ class GameTest {
     @DisplayName("#removeTerritoryFromAnotherTerritory")
     class RemoveTerritoryFromAnotherTerritory {
         Territory hms;
-        String hmsName = "Hidden Mobile Stronghold";
+        final String hmsName = "Hidden Mobile Stronghold";
         Territory shieldWallNorth;
-        String shieldWallNorthName = "Shield Wall (North Sector)";
-        String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
+        final String shieldWallNorthName = "Shield Wall (North Sector)";
+        final String shieldWallName = shieldWallNorthName.replaceAll("\\(.*\\)", "").strip();
 
         @BeforeEach
         void setUp() {
@@ -1137,9 +1136,9 @@ class GameTest {
     @Nested
     @DisplayName("#extortion")
     class Extortion {
-        TestTopic moritaniLedger = new TestTopic();
-        TestTopic richeseLedger = new TestTopic();
-        TestTopic guildLedger = new TestTopic();
+        final TestTopic moritaniLedger = new TestTopic();
+        final TestTopic richeseLedger = new TestTopic();
+        final TestTopic guildLedger = new TestTopic();
 
         @BeforeEach
         void setUp() throws IOException {
@@ -1174,7 +1173,7 @@ class GameTest {
         }
 
         @Test
-        void firstPlayerPays() throws InvalidGameStateException {
+        void firstPlayerPays() {
             game.startMentatPause();
             game.getMentatPause().factionWouldPayExtortion(game, guild);
             assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
@@ -1186,7 +1185,7 @@ class GameTest {
         }
 
         @Test
-        void fourthOffersToPayThenfirstPlayerPays() throws InvalidGameStateException {
+        void fourthOffersToPayThenfirstPlayerPays() {
             fremen.setSpice(0);
             game.startMentatPause();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
@@ -1200,7 +1199,7 @@ class GameTest {
         }
 
         @Test
-        void fourthPlayerPays() throws InvalidGameStateException {
+        void fourthPlayerPays() {
             fremen.setSpice(0);
             game.startMentatPause();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
@@ -1214,7 +1213,7 @@ class GameTest {
         }
 
         @Test
-        void allDecline() throws InvalidGameStateException {
+        void allDecline() {
             game.startMentatPause();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
@@ -1227,7 +1226,7 @@ class GameTest {
         }
 
         @Test
-        void allButOneDeclineMoritaniPoor() throws InvalidGameStateException {
+        void allButOneDeclineMoritaniPoor() {
             moritani.setSpice(2);
             game.startMentatPause();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
@@ -1238,7 +1237,7 @@ class GameTest {
         }
 
         @Test
-        void allDeclineFremenHas0Spice() throws InvalidGameStateException {
+        void allDeclineFremenHas0Spice() {
             fremen.setSpice(0);
             game.startMentatPause();
             game.getMentatPause().factionDeclinesExtortion(game, ix);
@@ -1256,7 +1255,7 @@ class GameTest {
     class CreateAlliance {
         TestTopic fremenLedger = new TestTopic();
         TestTopic guildLedger = new TestTopic();
-        TestTopic btLedger = new TestTopic();
+        final TestTopic btLedger = new TestTopic();
 
         @BeforeEach
         void setUp() throws IOException {

@@ -204,7 +204,7 @@ public class Territory {
     }
 
     public boolean hasTerrorToken() {
-        return getTerrorTokens().size() > 0;
+        return !getTerrorTokens().isEmpty();
     }
 
     public boolean isAftermathToken() {

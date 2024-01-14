@@ -55,7 +55,7 @@ public class MentatPause {
         }
     }
 
-    public void factionDeclinesExtortion(Game game, Faction faction) throws InvalidGameStateException {
+    public void factionDeclinesExtortion(Game game, Faction faction) {
         if (faction instanceof MoritaniFaction) return;
         declinedExtortion.add(faction.getName());
         if (declinedExtortion.size() == game.getFactions().size() - 1) {
@@ -67,7 +67,7 @@ public class MentatPause {
         }
     }
 
-    public void factionWouldPayExtortion(Game game, Faction faction) throws InvalidGameStateException {
+    public void factionWouldPayExtortion(Game game, Faction faction) {
         if (faction instanceof MoritaniFaction) return;
         wouldPayExtortion.add(faction.getName());
         checkForExtortionPayment(game);

@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import utils.CardImages;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -60,7 +59,7 @@ public class EventListener extends ListenerAdapter {
         DiscordGame discordGame;
         try {
             discordGame = new DiscordGame(event);
-        } catch (ChannelNotFoundException | IOException e) {
+        } catch (ChannelNotFoundException e) {
             return;
         }
         Game game;

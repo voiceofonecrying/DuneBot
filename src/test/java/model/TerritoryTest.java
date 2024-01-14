@@ -38,8 +38,8 @@ public class TerritoryTest {
     @DisplayName("#stormTroopsFremen")
     class StormTroopsFremen {
         String response;
-        int numFremen = 4;
-        int numFedaykin = 2;
+        final int numFremen = 4;
+        final int numFedaykin = 2;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -75,7 +75,7 @@ public class TerritoryTest {
     @DisplayName("#stormRemoveTroops")
     class StormRemoveTroops {
         String response;
-        int numForces = 4;
+        final int numForces = 4;
 
         @BeforeEach
         void setUp() throws IOException {

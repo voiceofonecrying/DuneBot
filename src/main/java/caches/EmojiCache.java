@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EmojiCache {
-    static Map<String, Map<String, RichCustomEmoji>> guildEmojis = new HashMap<>();
+    static final Map<String, Map<String, RichCustomEmoji>> guildEmojis = new HashMap<>();
 
     public static void setEmojis(String guildId, List<RichCustomEmoji> emojis) {
         Map<String, RichCustomEmoji> emojiMap = new HashMap<>();

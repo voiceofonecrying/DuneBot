@@ -8,10 +8,8 @@ import model.Game;
 import model.Territory;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
-import java.io.IOException;
-
 public class FremenButtons implements Pressable {
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
 
         if (event.getComponentId().startsWith("fremen-ht-")) triggerHT(event, game, discordGame);
         if (event.getComponentId().equals("fremen-cancel")) cancelHT(discordGame);

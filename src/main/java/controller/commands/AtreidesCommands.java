@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +33,12 @@ public class AtreidesCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
-        switch (name) {
-            case "kh-count-increase" -> addForcesLost(discordGame, game);
+        if (name.equals("kh-count-increase")) {
+            addForcesLost(discordGame, game);
         }
     }
 

@@ -8,9 +8,7 @@ import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
-import io.gsonfire.PreProcessor;
 import model.*;
-import model.factions.EmperorFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;
 import net.dv8tion.jda.api.JDA;
@@ -56,14 +54,14 @@ public class DiscordGame {
     private static final Pattern taggedEmojis = Pattern.compile("<(:[a-zA-Z0-9_]+:)\\d+>");
     private static final Pattern untaggedEmojis = Pattern.compile("(?<!<):([a-zA-Z0-9_]+):(?!\\d+>)");
 
-    public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException, IOException {
+    public DiscordGame(@NotNull GenericInteractionCreateEvent event) throws ChannelNotFoundException {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
         this.event = event;
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
-    public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException, IOException {
+    public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
@@ -79,7 +77,7 @@ public class DiscordGame {
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
     }
 
-    public DiscordGame(Category category, boolean isNew) throws ChannelNotFoundException, IOException {
+    public DiscordGame(Category category, boolean isNew) throws ChannelNotFoundException {
         this.gameCategory = category;
         if (!isNew) this.game = getGame();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
@@ -137,12 +135,9 @@ public class DiscordGame {
     public static Gson createGsonDeserializer() {
         GsonFireBuilder builder = new GsonFireBuilder()
                 .registerTypeSelector(Faction.class, new FactionTypeSelector())
-                .registerPreProcessor(TreacheryCard.class, new PreProcessor<TreacheryCard>() {
-                    @Override
-                    public void preDeserialize(Class<? extends TreacheryCard> clazz, JsonElement src, Gson gson) {
-                        JsonObject jsonObject = src.getAsJsonObject();
-                        jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
-                    }
+                .registerPreProcessor(TreacheryCard.class, (clazz, src, gson) -> {
+                    JsonObject jsonObject = src.getAsJsonObject();
+                    jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
                 })
                 ;
         GsonBuilder gsonBuilder = builder.createGsonBuilder();
@@ -391,40 +386,6 @@ public class DiscordGame {
         this.game = game;
     }
 
-    private void runHomeworldsMigration(Game game) {
-        HashMap<String, String> homeworlds = new HashMap<>();
-        homeworlds.put("Atreides", "Caladan");
-        homeworlds.put("Harkonnen", "Giedi Prime");
-        homeworlds.put("Emperor", "Kaitain");
-        homeworlds.put("Fremen", "Southern Hemisphere");
-        homeworlds.put("Guild", "Junction");
-        homeworlds.put("BG", "Wallach IX");
-        homeworlds.put("Ix", "Ix");
-        homeworlds.put("BT", "Tleilax");
-        homeworlds.put("CHOAM", "Tupile");
-        homeworlds.put("Richese", "Richese");
-        homeworlds.put("Ecaz", "Ecaz");
-        homeworlds.put("Moritani", "Grumman");
-
-        for (Faction faction : game.getFactions()) {
-            int reserves = faction.getReserves().getStrength();
-            int specialReserves = faction.getSpecialReserves().getStrength();
-            String homeworldName = homeworlds.get(faction.getName());
-            faction.setHomeworld(homeworldName);
-            Territory homeworld = new Territory(homeworldName, -1, false, false, false);
-            game.getTerritories().put(homeworldName, homeworld);
-            game.getHomeworlds().put(faction.getName(), homeworldName);
-            game.getTerritory(homeworldName).getForces().add(new Force(faction.getName(), reserves));
-            if (faction.getName().matches("Fremen|Ix"))
-                game.getTerritory(homeworldName).getForces().add(new Force(faction.getName() + "*", specialReserves));
-        }
-        if (game.hasFaction("Emperor")) {
-            game.getHomeworlds().put("Emperor*", "Salusa Secundus");
-            ((EmperorFaction) game.getFaction("Emperor")).setSecondHomeworld("Salusa Secundus");
-            game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
-            game.getTerritory("Salusa Secundus").getForces().add(game.getFaction("Emperor").getSpecialReserves());
-        }
-    }
 
     /**
      * Loads the game state from the bot data channel, or returns an already loaded game state.
@@ -713,7 +674,6 @@ public class DiscordGame {
     /**
      * Sends all messages in the message queue.
      */
-    @SuppressWarnings("rawtypes")
     public void sendAllMessages() {
         if (this.game.getMute()) return;
         for (DiscordRequest discordRequest : discordRequests) {
