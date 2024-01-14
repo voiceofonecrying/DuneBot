@@ -90,6 +90,15 @@ public class CardImages {
         return getCardImageLink(guild, "homeworld-images", pattern);
     }
 
+    public static String getLeaderImageLink(Guild guild, String leaderName) {
+        Pattern pattern = Pattern.compile(
+                Pattern.quote(leaderName.trim()) + ".*",
+                Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+
+        return getCardImageLink(guild, "leaders", pattern);
+    }
+
     public static String getStrongholdCardLink(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
                 Pattern.quote(cardName.trim()) + ".*",

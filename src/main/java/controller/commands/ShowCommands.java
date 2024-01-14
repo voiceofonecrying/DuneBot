@@ -1070,6 +1070,7 @@ public class ShowCommands {
                                                             Emojis.LEADER, leader.name(), leaderSkillCard.name()
                                                     )))
                                     .setColor(factionColor)
+                                    .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.name()))
                                     .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                                     .addField(
                                             "Always",
