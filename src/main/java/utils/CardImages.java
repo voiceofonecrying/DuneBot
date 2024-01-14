@@ -119,7 +119,7 @@ public class CardImages {
 
     public static String getHomeworldCardLink(Guild guild, String cardName) {
         Pattern pattern = Pattern.compile(
-                Pattern.quote(cardName.trim()) + ".*",
+                ".*" + Pattern.quote(cardName.trim()) + ".*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
