@@ -768,7 +768,7 @@ public class CommandManager extends ListenerAdapter {
 
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
-                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards));
+                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
 
         return commandDataWithPermissions;
     }
@@ -1661,7 +1661,10 @@ public class CommandManager extends ListenerAdapter {
         if (event.getOption(leaderSkills.getName()).getAsBoolean())
             message += ":white_check_mark: -- :european_castle: ";
         else message += ":no_entry_sign: -- :european_castle: ";
-        if (event.getOption(strongholdCards.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: ";
+        if (event.getOption(strongholdCards.getName()).getAsBoolean())
+            message += ":white_check_mark: -- :ringed_planet: ";
+        else message += ":no_entry_sign: -- :ringed_planet: ";
+        if (event.getOption(homeworlds.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: ";
         else message += ":no_entry_sign:\nUser: ";
         message += "<@" + userTag + ">";
         textChannel.sendMessage(message).queue();

@@ -202,6 +202,9 @@ public class CommandOptions {
     public static final OptionData strongholdCards =
             new OptionData(OptionType.BOOLEAN, "stronghold-cards", "Set to true if you are okay with playing with stronghold cards", true);
 
+    public static final OptionData homeworlds =
+            new OptionData(OptionType.BOOLEAN, "homeworlds", "Set to true if you are okay with playing with homeworlds", true);
+
     public static final OptionData gameState =
             new OptionData(OptionType.STRING, "game-state", "Select a game state to rewind to.", true)
                     .setAutoComplete(true);
