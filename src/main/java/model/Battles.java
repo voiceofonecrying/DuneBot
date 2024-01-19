@@ -173,10 +173,23 @@ public class Battles {
         else if (opponent instanceof BGFaction || opponent.getAlly().equals("BG"))
             message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
 
+        if (aggressor.getSkilledLeaders().stream().anyMatch(l -> l.skillCard().name().equals("Mentat")))
+            message += step++ + ". " + aggressor.getEmoji() + " use Mentat skill.\n";
+        else if (opponent.getSkilledLeaders().stream().anyMatch(l -> l.skillCard().name().equals("Mentat")))
+            message += step++ + ". " + opponent.getEmoji() + " use Mentat skill.\n";
+        else
+            message += "(No faction has the Mentat skill. <temporary message>)\n";
+
         if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides"))
             message += step++ + ". " + aggressor.getEmoji() + " ask the Prescience question.\n";
         else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides"))
             message += step++ + ". " + opponent.getEmoji() + " ask the Prescience question.\n";
+
+        String skilledLeaderFactions = "";
+        if (!aggressor.getSkilledLeaders().isEmpty()) skilledLeaderFactions += aggressor.getEmoji() + " ";
+        if (!opponent.getSkilledLeaders().isEmpty()) skilledLeaderFactions += opponent.getEmoji() + " ";
+        if (!skilledLeaderFactions.isEmpty())
+            message += step++ + ". " + skilledLeaderFactions + " pull skilled leader or leave out front.\n";
 
         if (step != 1) message += step + ". ";
         message += aggressor.getEmoji() + " and " + opponent.getEmoji() + " submit battle plans.\n";
