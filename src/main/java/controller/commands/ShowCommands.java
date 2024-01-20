@@ -7,9 +7,7 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.*;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -24,6 +22,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import utils.CardImages;
+import view.factions.FactionView;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -31,7 +30,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
 
@@ -926,256 +924,10 @@ public class ShowCommands {
         discordGame.queueMessage("front-of-shield", "", newMap);
 
         for (Faction faction : game.getFactions()) {
-            Color factionColor = faction.getColor();
-
-            MessageCreateBuilder builder = new MessageCreateBuilder();
-
-            builder.addContent(
-                    discordGame.tagEmojis(
-                            MessageFormat.format(
-                                    "{0} {1} Info {0}\n",
-                                    faction.getEmoji(), faction.getName()
-                            ))
-            );
-
-            EmbedBuilder embedBuilder = new EmbedBuilder()
-                    .setColor(factionColor);
-
-            if (game.hasGameOption(GameOption.SPICE_PUBLIC)) {
-                embedBuilder.addField(
-                        "BoS",
-                        discordGame.tagEmojis(faction.getSpice() + " " + Emojis.SPICE),
-                        true
-                );
-            }
-
-            embedBuilder.addField(
-                    "FoS",
-                    discordGame.tagEmojis(faction.getFrontOfShieldSpice() + " " + Emojis.SPICE),
-                    true
-            );
-
-            if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC)) {
-                embedBuilder.addField(
-                        "Treachery",
-                        discordGame.tagEmojis(faction.getTreacheryHand().size() + " " + Emojis.TREACHERY),
-                        true
-                );
-            }
-
-            if (game.hasGameOption(GameOption.TECH_TOKENS)) {
-                List<String> techTokenEmojis = faction.getTechTokens().stream()
-                        .map(TechToken::getName)
-                        .map(Emojis::getTechTokenEmoji)
-                        .toList();
-
-                if (!techTokenEmojis.isEmpty()) {
-                    embedBuilder.addField(
-                            "Tech",
-                            discordGame.tagEmojis(String.join("", techTokenEmojis)),
-                            true
-                    );
-                }
-            }
-
-            if (faction instanceof RicheseFaction richeseFaction && richeseFaction.hasFrontOfShieldNoField()) {
-                embedBuilder.addField(
-                        "No-Field",
-                        discordGame.tagEmojis(richeseFaction.getFrontOfShieldNoField() + " " + Emojis.NO_FIELD),
-                        true
-                );
-            }
-
-            if (faction instanceof EcazFaction ecazFaction && ecazFaction.getLoyalLeader() != null) {
-                embedBuilder.addField(
-                        "Loyal Leader",
-                        discordGame.tagEmojis(ecazFaction.getLoyalLeader().name()),
-                        true
-                );
-            }
-
-            builder.addEmbeds(embedBuilder.build());
-
-            if (faction instanceof BTFaction btFaction && !btFaction.getRevealedFaceDancers().isEmpty()) {
-                EmbedBuilder faceDancerBuilder = new EmbedBuilder()
-                        .setTitle("Revealed Face Dancers")
-                        .setColor(factionColor);
-
-                for (TraitorCard faceDancer : btFaction.getRevealedFaceDancers()) {
-
-                    faceDancerBuilder.addField(
-                            MessageFormat.format(
-                                    "{0} {1}",
-                                    game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
-                            ),
-                            null,
-                            false
-                    );
-                }
-
-                builder.addEmbeds(faceDancerBuilder.build());
-            }
-
-            if (faction instanceof MoritaniFaction moritaniFaction && !moritaniFaction.getAssassinationTargets().isEmpty()) {
-                EmbedBuilder assassinationTargetsBuilder = new EmbedBuilder()
-                        .setTitle("Assassinated targets")
-                        .setColor(factionColor);
-
-                for (String assassinationTarget : moritaniFaction.getAssassinationTargets()) {
-
-                    assassinationTargetsBuilder.addField(
-                            assassinationTarget,
-                            "",
-                            false
-                    );
-                }
-
-                builder.addEmbeds(assassinationTargetsBuilder.build());
-            }
-
-            if (game.hasGameOption(GameOption.HOMEWORLDS)) {
-                builder.addEmbeds(
-                        getHomeworldEmbed(
-                                discordGame,
-                                faction,
-                                new HomeworldCard(faction.getHomeworld()),
-                                faction.isHighThreshold()
-                        ));
-
-                if (faction instanceof EmperorFaction emperorFaction) {
-                    builder.addEmbeds(
-                            getHomeworldEmbed(
-                                    discordGame,
-                                    faction,
-                                    new HomeworldCard("Salusa Secundus"),
-                                    emperorFaction.isSecundusHighThreshold()
-                            )
-                    );
-                }
-            }
-
-
-            if (game.hasLeaderSkills()) {
-                List<Leader> skilledLeaders = faction.getSkilledLeaders();
-
-                for (Leader leader : skilledLeaders) {
-                    LeaderSkillCard leaderSkillCard = leader.skillCard();
-
-                    builder.addEmbeds(
-                            new EmbedBuilder()
-                                    .setTitle(
-                                            discordGame.tagEmojis(
-                                                    MessageFormat.format(
-                                                            "{0} {1} is a {2} {0}",
-                                                            Emojis.LEADER, leader.name(), leaderSkillCard.name()
-                                                    )))
-                                    .setColor(factionColor)
-                                    .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.name()))
-                                    .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
-                                    .addField(
-                                            "Always",
-                                            leaderSkillCard.description(),
-                                            false
-                                    )
-                                    .addField(
-                                            "This leader in battle",
-                                            leaderSkillCard.inBattleDescription(),
-                                            false
-                                    )
-                                    .build()
-                    );
-                }
-            }
-
-            if (game.hasStrongholdSkills()) {
-                for (StrongholdCard strongholdCard : faction.getStrongholdCards()) {
-                    builder.addEmbeds(
-                            new EmbedBuilder()
-                                    .setTitle(
-                                            discordGame.tagEmojis(
-                                                    MessageFormat.format(
-                                                            "{0} {1} {0}",
-                                                            Emojis.STRONGHOLD, strongholdCard.name()
-                                                    ))
-                                    )
-                                    .setDescription(strongholdCard.description())
-                                    .setColor(factionColor)
-                                    .setUrl(CardImages.getStrongholdCardLink(discordGame.getEvent().getGuild(), strongholdCard.name()))
-                                    .build()
-                    );
-                }
-            }
-
+            FactionView factionView = FactionView.factory(discordGame, faction);
+            MessageCreateBuilder builder = factionView.getPublicMessage();
             discordGame.queueMessage("front-of-shield", builder);
         }
-    }
-
-    public static MessageEmbed getHomeworldEmbed(DiscordGame discordGame, Faction faction, HomeworldCard homeworldCard, boolean isHighThreshold) {
-        EmbedBuilder homeworldBuilder = new EmbedBuilder()
-                .setTitle(homeworldCard.name() + " Homeworld")
-                .setColor(faction.getColor())
-                .setThumbnail(CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
-                .setUrl(CardImages.getHomeworldCardLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
-                ;
-
-        if (isHighThreshold) {
-            homeworldBuilder.addField(
-                    "High Threshold",
-                    homeworldCard.highLowerThreshold() + " to " + homeworldCard.highUpperThreshold() + " Reserves",
-                    false
-            );
-            homeworldBuilder.addField("", homeworldCard.highDescription(), false);
-            homeworldBuilder.addField("",
-                    discordGame.tagEmojis(
-                            MessageFormat.format(
-                                    "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
-                                    faction.getName(), homeworldCard.highBattleExplosion(), homeworldCard.name()
-                            )),
-                    false);
-        } else {
-            homeworldBuilder.addField(
-                    "Low Threshold",
-                    homeworldCard.lowLowerThreshold() + " to " + homeworldCard.lowUpperThreshold() + " Reserves",
-                    false
-            );
-            homeworldBuilder.addField("", homeworldCard.lowDescription(), false);
-
-            if (homeworldCard.lowRevivalCharity() > 0) {
-                homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
-                                MessageFormat.format(
-                                        "+{0} free revival",
-                                        homeworldCard.lowRevivalCharity()
-                                )),
-                        false);
-
-                homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
-                                MessageFormat.format(
-                                        "+{0} CHOAM Charity (from Spice Bank)",
-                                        homeworldCard.lowRevivalCharity()
-                                )),
-                        false);
-
-                homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
-                                MessageFormat.format(
-                                        "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
-                                        faction.getName(), homeworldCard.lowBattleExplosion(), homeworldCard.name()
-                                )),
-                        false);
-
-                homeworldBuilder.addField("When Occupied",
-                        homeworldCard.occupiedDescription(),
-                        false);
-
-                homeworldBuilder.addField("Occupied Spice",
-                        discordGame.tagEmojis(homeworldCard.occupiedSpice() + " " + Emojis.SPICE),
-                        false);
-            }
-        }
-
-        return homeworldBuilder.build();
     }
 
     public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
