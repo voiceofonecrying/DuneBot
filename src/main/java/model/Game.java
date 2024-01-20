@@ -12,6 +12,8 @@ import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.*;
 import model.topics.DuneTopic;
+import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
@@ -964,6 +966,34 @@ public class Game {
         mentatPause.endPhase();
         mentatPause = null;
         extortionTokenRevealed = false;
+    }
+
+    public void updateStrongholdSkills() {
+        if (hasStrongholdSkills()) {
+            getFactions().forEach(Faction::removeAllStrongholdCards);
+
+            List<Pair<String, Faction>> controllingFactions = new ArrayList<>();
+            List<Territory> strongholds = getTerritories().values().stream()
+                    .filter(Territory::isStronghold)
+                    .toList();
+
+            strongholds.stream().filter(t -> t.countActiveFactions() == 1)
+                    .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), t.getActiveFactions(this).get(0))));
+            if (hasFaction("Ecaz"))
+                strongholds.stream().filter(t -> t.countActiveFactions() == 2)
+                        .filter(t -> t.getActiveFactions(this).get(0).getName().equals("Ecaz") && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
+                                || t.getActiveFactions(this).get(1).getName().equals("Ecaz") && t.getActiveFactions(this).get(0).getAlly().equals("Ecaz"))
+                        .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), getFaction("Ecaz"))));
+
+            for (Pair<String, Faction> controllingFaction : controllingFactions) {
+                String strongholdName = controllingFaction.getLeft();
+                Faction faction = controllingFaction.getRight();
+                faction.addStrongholdCard(new StrongholdCard(strongholdName));
+
+                turnSummary.publish(MessageFormat.format("{0} controls {1}{2}{1}",
+                        faction.getEmoji(), Emojis.WORM, strongholdName));
+            }
+        }
     }
 
     /**

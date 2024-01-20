@@ -33,6 +33,7 @@ class GameTest {
     private Faction bt;
     private Faction ix;
     private Faction richese;
+    private Faction ecaz;
     private Faction moritani;
     private TestTopic turnSummary;
     private TestTopic bgChat;
@@ -66,7 +67,7 @@ class GameTest {
         void setUp() throws IOException {
             emperor = new EmperorFaction("ePlayer", "eUser", game);
             emperor.setAlly("Ecaz");
-            EcazFaction ecaz = new EcazFaction("aPlayer", "aUser", game);
+            ecaz = new EcazFaction("aPlayer", "aUser", game);
             ecaz.setAlly("Emperor");
             game.addFaction(emperor);
             game.addFaction(ecaz);
@@ -1247,6 +1248,84 @@ class GameTest {
             assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
+        }
+    }
+
+
+    @Nested
+    @DisplayName("#updateStrongholdSkills")
+    class UpdateStrongholdSkills {
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            game.addFaction(atreides);
+
+            guild = new GuildFaction("gPlayer", "gUser", game);
+            game.addFaction(guild);
+
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            game.addFaction(harkonnen);
+
+            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            game.addFaction(ecaz);
+
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+        }
+
+        @Test
+        void testNoStrongholdCards() {
+            game.updateStrongholdSkills();
+            assertTrue(atreides.getStrongholdCards().isEmpty());
+            assertTrue(guild.getStrongholdCards().isEmpty());
+            assertTrue(harkonnen.getStrongholdCards().isEmpty());
+        }
+
+        @Test
+        void testWithStrongholdCards() {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            game.updateStrongholdSkills();
+            assertEquals(1, atreides.getStrongholdCards().size());
+            assertEquals("Arrakeen", atreides.getStrongholdCards().get(0).name());
+            assertEquals(1, guild.getStrongholdCards().size());
+            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertEquals(1, harkonnen.getStrongholdCards().size());
+            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
+        }
+
+        @Test
+        void testWithStrongholdCardsEcazAlly() {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            arrakeen.addForce(new Force("Ecaz", 1, "Ecaz"));
+            atreides.setLedger(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            game.createAlliance(atreides, ecaz);
+            game.updateStrongholdSkills();
+            assertTrue(atreides.getStrongholdCards().isEmpty());
+            assertEquals(1, ecaz.getStrongholdCards().size());
+            assertEquals("Arrakeen", ecaz.getStrongholdCards().get(0).name());
+            assertEquals(1, guild.getStrongholdCards().size());
+            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertEquals(1, harkonnen.getStrongholdCards().size());
+            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
+        }
+
+        @Test
+        void testWithStrongholdCardsEcazAllyFalse() {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            arrakeen.addForce(new Force("Harkonnen", 1, "Harkonnen"));
+            atreides.setLedger(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            game.createAlliance(atreides, ecaz);
+            game.updateStrongholdSkills();
+            assertTrue(atreides.getStrongholdCards().isEmpty());
+            assertTrue(ecaz.getStrongholdCards().isEmpty());
+            assertEquals(1, guild.getStrongholdCards().size());
+            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertEquals(1, harkonnen.getStrongholdCards().size());
+            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
         }
     }
 

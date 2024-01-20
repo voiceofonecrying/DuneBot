@@ -62,6 +62,7 @@ public class RunCommands {
             game.endMentatPause();
             game.advanceTurn();
             game.setTurnSummary(discordGame.getTurnSummary());
+            game.updateStrongholdSkills();
         }
 
         int phase = game.getPhase();
@@ -851,32 +852,10 @@ public class RunCommands {
             MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
             moritani.sendTerrorTokenLocationMessage(game, discordGame);
         }
-
-        updateStrongholdSkills(discordGame, game);
     }
 
     public static void updateStrongholdSkillsCommand(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        updateStrongholdSkills(discordGame, game);
+        game.updateStrongholdSkills();
         discordGame.pushGame();
-    }
-
-    public static void updateStrongholdSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (game.hasStrongholdSkills()) {
-            game.getFactions().forEach(Faction::removeAllStrongholdCards);
-
-            List<Territory> strongholds = game.getTerritories().values().stream()
-                    .filter(Territory::isStronghold)
-                    .filter(t -> t.countActiveFactions() == 1)
-                    .toList();
-
-            for (Territory stronghold : strongholds) {
-                Faction faction = stronghold.getActiveFactions(game).get(0);
-                faction.addStrongholdCard(new StrongholdCard(stronghold.getTerritoryName()));
-
-                discordGame.getTurnSummary().queueMessage(MessageFormat.format("{0} controls {1}{2}{1}",
-                        stronghold.getActiveFactions(game).get(0).getEmoji(), Emojis.WORM,
-                        stronghold.getTerritoryName()));
-            }
-        }
     }
 }
