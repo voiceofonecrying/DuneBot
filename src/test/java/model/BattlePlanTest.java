@@ -28,6 +28,7 @@ public class BattlePlanTest {
     TreacheryCard harassAndWithdraw;
     TreacheryCard reinforcements;
     BattlePlan emptyBattlePlan;
+    BattlePlan kulonWeaponBattlePlan;
     BattlePlan crysknifePlan;
     BattlePlan duncanCrysknifePlan;
     BattlePlan chaumasPlan;
@@ -61,6 +62,7 @@ public class BattlePlanTest {
         harassAndWithdraw = new TreacheryCard("Harass and Withdraw");
         reinforcements = new TreacheryCard("Reinforcements");
         emptyBattlePlan = new BattlePlan(false,null, null, false, null, null, 0, false, 0, 0, 0, 0);
+        kulonWeaponBattlePlan = new BattlePlan(false,null, null, false, kulon, null, 0, false, 0, 0, 0, 0);
         crysknifePlan = new BattlePlan(false,null, null, false, crysknife, null, 0, false, 0, 0, 0, 0);
         duncanCrysknifePlan = new BattlePlan(false,duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, 0);
         chaumasPlan = new BattlePlan(false,null, null, false, chaumas, null, 0, false, 0, 0, 0, 0);
@@ -75,6 +77,15 @@ public class BattlePlanTest {
     @Test
     void testLeaderSurvivesNoWeapon() {
         BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.getLeaderContribution());
+    }
+
+    @Test
+    void testLeaderSurvivesAgainstWorthless() {
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(kulonWeaponBattlePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.getLeaderContribution());
     }

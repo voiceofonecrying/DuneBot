@@ -155,7 +155,7 @@ public class BattlePlan {
             return defense != null && defense.servesAsShield();
         } else if (poisonTooth()) {
             return defense != null && defense.name().equals("Chemistry");
-        } else if (opponentWeapon != null && !opponentWeapon.name().equals("Stone Burner")) {
+        } else if (opponentWeapon != null && !opponentWeapon.type().equals("Worthless Card") && !opponentWeapon.name().equals("Stone Burner")) {
             if (defense == null)
                 return false;
             else if (opponentWeapon.name().equals("Poison Blade") && !defense.name().equals("Shield Snooper"))
@@ -209,12 +209,15 @@ public class BattlePlan {
     }
 
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
-        this.opponentLeader = opponentPlan.getLeader();
-        this.opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
+        opponentLeader = opponentPlan.getLeader();
+        opponentWeapon = opponentPlan.getWeapon();
+        opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
+        if (opponentWeapon != null && opponentWeapon.type().equals("Worthless Card"))
+            opponentWeapon = null;
         if (opponentWeapon != null && opponentWeapon.name().equals("Mirror Weapon"))
-            this.opponentWeapon = weapon;
-        this.opponentDefense = opponentPlan.getDefense();
-        this.opponentStoneBurnerNoKill = opponentPlan.isStoneBurnerNoKill();
+            opponentWeapon = weapon;
+        opponentDefense = opponentPlan.getDefense();
+        opponentStoneBurnerNoKill = opponentPlan.isStoneBurnerNoKill();
     }
 
     public boolean isLasgunShieldExplosion() {
