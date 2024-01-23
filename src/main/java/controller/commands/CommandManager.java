@@ -1343,7 +1343,7 @@ public class CommandManager extends ListenerAdapter {
                 resolution += " " + specialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
             resolution += " to the tanks\n";
         }
-        if (currentBattle.hasEcazAndAlly() && (loser || battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+        if (currentBattle.hasEcazAndAlly() && (loser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
             resolution += Emojis.ECAZ + " loses ";
             resolution += loser ? battlePlan.getEcazTroopsForAlly() : Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
             resolution += " " + Emojis.ECAZ_TROOP;

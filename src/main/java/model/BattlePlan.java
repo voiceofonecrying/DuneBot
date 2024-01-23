@@ -1,5 +1,7 @@
 package model;
 
+import constants.Emojis;
+
 import java.text.MessageFormat;
 
 public class BattlePlan {
@@ -191,6 +193,8 @@ public class BattlePlan {
 
     public String getDialString() {
         String dialString = "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
+        if (ecazTroopsForAlly != 0 && !stoneBurnerForTroops())
+            dialString += " + " + Math.ceilDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " support";
         if (homeworldDialAdvantage != 0)
             dialString += "\nHomeworld advantage: " + homeworldDialAdvantage;
         return dialString;
