@@ -476,6 +476,7 @@ public class ShowCommands {
 
             if (!territory.getTerrorTokens().isEmpty()) {
                 for (int j = 0; j < territory.getTerrorTokens().size(); j++) {
+                    if (territory.getTerritoryName().equals("Jacurutu Sietch")) continue;
                     BufferedImage terrorToken = getResourceImage("Terror Token");
                     terrorToken = resize(terrorToken, 40, 40);
                     Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
@@ -543,6 +544,15 @@ public class ShowCommands {
                 if (territory.isDiscovered()) {
                     discoveryToken = getResourceImage(territory.getDiscoveryToken());
                     discoveryToken = resize(discoveryToken, 500, 500);
+                    for (String t : game.getTerritory(territory.getDiscoveryToken()).getTerrorTokens()) {
+                        BufferedImage terrorToken = getResourceImage("Terror Token");
+                        terrorToken = resize(terrorToken, 250, 250);
+                        Point tokenPlacement = new Point(250, 150);
+                        Point tokenPlacementOffset = new Point(tokenPlacement.x, tokenPlacement.y + offset);
+                        discoveryToken = overlay(discoveryToken, terrorToken, tokenPlacementOffset, 1);
+                        offset += 100;
+                    }
+
                     for (Force force : game.getTerritory(territory.getDiscoveryToken()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                         forceImage = resize(forceImage, 376, 232);
