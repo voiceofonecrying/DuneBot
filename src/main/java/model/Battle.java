@@ -309,12 +309,17 @@ public class Battle {
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
 
-        int troopsNotDialed = validateDial(faction, wholeNumberDial, plusHalfDial, spice);
+        int spiceForValidation = spice;
+        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+            && faction.hasStrongholdCard("Arrakeen"))
+            spiceForValidation += 2;
+        int troopsNotDialed = validateDial(faction, wholeNumberDial, plusHalfDial, spiceForValidation);
 
         int ecazTroops = 0;
         if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
             ecazTroops = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, homeworldDialAdvantage(game, territorySectors.get(0), faction));
+        boolean hasCarthagStrongholdCard = false;
+        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, homeworldDialAdvantage(game, territorySectors.get(0), faction), hasCarthagStrongholdCard);
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {
@@ -365,13 +370,16 @@ public class Battle {
         return defenderBattlePlan;
     }
 
-    public boolean isAggressorWin() throws InvalidGameStateException {
+    public boolean isAggressorWin(Game game) throws InvalidGameStateException {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                && getDefender(game).hasStrongholdCard("Habbanya Sietch"))
+            return aggressorBattlePlan.getDoubleBattleStrength() > defenderBattlePlan.getDoubleBattleStrength();
         return aggressorBattlePlan.getDoubleBattleStrength() >= defenderBattlePlan.getDoubleBattleStrength();
     }
 
     public String getWinnerEmojis(Game game) throws InvalidGameStateException {
-        return isAggressorWin() ? getAggressorEmojis(game) : getDefenderEmojis(game);
+        return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 }

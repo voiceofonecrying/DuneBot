@@ -177,8 +177,6 @@ public class Battles {
             message += step++ + ". " + aggressor.getEmoji() + " use Mentat skill.\n";
         else if (opponent.getSkilledLeaders().stream().anyMatch(l -> l.skillCard().name().equals("Mentat")))
             message += step++ + ". " + opponent.getEmoji() + " use Mentat skill.\n";
-        else
-            message += "(No faction has the Mentat skill. <temporary message>)\n";
 
         if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides"))
             message += step++ + ". " + aggressor.getEmoji() + " ask the Prescience question.\n";

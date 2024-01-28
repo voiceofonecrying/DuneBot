@@ -707,9 +707,40 @@ class BattleTest {
             harkonnen.addTreacheryCard(crysknife);
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false,0, null, null);
             battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            assertTrue(battle1.isAggressorWin(game));
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
             assertEquals("1", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
+        }
+
+        @Test
+        void testBattlePlanResolutionAggressorWinsTiesInHRSWithStrongholdCard() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            bt.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
+            bt.addTreacheryCard(cheapHero);
+            emperor.addTreacheryCard(cheapHero);
+            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
+            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
+            assertTrue(battle3.isAggressorWin(game));
+            assertEquals(Emojis.BT, battle3.getWinnerEmojis(game));
+            assertEquals("1", battle3.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle3.getDefenderBattlePlan().getTotalStrengthString());
+        }
+
+        @Test
+        void testBattlePlanResolutionDefenderWinsTiesInHRSWithStrongholdCard() throws InvalidGameStateException {
+            game.setTurnSummary(new TestTopic());
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            emperor.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
+            bt.addTreacheryCard(cheapHero);
+            emperor.addTreacheryCard(cheapHero);
+            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
+            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
+            assertFalse(battle3.isAggressorWin(game));
+            assertEquals(Emojis.EMPEROR, battle3.getWinnerEmojis(game));
+            assertEquals("1", battle3.getAggressorBattlePlan().getTotalStrengthString());
+            assertEquals("1", battle3.getDefenderBattlePlan().getTotalStrengthString());
         }
 
         @Test
@@ -721,7 +752,7 @@ class BattleTest {
             battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
-            assertTrue(battle2.isAggressorWin());
+            assertTrue(battle2.isAggressorWin(game));
             assertEquals("3.5", battle2.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }
@@ -748,7 +779,7 @@ class BattleTest {
             battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
             battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
-            assertFalse(battle2.isAggressorWin());
+            assertFalse(battle2.isAggressorWin(game));
             assertEquals("1", battle2.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("3.5", battle2.getDefenderBattlePlan().getTotalStrengthString());
         }

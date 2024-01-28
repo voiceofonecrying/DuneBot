@@ -1286,11 +1286,11 @@ class GameTest {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             game.updateStrongholdSkills();
             assertEquals(1, atreides.getStrongholdCards().size());
-            assertEquals("Arrakeen", atreides.getStrongholdCards().get(0).name());
+            assertTrue(atreides.hasStrongholdCard("Arrakeen"));
             assertEquals(1, guild.getStrongholdCards().size());
-            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertTrue(guild.hasStrongholdCard("Tuek's Sietch"));
             assertEquals(1, harkonnen.getStrongholdCards().size());
-            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
+            assertTrue(harkonnen.hasStrongholdCard("Carthag"));
         }
 
         @Test
@@ -1304,11 +1304,11 @@ class GameTest {
             game.updateStrongholdSkills();
             assertTrue(atreides.getStrongholdCards().isEmpty());
             assertEquals(1, ecaz.getStrongholdCards().size());
-            assertEquals("Arrakeen", ecaz.getStrongholdCards().get(0).name());
+            assertTrue(ecaz.hasStrongholdCard("Arrakeen"));
             assertEquals(1, guild.getStrongholdCards().size());
-            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertTrue(guild.hasStrongholdCard("Tuek's Sietch"));
             assertEquals(1, harkonnen.getStrongholdCards().size());
-            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
+            assertTrue(harkonnen.hasStrongholdCard("Carthag"));
         }
 
         @Test
@@ -1323,9 +1323,9 @@ class GameTest {
             assertTrue(atreides.getStrongholdCards().isEmpty());
             assertTrue(ecaz.getStrongholdCards().isEmpty());
             assertEquals(1, guild.getStrongholdCards().size());
-            assertEquals("Tuek's Sietch", guild.getStrongholdCards().get(0).name());
+            assertTrue(guild.hasStrongholdCard("Tuek's Sietch"));
             assertEquals(1, harkonnen.getStrongholdCards().size());
-            assertEquals("Carthag", harkonnen.getStrongholdCards().get(0).name());
+            assertTrue(harkonnen.hasStrongholdCard("Carthag"));
         }
     }
 

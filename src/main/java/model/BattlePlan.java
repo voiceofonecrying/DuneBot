@@ -17,6 +17,7 @@ public class BattlePlan {
     private final int troopsNotDialed;
     private final int ecazTroopsForAlly;
     private final int homeworldDialAdvantage;
+    private final boolean carthagStrongholdCard;
     private TreacheryCard opponentWeapon;
     private TreacheryCard opponentDefense;
     private Leader opponentLeader;
@@ -25,7 +26,7 @@ public class BattlePlan {
     private boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
 
-    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, int homeworldDialAdvantage) {
+    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, int homeworldDialAdvantage, boolean carthagStrongholdCard) {
         this.aggressor = aggressor;
         this.leader = leader;
         this.cheapHero = cheapHero;
@@ -38,6 +39,7 @@ public class BattlePlan {
         this.troopsNotDialed = troopsNotDialed;
         this.ecazTroopsForAlly = ecazTroopsForAlly;
         this.homeworldDialAdvantage = homeworldDialAdvantage;
+        this.carthagStrongholdCard = carthagStrongholdCard;
         this.stoneBurnerNoKill = false;
     }
 
@@ -148,6 +150,14 @@ public class BattlePlan {
         stoneBurnerNoKill = false;
     }
 
+    private boolean carthagStrongholdPoisonDefense() {
+        TreacheryCard effectiveWeapon = weapon;
+        if (weapon != null && weapon.name().equals("Mirror Weapon")) effectiveWeapon = opponentWeapon;
+        boolean nonPoisonWeapon = effectiveWeapon == null || (!effectiveWeapon.type().equals("Weapon - Poison") && !effectiveWeapon.name().equals("Chemistry")
+                && !effectiveWeapon.name().equals("Poison Tooth") && !effectiveWeapon.name().equals("Poison Blade"));
+        return carthagStrongholdCard && nonPoisonWeapon && defense != null && defense.servesAsShield();
+    }
+
     public boolean isLeaderAlive() {
         if (isLasgunShieldExplosion()) {
             return false;
@@ -160,10 +170,11 @@ public class BattlePlan {
         } else if (opponentWeapon != null && !opponentWeapon.type().equals("Worthless Card") && !opponentWeapon.name().equals("Stone Burner")) {
             if (defense == null)
                 return false;
-            else if (opponentWeapon.name().equals("Poison Blade") && !defense.name().equals("Shield Snooper"))
+            else if (opponentWeapon.name().equals("Poison Blade")
+                    && !(defense.name().equals("Shield Snooper") || carthagStrongholdPoisonDefense()))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
-                    && !(defense.servesAsSnooper() || defense.name().equals("Chemistry")))
+                    && !(defense.servesAsSnooper() || defense.name().equals("Chemistry") || carthagStrongholdPoisonDefense()))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
                     && !(defense.servesAsShield() || defense.name().equals("Weirding Way")))

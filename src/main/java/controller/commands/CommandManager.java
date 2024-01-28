@@ -1313,9 +1313,10 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
+        BattlePlan opponentBattlePlan = isAggressor ? defenderPlan : aggressorPlan;
         boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion();
         String emojis = isAggressor ? currentBattle.getAggressor(game).getEmoji() : currentBattle.getDefender(game).getEmoji();
-        boolean loser = isAggressor != currentBattle.isAggressorWin() || isLasgunShieldExplosion;
+        boolean loser = isAggressor != currentBattle.isAggressorWin(game) || isLasgunShieldExplosion;
 
         if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
@@ -1371,6 +1372,22 @@ public class CommandManager extends ListenerAdapter {
                 int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
                 if (combatWater > 0)
                     resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+                if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)) {
+                    String territoryNamne = currentBattle.getWholeTerritoryName();
+                    String sietchTabr = "Sietch Tabr";
+                    String tueksSietch = "Tuek's Sietch";
+                    String worthlessCardType = "Worthless Card";
+                    if (territoryNamne.equals(sietchTabr) && faction.hasStrongholdCard(sietchTabr)) {
+                        if (opponentBattlePlan.getWholeNumberDial() > 0)
+                            resolution += emojis + " gains " + opponentBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
+                    } else if (territoryNamne.equals(tueksSietch) && faction.hasStrongholdCard(tueksSietch)) {
+                        int worthlessCardSpice = 0;
+                        if (battlePlan.getWeapon().type().equals(worthlessCardType)) worthlessCardSpice += 2;
+                        if (battlePlan.getDefense().type().equals(worthlessCardType)) worthlessCardSpice += 2;
+                        if (worthlessCardSpice > 0)
+                            resolution += emojis + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n";
+                    }
+                }
             }
         }
 
@@ -1389,8 +1406,8 @@ public class CommandManager extends ListenerAdapter {
         if (aggressorPlan.isLasgunShieldExplosion())
             resolution += "**KABOOM!**\n";
         else {
-            BattlePlan winnerPlan = currentBattle.isAggressorWin() ? aggressorPlan : defenderPlan;
-            BattlePlan loswerPlan = currentBattle.isAggressorWin() ? defenderPlan : aggressorPlan;
+            BattlePlan winnerPlan = currentBattle.isAggressorWin(game) ? aggressorPlan : defenderPlan;
+            BattlePlan loswerPlan = currentBattle.isAggressorWin(game) ? defenderPlan : aggressorPlan;
             resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
                     currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loswerPlan.getTotalStrengthString()
             );

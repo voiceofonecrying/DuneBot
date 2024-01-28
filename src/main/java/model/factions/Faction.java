@@ -264,6 +264,10 @@ public class Faction {
         return strongholdCards;
     }
 
+    public boolean hasStrongholdCard(String strongholdName) {
+        return strongholdCards.stream().anyMatch(c -> c.name().equals(strongholdName));
+    }
+
     public void addStrongholdCard(StrongholdCard card) {
         strongholdCards.add(card);
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
