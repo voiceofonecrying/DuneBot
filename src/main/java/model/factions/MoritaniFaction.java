@@ -131,6 +131,12 @@ public class MoritaniFaction extends Faction {
         return terrorTokens;
     }
 
+    public void addTerrorToken(String name) {
+        getTerrorTokens().add(name);
+        getLedger().publish(name + " Terror token was added to your hand.");
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
     public void sendTerrorTokenLocationMessage(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {

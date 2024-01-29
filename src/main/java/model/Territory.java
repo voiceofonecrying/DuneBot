@@ -185,6 +185,10 @@ public class Territory {
         this.ecazAmbassador = ecazAmbassador;
     }
 
+    public void removeEcazAmbassador() {
+        this.ecazAmbassador = null;
+    }
+
     public List<String> getTerrorTokens() {
         if (terrorTokens == null) {
             LinkedList<String> tokens = new LinkedList<>();
@@ -205,6 +209,17 @@ public class Territory {
 
     public boolean hasTerrorToken() {
         return !getTerrorTokens().isEmpty();
+    }
+
+    public boolean hasTerrorToken(String name) {
+        return getTerrorTokens().stream()
+                .filter(t -> t.equals(name))
+                .map(t -> true)
+                .findFirst().orElse(false);
+    }
+
+    public void removeTerrorToken(String name) {
+        getTerrorTokens().remove(name);
     }
 
     public boolean isAftermathToken() {

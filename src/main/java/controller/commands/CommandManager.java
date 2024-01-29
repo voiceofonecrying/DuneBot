@@ -572,9 +572,11 @@ public class CommandManager extends ListenerAdapter {
                 case "run" -> RunCommands.runCommand(event, discordGame, game);
                 case "richese" -> RicheseCommands.runCommand(event, discordGame, game);
                 case "bt" -> BTCommands.runCommand(event, discordGame, game);
+                case "ecaz" -> EcazCommands.runCommand(event, discordGame, game);
                 case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                 case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
                 case "ix" -> IxCommands.runCommand(event, discordGame, game);
+                case "moritani" -> MoritaniCommands.runCommand(event, discordGame, game);
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
                 case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
@@ -759,6 +761,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(IxCommands.getCommands());
         commandData.addAll(BGCommands.getCommands());
         commandData.addAll(AtreidesCommands.getCommands());
+        commandData.addAll(EcazCommands.getCommands());
+        commandData.addAll(MoritaniCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(

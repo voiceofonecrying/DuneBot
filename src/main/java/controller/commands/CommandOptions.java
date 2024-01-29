@@ -222,6 +222,17 @@ public class CommandOptions {
                     .addChoice("Clockwise", "CW")
                     .addChoice("Counterclockwise", "CCW");
 
+    public static final OptionData ecazAmbassadorsOnMap =
+            new OptionData(OptionType.STRING, "ecaz-ambassador-on-map", "Ecaz Embassador Token on the Map", true)
+                    .setAutoComplete(true);
+
+    public static final OptionData moritaniTerrorTokenOnMap =
+            new OptionData(OptionType.STRING, "moritani-terror-token-on-map", "Moritani Terror Token on the Map", true)
+                    .setAutoComplete(true);
+
+    public static final OptionData toHand =
+            new OptionData(OptionType.BOOLEAN, "to-hand", "Move to hand (default=false)", false);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
@@ -253,6 +264,8 @@ public class CommandOptions {
             case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
             case "returning" -> choices = nonHarkLeaders(game, searchValue);
             case "game-state" -> choices = getGameStates(discordGame, searchValue);
+            case "ecaz-ambassador-on-map" -> choices = getEcazAmbassadorsOnMap(discordGame, searchValue);
+            case "moritani-terror-token-on-map" -> choices = getMoritaniTerrorTokensOnMap(discordGame, searchValue);
         }
 
         return choices;
@@ -606,6 +619,30 @@ public class CommandOptions {
         return list.stream().map(Enum::name)
                 .filter(e -> e.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(e -> new Command.Choice(e, e))
+                .toList();
+    }
+
+    private static List<Command.Choice> getEcazAmbassadorsOnMap(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+
+        return game.getTerritories().values().stream().filter(t -> t.getEcazAmbassador() != null)
+                .map(t -> new Command.Choice(
+                        t.getEcazAmbassador() + " in " + t.getTerritoryName(),
+                        t.getEcazAmbassador()
+                ))
+                .filter(t -> t.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .toList();
+    }
+
+    private static List<Command.Choice> getMoritaniTerrorTokensOnMap(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+
+        return game.getTerritories().values().stream().filter(t -> t.getTerrorTokens() != null  && !t.getTerrorTokens().isEmpty())
+                .flatMap(t -> t.getTerrorTokens().stream().map(tt -> new Command.Choice(
+                        tt + " in " + t.getTerritoryName(),
+                        tt
+                )))
+                .filter(t -> t.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .toList();
     }
 

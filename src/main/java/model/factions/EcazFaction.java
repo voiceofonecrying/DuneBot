@@ -187,4 +187,15 @@ public class EcazFaction extends Faction {
     public List<String> getAmbassadorSupplyList() {
         return this.ambassadorSupply;
     }
+
+    public void addToAmbassadorPool(String ambassador) {
+        ambassadorPool.add(ambassador);
+        getLedger().publish(ambassador + " ambassador token was added to the pool.");
+    }
+
+    public void addAmbassadorToSupply(String ambassador) {
+        ambassadorSupply.add(ambassador);
+        getLedger().publish(ambassador + " ambassador token was added to the supply.");
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
 }
