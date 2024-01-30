@@ -219,12 +219,12 @@ public class FactionView {
                 .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.name()))
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                 .addField(
-                        "Always",
+                        "When Leader is in Front of Shield",
                         leaderSkillCard.description(),
                         false
                 )
                 .addField(
-                        "This leader in battle",
+                        "When Leader is in Battle",
                         leaderSkillCard.inBattleDescription(),
                         false
                 )
