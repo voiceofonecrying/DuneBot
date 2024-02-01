@@ -209,18 +209,24 @@ public class Battle {
         return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
     }
 
+    private boolean spiceNeededForStarred(Faction faction) {
+        if (faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
+            return false;
+        else return !(faction instanceof FremenFaction);
+    }
+
     private int validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
-        boolean fremen = factionName.equals("Fremen");
+        boolean fremen = faction instanceof FremenFaction;
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
         int dialUsed = 0;
         int specialStrengthUsed = 0;
         int regularStrengthUsed = 0;
-        while ((spice - spiceUsed > 0 || fremen) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
+        while ((spice - spiceUsed > 0 || !spiceNeededForStarred(faction)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
             dialUsed += 2;
-            if (!fremen) spiceUsed++;
+            if (spiceNeededForStarred(faction)) spiceUsed++;
             specialStrengthUsed++;
         }
         while ((spice - spiceUsed == 0 && !fremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {

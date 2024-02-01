@@ -894,5 +894,31 @@ class BattleTest {
             assertEquals(0, battle3.homeworldDialAdvantage(game, wallachIX, bt));
             assertEquals(2, battle3.homeworldDialAdvantage(game, wallachIX, bg));
         }
+
+        @Test
+        void testSalusaSecundusHighSpiceNotNeededForSardaukar() {
+            Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
+            Force emperorForce = new Force("Emperor", 9, "Emperor");
+            Force sardaukarForce = new Force("Emperor*", 3, "Emperor");
+            Force bgForce = new Force("BG", 15, "BG");
+            game.addGameOption(GameOption.HOMEWORLDS);
+            emperor.setSecundusHighThreshold(true);
+            Battle battle = new Battle("Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
+            Leader burseg = new Leader("Burseg", 3, null, false);
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
+        }
+
+        @Test
+        void testSalusaSecundusLowSpiceNeededForSardaukar() {
+            Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
+            Force emperorForce = new Force("Emperor", 9, "Emperor");
+            Force sardaukarForce = new Force("Emperor*", 3, "Emperor");
+            Force bgForce = new Force("BG", 15, "BG");
+            game.addGameOption(GameOption.HOMEWORLDS);
+            emperor.setSecundusHighThreshold(false);
+            Battle battle = new Battle("Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
+            Leader burseg = new Leader("Burseg", 3, null, false);
+            assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
+        }
     }
 }
