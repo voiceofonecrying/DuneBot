@@ -495,6 +495,9 @@ public class RunCommands {
     }
 
     public static void btSetRevivalRates(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        BTFaction bt = (BTFaction) game.getFaction("BT");
+        bt.clearRevivalRatesSet();
+
         FactionChat btChat = discordGame.getBTChat();
         btChat.queueMessage("Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
 
