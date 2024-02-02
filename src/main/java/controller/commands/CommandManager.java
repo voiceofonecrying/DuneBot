@@ -1386,8 +1386,8 @@ public class CommandManager extends ListenerAdapter {
                             resolution += emojis + " gains " + opponentBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
                     } else if (territoryNamne.equals(tueksSietch) && faction.hasStrongholdCard(tueksSietch)) {
                         int worthlessCardSpice = 0;
-                        if (battlePlan.getWeapon().type().equals(worthlessCardType)) worthlessCardSpice += 2;
-                        if (battlePlan.getDefense().type().equals(worthlessCardType)) worthlessCardSpice += 2;
+                        if (battlePlan.getWeapon() != null && battlePlan.getWeapon().type().equals(worthlessCardType)) worthlessCardSpice += 2;
+                        if (battlePlan.getDefense() != null && battlePlan.getDefense().type().equals(worthlessCardType)) worthlessCardSpice += 2;
                         if (worthlessCardSpice > 0)
                             resolution += emojis + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n";
                     }
