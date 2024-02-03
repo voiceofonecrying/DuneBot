@@ -94,8 +94,6 @@ public class SpiceCollectionButtons  implements Pressable{
             discordGame.pushGame();
             discordGame.queueDeleteMessage();
 
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
             game.setUpdated(UpdateType.MAP);
-        }
     }
 }

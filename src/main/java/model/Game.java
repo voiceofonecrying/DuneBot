@@ -665,8 +665,7 @@ public class Game {
                         .ifPresent(faction -> faction.getTechTokens().add(techToken));
             }
         }
-        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MAP);
     }
 
     public boolean ixCanMoveHMS() {
@@ -844,8 +843,7 @@ public class Game {
         if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
 
         turnSummary.publish(message.toString());
-        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MAP);
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, boolean special, boolean isToTanks) {
@@ -880,9 +878,7 @@ public class Game {
                 turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }
-        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            setUpdated(UpdateType.MAP);
-        }
+        setUpdated(UpdateType.MAP);
     }
 
     public void putTerritoryInAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
@@ -944,8 +940,7 @@ public class Game {
         } else {
             turnSummary.publish("There are no battles this turn.");
         }
-        if (hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MAP);
     }
 
     public void endBattlePhase() throws InvalidGameStateException {

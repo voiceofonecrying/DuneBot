@@ -64,9 +64,7 @@ public class ShowCommands {
     public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
         discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -967,8 +965,7 @@ public class ShowCommands {
                 frontOfShieldModified = true;
             }
 
-            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD) &&
-                    updateTypes.contains(UpdateType.MAP)) {
+            if (updateTypes.contains(UpdateType.MAP)) {
                 frontOfShieldModified = true;
             }
         }

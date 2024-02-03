@@ -193,10 +193,7 @@ public class IxButtons implements Pressable {
         }
         movement.clear();
 //        deleteAllButtonsInChannel(event.getMessageChannel());
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
     }
 
     private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

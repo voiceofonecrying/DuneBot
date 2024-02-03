@@ -159,10 +159,7 @@ public class HarkCommands {
         discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.name());
         harkonnenFaction.spiceMessage(2, "from the killed leader", true);
 
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
     }

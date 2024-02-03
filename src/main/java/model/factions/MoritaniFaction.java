@@ -101,9 +101,7 @@ public class MoritaniFaction extends Faction {
         for (Territory territory : game.getTerritories().values()) {
             territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void sendTerrorTokenMessage(DiscordGame discordGame, String territory) throws ChannelNotFoundException {
@@ -117,9 +115,7 @@ public class MoritaniFaction extends Faction {
     public void placeTerrorToken(Game game, Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void getDukeVidal() {

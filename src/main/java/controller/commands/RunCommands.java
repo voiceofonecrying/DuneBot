@@ -222,8 +222,7 @@ public class RunCommands {
             if (!message.isEmpty()) {
                 turnSummary.queueMessage(message.toString());
             }
-            if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-                game.setUpdated(UpdateType.MAP);
+            game.setUpdated(UpdateType.MAP);
         }
         ShowCommands.showBoard(discordGame, game);
 
@@ -603,13 +602,7 @@ public class RunCommands {
             ecaz.sendAmbassadorLocationMessage(game, discordGame, 1);
         }
 
-        if (factionsWithRevivals > 0 && game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void flipToHighThresholdIfApplicable(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -804,10 +797,7 @@ public class RunCommands {
             TechToken.collectSpice(game, TechToken.SPICE_PRODUCTION);
         }
 
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

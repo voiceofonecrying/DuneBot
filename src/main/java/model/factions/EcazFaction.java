@@ -131,9 +131,7 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void sendAmbassadorLocationMessage(Game game, DiscordGame discordGame, int cost) throws ChannelNotFoundException {
@@ -162,9 +160,7 @@ public class EcazFaction extends Faction {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD)) {
-            game.setUpdated(UpdateType.MAP);
-        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public Leader getLoyalLeader() {

@@ -244,8 +244,7 @@ public class RicheseCommands {
 
         Territory territory = game.getTerritories().get(territoryName);
         territory.setRicheseNoField(noField);
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
+        game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
     }
@@ -256,8 +255,7 @@ public class RicheseCommands {
                 .findFirst();
 
         territory.ifPresent(value -> value.setRicheseNoField(null));
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
+        game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
     }

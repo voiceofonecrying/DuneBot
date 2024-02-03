@@ -64,10 +64,7 @@ public class BGCommands {
         discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         discordGame.getTurnSummary().queueMessage(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         discordGame.pushGame();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void flip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
@@ -92,9 +89,6 @@ public class BGCommands {
             return;
         }
         discordGame.pushGame();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
     }
 }

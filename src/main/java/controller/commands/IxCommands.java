@@ -155,10 +155,7 @@ public class IxCommands {
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
         discordGame.pushGame();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
         return targetTerritory;
     }
 
@@ -181,10 +178,7 @@ public class IxCommands {
             game.rotateHMS90degrees();
         }
         game.rotateHMS90degrees();
-        if (game.hasGameOption(GameOption.MAP_IN_FRONT_OF_SHIELD))
-            game.setUpdated(UpdateType.MAP);
-        else
-            ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }
 

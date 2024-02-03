@@ -4,6 +4,7 @@ import caches.EmojiCache;
 import caches.GameCache;
 import com.google.gson.*;
 import controller.channels.*;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -138,6 +139,12 @@ public class DiscordGame {
                 .registerPreProcessor(TreacheryCard.class, (clazz, src, gson) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
+                })
+                .registerPreProcessor(Game.class, (clazz, src, gson) -> {
+                    JsonObject jsonObject = src.getAsJsonObject();
+                    JsonArray jsonArray = jsonObject.get("gameOptions").getAsJsonArray();
+                    jsonArray.remove(new JsonPrimitive("MAP_IN_FRONT_OF_SHIELD"));
+                    jsonObject.add("gameOptions", jsonArray);
                 })
                 ;
         GsonBuilder gsonBuilder = builder.createGsonBuilder();
