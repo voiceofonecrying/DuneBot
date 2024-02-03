@@ -44,7 +44,7 @@ public class EcazCommands {
         }
     }
 
-    private static void removeAmbassadorFromMap(DiscordGame discordGame, Game game) {
+    private static void removeAmbassadorFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String ambassadorName = discordGame.required(CommandOptions.ecazAmbassadorsOnMap).getAsString();
         boolean toHand = discordGame.optional(CommandOptions.toHand) != null
                 && discordGame.required(CommandOptions.toHand).getAsBoolean();
@@ -59,5 +59,7 @@ public class EcazCommands {
 
         if (toHand) ecazFaction.addAmbassadorToSupply(ambassadorName);
         else ecazFaction.addToAmbassadorPool(ambassadorName);
+
+        discordGame.pushGame();
     }
 }

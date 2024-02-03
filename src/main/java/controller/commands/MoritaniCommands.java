@@ -44,7 +44,7 @@ public class MoritaniCommands {
         }
     }
 
-    public static void removeTerrorTokenFromMap(DiscordGame discordGame, Game game) {
+    public static void removeTerrorTokenFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(CommandOptions.moritaniTerrorTokenOnMap).getAsString();
         boolean toHand = discordGame.optional(CommandOptions.toHand) != null
                 && discordGame.required(CommandOptions.toHand).getAsBoolean();
@@ -58,5 +58,7 @@ public class MoritaniCommands {
         game.setUpdated(UpdateType.MAP);
 
         if (toHand) moritaniFaction.addTerrorToken(terrorTokenName);
+
+        discordGame.pushGame();
     }
 }
