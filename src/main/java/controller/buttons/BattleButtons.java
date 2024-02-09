@@ -7,6 +7,8 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Battles;
 import model.Game;
+import model.StrongholdCard;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public class BattleButtons implements Pressable {
@@ -14,6 +16,7 @@ public class BattleButtons implements Pressable {
         if (event.getComponentId().startsWith("chooseterritory")) chooseTerritory(event, discordGame, game);
         else if (event.getComponentId().startsWith("chooseopponent")) chooseOpponent(event, discordGame, game);
         else if (event.getComponentId().startsWith("choosecombatant")) ecazChooseCombatant(event, discordGame, game);
+        else if (event.getComponentId().startsWith("hmsstrongholdpower-")) hmsStrongholdPower(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -43,6 +46,20 @@ public class BattleButtons implements Pressable {
         discordGame.getTurnSummary().queueMessage(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
         battles.getCurrentBattle().setEcazCombatant(game, battleFaction);
         battles.callBattleActions(game);
+        discordGame.pushGame();
+    }
+
+    private static void hmsStrongholdPower(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String strongholdName = event.getComponentId().split("-")[1];
+        discordGame.queueMessage("You selected " + strongholdName + " Stronghold Card.");
+        discordGame.getModInfo().queueMessage(faction.getEmoji() + " selected " + strongholdName + " Stronghold Card for HMS battle.");
+        faction.setHmsStrongholdProxy(new StrongholdCard(strongholdName));
+        if (strongholdName.equals("Carthag")) {
+            Battles battles = game.getBattles();
+            battles.getCurrentBattle().addCarthagStrongholdPower(faction);
+        }
         discordGame.pushGame();
     }
 }

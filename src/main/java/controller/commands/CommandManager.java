@@ -1370,11 +1370,14 @@ public class CommandManager extends ListenerAdapter {
                     String territoryNamne = currentBattle.getWholeTerritoryName();
                     String sietchTabr = "Sietch Tabr";
                     String tueksSietch = "Tuek's Sietch";
+                    String hms = "Hidden Mobile Stronghold";
                     String worthlessCardType = "Worthless Card";
-                    if (territoryNamne.equals(sietchTabr) && faction.hasStrongholdCard(sietchTabr)) {
+                    if (territoryNamne.equals(sietchTabr) && faction.hasStrongholdCard(sietchTabr)
+                            || territoryNamne.equals(hms) && faction.hasHmsStrongholdProxy(sietchTabr)) {
                         if (opponentBattlePlan.getWholeNumberDial() > 0)
                             resolution += emojis + " gains " + opponentBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
-                    } else if (territoryNamne.equals(tueksSietch) && faction.hasStrongholdCard(tueksSietch)) {
+                    } else if (territoryNamne.equals(tueksSietch) && faction.hasStrongholdCard(tueksSietch)
+                            || territoryNamne.equals(hms) && faction.hasHmsStrongholdProxy(tueksSietch)) {
                         int worthlessCardSpice = 0;
                         if (battlePlan.getWeapon() != null && battlePlan.getWeapon().type().equals(worthlessCardType)) worthlessCardSpice += 2;
                         if (battlePlan.getDefense() != null && battlePlan.getDefense().type().equals(worthlessCardType)) worthlessCardSpice += 2;
@@ -1405,6 +1408,10 @@ public class CommandManager extends ListenerAdapter {
             resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
                     currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loswerPlan.getTotalStrengthString()
             );
+            if (winnerPlan.getWholeNumberDial() == loswerPlan.getWholeNumberDial()
+                    && winnerPlan.getPlusHalfDial() == loswerPlan.getPlusHalfDial()
+                    && !currentBattle.isAggressorWin(game))
+                resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.";
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);

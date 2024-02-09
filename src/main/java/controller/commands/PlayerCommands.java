@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -11,9 +12,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
 
@@ -116,6 +119,18 @@ public class PlayerCommands {
         BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
         discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
+        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && currentBattle.getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
+            List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
+            if (strongholdNames.size() == 1) {
+                discordGame.getFactionChat(faction).queueMessage(strongholdNames.get(0) + " Stronghold card will be applied in the HMS battle.");
+                if (strongholdNames.get(0).equals("Carthag"))
+                    battlePlan.addCarthagStrongholdPower();
+            } else if (strongholdNames.size() >= 2) {
+                discordGame.getModInfo().queueMessage(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
+                List<Button> buttons = strongholdNames.stream().map(strongholdName -> Button.primary("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
+                discordGame.getFactionChat(faction).queueMessage("Which Stronghold Card would you like to use in the HMS battle? " + faction.getPlayer(), buttons);
+            }
+        }
         return returnString;
     }
 

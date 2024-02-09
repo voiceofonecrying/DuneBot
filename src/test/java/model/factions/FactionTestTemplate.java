@@ -1,9 +1,7 @@
 package model.factions;
 
-import model.Force;
-import model.Game;
-import model.Territory;
-import model.TreacheryCard;
+import exceptions.InvalidGameStateException;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -295,6 +293,40 @@ abstract class FactionTestTemplate {
         @Test
         void doesNotHaveFamilyAtomics() {
             assertFalse(faction.hasTreacheryCard("Family Atomics"));
+        }
+    }
+
+    @Nested
+    @DisplayName("hmsStrongholdProxy")
+    class HMSStrongholdProxy {
+        Faction faction;
+        StrongholdCard arrakeenCard;
+        StrongholdCard hmsCard;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            arrakeenCard = new StrongholdCard("Arrakeen");
+            hmsCard = new StrongholdCard("Hidden Mobile Stronghold");
+        }
+
+        @Test
+        void testHasArrakeenButNotHMS() {
+            faction.addStrongholdCard(arrakeenCard);
+            assertThrows(InvalidGameStateException.class, () -> faction.setHmsStrongholdProxy(arrakeenCard));
+        }
+
+        @Test
+        void testHasHMSButNotArrakeen() {
+            faction.addStrongholdCard(hmsCard);
+            assertThrows(InvalidGameStateException.class, () -> faction.setHmsStrongholdProxy(arrakeenCard));
+        }
+
+        @Test
+        void testHasHMSAndArrakeen() {
+            faction.addStrongholdCard(arrakeenCard);
+            faction.addStrongholdCard(hmsCard);
+            assertDoesNotThrow(() -> faction.setHmsStrongholdProxy(arrakeenCard));
         }
     }
 }

@@ -17,7 +17,7 @@ public class BattlePlan {
     private final int troopsNotDialed;
     private final int ecazTroopsForAlly;
     private final int homeworldDialAdvantage;
-    private final boolean carthagStrongholdCard;
+    private boolean carthagStrongholdCard;
     private TreacheryCard opponentWeapon;
     private TreacheryCard opponentDefense;
     private Leader opponentLeader;
@@ -115,6 +115,10 @@ public class BattlePlan {
         return MessageFormat.format("{0}{1}", wholeNumber, plusHalfDial ? ".5" : "");
     }
 
+    public void addCarthagStrongholdPower() {
+        this.carthagStrongholdCard = true;
+    }
+
     private boolean artilleryStrike() {
         return opponentWeapon != null && opponentWeapon.name().equals("Artillery Strike")
                 || weapon != null && weapon.name().equals("Artillery Strike");
@@ -199,7 +203,7 @@ public class BattlePlan {
     }
 
     public String getDefenseString() {
-        return "Defense: " + (defense == null ? "-" : defense.name());
+        return "Defense: " + (defense == null ? "-" : defense.name() + (carthagStrongholdPoisonDefense() ? " + Snooper from Carthag stronghold card" : ""));
     }
 
     public String getDialString() {

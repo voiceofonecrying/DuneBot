@@ -4,6 +4,7 @@ import constants.Colors;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.*;
 import model.topics.DuneTopic;
@@ -26,6 +27,7 @@ public class Faction {
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
+    private StrongholdCard hmsStrongholdProxy;
     private final List<Long> buttonMessages;
     private final List<Leader> leaders;
     @Exclude
@@ -275,7 +277,21 @@ public class Faction {
 
     public void removeAllStrongholdCards() {
         strongholdCards.clear();
+        hmsStrongholdProxy = null;
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+    }
+
+    public boolean hasHmsStrongholdProxy(String strongholdName) {
+        return hmsStrongholdProxy != null && hmsStrongholdProxy.name().equals(strongholdName);
+    }
+
+    public void setHmsStrongholdProxy(StrongholdCard hmsStrongholdProxy) throws InvalidGameStateException {
+        if (!hasStrongholdCard("Hidden Mobile Stronghold"))
+            throw new InvalidGameStateException(getEmoji() + " does not have HMS Stronghold card");
+        else if (!hasStrongholdCard(hmsStrongholdProxy.name()))
+            throw new InvalidGameStateException(getEmoji() + " does not have " + hmsStrongholdProxy.name() + " Stronghold card");
+
+        this.hmsStrongholdProxy = hmsStrongholdProxy;
     }
 
     public int getSpice() {

@@ -317,15 +317,18 @@ public class Battle {
 
         int spiceForValidation = spice;
         if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-            && faction.hasStrongholdCard("Arrakeen"))
+            && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen")))
             spiceForValidation += 2;
         int troopsNotDialed = validateDial(faction, wholeNumberDial, plusHalfDial, spiceForValidation);
 
         int ecazTroops = 0;
         if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
             ecazTroops = forces.stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
-        boolean hasCarthagStrongholdCard = false;
-        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, homeworldDialAdvantage(game, territorySectors.get(0), faction), hasCarthagStrongholdCard);
+
+        // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
+        boolean hasCarthagStrongholdPower = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
+        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, homeworldDialAdvantage(game, territorySectors.get(0), faction), hasCarthagStrongholdPower);
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {
@@ -336,6 +339,18 @@ public class Battle {
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         }
         return battlePlan;
+    }
+
+    public void addCarthagStrongholdPower(Faction faction) throws InvalidGameStateException {
+        BattlePlan battlePlan;
+        if (getAggressorName().equals(faction.getName()))
+            battlePlan = aggressorBattlePlan;
+        else if (getDefenderName().equals(faction.getName()))
+            battlePlan = defenderBattlePlan;
+        else
+            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+
+        battlePlan.addCarthagStrongholdPower();
     }
 
     public boolean isNotResolvable() {
@@ -379,8 +394,10 @@ public class Battle {
     public boolean isAggressorWin(Game game) throws InvalidGameStateException {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        Faction defender = getDefender(game);
         if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && getDefender(game).hasStrongholdCard("Habbanya Sietch"))
+                && (wholeTerritoryName.equals("Habbanya Sietch") && defender.hasStrongholdCard("Habbanya Sietch")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && defender.hasHmsStrongholdProxy("Habbanya Sietch")))
             return aggressorBattlePlan.getDoubleBattleStrength() > defenderBattlePlan.getDoubleBattleStrength();
         return aggressorBattlePlan.getDoubleBattleStrength() >= defenderBattlePlan.getDoubleBattleStrength();
     }

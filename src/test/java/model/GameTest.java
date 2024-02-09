@@ -1287,10 +1287,16 @@ class GameTest {
             game.updateStrongholdSkills();
             assertEquals(1, atreides.getStrongholdCards().size());
             assertTrue(atreides.hasStrongholdCard("Arrakeen"));
+            assertFalse(guild.hasStrongholdCard("Arrakeen"));
+            assertFalse(harkonnen.hasStrongholdCard("Arrakeen"));
             assertEquals(1, guild.getStrongholdCards().size());
             assertTrue(guild.hasStrongholdCard("Tuek's Sietch"));
+            assertFalse(atreides.hasStrongholdCard("Tuek's Sietch"));
+            assertFalse(harkonnen.hasStrongholdCard("Tuek's Sietch"));
             assertEquals(1, harkonnen.getStrongholdCards().size());
             assertTrue(harkonnen.hasStrongholdCard("Carthag"));
+            assertFalse(atreides.hasStrongholdCard("Carthag"));
+            assertFalse(guild.hasStrongholdCard("Carthag"));
         }
 
         @Test
@@ -1305,6 +1311,7 @@ class GameTest {
             assertTrue(atreides.getStrongholdCards().isEmpty());
             assertEquals(1, ecaz.getStrongholdCards().size());
             assertTrue(ecaz.hasStrongholdCard("Arrakeen"));
+            assertFalse(atreides.hasStrongholdCard("Arrakeen"));
             assertEquals(1, guild.getStrongholdCards().size());
             assertTrue(guild.hasStrongholdCard("Tuek's Sietch"));
             assertEquals(1, harkonnen.getStrongholdCards().size());
