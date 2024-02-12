@@ -458,7 +458,7 @@ public class ShowCommands {
             int i = 0;
 
             if (territory.isAftermathToken()) {
-                BufferedImage aftermath = getResourceImage("Aftermath");
+                BufferedImage aftermath = getResourceImage("Atomics");
                 aftermath = resize(aftermath, 50, 50);
                 Point placement = Initializers.getPoints(territory.getTerritoryName()).get(0);
                 Point placementCorner = new Point(placement.x, placement.y);
