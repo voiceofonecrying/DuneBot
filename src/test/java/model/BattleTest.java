@@ -59,6 +59,24 @@ class BattleTest {
     void tearDown() {
     }
 
+    @Nested
+    @DisplayName("#validateDial")
+    class ValidateDial {
+        @Test
+        void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            Force cyborgs = new Force("Ix*", 3, "Ix");
+            Force suboids = new Force("Ix", 3, "Ix");
+            hms.addForce(cyborgs);
+            hms.addForce(suboids);
+            Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
+            assertEquals(1, battle.validateDial(ix, 7, false, 4));
+        }
+    }
+
     @Test
     void testAggressorMustChooseOpponentFalse() {
         garaKulon.addForce(new Force("Harkonnen", 10));

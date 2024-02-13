@@ -215,9 +215,10 @@ public class Battle {
         else return !(faction instanceof FremenFaction);
     }
 
-    private int validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+    public int validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
-        boolean fremen = faction instanceof FremenFaction;
+        boolean isFremen = faction instanceof FremenFaction;
+        boolean isIx = faction instanceof IxFaction;
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
@@ -229,13 +230,13 @@ public class Battle {
             if (spiceNeededForStarred(faction)) spiceUsed++;
             specialStrengthUsed++;
         }
-        while ((spice - spiceUsed == 0 && !fremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+        while ((spice - spiceUsed == 0 && !isFremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
             dialUsed++;
             specialStrengthUsed++;
         }
-        while ((spice - spiceUsed > 0 || fremen) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
+        while (!isIx && (spice - spiceUsed > 0 || isFremen) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
             dialUsed++;
-            if (!fremen) spiceUsed++;
+            if (!isFremen) spiceUsed++;
             regularStrengthUsed++;
         }
         if ((wholeNumberDial > dialUsed) || plusHalfDial) {
@@ -244,7 +245,7 @@ public class Battle {
         }
         if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
-        if (!fremen && spice > spiceUsed)
+        if (!isFremen && spice > spiceUsed)
             faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
         return specialStrength - specialStrengthUsed + regularStrength - regularStrengthUsed;
     }
