@@ -1,5 +1,6 @@
 package controller.commands;
 
+import constants.Emojis;
 import enums.ChoamInflationType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
@@ -51,7 +52,7 @@ public class ChoamCommands {
             faction.setFirstInflation(game.getTurn(), choamInflationType);
 
             discordGame.pushGame();
-            discordGame.getTurnSummary().queueMessage("CHOAM set inflation to " + choamInflationType + " for next round!");
+            discordGame.getTurnSummary().queueMessage(Emojis.CHOAM + " set inflation to " + choamInflationType + " for next round!");
         }
     }
 }
