@@ -1208,7 +1208,7 @@ public class CommandManager extends ListenerAdapter {
         game.getLeaderTanks().add(targetFaction.removeLeader(leaderName));
         String message = leaderName + " was sent to the tanks.";
         discordGame.getFactionLedger(targetFaction).queueMessage(message);
-        discordGame.getTurnSummary().queueMessage(message);
+        discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " " + message);
         discordGame.pushGame();
     }
 
@@ -1218,7 +1218,9 @@ public class CommandManager extends ListenerAdapter {
         targetFaction.addLeader(
                 game.removeLeaderFromTanks(leaderToRevive)
         );
-        discordGame.getFactionLedger(targetFaction).queueMessage(leaderToRevive + " was revived from the tanks.");
+        String message = leaderToRevive + " was revived from the tanks.";
+        discordGame.getFactionLedger(targetFaction).queueMessage(message);
+        discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " " + message);
         discordGame.pushGame();
     }
 
