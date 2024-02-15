@@ -1394,6 +1394,19 @@ public class CommandManager extends ListenerAdapter {
         return resolution;
     }
 
+    private String checkAuditor(Game game, Battle currentBattle, Faction faction, Faction opponent, BattlePlan battlePlan) {
+        String message = "";
+        if (faction instanceof ChoamFaction && battlePlan.getLeader().name().equals("Auditor")) {
+            int numCards = battlePlan.isLeaderAlive() ? 2 : 1;
+            message = MessageFormat.format(
+                    "{0} may audit {1} {2} cards not used in the battle unless {3} cancels the audit for {1} {4}\n",
+                    Emojis.CHOAM, numCards, Emojis.TREACHERY, opponent.getEmoji(), Emojis.SPICE
+            ).toString();
+            // When automatic resolution is supported, give opponent buttons for their choice here.
+        }
+        return message;
+    }
+
     private void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
@@ -1417,6 +1430,8 @@ public class CommandManager extends ListenerAdapter {
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
+        resolution += checkAuditor(game, currentBattle, currentBattle.getAggressor(game), currentBattle.getDefender(game), currentBattle.getAggressorBattlePlan());
+        resolution += checkAuditor(game, currentBattle, currentBattle.getDefender(game), currentBattle.getAggressor(game), currentBattle.getDefenderBattlePlan());
         discordGame.getModInfo().queueMessage(resolution);
     }
 
