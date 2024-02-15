@@ -511,7 +511,7 @@ public class RunCommands {
 
     }
 
-    public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Revival Phase:");
         List<Faction> factions = game.getFactions();
@@ -685,7 +685,7 @@ public class RunCommands {
         ShowCommands.showBoard(discordGame, game);
     }
 
-    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.endBattlePhase();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.name().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
@@ -757,6 +757,7 @@ public class RunCommands {
             }
             faction.addSpice(spice);
             faction.spiceMessage(spice, "for Spice Blow", true);
+            territory.setSpice(territory.getSpice() - spice);
             if (orgizActive) {
                 faction.subtractSpice(1);
                 faction.spiceMessage(1, "for Orgiz Processing Station", false);
@@ -764,7 +765,6 @@ public class RunCommands {
                 orgiz.getActiveFactions(game).get(0).spiceMessage(1, "for Orgiz Processing Station", true);
                 spice--;
             }
-            territory.setSpice(territory.getSpice() - spice);
 
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
                     && (!(faction instanceof FremenFaction) || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
