@@ -1352,8 +1352,15 @@ public class CommandManager extends ListenerAdapter {
             resolution += emojis + " discards " + battlePlan.getWeapon().name() + "\n";
         if (battlePlan.defenseMustBeDiscarded(loser))
             resolution += emojis + " discards " + battlePlan.getDefense().name() + "\n";
-        if (battlePlan.getSpice() > 0)
+        if (battlePlan.getSpice() > 0) {
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + "\n";
+            if (!(faction instanceof ChoamFaction) && game.hasFaction("Choam") && battlePlan.getSpice() > 1) {
+                resolution += MessageFormat.format(
+                        "{0} collects {1} {2} from {3} combat {2}",
+                        Emojis.CHOAM, Math.floorDiv(battlePlan.getSpice(), 2), Emojis.SPICE, emojis
+                );
+            }
+        }
         if (!isLasgunShieldExplosion) {
             if (loser) {
                 List<TechToken> techTokens = faction.getTechTokens();
