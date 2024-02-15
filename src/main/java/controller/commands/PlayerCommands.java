@@ -251,10 +251,6 @@ public class PlayerCommands {
                 faction.setMaxBid(0);
             } else {
                 faction.setBid(String.valueOf(faction.getMaxBid()));
-                if (faction.getMaxBid() > bidding.getCurrentBid()) {
-                    bidding.setCurrentBid(Integer.parseInt(faction.getBid()));
-                    bidding.setBidLeader(faction.getName());
-                }
             }
             boolean allHaveBid = true;
             for (String factionName : bidding.getEligibleBidOrder(game)) {
