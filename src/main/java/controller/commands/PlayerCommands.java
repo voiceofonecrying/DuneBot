@@ -163,6 +163,10 @@ public class PlayerCommands {
         boolean silentAuction = game.getBidding().isSilentAuction();
         boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
         int bidAmount = discordGame.required(amount).getAsInt();
+        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
+                && !faction.getTreacheryHand().stream().anyMatch(c -> c.name().equals("Karama")))
+            throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
+
         faction.setUseExact(useExact);
         faction.setMaxBid(bidAmount);
         String modMessage = faction.getEmoji() + " set their bid to " + (useExact ? "exactly " : "increment up to ") + bidAmount + ".";
@@ -174,6 +178,9 @@ public class PlayerCommands {
         } else {
             responseMessage += "+1 up to " + bidAmount + ".";
         }
+        int spiceAvaiable = faction.getSpice() + faction.getAllySpiceBidding();
+        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding())
+            responseMessage += "\nIf you win for more than " + spiceAvaiable + ", you will have to use your Karama.";
         if (discordGame.optional(autoPassAfterMax) != null) {
             boolean enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
             faction.setAutoBid(enableAutoPass);
