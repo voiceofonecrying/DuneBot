@@ -268,7 +268,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void guildDefer(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         game.getTurnOrder().pollFirst();
-        discordGame.queueMessage("You will defer this turn.");
+        discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(game.getTurnOrder().peekFirst()));
         discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time.");
         sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
         discordGame.pushGame();
