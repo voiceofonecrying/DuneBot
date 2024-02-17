@@ -784,7 +784,7 @@ public class RunCommands {
         if (game.hasFaction("Harkonnen")) ((HarkonnenFaction)game.getFaction("Harkonnen")).setTriggeredHT(false);
 
         for (Territory territory : territories.values()) {
-            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0) continue;
+            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
             Faction faction = territory.getActiveFactions(game).get(0);
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
