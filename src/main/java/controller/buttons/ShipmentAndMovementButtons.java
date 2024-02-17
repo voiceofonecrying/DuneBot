@@ -119,7 +119,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
     }
 
-    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Karama"));
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
@@ -165,7 +165,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     }
 
-    public static void executeFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidOptionException, IOException {
+    public static void executeFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidOptionException {
         Movement movement = faction.getMovement();
         String movingFrom = movement.getMovingFrom();
         String movingTo = movement.getMovingTo();
@@ -192,7 +192,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         game.setUpdated(UpdateType.MAP);
     }
 
-    private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException, IOException {
+    private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
         else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
@@ -360,7 +360,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
     }
 
-    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException, IOException {
+    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         executeFactionMovement(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
@@ -420,7 +420,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
-    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException, IOException {
+    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException {
         Shipment shipment = faction.getShipment();
         String territoryName = shipment.getTerritoryName();
         int noField = shipment.getNoField();
@@ -473,7 +473,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, IOException {
+    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
         if (faction instanceof FremenFaction) spice = 0;

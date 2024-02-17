@@ -1113,7 +1113,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void drawSpiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void drawSpiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String spiceBlowDeckName = discordGame.required(spiceBlowDeck).getAsString();
         game.drawSpiceBlow(spiceBlowDeckName);
         discordGame.pushGame();
@@ -1248,7 +1248,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException, IOException {
+    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         Territory from = game.getTerritories().get(discordGame.required(fromTerritory).getAsString());
         Territory to = game.getTerritories().get(discordGame.required(toTerritory).getAsString());
@@ -1401,14 +1401,13 @@ public class CommandManager extends ListenerAdapter {
         return resolution;
     }
 
-    private String checkAuditor(Game game, Battle currentBattle, Faction faction, Faction opponent, BattlePlan battlePlan) {
+    private String checkAuditor(Faction faction, Faction opponent, BattlePlan battlePlan) {
         String message = "";
         if (faction instanceof ChoamFaction && battlePlan.getLeader().name().equals("Auditor")) {
             int numCards = battlePlan.isLeaderAlive() ? 2 : 1;
             message = MessageFormat.format(
                     "{0} may audit {1} {2} cards not used in the battle unless {3} cancels the audit for {1} {4}\n",
-                    Emojis.CHOAM, numCards, Emojis.TREACHERY, opponent.getEmoji(), Emojis.SPICE
-            ).toString();
+                    Emojis.CHOAM, numCards, Emojis.TREACHERY, opponent.getEmoji(), Emojis.SPICE);
             // When automatic resolution is supported, give opponent buttons for their choice here.
         }
         return message;
@@ -1437,8 +1436,8 @@ public class CommandManager extends ListenerAdapter {
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
-        resolution += checkAuditor(game, currentBattle, currentBattle.getAggressor(game), currentBattle.getDefender(game), currentBattle.getAggressorBattlePlan());
-        resolution += checkAuditor(game, currentBattle, currentBattle.getDefender(game), currentBattle.getAggressor(game), currentBattle.getDefenderBattlePlan());
+        resolution += checkAuditor(currentBattle.getAggressor(game), currentBattle.getDefender(game), currentBattle.getAggressorBattlePlan());
+        resolution += checkAuditor(currentBattle.getDefender(game), currentBattle.getAggressor(game), currentBattle.getDefenderBattlePlan());
         discordGame.getModInfo().queueMessage(resolution);
     }
 
@@ -1501,7 +1500,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction f : game.getFactions()) {
             if (f.getTechTokens().removeIf(
                     techToken -> techToken.getName().equals(discordGame.required(token).getAsString())))
@@ -1562,7 +1561,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void displayGameState(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void displayGameState(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TextChannel channel = discordGame.getTextChannel("mod-info");
         switch (discordGame.required(data).getAsString()) {
             case "territories" -> {
@@ -1664,7 +1663,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void reassignMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.setMod(event.getUser().getAsMention());
-        List<Role> roles = event.getGuild().getRolesByName(game.getGameRole(), false);
+        List<Role> roles = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
         if (!roles.isEmpty()) {
             game.setGameRoleMention(roles.get(0).getAsMention());
         }

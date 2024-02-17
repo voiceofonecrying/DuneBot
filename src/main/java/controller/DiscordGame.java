@@ -4,7 +4,6 @@ import caches.EmojiCache;
 import caches.GameCache;
 import com.google.gson.*;
 import controller.channels.*;
-import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -92,7 +91,7 @@ public class DiscordGame {
         } else if (channel instanceof ThreadChannel) {
             textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
-        return textChannel.getParentCategory();
+        return textChannel != null ? textChannel.getParentCategory() : null;
     }
 
     public static Category categoryFromEvent(@NotNull MessageReceivedEvent event) {
@@ -103,7 +102,7 @@ public class DiscordGame {
         } else if (channel instanceof ThreadChannel) {
             textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
-        return textChannel.getParentCategory();
+        return textChannel != null ? textChannel.getParentCategory() : null;
     }
 
     public static Category categoryFromEvent(@NotNull CommandAutoCompleteInteractionEvent event) {
@@ -114,7 +113,7 @@ public class DiscordGame {
         } else if (channel instanceof ThreadChannel) {
             textChannel = ((ThreadChannel) channel).getParentChannel().asTextChannel();
         }
-        return textChannel.getParentCategory();
+        return textChannel != null ? textChannel.getParentCategory() : null;
     }
 
     /**
@@ -481,7 +480,7 @@ public class DiscordGame {
             queueMessage("bot-data", message, fileUpload);
         } else {
             ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
-            String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + buttonInteractionEvent.getMember().getUser().getName() + "`";
+            String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + Objects.requireNonNull(buttonInteractionEvent.getMember()).getUser().getName() + "`";
             queueMessage("bot-data", message, fileUpload);
         }
     }

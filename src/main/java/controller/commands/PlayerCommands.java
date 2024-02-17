@@ -164,7 +164,7 @@ public class PlayerCommands {
         boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
         int bidAmount = discordGame.required(amount).getAsInt();
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
-                && !faction.getTreacheryHand().stream().anyMatch(c -> c.name().equals("Karama")))
+                && faction.getTreacheryHand().stream().noneMatch(c -> c.name().equals("Karama")))
             throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
 
         faction.setUseExact(useExact);
