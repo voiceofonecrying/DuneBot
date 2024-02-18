@@ -1,7 +1,6 @@
 package controller.commands;
 
 import constants.Emojis;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
@@ -56,8 +55,7 @@ public class BGCommands {
     }
 
     public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException {
-
-        CommandManager.placeForceInTerritory(territory, game.getFaction("BG"), amount, false);
+        CommandManager.placeForceInTerritory(discordGame, game, territory, game.getFaction("BG"), amount, false);
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));

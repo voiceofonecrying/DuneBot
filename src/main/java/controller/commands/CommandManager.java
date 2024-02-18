@@ -259,17 +259,10 @@ public class CommandManager extends ListenerAdapter {
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
 
-        if (amountValue > 0) {
-            placeForceInTerritory(targetTerritory, targetFaction, amountValue, false);
-            discordGame.getFactionLedger(targetFaction).queueMessage(
-                    MessageFormat.format("{0} {1} removed from reserves.", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
-        }
-
-        if (starredAmountValue > 0) {
-            placeForceInTerritory(targetTerritory, targetFaction, starredAmountValue, true);
-            discordGame.getFactionLedger(targetFaction).queueMessage(
-                    MessageFormat.format("{0} {1} removed from reserves.", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
-        }
+        if (amountValue > 0)
+            placeForceInTerritory(discordGame, game, targetTerritory, targetFaction, amountValue, false);
+        if (starredAmountValue > 0)
+            placeForceInTerritory(discordGame, game, targetTerritory, targetFaction, starredAmountValue, true);
 
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
@@ -384,38 +377,59 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && (reserves.getStrength() + specialReserves.getStrength() < targetFaction.getHighThreshold()) && targetFaction.isHighThreshold()) {
-            discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " is now at Low Threshold.");
-            targetFaction.setHighThreshold(false);
-        }
-        game.setUpdated(UpdateType.MAP);
     }
 
     /**
      * Places a force from the reserves into a territory.
+     * Reports removal from reserves to ledger.
+     * Switches homeworld to low threshold if applicable.
      *
+     * @param discordGame The DiscordGame instance.
+     * @param game      The Game instance.
      * @param territory The territory to place the force in.
      * @param faction   The faction that owns the force.
      * @param amount    The number of forces to place.
      * @param special   Whether the force is a special reserve.
      */
-    public static void placeForceInTerritory(Territory territory, Faction faction, int amount, boolean special) {
+    public static void placeForceInTerritory(DiscordGame discordGame, Game game, Territory territory, Faction faction, int amount, boolean special) throws ChannelNotFoundException {
         String forceName;
 
         if (special) {
+            // Are Sardaukar being reported to ledger?
             faction.removeSpecialReserves(amount);
             forceName = faction.getSpecialReserves().getName();
         } else {
             faction.removeReserves(amount);
             forceName = faction.getReserves().getName();
             if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
+                // Also need to report Advisors to ledger
                 int advisors = territory.getForce("Advisor").getStrength();
                 territory.getForces().add(new Force("BG", advisors));
                 territory.removeForce("Advisor");
             }
         }
+        discordGame.getFactionLedger(faction).queueMessage(
+                MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
         Force territoryForce = territory.getForce(forceName);
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
+
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            Force reserves = faction.getReserves();
+            Force specialReserves = faction.getSpecialReserves();
+            if (faction instanceof EmperorFaction emperorFaction) {
+                if (reserves.getStrength() < faction.getHighThreshold() && faction.isHighThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " is now at Low Threshold.");
+                    faction.setHighThreshold(false);
+                } else if (specialReserves.getStrength() < emperorFaction.getSecundusHighThreshold() && emperorFaction.isSecundusHighThreshold()) {
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " Salusa Secundus is now at Low Threshold.");
+                    emperorFaction.setSecundusHighThreshold(false);
+                }
+            } else if (reserves.getStrength() + specialReserves.getStrength() < faction.getHighThreshold() && faction.isHighThreshold()) {
+                discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " is now at Low Threshold.");
+                faction.setHighThreshold(false);
+            }
+        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {

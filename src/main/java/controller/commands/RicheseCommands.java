@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -86,7 +85,7 @@ public class RicheseCommands {
         for (Territory territory : game.getTerritories().values()) {
             noField = territory.getRicheseNoField() == null ? noField : territory.getRicheseNoField();
             if (territory.getRicheseNoField() != null) {
-                CommandManager.placeForceInTerritory(territory, game.getFaction("Richese"), noField, false);
+                CommandManager.placeForceInTerritory(discordGame, game, territory, game.getFaction("Richese"), noField, false);
                 discordGame.getTurnSummary().queueMessage("The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji("Richese") + "!");
             }
             territory.setRicheseNoField(null);
