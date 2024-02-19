@@ -7,6 +7,7 @@ import controller.DiscordGame;
 import model.Force;
 import model.Game;
 import model.Territory;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -55,7 +56,12 @@ public class BGCommands {
     }
 
     public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException {
-        CommandManager.placeForceInTerritory(discordGame, game, territory, game.getFaction("BG"), amount, false);
+        Faction bg = game.getFaction("BG");
+        if (amount == 2 && !bg.isHighThreshold()) {
+            discordGame.getFactionChat(bg).queueMessage("You are at Low Threshold and cannot send 2 " + Emojis.BG_ADVISOR);
+            amount = 1;
+        }
+        CommandManager.placeForceInTerritory(discordGame, game, territory, bg, amount, false);
         int fighters = territory.getForce("BG").getStrength();
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.getForces().add(new Force("Advisor", fighters));
