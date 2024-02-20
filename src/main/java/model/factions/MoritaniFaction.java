@@ -4,7 +4,6 @@ import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.TurnSummary;
 import controller.commands.ShowCommands;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -20,6 +19,7 @@ public class MoritaniFaction extends Faction {
 
     private final List<String> terrorTokens;
     private final List<String> assassinationTargets;
+    private boolean newAssassinationTargetNeeded;
 
     public MoritaniFaction(String player, String userName, Game game) throws IOException {
         super("Moritani", player, userName, game);
@@ -36,6 +36,7 @@ public class MoritaniFaction extends Faction {
         game.getHomeworlds().put(getName(), homeworld);
         this.terrorTokens = new LinkedList<>();
         this.assassinationTargets = new LinkedList<>();
+        this.newAssassinationTargetNeeded = false;
 
         terrorTokens.add("Assassination");
         terrorTokens.add("Atomics");
@@ -162,6 +163,14 @@ public class MoritaniFaction extends Faction {
 
     public List<String> getAssassinationTargets() {
         return assassinationTargets;
+    }
+
+    public boolean isNewAssassinationTargetNeeded() {
+        return newAssassinationTargetNeeded;
+    }
+
+    public void setNewAssassinationTargetNeeded(boolean newAssassinationTargetNeeded) {
+        this.newAssassinationTargetNeeded = newAssassinationTargetNeeded;
     }
 
     public String getTerrorTokenMessage() {

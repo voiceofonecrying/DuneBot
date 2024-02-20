@@ -1179,9 +1179,9 @@ class GameTest {
             game.getMentatPause().factionWouldPayExtortion(game, guild);
             assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
             assertEquals(2, guild.getSpice());
-            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.get(0));
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3" + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
             game.getMentatPause().factionDeclinesExtortion(game, ix);
         }
 
@@ -1194,9 +1194,9 @@ class GameTest {
             game.getMentatPause().factionWouldPayExtortion(game, guild);
             assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
             assertEquals(2, guild.getSpice());
-            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.get(0));
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3" + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
         }
 
         @Test
@@ -1208,9 +1208,9 @@ class GameTest {
             game.getMentatPause().factionDeclinesExtortion(game, guild);
             assertEquals(Emojis.RICHESE + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
             assertEquals(2, richese.getSpice());
-            assertEquals("-3" + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2" + Emojis.SPICE, richeseLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, richeseLedger.messages.get(0));
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3" + Emojis.SPICE + " " + Emojis.RICHESE + " paid Extortion " + "= 15" + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.RICHESE + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
         }
 
         @Test

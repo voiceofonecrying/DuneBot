@@ -801,9 +801,9 @@ public class RunCommands {
     }
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.startMentatPause();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Mentat Pause Phase:");
+        game.startMentatPause();
         for (Faction faction : game.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {
                 turnSummary.queueMessage(faction.getEmoji() + " collects " +

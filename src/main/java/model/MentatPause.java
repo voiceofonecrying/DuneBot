@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
@@ -14,6 +15,18 @@ public class MentatPause {
     boolean extortionActive = false;
 
     public MentatPause(Game game) {
+        try {
+            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+            if (moritani.isNewAssassinationTargetNeeded()) {
+                moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
+                game.getTurnSummary().publish(Emojis.MORITANI + " have drawn a new traitor.");
+                moritani.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            }
+            moritani.setNewAssassinationTargetNeeded(false);
+        } catch (IllegalArgumentException e) {
+            // Moritani is not in the game
+        }
+
         if (game.isExtortionTokenRevealed())
             startExtortion(game);
     }

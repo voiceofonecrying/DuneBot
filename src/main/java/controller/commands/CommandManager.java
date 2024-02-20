@@ -1304,14 +1304,20 @@ public class CommandManager extends ListenerAdapter {
         String assassinated = moritani.getTraitorHand().get(0).name();
         moritani.getAssassinationTargets().add(assassinated);
         moritani.getTraitorHand().clear();
+        moritani.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
         for (Faction faction : game.getFactions()) {
-            if (faction.getLeaders().stream().anyMatch(leader1 -> leader1.name().equals(assassinated))) {
+            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.name().equals(assassinated)).findFirst();
+            if (optLeader.isPresent()) {
                 game.getLeaderTanks().add(faction.removeLeader(assassinated));
+                Leader leader = optLeader.get();
+                int spiceGained = leader.name().equals("Zoal") ? 3 : leader.value();
+                moritani.addSpice(spiceGained);
+                moritani.spiceMessage(spiceGained, "assassination of " + assassinated, true);
                 break;
             }
         }
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " have assassinated " + assassinated + "!");
-        moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
+        moritani.setNewAssassinationTargetNeeded(true);
         discordGame.pushGame();
     }
 
