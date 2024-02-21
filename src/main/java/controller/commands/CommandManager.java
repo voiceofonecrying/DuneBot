@@ -1427,14 +1427,13 @@ public class CommandManager extends ListenerAdapter {
             resolution += "**KABOOM!**\n";
         else {
             BattlePlan winnerPlan = currentBattle.isAggressorWin(game) ? aggressorPlan : defenderPlan;
-            BattlePlan loswerPlan = currentBattle.isAggressorWin(game) ? defenderPlan : aggressorPlan;
+            BattlePlan loserPlan = currentBattle.isAggressorWin(game) ? defenderPlan : aggressorPlan;
             resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
-                    currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loswerPlan.getTotalStrengthString()
+                    currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loserPlan.getTotalStrengthString()
             );
-            if (winnerPlan.getWholeNumberDial() == loswerPlan.getWholeNumberDial()
-                    && winnerPlan.getPlusHalfDial() == loswerPlan.getPlusHalfDial()
+            if (winnerPlan.getTotalStrengthString().equals(loserPlan.getTotalStrengthString())
                     && !currentBattle.isAggressorWin(game))
-                resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.";
+                resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.\n";
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
