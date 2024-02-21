@@ -1,20 +1,25 @@
 package controller.commands;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Force;
 import model.Game;
 import model.Territory;
+import model.factions.BGFaction;
 import model.factions.Faction;
+import model.factions.FremenFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static controller.commands.CommandOptions.bgTerritories;
@@ -94,5 +99,27 @@ public class BGCommands {
         }
         discordGame.pushGame();
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public static void presentAdvisorButtons(DiscordGame discordGame, Game game, Faction targetFaction, Territory targetTerritory) throws ChannelNotFoundException {
+        if (game.hasFaction("BG")
+                && !(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
+                && !(
+                game.hasGameOption(GameOption.HOMEWORLDS)
+                        && !game.getFaction("BG").isHighThreshold()
+                        && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())
+        )) {
+            List<Button> buttons = new LinkedList<>();
+            String territoryName = targetTerritory.getTerritoryName();
+            buttons.add(Button.primary("bg-advise-" + territoryName, "Advise"));
+            buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
+
+            if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+                buttons.add(Button.secondary("bg-ht", "Advise 2 to Polar Sink"));
+            }
+
+            buttons.add(Button.danger("bg-dont-advise-" + territoryName, "No"));
+            discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "? " + game.getFaction("BG").getPlayer(), buttons);
+        }
     }
 }

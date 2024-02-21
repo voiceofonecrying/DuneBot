@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import controller.commands.BGCommands;
 import controller.commands.CommandManager;
 import controller.commands.RicheseCommands;
 import controller.commands.ShowCommands;
@@ -451,6 +452,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 guildFaction.addSpice(spice);
                 guildFaction.spiceMessage(spice, faction.getEmoji() + " shipment", true);
             }
+            BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);

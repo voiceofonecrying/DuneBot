@@ -339,25 +339,7 @@ public class CommandManager extends ListenerAdapter {
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
                 bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
             }
-            if (game.hasFaction("BG")
-                    && !(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
-                    && !(
-                            game.hasGameOption(GameOption.HOMEWORLDS)
-                            && !game.getFaction("BG").isHighThreshold()
-                            && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())
-                    )) {
-                List<Button> buttons = new LinkedList<>();
-                String territoryName = targetTerritory.getTerritoryName();
-                buttons.add(Button.primary("bg-advise-" + territoryName, "Advise"));
-                buttons.add(Button.secondary("bg-advise-Polar Sink", "Advise to Polar Sink"));
-
-                if (game.hasGameOption(GameOption.HOMEWORLDS)) {
-                    buttons.add(Button.secondary("bg-ht", "Advise 2 to Polar Sink"));
-                }
-
-                buttons.add(Button.danger("bg-dont-advise-" + territoryName, "No"));
-                discordGame.getBGChat().queueMessage(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "? " + game.getFaction("BG").getPlayer(), buttons);
-            }
+            BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
             turnSummary.queueMessage(message.toString());
 
             if (targetTerritory.getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
