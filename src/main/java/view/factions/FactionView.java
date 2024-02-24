@@ -206,17 +206,17 @@ public class FactionView {
     }
 
     private MessageEmbed getLeaderSkillEmbed(Leader leader) {
-        LeaderSkillCard leaderSkillCard = leader.skillCard();
+        LeaderSkillCard leaderSkillCard = leader.getSkillCard();
 
         return new EmbedBuilder()
                 .setTitle(
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "{0} {1} is a {2} {0}",
-                                        Emojis.LEADER, leader.name(), leaderSkillCard.name()
+                                        Emojis.LEADER, leader.getName(), leaderSkillCard.name()
                                 )))
                 .setColor(faction.getColor())
-                .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.name()))
+                .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()))
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                 .addField(
                         "When Leader is in Front of Shield",

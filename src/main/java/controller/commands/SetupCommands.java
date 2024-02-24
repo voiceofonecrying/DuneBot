@@ -541,15 +541,15 @@ public class SetupCommands {
         List<Map<String, String>> leaderSkills = new ArrayList<>();
 
         for (Faction faction : game.getFactions()) {
-            Leader leader = faction.getLeaders().stream().filter(l -> l.skillCard() != null)
+            Leader leader = faction.getLeaders().stream().filter(l -> l.getSkillCard() != null)
                     .findFirst().orElseThrow(() -> new InvalidGameStateException(
                             MessageFormat.format("Faction {0} do not have a skilled leader", faction.getName())
                     ));
 
             Map<String, String> leaderSkillInfo = Map.of(
                     "emoji", faction.getEmoji(),
-                    "leader", leader.name(),
-                    "skill", leader.skillCard().name()
+                    "leader", leader.getName(),
+                    "skill", leader.getSkillCard().name()
             );
             leaderSkills.add(leaderSkillInfo);
         }
@@ -603,8 +603,8 @@ public class SetupCommands {
         List<Leader> leaders = ecaz.getLeaders();
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.get(0));
-        game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().name()));
-        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().name() + " as their loyal leader.");
+        game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().getName()));
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().getName() + " as their loyal leader.");
         return StepStatus.CONTINUE;
     }
 
@@ -690,14 +690,14 @@ public class SetupCommands {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
 
-        Leader updatedLeader = new Leader(leader.name(), leader.value(), leaderSkillCard, leader.faceDown());
+        Leader updatedLeader = new Leader(leader.getName(), leader.getValue(), leaderSkillCard, leader.isFaceDown());
 
         faction.removeLeader(leader);
         faction.addLeader(updatedLeader);
 
         faction.getLeaderSkillsHand().clear();
         discordGame.getFactionChat(faction.getName()).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
-                        updatedLeader.name(), leaderSkillCard.name()
+                        updatedLeader.getName(), leaderSkillCard.name()
                 )
         );
         discordGame.pushGame();

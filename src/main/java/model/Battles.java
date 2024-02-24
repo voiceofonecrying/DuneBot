@@ -173,9 +173,9 @@ public class Battles {
         else if (opponent instanceof BGFaction || opponent.getAlly().equals("BG"))
             message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
 
-        if (aggressor.getSkilledLeaders().stream().anyMatch(l -> l.skillCard().name().equals("Mentat")))
+        if (aggressor.getSkilledLeaders().stream().anyMatch(l -> l.getSkillCard().name().equals("Mentat")))
             message += step++ + ". " + aggressor.getEmoji() + " use Mentat skill.\n";
-        else if (opponent.getSkilledLeaders().stream().anyMatch(l -> l.skillCard().name().equals("Mentat")))
+        else if (opponent.getSkilledLeaders().stream().anyMatch(l -> l.getSkillCard().name().equals("Mentat")))
             message += step++ + ". " + opponent.getEmoji() + " use Mentat skill.\n";
 
         if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides"))

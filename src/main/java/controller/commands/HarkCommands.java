@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
@@ -98,11 +97,11 @@ public class HarkCommands {
         faction.removeLeader(leader);
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (leader.skillCard() != null) {
+        if (leader.getSkillCard() != null) {
             turnSummary.queueMessage(MessageFormat.format(
                     "{0} have captured a {1} skilled leader: {2} the {3}",
                     harkonnenFaction.getEmoji(), faction.getEmoji(),
-                    leader.name(), leader.skillCard().name()
+                    leader.getName(), leader.getSkillCard().name()
             ));
         } else {
             turnSummary.queueMessage(MessageFormat.format(
@@ -111,9 +110,9 @@ public class HarkCommands {
             ));
         }
 
-        discordGame.getHarkonnenLedger().queueMessage("You have captured " + leader.name());
+        discordGame.getHarkonnenLedger().queueMessage("You have captured " + leader.getName());
         discordGame.getFactionLedger(faction).queueMessage(
-                leader.name() + " has been captured by " + harkonnenFaction.getEmoji()
+                leader.getName() + " has been captured by " + harkonnenFaction.getEmoji()
         );
 
         discordGame.pushGame();
@@ -126,8 +125,8 @@ public class HarkCommands {
         Faction faction = game.getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
 
-        if (leader.skillCard() != null) {
-            game.getLeaderSkillDeck().add(leader.skillCard());
+        if (leader.getSkillCard() != null) {
+            game.getLeaderSkillDeck().add(leader.getSkillCard());
         }
 
         faction.removeLeader(leader);
@@ -137,10 +136,10 @@ public class HarkCommands {
         harkonnenFaction.addSpice(2);
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (leader.skillCard() != null) {
+        if (leader.getSkillCard() != null) {
             turnSummary.queueMessage(MessageFormat.format(
                     "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.name(), Emojis.SPICE
+                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.getName(), Emojis.SPICE
             ));
         } else {
             turnSummary.queueMessage(MessageFormat.format(
@@ -150,13 +149,13 @@ public class HarkCommands {
 
         }
 
-        Leader killedLeader = new Leader(leader.name(), leader.value(), null, true);
+        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), null, true);
 
         game.getLeaderTanks().add(killedLeader);
 
-        discordGame.getFactionChat(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        discordGame.getFactionLedger(factionName).queueMessage(killedLeader.name() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.name());
+        discordGame.getFactionChat(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getFactionLedger(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.getName());
         harkonnenFaction.spiceMessage(2, "from the killed leader", true);
 
         game.setUpdated(UpdateType.MAP);

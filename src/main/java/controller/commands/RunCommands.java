@@ -688,7 +688,7 @@ public class RunCommands {
     public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.endBattlePhase();
         TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.name().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
+        if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
         turnSummary.queueMessage("Turn " + game.getTurn() + " Spice Harvest Phase:");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {

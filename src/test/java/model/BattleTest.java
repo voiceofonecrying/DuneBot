@@ -556,8 +556,8 @@ class BattleTest {
             Battle ecazBattle = new Battle("Tuek's Sietch", List.of(tueksSietch), List.of(atreides, ecaz), List.of(atreidesForce, ecazForce), null);
             atreides.addTreacheryCard(hunterSeeker);
             atreides.addTreacheryCard(weirdingWay);
-            ecazBattle.setBattlePlan(game, atreides, new Leader("Lady Jessica", 5, null, false), null, false, 6, false, 4, hunterSeeker, weirdingWay);
-            ecazBattle.setBattlePlan(game, ecaz, new Leader("Bindikk Narvi", 2, null, false), null, false, 5, false, 0, null, null);
+            ecazBattle.setBattlePlan(game, atreides, atreides.getLeader("Lady Jessica").orElseThrow(), null, false, 6, false, 4, hunterSeeker, weirdingWay);
+            ecazBattle.setBattlePlan(game, ecaz, ecaz.getLeader("Bindikk Narvi").orElseThrow(), null, false, 5, false, 0, null, null);
             BattlePlan atreidesPlan = ecazBattle.getAggressorBattlePlan();
             BattlePlan ecazPlan = ecazBattle.getDefenderBattlePlan();
             atreidesPlan.revealOpponentBattlePlan(ecazPlan);
@@ -630,7 +630,7 @@ class BattleTest {
 
         @Test
         void testBattlePlanLeaderInTanks() {
-            atreides.removeLeader(duncanIdaho.name());
+            atreides.removeLeader(duncanIdaho.getName());
             assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, null));
         }
 
@@ -968,7 +968,7 @@ class BattleTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             emperor.setSecundusHighThreshold(true);
             Battle battle = new Battle("Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
-            Leader burseg = new Leader("Burseg", 3, null, false);
+            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
         }
 

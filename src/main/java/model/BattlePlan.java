@@ -80,9 +80,9 @@ public class BattlePlan {
     }
 
     public int getLeaderValue() {
-        if (leader != null && leader.name().equals("Zoal"))
-            return opponentLeader == null ? 0 : opponentLeader.value();
-        return leader == null ? 0 : leader.value();
+        if (leader != null && leader.getName().equals("Zoal"))
+            return opponentLeader == null ? 0 : opponentLeader.getValue();
+        return leader == null ? 0 : leader.getValue();
     }
 
     public int getLeaderContribution() {
@@ -95,7 +95,7 @@ public class BattlePlan {
         String khString = kwisatzHaderach ? " + KH (2)" : "";
         String leaderString = "-";
         if (leader != null) leaderString = MessageFormat.format("{0} ({1}){2}",
-                leader.name(), leader.name().equals("Zoal") ? "X" : leader.value(), khString);
+                leader.getName(), leader.getName().equals("Zoal") ? "X" : leader.getValue(), khString);
         else if (cheapHero != null) leaderString = cheapHero.name() + "(0)" + khString;
         return "Leader: " + leaderString;
     }
@@ -194,7 +194,7 @@ public class BattlePlan {
     }
 
     public String getKilledLeaderString() {
-        return leader == null ? "" : leader.name();
+        return leader == null ? "" : leader.getName();
     }
 
     public String getWeaponString() {

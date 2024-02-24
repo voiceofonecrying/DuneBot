@@ -456,7 +456,7 @@ public class Game {
 
     public Leader removeLeaderFromTanks(String name) {
         Leader remove = leaderTanks.stream()
-                .filter(l -> l.name().equals(name))
+                .filter(l -> l.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
 
@@ -872,7 +872,7 @@ public class Game {
 
             if (territoryName.equals("Ecaz") && getFaction("Ecaz").isHomeworldOccupied()) {
                 for (Faction faction1 : factions) {
-                    faction1.getLeaders().removeIf(leader1 -> leader1.name().equals("Duke Vidal"));
+                    faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
                 }
                 getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, null, false));
                 turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
@@ -912,7 +912,7 @@ public class Game {
         // Get list of aggregate territory names with multiple factions
         battles = new Battles();
         battles.startBattlePhase(this);
-        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.name().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
+        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
             for (Faction faction : factions) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");

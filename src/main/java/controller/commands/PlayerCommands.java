@@ -79,7 +79,7 @@ public class PlayerCommands {
         if (leaderName.startsWith("Cheap"))
             cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
         else if (!leaderName.equals("None"))
-            leader = faction.getLeaders().stream().filter(l -> l.name().equals(leaderName)).findFirst().orElseThrow();
+            leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
         String dial = discordGame.required(combatDial).getAsString();
         int decimalPoint = dial.indexOf(".");
         int wholeNumberDial;

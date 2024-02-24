@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -73,9 +72,9 @@ public class EcazFaction extends Faction {
             case "Ecaz" -> {
                 Button getVidal = Button.primary("ecaz-get-vidal", "Get Duke Vidal");
                 Button offerAlliance = Button.primary("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
-                if (game.getLeaderTanks().stream().anyMatch(leader -> leader.name().equals("Duke Vidal"))
-                        || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal")))
-                        || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.name().equals("Duke Vidal"))))
+                if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
+                        || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+                        || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
                     getVidal = getVidal.asDisabled();
                 if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly())
                     offerAlliance = offerAlliance.asDisabled();

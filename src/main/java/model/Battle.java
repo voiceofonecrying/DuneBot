@@ -283,10 +283,10 @@ public class Battle {
         if (leader != null && cheapHero != null)
             throw new InvalidGameStateException(faction.getEmoji() + " cannot play both a leader and " + cheapHero.name());
         if (leader != null && !faction.getLeaders().contains(leader))
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + leader);
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + leader.getName());
         if (cheapHero != null && !faction.hasTreacheryCard(cheapHero.name()))
             throw new InvalidGameStateException(faction.getEmoji() + " does not have " + cheapHero.name());
-        if (leader == null && cheapHero == null && !faction.getLeaders().stream().filter(l -> !l.name().equals("Kwisatz Haderach")).toList().isEmpty())
+        if (leader == null && cheapHero == null && !faction.getLeaders().stream().filter(l -> !l.getName().equals("Kwisatz Haderach")).toList().isEmpty())
             throw new InvalidGameStateException(faction.getEmoji() + " must play a leader or a Cheap Hero");
         if (kwisatzHaderach) {
             if (leader == null && cheapHero == null)

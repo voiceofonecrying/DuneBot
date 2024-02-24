@@ -393,7 +393,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (ornithopter || game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
                 game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())))
             spacesCanMove = 3;
-        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist") && spacesCanMove < 3)
+        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
             spacesCanMove++;
         Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
@@ -693,7 +693,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             arrangeButtonsAndSend(message, forcesButtons, discordGame);
 
-            if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).skillCard().name().equals("Planetologist")) {
+            if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).getSkillCard().name().equals("Planetologist")) {
                 int spacesCanMove = 1;
                 if (faction instanceof FremenFaction) spacesCanMove = 2;
                 if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||

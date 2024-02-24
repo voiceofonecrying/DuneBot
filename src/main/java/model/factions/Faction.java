@@ -373,7 +373,7 @@ public class Faction {
 
     public Optional<Leader> getLeader(String leaderName) {
         return getLeaders().stream()
-                .filter(l -> l.name().equalsIgnoreCase(leaderName))
+                .filter(l -> l.getName().equalsIgnoreCase(leaderName))
                 .findFirst();
     }
 
@@ -382,12 +382,12 @@ public class Faction {
     }
 
     public List<Leader> getSkilledLeaders() {
-        return getLeaders().stream().filter(l -> l.skillCard() != null).toList();
+        return getLeaders().stream().filter(l -> l.getSkillCard() != null).toList();
     }
 
     public Leader removeLeader(String name) {
         Leader remove = leaders.stream()
-                .filter(l -> l.name().equals(name))
+                .filter(l -> l.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
 
@@ -400,7 +400,7 @@ public class Faction {
     public void removeLeader(Leader leader) {
         getLeaders().remove(leader);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (leader.skillCard() != null) {
+        if (leader.getSkillCard() != null) {
             setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
         }
     }

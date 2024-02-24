@@ -376,7 +376,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
-        return faction.getLeaders().stream().map(Leader::name)
+        return faction.getLeaders().stream().map(Leader::getName)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
@@ -398,7 +398,7 @@ public class CommandOptions {
         harkLeaders.add("Piter de Vries");
         harkLeaders.add("Cpt. Iakin Nefud");
         harkLeaders.add("Umman Kudu");
-        return faction.getLeaders().stream().map(Leader::name)
+        return faction.getLeaders().stream().map(Leader::getName)
                 .filter(leader -> !harkLeaders.contains(leader))
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
@@ -406,7 +406,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> reviveLeaders(Game game, String searchValue) {
-        return game.getLeaderTanks().stream().map(Leader::name)
+        return game.getLeaderTanks().stream().map(Leader::getName)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
@@ -415,8 +415,8 @@ public class CommandOptions {
     private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         List<Command.Choice> choices = new ArrayList<>();
-        if (faction.getLeaders().stream().filter(leader -> !leader.name().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
-        choices.addAll(faction.getLeaders().stream().map(Leader::name)
+        if (faction.getLeaders().stream().filter(leader -> !leader.getName().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
+        choices.addAll(faction.getLeaders().stream().map(Leader::getName)
                 .filter(leader -> !leader.equals("Kwisatz Haderach"))
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))

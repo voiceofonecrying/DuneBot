@@ -167,8 +167,8 @@ public class ShowCommands {
 
         //Place leaders
         for (Leader leader : faction.getLeaders()) {
-            BufferedImage leaderImage = getResourceImage(leader.name());
-            if (!leader.name().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
+            BufferedImage leaderImage = getResourceImage(leader.getName());
+            if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
             else leaderImage = resize(leaderImage, 500, 301);
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
@@ -666,12 +666,12 @@ public class ShowCommands {
         offset = 0;
         for (Leader leader : game.getLeaderTanks()) {
             BufferedImage leaderImage;
-            if (leader.faceDown()) {
-                leaderImage = getResourceImage(leaderToFaction.get(leader.name()) + " Sigil");
+            if (leader.isFaceDown()) {
+                leaderImage = getResourceImage(leaderToFaction.get(leader.getName()) + " Sigil");
             } else {
-                leaderImage = getResourceImage(leader.name());
+                leaderImage = getResourceImage(leader.getName());
             }
-            if (!leader.name().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 70, 70);
+            if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 70, 70);
             else leaderImage = resize(leaderImage, 70, 42);
             Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
             Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
@@ -876,7 +876,7 @@ public class ShowCommands {
                         factionSpecificString +
                         traitorString);
         for (Leader leader : faction.getLeaders()) {
-            builder = builder.addFiles(getResourceFile(leader.name()));
+            builder = builder.addFiles(getResourceFile(leader.getName()));
         }
 
         MessageCreateData data = builder.build();

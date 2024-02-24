@@ -22,7 +22,7 @@ public class EcazView extends FactionView {
             return Collections.singletonList(
                     new MessageEmbed.Field(
                             "Loyal Leader",
-                            discordGame.tagEmojis(faction.getLoyalLeader().name()),
+                            discordGame.tagEmojis(faction.getLoyalLeader().getName()),
                             true
                     )
             );

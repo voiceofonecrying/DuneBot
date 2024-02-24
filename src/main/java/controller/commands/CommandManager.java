@@ -1288,11 +1288,11 @@ public class CommandManager extends ListenerAdapter {
         moritani.getTraitorHand().clear();
         moritani.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
         for (Faction faction : game.getFactions()) {
-            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.name().equals(assassinated)).findFirst();
+            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.getName().equals(assassinated)).findFirst();
             if (optLeader.isPresent()) {
                 game.getLeaderTanks().add(faction.removeLeader(assassinated));
                 Leader leader = optLeader.get();
-                int spiceGained = leader.name().equals("Zoal") ? 3 : leader.value();
+                int spiceGained = leader.getName().equals("Zoal") ? 3 : leader.getValue();
                 moritani.addSpice(spiceGained);
                 moritani.spiceMessage(spiceGained, "assassination of " + assassinated, true);
                 break;
@@ -1412,7 +1412,7 @@ public class CommandManager extends ListenerAdapter {
 
     private String checkAuditor(Faction faction, Faction opponent, BattlePlan battlePlan) {
         String message = "";
-        if (faction instanceof ChoamFaction && battlePlan.getLeader().name().equals("Auditor")) {
+        if (faction instanceof ChoamFaction && battlePlan.getLeader().getName().equals("Auditor")) {
             int numCards = battlePlan.isLeaderAlive() ? 2 : 1;
             message = MessageFormat.format(
                     "{0} may audit {1} {2} cards not used in the battle unless {3} cancels the audit for {1} {4}\n",
