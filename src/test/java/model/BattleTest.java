@@ -75,6 +75,52 @@ class BattleTest {
             Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
             assertEquals(1, battle.validateDial(ix, 7, false, 4));
         }
+
+        @Test
+        void testNoFieldForces() throws IOException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3, "Richese");
+            Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            assertDoesNotThrow(() -> battle.validateDial(richese, 3, false, 3));
+            assertThrows(InvalidGameStateException.class, () -> battle.validateDial(richese, 3, true, 3));
+        }
+    }
+
+    @Nested
+    @DisplayName("#getForcesDialed")
+    class GetForcesDialed {
+        @Test
+        void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            Force cyborgs = new Force("Ix*", 3, "Ix");
+            Force suboids = new Force("Ix", 3, "Ix");
+            hms.addForce(cyborgs);
+            hms.addForce(suboids);
+            Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
+            List<Force> ixForces = battle.getForcesDialed(ix, 7, false, 4);
+            assertEquals(3, ixForces.stream().filter(f -> f.getName().equals("Ix*")).findFirst().map(Force::getStrength).orElse(0));
+            assertEquals(1, ixForces.stream().filter(f -> f.getName().equals("Ix")).findFirst().map(Force::getStrength).orElse(0));
+        }
+
+        @Test
+        void testNoFieldForces() throws IOException, InvalidGameStateException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3, "Richese");
+            Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            List<Force> richeseForces = battle.getForcesDialed(richese, 3, false, 3);
+            assertEquals(3, richeseForces.stream().filter(f -> f.getName().equals("Richese")).findFirst().map(Force::getStrength).orElse(0));
+        }
     }
 
     @Test

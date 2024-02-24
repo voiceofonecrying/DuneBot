@@ -64,10 +64,11 @@ public class BattlesTest {
         carthag.addForce(sardaukar);
         game.startBattlePhase();
         Battles battles = game.getBattles();
-//        Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), null);
         Force harkonnenTroops = carthag.getForce("Harkonnen");
-        List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops);
-        assertEquals(expectedResult, battles.aggregateForces(List.of(carthag), List.of(emperor, harkonnen)));
+        List<Force> battleForces = battles.aggregateForces(List.of(carthag), List.of(emperor, harkonnen));
+        assertEquals(sardaukar.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
+        assertEquals(emperorTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
+        assertEquals(harkonnenTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
     }
 
     @Test
@@ -103,9 +104,12 @@ public class BattlesTest {
         game.startBattlePhase();
         Battles battles = game.getBattles();
         Force emperorTroops = new Force("Emperor", 4);
-        Force noFieldForce = new Force("NoField", 1, "Richese");
-        List<Force> expectedResult = List.of(sardaukar, emperorTroops, harkonnenTroops, noFieldForce);
-        assertEquals(expectedResult, battles.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese)));
+        Force noFieldForce = new Force("NoField", 5, "Richese");
+        List<Force> battleForces = battles.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese));
+        assertEquals(sardaukar.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
+        assertEquals(emperorTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
+        assertEquals(harkonnenTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
+        assertEquals(noFieldForce.getStrength(), battleForces.stream().filter(f -> f.getName().equals("NoField")).findFirst().orElseThrow().getStrength());
     }
 
     @Test

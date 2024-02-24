@@ -10,9 +10,9 @@ import java.text.MessageFormat;
 import java.util.*;
 
 public class Battles {
-    List<Battle> battles;
-    Battle currentBattle;
-    boolean moritaniCanTakeVidal;
+    private List<Battle> battles;
+    private Battle currentBattle;
+    private boolean moritaniCanTakeVidal;
 
 
     public Battles() {
@@ -32,9 +32,9 @@ public class Battles {
             optInt  = territorySectors.stream().map(t -> t.getForce(f.getName()).getStrength()).reduce(Integer::sum);
             int totalForceStrength = optInt.orElse(0);
             if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
-            boolean hasNoField = territorySectors.stream().anyMatch(Territory::hasRicheseNoField);
-            if (hasNoField && f.getName().equals("Richese")) {
-                forces.add(new Force("NoField", 1, "Richese"));
+            Integer noField = territorySectors.stream().map(Territory::getRicheseNoField).filter(Objects::nonNull).findFirst().orElse(null);
+            if (noField != null && f.getName().equals("Richese")) {
+                forces.add(new Force("NoField", noField, "Richese"));
             }
         }
         return forces;

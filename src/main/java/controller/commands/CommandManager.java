@@ -1322,18 +1322,24 @@ public class CommandManager extends ListenerAdapter {
         int regularForces = forcesDialed.get(0).getStrength();
         int specialForces = forcesDialed.get(1).getStrength();
         if (loser) {
-            resolution += troopFactionEmoji + " loses ";
+            String troopLosses = troopFactionEmoji + " loses ";
             int regularStrength = currentBattle.getForces().stream()
                     .filter(f -> f.getName().equals(troopFactionName))
                     .mapToInt(Force::getStrength).findFirst().orElse(0);
+            if (faction instanceof RicheseFaction)
+                regularStrength += currentBattle.getForces().stream()
+                        .filter(f -> f.getName().equals("NoField"))
+                        .mapToInt(Force::getStrength).findFirst().orElse(0);
             if (regularStrength > 0)
-                resolution += regularStrength + " " + Emojis.getForceEmoji(troopFactionName);
+                troopLosses += regularStrength + " " + Emojis.getForceEmoji(troopFactionName);
             int specialStrength = currentBattle.getForces().stream()
                     .filter(f -> f.getName().equals(troopFactionName + "*"))
                     .mapToInt(Force::getStrength).findFirst().orElse(0);
             if (specialStrength > 0)
-                resolution += specialStrength + " " + Emojis.getForceEmoji(troopFactionName + "*");
-            resolution += " to the tanks\n";
+                troopLosses += specialStrength + " " + Emojis.getForceEmoji(troopFactionName + "*");
+            troopLosses += " to the tanks\n";
+            if (regularStrength > 0 || specialStrength > 0)
+                resolution += troopLosses;
         } else if (regularForces > 0 || specialForces > 0) {
             resolution += troopFactionEmoji + " loses";
             if (regularForces > 0)
@@ -1420,6 +1426,9 @@ public class CommandManager extends ListenerAdapter {
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
         );
+        Integer noFieldValue = currentBattle.getForces().stream().filter(f -> f.getName().equals("NoField")).map(Force::getStrength).findFirst().orElse(null);
+        if (noFieldValue != null)
+            resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
         resolution += currentBattle.getAggressorEmojis(game) + "\n";
         resolution += aggressorPlan.getPlanMessage() + "\n\n";
         resolution += currentBattle.getDefenderEmojis(game) + "\n";

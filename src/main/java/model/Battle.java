@@ -176,6 +176,8 @@ public class Battle {
         boolean fremen = factionName.equals("Fremen");
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        if (faction instanceof RicheseFaction)
+            regularStrength += forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
         int dialUsed = 0;
         int specialStrengthUsed = 0;
@@ -221,6 +223,8 @@ public class Battle {
         boolean isIx = faction instanceof IxFaction;
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        if (faction instanceof RicheseFaction)
+            regularStrength += forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
         int spiceUsed = 0;
         int dialUsed = 0;
         int specialStrengthUsed = 0;
