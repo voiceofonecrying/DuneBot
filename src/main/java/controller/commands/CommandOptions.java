@@ -96,6 +96,7 @@ public class CommandOptions {
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
     public static final OptionData combatLeader = new OptionData(OptionType.STRING, "combat-leader", "The leader or None.", true).setAutoComplete(true);
+    public static final OptionData removeLeader = new OptionData(OptionType.STRING, "leader-to-remove", "The leader incorrectly in a territory.", true).setAutoComplete(true);
     public static final OptionData combatDial = new OptionData(OptionType.STRING, "combat-dial", "The dial on the battle wheel.", true);
     public static final OptionData combatSpice = new OptionData(OptionType.INTEGER, "combat-spice", "Spice used for backing troops", true);
     public static final OptionData weapon = new OptionData(OptionType.STRING, "weapon", "Weapon or Worthless.", true).setAutoComplete(true);
@@ -254,6 +255,7 @@ public class CommandOptions {
             case "leadertokill", "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
             case "combat-leader" -> choices = combatLeaders(event, discordGame, searchValue);
+            case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
             case "weapon" -> choices = weapon(event, discordGame, searchValue);
             case "defense" -> choices = defense(event, discordGame, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, game, searchValue);
@@ -414,9 +416,18 @@ public class CommandOptions {
 
     private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        Battles battles = null;
+        try {
+            battles = discordGame.getGame().getBattles();
+        } catch (InvalidGameStateException e) {
+            // Battle territory not found. Continue without filtering leaders in other territories.
+        }
+        List<String> battleTerritoryNames = battles == null ? new ArrayList<>() : battles.getCurrentBattle().getTerritorySectors().stream().map(Territory::getTerritoryName).toList();
         List<Command.Choice> choices = new ArrayList<>();
         if (faction.getLeaders().stream().filter(leader -> !leader.getName().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
-        choices.addAll(faction.getLeaders().stream().map(Leader::getName)
+        choices.addAll(faction.getLeaders().stream()
+                .filter(leader -> leader.getBattleTerritoryName() == null || battleTerritoryNames.stream().anyMatch(n -> n.equals(leader.getBattleTerritoryName())))
+                .map(Leader::getName)
                 .filter(leader -> !leader.equals("Kwisatz Haderach"))
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
@@ -430,6 +441,15 @@ public class CommandOptions {
                 .toList()
         );
         return choices;
+    }
+
+    private static List<Command.Choice> removeLeaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        return faction.getLeaders().stream()
+                .filter(l -> l.getBattleTerritoryName() != null)
+                .filter(l -> l.getName().matches(searchRegex(searchValue)))
+                .map(l -> new Command.Choice(l.getName() + " from " + l.getBattleTerritoryName(), l.getName()))
+                .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> weapon(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {

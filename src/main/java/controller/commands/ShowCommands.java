@@ -17,7 +17,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -165,6 +164,7 @@ public class ShowCommands {
 
         offset = 0;
 
+        String leadersInTerritories = "";
         //Place leaders
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage = getResourceImage(leader.getName());
@@ -173,6 +173,8 @@ public class ShowCommands {
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
             offset += 450;
+            if (leader.getName() != null)
+                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName();
         }
 
         offset = 0;
@@ -334,7 +336,10 @@ public class ShowCommands {
 
         FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "behind shield.png");
 
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", "Faction Info", boardFileUpload);
+        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
+        if (!leadersInTerritories.isEmpty())
+            discordGame.queueMessage(infoChannelName, leadersInTerritories);
 
         sendInfoButtons(game, discordGame, faction);
     }
@@ -875,13 +880,16 @@ public class ShowCommands {
                         nexusCard +
                         factionSpecificString +
                         traitorString);
+        String leadersInTerritories = "";
         for (Leader leader : faction.getLeaders()) {
             builder = builder.addFiles(getResourceFile(leader.getName()));
+            if (leader.getBattleTerritoryName() != null)
+                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName() + "\n";
         }
+        discordGame.queueMessage(infoChannelName, builder.build());
 
-        MessageCreateData data = builder.build();
-
-        discordGame.queueMessage(infoChannelName, data);
+        if (!leadersInTerritories.isEmpty())
+            discordGame.queueMessage(infoChannelName, leadersInTerritories);
 
         if (faction.getGame().hasGameOption(GameOption.HOMEWORLDS)) {
             MessageCreateBuilder homeworldMessageBuilder = new MessageCreateBuilder();

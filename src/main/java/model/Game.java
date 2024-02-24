@@ -909,6 +909,7 @@ public class Game {
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("Turn " + turn + " Battle Phase:");
 
+        getFactions().forEach(f -> f.getLeaders().forEach(l -> l.setBattleTerritoryName(null)));
         // Get list of aggregate territory names with multiple factions
         battles = new Battles();
         battles.startBattlePhase(this);
@@ -946,6 +947,9 @@ public class Game {
     public void endBattlePhase() throws InvalidGameStateException {
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");
+        getFactions().forEach(f -> f.getLeaders().forEach(l -> l.setBattleTerritoryName(null)));
+        getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
+        getLeaderTanks().forEach(l -> l.setBattleTerritoryName(null));
         battles = null;
     }
 

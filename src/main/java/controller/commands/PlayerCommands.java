@@ -2,12 +2,14 @@ package controller.commands;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import controller.DiscordGame;
 import model.factions.AtreidesFaction;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -73,13 +75,20 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         if (!currentBattle.getAggressorName().equals(faction.getName()) && !currentBattle.getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException("You are not in the current battle.");
+        faction.getLeaders().stream().filter(l -> l.getBattleTerritoryName() != null && l.getBattleTerritoryName().equals(currentBattle.getWholeTerritoryName())).forEach(l -> l.setBattleTerritoryName(null));
         String leaderName = discordGame.required(combatLeader).getAsString();
         Leader leader = null;
         TreacheryCard cheapHero = null;
         if (leaderName.startsWith("Cheap"))
             cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
-        else if (!leaderName.equals("None"))
+        else if (!leaderName.equals("None")) {
             leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
+            Territory battleTerritory = currentBattle.getTerritorySectors().stream()
+                    .filter(t -> !t.getForces(faction).isEmpty() || faction instanceof RicheseFaction && t.hasRicheseNoField())
+                    .findAny().orElseThrow();
+            leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
         String dial = discordGame.required(combatDial).getAsString();
         int decimalPoint = dial.indexOf(".");
         int wholeNumberDial;

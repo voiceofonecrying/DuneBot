@@ -2,19 +2,72 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Battle;
 import model.Battles;
 import model.Game;
+import model.Territory;
 import model.factions.EcazFaction;
 import model.factions.Faction;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static controller.commands.CommandOptions.*;
+import static controller.commands.CommandOptions.territory;
+
 public class BattleCommands {
+    public static List<CommandData> getCommands() {
+        List<CommandData> commandData = new ArrayList<>();
+        commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
+                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills),
+                new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
+                new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader)
+        ));
+        return commandData;
+    }
+
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        String name = event.getSubcommandName();
+        if (name == null) throw new IllegalArgumentException("Invalid command name: null");
+
+        switch (name) {
+            case "review-resolution" -> reviewResolution(discordGame, game);
+            case "place-leader-in-territory" -> placeLeaderInTerritory(discordGame, game);
+            case "remove-leader-from-territory" -> removeLeaderFromTerritory(discordGame, game);
+        }
+    }
+
+    public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        CommandManager.reviewBattleResolution(discordGame, game);
+    }
+
+    public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
+        String leaderName = discordGame.required(factionLeader).getAsString();
+        Territory territory = game.getTerritory(discordGame.required(CommandOptions.territory).getAsString());
+        targetFaction.getLeader(leaderName).orElseThrow().setBattleTerritoryName(territory.getTerritoryName());
+        targetFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        discordGame.pushGame();
+    }
+
+    public static void removeLeaderFromTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
+        String leaderName = discordGame.required(removeLeader).getAsString();
+        targetFaction.getLeader(leaderName).orElseThrow().setBattleTerritoryName(null);
+        targetFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        discordGame.pushGame();
+    }
+
     public static void setupBattle(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Battles battles = game.getBattles();
         Battle currentBattle = battles.getCurrentBattle();

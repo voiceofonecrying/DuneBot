@@ -560,6 +560,7 @@ public class CommandManager extends ListenerAdapter {
                 case "show" -> ShowCommands.runCommand(event, discordGame, game);
                 case "setup" -> SetupCommands.runCommand(event, discordGame, game);
                 case "run" -> RunCommands.runCommand(event, discordGame, game);
+                case "battle" -> BattleCommands.runCommand(event, discordGame, game);
                 case "richese" -> RicheseCommands.runCommand(event, discordGame, game);
                 case "bt" -> BTCommands.runCommand(event, discordGame, game);
                 case "ecaz" -> EcazCommands.runCommand(event, discordGame, game);
@@ -744,6 +745,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
         commandData.addAll(RunCommands.getCommands());
+        commandData.addAll(BattleCommands.getCommands());
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
@@ -1303,7 +1305,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    private String factionBattleResults(Game game, Battle currentBattle, boolean isAggressor) throws InvalidGameStateException {
+    private static String factionBattleResults(Game game, Battle currentBattle, boolean isAggressor) throws InvalidGameStateException {
         String resolution = "";
         Faction faction = isAggressor ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
         String troopFactionName = currentBattle.hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
@@ -1410,7 +1412,7 @@ public class CommandManager extends ListenerAdapter {
         return resolution;
     }
 
-    private String checkAuditor(Faction faction, Faction opponent, BattlePlan battlePlan) {
+    private static String checkAuditor(Faction faction, Faction opponent, BattlePlan battlePlan) {
         String message = "";
         if (faction instanceof ChoamFaction && battlePlan.getLeader().getName().equals("Auditor")) {
             int numCards = battlePlan.isLeaderAlive() ? 2 : 1;
@@ -1422,7 +1424,7 @@ public class CommandManager extends ListenerAdapter {
         return message;
     }
 
-    private void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
+    private static void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
         );
@@ -1452,7 +1454,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getModInfo().queueMessage(resolution);
     }
 
-    public void reviewBattleResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+    public static void reviewBattleResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Battle currentBattle = game.getBattles().getCurrentBattle();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
