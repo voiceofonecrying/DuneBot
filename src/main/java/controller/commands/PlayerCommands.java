@@ -87,7 +87,7 @@ public class PlayerCommands {
         if (decimalPoint == -1)
             wholeNumberDial = Integer.parseInt(dial);
         else {
-            wholeNumberDial = Integer.parseInt(dial.substring(0, decimalPoint));
+            wholeNumberDial = decimalPoint == 0 ? 0 : Integer.parseInt(dial.substring(0, decimalPoint));
             if (dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
                 plusHalfDial = true;
             else
