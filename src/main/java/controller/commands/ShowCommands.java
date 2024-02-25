@@ -173,8 +173,8 @@ public class ShowCommands {
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
             offset += 450;
-            if (leader.getName() != null)
-                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName();
+            if (leader.getBattleTerritoryName() != null)
+                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName() + "\n";
         }
 
         offset = 0;

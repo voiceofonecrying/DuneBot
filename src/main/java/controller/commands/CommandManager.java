@@ -1213,9 +1213,10 @@ public class CommandManager extends ListenerAdapter {
     public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         String leaderToRevive = discordGame.required(reviveLeader).getAsString();
-        targetFaction.addLeader(
-                game.removeLeaderFromTanks(leaderToRevive)
-        );
+
+        Leader leader = game.removeLeaderFromTanks(leaderToRevive);
+        targetFaction.addLeader(leader);
+        leader.setBattleTerritoryName(null);
         String message = leaderToRevive + " was revived from the tanks.";
         discordGame.getFactionLedger(targetFaction).queueMessage(message);
         discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " " + message);
@@ -1367,7 +1368,7 @@ public class CommandManager extends ListenerAdapter {
             if (!(faction instanceof ChoamFaction) && game.hasFaction("Choam") && battlePlan.getSpice() > 1) {
                 resolution += MessageFormat.format(
                         ", {0} {1} paid to {2}",
-                        Math.floorDiv(battlePlan.getSpice(), 2), Emojis.SPICE, Emojis.CHOAM, emojis
+                        Math.floorDiv(battlePlan.getSpice(), 2), Emojis.SPICE, Emojis.CHOAM
                 );
             }
             resolution += "\n";
