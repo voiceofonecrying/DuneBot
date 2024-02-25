@@ -281,7 +281,7 @@ public class Initializers {
                 points.add(new Point(250, 410));
                 points.add(new Point(300, 440));
             }
-            case "Bight of the Cliff (North Sector)" -> {
+            case "Bight Of The Cliff (North Sector)" -> {
                 points.add(new Point(105, 375));
                 points.add(new Point(170, 405));
             }
@@ -301,7 +301,7 @@ public class Initializers {
                 points.add(new Point(90, 455));
                 points.add(new Point(225, 460));
             }
-            case "Bight of the Cliff (South Sector)" -> points.add(new Point(105, 420));
+            case "Bight Of The Cliff (South Sector)" -> points.add(new Point(105, 420));
             case "Wind Pass (South Sector)" -> points.add(new Point(360, 555));
             case "The Greater Flat" -> {
                 points.add(new Point(115, 575));
