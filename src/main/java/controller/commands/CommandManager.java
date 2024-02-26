@@ -960,6 +960,7 @@ public class CommandManager extends ListenerAdapter {
                 games.add(categoryName);
             }
         } catch (Exception e) {
+            System.out.println(category.getName() + " is not a Dune game.");
             // category is not a Dune game
         }
     }
@@ -969,12 +970,12 @@ public class CommandManager extends ListenerAdapter {
         if (playerGame.numGames != 0) message.append(" (");
         String comma = "";
         for (String categoryName : playerGame.games) {
-            String printName = categoryName.substring(0, Math.min(5, categoryName.length()));
-            if (categoryName.startsWith("Discord ")) {
+            String printName = categoryName.substring(0, Math.min(6, categoryName.length()));
+            if (categoryName.startsWith("D") || categoryName.startsWith("PBD")) {
                 try {
-                    printName = "D" +  new Scanner(categoryName).useDelimiter("\\D+").nextInt();
+                    printName = "D" + new Scanner(categoryName).useDelimiter("\\D+").nextInt();
                 } catch (Exception e) {
-                    // category does not follow Discord N pattern
+                    // category does not follow Dune: Play by Discord game naming and numbering patterns
                 }
             }
             message.append(comma).append(printName);
