@@ -195,8 +195,9 @@ public class Initializers {
                 points.add(new Point(825, 385));
             }
             case "Gara Kulon" -> {
-                points.add(new Point(780, 300));
-                points.add(new Point(755, 342));
+                points.add(new Point(755, 240));
+                points.add(new Point(780, 240));
+                points.add(new Point(805, 240));
             }
             case "False Wall East (Far North Sector)" -> {
                 points.add(new Point(521, 476));
