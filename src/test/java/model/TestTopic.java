@@ -12,7 +12,13 @@ public class TestTopic implements DuneTopic {
         return messages;
     }
 
+    @Override
     public void publish(String message) {
+        messages.add(message);
+    }
+
+    @Override
+    public void publish(String message, List<DuneChoice> choices) {
         messages.add(message);
     }
 }

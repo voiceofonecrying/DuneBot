@@ -1,12 +1,14 @@
 package controller.channels;
 
 import controller.DiscordGame;
+import model.DuneChoice;
 import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DiscordChannel implements DuneTopic {
@@ -25,6 +27,20 @@ public class DiscordChannel implements DuneTopic {
     @Override
     public void publish(String message) {
         queueMessage(message);
+    }
+
+    @Override
+    public void publish(String message, List<DuneChoice> choices) {
+        List<Button> buttons = new ArrayList<>();
+        for (DuneChoice choice : choices) {
+            switch (choice.getType()) {
+                case "secondary" -> buttons.add(Button.secondary(choice.getId(), choice.getLabel()));
+                case "danger" -> buttons.add(Button.danger(choice.getId(), choice.getLabel()));
+                case "success" -> buttons.add(Button.success(choice.getId(), choice.getLabel()));
+                default -> buttons.add(Button.primary(choice.getId(), choice.getLabel()));
+            }
+        }
+        queueMessage(message, buttons);
     }
 
     public void queueMessage(String message) {
