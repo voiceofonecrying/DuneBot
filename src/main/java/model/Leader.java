@@ -6,6 +6,7 @@ public class Leader {
     private final LeaderSkillCard skillCard;
     private final boolean faceDown;
     private String battleTerritoryName;
+    private boolean pulledBehindShield;
 
     public Leader(String name, int value, LeaderSkillCard skillCard, boolean faceDown) {
         this.name = name;
@@ -13,6 +14,7 @@ public class Leader {
         this.skillCard = skillCard;
         this.faceDown = faceDown;
         this.battleTerritoryName = null;
+        this.pulledBehindShield = false;
     }
 
     public String getName() {
@@ -37,5 +39,13 @@ public class Leader {
 
     public void setBattleTerritoryName(String battleTerritoryName) {
         this.battleTerritoryName = battleTerritoryName;
+    }
+
+    public boolean isPulledBehindShield() {
+        return pulledBehindShield;
+    }
+
+    public void setPulledBehindShield(boolean pulledBehindShield) {
+        this.pulledBehindShield = pulledBehindShield;
     }
 }

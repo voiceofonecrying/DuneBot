@@ -140,6 +140,7 @@ public class Battles {
         if (noBattlesRemaining(game))
             throw new InvalidGameStateException("There are no more battles");
 
+        game.getFactions().forEach(f -> f.getLeaders().forEach(l -> l.setPulledBehindShield(false)));
         StringBuilder nextBattle = new StringBuilder();
         Faction aggressor = battles.get(0).getAggressor(game);
         if (aggressorMustChooseBattle()) {
@@ -160,6 +161,15 @@ public class Battles {
         }
         game.getTurnSummary().publish(nextBattle.toString());
 //        currentBattle = battleTerritories.
+    }
+
+    private void presentSkilledLeaderChoices(Faction faction) {
+        for (Leader leader : faction.getSkilledLeaders()) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
+            choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
+            faction.getChat().publish("Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield?", choices);
+        }
     }
 
     public void callBattleActions(Game game) {
@@ -184,10 +194,16 @@ public class Battles {
             message += step++ + ". " + opponent.getEmoji() + " ask the Prescience question.\n";
 
         String skilledLeaderFactions = "";
-        if (!aggressor.getSkilledLeaders().isEmpty()) skilledLeaderFactions += aggressor.getEmoji() + " ";
-        if (!opponent.getSkilledLeaders().isEmpty()) skilledLeaderFactions += opponent.getEmoji() + " ";
+        if (!aggressor.getSkilledLeaders().isEmpty()) {
+            skilledLeaderFactions += aggressor.getEmoji() + " ";
+            presentSkilledLeaderChoices(aggressor);
+        }
+        if (!opponent.getSkilledLeaders().isEmpty()) {
+            skilledLeaderFactions += opponent.getEmoji() + " ";
+            presentSkilledLeaderChoices(opponent);
+        }
         if (!skilledLeaderFactions.isEmpty())
-            message += step++ + ". " + skilledLeaderFactions + " pull skilled leader or leave out front.\n";
+            message += step++ + ". " + skilledLeaderFactions + " pull skilled leader or leave out front. (Use buttons in your faction chat thread.)\n";
 
         if (step != 1) message += step + ". ";
         message += aggressor.getEmoji() + " and " + opponent.getEmoji() + " submit battle plans.\n";
