@@ -695,6 +695,13 @@ public class SetupCommands {
         faction.removeLeader(leader);
         faction.addLeader(updatedLeader);
 
+        LeaderSkillCard returnedLeaderSkillCard = faction.getLeaderSkillsHand().stream()
+                .filter(l -> !l.name().equalsIgnoreCase(leaderSkillName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Rejected leader Skill not found"));
+        game.getLeaderSkillDeck().add(returnedLeaderSkillCard);
+        Collections.shuffle(game.getLeaderSkillDeck());
+
         faction.getLeaderSkillsHand().clear();
         discordGame.getFactionChat(faction.getName()).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
                         updatedLeader.getName(), leaderSkillCard.name()
