@@ -164,7 +164,7 @@ public class ShowCommands {
 
         offset = 0;
 
-        String leadersInTerritories = "";
+        StringBuilder leadersInTerritories = new StringBuilder();
         //Place leaders
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage = getResourceImage(leader.getName());
@@ -174,7 +174,7 @@ public class ShowCommands {
             table = overlay(table, leaderImage, leaderPoint, 1);
             offset += 450;
             if (leader.getBattleTerritoryName() != null)
-                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName() + "\n";
+                leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
 
         offset = 0;
@@ -339,7 +339,7 @@ public class ShowCommands {
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
         if (!leadersInTerritories.isEmpty())
-            discordGame.queueMessage(infoChannelName, leadersInTerritories);
+            discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
 
         sendInfoButtons(game, discordGame, faction);
     }
@@ -547,7 +547,7 @@ public class ShowCommands {
                 if (territory.isDiscovered()) {
                     discoveryToken = getResourceImage(territory.getDiscoveryToken());
                     discoveryToken = resize(discoveryToken, 500, 500);
-                    for (String t : game.getTerritory(territory.getDiscoveryToken()).getTerrorTokens()) {
+                    for (String ignored : game.getTerritory(territory.getDiscoveryToken()).getTerrorTokens()) {
                         BufferedImage terrorToken = getResourceImage("Terror Token");
                         terrorToken = resize(terrorToken, 250, 250);
                         Point tokenPlacement = new Point(250, 150);
@@ -880,16 +880,16 @@ public class ShowCommands {
                         nexusCard +
                         factionSpecificString +
                         traitorString);
-        String leadersInTerritories = "";
+        StringBuilder leadersInTerritories = new StringBuilder();
         for (Leader leader : faction.getLeaders()) {
             builder = builder.addFiles(getResourceFile(leader.getName()));
             if (leader.getBattleTerritoryName() != null)
-                leadersInTerritories += leader.getName() + " is in " + leader.getBattleTerritoryName() + "\n";
+                leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
         discordGame.queueMessage(infoChannelName, builder.build());
 
         if (!leadersInTerritories.isEmpty())
-            discordGame.queueMessage(infoChannelName, leadersInTerritories);
+            discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
 
         if (faction.getGame().hasGameOption(GameOption.HOMEWORLDS)) {
             MessageCreateBuilder homeworldMessageBuilder = new MessageCreateBuilder();
