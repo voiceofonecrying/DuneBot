@@ -314,7 +314,7 @@ public class ShowCommands {
 
         //Ecaz ambassadors
         if (faction instanceof EcazFaction ecazFaction) {
-            for (String ambassador : ecazFaction.getAmbassadorSupplyList()) {
+            for (String ambassador : ecazFaction.getAmbassadorSupply()) {
                 BufferedImage ambassadorImage = getResourceImage(ambassador + " Ambassador");
                 table = overlay(table, resize(ambassadorImage, 300, 300), new Point(750 + offset, 2250), 1);
                 offset += 330;
@@ -842,7 +842,7 @@ public class ShowCommands {
                     .append(" Turn ")
                     .append(bg.getPredictionRound());
         } else if (faction instanceof EcazFaction ecaz) {
-            factionSpecificString.append(ecaz.getAmbassadorSupply());
+            factionSpecificString.append(ecaz.getAmbassadorSupplyInfoMessage());
         } else if (faction instanceof MoritaniFaction moritani) {
             factionSpecificString.append(moritani.getTerrorTokenMessage());
         } else if (faction instanceof AtreidesFaction atreides) {

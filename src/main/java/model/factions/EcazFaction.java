@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class EcazFaction extends Faction {
     private final List<String> ambassadorPool;
@@ -170,17 +171,21 @@ public class EcazFaction extends Faction {
         this.loyalLeader = loyalLeader;
     }
 
-    public String getAmbassadorSupply() {
+    public String getAmbassadorSupplyInfoMessage() {
         StringBuilder supply = new StringBuilder();
-        supply.append("\nAmbassador Supply:\n");
+        supply.append("\n__Ambassador Supply:__ ");
 
-        for (String ambassador : ambassadorSupply) {
-            supply.append(ambassador).append("\n");
-        }
+        String emojis = getAmbassadorSupplyEmojis();
+        supply.append(emojis.isEmpty() ? "Empty" : emojis);
         return supply.toString();
     }
-    public List<String> getAmbassadorSupplyList() {
+
+    public List<String> getAmbassadorSupply() {
         return this.ambassadorSupply;
+    }
+
+    public String getAmbassadorSupplyEmojis() {
+        return ambassadorSupply.stream().map(a -> Emojis.getFactionEmoji(a) + " ").collect(Collectors.joining());
     }
 
     public void addToAmbassadorPool(String ambassador) {
