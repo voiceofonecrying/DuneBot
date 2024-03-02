@@ -427,6 +427,7 @@ public class CommandOptions {
         if (faction.getLeaders().stream().filter(leader -> !leader.getName().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getLeaders().stream()
                 .filter(leader -> leader.getBattleTerritoryName() == null || battleTerritoryNames.stream().anyMatch(n -> n.equals(leader.getBattleTerritoryName())))
+                .filter(l -> l.getSkillCard() == null || l.isPulledBehindShield())
                 .map(Leader::getName)
                 .filter(leader -> !leader.equals("Kwisatz Haderach"))
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
