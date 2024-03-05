@@ -1340,6 +1340,7 @@ public class CommandManager extends ListenerAdapter {
         int regularForcesNotDialed = regularForcesTotal - regularForcesDialed;
         int savedSpecialForces;
         int savedRegularForces;
+        TreacheryCard weapon = battlePlan.getWeapon();
         if (loser) {
             if (!(faction instanceof EcazFaction)) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
@@ -1358,7 +1359,7 @@ public class CommandManager extends ListenerAdapter {
                     resolution += " retreat to an empty adjacent non-stronghold with Diplomat\n";
                 }
             }
-            if (battlePlan.getWeapon().name().equals("Harass and Withdraw")
+            if (weapon != null && weapon.name().equals("Harass and Withdraw")
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
                 resolution += troopFactionEmoji + " returns";
                 if (regularForcesNotDialed > 0)
@@ -1403,7 +1404,7 @@ public class CommandManager extends ListenerAdapter {
                         resolution += troopFactionEmoji + " returns 1 " + savedTroopEmoji + " to reserves with Suk Graduate\n";
                 }
             }
-            if (battlePlan.getWeapon().name().equals("Harass and Withdraw")
+            if (weapon != null && weapon.name().equals("Harass and Withdraw")
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
                 resolution += troopFactionEmoji + " returns";
                 if (regularForcesNotDialed > 0)
@@ -1441,7 +1442,6 @@ public class CommandManager extends ListenerAdapter {
             resolution += " " + Emojis.ECAZ_TROOP;
             resolution += " to the tanks\n";
         }
-        TreacheryCard weapon = battlePlan.getWeapon();
         TreacheryCard defense = battlePlan.getDefense();
         if (battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
