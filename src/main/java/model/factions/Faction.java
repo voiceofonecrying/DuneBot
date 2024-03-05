@@ -385,6 +385,10 @@ public class Faction {
         return getLeaders().stream().filter(l -> l.getSkillCard() != null).toList();
     }
 
+    public boolean hasSkill(String skillName) {
+        return getSkilledLeaders().stream().anyMatch(l -> l.getSkillCard().name().equals(skillName));
+    }
+
     public Leader removeLeader(String name) {
         Leader remove = leaders.stream()
                 .filter(l -> l.getName().equals(name))

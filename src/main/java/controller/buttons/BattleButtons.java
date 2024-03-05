@@ -5,10 +5,7 @@ import controller.DiscordGame;
 import controller.commands.BattleCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.Battles;
-import model.Game;
-import model.Leader;
-import model.StrongholdCard;
+import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
@@ -20,6 +17,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("chooseopponent")) chooseOpponent(event, discordGame, game);
         else if (event.getComponentId().startsWith("choosecombatant")) ecazChooseCombatant(event, discordGame, game);
         else if (event.getComponentId().startsWith("hmsstrongholdpower-")) hmsStrongholdPower(event, discordGame, game);
+        else if (event.getComponentId().startsWith("spicebanker-")) spiceBanker(event, discordGame, game);
         else if (event.getComponentId().startsWith("pullleader-")) pullLeader(event, discordGame, game);
     }
 
@@ -63,6 +61,22 @@ public class BattleButtons implements Pressable {
         if (strongholdName.equals("Carthag")) {
             Battles battles = game.getBattles();
             battles.getCurrentBattle().addCarthagStrongholdPower(faction);
+        }
+        discordGame.pushGame();
+    }
+
+    private static void spiceBanker(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        int spice = Integer.parseInt(event.getComponentId().split("-")[1]);
+        discordGame.queueMessage("You will spend " + spice + " " + Emojis.SPICE + " with Spice Banker to increase your leader strength.");
+        discordGame.getModInfo().queueMessage(faction.getEmoji() + " will spend " + spice + " " + Emojis.SPICE + " with Spice Banker.");
+        Battle battle = game.getBattles().getCurrentBattle();
+        BattlePlan plan = faction.getName().equals(battle.getAggressorName()) ? battle.getAggressorBattlePlan() : battle.getDefenderBattlePlan();
+        plan.setSpiceBankerSupport(spice);
+        if (spice > 0) {
+            discordGame.getModInfo().queueMessage(faction.getEmoji() + " updated battle plan:\n" + plan.getPlanMessage(false));
+            discordGame.getFactionChat(faction).queueMessage("Your updated battle plan has been submitted:\n" + plan.getPlanMessage(false));
         }
         discordGame.pushGame();
     }

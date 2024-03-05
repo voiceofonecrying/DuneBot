@@ -1,8 +1,12 @@
 package model;
 
+import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,22 +65,22 @@ public class BattlePlanTest {
         stoneBurner = new TreacheryCard("Stone Burner");
         harassAndWithdraw = new TreacheryCard("Harass and Withdraw");
         reinforcements = new TreacheryCard("Reinforcements");
-        emptyBattlePlan = new BattlePlan(false,null, null, false, null, null, 0, false, 0, 0, 0, 0, false);
-        kulonWeaponBattlePlan = new BattlePlan(false,null, null, false, kulon, null, 0, false, 0, 0, 0, 0, false);
-        crysknifePlan = new BattlePlan(false,null, null, false, crysknife, null, 0, false, 0, 0, 0, 0, false);
-        duncanCrysknifePlan = new BattlePlan(false,duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, 0, false);
-        chaumasPlan = new BattlePlan(false,null, null, false, chaumas, null, 0, false, 0, 0, 0, 0, false);
-        lasgunPlan = new BattlePlan(false,null, null, false, lasgun, null, 0, false, 0, 0, 0, 0, false);
-        artilleryStrikePlan = new BattlePlan(false,null, null, false, artilleryStrike, null, 0, false, 0, 0, 0, 0, false);
-        poisonToothPlan = new BattlePlan(false,null, null, false, poisonTooth, null, 0, false, 0, 0, 0, 0, false);
-        poisonBladePlan = new BattlePlan(false,null, null, false, poisonBlade, null, 0, false, 0, 0, 0, 0, false);
-        mirrorWeaponPlan = new BattlePlan(false,null, null, false, mirrorWeapon, null, 0, false, 0, 0, 0, 0, false);
-        shieldPlan = new BattlePlan(false,null, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        emptyBattlePlan = new BattlePlan(false,null, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        kulonWeaponBattlePlan = new BattlePlan(false,null, null, false, kulon, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        crysknifePlan = new BattlePlan(false,null, null, false, crysknife, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        duncanCrysknifePlan = new BattlePlan(false,duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        chaumasPlan = new BattlePlan(false,null, null, false, chaumas, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        lasgunPlan = new BattlePlan(false,null, null, false, lasgun, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        artilleryStrikePlan = new BattlePlan(false,null, null, false, artilleryStrike, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        poisonToothPlan = new BattlePlan(false,null, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        poisonBladePlan = new BattlePlan(false,null, null, false, poisonBlade, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        mirrorWeaponPlan = new BattlePlan(false,null, null, false, mirrorWeapon, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        shieldPlan = new BattlePlan(false,null, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
     }
 
     @Test
     void testLeaderSurvivesNoWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.getLeaderContribution());
@@ -84,7 +88,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesAgainstWorthless() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(kulonWeaponBattlePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.getLeaderContribution());
@@ -92,7 +96,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesWithWrongDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(crysknifePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
@@ -100,7 +104,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesWithCorrectDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(crysknifePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -108,14 +112,14 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesWithKH() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, true, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, true, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(4, battlePlan.getLeaderContribution());
     }
 
     @Test
     void testKHWithCheapHero() {
-        BattlePlan battlePlan = new BattlePlan(true, null, cheapHero, true, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, null, cheapHero, true, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertEquals(2, battlePlan.getLeaderContribution());
         assertTrue(battlePlan.isLeaderAlive());
@@ -124,7 +128,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesArtilleryStrikeWithWrongDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(artilleryStrikePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -132,7 +136,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesWthOwnArtilleryStrikeNoDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -140,7 +144,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesArtilleryStrikeWithCorrectDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(artilleryStrikePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.getLeaderContribution());
@@ -150,7 +154,7 @@ public class BattlePlanTest {
 
     @Test
     void testWeirdingWayDoesNotProtectAgainstArtilleryStrike() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, weirdingWay, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, weirdingWay, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(artilleryStrikePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -158,7 +162,7 @@ public class BattlePlanTest {
 
     @Test
     void testShieldSnooperDoesProtectAgainstArtilleryStrike() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(artilleryStrikePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.getLeaderContribution());
@@ -168,7 +172,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesFromTheirOwnArtilleryStrike() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -176,7 +180,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesTheirOwnArtilleryStrike() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -185,7 +189,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesPoisonToothWithSnooper() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonToothPlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
@@ -193,7 +197,7 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderSurvivesInactivatedPoisonTooth() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         poisonToothPlan.revokePoisonTooth();
         battlePlan.revealOpponentBattlePlan(poisonToothPlan);
         assertTrue(battlePlan.isLeaderAlive());
@@ -201,28 +205,28 @@ public class BattlePlanTest {
 
     @Test
     void testLeaderDiesWithOwnPoisonTooth() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
     }
 
     @Test
     void testLeaderSurvivesOwnInactivePoisonTooth() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revokePoisonTooth();
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testLeaderDiesWithOwnPoisonToothNoDefense() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
     }
 
     @Test
     void testLeaderSurvivesPoisonToothWithChemistry() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, chemistry, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, chemistry, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonToothPlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -230,26 +234,26 @@ public class BattlePlanTest {
 
     @Test
     void testZoalHasNoValue() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertEquals(0, battlePlan.getLeaderValue());
-        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
+        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString(false));
         assertEquals("Zoal", battlePlan.getKilledLeaderString());
         assertEquals(0, battlePlan.combatWater());
     }
 
     @Test
     void testZoalHasOpponentLeaderValue() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(duncanCrysknifePlan);
         assertEquals(2, battlePlan.getLeaderValue());
-        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString());
+        assertEquals("Leader: Zoal (X)", battlePlan.getLeaderString(false));
         assertEquals("Zoal", battlePlan.getKilledLeaderString());
         assertEquals(2, battlePlan.combatWater());
     }
 
     @Test
     void testLasgunWithShield() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(duncanCrysknifePlan);
         assertTrue(battlePlan.isLasgunShieldExplosion());
         assertEquals(0, battlePlan.combatWater());
@@ -257,7 +261,7 @@ public class BattlePlanTest {
 
     @Test
     void testLasgunWithOpponentShield() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(shieldPlan);
         assertTrue(battlePlan.isLasgunShieldExplosion());
         assertEquals(0, battlePlan.combatWater());
@@ -265,7 +269,7 @@ public class BattlePlanTest {
 
     @Test
     void testOpponentLasgunWithShield() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(lasgunPlan);
         assertTrue(battlePlan.isLasgunShieldExplosion());
         assertEquals(0, battlePlan.combatWater());
@@ -273,21 +277,21 @@ public class BattlePlanTest {
 
     @Test
     void testLasgunNoShield() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, lasgun, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertFalse(battlePlan.isLasgunShieldExplosion());
     }
 
     @Test
     void testShieldNoLasgun() {
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(emptyBattlePlan);
         assertFalse(battlePlan.isLasgunShieldExplosion());
     }
 
     @Test
     void testPoisonBladeAgainstShield() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonBladePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
@@ -295,7 +299,7 @@ public class BattlePlanTest {
 
     @Test
     void testPoisonBladeAgainstSnooper() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonBladePlan);
         assertFalse(battlePlan.isLeaderAlive());
         assertEquals(2, battlePlan.combatWater());
@@ -303,7 +307,7 @@ public class BattlePlanTest {
 
     @Test
     void testPoisonBladeAgainstShieldSnooper() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonBladePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -311,7 +315,7 @@ public class BattlePlanTest {
 
     @Test
     void testShieldSnooperAgainstProjectileWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(crysknifePlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -319,7 +323,7 @@ public class BattlePlanTest {
 
     @Test
     void testShieldSnooperAgainstPoisonWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(chaumasPlan);
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
@@ -327,7 +331,7 @@ public class BattlePlanTest {
 
     @Test
     void testShieldSnooperAgainstLasgun() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(lasgunPlan);
         assertTrue(battlePlan.isLasgunShieldExplosion());
         assertFalse(battlePlan.isLeaderAlive());
@@ -336,7 +340,7 @@ public class BattlePlanTest {
 
     @Test
     void testWeirdingWayAgainstLasgun() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, weirdingWay, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, weirdingWay, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(lasgunPlan);
         assertFalse(battlePlan.isLasgunShieldExplosion());
         assertFalse(battlePlan.isLeaderAlive());
@@ -345,99 +349,99 @@ public class BattlePlanTest {
 
     @Test
     void testWinnersWeaponNotDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testWinnersDefenseNotDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, chaumas, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, chaumas, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.defenseMustBeDiscarded(false));
     }
 
     @Test
     void testArtilleryStrikeMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testMirrorWeaponMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, mirrorWeapon, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, mirrorWeapon, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testPoisonToothMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testPoisonToothNotDiscardedIfNotUsed() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revokePoisonTooth();
         assertFalse(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testPortableSnooperMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.addPortableSnooper();
         assertTrue(battlePlan.defenseMustBeDiscarded(false));
     }
 
     @Test
     void testStoneBurnerMustBeDisarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, stoneBurner, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, stoneBurner, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testHarassAndWithdrawMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, harassAndWithdraw, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, harassAndWithdraw, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testReinforcementsMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, reinforcements, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, reinforcements, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.defenseMustBeDiscarded(false));
     }
 
     @Test
     void testWorthlessWeaponMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(false));
     }
 
     @Test
     void testWorthlessDefenseMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, baliset, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, baliset, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.defenseMustBeDiscarded(false));
     }
 
     @Test
     void testLosersWeaponMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.weaponMustBeDiscarded(true));
     }
 
     @Test
     void testLosersDefenseMustBeDiscarded() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.defenseMustBeDiscarded(true));
     }
 
     @Test
     void testRevokePoisonToothFalse() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, artilleryStrike, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.revokePoisonTooth());
     }
 
     @Test
     void testRevokePoisonToothTrue() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.revokePoisonTooth());
         assertNotNull(battlePlan.getWeapon());
         assertEquals("Weapon: Poison Tooth (not used)", battlePlan.getWeaponString());
@@ -447,8 +451,8 @@ public class BattlePlanTest {
 
     @Test
     void testOpponentRevokesPoisonTooth() {
-        BattlePlan opponentBattlePlan = new BattlePlan(false, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, 0, false);
-        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan opponentBattlePlan = new BattlePlan(false, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, zoal, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(opponentBattlePlan.revokePoisonTooth());
         opponentBattlePlan.revealOpponentBattlePlan(battlePlan);
         battlePlan.revealOpponentBattlePlan(opponentBattlePlan);
@@ -459,7 +463,7 @@ public class BattlePlanTest {
 
     @Test
     void testRestorePoisonTooth() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revokePoisonTooth();
         battlePlan.restorePoisonTooth();
         assertEquals("Weapon: Poison Tooth", battlePlan.getWeaponString());
@@ -469,7 +473,7 @@ public class BattlePlanTest {
 
     @Test
     void testRevokePoisonToothWithWeirdingWay() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, weirdingWay, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, weirdingWay, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.revokePoisonTooth());
         assertEquals("Weirding Way", battlePlan.getDefense().name());
         assertNotNull(battlePlan.getDefense());
@@ -477,14 +481,14 @@ public class BattlePlanTest {
 
     @Test
     void testPortableSnooperFalse() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertFalse(battlePlan.addPortableSnooper());
     }
 
     @Test
     void testPortableSnooperTrue() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0, false);
-        BattlePlan opponentBattlePlan = new BattlePlan(false, zoal, null, false, chaumas, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        BattlePlan opponentBattlePlan = new BattlePlan(false, zoal, null, false, chaumas, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(opponentBattlePlan);
         opponentBattlePlan.revealOpponentBattlePlan(battlePlan);
         assertTrue(battlePlan.addPortableSnooper());
@@ -493,8 +497,8 @@ public class BattlePlanTest {
 
     @Test
     void testPortableSnooperTrueThenRemove() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0, false);
-        BattlePlan opponentBattlePlan = new BattlePlan(false, zoal, null, false, chaumas, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
+        BattlePlan opponentBattlePlan = new BattlePlan(false, zoal, null, false, chaumas, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(opponentBattlePlan);
         opponentBattlePlan.revealOpponentBattlePlan(battlePlan);
         assertTrue(battlePlan.addPortableSnooper());
@@ -505,72 +509,288 @@ public class BattlePlanTest {
 
     @Test
     void testMirrorWeaponNoWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testMirrorWeaponWithWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
         assertFalse(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testMirrorWeaponWithWeaponDefended() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testMirrorWeaponWithPoisonBlade() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shield, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shield, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
         assertFalse(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testMirrorWeaponWithPoisonBladeDefended() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shieldSnooper, 0, false, 0, 0, 0, 0, false);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonBlade, shieldSnooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(mirrorWeaponPlan);
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testShieldAndCarthagCardAgainstPoisonWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, true);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, true, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(chaumasPlan);
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testShieldAndCarthagCardAgainstPoisonTooth() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, true);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, true, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonToothPlan);
         assertFalse(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testShieldAndCarthagCardAgainstPoisonBlade() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, 0, true);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, null, true, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(poisonBladePlan);
         assertTrue(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testShieldAndCarthagCardPlayingPoisonWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, 0, true);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, null, true, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(chaumasPlan);
         assertFalse(battlePlan.isLeaderAlive());
     }
 
     @Test
     void testShieldAndCarthagCardPlayingMirrorWeapon() {
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, mirrorWeapon, shield, 0, false, 0, 0, 0, 0, true);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, mirrorWeapon, shield, 0, false, 0, 0, 0, null, true, 0, 0, 0);
         battlePlan.revealOpponentBattlePlan(chaumasPlan);
         assertFalse(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testKillerMedicInFrontPoisonDefense() {
+        LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(killerMedic);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testKillerMedicInFrontNoDefense() {
+        LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(killerMedic);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testKillerMedicInBattlePoisonDefense() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
+        duncanIdaho.setSkillCard(killerMedic);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testKillerMedicInBattleNoDefense() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
+        duncanIdaho.setSkillCard(killerMedic);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMasterOfAssassinsInFrontPoisonWeapon() {
+        LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(masterOfAssassins);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMasterOfAssassinsInFrontNoWeapon() {
+        LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(masterOfAssassins);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMasterOfAssassinsInBattlePoisonWeapon() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
+        duncanIdaho.setSkillCard(masterOfAssassins);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMasterOfAssassinsInBattleNoWeapon() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
+        duncanIdaho.setSkillCard(masterOfAssassins);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMentatInFront() {
+        LeaderSkillCard mentat = new LeaderSkillCard("Mentat");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(mentat);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMentatInBattle() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard mentat = new LeaderSkillCard("Mentat");
+        duncanIdaho.setSkillCard(mentat);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(8, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testPranaBinduAdeptInFrontProjectileDefense() {
+        LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(pranaBinduAdept);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testPranaBinduAdeptInFrontNoDefense() {
+        LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(pranaBinduAdept);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testPranaBinduAdeptInBattleProjectileDefense() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
+        duncanIdaho.setSkillCard(pranaBinduAdept);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testPranaBinduAdeptInBattleNoDefense() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
+        duncanIdaho.setSkillCard(pranaBinduAdept);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testSwordmasterOfGinazInFrontProjectileWeapon() {
+        LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(swordmasterOfGinaz);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testSwordmasterOfGinazInFrontNoWeapon() {
+        LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(swordmasterOfGinaz);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testSwordmasterOfGinazInBattleProjectileWeapon() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
+        duncanIdaho.setSkillCard(swordmasterOfGinaz);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testSwordmasterOfGinazInBattleNoWeapon() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
+        duncanIdaho.setSkillCard(swordmasterOfGinaz);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInFrontWorthlessWeapon() {
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInFrontWorthlessDefense() {
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInFrontNoWorthless() {
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInBattleWorthlessWeapon() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        duncanIdaho.setSkillCard(warmaster);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInBattleWorthlessDefense() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        duncanIdaho.setSkillCard(warmaster);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testWarmasterInBattleNoWorthless() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
+        duncanIdaho.setSkillCard(warmaster);
+        List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
     @AfterEach

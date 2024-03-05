@@ -22,4 +22,8 @@ public record TreacheryCard(String name) {
     public boolean servesAsSnooper() {
         return type().equals("Defense - Poison") || name().equals("Shield Snooper");
     }
+
+    public boolean isGreenSpecialCard() {
+        return type().startsWith("Special") || type().equals("Spice Blow - Special");
+    }
 }

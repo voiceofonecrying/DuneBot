@@ -1,9 +1,11 @@
 package model;
 
+import exceptions.InvalidGameStateException;
+
 public class Leader {
     private final String name;
     private final int value;
-    private final LeaderSkillCard skillCard;
+    private LeaderSkillCard skillCard;
     private final boolean faceDown;
     private String battleTerritoryName;
     private boolean pulledBehindShield;
@@ -27,6 +29,12 @@ public class Leader {
 
     public LeaderSkillCard getSkillCard() {
         return skillCard;
+    }
+
+    public void setSkillCard(LeaderSkillCard skillCard) throws InvalidGameStateException {
+        if (this.skillCard != null)
+            throw new InvalidGameStateException(name + " has a skill that must be removed before adding a new one.");
+        this.skillCard = skillCard;
     }
 
     public boolean isFaceDown() {

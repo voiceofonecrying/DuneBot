@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static controller.commands.CommandOptions.*;
 
@@ -126,8 +127,8 @@ public class PlayerCommands {
             returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
         }
         BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
-        discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage());
-        discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage());
+        discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage(false));
+        discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage(false));
         if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && currentBattle.getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
             List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
             if (strongholdNames.size() == 1) {
@@ -139,6 +140,16 @@ public class PlayerCommands {
                 List<Button> buttons = strongholdNames.stream().map(strongholdName -> Button.primary("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
                 discordGame.getFactionChat(faction).queueMessage("Which Stronghold Card would you like to use in the HMS battle? " + faction.getPlayer(), buttons);
             }
+        }
+        int availableSpice = faction.getSpice() - spice;
+        if (availableSpice > 0 && battlePlan.isSkillBehindAndLeaderAlive("Spice Banker")) {
+            discordGame.getModInfo().queueMessage(faction.getEmoji() + " may spend spice to increase leader value with Spice Banker. Please wait to resolve the battle.");
+            List<Button> buttons = new ArrayList<>();
+            IntStream.range(0, 4).forEachOrdered(i -> {
+                Button button = Button.primary("spicebanker-" + i, Integer.toString(i));
+                buttons.add(availableSpice >= i ? button : button.asDisabled());
+            });
+            discordGame.getFactionChat(faction).queueMessage("How much would you like to spend with Spice Banker? " + faction.getPlayer(), buttons);
         }
         return returnString;
     }

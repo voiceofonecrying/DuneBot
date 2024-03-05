@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 public class BattlePlan {
     private final boolean aggressor;
@@ -11,35 +12,46 @@ public class BattlePlan {
     private final boolean kwisatzHaderach;
     private final TreacheryCard weapon;
     private TreacheryCard defense;
+    private TreacheryCard originalDefense;
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
     private final int troopsNotDialed;
     private final int ecazTroopsForAlly;
-    private final int homeworldDialAdvantage;
+    private final List<LeaderSkillCard> leaderSkillsInFront;
     private boolean carthagStrongholdCard;
+    private final int homeworldDialAdvantage;
+    private final int numStrongholdsOccupied;
+    private final int numForcesInReserve;
+    private int spiceBankerSupport;
     private TreacheryCard opponentWeapon;
     private TreacheryCard opponentDefense;
     private Leader opponentLeader;
+    private boolean opponentHasBureaucrat;
     private boolean inactivePoisonTooth;
     private boolean portableSnooperAdded;
     private boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
 
-    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, int homeworldDialAdvantage, boolean carthagStrongholdCard) {
+    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, List<LeaderSkillCard> leaderSkillsInFront, boolean carthagStrongholdCard, int homeworldDialAdvantage, int numStrongholdsOccupied, int numForcesInReserve) {
         this.aggressor = aggressor;
         this.leader = leader;
         this.cheapHero = cheapHero;
         this.kwisatzHaderach = kwisatzHaderach;
         this.weapon = weapon;
         this.defense = defense;
+        this.originalDefense = defense;
         this.wholeNumberDial = wholeNumberDial;
         this.plusHalfDial = plusHalfDial;
         this.spice = spice;
         this.troopsNotDialed = troopsNotDialed;
         this.ecazTroopsForAlly = ecazTroopsForAlly;
-        this.homeworldDialAdvantage = homeworldDialAdvantage;
+        this.leaderSkillsInFront = leaderSkillsInFront;
         this.carthagStrongholdCard = carthagStrongholdCard;
+        this.homeworldDialAdvantage = homeworldDialAdvantage;
+        this.numStrongholdsOccupied = numStrongholdsOccupied;
+        this.numForcesInReserve = numForcesInReserve;
+        this.spiceBankerSupport = 0;
         this.stoneBurnerNoKill = false;
     }
 
@@ -59,6 +71,10 @@ public class BattlePlan {
         return plusHalfDial;
     }
 
+    public int getNumForcesInReserve() {
+        return numForcesInReserve;
+    }
+
     public int getEcazTroopsForAlly() {
         return ecazTroopsForAlly;
     }
@@ -72,7 +88,7 @@ public class BattlePlan {
     }
 
     public TreacheryCard getDefense() {
-        return defense;
+        return originalDefense;
     }
 
     public boolean isStoneBurnerNoKill() {
@@ -91,19 +107,139 @@ public class BattlePlan {
         return getLeaderValue() + (kwisatzHaderach ? 2 : 0);
     }
 
-    public String getLeaderString() {
+    public boolean isSkillBehindAndLeaderAlive(String skillName) {
+        return leader != null && leader.isPulledBehindShield() && isLeaderAlive() && leader.getSkillCard().name().equals(skillName);
+    }
+
+    public boolean isSkillInFront(String skillName) {
+        return leaderSkillsInFront != null && leaderSkillsInFront.stream().anyMatch(s -> s.name().equals(skillName));
+    }
+
+    private boolean isOpponentWeaponPoison() {
+        return opponentWeapon != null
+                && (opponentWeapon.type().equals("Weapon - Poison")
+                || opponentWeapon.name().equals("Chemistry")
+                || opponentWeapon.name().equals("Poison Blade")
+                || opponentWeapon.name().equals("Poison Tooth")
+        );
+    }
+
+    private boolean isPoisonWeapon() {
+        return weapon != null
+                && (weapon.type().equals("Weapon - Poison")
+                || weapon.name().equals("Chemistry")
+                || weapon.name().equals("Poison Blade")
+                || weapon.name().equals("Poison Tooth") && !inactivePoisonTooth
+                || weapon.name().equals("Mirror Weapon") && isOpponentWeaponPoison()
+        );
+    }
+
+    private boolean isOpponentWeaponProjectile() {
+        return opponentWeapon != null
+                && (opponentWeapon.type().equals("Weapon - Projectile")
+                || opponentWeapon.name().equals("Weirding Way")
+                || opponentWeapon.name().equals("Poison Blade")
+        );
+    }
+
+    private boolean isProjectileWeapon() {
+        return weapon != null
+                && (weapon.type().equals("Weapon - Projectile")
+                || weapon.name().equals("Weirding Way")
+                || weapon.name().equals("Poison Blade")
+                || weapon.name().equals("Mirror Weapon") && isOpponentWeaponProjectile()
+        );
+    }
+
+    private boolean isSpecialForWeapon() {
+        return weapon != null && (weapon.type().startsWith("Special") || weapon.type().equals("Spice Blow - Special"));
+    }
+
+    private boolean isPoisonDefense() {
+        return defense != null && (defense.servesAsSnooper() || defense.name().equals("Chemistry"));
+    }
+
+    private boolean isProjectileDefense() {
+        return defense != null && (defense.servesAsShield() || defense.name().equals("Weirding Way"));
+    }
+
+    private boolean hasWorthlessCard() {
+        return weapon != null && weapon.type().equals("Worthless Card") || originalDefense != null && originalDefense.type().equals("Worthless Card");
+    }
+
+    public String getLeaderString(boolean revealLeaderSkills) {
         String khString = kwisatzHaderach ? " + KH (2)" : "";
         String leaderString = "-";
         if (leader != null) leaderString = MessageFormat.format("{0} ({1}){2}",
                 leader.getName(), leader.getName().equals("Zoal") ? "X" : leader.getValue(), khString);
         else if (cheapHero != null) leaderString = cheapHero.name() + "(0)" + khString;
+
+        if (revealLeaderSkills) {
+            if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
+                leaderString += "\n  +3 for Killer Medic";
+            if (isSkillInFront("Killer Medic") && isPoisonDefense())
+                leaderString += "\n  +1 for Killer Medic";
+            if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
+                leaderString += "\n  +3 for Master of Assassins";
+            if (isSkillInFront("Master of Assassins") && isPoisonWeapon())
+                leaderString += "\n  +1 for Master of Assassins";
+            if (isSkillBehindAndLeaderAlive("Mentat"))
+                leaderString += "\n  +2 for Mentat";
+            if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
+                leaderString += "\n  +2 for Planetologist";
+            if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
+                leaderString += "\n  +3 for Prana Bindu Adept";
+            if (isSkillInFront("Prana Bindu Adept") && isProjectileDefense())
+                leaderString += "\n  +1 for Prana Bindu Adept";
+            if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
+                leaderString += "\n  +3 for Swordmaster of Ginaz";
+            if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
+                leaderString += "\n  +1 for Swordmaster of Ginaz";
+            if (spiceBankerSupport > 0)
+                leaderString += "\n  +" + spiceBankerSupport + " for Spice Banker";
+            if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
+                leaderString += "\n  +3 for Warmaster";
+            if (isSkillInFront("Warmaster") && hasWorthlessCard())
+                leaderString += "\n  +1 for Warmaster";
+            if (opponentHasBureaucrat && numStrongholdsOccupied > 0)
+                leaderString += "\n -" + numStrongholdsOccupied + " for opponent Bureaucrat";
+        }
         return "Leader: " + leaderString;
     }
 
     public int getDoubleBattleStrength() {
+        int bonuses = homeworldDialAdvantage + spiceBankerSupport;
+        if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
+            bonuses += 2;
+        if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
+            bonuses += 3;
+        if (isSkillInFront("Killer Medic") && isPoisonDefense())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
+            bonuses += 3;
+        if (isSkillInFront("Master of Assassins") && isPoisonWeapon())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Mentat"))
+            bonuses += 2;
+        if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
+            bonuses += 2;
+        if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
+            bonuses += 3;
+        if (isSkillInFront("Prana Bindu Adept") && isProjectileDefense())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
+            bonuses += 3;
+        if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
+            bonuses += 3;
+        if (isSkillInFront("Warmaster") && hasWorthlessCard())
+            bonuses += 1;
+        if (opponentHasBureaucrat)
+            bonuses -= numStrongholdsOccupied;
         if (stoneBurnerForTroops())
-            return 2 * troopsNotDialed + 2 * homeworldDialAdvantage;
-        int doubleBattleStrength = 2 * wholeNumberDial + 2 * homeworldDialAdvantage;
+            return 2 * troopsNotDialed + 2 * bonuses;
+        int doubleBattleStrength = 2 * wholeNumberDial + 2 * bonuses;
         if (plusHalfDial) doubleBattleStrength++;
         doubleBattleStrength += 2 * getLeaderContribution();
         doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
@@ -203,7 +339,7 @@ public class BattlePlan {
     }
 
     public String getDefenseString() {
-        return "Defense: " + (defense == null ? "-" : defense.name() + (carthagStrongholdPoisonDefense() ? " + Snooper from Carthag stronghold card" : ""));
+        return "Defense: " + (originalDefense == null ? "-" : originalDefense.name() + (carthagStrongholdPoisonDefense() ? " + Snooper from Carthag stronghold card" : ""));
     }
 
     public String getDialString() {
@@ -211,32 +347,53 @@ public class BattlePlan {
         if (ecazTroopsForAlly != 0 && !stoneBurnerForTroops())
             dialString += " + " + Math.ceilDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " support";
         if (homeworldDialAdvantage != 0)
-            dialString += "\nHomeworld advantage: " + homeworldDialAdvantage;
+            dialString += "\n  +" + homeworldDialAdvantage + " for Homeworld advantage";
+        if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
+            dialString += "\n  +2 for Reinforcements";
         return dialString;
     }
 
     public String getSpiceString() {
-        return "Spice: " + spice;
+        return "Spice: " + spice + (spiceBankerSupport > 0 ? " + " + spiceBankerSupport + " for Spice Banker" : "");
     }
 
-    public String getPlanMessage() {
-        return getLeaderString() + "\n"
+    public String getPlanMessage(boolean revealLeaderSkills) {
+        return getLeaderString(revealLeaderSkills) + "\n"
                 + getWeaponString() + "\n"
                 + getDefenseString() + "\n"
                 + getDialString() + "\n"
                 + getSpiceString();
     }
 
+    public int getSpiceBankerSupport() {
+        return spiceBankerSupport;
+    }
+
+    public void setSpiceBankerSupport(int spiceBankerSupport) {
+        this.spiceBankerSupport = spiceBankerSupport;
+    }
+
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {
         opponentLeader = opponentPlan.getLeader();
-        opponentWeapon = opponentPlan.getWeapon();
         opponentWeapon = opponentPlan.inactivePoisonTooth ? null : opponentPlan.getWeapon();
-        if (opponentWeapon != null && opponentWeapon.type().equals("Worthless Card"))
-            opponentWeapon = null;
-        if (opponentWeapon != null && opponentWeapon.name().equals("Mirror Weapon"))
-            opponentWeapon = weapon;
+        if (opponentWeapon != null) {
+            if (opponentWeapon.type().equals("Worthless Card")
+                    || opponentWeapon.type().startsWith("Special")
+                    || opponentWeapon.type().equals("Spice Blow - Special"))
+                opponentWeapon = null;
+            else if (opponentWeapon.name().equals("Mirror Weapon"))
+                opponentWeapon = weapon;
+        }
         opponentDefense = opponentPlan.getDefense();
+        if (isSkillInFront("Diplomat") && (defense == null && weapon.type().equals("Worthless Card") || defense.type().equals("Worthless Card")))
+            defense = opponentDefense;
+        if (opponentPlan.isSkillBehindAndLeaderAlive("Bureaucrat"))
+            opponentHasBureaucrat = true;
         opponentStoneBurnerNoKill = opponentPlan.isStoneBurnerNoKill();
+    }
+
+    public boolean isOpponentHasBureaucrat() {
+        return opponentHasBureaucrat;
     }
 
     public boolean isLasgunShieldExplosion() {
@@ -251,8 +408,8 @@ public class BattlePlan {
             if (card.name().equals("Poison Tooth") && !inactivePoisonTooth) return true;
             if (card.name().equals("Portable Snooper")) return true;
             if (card.name().equals("Stone Burner")) return true;
-            if (card.name().equals("Harass and Withdraw")) return true;
-            if (card.name().equals("Reinforcements")) return true;
+            if (card.type().equals("Spice Blow - Special")) return true;
+            if (card.type().startsWith("Special")) return true;
             return card.type().equals("Worthless Card");
         }
         return false;
@@ -263,7 +420,7 @@ public class BattlePlan {
     }
 
     public boolean defenseMustBeDiscarded(boolean loser) {
-        return defense != null && (loser || cardMustBeDiscarded(defense));
+        return originalDefense != null && (loser || cardMustBeDiscarded(originalDefense));
     }
 
     public boolean revokePoisonTooth() {
@@ -283,13 +440,17 @@ public class BattlePlan {
     }
 
     public boolean addPortableSnooper() {
-        if (defense != null) return false;
-        defense = new TreacheryCard("Portable Snooper");
+        if (originalDefense != null) return false;
+        originalDefense = new TreacheryCard("Portable Snooper");
+        defense = originalDefense;
         portableSnooperAdded = true;
         return true;
     }
 
     public void removePortableSnooper() {
-        if (portableSnooperAdded) defense = null;
+        if (portableSnooperAdded) {
+            originalDefense = null;
+            defense = null;
+        }
     }
 }

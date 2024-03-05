@@ -471,21 +471,31 @@ public class CommandOptions {
                 .map(card -> new Command.Choice("Chemistry (only with another Defense)", card))
                 .toList()
         );
-        choices.addAll(faction.getTreacheryHand().stream()
-                .map(TreacheryCard::name)
-                .filter(name -> name.equals("Harass and Withdraw"))
-                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
-                .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
-                .toList()
-        );
-        if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+        if (faction.hasSkill("Planetologist")) {
             choices.addAll(faction.getTreacheryHand().stream()
+                    .filter(c -> c.type().startsWith("Special") && !c.name().startsWith("Cheap Hero") || c.type().equals("Spice Blow - Special"))
                     .map(TreacheryCard::name)
-                    .filter(name -> name.equals("Reinforcements"))
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice(card, card))
                     .toList()
             );
+        } else {
+            choices.addAll(faction.getTreacheryHand().stream()
+                    .map(TreacheryCard::name)
+                    .filter(name -> name.equals("Harass and Withdraw"))
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
+                    .toList()
+            );
+            if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+                choices.addAll(faction.getTreacheryHand().stream()
+                        .map(TreacheryCard::name)
+                        .filter(name -> name.equals("Reinforcements"))
+                        .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                        .map(card -> new Command.Choice(card, card))
+                        .toList()
+                );
+        }
         return choices;
     }
 
