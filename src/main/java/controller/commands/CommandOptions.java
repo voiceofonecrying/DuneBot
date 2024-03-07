@@ -104,6 +104,7 @@ public class CommandOptions {
     public static final OptionData deactivatePoisonTooth = new OptionData(OptionType.BOOLEAN, "deactivate-poison-tooth", "Allow battle plan resolution with Poison Tooth not used (default = False)", false);
     public static final OptionData addPortableSnooper = new OptionData(OptionType.BOOLEAN, "add-portable-snooper", "Allow battle plan resolution with Portable Snooper added (default = False)", false);
     public static final OptionData stoneBurnerKills = new OptionData(OptionType.BOOLEAN, "stone-burner-kills", "Select whether Stone Burner kills leaders (default = False)", false);
+    public static final OptionData useJuiceOfSapho = new OptionData(OptionType.BOOLEAN, "use-juice-of-sapho", "Use Juice of Sapho", false);
     public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);

@@ -279,6 +279,27 @@ public class Battle {
         return numForcesInReserve;
     }
 
+    private void presentJuiceOfSaphoChoices(Game game, Faction faction, boolean tag) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("battlesapho-yes", "Yes"));
+        choices.add(new DuneChoice("battlesapho-no", "No"));
+        faction.getChat().publish("Do you want to play Juice of Sapho to be aggressor in the battle of " + wholeTerritoryName + "?" + (tag ? " " + faction.getPlayer() : ""), choices);
+        game.getModInfo().publish(faction.getEmoji() + " may choose to play Juice of Sapho in " + wholeTerritoryName + ". Please wait to resolve the battle.");
+    }
+
+    public void checkJuiceOfSapho(Game game, Faction faction) {
+        if (getDefenderName().equals(faction.getName())) {
+            if (faction.hasTreacheryCard("Juice of Sapho"))
+                presentJuiceOfSaphoChoices(game, faction, false);
+            else if (hasEcazAndAlly()) {
+                if (faction instanceof EcazFaction && game.getFaction(faction.getAlly()).hasTreacheryCard("Juice of Sapho"))
+                    presentJuiceOfSaphoChoices(game, game.getFaction(faction.getAlly()), true);
+                else if (faction.getAlly().equals("Ecaz") && game.getFaction("Ecaz").hasTreacheryCard("Juice of Sapho"))
+                    presentJuiceOfSaphoChoices(game, game.getFaction("Ecaz"), true);
+            }
+        }
+    }
+
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
         int actualSize = factionNames.size();
         int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
@@ -436,9 +457,10 @@ public class Battle {
         if (isNotResolvable())
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
         Faction defender = getDefender(game);
-        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+        if (defenderBattlePlan.isJuiceOfSapho()
+                || (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
                 && (wholeTerritoryName.equals("Habbanya Sietch") && defender.hasStrongholdCard("Habbanya Sietch")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && defender.hasHmsStrongholdProxy("Habbanya Sietch")))
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && defender.hasHmsStrongholdProxy("Habbanya Sietch"))))
             return aggressorBattlePlan.getDoubleBattleStrength() > defenderBattlePlan.getDoubleBattleStrength();
         return aggressorBattlePlan.getDoubleBattleStrength() >= defenderBattlePlan.getDoubleBattleStrength();
     }

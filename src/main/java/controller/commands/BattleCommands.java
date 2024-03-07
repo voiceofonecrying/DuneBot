@@ -29,7 +29,7 @@ public class BattleCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills),
+                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader)
         ));

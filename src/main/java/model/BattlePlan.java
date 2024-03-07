@@ -24,6 +24,7 @@ public class BattlePlan {
     private final int numStrongholdsOccupied;
     private final int numForcesInReserve;
     private int spiceBankerSupport;
+    private boolean juiceOfSapho;
     private TreacheryCard opponentWeapon;
     private TreacheryCard opponentDefense;
     private Leader opponentLeader;
@@ -52,6 +53,7 @@ public class BattlePlan {
         this.numStrongholdsOccupied = numStrongholdsOccupied;
         this.numForcesInReserve = numForcesInReserve;
         this.spiceBankerSupport = 0;
+        this.juiceOfSapho = false;
         this.stoneBurnerNoKill = false;
     }
 
@@ -371,6 +373,14 @@ public class BattlePlan {
 
     public void setSpiceBankerSupport(int spiceBankerSupport) {
         this.spiceBankerSupport = spiceBankerSupport;
+    }
+
+    public boolean isJuiceOfSapho() {
+        return juiceOfSapho;
+    }
+
+    public void setJuiceOfSapho(boolean juiceOfSapho) {
+        this.juiceOfSapho = juiceOfSapho;
     }
 
     public void revealOpponentBattlePlan(BattlePlan opponentPlan) {

@@ -602,7 +602,6 @@ public class CommandManager extends ListenerAdapter {
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
-                case "review-battle-resolution" -> reviewBattleResolution(discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -738,7 +737,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
-        commandData.add(Commands.slash("review-battle-resolution", "Print battle results to mod-info for review").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
 
         commandData.addAll(GameStateCommands.getCommands());
@@ -1511,6 +1509,8 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
+        if (battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
+            resolution += emojis + " discards Juice of Sapho\n";
 
         if (!resolution.isEmpty()) resolution = "\n" + resolution;
         return resolution;
@@ -1549,7 +1549,11 @@ public class CommandManager extends ListenerAdapter {
             );
             if (winnerPlan.getTotalStrengthString().equals(loserPlan.getTotalStrengthString())
                     && !currentBattle.isAggressorWin(game))
-                resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.\n";
+                if (winnerPlan.isJuiceOfSapho()) {
+                    resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Juice of Sapho.\n";
+                } else {
+                    resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.\n";
+                }
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
@@ -1563,6 +1567,8 @@ public class CommandManager extends ListenerAdapter {
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan != null && defenderPlan != null) {
+            if (discordGame.optional(useJuiceOfSapho) != null)
+                defenderPlan.setJuiceOfSapho(discordGame.required(useJuiceOfSapho).getAsBoolean());
             boolean killerStoneBurner = discordGame.optional(stoneBurnerKills) != null && discordGame.required(stoneBurnerKills).getAsBoolean();
             boolean stoneBurnerNoKill = !killerStoneBurner;
             boolean aggressorNoKillStoneBurner = false;
@@ -1604,6 +1610,7 @@ public class CommandManager extends ListenerAdapter {
             else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
         } else
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        discordGame.getModInfo().queueMessage("Sapho " + defenderPlan.isJuiceOfSapho());
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {

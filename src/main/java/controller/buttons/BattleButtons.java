@@ -19,6 +19,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("hmsstrongholdpower-")) hmsStrongholdPower(event, discordGame, game);
         else if (event.getComponentId().startsWith("spicebanker-")) spiceBanker(event, discordGame, game);
         else if (event.getComponentId().startsWith("pullleader-")) pullLeader(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battlesapho-")) battleSapho(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -105,6 +106,25 @@ public class BattleButtons implements Pressable {
             discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                     "{0} left {1} {2} in front of their shield.",
                     faction.getEmoji(), leader.getSkillCard().name(), leader.getName()));
+        }
+        discordGame.pushGame();
+    }
+
+    private static void battleSapho(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String response = event.getComponentId().split("-")[1];
+        Battle battle = game.getBattles().getCurrentBattle();
+        BattlePlan plan = faction.getName().equals(battle.getAggressorName()) ? battle.getAggressorBattlePlan() : battle.getDefenderBattlePlan();
+        String territoryName = battle.getWholeTerritoryName();
+        if (response.equals("yes")) {
+            discordGame.queueMessage("You will play Juice of Sapho to become the aggressor in " + territoryName + ".");
+            discordGame.getModInfo().queueMessage(faction.getEmoji() + " will play Juice of Sapho to become the aggressor in " + territoryName + ".");
+            plan.setJuiceOfSapho(true);
+        } else {
+            discordGame.queueMessage("You will not play Juice of Sapho and will remain the defender in " + territoryName + ".");
+            discordGame.getModInfo().queueMessage(faction.getEmoji() + " will not play Juice of Sapho in " + territoryName + ".");
+            plan.setJuiceOfSapho(false);
         }
         discordGame.pushGame();
     }
