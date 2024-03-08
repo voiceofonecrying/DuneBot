@@ -168,7 +168,10 @@ public class Battles {
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
             choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
-            faction.getChat().publish("Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield?", choices);
+            faction.getChat().publish(
+                    "Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield? " + faction.getPlayer(),
+                    choices
+            );
         }
     }
 
