@@ -127,7 +127,7 @@ public class Game {
             spiceDeck.add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), null, null));
         }
 
-        LeaderSkillCardsCache.getNames().forEach(name -> leaderSkillDeck.add(new LeaderSkillCard(name)));
+        LeaderSkillCardsCache.getNames().forEach(name -> leaderSkillDeck.add(new LeaderSkillCard(LeaderSkillCardsCache.getCardInfo(name).get("Name"))));
 
         csvParser = getCSVFile("NexusCards.csv");
         for (CSVRecord csvRecord : csvParser) {
