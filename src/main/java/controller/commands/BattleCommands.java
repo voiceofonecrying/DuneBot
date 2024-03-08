@@ -76,6 +76,7 @@ public class BattleCommands {
         battles.nextBattle(game);
         if (battles.aggressorMustChooseBattle()) territoryButtons(discordGame, game, battles);
         else setBattleIndex(discordGame, game, 0);
+        discordGame.pushGame();
     }
 
     public static void territoryButtons(DiscordGame discordGame, Game game, Battles battles) throws ChannelNotFoundException {

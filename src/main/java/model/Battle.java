@@ -21,6 +21,8 @@ public class Battle {
         this.territorySectors = territorySectors;
         this.factionNames = new ArrayList<>();
         battleFactionsInStormOrder.forEach(f -> factionNames.add(f.getName()));
+        if (factionNames.get(0).equals("Ecaz") && factionNames.get(1).equals(ecazAllyName) || factionNames.get(0).equals(ecazAllyName) && factionNames.get(1).equals("Ecaz"))
+            factionNames.add(factionNames.remove(1));
         this.forces = forces;
         this.ecazAllyName = ecazAllyName;
     }
