@@ -2,8 +2,11 @@ package view.factions;
 
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import model.EcazAmbassador;
 import model.factions.EcazFaction;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import utils.CardImages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,12 +32,24 @@ public class EcazView extends FactionView {
             );
         }
 
-        String emojis = faction.getAmbassadorSupplyEmojis();
-        returnList.add(new MessageEmbed.Field(
-                "Ambassador Supply",
-                emojis.isEmpty() ? "Empty" : discordGame.tagEmojis(emojis),
-                true));
-
         return returnList;
+    }
+
+    @Override
+    protected List<MessageEmbed> additionalEmbedsBottom() {
+        return faction.getAmbassadorSupply().stream()
+                .map(this::getAmbassadorEmbed)
+                .toList();
+    }
+
+    private MessageEmbed getAmbassadorEmbed(String id) {
+        EcazAmbassador ambassador = new EcazAmbassador(id);
+        EmbedBuilder embedBuilder = new EmbedBuilder()
+                .setTitle(ambassador.name() + " Ambassador in Supply")
+                .setColor(faction.getColor())
+                .setDescription(ambassador.description())
+                .setThumbnail(CardImages.getEcazAmbassadorImageLink(discordGame.getEvent().getGuild(), ambassador.name()));
+
+        return embedBuilder.build();
     }
 }

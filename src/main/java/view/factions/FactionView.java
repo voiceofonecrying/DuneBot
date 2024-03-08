@@ -50,7 +50,7 @@ public class FactionView {
 
         builder.addEmbeds(getSummaryEmbed());
 
-        additionalEmbeds().forEach(builder::addEmbeds);
+        additionalEmbedsTop().forEach(builder::addEmbeds);
 
         if (game.hasGameOption(GameOption.HOMEWORLDS)) {
             getHomeworldEmbeds().forEach(builder::addEmbeds);
@@ -64,6 +64,8 @@ public class FactionView {
             getStrongholdCardEmbeds().forEach(builder::addEmbeds);
         }
 
+        additionalEmbedsBottom().forEach(builder::addEmbeds);
+
         return  builder;
     }
 
@@ -73,14 +75,14 @@ public class FactionView {
 
         if (game.hasGameOption(GameOption.SPICE_PUBLIC)) {
             embedBuilder.addField(
-                    "BoS",
+                    "Back",
                     discordGame.tagEmojis(faction.getSpice() + " " + Emojis.SPICE),
                     true
             );
         }
 
         embedBuilder.addField(
-                "FoS",
+                "Front",
                 discordGame.tagEmojis(faction.getFrontOfShieldSpice() + " " + Emojis.SPICE),
                 true
         );
@@ -117,7 +119,11 @@ public class FactionView {
         return new ArrayList<>();
     }
 
-    protected List<MessageEmbed> additionalEmbeds() {
+    protected List<MessageEmbed> additionalEmbedsTop() {
+        return new ArrayList<>();
+    }
+
+    protected List<MessageEmbed> additionalEmbedsBottom() {
         return new ArrayList<>();
     }
 

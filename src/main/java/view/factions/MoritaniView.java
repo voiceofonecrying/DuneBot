@@ -19,7 +19,7 @@ public class MoritaniView extends FactionView {
     }
 
     @Override
-    protected List<MessageEmbed> additionalEmbeds() {
+    protected List<MessageEmbed> additionalEmbedsTop() {
         if (!faction.getAssassinationTargets().isEmpty()) {
             EmbedBuilder assassinationTargetsBuilder = new EmbedBuilder()
                     .setTitle("Assassinated targets")

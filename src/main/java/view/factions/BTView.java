@@ -20,7 +20,7 @@ public class BTView extends FactionView {
     }
 
     @Override
-    protected List<MessageEmbed> additionalEmbeds() {
+    protected List<MessageEmbed> additionalEmbedsTop() {
         if (!faction.getRevealedFaceDancers().isEmpty()) {
             EmbedBuilder faceDancerBuilder = new EmbedBuilder()
                     .setTitle("Revealed Face Dancers")
