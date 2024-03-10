@@ -87,7 +87,6 @@ public class BattleButtons implements Pressable {
         String factionName = event.getComponentId().split("-")[1];
         String leaderName = event.getComponentId().split("-")[2];
         String yesOrNo = event.getComponentId().split("-")[3];
-        discordGame.queueMessage("You selected " + yesOrNo + ".");
         Faction faction = game.getFaction(factionName);
         Leader leader = faction.getSkilledLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
         if (yesOrNo.equals("yes")) {

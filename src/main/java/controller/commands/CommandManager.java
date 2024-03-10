@@ -1449,6 +1449,8 @@ public class CommandManager extends ListenerAdapter {
             resolution += emojis + " discards " + battlePlan.getWeapon().name() + "\n";
         if (battlePlan.defenseMustBeDiscarded(loser))
             resolution += emojis + " discards " + battlePlan.getDefense().name() + "\n";
+        if (battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
+            resolution += emojis + " discards Juice of Sapho\n";
         if (battlePlan.getSpice() > 0) {
             resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + " combat spice";
             if (!(faction instanceof ChoamFaction) && game.hasFaction("Choam") && battlePlan.getSpice() > 1) {
@@ -1509,8 +1511,15 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
-        if (battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
-            resolution += emojis + " discards Juice of Sapho\n";
+        Faction winner = currentBattle.isAggressorWin(game) ? currentBattle.getAggressor(game) : currentBattle.getDefender(game);
+        boolean atreidesWin = winner instanceof AtreidesFaction || winner instanceof EcazFaction && currentBattle.hasEcazAndAlly() && winner.getAlly().equals("Atreides");
+        if (!loser && atreidesWin) {
+            Faction atreides = game.getFaction("Atreides");
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
+                    && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReserves().getStrength() > 0 || regularForcesDialed > 0)) {
+                resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
+            }
+        }
 
         if (!resolution.isEmpty()) resolution = "\n" + resolution;
         return resolution;
@@ -1529,8 +1538,9 @@ public class CommandManager extends ListenerAdapter {
     }
 
     private static void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
+        String wholeTerritoryName = currentBattle.getWholeTerritoryName();
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
-                currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), currentBattle.getWholeTerritoryName()
+                currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), wholeTerritoryName
         );
         Integer noFieldValue = currentBattle.getForces().stream().filter(f -> f.getName().equals("NoField")).map(Force::getStrength).findFirst().orElse(null);
         if (noFieldValue != null)
@@ -1548,12 +1558,12 @@ public class CommandManager extends ListenerAdapter {
                     currentBattle.getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loserPlan.getTotalStrengthString()
             );
             if (winnerPlan.getTotalStrengthString().equals(loserPlan.getTotalStrengthString())
-                    && !currentBattle.isAggressorWin(game))
-                if (winnerPlan.isJuiceOfSapho()) {
+                    && !currentBattle.isAggressorWin(game)) {
+                if (winnerPlan.isJuiceOfSapho())
                     resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Juice of Sapho.\n";
-                } else {
+                else
                     resolution += currentBattle.getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.\n";
-                }
+            }
         }
         resolution += factionBattleResults(game, currentBattle, true);
         resolution += factionBattleResults(game, currentBattle, false);
@@ -1610,7 +1620,6 @@ public class CommandManager extends ListenerAdapter {
             else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
         } else
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-        discordGame.getModInfo().queueMessage("Sapho " + defenderPlan.isJuiceOfSapho());
     }
 
     public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
