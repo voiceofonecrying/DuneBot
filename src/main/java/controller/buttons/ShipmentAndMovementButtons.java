@@ -466,10 +466,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else if (!crossShipFrom.isEmpty()) {
             game.removeForces(crossShipFrom, faction, force, 0, false);
-            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, false);
+            CommandManager.placeForces(territory, faction, force, specialForce, true, true, discordGame, game, false);
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
         } else if (force > 0 || specialForce > 0)
-            CommandManager.placeForces(territory, faction, force, specialForce, true, discordGame, game, karama);
+            CommandManager.placeForces(territory, faction, force, specialForce, true, true, discordGame, game, karama);
         game.setUpdated(UpdateType.MAP);
         shipment.clear();
         discordGame.pushGame();

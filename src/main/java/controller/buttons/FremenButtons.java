@@ -23,7 +23,7 @@ public class FremenButtons implements Pressable {
 
     private static void triggerHT(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Territory territory = game.getTerritory(event.getComponentId().split("-")[2]);
-        CommandManager.placeForces(territory, game.getFaction("Fremen"), 0, 1, false, discordGame, game, false);
+        CommandManager.placeForces(territory, game.getFaction("Fremen"), 0, 1, false, true, discordGame, game, false);
         discordGame.getTurnSummary().queueMessage(Emojis.FREMEN + " place their revived " + Emojis.FREMEN_FEDAYKIN + " with their forces in " + territory.getTerritoryName());
         discordGame.queueMessage("Your " + Emojis.FREMEN_FEDAYKIN + " has left for the northern hemisphere.");
         discordGame.pushGame();

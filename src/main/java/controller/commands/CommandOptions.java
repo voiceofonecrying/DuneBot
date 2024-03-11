@@ -91,7 +91,8 @@ public class CommandOptions {
             .addChoice("Decks and Discards", "dnd")
             .addChoice("Phase, Turn, and everything else", "etc")
             .addChoice("Faction Info", "factions");
-    public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "isshipment", "Is this placement a shipment?", true);
+    public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "is-shipment", "Is this placement a shipment?", true);
+    public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);
     public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);

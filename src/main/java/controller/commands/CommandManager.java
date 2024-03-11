@@ -254,10 +254,10 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getEcazChat().queueMessage("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + territoryName + "? " + game.getFaction("Ecaz").getPlayer(), buttons);
     }
 
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
-
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
         Force reserves = targetFaction.getReserves();
         Force specialReserves = targetFaction.getSpecialReserves();
+        TurnSummary turnSummary = discordGame.getTurnSummary();
 
         if (amountValue > 0)
             placeForceInTerritory(discordGame, game, targetTerritory, targetFaction, amountValue, false);
@@ -335,13 +335,14 @@ public class CommandManager extends ListenerAdapter {
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
             }
 
-            TurnSummary turnSummary = discordGame.getTurnSummary();
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
                 bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
             }
             BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
             turnSummary.queueMessage(message.toString());
+        }
 
+        if (canTrigger) {
             if (targetTerritory.getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
                     && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                     && !(game.getFaction("Ecaz").hasAlly()
@@ -706,7 +707,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
-        commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, territory));
+        commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
@@ -1242,7 +1243,8 @@ public class CommandManager extends ListenerAdapter {
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
         boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
-        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, discordGame, game, false);
+        boolean canTrigger = discordGame.required(CommandOptions.canTrigger).getAsBoolean();
+        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, canTrigger, discordGame, game, false);
         discordGame.pushGame();
     }
 
