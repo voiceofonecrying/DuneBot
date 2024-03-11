@@ -830,8 +830,8 @@ public class DiscordGame {
                 .orElseThrow(() -> new IllegalArgumentException("Player not found"));
     }
 
-    public OptionMapping required(OptionData optionData) {
-        OptionMapping optionMapping = optional(optionData);
+    public static OptionMapping required(OptionData optionData, SlashCommandInteractionEvent event) {
+        OptionMapping optionMapping = optional(optionData, event);
 
         if (optionMapping == null) {
             throw new IllegalArgumentException("Required option is missing: " + optionData.getName());
@@ -840,10 +840,17 @@ public class DiscordGame {
         return optionMapping;
     }
 
-    public OptionMapping optional(OptionData optionData) {
+    public OptionMapping required(OptionData optionData) {
+        return required(optionData, (SlashCommandInteractionEvent) event);
+    }
+
+    public static OptionMapping optional(OptionData optionData, SlashCommandInteractionEvent event) {
         String optionName = optionData.getName();
-        SlashCommandInteractionEvent newEvent = (SlashCommandInteractionEvent) event;
-        return newEvent.getOption(optionName);
+        return event.getOption(optionName);
+    }
+
+    public OptionMapping optional(OptionData optionData) {
+        return optional(optionData, (SlashCommandInteractionEvent) event);
     }
 
     public RichCustomEmoji getEmoji(String emojiName) {

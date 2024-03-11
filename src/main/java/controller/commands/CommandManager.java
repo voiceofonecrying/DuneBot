@@ -517,7 +517,7 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("random-dune-quote")) {
                 randomDuneQuote(event);
             } else {
-                String categoryName = DiscordGame.categoryFromEvent(event).getName();
+                String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
                 Queue.putFuture(categoryName, future.thenRunAsync(() -> runGameCommand(event)));
             }
@@ -619,14 +619,21 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
+    private List<String> getQuotesFromBook(String bookName) throws IOException {
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(bookName)) {
+            byte[] allBytes = Objects.requireNonNull(stream).readAllBytes();
+            return new ArrayList<>(Arrays.stream(new String(allBytes, StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
+        }
+    }
+
     private void randomDuneQuote(SlashCommandInteractionEvent event) throws IOException {
-        int lines = event.getOption("lines").getAsInt();
-        if (event.getOption("search") == null) {
-            if (event.getOption("book") == null) {
-                InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
-                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList();
+        int lines = DiscordGame.required(CommandOptions.lines, event).getAsInt();
+        List<String> quotes;
+        if (DiscordGame.optional(search, event) == null) {
+            if (DiscordGame.optional(book, event) == null) {
+                quotes = getQuotesFromBook("Dune Books/Dune.txt");
                 Random random = new Random();
-                int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
+                int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() : random.nextInt(quotes.size() - lines + 1);
                 StringBuilder quote = new StringBuilder();
 
                 for (int i = 0; i < lines; i++) {
@@ -635,11 +642,9 @@ public class CommandManager extends ListenerAdapter {
                 event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
 
             } else {
-                InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/" + event.getOption("book").getAsString());
-
-                List<String> quotes = Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList();
+                quotes = getQuotesFromBook("Dune Books/" + DiscordGame.required(book, event).getAsString());
                 Random random = new Random();
-                int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() : random.nextInt(quotes.size() - lines + 1);
+                int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() : random.nextInt(quotes.size() - lines + 1);
                 StringBuilder quote = new StringBuilder();
 
                 for (int i = 0; i < lines; i++) {
@@ -648,19 +653,14 @@ public class CommandManager extends ListenerAdapter {
                 event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
             }
         } else {
-            String search = event.getOption("search").getAsString();
-            InputStream stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Dune.txt");
-            List<String> quotes = new ArrayList<>(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Messiah.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Children.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/GeoD.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Heretics.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-            stream = getClass().getClassLoader().getResourceAsStream("Dune Books/Chapterhouse.txt");
-            quotes.addAll(Arrays.stream(new String(stream.readAllBytes(), StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
+            String search = DiscordGame.required(CommandOptions.search, event).getAsString();
+            quotes = new ArrayList<>();
+            quotes.addAll(getQuotesFromBook("Dune Books/Dune.txt"));
+            quotes.addAll(getQuotesFromBook("Dune Books/Messiah.txt"));
+            quotes.addAll(getQuotesFromBook("Dune Books/Children.txt"));
+            quotes.addAll(getQuotesFromBook("Dune Books/GeoD.txt"));
+            quotes.addAll(getQuotesFromBook("Dune Books/Heretics.txt"));
+            quotes.addAll(getQuotesFromBook("Dune Books/Chapterhouse.txt"));
             List<String> matched = new LinkedList<>();
 
             for (int i = 0; i < quotes.size() - lines; i+=lines) {
@@ -675,7 +675,7 @@ public class CommandManager extends ListenerAdapter {
                 return;
             }
             Random random = new Random();
-            int start = event.getOption("starting-line") != null ? event.getOption("starting-line").getAsInt() - 1 : random.nextInt(matched.size() - 1);
+            int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() - 1 : random.nextInt(matched.size() - 1);
 
             event.getMessageChannel().sendMessage(matched.get(start) + "\n (Match " + (start + 1) + " of " + matched.size() + " for search term: '" + search + "')").queue();
         }
@@ -1392,11 +1392,11 @@ public class CommandManager extends ListenerAdapter {
                         resolution += " " + savedSpecialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
-                    String savedTroopEmoji = "";
+                    String savedTroopEmoji;
                     if (specialForcesDialed > 0) {
                         savedTroopEmoji = Emojis.getForceEmoji(troopFactionName + "*");
                         specialForcesDialed--;
-                    } else if (regularForcesDialed > 0) {
+                    } else {
                         savedTroopEmoji = Emojis.getForceEmoji(troopFactionName);
                         regularForcesDialed--;
                     }
@@ -1811,32 +1811,32 @@ public class CommandManager extends ListenerAdapter {
 
     public void waitingList(SlashCommandInteractionEvent event) {
         String userTag = event.getUser().getId();
-        TextChannel textChannel = event.getGuild().getTextChannelsByName("waiting-list", true).get(0);
+        TextChannel textChannel = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).get(0);
         String message = "";
         message += "Speed: :scooter: ";
-        if (event.getOption(slowGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :blue_car: ";
+        if (DiscordGame.required(slowGame, event).getAsBoolean()) message += ":white_check_mark: -- :blue_car: ";
         else message += ":no_entry_sign: -- :blue_car: ";
-        if (event.getOption(midGame.getName()).getAsBoolean()) message += ":white_check_mark: -- :race_car: ";
+        if (DiscordGame.required(midGame, event).getAsBoolean()) message += ":white_check_mark: -- :race_car: ";
         else message += ":no_entry_sign: -- :race_car: ";
-        if (event.getOption(fastGame.getName()).getAsBoolean())
+        if (DiscordGame.required(fastGame, event).getAsBoolean())
             message += ":white_check_mark:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
         else message += ":no_entry_sign:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
-        if (event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean())
+        if (DiscordGame.required(ixianstleilaxuExpansion, event).getAsBoolean())
             message += ":white_check_mark: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
         else message += ":no_entry_sign: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
-        if (event.getOption(choamricheseExpansion.getName()).getAsBoolean())
+        if (DiscordGame.required(choamricheseExpansion, event).getAsBoolean())
             message += ":white_check_mark: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
         else message += ":no_entry_sign: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
-        if (event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean())
+        if (DiscordGame.required(ecazmoritaniExpansion, event).getAsBoolean())
             message += ":white_check_mark:\nOptions: <:weirding:991763071775297681> ";
         else message += ":no_entry_sign:\nOptions: <:weirding:991763071775297681> ";
-        if (event.getOption(leaderSkills.getName()).getAsBoolean())
+        if (DiscordGame.required(leaderSkills, event).getAsBoolean())
             message += ":white_check_mark: -- :european_castle: ";
         else message += ":no_entry_sign: -- :european_castle: ";
-        if (event.getOption(strongholdCards.getName()).getAsBoolean())
+        if (DiscordGame.required(strongholdCards, event).getAsBoolean())
             message += ":white_check_mark: -- :ringed_planet: ";
         else message += ":no_entry_sign: -- :ringed_planet: ";
-        if (event.getOption(homeworlds.getName()).getAsBoolean()) message += ":white_check_mark:\nUser: ";
+        if (DiscordGame.required(homeworlds, event).getAsBoolean()) message += ":white_check_mark:\nUser: ";
         else message += ":no_entry_sign:\nUser: ";
         message += "<@" + userTag + ">";
         textChannel.sendMessage(message).queue();
