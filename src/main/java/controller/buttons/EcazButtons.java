@@ -34,7 +34,7 @@ public class EcazButtons implements Pressable {
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "ecaz-deny-offer" -> denyAlliance(discordGame);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
-            case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(event, discordGame);
+            case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(discordGame);
             case "ecaz-reset-ambassadors" -> resetAmbassadors(discordGame);
         }
 
@@ -45,10 +45,9 @@ public class EcazButtons implements Pressable {
         ecazFaction.sendAmbassadorLocationMessage(discordGame.getGame(), discordGame, 1);
     }
 
-    private static void noMoreAmbassadors(ButtonInteractionEvent event, DiscordGame discordGame) {
+    private static void noMoreAmbassadors(DiscordGame discordGame) {
         discordGame.queueMessage("Finished sending ambassadors.");
         discordGame.queueDeleteMessage();
-        ButtonManager.deleteAllButtonsInChannel(event.getChannel());
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -68,6 +67,7 @@ public class EcazButtons implements Pressable {
     }
 
     private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
         EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
         String ambassador = event.getComponentId().split("-")[3];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
@@ -94,6 +94,7 @@ public class EcazButtons implements Pressable {
             return;
         }
         ecazFaction.sendAmbassadorMessage(discordGame, territory.getTerritoryName(), cost);
+        discordGame.queueMessage("You selected " + territory.getTerritoryName());
     }
 
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
