@@ -158,6 +158,7 @@ public class MoritaniFaction extends Faction {
             buttons.add(Button.danger("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
         }
         buttons.add(Button.danger("moritani-don't-trigger-terror", "Don't Trigger"));
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
         discordGame.getMoritaniChat().queueMessage("Will you trigger your terror token now?" + game.getFaction("Moritani").getPlayer(), buttons);
     }
 
