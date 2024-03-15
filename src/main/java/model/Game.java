@@ -851,20 +851,20 @@ public class Game {
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
-        String factionName = targetFaction.getName();
         Territory territory = getTerritory(territoryName);
 
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
             Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f instanceof EmperorFaction && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
+            String homeworldFactionName = homeworldFaction.getName();
             if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > territory.getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
                 ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
                 turnSummary.publish("Salusa Secundus has flipped to low threshold.");
 
             } else if (homeworldFaction.isHighThreshold() &&
                     homeworldFaction.getHighThreshold() >
-                            territory.getForce(factionName).getStrength() + territory.getForce(factionName + "*").getStrength()
+                            territory.getForce(homeworldFactionName).getStrength() + territory.getForce(homeworldFactionName + "*").getStrength()
             ) {
                 homeworldFaction.setHighThreshold(false);
                 turnSummary.publish(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
