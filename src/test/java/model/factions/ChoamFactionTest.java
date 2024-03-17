@@ -70,12 +70,10 @@ class ChoamFactionTest extends FactionTestTemplate {
     public void choamCanNotSetInflationRoundTooLow() {
         assertThrows(IllegalArgumentException.class, () ->
                 faction.setFirstInflation(0, ChoamInflationType.DOUBLE));
-        assertThrows(IllegalArgumentException.class, () ->
-                faction.setFirstInflation(1, ChoamInflationType.DOUBLE));
+        assertDoesNotThrow(() -> faction.setFirstInflation(1, ChoamInflationType.DOUBLE));
         assertThrows(IllegalArgumentException.class, () ->
                 faction.setFirstInflation(0, ChoamInflationType.CANCEL));
-        assertThrows(IllegalArgumentException.class, () ->
-                faction.setFirstInflation(1, ChoamInflationType.CANCEL));
+        assertDoesNotThrow(() -> faction.setFirstInflation(1, ChoamInflationType.CANCEL));
     }
 
     @Test

@@ -50,8 +50,8 @@ public class ChoamFaction extends Faction {
      * @param firstInflationType  the type of inflation that is active in the first round.
      */
     public void setFirstInflation(int firstInflationRound, ChoamInflationType firstInflationType) {
-        if (firstInflationRound < 2) {
-            throw new IllegalArgumentException("First inflation round must be at least 2");
+        if (firstInflationRound < 1) {
+            throw new IllegalArgumentException("First inflation must wait until Mentat Pause");
         }
 
         if (firstInflationRound > 10) {
