@@ -1341,6 +1341,7 @@ public class CommandManager extends ListenerAdapter {
         int savedSpecialForces;
         int savedRegularForces;
         TreacheryCard weapon = battlePlan.getWeapon();
+        TreacheryCard defense = battlePlan.getDefense();
         if (loser) {
             if (!(faction instanceof EcazFaction)) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
@@ -1359,13 +1360,13 @@ public class CommandManager extends ListenerAdapter {
                     resolution += " retreat to an empty adjacent non-stronghold with Diplomat\n";
                 }
             }
-            if (weapon != null && weapon.name().equals("Harass and Withdraw")
+            if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
                 resolution += troopFactionEmoji + " returns";
                 if (regularForcesNotDialed > 0)
-                    resolution += " " + regularForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*");
+                    resolution += " " + regularForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName);
                 if (specialForcesNotDialed > 0)
-                    resolution += " " + specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName);
+                    resolution += " " + specialForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName + "*");
                 regularForcesTotal -= regularForcesNotDialed;
                 specialForcesTotal -= specialForcesNotDialed;
                 resolution += " to reserves with Harass and Withdraw\n";
@@ -1404,13 +1405,13 @@ public class CommandManager extends ListenerAdapter {
                         resolution += troopFactionEmoji + " returns 1 " + savedTroopEmoji + " to reserves with Suk Graduate\n";
                 }
             }
-            if (weapon != null && weapon.name().equals("Harass and Withdraw")
+            if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
                 resolution += troopFactionEmoji + " returns";
                 if (regularForcesNotDialed > 0)
-                    resolution += " " + regularForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*");
+                    resolution += " " + regularForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName);
                 if (specialForcesNotDialed > 0)
-                    resolution += " " + specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName);
+                    resolution += " " + specialForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName + "*");
                 resolution += " to reserves with Harass and Withdraw\n";
             }
             if (regularForcesDialed > 0 || specialForcesDialed > 0) {
@@ -1442,7 +1443,6 @@ public class CommandManager extends ListenerAdapter {
             resolution += " " + Emojis.ECAZ_TROOP;
             resolution += " to the tanks\n";
         }
-        TreacheryCard defense = battlePlan.getDefense();
         if (battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
         if (battlePlan.getCheapHero() != null)

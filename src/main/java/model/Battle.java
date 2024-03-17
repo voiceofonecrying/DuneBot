@@ -349,7 +349,7 @@ public class Battle {
                     && isNotPlanetologist
                     && getNumForcesInReserve(game, faction) < 3)
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
-            else if (weapon.isGreenSpecialCard() && isNotPlanetologist)
+            else if (isNotPlanetologist && weapon.isGreenSpecialCard() && !weapon.name().equals("Harass and Withdraw") && !weapon.name().equals("Reinforcements"))
                 throw new InvalidGameStateException(weapon.name() + " can only be played as a weapon if leader has Planetologist skill");
         }
         if (defense != null) {
