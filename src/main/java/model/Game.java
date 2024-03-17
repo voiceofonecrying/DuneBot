@@ -403,8 +403,16 @@ public class Game {
         return turn;
     }
 
+    public void setTurn(int turn) {
+        this.turn = turn;
+    }
+
     public int getPhase() {
         return phase;
+    }
+
+    public void setPhase(int phase) {
+        this.phase = phase;
     }
 
     public int getSubPhase() {

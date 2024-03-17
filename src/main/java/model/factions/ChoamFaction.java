@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.ChoamInflationType;
+import exceptions.InvalidGameStateException;
 import model.Force;
 import model.Game;
 import model.Territory;
@@ -26,7 +27,7 @@ public class ChoamFaction extends Faction {
         game.getHomeworlds().put(getName(), homeworld);
         this.occupiedIncome = 2;
         this.handLimit = 5;
-        this.firstInflationRound = 0;
+        clearInflation();
     }
 
     /**
@@ -44,22 +45,27 @@ public class ChoamFaction extends Faction {
     }
 
     /**
-     * Sets the first round where inflation is active.
+     * Sets the inflation type for the next applicable round.
      *
-     * @param firstInflationRound the first round where inflation is active.
-     * @param firstInflationType  the type of inflation that is active in the first round.
+     * @param firstInflationType  the type of inflation that is active in the first applicable round.
      */
-    public void setFirstInflation(int firstInflationRound, ChoamInflationType firstInflationType) {
-        if (firstInflationRound < 1) {
-            throw new IllegalArgumentException("First inflation must wait until Mentat Pause");
-        }
+    public void setFirstInflation(ChoamInflationType firstInflationType) throws InvalidGameStateException {
+        if (firstInflationRound != 0)
+            throw new InvalidGameStateException("Inflation has already been activated.");
 
-        if (firstInflationRound > 10) {
-            throw new IllegalArgumentException("First inflation round must be at most 10");
-        }
-
-        this.firstInflationRound = firstInflationRound;
+        firstInflationRound = game.getTurn();
+        if (game.getPhase() > 3) firstInflationRound++;
+        if (firstInflationRound <= 1) firstInflationRound = 2;
         this.firstInflationType = firstInflationType;
+        game.getTurnSummary().publish(Emojis.CHOAM + " set inflation to " + firstInflationType + " for turn " + firstInflationRound);
+    }
+
+    /**
+     * Clears inflation to allow it to be set for a different turn.
+     */
+    public void clearInflation() {
+        firstInflationRound = 0;
+        firstInflationType = null;
     }
 
     /**

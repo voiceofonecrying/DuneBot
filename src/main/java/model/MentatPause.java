@@ -1,8 +1,10 @@
 package model;
 
 import constants.Emojis;
+import enums.ChoamInflationType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
+import model.factions.ChoamFaction;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
 
@@ -15,8 +17,33 @@ public class MentatPause {
     boolean extortionActive = false;
 
     public MentatPause(Game game) {
+        List<DuneChoice> choices;
+        ChoamFaction choam = null;
         try {
-            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+            choam = (ChoamFaction)game.getFaction("CHOAM");
+        } catch (IllegalArgumentException e) {
+            // CHOAM is not in the game
+        }
+        if (choam != null) {
+            if (choam.getFirstInflationRound() == 0) {
+                choices = new ArrayList<>();
+                choices.add(new DuneChoice("inflation-double", "Yes, Double side up"));
+                choices.add(new DuneChoice("inflation-cancel", "Yes, Cancel side up"));
+                choices.add(new DuneChoice("inflation-not-yet", "No"));
+                choam.getChat().publish("Would you like to set inflation? " + choam.getPlayer(), choices);
+            } else {
+                int doubleRound = choam.getFirstInflationRound();
+                if (choam.getFirstInflationType() == ChoamInflationType.CANCEL) doubleRound++;
+
+                if (doubleRound == game.getTurn() + 1)
+                    game.getTurnSummary().publish("No bribes may be made while the " + Emojis.CHOAM + " inflation token is Double side up.");
+                else if (doubleRound == game.getTurn())
+                    game.getTurnSummary().publish("Bribes may be made again. The Inflation Token is no longer Double side up.");
+            }
+        }
+
+        try {
+            MoritaniFaction moritani = (MoritaniFaction)game.getFaction("Moritani");
             if (moritani.isNewAssassinationTargetNeeded()) {
                 moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
                 game.getTurnSummary().publish(Emojis.MORITANI + " have drawn a new traitor.");

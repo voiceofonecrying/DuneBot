@@ -249,6 +249,8 @@ public class RunCommands {
             if (multiplier == 0) {
                 turnSummary.queueMessage("CHOAM Charity is cancelled!");
                 return;
+            } else if (multiplier == 2) {
+                turnSummary.queueMessage("CHOAM charity is doubled! No bribes may be made while the Inflation token is Double side up.");
             }
         }
 

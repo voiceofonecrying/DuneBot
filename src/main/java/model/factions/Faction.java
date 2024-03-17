@@ -65,7 +65,7 @@ public class Faction {
     private boolean isHighThreshold;
     private Boolean ornithoperToken;
     @Exclude
-    private Game game;
+    protected Game game;
     @Exclude
     private DuneTopic ledger;
     @Exclude
