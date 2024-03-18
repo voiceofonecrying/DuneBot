@@ -13,7 +13,12 @@ import java.io.IOException;
 
 public class ChoamButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        ChoamFaction choam = (ChoamFaction)game.getFaction("CHOAM");
+        ChoamFaction choam;
+        try {
+            choam = (ChoamFaction) game.getFaction("CHOAM");
+        } catch (IllegalArgumentException e) {
+            return;
+        }
 
         if (event.getComponentId().equals("inflation-double")) {
             choam.setFirstInflation(ChoamInflationType.DOUBLE);
