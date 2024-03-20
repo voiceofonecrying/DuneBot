@@ -18,6 +18,7 @@ public class Bidding {
     private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
     private boolean ixTechnologyUsed;
+    private int ixTechnologyCardNumber;
     private boolean marketPopulated;
     private boolean marketShownToIx;
     private boolean ixRejectOutstanding;
@@ -46,6 +47,7 @@ public class Bidding {
         this.silentAuction = false;
         this.richeseCacheCardOutstanding = false;
         this.ixTechnologyUsed = false;
+        this.ixTechnologyCardNumber = 0;
         this.market = new LinkedList<>();
         this.marketPopulated = false;
         this.marketShownToIx = false;
@@ -152,6 +154,7 @@ public class Bidding {
         faction.addTreacheryCard(newCard);
         market.addFirst(cardFromIx);
         ixTechnologyUsed = true;
+        ixTechnologyCardNumber = bidCardNumber + 1;
         return newCard;
     }
 
@@ -241,6 +244,10 @@ public class Bidding {
 
     public boolean isRicheseBidding() {
         return richeseBidOrder != null;
+    }
+
+    public boolean isCardFromIxHand() {
+        return bidCardNumber == ixTechnologyCardNumber;
     }
 
     public int getBidCardNumber() {

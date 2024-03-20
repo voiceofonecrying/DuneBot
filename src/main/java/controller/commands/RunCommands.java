@@ -445,11 +445,11 @@ public class RunCommands {
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
                 Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1));
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                discordGame.queueMessage("bidding-phase",
-                        MessageFormat.format("{0} You may now place your bids for R{1}:C{2}",
-                                game.getGameRoleMention(), game.getTurn(), bidding.getBidCardNumber()
-                        )
-                );
+                String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
+                        game.getGameRoleMention(), game.getTurn(), bidding.getBidCardNumber());
+                if (bidding.isCardFromIxHand())
+                    newCardAnnouncement += "\nThis card is from " + Emojis.IX + " hand after they used technology.";
+                discordGame.queueMessage("bidding-phase", newCardAnnouncement);
                 createBidMessage(discordGame, game);
                 bidding.advanceBidder(game);
                 discordGame.pushGame();
