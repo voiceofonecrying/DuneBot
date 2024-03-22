@@ -173,53 +173,13 @@ public class Battle {
         return message.toString().trim();
     }
 
-    public List<Force> getForcesDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
-        boolean fremen = factionName.equals("Fremen");
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        if (faction instanceof RicheseFaction)
-            regularStrength += forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
-        int spiceUsed = 0;
-        int dialUsed = 0;
-        int specialStrengthUsed = 0;
-        int regularStrengthUsed = 0;
-        while ((spice - spiceUsed > 0 || fremen) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
-            dialUsed += 2;
-            if (!fremen) spiceUsed++;
-            specialStrengthUsed++;
-        }
-        while ((spice - spiceUsed > 0 || fremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-            dialUsed++;
-            specialStrengthUsed++;
-        }
-        while ((spice - spiceUsed > 0 || fremen) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-            dialUsed++;
-            if (!fremen) spiceUsed++;
-            regularStrengthUsed++;
-        }
-        if ((wholeNumberDial > dialUsed) || plusHalfDial) {
-            int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-            regularStrengthUsed += troopsNeeded;
-        }
-        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
-        while (spice > spiceUsed && regularStrength > regularStrength + 1) {
-            specialStrengthUsed--;
-            regularStrengthUsed++;
-            regularStrengthUsed++;
-            spiceUsed++;
-        }
-        return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
-    }
-
-    private boolean spiceNeededForStarred(Faction faction) {
+    private boolean isSpiceNeededForStarred(Faction faction) {
         if (faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
             return false;
         else return !(faction instanceof FremenFaction);
     }
 
-    public int validateDial(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+    public List<Force> getForcesDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice, boolean isBattlePlanSubmission) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
         boolean isIx = faction instanceof IxFaction;
@@ -231,9 +191,9 @@ public class Battle {
         int dialUsed = 0;
         int specialStrengthUsed = 0;
         int regularStrengthUsed = 0;
-        while ((spice - spiceUsed > 0 || !spiceNeededForStarred(faction)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
+        while ((spice - spiceUsed > 0 || !isSpiceNeededForStarred(faction)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
             dialUsed += 2;
-            if (spiceNeededForStarred(faction)) spiceUsed++;
+            if (isSpiceNeededForStarred(faction)) spiceUsed++;
             specialStrengthUsed++;
         }
         while ((spice - spiceUsed == 0 && !isFremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
@@ -251,9 +211,19 @@ public class Battle {
         }
         if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
-        if (!isFremen && spice > spiceUsed)
+        if (!isFremen && spice > spiceUsed && isBattlePlanSubmission)
             faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
-        return specialStrength - specialStrengthUsed + regularStrength - regularStrengthUsed;
+        return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
+    }
+
+    public int numForcesNotDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+        List<Force> forcesDialed = getForcesDialed(faction, wholeNumberDial, plusHalfDial, spice, true);
+        int regularForcesDialed = forcesDialed.get(0).getStrength();
+        int specialForcesDialed = forcesDialed.get(1).getStrength();
+        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
+        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
+        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        return specialStrength - specialForcesDialed + regularStrength - regularForcesDialed;
     }
 
     public int homeworldDialAdvantage(Game game, Territory territory, Faction faction) {
@@ -368,7 +338,7 @@ public class Battle {
             && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
                 || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen")))
             spiceForValidation += 2;
-        int troopsNotDialed = validateDial(faction, wholeNumberDial, plusHalfDial, spiceForValidation);
+        int troopsNotDialed = numForcesNotDialed(faction, wholeNumberDial, plusHalfDial, spiceForValidation);
 
         int ecazTroops = 0;
         if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))

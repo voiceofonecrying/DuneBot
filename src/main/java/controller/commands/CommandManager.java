@@ -1323,7 +1323,7 @@ public class CommandManager extends ListenerAdapter {
 
         if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
-        List<Force> forcesDialed = currentBattle.getForcesDialed(faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice());
+        List<Force> forcesDialed = currentBattle.getForcesDialed(faction, battlePlan.getWholeNumberDial(), battlePlan.getPlusHalfDial(), battlePlan.getSpice(), false);
         int regularForcesDialed = forcesDialed.get(0).getStrength();
         int specialForcesDialed = forcesDialed.get(1).getStrength();
         int regularForcesTotal = currentBattle.getForces().stream()
