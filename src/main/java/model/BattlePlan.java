@@ -16,7 +16,9 @@ public class BattlePlan {
     private final int wholeNumberDial;
     private final boolean plusHalfDial;
     private final int spice;
-    private final int troopsNotDialed;
+    private int regularDialed;
+    private int specialDialed;
+    private int troopsNotDialed;
     private final int ecazTroopsForAlly;
     private final List<LeaderSkillCard> leaderSkillsInFront;
     private boolean carthagStrongholdCard;
@@ -69,8 +71,26 @@ public class BattlePlan {
         return wholeNumberDial;
     }
 
-    public boolean getPlusHalfDial() {
-        return plusHalfDial;
+    public int getRegularDialed() {
+        return regularDialed;
+    }
+
+    public void setRegularDialed(int regularDialed) {
+        this.regularDialed = regularDialed;
+    }
+
+    public int getSpecialDialed() {
+        return specialDialed;
+    }
+
+    public void setSpecialDialed(int specialDialed) {
+        this.specialDialed = specialDialed;
+    }
+
+    public void setForcesDialed(int regularDialed, int specialDialed, int notDialed) {
+        this.regularDialed = regularDialed;
+        this.specialDialed = specialDialed;
+        this.troopsNotDialed = notDialed;
     }
 
     public int getNumForcesInReserve() {

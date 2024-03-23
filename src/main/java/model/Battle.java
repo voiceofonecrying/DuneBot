@@ -223,7 +223,26 @@ public class Battle {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        return specialStrength - specialForcesDialed + regularStrength - regularForcesDialed;
+        int forcesNotDialed = specialStrength - specialForcesDialed + regularStrength - regularForcesDialed;
+        if (specialForcesDialed > 0 && regularStrength - regularForcesDialed >= 2) {
+            List<DuneChoice> choices = new ArrayList<>();
+            int numStarsReplaced = 0;
+            int swappableSpecials = specialStrength;
+            if (faction instanceof IxFaction) swappableSpecials -= spice;
+            while (regularStrength - regularForcesDialed >= 2 * numStarsReplaced && swappableSpecials > 0) {
+                int altRegularDialed = regularForcesDialed + numStarsReplaced * 2;
+                int altSpecialDialed = specialForcesDialed - numStarsReplaced;
+                int altNotDialed = forcesNotDialed + numStarsReplaced;
+                String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed + "-" + altNotDialed;
+                String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
+                choices.add(new DuneChoice(id, label));
+                numStarsReplaced++;
+                if (altSpecialDialed == 0 || faction instanceof IxFaction && altSpecialDialed == specialStrength - spice)
+                    break;
+            }
+            faction.getChat().publish("How would you like to take troop losses?", choices);
+        }
+        return forcesNotDialed;
     }
 
     public int homeworldDialAdvantage(Game game, Territory territory, Faction faction) {
@@ -361,6 +380,9 @@ public class Battle {
         if (faction instanceof BGFaction)
             numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getName().equals("BG") && f.getStrength() > 0)).toList().size();
         BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, leaderSkillsInFront, hasCarthagStrongholdPower, homeworldDialAdvantage(game, territorySectors.get(0), faction), numStrongholdsOccupied, getNumForcesInReserve(game, faction));
+        List<Force> forcesDialed = getForcesDialed(faction, wholeNumberDial, plusHalfDial, spice, false);
+        battlePlan.setRegularDialed(forcesDialed.get(0).getStrength());
+        battlePlan.setSpecialDialed(forcesDialed.get(1).getStrength());
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {

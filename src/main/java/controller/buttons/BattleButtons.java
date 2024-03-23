@@ -20,6 +20,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("spicebanker-")) spiceBanker(event, discordGame, game);
         else if (event.getComponentId().startsWith("pullleader-")) pullLeader(event, discordGame, game);
         else if (event.getComponentId().startsWith("battlesapho-")) battleSapho(event, discordGame, game);
+        else if (event.getComponentId().startsWith("forcesdialed-")) forcesDialed(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -125,6 +126,23 @@ public class BattleButtons implements Pressable {
             discordGame.getModInfo().queueMessage(faction.getEmoji() + " will not play Juice of Sapho in " + territoryName + ".");
             plan.setJuiceOfSapho(false);
         }
+        discordGame.pushGame();
+    }
+
+    private static void forcesDialed(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        String factionName = event.getComponentId().split("-")[1];
+        int regularDialed = Integer.parseInt(event.getComponentId().split("-")[2]);
+        int specialDialed = Integer.parseInt(event.getComponentId().split("-")[3]);
+        int notDialed = Integer.parseInt(event.getComponentId().split("-")[4]);
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (battle.getAggressorName().equals(factionName))
+            battle.getAggressorBattlePlan().setForcesDialed(regularDialed, specialDialed, notDialed);
+        else if (battle.getDefenderName().equals(factionName))
+            battle.getDefenderBattlePlan().setForcesDialed(regularDialed, specialDialed, notDialed);
+        else
+            throw new InvalidGameStateException(factionName + " is not in the current battle.");
+        discordGame.queueMessage("Battle plan updated to dial " + regularDialed + " regular forces and " + specialDialed + " * forces.");
         discordGame.pushGame();
     }
 }
