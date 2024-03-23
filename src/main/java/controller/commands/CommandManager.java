@@ -1538,7 +1538,7 @@ public class CommandManager extends ListenerAdapter {
         return message;
     }
 
-    private static void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan) throws InvalidGameStateException, ChannelNotFoundException {
+    private static void printBattleResolution(DiscordGame discordGame, Game game, Battle currentBattle, BattlePlan aggressorPlan, BattlePlan defenderPlan, boolean publishToTurnSummary) throws InvalidGameStateException, ChannelNotFoundException {
         String wholeTerritoryName = currentBattle.getWholeTerritoryName();
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 currentBattle.getAggressorEmojis(game), currentBattle.getDefenderEmojis(game), wholeTerritoryName
@@ -1570,10 +1570,13 @@ public class CommandManager extends ListenerAdapter {
         resolution += factionBattleResults(game, currentBattle, false);
         resolution += checkAuditor(currentBattle.getAggressor(game), currentBattle.getDefender(game), currentBattle.getAggressorBattlePlan());
         resolution += checkAuditor(currentBattle.getDefender(game), currentBattle.getAggressor(game), currentBattle.getDefenderBattlePlan());
-        discordGame.getModInfo().queueMessage(resolution);
+        if (publishToTurnSummary)
+            discordGame.getTurnSummary().queueMessage(resolution);
+        else
+            discordGame.getModInfo().queueMessage(resolution);
     }
 
-    public static void reviewBattleResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+    public static void reviewBattleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException, ChannelNotFoundException {
         Battle currentBattle = game.getBattles().getCurrentBattle();
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
@@ -1612,7 +1615,7 @@ public class CommandManager extends ListenerAdapter {
                 aggressorPlan.revealOpponentBattlePlan(defenderPlan);
                 defenderPlan.revealOpponentBattlePlan(aggressorPlan);
             }
-            printBattleResolution(discordGame, game, currentBattle, aggressorPlan, defenderPlan);
+            printBattleResolution(discordGame, game, currentBattle, aggressorPlan, defenderPlan, publishToTurnSummary);
             if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
             else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
             if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();

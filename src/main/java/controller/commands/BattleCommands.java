@@ -30,6 +30,7 @@ public class BattleCommands {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
                 new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
+                new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader)
         ));
@@ -42,13 +43,18 @@ public class BattleCommands {
 
         switch (name) {
             case "review-resolution" -> reviewResolution(discordGame, game);
+            case "publish-resolution" -> publishResolution(discordGame, game);
             case "place-leader-in-territory" -> placeLeaderInTerritory(discordGame, game);
             case "remove-leader-from-territory" -> removeLeaderFromTerritory(discordGame, game);
         }
     }
 
     public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        CommandManager.reviewBattleResolution(discordGame, game);
+        CommandManager.reviewBattleResolution(discordGame, game, false);
+    }
+
+    public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        CommandManager.reviewBattleResolution(discordGame, game, true);
     }
 
     public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
