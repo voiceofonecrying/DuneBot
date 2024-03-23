@@ -127,8 +127,6 @@ public class PlayerCommands {
             returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
         }
         BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
-        discordGame.getModInfo().queueMessage(faction.getEmoji() + " battle plan for " + currentBattle.getWholeTerritoryName() + ":\n" + battlePlan.getPlanMessage(false));
-        discordGame.getFactionChat(faction).queueMessage("Your battle plan for " + currentBattle.getWholeTerritoryName() + " has been submitted:\n" + battlePlan.getPlanMessage(false));
         if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && currentBattle.getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
             List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
             if (strongholdNames.size() == 1) {

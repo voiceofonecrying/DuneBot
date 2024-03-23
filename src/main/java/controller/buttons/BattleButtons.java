@@ -136,13 +136,7 @@ public class BattleButtons implements Pressable {
         int specialDialed = Integer.parseInt(event.getComponentId().split("-")[3]);
         int notDialed = Integer.parseInt(event.getComponentId().split("-")[4]);
         Battle battle = game.getBattles().getCurrentBattle();
-        if (battle.getAggressorName().equals(factionName))
-            battle.getAggressorBattlePlan().setForcesDialed(regularDialed, specialDialed, notDialed);
-        else if (battle.getDefenderName().equals(factionName))
-            battle.getDefenderBattlePlan().setForcesDialed(regularDialed, specialDialed, notDialed);
-        else
-            throw new InvalidGameStateException(factionName + " is not in the current battle.");
-        discordGame.queueMessage("Battle plan updated to dial " + regularDialed + " regular forces and " + specialDialed + " * forces.");
+        discordGame.queueMessage(battle.updateTroopsDialed(factionName, regularDialed, specialDialed, notDialed));
         discordGame.pushGame();
     }
 }

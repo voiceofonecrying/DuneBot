@@ -37,6 +37,7 @@ class BattleTest {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        game.setModInfo(new TestTopic());
         ecaz = new EcazFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);
@@ -49,6 +50,8 @@ class BattleTest {
         game.addFaction(fremen);
         game.addFaction(harkonnen);
         game.addFaction(richese);
+        ecaz.setChat(new TestTopic());
+        emperor.setChat(new TestTopic());
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
@@ -508,6 +511,7 @@ class BattleTest {
         @BeforeEach
         void setUp() throws IOException {
             game = new Game();
+            game.setModInfo(new TestTopic());
             atreides = new AtreidesFaction("aPlayer", "aUser", game);
             bg = new BGFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
@@ -520,6 +524,11 @@ class BattleTest {
             game.addFaction(ecaz);
             game.addFaction(bt);
             game.addFaction(emperor);
+            atreides.setChat(new TestTopic());
+            bt.setChat(new TestTopic());
+            ecaz.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            harkonnen.setChat(new TestTopic());
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.setForceStrength("Harkonnen", 1);
             battle1 = new Battle("Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
@@ -555,8 +564,8 @@ class BattleTest {
             game.setModInfo(modInfo);
             battle1.setBattlePlan(game, harkonnen, harkonnen.getLeader("Feyd Rautha").orElseThrow(), null, false, 0, false, 0, null, null);
             battle1.checkJuiceOfSapho(game, harkonnen);
-            assertEquals(1, harkonnenChat.getMessages().size());
-            assertEquals("Do you want to play Juice of Sapho to be aggressor in the battle of Arrakeen?", harkonnenChat.getMessages().get(0));
+            assertEquals(3, harkonnenChat.getMessages().size());
+            assertEquals("Do you want to play Juice of Sapho to be aggressor in the battle of Arrakeen?", harkonnenChat.getMessages().get(2));
             assertEquals(1, harkonnenChat.getChoices().size());
             assertEquals(2, harkonnenChat.getChoices().get(0).size());
             assertEquals("battlesapho-yes", harkonnenChat.getChoices().get(0).get(0).getId());
@@ -575,7 +584,7 @@ class BattleTest {
             game.setModInfo(modInfo);
             battle1.setBattlePlan(game, harkonnen, harkonnen.getLeader("Feyd Rautha").orElseThrow(), null, false, 0, false, 0, null, null);
             battle1.checkJuiceOfSapho(game, harkonnen);
-            assertEquals(0, harkonnenChat.getMessages().size());
+            assertEquals(2, harkonnenChat.getMessages().size());
             assertEquals(0, harkonnenChat.getChoices().size());
         }
 
@@ -589,7 +598,7 @@ class BattleTest {
             game.setModInfo(modInfo);
             battle1.setBattlePlan(game, atreides, atreides.getLeader("Duncan Idaho").orElseThrow(), null, false, 0, false, 0, null, null);
             battle1.checkJuiceOfSapho(game, atreides);
-            assertEquals(0, atreidesChat.getMessages().size());
+            assertEquals(2, atreidesChat.getMessages().size());
             assertEquals(0, atreidesChat.getChoices().size());
         }
 
@@ -837,7 +846,7 @@ class BattleTest {
             TestTopic atreidesChat = new TestTopic();
             atreides.setChat(atreidesChat);
             assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true,5, null, null));
-            assertEquals(1, atreidesChat.messages.size());
+            assertEquals(3, atreidesChat.messages.size());
         }
 
         @Test
