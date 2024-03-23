@@ -179,7 +179,19 @@ public class Battle {
         else return !(faction instanceof FremenFaction);
     }
 
-    public List<Force> getForcesDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice, boolean isBattlePlanSubmission) throws InvalidGameStateException {
+    public static class ForcesDialed {
+        int regularForcesDialed;
+        int specialForcesDialed;
+        int spiceUsed;
+
+        ForcesDialed(int regularForcesDialed, int specialForcesDialed, int spiceUsed) {
+            this.regularForcesDialed = regularForcesDialed;
+            this.specialForcesDialed = specialForcesDialed;
+            this.spiceUsed = spiceUsed;
+        }
+    }
+
+    public ForcesDialed getForcesDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
         boolean isIx = faction instanceof IxFaction;
@@ -216,15 +228,12 @@ public class Battle {
             regularStrengthUsed += 2;
             spiceUsed++;
         }
-        if (!isFremen && spice > spiceUsed && isBattlePlanSubmission)
-            faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
-        return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
+        return new ForcesDialed(regularStrengthUsed, specialStrengthUsed, spiceUsed);
     }
 
-    public int numForcesNotDialed(Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        List<Force> forcesDialed = getForcesDialed(faction, wholeNumberDial, plusHalfDial, spice, true);
-        int regularForcesDialed = forcesDialed.get(0).getStrength();
-        int specialForcesDialed = forcesDialed.get(1).getStrength();
+    public int numForcesNotDialed(ForcesDialed forcesDialed, Faction faction, int spice) {
+        int regularForcesDialed = forcesDialed.regularForcesDialed;
+        int specialForcesDialed = forcesDialed.specialForcesDialed;
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
@@ -364,7 +373,11 @@ public class Battle {
             && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
                 || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen")))
             spiceForValidation += 2;
-        int troopsNotDialed = numForcesNotDialed(faction, wholeNumberDial, plusHalfDial, spiceForValidation);
+        ForcesDialed forcesDialed = getForcesDialed(faction, wholeNumberDial, plusHalfDial, spice);
+        int troopsNotDialed = numForcesNotDialed(forcesDialed, faction, spiceForValidation);
+        if (spice > forcesDialed.spiceUsed)
+            faction.getChat().publish("This dial can be supported with " + forcesDialed.spiceUsed + " " + Emojis.SPICE + ". Reducing from " + spice + ".");
+        spice = forcesDialed.spiceUsed;
 
         int ecazTroops = 0;
         if (hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
@@ -387,9 +400,8 @@ public class Battle {
         if (faction instanceof BGFaction)
             numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getName().equals("BG") && f.getStrength() > 0)).toList().size();
         BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, leaderSkillsInFront, hasCarthagStrongholdPower, homeworldDialAdvantage(game, territorySectors.get(0), faction), numStrongholdsOccupied, getNumForcesInReserve(game, faction));
-        List<Force> forcesDialed = getForcesDialed(faction, wholeNumberDial, plusHalfDial, spice, false);
-        battlePlan.setRegularDialed(forcesDialed.get(0).getStrength());
-        battlePlan.setSpecialDialed(forcesDialed.get(1).getStrength());
+        battlePlan.setRegularDialed(forcesDialed.regularForcesDialed);
+        battlePlan.setSpecialDialed(forcesDialed.specialForcesDialed);
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {

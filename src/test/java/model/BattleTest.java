@@ -73,7 +73,8 @@ class BattleTest {
             hms.addForce(cyborgs);
             hms.addForce(suboids);
             Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
-            assertEquals(1, battle.numForcesNotDialed(ix, 7, false, 4));
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(ix, 7, false, 4);
+            assertEquals(1, battle.numForcesNotDialed(forcesDialed, ix, 7));
         }
 
         @Test
@@ -85,8 +86,8 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3, "Richese");
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            assertDoesNotThrow(() -> battle.numForcesNotDialed(richese, 3, false, 3));
-            assertThrows(InvalidGameStateException.class, () -> battle.numForcesNotDialed(richese, 3, true, 3));
+            assertDoesNotThrow(() -> battle.getForcesDialed(richese, 3, false, 3));
+            assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(richese, 3, true, 3));
         }
     }
 
@@ -104,9 +105,9 @@ class BattleTest {
             hms.addForce(cyborgs);
             hms.addForce(suboids);
             Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
-            List<Force> ixForces = battle.getForcesDialed(ix, 7, false, 4, false);
-            assertEquals(3, ixForces.stream().filter(f -> f.getName().equals("Ix*")).findFirst().map(Force::getStrength).orElse(0));
-            assertEquals(2, ixForces.stream().filter(f -> f.getName().equals("Ix")).findFirst().map(Force::getStrength).orElse(0));
+            Battle.ForcesDialed ixForces = battle.getForcesDialed(ix, 7, false, 4);
+            assertEquals(3, ixForces.specialForcesDialed);
+            assertEquals(2, ixForces.regularForcesDialed);
         }
 
         @Test
@@ -118,8 +119,8 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3, "Richese");
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            List<Force> richeseForces = battle.getForcesDialed(richese, 3, false, 3, false);
-            assertEquals(3, richeseForces.stream().filter(f -> f.getName().equals("Richese")).findFirst().map(Force::getStrength).orElse(0));
+            Battle.ForcesDialed richeseForces = battle.getForcesDialed(richese, 3, false, 3);
+            assertEquals(3, richeseForces.regularForcesDialed);
         }
     }
 
