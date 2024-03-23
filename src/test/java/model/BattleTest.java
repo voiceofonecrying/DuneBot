@@ -912,6 +912,7 @@ class BattleTest {
             bt.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
+            emperor.setChat(new TestTopic());
             battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
             battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
             assertTrue(battle3.isAggressorWin(game));
@@ -927,6 +928,7 @@ class BattleTest {
             emperor.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
+            emperor.setChat(new TestTopic());
             battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
             battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
             assertFalse(battle3.isAggressorWin(game));

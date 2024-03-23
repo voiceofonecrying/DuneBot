@@ -211,6 +211,11 @@ public class Battle {
         }
         if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
+        while (faction instanceof EmperorFaction && spiceUsed < spice && specialStrengthUsed > 0 && regularStrength - regularStrengthUsed >= 2) {
+            specialStrengthUsed--;
+            regularStrengthUsed += 2;
+            spiceUsed++;
+        }
         if (!isFremen && spice > spiceUsed && isBattlePlanSubmission)
             faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE);
         return List.of(new Force(factionName, regularStrengthUsed, factionName), new Force(factionName + "*", specialStrengthUsed, factionName));
@@ -227,10 +232,12 @@ public class Battle {
         if (specialForcesDialed > 0 && regularStrength - regularForcesDialed >= 2) {
             List<DuneChoice> choices = new ArrayList<>();
             int numStarsReplaced = 0;
+            int swapRatio = 2;
+            if (faction instanceof EmperorFaction) swapRatio = 3;
             int swappableSpecials = specialStrength;
             if (faction instanceof IxFaction) swappableSpecials -= spice;
-            while (regularStrength - regularForcesDialed >= 2 * numStarsReplaced && swappableSpecials > 0) {
-                int altRegularDialed = regularForcesDialed + numStarsReplaced * 2;
+            while (regularStrength - regularForcesDialed >= swapRatio * numStarsReplaced && swappableSpecials > 0) {
+                int altRegularDialed = regularForcesDialed + numStarsReplaced * swapRatio;
                 int altSpecialDialed = specialForcesDialed - numStarsReplaced;
                 int altNotDialed = forcesNotDialed + numStarsReplaced;
                 String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed + "-" + altNotDialed;
