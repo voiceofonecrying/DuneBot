@@ -18,6 +18,7 @@ public class Battle {
     private boolean fedaykinKaramad;
     private boolean sardaukarKaramad;
     private boolean cyborgsKaramad;
+    private boolean fremenMustPay;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
         this.wholeTerritoryName = wholeTerritoryName;
@@ -31,6 +32,7 @@ public class Battle {
         this.fedaykinKaramad = false;
         this.sardaukarKaramad = false;
         this.cyborgsKaramad = false;
+        this.fremenMustPay = false;
     }
 
     public String getWholeTerritoryName() {
@@ -179,10 +181,10 @@ public class Battle {
         return message.toString().trim();
     }
 
-    private boolean isSpiceNeededForStarred(Game game, Faction faction) {
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
+    private boolean isSpiceNeeded(Game game, Faction faction, boolean starred) {
+        if (starred && game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
             return false;
-        else return !(faction instanceof FremenFaction);
+        else return !(faction instanceof FremenFaction) || fremenMustPay;
     }
 
     public static class ForcesDialed {
@@ -212,20 +214,16 @@ public class Battle {
         int specialStrengthUsed = 0;
         int regularStrengthUsed = 0;
         if (specialsKaramad) {
-            while (!isIx && (spice - spiceUsed > 0 || isFremen) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
+            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
                 dialUsed++;
-                if (!isFremen) spiceUsed++;
+                if (isSpiceNeeded(game, faction, false)) spiceUsed++;
                 regularStrengthUsed++;
             }
-            if (isEmperor)
-                System.out.println("Before " + specialStrengthUsed + " " + regularStrengthUsed + " " + spiceUsed);
-            while ((spice - spiceUsed > 0 || !isSpiceNeededForStarred(game, faction)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
                 dialUsed++;
-                if (isSpiceNeededForStarred(game, faction)) spiceUsed++;
+                if (isSpiceNeeded(game, faction, true)) spiceUsed++;
                 specialStrengthUsed++;
             }
-            if (isEmperor)
-                System.out.println("Middle " + specialStrengthUsed + " " + regularStrengthUsed + " " + spiceUsed);
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
                 int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
                 if (isIx)
@@ -236,21 +234,19 @@ public class Battle {
                     specialStrengthUsed += troopsNeeded;
                 }
             }
-            if (isEmperor)
-                System.out.println("After " + specialStrengthUsed + " " + regularStrengthUsed + " " + spiceUsed);
         } else {
-            while ((spice - spiceUsed > 0 || !isSpiceNeededForStarred(game, faction)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
+            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
                 dialUsed += 2;
-                if (isSpiceNeededForStarred(game, faction)) spiceUsed++;
+                if (isSpiceNeeded(game, faction, true)) spiceUsed++;
                 specialStrengthUsed++;
             }
-            while ((spice - spiceUsed == 0 && !isFremen) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+            while ((spice - spiceUsed == 0 && isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
                 dialUsed++;
                 specialStrengthUsed++;
             }
-            while (!isIx && (spice - spiceUsed > 0 || isFremen) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
+            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
                 dialUsed++;
-                if (!isFremen) spiceUsed++;
+                if (isSpiceNeeded(game, faction, false)) spiceUsed++;
                 regularStrengthUsed++;
             }
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
@@ -344,18 +340,19 @@ public class Battle {
         }
     }
 
-    public void karamaSpecialForces(Game game, String targetFactionName) throws InvalidGameStateException {
+    public void karamaSpecialForces(Faction targetFaction) throws InvalidGameStateException {
+        String targetFactionName = targetFaction.getName();
         boolean aggressorKaramad = targetFactionName.equals(getAggressorName());
         boolean defenderKaramad = targetFactionName.equals(getDefenderName());
-        if (aggressorKaramad && defenderKaramad) {
+        if (!aggressorKaramad && !defenderKaramad)
             throw new InvalidGameStateException(targetFactionName + " is not in the current battle.");
-        }
 
-        switch (targetFactionName) {
-            case "Fremen" -> fedaykinKaramad = true;
-            case "Emperor" -> sardaukarKaramad = true;
-            case "Ix" -> cyborgsKaramad = true;
-        }
+        if (targetFaction instanceof FremenFaction)
+            fedaykinKaramad = true;
+        else if (targetFaction instanceof EmperorFaction)
+            sardaukarKaramad = true;
+        else if (targetFaction instanceof IxFaction)
+            cyborgsKaramad = true;
 
         boolean battlePlanRemoved = false;
         if (aggressorKaramad && aggressorBattlePlan != null) {
@@ -365,9 +362,33 @@ public class Battle {
             defenderBattlePlan = null;
             battlePlanRemoved = true;
         }
+        String message = "Your " + Emojis.getForceEmoji(targetFactionName + "*") + " advantage has been negated by Karama.";
         if (battlePlanRemoved)
-            game.getFaction(targetFactionName).getChat()
-                    .publish("Your " + Emojis.getForceEmoji(targetFactionName + "*") + " advantage has been negated by Karama.\nYou must submit a new battle plan.");
+            message += "\nYou must submit a new battle plan.";
+        targetFaction.getChat().publish(message + " " + targetFaction.getPlayer());
+    }
+
+    public void karamaFremenMustPay(Game game) throws InvalidGameStateException {
+        boolean aggressorKaramad = getAggressor(game) instanceof FremenFaction;
+        boolean defenderKaramad = getDefender(game) instanceof FremenFaction;
+        if (!aggressorKaramad && !defenderKaramad)
+            throw new InvalidGameStateException(Emojis.FREMEN + " is not in the current battle.");
+
+        fremenMustPay = true;
+
+        boolean battlePlanRemoved = false;
+        if (aggressorKaramad && aggressorBattlePlan != null) {
+            aggressorBattlePlan = null;
+            battlePlanRemoved = true;
+        } else if (defenderKaramad && defenderBattlePlan != null) {
+            defenderBattlePlan = null;
+            battlePlanRemoved = true;
+        }
+        Faction fremen = game.getFaction("Fremen");
+        String message = "Your free dial advantage has been negated by Karama.";
+        if (battlePlanRemoved)
+            message += "\nYou must submit a new battle plan.";
+        fremen.getChat().publish(message + " " + fremen.getPlayer());
     }
 
     public String getForcesRemainingString(String factionName, int regularDialed, int specialDialed) {

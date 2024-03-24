@@ -59,6 +59,8 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData karamaFaction = new OptionData(OptionType.STRING, "karama-faction", "The faction playing Karama", true)
             .setAutoComplete(true);
+    public static final OptionData starredForcesFaction = new OptionData(OptionType.STRING, "starred-forces-faction", "The faction whose starred forces will be negated", true)
+            .setAutoComplete(true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
@@ -234,6 +236,7 @@ public class CommandOptions {
         switch (optionName) {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" ->
                     choices = factions(game, searchValue);
+            case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
             case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
@@ -266,6 +269,15 @@ public class CommandOptions {
 
     private static List<Command.Choice> factions(@NotNull Game game, String searchValue) {
         return game.getFactions().stream()
+                .map(Faction::getName)
+                .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(factionName -> new Command.Choice(factionName, factionName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> starredForcesFactions(@NotNull Game game, String searchValue) {
+        return game.getFactions().stream()
+                .filter(f -> f instanceof EmperorFaction || f instanceof FremenFaction || f instanceof IxFaction)
                 .map(Faction::getName)
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(factionName -> new Command.Choice(factionName, factionName))

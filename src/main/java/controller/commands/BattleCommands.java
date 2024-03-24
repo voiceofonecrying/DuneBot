@@ -33,7 +33,8 @@ public class BattleCommands {
                 new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader),
-                new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(faction)
+                new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(starredForcesFaction),
+                new SubcommandData("karama-fremen-must-pay-spice", "Require Fremen to pay spice for full force value in the current battle.")
         ));
         return commandData;
     }
@@ -48,6 +49,7 @@ public class BattleCommands {
             case "place-leader-in-territory" -> placeLeaderInTerritory(discordGame, game);
             case "remove-leader-from-territory" -> removeLeaderFromTerritory(discordGame, game);
             case "karama-starred-forces" -> karamaStarredForces(discordGame, game);
+            case "karama-fremen-must-pay-spice" -> karamaFremenMustPay(discordGame, game);
         }
     }
 
@@ -77,8 +79,13 @@ public class BattleCommands {
     }
 
     public static void karamaStarredForces(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
-        game.getBattles().getCurrentBattle().karamaSpecialForces(game, targetFaction.getName());
+        Faction targetFaction = game.getFaction(discordGame.required(starredForcesFaction).getAsString());
+        game.getBattles().getCurrentBattle().karamaSpecialForces(targetFaction);
+        discordGame.pushGame();
+    }
+
+    public static void karamaFremenMustPay(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        game.getBattles().getCurrentBattle().karamaFremenMustPay(game);
         discordGame.pushGame();
     }
 
