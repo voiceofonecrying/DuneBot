@@ -1811,36 +1811,36 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    public String waitingListItemResult(String itemEmoji, String choice) {
+        return switch (choice) {
+            case "Yes" -> itemEmoji + " :white_check_mark:";
+            case "Maybe" -> itemEmoji + " :ok:";
+            default -> itemEmoji + " :no_entry_sign:";
+        };
+    }
+
     public void waitingList(SlashCommandInteractionEvent event) {
         String userTag = event.getUser().getId();
         TextChannel textChannel = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).get(0);
-        String message = "";
-        message += "Speed: :scooter: ";
-        if (DiscordGame.required(slowGame, event).getAsBoolean()) message += ":white_check_mark: -- :blue_car: ";
-        else message += ":no_entry_sign: -- :blue_car: ";
-        if (DiscordGame.required(midGame, event).getAsBoolean()) message += ":white_check_mark: -- :race_car: ";
-        else message += ":no_entry_sign: -- :race_car: ";
-        if (DiscordGame.required(fastGame, event).getAsBoolean())
-            message += ":white_check_mark:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
-        else message += ":no_entry_sign:\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514> ";
-        if (DiscordGame.required(ixianstleilaxuExpansion, event).getAsBoolean())
-            message += ":white_check_mark: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
-        else message += ":no_entry_sign: -- <:choam:991763324624703538> <:rich:991763318467465337> ";
-        if (DiscordGame.required(choamricheseExpansion, event).getAsBoolean())
-            message += ":white_check_mark: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
-        else message += ":no_entry_sign: -- <:ecaz:1142126129105346590> <:moritani:1142126199775182879> ";
-        if (DiscordGame.required(ecazmoritaniExpansion, event).getAsBoolean())
-            message += ":white_check_mark:\nOptions: <:weirding:991763071775297681> ";
-        else message += ":no_entry_sign:\nOptions: <:weirding:991763071775297681> ";
-        if (DiscordGame.required(leaderSkills, event).getAsBoolean())
-            message += ":white_check_mark: -- :european_castle: ";
-        else message += ":no_entry_sign: -- :european_castle: ";
-        if (DiscordGame.required(strongholdCards, event).getAsBoolean())
-            message += ":white_check_mark: -- :ringed_planet: ";
-        else message += ":no_entry_sign: -- :ringed_planet: ";
-        if (DiscordGame.required(homeworlds, event).getAsBoolean()) message += ":white_check_mark:\nUser: ";
-        else message += ":no_entry_sign:\nUser: ";
-        message += "<@" + userTag + ">";
+        String message = "Speed: ";
+        message += waitingListItemResult(":scooter:", DiscordGame.required(slowGame, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult(":blue_car:", DiscordGame.required(midGame, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult(":race_car:", DiscordGame.required(fastGame, event).getAsString());
+        message += "\nExpansions: ";
+        message += waitingListItemResult("<:bt:991763325576810546> <:ix:991763319406997514>", DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult("<:choam:991763324624703538> <:rich:991763318467465337>", DiscordGame.required(choamricheseExpansion, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult("<:ecaz:1142126129105346590> <:moritani:1142126199775182879>", DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
+        message += "\nOptions: ";
+        message += waitingListItemResult(Emojis.WEIRDING, DiscordGame.required(leaderSkills, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult(":european_castle:", DiscordGame.required(strongholdCards, event).getAsString());
+        message += " -- ";
+        message += waitingListItemResult(":ringed_planet:", DiscordGame.required(homeworlds, event).getAsString());
+        message += "\nUser: <@" + userTag + ">";
         textChannel.sendMessage(message).queue();
         // textChannel.sendMessage("Speed: :turtle: " + event.getOption(slowGame.getName()).getAsBoolean() + " :racehorse: " + event.getOption(midGame.getName()).getAsBoolean() + " :race_car: " + event.getOption(fastGame.getName()).getAsBoolean() + "\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514>  " + event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean() + " <:choam:991763324624703538> <:rich:991763318467465337> " + event.getOption(choamricheseExpansion.getName()).getAsBoolean() + " :ecaz: :moritani: " + event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean() + "\nOptions: Leader Skills " + event.getOption(leaderSkills.getName()).getAsBoolean() + " Stronghold Cards " + event.getOption(strongholdCards.getName()).getAsBoolean() + "\nUser: <@" + userTag + ">").queue();
     }

@@ -181,32 +181,21 @@ public class CommandOptions {
                     .addChoice("Double", "DOUBLE")
                     .addChoice("Cancel", "CANCEL");
 
-    public static final OptionData slowGame =
-            new OptionData(OptionType.BOOLEAN, "slow-game", "Set to true if you are okay with playing a slow speed game", true);
-
-    public static final OptionData midGame =
-            new OptionData(OptionType.BOOLEAN, "mid-game", "Set to true if you are okay with playing a normal speed game", true);
-
-    public static final OptionData fastGame =
-            new OptionData(OptionType.BOOLEAN, "fast-game", "Set to true if you are okay with playing a fast speed game", true);
-
-    public static final OptionData ixianstleilaxuExpansion =
-            new OptionData(OptionType.BOOLEAN, "ix-bt", "Set to true if you are okay with playing with the Ixians & Tleilaxu expansion content", true);
-
-    public static final OptionData choamricheseExpansion =
-            new OptionData(OptionType.BOOLEAN, "choam-rich", "Set to true if you are okay with playing with the Choam & Richese expansion content", true);
-
-    public static final OptionData ecazmoritaniExpansion =
-            new OptionData(OptionType.BOOLEAN, "ecaz-moritani", "Set to true if you are okay with playing with the Ecaz & Moritani expansion content", true);
-
-    public static final OptionData leaderSkills =
-            new OptionData(OptionType.BOOLEAN, "leader-skills", "Set to true if you are okay with playing with leader skills", true);
-
-    public static final OptionData strongholdCards =
-            new OptionData(OptionType.BOOLEAN, "stronghold-cards", "Set to true if you are okay with playing with stronghold cards", true);
-
-    public static final OptionData homeworlds =
-            new OptionData(OptionType.BOOLEAN, "homeworlds", "Set to true if you are okay with playing with homeworlds", true);
+    private static OptionData waitingListOptionData(String name, String description) {
+        return new OptionData(OptionType.STRING, name, description, true)
+                .addChoice("Either way is okay", "Maybe")
+                .addChoice("Strongly want", "Yes")
+                .addChoice("Don't want", "No");
+    }
+    public static final OptionData slowGame = waitingListOptionData("slow-game", "Do you want to play a slow speed game?");
+    public static final OptionData midGame = waitingListOptionData("mid-game", "Do you want to play a normal speed game?");
+    public static final OptionData fastGame = waitingListOptionData("fast-game", "Do you want to play a fast speed game?");
+    public static final OptionData ixianstleilaxuExpansion = waitingListOptionData("ix-bt", "Do you want to with the Ixians & Tleilaxu expansion content?");
+    public static final OptionData choamricheseExpansion = waitingListOptionData("choam-rich", "Do you want to play with the Choam & Richese expansion content?");
+    public static final OptionData ecazmoritaniExpansion = waitingListOptionData("ecaz-moritani", "Do you want to play with the Ecaz & Moritani expansion content?");
+    public static final OptionData leaderSkills = waitingListOptionData("leader-skills", "Do you want to play with leader skills?");
+    public static final OptionData strongholdCards = waitingListOptionData("stronghold-cards", "Do you want to play with stronghold cards?");
+    public static final OptionData homeworlds = waitingListOptionData("homeworlds", "Do you want to play with homeworlds?");
 
     public static final OptionData gameState =
             new OptionData(OptionType.STRING, "game-state", "Select a game state to rewind to.", true)
