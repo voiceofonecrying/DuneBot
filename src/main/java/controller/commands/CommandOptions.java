@@ -184,7 +184,7 @@ public class CommandOptions {
     private static OptionData waitingListOptionData(String name, String description) {
         return new OptionData(OptionType.STRING, name, description, true)
                 .addChoice("Either way is okay", "Maybe")
-                .addChoice("Strongly want", "Yes")
+                .addChoice("Preferred", "Yes")
                 .addChoice("Don't want", "No");
     }
     public static final OptionData slowGame = waitingListOptionData("slow-game", "Do you want to play a slow speed game?");
