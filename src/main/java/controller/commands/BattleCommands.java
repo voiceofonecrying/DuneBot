@@ -32,7 +32,8 @@ public class BattleCommands {
                 new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
                 new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
-                new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader)
+                new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader),
+                new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(faction)
         ));
         return commandData;
     }
@@ -46,6 +47,7 @@ public class BattleCommands {
             case "publish-resolution" -> publishResolution(discordGame, game);
             case "place-leader-in-territory" -> placeLeaderInTerritory(discordGame, game);
             case "remove-leader-from-territory" -> removeLeaderFromTerritory(discordGame, game);
+            case "karama-starred-forces" -> karamaStarredForces(discordGame, game);
         }
     }
 
@@ -71,6 +73,12 @@ public class BattleCommands {
         String leaderName = discordGame.required(removeLeader).getAsString();
         targetFaction.getLeader(leaderName).orElseThrow().setBattleTerritoryName(null);
         targetFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        discordGame.pushGame();
+    }
+
+    public static void karamaStarredForces(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
+        game.getBattles().getCurrentBattle().karamaSpecialForces(game, targetFaction.getName());
         discordGame.pushGame();
     }
 

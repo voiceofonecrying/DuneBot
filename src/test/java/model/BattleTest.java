@@ -76,8 +76,53 @@ class BattleTest {
             hms.addForce(cyborgs);
             hms.addForce(suboids);
             Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(ix, 7, false, 4);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 7, false, 4);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, ix, 7));
+        }
+
+        @Test
+        void testKaramadSardaukar() throws InvalidGameStateException {
+            Force empRegulars = new Force("Emperor", 1, "Emperor");
+            Force sardaukar = new Force("Emperor*", 3, "Emperor");
+            carthag.addForce(empRegulars);
+            carthag.addForce(sardaukar);
+            Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen), List.of(empRegulars, sardaukar), null);
+            battle.karamaSpecialForces(game, "Emperor");
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
+            assertEquals(1, forcesDialed.regularForcesDialed);
+            assertEquals(2, forcesDialed.specialForcesDialed);
+            assertEquals(1, battle.numForcesNotDialed(forcesDialed, emperor, 1));
+        }
+
+        @Test
+        void testKaramadFedaykin() throws InvalidGameStateException {
+            Force fremRegulars = new Force("Fremen", 1, "Fremen");
+            Force fedaykin = new Force("Fremen*", 3, "Fremen");
+            carthag.addForce(fremRegulars);
+            carthag.addForce(fedaykin);
+            Battle battle = new Battle("Carthag", List.of(carthag), List.of(fremen, harkonnen), List.of(fremRegulars, fedaykin), null);
+            battle.karamaSpecialForces(game, "Fremen");
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0);
+            assertEquals(1, forcesDialed.regularForcesDialed);
+            assertEquals(2, forcesDialed.specialForcesDialed);
+            assertEquals(1, battle.numForcesNotDialed(forcesDialed, fremen, 0));
+        }
+
+        @Test
+        void testKaramadCyborgs() throws InvalidGameStateException, IOException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            Force suboids = new Force("Ix", 2, "Ix");
+            Force cyborgs = new Force("Ix*", 3, "Ix");
+            carthag.addForce(suboids);
+            carthag.addForce(cyborgs);
+            Battle battle = new Battle("Carthag", List.of(carthag), List.of(ix, harkonnen), List.of(suboids, cyborgs), null);
+            battle.karamaSpecialForces(game, "Ix");
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 2, false, 1);
+            assertEquals(2, forcesDialed.regularForcesDialed);
+            assertEquals(1, forcesDialed.specialForcesDialed);
+            assertEquals(2, battle.numForcesNotDialed(forcesDialed, ix, 1));
         }
 
         @Test
@@ -89,8 +134,8 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3, "Richese");
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            assertDoesNotThrow(() -> battle.getForcesDialed(richese, 3, false, 3));
-            assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(richese, 3, true, 3));
+            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 3, false, 3));
+            assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(game, richese, 3, true, 3));
         }
     }
 
@@ -108,7 +153,7 @@ class BattleTest {
             hms.addForce(cyborgs);
             hms.addForce(suboids);
             Battle battle = new Battle("Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), List.of(cyborgs, suboids), null);
-            Battle.ForcesDialed ixForces = battle.getForcesDialed(ix, 7, false, 4);
+            Battle.ForcesDialed ixForces = battle.getForcesDialed(game, ix, 7, false, 4);
             assertEquals(3, ixForces.specialForcesDialed);
             assertEquals(2, ixForces.regularForcesDialed);
         }
@@ -122,7 +167,7 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3, "Richese");
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            Battle.ForcesDialed richeseForces = battle.getForcesDialed(richese, 3, false, 3);
+            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 3, false, 3);
             assertEquals(3, richeseForces.regularForcesDialed);
         }
     }
