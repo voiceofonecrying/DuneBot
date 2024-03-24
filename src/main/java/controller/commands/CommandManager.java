@@ -1835,7 +1835,7 @@ public class CommandManager extends ListenerAdapter {
         message += " -- ";
         message += waitingListItemResult("<:ecaz:1142126129105346590> <:moritani:1142126199775182879>", DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
         message += "\nOptions: ";
-        message += waitingListItemResult(Emojis.WEIRDING, DiscordGame.required(leaderSkills, event).getAsString());
+        message += waitingListItemResult("<:weirding:991763071775297681>", DiscordGame.required(leaderSkills, event).getAsString());
         message += " -- ";
         message += waitingListItemResult(":european_castle:", DiscordGame.required(strongholdCards, event).getAsString());
         message += " -- ";
