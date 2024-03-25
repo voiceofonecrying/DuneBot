@@ -14,8 +14,6 @@ import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -29,7 +27,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.utils.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -511,9 +508,9 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            }  else if (name.equals("num-games-per-player")) {
-                    String result = numGamesPerPlayer(event);
-                    event.getHook().editOriginal(result).queue();
+            } else if (name.equals("stats")) {
+                String result = StatsCommands.runCommand(event);
+                event.getHook().editOriginal(result).queue();
             } else if (name.equals("random-dune-quote")) {
                 randomDuneQuote(event);
             } else {
@@ -701,7 +698,6 @@ public class CommandManager extends ListenerAdapter {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
-        commandData.add(Commands.slash("num-games-per-player", "Report on how many games players are in.").addOptions(months));
         commandData.add(Commands.slash("draw-treachery-card", "Draw a card from the top of a deck.").addOptions(faction));
         commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
@@ -754,6 +750,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(AtreidesCommands.getCommands());
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
+        commandData.addAll(StatsCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
@@ -884,14 +881,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.sendAllMessages();
     }
 
-    private static class PlayerGame {
-        String player;
-        List<String> games;
-        int numGames;
-        boolean onWaitingList;
-        boolean recentlyFinished;
-    }
-
     public static List<String> findPlayerTags(String message) {
         List<String> players = new ArrayList<>();
         int startChar = message.indexOf("<@");
@@ -904,142 +893,6 @@ public class CommandManager extends ListenerAdapter {
             startChar = message.indexOf("<@");
         }
         return players;
-    }
-
-    private void addWaitingListPlayers(HashMap<String, List<String>> playerGamesMap, Category category) {
-        Optional<TextChannel> optChannel = category.getTextChannels().stream()
-                .filter(c -> c.getName().equalsIgnoreCase("waiting-list"))
-                .findFirst();
-        if (optChannel.isPresent()) {
-            TextChannel waitingList = optChannel.get();
-            MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
-            List<Message> messages = messageHistory.getRetrievedHistory();
-            for (Message m : messages) {
-                int startChar = m.getContentRaw().indexOf("User:");
-                if (startChar == -1) continue;
-                for (String player : findPlayerTags(m.getContentRaw().substring(startChar))) {
-                    List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
-                    if (games.isEmpty()) {
-                        games.add("waiting-list");
-                    }
-                }
-            }
-        }
-    }
-
-    private void addRecentlyFinishedPlayers(HashMap<String, List<String>> playerGamesMap, Category category, int monthsAgo) {
-        Optional<TextChannel> optChannel = category.getTextChannels().stream()
-                .filter(c -> c.getName().equalsIgnoreCase("game-results"))
-                .findFirst();
-        if (optChannel.isPresent()) {
-            Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-            c.add(Calendar.MONTH, -1 * monthsAgo);
-            long timestamp = c.getTimeInMillis();
-            String discordTimestamp = Long.toUnsignedString(TimeUtil.getDiscordTimestamp(timestamp));
-            TextChannel gameResults = optChannel.get();
-            MessageHistory messageHistory = MessageHistory.getHistoryAfter(gameResults, discordTimestamp).complete();
-            List<Message> messages = messageHistory.getRetrievedHistory();
-            for (Message m : messages) {
-                for (String player : findPlayerTags(m.getContentRaw())) {
-                    List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
-                    if (games.isEmpty()) {
-                        games.add("recently-finished");
-                    }
-                }
-            }
-        }
-    }
-
-    private void addGamePlayers(HashMap<String, List<String>> playerGamesMap, Category category, String categoryName) {
-        try {
-            DiscordGame discordGame = new DiscordGame(category, false);
-            for (Faction faction : discordGame.getGame().getFactions()) {
-                String player = faction.getPlayer();
-                List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
-                games.add(categoryName);
-            }
-        } catch (Exception e) {
-            System.out.println(category.getName() + " is not a Dune game.");
-            // category is not a Dune game
-        }
-    }
-
-    private String playerMessage(PlayerGame playerGame) {
-        StringBuilder message = new StringBuilder("    " + playerGame.numGames + " - " + playerGame.player);
-        if (playerGame.numGames != 0) message.append(" (");
-        String comma = "";
-        for (String categoryName : playerGame.games) {
-            String printName = categoryName.substring(0, Math.min(6, categoryName.length()));
-            if (categoryName.startsWith("D") || categoryName.startsWith("PBD")) {
-                try {
-                    printName = "D" + new Scanner(categoryName).useDelimiter("\\D+").nextInt();
-                } catch (Exception e) {
-                    // category does not follow Dune: Play by Discord game naming and numbering patterns
-                }
-            }
-            message.append(comma).append(printName);
-            comma = ", ";
-        }
-        if (playerGame.numGames != 0) message.append(")");
-        message.append("\n");
-        return message.toString();
-    }
-
-    private String playerGamesMessage(List<PlayerGame> playerGames, String header) {
-        StringBuilder message = new StringBuilder();
-        if (!playerGames.isEmpty()) {
-            Comparator<PlayerGame> numGamesComparator = Comparator.comparingInt(playerGame -> playerGame.numGames);
-            playerGames.sort(numGamesComparator);
-            message.append(header);
-            for (PlayerGame playerGame : playerGames) {
-                message.append(playerMessage(playerGame));
-            }
-        }
-        return message.toString();
-    }
-
-    private String numGamesPerPlayer(SlashCommandInteractionEvent event) {
-        String message = "**Number of games players are in**\n";
-        HashMap<String, List<String>> playerGamesMap = new HashMap<>();
-        OptionMapping optionMapping = event.getOption(months.getName());
-        int monthsAgo = (optionMapping != null ? optionMapping.getAsInt() : 1);
-        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
-        for (Category category : categories) {
-            String categoryName = category.getName();
-            if (categoryName.equalsIgnoreCase("staging area")) {
-                addWaitingListPlayers(playerGamesMap, category);
-            } else if (categoryName.equalsIgnoreCase("dune statistics")) {
-                addRecentlyFinishedPlayers(playerGamesMap, category, monthsAgo);
-            } else {
-                addGamePlayers(playerGamesMap, category, categoryName);
-            }
-        }
-        List<PlayerGame> waitingPlayerGames = new ArrayList<>();
-        List<PlayerGame> finishedPlayerGames = new ArrayList<>();
-        List<PlayerGame> activePlayerGames = new ArrayList<>();
-        for (Map.Entry<String, List<String>> entry : playerGamesMap.entrySet()) {
-            PlayerGame pg = new PlayerGame();
-            pg.player = entry.getKey();
-            pg.games = entry.getValue();
-            if (pg.games.get(0).equals("waiting-list")) {
-                pg.games.remove(0);
-                pg.onWaitingList = true;
-            } else if (pg.games.get(0).equals("recently-finished")) {
-                pg.games.remove(0);
-                if (pg.games.isEmpty()) {
-                    pg.recentlyFinished = true;
-                }
-            }
-            pg.numGames = pg.games.size();
-            if (pg.onWaitingList) waitingPlayerGames.add(pg);
-            else if (pg.recentlyFinished) finishedPlayerGames.add(pg);
-            else activePlayerGames.add(pg);
-        }
-        message += playerGamesMessage(waitingPlayerGames, "On waiting list:\n");
-        message += playerGamesMessage(finishedPlayerGames,
-                "Finished in last " + monthsAgo + " month" + (monthsAgo == 1 ? "" : "s") + ", not in a game:\n");
-        message += playerGamesMessage(activePlayerGames, "Currently playing:\n");
-        return message;
     }
 
     /**
