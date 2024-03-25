@@ -2,6 +2,7 @@ package controller.commands;
 
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import model.Bidding;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
@@ -202,6 +203,21 @@ public class StatsCommands {
         return message;
     }
 
+    private static String phaseName(int phase) {
+        return switch (phase) {
+            case 1 -> "Storm";
+            case 2 -> "Spice Blow";
+            case 3 -> "CHOAM Charity";
+            case 4 -> "Bidding";
+            case 5 -> "Revival";
+            case 6 -> "Shipment and Movement";
+            case 7 -> "Battle";
+            case 8 -> "Spice Collection";
+            case 9 -> "Mentat Pause";
+            default -> "Phase not identified";
+        };
+    }
+
     public static String activeGames(SlashCommandInteractionEvent event) {
         StringBuilder response = new StringBuilder();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
@@ -210,7 +226,14 @@ public class StatsCommands {
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
-                response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", Phase ").append(game.getPhase()).append(", Subphase ").append(game.getSubPhase()).append("\n");
+                response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
+                response.append(phaseName(game.getPhaseForTracker()));
+                int phase = game.getPhaseForTracker();
+                if (phase == 4) {
+                    Bidding bidding = game.getBidding();
+                    response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
+                }
+                response.append("\n");
                 for (Faction f : game.getFactions()) {
                     response.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
                 }
