@@ -28,6 +28,7 @@ import static model.Initializers.getJSONString;
 
 public class Game {
     private String gameRole;
+    private int phaseForTracker;
     private int turn;
     private int phase;
     private int subPhase;
@@ -85,6 +86,7 @@ public class Game {
         this.turn = 0;
         this.phase = 0;
         this.subPhase = 0;
+        this.phaseForTracker = 0;
         this.bidding = null;
         turnOrder = new LinkedList<>();
         factions = new LinkedList<>();
@@ -170,6 +172,7 @@ public class Game {
 
     public void startBidding() {
         bidding = new Bidding();
+        setUpdated(UpdateType.MAP);
         try {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");
             if (!faction.getTreacheryCardCache().isEmpty()) bidding.setRicheseCacheCardOutstanding(true);
@@ -411,6 +414,11 @@ public class Game {
         return phase;
     }
 
+    public int getPhaseForTracker() {
+        if (phaseForTracker == 0) return phase;
+        return phaseForTracker;
+    }
+
     public void setPhase(int phase) {
         this.phase = phase;
     }
@@ -475,10 +483,13 @@ public class Game {
     public void advanceTurn() {
         turn++;
         phase = 1;
+        phaseForTracker = 1;
         subPhase = 1;
+        setUpdated(UpdateType.MAP);
     }
 
     public void advancePhase() {
+        phaseForTracker = phase;
         phase++;
         subPhase = 1;
 
@@ -488,6 +499,7 @@ public class Game {
     }
 
     public void advanceSubPhase() {
+        phaseForTracker = phase;
         subPhase++;
     }
 

@@ -431,7 +431,7 @@ public class ShowCommands {
         board = overlay(board, turnMarker, coordinates, 1);
         BufferedImage phaseMarker = getResourceImage("Phase Marker");
         phaseMarker = resize(phaseMarker, 50, 50);
-        coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhase()));
+        coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhaseForTracker()));
         board = overlay(board, phaseMarker, coordinates, 1);
 
         //Place Tech Tokens
@@ -979,6 +979,11 @@ public class ShowCommands {
         }
         if (game.getUpdateTypes().contains(UpdateType.MAP)) {
             frontOfShieldModified = true;
+        }
+
+        if (game.getUpdateTypes().contains(UpdateType.MAP_ALSO_IN_TURN_SUMMARY)) {
+            frontOfShieldModified = true;
+            discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
         }
 
         if (frontOfShieldModified) {

@@ -131,12 +131,15 @@ public class RunCommands {
             game.advanceSubPhase();
         } else if (phase == 5 && subPhase == 2) {
             startRevivalPhase(discordGame, game);
+            game.advanceSubPhase();
+        } else if (phase == 5 && subPhase == 3) {
+            discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement.");
             game.advancePhase();
         } else if (phase == 6) {
             startShipmentPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 7) {
-            startBattlePhase(discordGame, game);
+            startBattlePhase(game);
             game.advancePhase();
         } else if (phase == 8) {
             startSpiceHarvest(discordGame, game);
@@ -513,6 +516,7 @@ public class RunCommands {
             btChat.queueMessage(faction.getEmoji(), buttons);
         }
 
+        game.setUpdated(UpdateType.MAP);
     }
 
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -628,7 +632,7 @@ public class RunCommands {
         }
     }
 
-    public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.AXLOTL_TANKS);
 
@@ -681,12 +685,12 @@ public class RunCommands {
                 }
             }
         }
-        ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
-    public static void startBattlePhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void startBattlePhase(Game game) {
         game.startBattlePhase();
-        ShowCommands.showBoard(discordGame, game);
+        game.setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
     public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

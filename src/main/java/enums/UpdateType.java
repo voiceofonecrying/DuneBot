@@ -6,4 +6,5 @@ public enum UpdateType {
     MISC_FRONT_OF_SHIELD,
     MISC_BACK_OF_SHIELD,
     MAP,
+    MAP_ALSO_IN_TURN_SUMMARY,
 }
