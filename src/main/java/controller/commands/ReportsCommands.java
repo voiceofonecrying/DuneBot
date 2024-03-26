@@ -21,11 +21,11 @@ import java.util.*;
 
 import static controller.commands.CommandOptions.*;
 
-public class StatsCommands {
+public class ReportsCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
 
-        commandData.add(Commands.slash("stats", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
+        commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showPlayers)
         ));

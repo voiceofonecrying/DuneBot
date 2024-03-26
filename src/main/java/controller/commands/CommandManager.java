@@ -508,8 +508,8 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            } else if (name.equals("stats")) {
-                String result = StatsCommands.runCommand(event);
+            } else if (name.equals("reports")) {
+                String result = ReportsCommands.runCommand(event);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("random-dune-quote")) {
                 randomDuneQuote(event);
@@ -750,7 +750,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(AtreidesCommands.getCommands());
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
-        commandData.addAll(StatsCommands.getCommands());
+        commandData.addAll(ReportsCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
