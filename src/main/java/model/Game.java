@@ -28,10 +28,10 @@ import static model.Initializers.getJSONString;
 
 public class Game {
     private String gameRole;
-    private int phaseForTracker;
     private int turn;
     private int phase;
     private int subPhase;
+    private int phaseForTracker;
     private Bidding bidding;
     private Battles battles;
     private MentatPause mentatPause;

@@ -227,6 +227,9 @@ public class CommandOptions {
     public static final OptionData toHand =
             new OptionData(OptionType.BOOLEAN, "to-hand", "Move to hand (default=false)", false);
 
+    public static final OptionData showPlayers =
+            new OptionData(OptionType.BOOLEAN, "show-players", "Show player tags in teach game", false);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();

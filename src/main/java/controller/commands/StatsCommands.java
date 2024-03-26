@@ -27,7 +27,7 @@ public class StatsCommands {
 
         commandData.add(Commands.slash("stats", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
-                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.")
+                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showPlayers)
         ));
 
         return commandData;
@@ -39,7 +39,7 @@ public class StatsCommands {
 
         String responseMessage = "";
         switch (name) {
-            case "games-per-player" -> responseMessage = numGamesPerPlayer(event);
+            case "games-per-player" -> responseMessage = gamesPerPlayer(event);
             case "active-games" -> responseMessage = activeGames(event);
         }
         return responseMessage;
@@ -159,7 +159,7 @@ public class StatsCommands {
         return message.toString();
     }
 
-    public static String numGamesPerPlayer(SlashCommandInteractionEvent event) {
+    public static String gamesPerPlayer(SlashCommandInteractionEvent event) {
         String message = "**Number of games players are in**\n";
         HashMap<String, List<String>> playerGamesMap = new HashMap<>();
         OptionMapping optionMapping = event.getOption(months.getName());
@@ -219,6 +219,8 @@ public class StatsCommands {
     }
 
     public static String activeGames(SlashCommandInteractionEvent event) {
+        OptionMapping optionMapping = event.getOption(showPlayers.getName());
+        boolean showPlayersInGames = (optionMapping != null && optionMapping.getAsBoolean());
         StringBuilder response = new StringBuilder();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         for (Category category : categories) {
@@ -232,11 +234,17 @@ public class StatsCommands {
                 if (phase == 4) {
                     Bidding bidding = game.getBidding();
                     response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
+                } else if (phase == 6) {
+                    int factionsLeftToGo = game.getTurnOrder().size();
+                    if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
+                        factionsLeftToGo++;
+                    response.append(", ").append(factionsLeftToGo).append(" factions remaining.");
                 }
                 response.append("\n");
-                for (Faction f : game.getFactions()) {
-                    response.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
-                }
+                if (showPlayersInGames)
+                    for (Faction f : game.getFactions()) {
+                        response.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
+                    }
                 response.append("\n");
             } catch (Exception e) {
                 // category is not a Dune game
