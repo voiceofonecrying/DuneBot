@@ -229,8 +229,10 @@ public class ReportsCommands {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
                 response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
-                response.append(phaseName(game.getPhaseForTracker()));
                 int phase = game.getPhaseForTracker();
+                response.append(phaseName(phase));
+                if (!game.hasPhaseForTracker())
+                    response.append(" (old tracker)");
                 if (phase == 4) {
                     Bidding bidding = game.getBidding();
                     response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());

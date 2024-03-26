@@ -419,6 +419,10 @@ public class Game {
         return phaseForTracker;
     }
 
+    public boolean hasPhaseForTracker() {
+        return phaseForTracker != 0;
+    }
+
     public void setPhase(int phase) {
         this.phase = phase;
     }
