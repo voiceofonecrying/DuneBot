@@ -143,10 +143,13 @@ public class FactionView {
                 .setUrl(CardImages.getHomeworldCardLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
                 ;
 
+        String reservesModifier = "";
+        if (homeworldCard.name().equals("Salusa Secundus"))
+            reservesModifier = " Sardaukar";
         if (isHighThreshold) {
             homeworldBuilder.addField(
                     "High Threshold",
-                    homeworldCard.highLowerThreshold() + " to " + homeworldCard.highUpperThreshold() + " Reserves",
+                    homeworldCard.highLowerThreshold() + " to " + homeworldCard.highUpperThreshold() + reservesModifier + " Reserves",
                     false
             );
             homeworldBuilder.addField("", homeworldCard.highDescription(), false);
@@ -160,7 +163,7 @@ public class FactionView {
         } else {
             homeworldBuilder.addField(
                     "Low Threshold",
-                    homeworldCard.lowLowerThreshold() + " to " + homeworldCard.lowUpperThreshold() + " Reserves",
+                    homeworldCard.lowLowerThreshold() + " to " + homeworldCard.lowUpperThreshold() + reservesModifier + " Reserves",
                     false
             );
             homeworldBuilder.addField("", homeworldCard.lowDescription(), false);
