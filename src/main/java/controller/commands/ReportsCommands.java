@@ -1,7 +1,9 @@
 package controller.commands;
 
+import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.Bidding;
 import model.Game;
 import model.factions.Faction;
@@ -253,5 +255,70 @@ public class ReportsCommands {
             }
         }
         return response.toString();
+    }
+
+    public static void gameResult(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        OptionMapping optionMapping = event.getOption(faction.getName());
+        if (optionMapping == null)
+            throw new IllegalArgumentException("There must be at least on winner for this command.");
+        String winner1Name = optionMapping.getAsString();
+        String winner2Name = null;
+        optionMapping = event.getOption(otherWinnerFaction.getName());
+        if (optionMapping != null)
+            winner2Name = optionMapping.getAsString();
+        int totalSpecials = 0;
+        boolean guildSpecial = false;
+        optionMapping = event.getOption(guildSpecialWin.getName());
+        if (optionMapping != null) {
+            guildSpecial = optionMapping.getAsBoolean();
+            totalSpecials++;
+        }
+        boolean fremenSpecial = false;
+        optionMapping = event.getOption(fremenSpecialWin.getName());
+        if (optionMapping != null) {
+            fremenSpecial = optionMapping.getAsBoolean();
+            totalSpecials++;
+        }
+        boolean bgPrediction = false;
+        optionMapping = event.getOption(bgPredictionWin.getName());
+        if (optionMapping != null) {
+            bgPrediction = optionMapping.getAsBoolean();
+            totalSpecials++;
+        }
+        boolean ecazAllyOccupy = false;
+        optionMapping = event.getOption(ecazOccupyWin.getName());
+        if (optionMapping != null) {
+            ecazAllyOccupy = optionMapping.getAsBoolean();
+            totalSpecials++;
+        }
+        if (totalSpecials > 1)
+            throw new InvalidGameStateException("There can only be 1 special victory type.");
+
+
+        String result = "__" + discordGame.getGameCategory().getName() + "__\n";
+        result += "> " + discordGame.getTextChannel("front-of-shield").getJumpUrl() + "\n";
+        result += "Moderator:\n> " + game.getMod() + "\n";
+        result += "Factions:\n";
+        StringBuilder factions = new StringBuilder();
+        for (Faction f : game.getFactions()) {
+            factions.append("> ").append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
+        }
+        result += factions;
+        result += "Winner: Turn " + game.getTurn();
+        if (guildSpecial)
+            result += " - " + Emojis.getFactionEmoji("Guild") + " special victory condition";
+        else if (fremenSpecial)
+            result += " - " + Emojis.getFactionEmoji("Fremen") + " special victory condition";
+        else if (bgPrediction)
+            result += " - " + Emojis.getFactionEmoji("BG") + " prediction win";
+        else if (ecazAllyOccupy)
+            result += " - " + Emojis.getFactionEmoji("Ecaz") + Emojis.getFactionEmoji(Objects.requireNonNull(winner2Name)) + " co-occupied 3 strongholds";
+        result += "\n";
+        result += "> " + Emojis.getFactionEmoji(winner1Name) + " - " + winner1Name + "\n";
+        if (winner2Name != null)
+            result += "> " + Emojis.getFactionEmoji(winner2Name) + " - " + winner2Name + "\n";
+        result += "Summary:\n";
+        result += "> Edit this text to add a summary, or remove the Summary section if you do not wish to include one.";
+        discordGame.getModInfo().queueMessage(result);
     }
 }

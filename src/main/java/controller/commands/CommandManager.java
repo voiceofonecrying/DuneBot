@@ -600,6 +600,7 @@ public class CommandManager extends ListenerAdapter {
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
+                case "game-result" -> ReportsCommands.gameResult(event, discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -735,6 +736,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
+        commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());

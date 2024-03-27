@@ -61,7 +61,13 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData starredForcesFaction = new OptionData(OptionType.STRING, "starred-forces-faction", "The faction whose starred forces will be negated", true)
             .setAutoComplete(true);
+    public static final OptionData otherWinnerFaction = new OptionData(OptionType.STRING, "other-winner", "The allied faction that also won", false)
+            .setAutoComplete(true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
+    public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
+    public static final OptionData fremenSpecialWin = new OptionData(OptionType.BOOLEAN, "fremen-special", "Was this a Fremen special victory condition?", false);
+    public static final OptionData bgPredictionWin = new OptionData(OptionType.BOOLEAN, "bg-prediction", "Was this a BG prediction win?", false);
+    public static final OptionData ecazOccupyWin = new OptionData(OptionType.BOOLEAN, "ecaz-occupy", "Was this an Ecaz-ally occupy win?", false);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
@@ -237,7 +243,7 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction" ->
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner" ->
                     choices = factions(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
