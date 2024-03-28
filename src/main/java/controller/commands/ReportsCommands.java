@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -29,7 +30,7 @@ public class ReportsCommands {
 
         commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
-                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showPlayers)
+                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions)
         ));
 
         return commandData;
@@ -221,16 +222,15 @@ public class ReportsCommands {
     }
 
     public static String activeGames(SlashCommandInteractionEvent event) {
-        OptionMapping optionMapping = event.getOption(showPlayers.getName());
-        boolean showPlayersInGames = (optionMapping != null && optionMapping.getAsBoolean());
+        OptionMapping optionMapping = event.getOption(showFactions.getName());
+        boolean showFactionsinGames = (optionMapping != null && optionMapping.getAsBoolean());
         StringBuilder response = new StringBuilder();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         for (Category category : categories) {
-            String categoryName = category.getName();
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
-                response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
+                response.append("\nTurn ").append(game.getTurn()).append(", ");
                 int phase = game.getPhaseForTracker();
                 response.append(phaseName(phase));
                 if (!game.hasPhaseForTracker())
@@ -242,14 +242,21 @@ public class ReportsCommands {
                     int factionsLeftToGo = game.getTurnOrder().size();
                     if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
                         factionsLeftToGo++;
-                    response.append(", ").append(factionsLeftToGo).append(" factions remaining.");
+                    response.append(", ").append(factionsLeftToGo).append(" factions remaining");
                 }
-                response.append("\n");
-                if (showPlayersInGames)
-                    for (Faction f : game.getFactions()) {
-                        response.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
+                response.append("\nMod: ").append(game.getMod());
+                if (showFactionsinGames) {
+                    response.append("\nFactions: ");
+                    for (Faction f: game.getFactions()) {
+                        String factionEmojiName = f.getEmoji().substring(1, f.getEmoji().length() - 1);
+                        RichCustomEmoji emoji = event.getGuild().getEmojis().stream().filter(e -> e.getName().equals(factionEmojiName)).findFirst().orElse(null);
+                        if (emoji == null)
+                            response.append(f.getEmoji());
+                        else
+                            response.append("<").append(f.getEmoji()).append(emoji.getId()).append(">");
                     }
-                response.append("\n");
+                }
+                response.append("\n\n");
             } catch (Exception e) {
                 // category is not a Dune game
             }
