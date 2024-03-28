@@ -214,7 +214,7 @@ public class ReportsCommands {
             case 4 -> "Bidding";
             case 5 -> "Revival";
             case 6 -> "Shipment and Movement";
-            case 7 -> "Battle";
+            case 7 -> "Battles";
             case 8 -> "Spice Collection";
             case 9 -> "Mentat Pause";
             default -> "Phase not identified";
@@ -227,10 +227,11 @@ public class ReportsCommands {
         StringBuilder response = new StringBuilder();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         for (Category category : categories) {
+            String categoryName = category.getName();
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
-                response.append("\nTurn ").append(game.getTurn()).append(", ");
+                response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
                 int phase = game.getPhaseForTracker();
                 response.append(phaseName(phase));
                 if (!game.hasPhaseForTracker())
