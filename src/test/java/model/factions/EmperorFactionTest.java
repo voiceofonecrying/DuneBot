@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import model.Force;
 import model.Territory;
 import model.TestTopic;
 import model.TreacheryCard;
@@ -89,5 +90,29 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertEquals(Emojis.EMPEROR + " paid 2 " + Emojis.SPICE + " to discard Kulon (Kaitain High Threshold ability)",
                 turnSummary.getMessages().get(0)
         );
+    }
+
+    @Test
+    public void sardaukarGetRemovedToSalusaSecundus() {
+        Territory territory = game.getTerritory("Habbanya Sietch");
+
+        int regularAmount = 2;
+        faction.removeReserves(regularAmount);
+        Force territoryForce = territory.getForce("Emperor");
+        territory.setForceStrength("Emperor", territoryForce.getStrength() + regularAmount);
+
+        int specialAmount = 1;
+        faction.removeSpecialReserves(specialAmount);
+        territoryForce = territory.getForce("Emperor*");
+        territory.setForceStrength("Emperor*", territoryForce.getStrength() + specialAmount);
+
+        assertEquals(13, game.getTerritory("Kaitain").getForce("Emperor").getStrength());
+        assertEquals(4, game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength());
+
+        faction.removeForces("Habbanya Sietch", 2, false, false);
+        faction.removeForces("Habbanya Sietch", 1, true, false);
+
+        assertEquals(15, game.getTerritory("Kaitain").getForce("Emperor").getStrength());
+        assertEquals(5, game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength());
     }
 }
