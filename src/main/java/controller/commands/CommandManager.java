@@ -762,7 +762,7 @@ public class CommandManager extends ListenerAdapter {
 
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
-                .addOptions(slowGame, midGame, fastGame, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
+                .addOptions(slowGame, midGame, fastGame, originalSixFactions, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
 
         return commandDataWithPermissions;
     }
@@ -1684,6 +1684,8 @@ public class CommandManager extends ListenerAdapter {
         message += " -- ";
         message += waitingListItemResult(":race_car:", DiscordGame.required(fastGame, event).getAsString());
         message += "\nExpansions: ";
+        message += waitingListItemResult("O6", DiscordGame.required(originalSixFactions, event).getAsString());
+        message += " -- ";
         message += waitingListItemResult("<:bt:991763325576810546> <:ix:991763319406997514>", DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
         message += " -- ";
         message += waitingListItemResult("<:choam:991763324624703538> <:rich:991763318467465337>", DiscordGame.required(choamricheseExpansion, event).getAsString());

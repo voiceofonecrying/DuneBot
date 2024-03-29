@@ -198,6 +198,7 @@ public class CommandOptions {
     public static final OptionData slowGame = waitingListOptionData("slow-game", "Do you want to play a slow speed game?");
     public static final OptionData midGame = waitingListOptionData("mid-game", "Do you want to play a normal speed game?");
     public static final OptionData fastGame = waitingListOptionData("fast-game", "Do you want to play a fast speed game?");
+    public static final OptionData originalSixFactions = waitingListOptionData("o6", "Choose Preferred for an Original 6 factions game.");
     public static final OptionData ixianstleilaxuExpansion = waitingListOptionData("ix-bt", "Do you want to with the Ixians & Tleilaxu expansion content?");
     public static final OptionData choamricheseExpansion = waitingListOptionData("choam-rich", "Do you want to play with the Choam & Richese expansion content?");
     public static final OptionData ecazmoritaniExpansion = waitingListOptionData("ecaz-moritani", "Do you want to play with the Ecaz & Moritani expansion content?");
