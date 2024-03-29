@@ -13,13 +13,14 @@ import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 public class EcazButtons implements Pressable {
 
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
 
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
@@ -111,7 +112,7 @@ public class EcazButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the Ambassador away with news of their new alliance!");
         discordGame.queueDeleteMessage();

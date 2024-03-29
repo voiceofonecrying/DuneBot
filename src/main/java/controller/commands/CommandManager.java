@@ -974,20 +974,31 @@ public class CommandManager extends ListenerAdapter {
 
     private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
+        boolean discarded = false;
         if (faction.getNexusCard() != null) {
+            discarded = true;
             game.getNexusDiscard().add(faction.getNexusCard());
         }
         faction.setNexusCard(game.getNexusDeck().pollFirst());
+        if (discarded)
+            game.getTurnSummary().publish(faction.getEmoji() + " has replaced their Nexus Card.");
+        else
+            game.getTurnSummary().publish(faction.getEmoji() + " has drawn a Nexus Card.");
+        showFactionInfo(discordGame);
+        discordGame.pushGame();
+    }
+
+    public static void discardNexusCard(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
+        game.getNexusDiscard().add(faction.getNexusCard());
+        faction.setNexusCard(null);
+        game.getTurnSummary().publish(faction.getEmoji() + " has discarded a Nexus Card.");
         showFactionInfo(discordGame);
         discordGame.pushGame();
     }
 
     private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
-        game.getNexusDiscard().add(faction.getNexusCard());
-        faction.setNexusCard(null);
-        showFactionInfo(discordGame);
-        discordGame.pushGame();
+        discardNexusCard(discordGame, game, faction);
     }
 
     public void drawTreacheryCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -1596,7 +1607,7 @@ public class CommandManager extends ListenerAdapter {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction1 = game.getFaction(discordGame.required(faction).getAsString());
         Faction faction2 = game.getFaction(discordGame.required(otherFaction).getAsString());
 

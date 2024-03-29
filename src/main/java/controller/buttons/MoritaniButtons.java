@@ -119,7 +119,7 @@ public class MoritaniButtons implements Pressable {
         ((MoritaniFaction) game.getFaction("Moritani")).triggerTerrorToken(game, discordGame, ButtonManager.getButtonPresser(event, game), territory, terror);
     }
 
-    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the emissary away with news of their new alliance!");
         discordGame.queueDeleteMessage();
