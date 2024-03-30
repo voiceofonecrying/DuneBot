@@ -905,6 +905,42 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
+    public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount) {
+        int revivalCost;
+        if (faction instanceof ChoamFaction) revivalCost = regularAmount + starredAmount;
+        else if (faction instanceof BTFaction) revivalCost = regularAmount + starredAmount;
+        else if (faction instanceof IxFaction) revivalCost = regularAmount * 2 + starredAmount * 3;
+        else revivalCost = (regularAmount + starredAmount) * 2;
+        if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
+
+        Force force = getForceFromTanks(faction.getName());
+        force.setStrength(force.getStrength() - regularAmount);
+        faction.addReserves(regularAmount);
+        force = getForceFromTanks(faction.getName() + "*");
+        force.setStrength(force.getStrength() - starredAmount);
+        faction.addSpecialReserves(starredAmount);
+
+        String costString = "";
+        if (isPaid) {
+            faction.subtractSpice(revivalCost);
+            faction.spiceMessage(revivalCost, "Revivals", false);
+            costString = "for " + revivalCost + " " + Emojis.SPICE;
+            if (hasFaction("BT") && !(faction instanceof BTFaction)) {
+                Faction btFaction = getFaction("BT");
+                btFaction.addSpice(revivalCost);
+                costString += " paid to " + Emojis.BT;
+                btFaction.spiceMessage(revivalCost, faction.getEmoji() + " revivals", true);
+            }
+        }
+
+        String forcesString = "";
+        if (regularAmount > 0) forcesString += MessageFormat.format("{0} {1} ", regularAmount, Emojis.getForceEmoji(faction.getName()));
+        if (starredAmount > 0) forcesString += MessageFormat.format("{0} {1} ", starredAmount, Emojis.getForceEmoji(faction.getName() + "*"));
+        faction.getLedger().publish(forcesString + "returned to reserves.");
+        turnSummary.publish(faction.getEmoji() + " revives " + forcesString + costString);
+        faction.setUpdated(UpdateType.MAP);
+    }
+
     public void putTerritoryInAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
         String insertedName = insertedTerritory.getTerritoryName();
         String containingName = containingTerritory.getTerritoryName().replaceAll("\\(.*\\)", "").strip();

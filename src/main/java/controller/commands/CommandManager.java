@@ -202,37 +202,16 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String star = starred ? "*" : "";
-
-        int revivalCost;
-        if (faction instanceof ChoamFaction) revivalCost = revivedValue;
-        else if (faction instanceof BTFaction) revivalCost = revivedValue;
-        else if ((faction instanceof IxFaction) && starred) revivalCost = revivedValue * 3;
-        else revivalCost = revivedValue * 2;
-        if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
-
-        if (star.isEmpty()) faction.addReserves(revivedValue);
-        else faction.addSpecialReserves(revivedValue);
-
-        Force force = game.getForceFromTanks(faction.getName() + star);
-        force.setStrength(force.getStrength() - revivedValue);
-
-        if (isPaid) {
-            faction.subtractSpice(revivalCost);
-            faction.spiceMessage(revivalCost, "Revivals", false);
-            if (game.hasFaction("BT") && !(faction instanceof BTFaction)) {
-                Faction btFaction = game.getFaction("BT");
-                btFaction.addSpice(revivalCost);
-                btFaction.spiceMessage(revivalCost, faction.getEmoji() + " revivals", true);
-            }
-        }
-        discordGame.getFactionLedger(faction).queueMessage(revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + " returned to reserves.");
-        String costString = isPaid ? " for " + revivalCost + " " + Emojis.SPICE : "";
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " revives " + revivedValue + " " + Emojis.getForceEmoji(faction.getName() + star) + costString);
+    public static void reviveForces(Faction faction, boolean isPaid, int revivedValue, int starredAmountValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        game.reviveForces(faction, isPaid, revivedValue, starredAmountValue);
         RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
-        faction.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
+    }
+
+    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        int regularValue = starred ? 0 : revivedValue;
+        int starredValue = starred ? revivedValue : 0;
+        reviveForces(faction, isPaid, regularValue, starredValue, game, discordGame);
     }
 
     private static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
@@ -578,7 +557,7 @@ public class CommandManager extends ListenerAdapter {
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
                 case "remove-forces" -> removeForcesEventHandler(discordGame, game);
                 case "display" -> displayGameState(discordGame, game);
-                case "revive-forces" -> revivalHandler(discordGame, game);
+                case "revive-forces" -> reviveForcesEventHandler(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
                 case "kill-leader" -> killLeader(discordGame, game);
@@ -709,7 +688,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
-        commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starred, paid));
+        commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
         commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
@@ -1089,12 +1068,18 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void revivalHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        boolean star = discordGame.required(starred).getAsBoolean();
+    /**
+     * Revive forces from the tanks
+     *
+     * @param discordGame the discord game
+     * @param game        the game
+     */
+    public void reviveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         boolean isPaid = discordGame.required(paid).getAsBoolean();
         int revivedValue = discordGame.required(revived).getAsInt();
-        revival(star, targetFaction, isPaid, revivedValue, game, discordGame);
+        int starredAmountValue = discordGame.required(starredAmount).getAsInt();
+        reviveForces(targetFaction, isPaid, revivedValue, starredAmountValue, game, discordGame);
     }
 
     /**
