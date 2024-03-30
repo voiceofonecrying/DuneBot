@@ -361,7 +361,7 @@ public class PlayerCommands {
         recipient.getChat().publish(":speaking_head: from " + sender.getEmoji() + ": " + whisperedMessage);
         sender.getChat().publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
         String lastWhisperString = sender.getWhisperTime(recipient.getName());
-        boolean announceWhisperToTurnSummary = false;
+        boolean announceWhisperToTurnSummary = lastWhisperString == null;
         if (lastWhisperString != null) {
             Instant lastWhisperTime = Instant.parse(lastWhisperString);
             if (lastWhisperTime.plus(30, ChronoUnit.MINUTES).isBefore(Instant.now()))
@@ -370,7 +370,7 @@ public class PlayerCommands {
         if (announceWhisperToTurnSummary)
             game.getTurnSummary().publish(sender.getEmoji() + " is whispering to " + recipient.getEmoji());
         sender.setWhisperTime(recipient.getName(), Instant.now().toString());
-        return "Your message has been sent to " + recipient.getEmoji();
+        return "";
     }
 
     private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
