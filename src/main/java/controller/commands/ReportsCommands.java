@@ -322,9 +322,9 @@ public class ReportsCommands {
         else if (ecazAllyOccupy)
             result += " - " + Emojis.getFactionEmoji("Ecaz") + Emojis.getFactionEmoji(Objects.requireNonNull(winner2Name)) + " co-occupied 3 strongholds";
         result += "\n";
-        result += "> " + Emojis.getFactionEmoji(winner1Name) + " - " + winner1Name + "\n";
+        result += "> " + Emojis.getFactionEmoji(winner1Name) + " - " + game.getFaction(winner1Name).getPlayer() + "\n";
         if (winner2Name != null)
-            result += "> " + Emojis.getFactionEmoji(winner2Name) + " - " + winner2Name + "\n";
+            result += "> " + Emojis.getFactionEmoji(winner2Name) + " - " + game.getFaction(winner2Name).getPlayer() + "\n";
         result += "Summary:\n";
         result += "> Edit this text to add a summary, or remove the Summary section if you do not wish to include one.";
         discordGame.getModInfo().queueMessage(result);
