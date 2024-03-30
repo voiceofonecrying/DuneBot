@@ -861,14 +861,7 @@ public class ShowCommands {
             traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
             traitorString.append("\n");
         }
-        StringBuilder reservesString = new StringBuilder();
-        reservesString.append("\n__Reserves:__ ").append(faction.getReserves().getStrength());
-        if (faction instanceof FremenFaction)
-            reservesString.append("\n__Fedaykin Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction instanceof EmperorFaction)
-            reservesString.append("\n__Sardaukar Reserves:__ ").append(faction.getSpecialReserves().getStrength());
-        if (faction instanceof IxFaction)
-            reservesString.append("\n__Cyborg Reserves:__ ").append(faction.getSpecialReserves().getStrength());
+        String reservesString = "\n__Reserves:__ " + FactionView.getTaggedReservesString(discordGame, faction);
 
         StringBuilder ornithopter = new StringBuilder();
         if (faction.hasOrnithoperToken()) ornithopter.append("\nOrnithopter Token\n");

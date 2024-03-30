@@ -69,6 +69,13 @@ public class FactionView {
         return  builder;
     }
 
+    public static String getTaggedReservesString(DiscordGame discordGame, Faction faction) {
+        String reservesString = faction.getReserves().getStrength() + " " + Emojis.getForceEmoji(faction.getName());
+        if (faction instanceof EmperorFaction || faction instanceof FremenFaction ||faction instanceof IxFaction)
+            reservesString += " " + faction.getSpecialReserves().getStrength() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+        return discordGame.tagEmojis(reservesString);
+    }
+
     private MessageEmbed getSummaryEmbed() {
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setColor(faction.getColor());
@@ -93,6 +100,10 @@ public class FactionView {
                     discordGame.tagEmojis(faction.getTreacheryHand().size() + " " + Emojis.TREACHERY),
                     true
             );
+        }
+
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) {
+            embedBuilder.addField("Reserves", getTaggedReservesString(discordGame, faction), true);
         }
 
         if (game.hasGameOption(GameOption.TECH_TOKENS)) {
