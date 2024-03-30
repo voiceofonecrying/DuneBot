@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ public class PlayerCommands {
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
                 new SubcommandData("battle-plan-kh", "Submit your plan using Kwisatz-Haderach for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
+                new SubcommandData("whisper", "Whisper to another player.").addOptions(faction, message),
                 new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
@@ -58,6 +61,7 @@ public class PlayerCommands {
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
             case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game, false);
             case "battle-plan-kh" -> responseMessage = battlePlanKH(event, discordGame, game);
+            case "whisper" -> responseMessage = whisper(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
         }
         discordGame.pushGame();
@@ -344,6 +348,29 @@ public class PlayerCommands {
 
             faction = game.getFaction(bidding.advanceBidder(game));
         } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
+    }
+
+    private static String whisper(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction sender = discordGame.getFactionByPlayer(event.getUser().toString());
+        Faction recipient = game.getFaction(discordGame.required(faction).getAsString());
+        if (sender == recipient)
+            throw new IllegalArgumentException("You cannot whisper to yourself.");
+        if (sender.getAlly().equals(recipient.getName()) || recipient.getAlly().equals(sender.getName()))
+            throw new IllegalArgumentException("Please use your alliance thread to communicate with your ally.");
+        String whisperedMessage = discordGame.required(message).getAsString();
+        recipient.getChat().publish(":speaking_head: from " + sender.getEmoji() + ": " + whisperedMessage);
+        sender.getChat().publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
+        String lastWhisperString = sender.getWhisperTime(recipient.getName());
+        boolean announceWhisperToTurnSummary = false;
+        if (lastWhisperString != null) {
+            Instant lastWhisperTime = Instant.parse(lastWhisperString);
+            if (lastWhisperTime.plus(30, ChronoUnit.MINUTES).isBefore(Instant.now()))
+                announceWhisperToTurnSummary = true;
+        }
+        if (announceWhisperToTurnSummary)
+            game.getTurnSummary().publish(sender.getEmoji() + " is whispering to " + recipient.getEmoji());
+        sender.setWhisperTime(recipient.getName(), Instant.now().toString());
+        return "Your message has been sent to " + recipient.getEmoji();
     }
 
     private static String holdGame(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {

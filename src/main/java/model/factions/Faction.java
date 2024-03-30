@@ -64,6 +64,7 @@ public class Faction {
     private int maxRevival;
     private boolean isHighThreshold;
     private Boolean ornithoperToken;
+    private Map<String, String> lastWhisper;
     @Exclude
     protected Game game;
     @Exclude
@@ -667,6 +668,16 @@ public class Faction {
 
     public void setOrnithoperToken(boolean ornithoperToken) {
         this.ornithoperToken = ornithoperToken;
+    }
+
+    public String getWhisperTime(String recipient) {
+        if (lastWhisper == null)
+            lastWhisper = new HashMap<>();
+        return lastWhisper.get(recipient);
+    }
+
+    public void setWhisperTime(String recipient, String whisperTime) {
+        lastWhisper.put(recipient, whisperTime);
     }
 
     public boolean isHomeworldOccupied() {
