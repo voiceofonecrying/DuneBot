@@ -6,6 +6,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Bidding;
 import model.Game;
+import model.factions.BGFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
@@ -318,7 +319,7 @@ public class ReportsCommands {
         else if (fremenSpecial)
             result += " - " + Emojis.getFactionEmoji("Fremen") + " special victory condition";
         else if (bgPrediction)
-            result += " - " + Emojis.getFactionEmoji("BG") + " prediction win";
+            result += " - " + Emojis.getFactionEmoji("BG") + " predicted " + Emojis.getFactionEmoji(((BGFaction) game.getFaction("BG")).getPredictionFactionName());
         else if (ecazAllyOccupy)
             result += " - " + Emojis.getFactionEmoji("Ecaz") + Emojis.getFactionEmoji(Objects.requireNonNull(winner2Name)) + " co-occupied 3 strongholds";
         result += "\n";
