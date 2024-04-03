@@ -301,6 +301,7 @@ public class Faction {
 
     public void setSpice(int spice) {
         this.spice = spice;
+        updateAllySupport();
         setUpdated(UpdateType.SPICE_BACK);
     }
 
@@ -316,6 +317,7 @@ public class Faction {
         if (spice == 0) return;
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
+        updateAllySupport();
         setUpdated(UpdateType.SPICE_BACK);
     }
 
@@ -593,6 +595,10 @@ public class Faction {
     }
 
     public void setAllySpiceShipment(int allySpiceShipment) {
+        if (getAllySpiceShipment() != allySpiceShipment && hasAlly()) {
+            Faction ally = getGame().getFaction(getAlly());
+            ally.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
         this.allySpiceShipment = allySpiceShipment;
     }
 
@@ -601,7 +607,19 @@ public class Faction {
     }
 
     public void setAllySpiceBidding(int allySpiceBidding) {
+        if (getAllySpiceBidding() != allySpiceBidding && hasAlly()) {
+            Faction ally = getGame().getFaction(getAlly());
+            ally.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
         this.allySpiceBidding = allySpiceBidding;
+    }
+
+    public void updateAllySupport() {
+        if (hasAlly()) {
+            Faction ally = getGame().getFaction(getAlly());
+            ally.setAllySpiceBidding(Math.min(getSpice(), ally.getAllySpiceBidding()));
+            ally.setAllySpiceShipment(Math.min(getSpice(), ally.getAllySpiceShipment()));
+        }
     }
 
     public NexusCard getNexusCard() {
