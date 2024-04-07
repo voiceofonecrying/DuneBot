@@ -815,6 +815,8 @@ public class Battle {
     }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
+        Faction aggressor = getAggressor(game);
+        Faction defender = getDefender(game);
         BattlePlan aggressorPlan = getAggressorBattlePlan();
         BattlePlan defenderPlan = getDefenderBattlePlan();
         String wholeTerritoryName = getWholeTerritoryName();
@@ -846,8 +848,66 @@ public class Battle {
         }
         resolution += factionBattleResults(game, true);
         resolution += factionBattleResults(game, false);
-        resolution += aggressorPlan.checkAuditor(getDefender(game).getEmoji());
-        resolution += defenderPlan.checkAuditor(getAggressor(game).getEmoji());
+        resolution += aggressorPlan.checkAuditor(defender.getEmoji());
+        resolution += defenderPlan.checkAuditor(aggressor.getEmoji());
+
+        String resolutionOptions = "";
+        RicheseFaction richeseFaction;
+        boolean saphoHasBeenAuctioned = false;
+        boolean portableSnooperHasBeenAuctioned = false;
+        if (game.hasFaction("Richese")) {
+            richeseFaction = (RicheseFaction) game.getFaction("Richese");
+            saphoHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Juice of Sapho"));
+            portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
+        }
+        if (saphoHasBeenAuctioned && defenderPlan.getTotalStrengthString().equals(aggressorPlan.getTotalStrengthString())) {
+            resolutionOptions += defender.getEmoji() + " may play Juice of Sapho to win the battle if they have it.\n";
+            if (publishToTurnSummary && defender.hasTreacheryCard("Juice of Sapho"))
+                defender.getChat().publish("Will you play Juice of Sapho to win the battle in " + wholeTerritoryName + "? " + defender.getPlayer());
+        }
+        if (portableSnooperHasBeenAuctioned && aggressorPlan.getDefense() == null) {
+            resolutionOptions += aggressor.getEmoji() + " may play Portable Snooper if they have it.\n";
+            if (publishToTurnSummary && aggressor.hasTreacheryCard("Portable Snooper"))
+                aggressor.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + aggressor.getPlayer());
+        }
+        if (portableSnooperHasBeenAuctioned && defenderPlan.getDefense() == null) {
+            resolutionOptions += defender.getEmoji() + " may play Portable Snooper if they have it.\n";
+            if (publishToTurnSummary && defender.hasTreacheryCard("Portable Snooper"))
+                defender.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + defender.getPlayer());
+        }
+        if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Stone Burner")) {
+            resolutionOptions += aggressor.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
+            if (publishToTurnSummary)
+                aggressor.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + aggressor.getPlayer());
+            if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Mirror Weapon")) {
+                resolutionOptions += "If not, " + defender.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
+                if (publishToTurnSummary)
+                    defender.getChat().publish("Will you kill both leaders in " + wholeTerritoryName + " if " + aggressor.getEmoji() + " does not? " + defender.getPlayer());
+            }
+        }
+        if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Stone Burner")) {
+            resolutionOptions += defender.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
+            if (publishToTurnSummary)
+                defender.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + defender.getPlayer());
+            if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Mirror Weapon")) {
+                resolutionOptions += "If not, " + aggressor.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
+                if (publishToTurnSummary)
+                    aggressor.getChat().publish("Will you kill both leaders in " + wholeTerritoryName + " if " + defender.getEmoji() + " does not? " + aggressor.getPlayer());
+            }
+        }
+        if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Poison Tooth")) {
+            resolutionOptions += aggressor.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
+            if (publishToTurnSummary)
+                aggressor.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + aggressor.getPlayer());
+        }
+        if (defenderPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Poison Tooth")) {
+            resolutionOptions += defender.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
+            if (publishToTurnSummary)
+                defender.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + defender.getPlayer());
+        }
+        if (!resolutionOptions.isEmpty())
+            resolution += "\n" + resolutionOptions;
+
         if (publishToTurnSummary)
             game.getTurnSummary().publish(resolution);
         else
