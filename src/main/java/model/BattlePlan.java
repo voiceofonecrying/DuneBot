@@ -301,9 +301,11 @@ public class BattlePlan {
     }
 
     public boolean dontKillWithStoneBurner() {
-        if (weapon != null && weapon.name().equals("Stone Burner")) {
-            stoneBurnerNoKill = true;
-            return true;
+        if (weapon != null) {
+            if (weapon.name().equals("Stone Burner") || opponentWeapon != null && opponentWeapon.name().equals("Stone Burner") && weapon.name().equals("Mirror Weapon")) {
+                stoneBurnerNoKill = true;
+                return true;
+            }
         }
         return false;
     }
