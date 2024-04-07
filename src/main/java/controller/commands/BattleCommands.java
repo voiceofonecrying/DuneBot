@@ -5,10 +5,7 @@ import controller.DiscordGame;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.Battle;
-import model.Battles;
-import model.Game;
-import model.Territory;
+import model.*;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -53,12 +50,64 @@ public class BattleCommands {
         }
     }
 
-    public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        CommandManager.reviewBattleResolution(discordGame, game, false);
+    public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+        battleResolution(discordGame, game, false);
     }
 
-    public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        CommandManager.reviewBattleResolution(discordGame, game, true);
+    public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+        battleResolution(discordGame, game, true);
+    }
+
+    public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        boolean playedJuiceOfSapho = discordGame.optional(useJuiceOfSapho) != null && discordGame.required(useJuiceOfSapho).getAsBoolean();
+        boolean killerStoneBurner = discordGame.optional(stoneBurnerKills) != null && discordGame.required(stoneBurnerKills).getAsBoolean();
+        boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
+        boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
+
+        BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
+        BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
+        if (aggressorPlan == null || defenderPlan == null)
+            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+
+        defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
+        boolean stoneBurnerNoKill = !killerStoneBurner;
+        boolean aggressorNoKillStoneBurner = false;
+        boolean defenderNoKillStoneBurner = false;
+        if (stoneBurnerNoKill) {
+            aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
+            defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+        }
+        boolean aggressorPlanAddedPortableSnooper = false;
+        boolean defenderPlanAddedPortableSnooper = false;
+        if (portableSnooper) {
+            if (currentBattle.getAggressor(game).hasTreacheryCard("Portable Snooper"))
+                aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
+            if (currentBattle.getDefender(game).hasTreacheryCard("Portable Snooper"))
+                defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+            if (aggressorPlan.isOpponentHasBureaucrat())
+                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+        }
+        boolean aggressorPlanHasPoisonTooth = false;
+        boolean defenderPlanHasPoisonTooth = false;
+        if (noPoisonTooth) {
+            aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
+            defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+        }
+        currentBattle.printBattleResolution(game, publishToTurnSummary);
+        if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
+        else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
+        if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
+        else if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
+        if (aggressorNoKillStoneBurner) aggressorPlan.restoreKillWithStoneBurner();
+        else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
+        if (playedJuiceOfSapho) defenderPlan.setJuiceOfSapho(false);
     }
 
     public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
