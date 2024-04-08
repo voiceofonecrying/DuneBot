@@ -488,7 +488,7 @@ public class BattlePlan {
 
     public String checkAuditor(String opponentEmoji) {
         String message = "";
-        if (getLeader().getName().equals("Auditor")) {
+        if (getLeader() != null && getLeader().getName().equals("Auditor")) {
             int numCards = isLeaderAlive() ? 2 : 1;
             message = MessageFormat.format(
                     "{0} may audit {1} {2} cards not used in the battle unless {3} cancels the audit for {1} {4}\n",
