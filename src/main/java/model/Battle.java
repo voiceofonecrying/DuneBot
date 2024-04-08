@@ -900,7 +900,7 @@ public class Battle {
             if (publishToTurnSummary)
                 aggressor.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + aggressor.getPlayer());
         }
-        if (defenderPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Poison Tooth")) {
+        if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Poison Tooth")) {
             resolutionOptions += defender.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
             if (publishToTurnSummary)
                 defender.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + defender.getPlayer());
