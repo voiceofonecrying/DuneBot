@@ -67,6 +67,19 @@ class BattleTest {
     @DisplayName("#numForcesNotDialed")
     class NumForcesNotDialed {
         @Test
+        void testFremenNegateSardaukar() throws InvalidGameStateException {
+            Force empRegulars = new Force("Emperor", 1, "Emperor");
+            Force sardaukar = new Force("Emperor*", 3, "Emperor");
+            garaKulon.addForce(empRegulars);
+            garaKulon.addForce(sardaukar);
+            Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(emperor, fremen), List.of(empRegulars, sardaukar), null);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
+            assertEquals(1, forcesDialed.regularForcesDialed);
+            assertEquals(2, forcesDialed.specialForcesDialed);
+            assertEquals(1, battle.numForcesNotDialed(forcesDialed, emperor, 1));
+        }
+
+        @Test
         void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
             IxFaction ix = new IxFaction("iPlayer", "iUser", game);
             TestTopic ixChat = new TestTopic();
@@ -88,7 +101,7 @@ class BattleTest {
             carthag.addForce(empRegulars);
             carthag.addForce(sardaukar);
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(emperor, harkonnen), List.of(empRegulars, sardaukar), null);
-            battle.karamaSpecialForces(emperor);
+            battle.negateSpecialForces(emperor);
             Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
@@ -102,7 +115,7 @@ class BattleTest {
             carthag.addForce(fremRegulars);
             carthag.addForce(fedaykin);
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(fremen, harkonnen), List.of(fremRegulars, fedaykin), null);
-            battle.karamaSpecialForces(fremen);
+            battle.negateSpecialForces(fremen);
             Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
@@ -119,7 +132,7 @@ class BattleTest {
             carthag.addForce(suboids);
             carthag.addForce(cyborgs);
             Battle battle = new Battle("Carthag", List.of(carthag), List.of(ix, harkonnen), List.of(suboids, cyborgs), null);
-            battle.karamaSpecialForces(ix);
+            battle.negateSpecialForces(ix);
             Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 2, false, 1);
             assertEquals(2, forcesDialed.regularForcesDialed);
             assertEquals(1, forcesDialed.specialForcesDialed);

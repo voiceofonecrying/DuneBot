@@ -16,9 +16,9 @@ public class Battle {
     private final String ecazAllyName;
     private BattlePlan aggressorBattlePlan;
     private BattlePlan defenderBattlePlan;
-    private boolean fedaykinKaramad;
-    private boolean sardaukarKaramad;
-    private boolean cyborgsKaramad;
+    private boolean fedaykinNegated;
+    private boolean sardaukarNegated;
+    private boolean cyborgsNegated;
     private boolean fremenMustPay;
 
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
@@ -30,9 +30,9 @@ public class Battle {
             factionNames.add(factionNames.remove(1));
         this.forces = forces;
         this.ecazAllyName = ecazAllyName;
-        this.fedaykinKaramad = false;
-        this.sardaukarKaramad = false;
-        this.cyborgsKaramad = false;
+        this.fedaykinNegated = false;
+        this.sardaukarNegated = factionNames.stream().anyMatch(n -> n.equals("Emperor")) && factionNames.stream().anyMatch(n -> n.equals("Fremen"));
+        this.cyborgsNegated = false;
         this.fremenMustPay = false;
     }
 
@@ -205,7 +205,7 @@ public class Battle {
         boolean isFremen = faction instanceof FremenFaction;
         boolean isIx = faction instanceof IxFaction;
         boolean isEmperor = faction instanceof EmperorFaction;
-        boolean specialsKaramad = isFremen && fedaykinKaramad || isEmperor && sardaukarKaramad || isIx && cyborgsKaramad;
+        boolean specialsNegated = isFremen && fedaykinNegated || isEmperor && sardaukarNegated || isIx && cyborgsNegated;
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
         if (faction instanceof RicheseFaction)
@@ -214,7 +214,7 @@ public class Battle {
         int dialUsed = 0;
         int specialStrengthUsed = 0;
         int regularStrengthUsed = 0;
-        if (specialsKaramad) {
+        if (specialsNegated) {
             while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
                 dialUsed++;
                 if (isSpiceNeeded(game, faction, false)) spiceUsed++;
@@ -341,25 +341,25 @@ public class Battle {
         }
     }
 
-    public void karamaSpecialForces(Faction targetFaction) throws InvalidGameStateException {
+    public void negateSpecialForces(Faction targetFaction) throws InvalidGameStateException {
         String targetFactionName = targetFaction.getName();
-        boolean aggressorKaramad = targetFactionName.equals(getAggressorName());
-        boolean defenderKaramad = targetFactionName.equals(getDefenderName());
-        if (!aggressorKaramad && !defenderKaramad)
+        boolean aggressorNegated = targetFactionName.equals(getAggressorName());
+        boolean defenderNegated = targetFactionName.equals(getDefenderName());
+        if (!aggressorNegated && !defenderNegated)
             throw new InvalidGameStateException(targetFactionName + " is not in the current battle.");
 
         if (targetFaction instanceof FremenFaction)
-            fedaykinKaramad = true;
+            fedaykinNegated = true;
         else if (targetFaction instanceof EmperorFaction)
-            sardaukarKaramad = true;
+            sardaukarNegated = true;
         else if (targetFaction instanceof IxFaction)
-            cyborgsKaramad = true;
+            cyborgsNegated = true;
 
         boolean battlePlanRemoved = false;
-        if (aggressorKaramad && aggressorBattlePlan != null) {
+        if (aggressorNegated && aggressorBattlePlan != null) {
             aggressorBattlePlan = null;
             battlePlanRemoved = true;
-        } else if (defenderKaramad && defenderBattlePlan != null) {
+        } else if (defenderNegated && defenderBattlePlan != null) {
             defenderBattlePlan = null;
             battlePlanRemoved = true;
         }
