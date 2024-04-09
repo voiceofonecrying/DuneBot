@@ -739,9 +739,12 @@ public class ReportsCommands {
         TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElse(null);
         if (gameResults == null)
             throw new IllegalStateException("The game-results channel was not found.");
-        ThreadChannel parsedResults = gameResults.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElse(null);
+        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElse(null);
+        if (playerStatsChannel == null)
+            throw new IllegalStateException("The player-stats channel was not found.");
+        ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElse(null);
         if (parsedResults == null)
-            parsedResults = gameResults.createThreadChannel("parsed-results").complete();
+            parsedResults = playerStatsChannel.createThreadChannel("parsed-results").complete();
 
         JsonArray jsonGameResults = new JsonArray();
         MessageHistory h = parsedResults.getHistory();
@@ -937,17 +940,17 @@ public class ReportsCommands {
         }
         jsonGameResults.addAll(jsonNewGameResults);
         if (!jsonNewGameResults.isEmpty()) {
-            ThreadChannel factionStats = gameResults.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats-test")).findFirst().orElse(null);
+            ThreadChannel factionStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats-test")).findFirst().orElse(null);
             if (factionStats == null)
-                factionStats = gameResults.createThreadChannel("faction-stats-test").complete();
+                factionStats = playerStatsChannel.createThreadChannel("faction-stats-test").complete();
             factionStats.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
-            ThreadChannel moderatorStats = gameResults.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats-test")).findFirst().orElse(null);
+            ThreadChannel moderatorStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats-test")).findFirst().orElse(null);
             if (moderatorStats == null)
-                moderatorStats = gameResults.createThreadChannel("moderator-stats-test").complete();
+                moderatorStats = playerStatsChannel.createThreadChannel("moderator-stats-test").complete();
             moderatorStats.sendMessage(writeModeratorStats(jsonGameResults)).queue();
-            ThreadChannel playerStats = gameResults.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats-test")).findFirst().orElse(null);
+            ThreadChannel playerStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats-test")).findFirst().orElse(null);
             if (playerStats == null)
-                playerStats = gameResults.createThreadChannel("player-stats-test").complete();
+                playerStats = playerStatsChannel.createThreadChannel("player-stats-test").complete();
             StringBuilder playerStatsString = new StringBuilder();
             String[] playerStatsLines = writePlayerStats(jsonGameResults).split("\n");
             for (String s : playerStatsLines) {
