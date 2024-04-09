@@ -487,9 +487,11 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            } else if (name.equals("reports")) {
+            } else if (name.equals("reports") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.runCommand(event);
                 event.getHook().editOriginal(result).queue();
+            } else if (name.equals("my-record")) {
+                event.getHook().editOriginal(ReportsCommands.playerRecord(event)).queue();
             } else if (name.equals("random-dune-quote")) {
                 randomDuneQuote(event);
             } else {
@@ -742,6 +744,7 @@ public class CommandManager extends ListenerAdapter {
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
                 .addOptions(slowGame, midGame, fastGame, originalSixFactions, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
+        commandDataWithPermissions.add(Commands.slash("my-record", "View your record in an ephemeral message"));
 
         return commandDataWithPermissions;
     }
