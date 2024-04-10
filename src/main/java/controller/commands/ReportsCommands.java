@@ -724,6 +724,8 @@ public class ReportsCommands {
     private static final Pattern turn = Pattern.compile(".*Turn ([0-9]+)");
 
     private static String capitalize(String strippedEmoji) {
+        if (strippedEmoji == null || strippedEmoji.isEmpty())
+            return "";
         if (strippedEmoji.equals("bg") || strippedEmoji.equals("bt") || strippedEmoji.equals("choam"))
             return strippedEmoji.toUpperCase();
         if (strippedEmoji.equals("rich"))
