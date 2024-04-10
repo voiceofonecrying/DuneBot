@@ -787,6 +787,8 @@ public class ReportsCommands {
                 jsonGameRecord.addProperty("archiveDate", m.getTimeCreated().toLocalDate().toString());
                 int modStart = raw.indexOf("Moderator");
                 int factionsStart = raw.indexOf("Factions");
+                if (modStart == -1)
+                    modStart = factionsStart;
                 int winnersStart = raw.indexOf("Winner");
                 int summaryStart = raw.indexOf("Summary");
 
@@ -823,14 +825,18 @@ public class ReportsCommands {
                     // Can't get a channel to find last post date
                 }
 
+                String[] lines;
+                String moderator = "";
                 String modString = raw.substring(modStart, factionsStart);
-                String[] lines = modString.split("\n");
-                Matcher modMatcher = playerTags.matcher(modString);
-                String moderator;
-                if (modMatcher.find())
-                    moderator = "@" + event.getJDA().retrieveUserById(modMatcher.group(1)).complete().getName();
-                else
-                    moderator = lines[1].substring(2).split("\\s+", 2)[0];
+                if (!modString.isEmpty()) {
+                    lines = modString.split("\n");
+                    Matcher modMatcher = playerTags.matcher(modString);
+                    if (modMatcher.find())
+                        moderator = "@" + event.getJDA().retrieveUserById(modMatcher.group(1)).complete().getName();
+                    else
+                        moderator = lines[1].substring(2).split("\\s+", 2)[0];
+                } else if (gameName.equals("Discord 27"))
+                    moderator = "@voiceofonecrying";
                 jsonGameRecord.addProperty("moderator", moderator);
 
                 String winnersString;
@@ -868,6 +874,7 @@ public class ReportsCommands {
                     turn = turnMatcher.group(1);
                 jsonGameRecord.addProperty("victoryType", victoryType);
                 jsonGameRecord.addProperty("turn", turn);
+                winnersString = winnersString.substring(winnersString.indexOf("\n"));
                 Matcher taggedMatcher = taggedEmojis.matcher(winnersString);
                 Matcher untaggedMatcher = untaggedEmojis.matcher(winnersString);
                 if (taggedMatcher.find()) {
@@ -940,7 +947,11 @@ public class ReportsCommands {
                 // Not a game result message, so skip it.
             }
         }
-        jsonGameResults.addAll(jsonNewGameResults);
+        List<JsonElement> newGames = jsonNewGameResults.asList();
+        Collections.reverse(newGames);
+        JsonArray reversedNewGames = new JsonArray();
+        newGames.forEach(reversedNewGames::add);
+        jsonGameResults.addAll(reversedNewGames);
         if (!jsonNewGameResults.isEmpty()) {
             ThreadChannel factionStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats-test")).findFirst().orElse(null);
             if (factionStats == null)
