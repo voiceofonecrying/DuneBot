@@ -574,7 +574,8 @@ public class ReportsCommands {
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "Ix") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "Moritani") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "Richese") + ",";
-        if (getJsonRecordValueOrBlankString(jsonGameObject, "victoryType").isEmpty())
+        String victoryType = getJsonRecordValueOrBlankString(jsonGameObject, "victoryType");
+        if (victoryType.isEmpty() || victoryType.equals("E"))
             gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "turn") + ",";
         else
             gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "victoryType") + ",";
@@ -850,15 +851,15 @@ public class ReportsCommands {
                 String victoryType = "";
                 if (winnersString.toLowerCase().contains("predict"))
                     victoryType = "BG";
-                else if (winnersString.toLowerCase().contains("co-occupied"))
-                    victoryType = "Ecaz";
+                else if (winnersString.toLowerCase().contains("co-occup"))
+                    victoryType = "E";
                 else if (winnersString.contains("Guild Default"))
                     victoryType = "G";
                 else if (winnersString.contains(":guild: victory condition"))
                     victoryType = "G";
                 else if (winnersString.contains(":guild: Default"))
                     victoryType = "G";
-                else if (gameName.equals("__Discord 26__"))
+                else if (gameName.equals("Discord 26"))
                     victoryType = "F";
                 else if (winnersString.toLowerCase().contains("victory condition")) {
                     if (winnersString.toLowerCase().contains("guild"))
@@ -939,6 +940,8 @@ public class ReportsCommands {
                     }
                     jsonGameRecord.addProperty(capitalize(factionName), playerName);
                 }
+                if (gameName.equals("Discord 32"))
+                    jsonGameRecord.addProperty("Fremen", "@jefwiodrade");
                 jsonGameRecord.addProperty("winner1Player", jsonGameRecord.get(jsonGameRecord.get("winner1Faction").getAsString()).getAsString());
                 if (!winner2Faction.isEmpty())
                     jsonGameRecord.addProperty("winner2Player", jsonGameRecord.get(jsonGameRecord.get("winner2Faction").getAsString()).getAsString());
