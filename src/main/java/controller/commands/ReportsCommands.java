@@ -902,6 +902,8 @@ public class ReportsCommands {
                     winner1Faction = strippedEmoji1;
                     winner2Faction = strippedEmoji2;
                 }
+                if (gameName.equals("Discord 38"))
+                    winner1Faction = "Emperor";
                 jsonGameRecord.addProperty("winner1Faction", winner1Faction);
                 if (!winner2Faction.isEmpty())
                     jsonGameRecord.addProperty("winner2Faction", winner2Faction);
