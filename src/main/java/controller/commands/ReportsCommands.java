@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -753,7 +752,6 @@ public class ReportsCommands {
         MessageHistory h = parsedResults.getHistory();
         h.retrievePast(1).complete();
         List<Message> ml = h.getRetrievedHistory();
-        OffsetDateTime csvFileDateTime = null;
         String lastMessageID = "";
         if (ml.size() == 1) {
             List<Message.Attachment> messageList =  ml.get(0).getAttachments();
@@ -764,7 +762,6 @@ public class ReportsCommands {
                     String jsonResults = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
                     future.get().close();
                     jsonGameResults = JsonParser.parseString(jsonResults).getAsJsonArray();
-                    csvFileDateTime = ml.get(0).getTimeCreated();
                     lastMessageID = jsonGameResults.get(jsonGameResults.size() - 1).getAsJsonObject().get("messageID").getAsString();
                 } catch (IOException | InterruptedException | ExecutionException e) {
                     // Could not load from csv file. Complete new set will be generated from game-results
@@ -783,8 +780,6 @@ public class ReportsCommands {
         JsonArray jsonNewGameResults = new JsonArray();
         for (Message m : messages) {
             try {
-//                if (csvFileDateTime != null && m.getTimeCreated().isBefore(csvFileDateTime))
-//                    break;
                 JsonObject jsonGameRecord = new JsonObject();
                 String raw = m.getContentRaw();
                 String gameName = raw.split("\n")[0];
@@ -818,15 +813,19 @@ public class ReportsCommands {
                         }
                     }
                     if (foundChannelId) {
-                        TextChannel posts = Objects.requireNonNull(event.getGuild()).getTextChannelById(channelString);
-                        if (posts != null) {
-                            jsonGameRecord.addProperty("gameStartDate", posts.getTimeCreated().toLocalDate().toString());
-                            MessageHistory postsHistory = posts.getHistory();
-                            postsHistory.retrievePast(1).complete();
-                            ml = postsHistory.getRetrievedHistory();
-                            if (!ml.isEmpty()) {
-                                jsonGameRecord.addProperty("gameEndDate", ml.get(0).getTimeCreated().toLocalDate().toString());
+                        try {
+                            TextChannel posts = Objects.requireNonNull(event.getGuild()).getTextChannelById(channelString);
+                            if (posts != null) {
+                                jsonGameRecord.addProperty("gameStartDate", posts.getTimeCreated().toLocalDate().toString());
+                                MessageHistory postsHistory = posts.getHistory();
+                                postsHistory.retrievePast(1).complete();
+                                ml = postsHistory.getRetrievedHistory();
+                                if (!ml.isEmpty()) {
+                                    jsonGameRecord.addProperty("gameEndDate", ml.get(0).getTimeCreated().toLocalDate().toString());
+                                }
                             }
+                        } catch (Exception e) {
+                            // Can't get game start and end, but save everything else
                         }
                     }
                 } catch (Exception e) {
@@ -912,6 +911,10 @@ public class ReportsCommands {
                 }
                 if (gameName.equals("Discord 38"))
                     winner1Faction = "Emperor";
+                else if (gameName.equals("Discord 40")) {
+                    winner1Faction = "BT";
+                    winner2Faction = "Harkonnen";
+                }
                 jsonGameRecord.addProperty("winner1Faction", winner1Faction);
                 if (!winner2Faction.isEmpty())
                     jsonGameRecord.addProperty("winner2Faction", winner2Faction);
