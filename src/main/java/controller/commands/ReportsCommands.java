@@ -584,7 +584,7 @@ public class ReportsCommands {
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
-        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction");
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
@@ -618,7 +618,7 @@ public class ReportsCommands {
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
-        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction");
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
