@@ -325,7 +325,7 @@ public class ReportsCommands {
         for (PlayerPerformance pp : allPlayerPerformance) {
             String winPercentage = new DecimalFormat("%#0.0").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
-            String tensEmoji = tensDigit == 0 ? ":black_large_square:" : numberBoxes.get(tensDigit);
+            String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
             playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(pp.playerName).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
         }
@@ -783,8 +783,8 @@ public class ReportsCommands {
         JsonArray jsonNewGameResults = new JsonArray();
         for (Message m : messages) {
             try {
-                if (csvFileDateTime != null && m.getTimeCreated().isBefore(csvFileDateTime))
-                    break;
+//                if (csvFileDateTime != null && m.getTimeCreated().isBefore(csvFileDateTime))
+//                    break;
                 JsonObject jsonGameRecord = new JsonObject();
                 String raw = m.getContentRaw();
                 String gameName = raw.split("\n")[0];
