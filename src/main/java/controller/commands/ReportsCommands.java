@@ -366,7 +366,7 @@ public class ReportsCommands {
                 + playerFactionGames(gameResults, playerName, "Richese");
         long numWins = gameResults.asList().stream()
                 .map(JsonElement::getAsJsonObject)
-                .filter(jo -> jo.get("winner1Player").getAsString().equals(playerName) || jo.get("winner2Player") != null && jo.get("winner2Faction").getAsString().equals(playerName))
+                .filter(jo -> jo.get("winner1Player").getAsString().equals(playerName) || jo.get("winner2Player") != null && jo.get("winner2Player").getAsString().equals(playerName))
                 .count();
         float winPercentage = numWins/(float)numGames;
         return new PlayerPerformance(playerName, (int) numGames, (int) numWins, winPercentage);
@@ -578,8 +578,14 @@ public class ReportsCommands {
             gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "turn") + ",";
         else
             gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "victoryType") + ",";
-        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner1Faction") + ",";
-        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        String winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner1Faction");
+        if (winner.equals("Richese"))
+            winner = "Rich";
+        gameRecord += winner + ",";
+        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        if (winner.equals("Richese"))
+            winner = "Rich";
+        gameRecord += winner + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner1Player") + ",";
         if (getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction").isEmpty())
             gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "=NA()") + ",";
@@ -606,8 +612,14 @@ public class ReportsCommands {
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "Richese") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "turn") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "victoryType") + ",";
-        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner1Faction") + ",";
-        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        String winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner1Faction");
+        if (winner.equals("Richese"))
+            winner = "Rich";
+        gameRecord += winner + ",";
+        winner = getJsonRecordValueOrBlankString(jsonGameObject, "winner2Faction") + ",";
+        if (winner.equals("Richese"))
+            winner = "Rich";
+        gameRecord += winner + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner1Player") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "winner2Player") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "predictedFaction") + ",";
@@ -904,7 +916,10 @@ public class ReportsCommands {
                 String predictedFaction = "";
                 if (victoryType.equals("BG")) {
                     winner1Faction = "BG";
-                    predictedFaction = strippedEmoji1.equals("BG") ? strippedEmoji2 : strippedEmoji1;
+                    if (gameName.equals("PBD 56: Caladanian Kicks"))
+                        predictedFaction = "Emperor";
+                    else
+                        predictedFaction = strippedEmoji1.equals("BG") ? strippedEmoji2 : strippedEmoji1;
                 } else {
                     winner1Faction = strippedEmoji1;
                     winner2Faction = strippedEmoji2;
