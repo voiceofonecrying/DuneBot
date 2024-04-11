@@ -51,6 +51,7 @@ public class ReportsCommands {
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions),
                 new SubcommandData("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."),
+                new SubcommandData("test-discord-5", "Temp command to test why Discord 5 is not parsing."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user)
         ));
 
@@ -66,6 +67,7 @@ public class ReportsCommands {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event);
             case "active-games" -> responseMessage = activeGames(event);
             case "update-stats" -> responseMessage = updateStats(event);
+            case "test-discord-5" -> responseMessage = testFailingGame(event);
             case "player-record" -> responseMessage = playerRecord(event);
         }
         return responseMessage;
@@ -324,7 +326,7 @@ public class ReportsCommands {
         for (PlayerPerformance pp : allPlayerPerformance) {
             String winPercentage = new DecimalFormat("%#0.0").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
-            String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
+            String tensEmoji = tensDigit == 0 ? ":small_blue_diamond:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
             playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(pp.playerName).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
         }
@@ -385,7 +387,7 @@ public class ReportsCommands {
     }
 
     public static String updateStats(SlashCommandInteractionEvent event) {
-        GameResults gameResults = gatherGameResults(event);
+        GameResults gameResults = gatherGameResults(event, true);
         return gameResults.numNewEntries + " new games were added to parsed results.";
     }
 
@@ -745,7 +747,7 @@ public class ReportsCommands {
         return strippedEmoji.substring(0, 1).toUpperCase() + strippedEmoji.substring(1);
     }
 
-    private static GameResults gatherGameResults(SlashCommandInteractionEvent event) {
+    private static GameResults gatherGameResults(SlashCommandInteractionEvent event, boolean loadNewGames) {
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
         if (category == null)
@@ -780,6 +782,8 @@ public class ReportsCommands {
                 }
             }
         }
+        if (!loadNewGames)
+            return new GameResults(jsonGameResults, 0);
 
         StringBuilder chrisCSVFromJson = new StringBuilder(getChrisHeader());
         StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
@@ -1031,6 +1035,238 @@ public class ReportsCommands {
         return new GameResults(jsonGameResults, jsonNewGameResults.size());
     }
 
+    private static String testFailingGame(SlashCommandInteractionEvent event) {
+        String progress = "Parsing progress:\n";
+        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
+        if (category == null)
+            throw new IllegalStateException("The DUNE STATISTICS category was not found.");
+        TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElse(null);
+        if (gameResults == null)
+            throw new IllegalStateException("The game-results channel was not found.");
+        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElse(null);
+        if (playerStatsChannel == null)
+            throw new IllegalStateException("The player-stats channel was not found.");
+        ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElse(null);
+        if (parsedResults == null)
+            parsedResults = playerStatsChannel.createThreadChannel("parsed-results").complete();
+
+        JsonArray jsonGameResults = new JsonArray();
+        MessageHistory h = parsedResults.getHistory();
+        h.retrievePast(1).complete();
+        List<Message> ml = h.getRetrievedHistory();
+        String lastMessageID = "";
+        StringBuilder chrisCSVFromJson = new StringBuilder(getChrisHeader());
+        StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
+        MessageHistory messageHistory;
+        messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).complete();
+        List<Message> messages = messageHistory.getRetrievedHistory();
+        JsonArray jsonNewGameResults = new JsonArray();
+        for (Message m : messages) {
+            try {
+                JsonObject jsonGameRecord = new JsonObject();
+                String raw = m.getContentRaw();
+                String gameName = raw.split("\n")[0];
+                if (gameName.indexOf("__") == 0)
+                    gameName = gameName.substring(2, gameName.length() - 2);
+                if (!gameName.equals("Discord 5"))
+                    continue;
+                progress += "Found gameName\n";
+                jsonGameRecord.addProperty("gameName", gameName);
+                jsonGameRecord.addProperty("messageID", m.getId());
+                jsonGameRecord.addProperty("archiveDate", m.getTimeCreated().toLocalDate().toString());
+                int modStart = raw.indexOf("Moderator");
+                int factionsStart = raw.indexOf("Factions");
+                if (modStart == -1)
+                    modStart = factionsStart;
+                int winnersStart = raw.indexOf("Winner");
+                int summaryStart = raw.indexOf("Summary");
+                progress += "Found sections\n";
+
+                try {
+                    String channelString = raw.substring(0, modStart);
+                    int channelIdStart = channelString.indexOf("<#");
+                    boolean foundChannelId = false;
+                    if (channelIdStart != -1) {
+                        channelString = channelString.substring(channelString.indexOf("<#"));
+                        channelString = channelString.substring(2, channelString.indexOf(">"));
+                        foundChannelId = true;
+                    } else {
+                        channelIdStart = channelString.indexOf("https://discord.com/channels/");
+                        channelString = channelString.substring(channelIdStart + "https://discord.com/channels/".length() + 1);
+                        if (channelIdStart != -1) channelIdStart = channelString.indexOf("/");
+                        if (channelIdStart != -1) {
+                            channelString = channelString.substring(channelIdStart + 1, channelString.indexOf("\n"));
+                            foundChannelId = true;
+                        }
+                    }
+                    if (foundChannelId) {
+                        try {
+                            TextChannel posts = Objects.requireNonNull(event.getGuild()).getTextChannelById(channelString);
+                            if (posts != null) {
+                                jsonGameRecord.addProperty("gameStartDate", posts.getTimeCreated().toLocalDate().toString());
+                                MessageHistory postsHistory = posts.getHistory();
+                                postsHistory.retrievePast(1).complete();
+                                ml = postsHistory.getRetrievedHistory();
+                                if (!ml.isEmpty()) {
+                                    jsonGameRecord.addProperty("gameEndDate", ml.get(0).getTimeCreated().toLocalDate().toString());
+                                }
+                            }
+                        } catch (Exception e) {
+                            progress += "Cound not find channel (2)\n";
+                            // Can't get game start and end, but save everything else
+                        }
+                        progress += "Found channel and updated";
+                    }
+                } catch (Exception e) {
+                    progress += "Cound not find channel (2)\n";
+                    // Can't get a channel to find last post date
+                }
+
+                String[] lines;
+                String moderator = "";
+                String modString = raw.substring(modStart, factionsStart);
+                if (!modString.isEmpty()) {
+                    lines = modString.split("\n");
+                    Matcher modMatcher = playerTags.matcher(modString);
+                    if (modMatcher.find())
+                        moderator = "@" + event.getJDA().retrieveUserById(modMatcher.group(1)).complete().getName();
+                    else
+                        moderator = lines[1].substring(2).split("\\s+", 2)[0];
+                } else if (gameName.equals("Discord 27"))
+                    moderator = "@voiceofonecrying";
+                jsonGameRecord.addProperty("moderator", moderator);
+                progress += "Completed moderator section\n";
+
+                String winnersString;
+                String strippedEmoji1 = "";
+                String strippedEmoji2 = "";
+                if (summaryStart == -1)
+                    winnersString = raw.substring(winnersStart);
+                else
+                    winnersString = raw.substring(winnersStart, summaryStart);
+                Matcher turnMatcher = turn.matcher(winnersString);
+                String victoryType = "";
+                if (winnersString.toLowerCase().contains("predict"))
+                    victoryType = "BG";
+                else if (winnersString.toLowerCase().contains("co-occup"))
+                    victoryType = "E";
+                else if (winnersString.contains("Guild Default"))
+                    victoryType = "G";
+                else if (winnersString.contains(":guild: victory condition"))
+                    victoryType = "G";
+                else if (winnersString.contains(tagEmojis(event,":guild: Default")))
+                    victoryType = "G";
+                else if (gameName.equals("Discord 26"))
+                    victoryType = "F";
+                else if (winnersString.toLowerCase().contains("victory condition")) {
+                    if (winnersString.toLowerCase().contains("guild"))
+                        victoryType = "G";
+                    else if (winnersString.toLowerCase().contains("fremen"))
+                        victoryType = "F";
+                    else if (winnersString.toLowerCase().contains("ecaz"))
+                        victoryType = "E";
+                }
+                progress += "Completed victory type section\n";
+
+                String turn = "";
+                if (!victoryType.equals("G") && !victoryType.equals("F") && turnMatcher.find())
+                    turn = turnMatcher.group(1);
+                jsonGameRecord.addProperty("victoryType", victoryType);
+                jsonGameRecord.addProperty("turn", turn);
+                winnersString = winnersString.substring(winnersString.indexOf("\n"));
+                Matcher taggedMatcher = taggedEmojis.matcher(winnersString);
+                Matcher untaggedMatcher = untaggedEmojis.matcher(winnersString);
+                if (taggedMatcher.find()) {
+                    strippedEmoji1 = taggedMatcher.group(1);
+                    if (taggedMatcher.find())
+                        strippedEmoji2 = taggedMatcher.group(1);
+                    else if (untaggedMatcher.find())
+                        strippedEmoji2 = untaggedMatcher.group(1);
+                } else if (untaggedMatcher.find()) {
+                    strippedEmoji1 = untaggedMatcher.group(1);
+                    if (taggedMatcher.find())
+                        strippedEmoji2 = taggedMatcher.group(1);
+                    else if (untaggedMatcher.find())
+                        strippedEmoji2 = untaggedMatcher.group(1);
+                }
+                strippedEmoji1 = capitalize(strippedEmoji1);
+                strippedEmoji2 = capitalize(strippedEmoji2);
+                String winner1Faction;
+                String winner2Faction = "";
+                String predictedFaction = "";
+                if (victoryType.equals("BG")) {
+                    winner1Faction = "BG";
+                    if (gameName.equals("PBD 56: Caladanian Kicks"))
+                        predictedFaction = "Emperor";
+                    else
+                        predictedFaction = strippedEmoji1.equals("BG") ? strippedEmoji2 : strippedEmoji1;
+                } else {
+                    winner1Faction = strippedEmoji1;
+                    winner2Faction = strippedEmoji2;
+                }
+                if (gameName.equals("Discord 38"))
+                    winner1Faction = "Emperor";
+                else if (gameName.equals("Discord 40")) {
+                    winner1Faction = "BT";
+                    winner2Faction = "Harkonnen";
+                }
+                jsonGameRecord.addProperty("winner1Faction", winner1Faction);
+                if (!winner2Faction.isEmpty())
+                    jsonGameRecord.addProperty("winner2Faction", winner2Faction);
+                if (!predictedFaction.isEmpty())
+                    jsonGameRecord.addProperty("predictedFaction", predictedFaction);
+                progress += "Completed winners section\n";
+
+                String factionsString = raw.substring(factionsStart, winnersStart);
+                lines = factionsString.split("\n");
+                String playerName;
+                for (String s : lines) {
+                    if (s.contains("Factions") || s.isEmpty())
+                        continue;
+                    taggedMatcher = taggedEmojis.matcher(s);
+                    untaggedMatcher = untaggedEmojis.matcher(s);
+                    Matcher matcherThatFoundEmoji;
+                    String factionName;
+                    if (taggedMatcher.find()) {
+                        factionName = taggedMatcher.group(1);
+                        matcherThatFoundEmoji = taggedMatcher;
+                    } else if (untaggedMatcher.find()) {
+                        factionName = untaggedMatcher.group(1);
+                        matcherThatFoundEmoji = untaggedMatcher;
+                    } else {
+                        continue;
+                    }
+                    Matcher matcher2 = playerTags.matcher(s.substring(matcherThatFoundEmoji.end()));
+                    if (matcher2.find())
+                        playerName = "@" + event.getJDA().retrieveUserById(matcher2.group(1)).complete().getName();
+                    else {
+                        playerName = s.substring(matcherThatFoundEmoji.end());
+                        if (playerName.indexOf(" - ") == 0)
+                            playerName = playerName.substring(3).split("\\s+", 2)[0];
+                    }
+                    jsonGameRecord.addProperty(capitalize(factionName), playerName);
+                }
+                progress += "Completed standard factions section\n";
+                if (gameName.equals("Discord 32"))
+                    jsonGameRecord.addProperty("Fremen", "@jefwiodrade");
+                else if (gameName.equals("Discord 47"))
+                    jsonGameRecord.addProperty("Richese", "@jadedaf");
+                jsonGameRecord.addProperty("winner1Player", jsonGameRecord.get(jsonGameRecord.get("winner1Faction").getAsString()).getAsString());
+                if (!winner2Faction.isEmpty())
+                    jsonGameRecord.addProperty("winner2Player", jsonGameRecord.get(jsonGameRecord.get("winner2Faction").getAsString()).getAsString());
+                if (!predictedFaction.isEmpty())
+                    jsonGameRecord.addProperty("predictedPlayer", jsonGameRecord.get(jsonGameRecord.get("predictedFaction").getAsString()).getAsString());
+                jsonNewGameResults.add(jsonGameRecord);
+                progress += "Completed factions section\n";
+            } catch (Exception e) {
+                return progress + "\nAfter exception thrown";
+                // Not a game result message, so skip it.
+            }
+        }
+        return progress + "\n parsed successfully";
+    }
+
     public static RichCustomEmoji getEmoji(SlashCommandInteractionEvent event, String emojiName) {
         Map<String, RichCustomEmoji> emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
         return emojis.get(emojiName.replace(":", ""));
@@ -1059,7 +1295,7 @@ public class ReportsCommands {
     }
 
     private static String playerRecord(SlashCommandInteractionEvent event, String playerName) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+        JsonArray gameResults = gatherGameResults(event, false).gameResults;
         PlayerRecord pr = getPlayerRecord(gameResults, "@" + playerName);
         String returnString = playerName + " has played in " + pr.games + " games and won " + pr.wins;
         if (pr.atreidesGames > 0) {
