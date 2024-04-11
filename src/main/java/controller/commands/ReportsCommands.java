@@ -785,6 +785,7 @@ public class ReportsCommands {
                 if (gameName.indexOf("__") == 0)
                     gameName = gameName.substring(2, gameName.length() - 2);
                 jsonGameRecord.addProperty("gameName", gameName);
+                jsonGameRecord.addProperty("messageID", m.getId());
                 jsonGameRecord.addProperty("archiveDate", m.getTimeCreated().toLocalDate().toString());
                 int modStart = raw.indexOf("Moderator");
                 int factionsStart = raw.indexOf("Factions");
