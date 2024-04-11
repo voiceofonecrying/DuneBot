@@ -1037,6 +1037,7 @@ public class ReportsCommands {
 
     private static String testFailingGame(SlashCommandInteractionEvent event) {
         String progress = "Parsing progress:\n";
+        JsonObject jsonGameRecord = new JsonObject();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
         if (category == null)
@@ -1064,7 +1065,6 @@ public class ReportsCommands {
         JsonArray jsonNewGameResults = new JsonArray();
         for (Message m : messages) {
             try {
-                JsonObject jsonGameRecord = new JsonObject();
                 String raw = m.getContentRaw();
                 String gameName = raw.split("\n")[0];
                 if (gameName.indexOf("__") == 0)
@@ -1113,7 +1113,7 @@ public class ReportsCommands {
                                 }
                             }
                         } catch (Exception e) {
-                            progress += "Cound not find channel (2)\n";
+                            progress += "Cound not find channel (1)\n";
                             // Can't get game start and end, but save everything else
                         }
                         progress += "Found channel and updated";
@@ -1264,7 +1264,7 @@ public class ReportsCommands {
                 // Not a game result message, so skip it.
             }
         }
-        return progress + "\n parsed successfully";
+        return progress + "\n" + jsonGameRecord.toString();
     }
 
     public static RichCustomEmoji getEmoji(SlashCommandInteractionEvent event, String emojiName) {
