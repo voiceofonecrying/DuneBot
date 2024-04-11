@@ -754,6 +754,7 @@ public class ReportsCommands {
         h.retrievePast(1).complete();
         List<Message> ml = h.getRetrievedHistory();
         OffsetDateTime csvFileDateTime = null;
+        String lastMessageID = "";
         if (ml.size() == 1) {
             List<Message.Attachment> messageList =  ml.get(0).getAttachments();
             if (!messageList.isEmpty()) {
@@ -764,6 +765,7 @@ public class ReportsCommands {
                     future.get().close();
                     jsonGameResults = JsonParser.parseString(jsonResults).getAsJsonArray();
                     csvFileDateTime = ml.get(0).getTimeCreated();
+                    lastMessageID = jsonGameResults.get(jsonGameResults.size() - 1).getAsJsonObject().get("messageID").getAsString();
                 } catch (IOException | InterruptedException | ExecutionException e) {
                     // Could not load from csv file. Complete new set will be generated from game-results
                 }
@@ -772,7 +774,11 @@ public class ReportsCommands {
 
         StringBuilder chrisCSVFromJson = new StringBuilder(getChrisHeader());
         StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
-        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).complete();
+        MessageHistory messageHistory;
+        if (lastMessageID.isEmpty())
+            messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).complete();
+        else
+            messageHistory = MessageHistory.getHistoryAfter(gameResults, lastMessageID).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
         JsonArray jsonNewGameResults = new JsonArray();
         for (Message m : messages) {
