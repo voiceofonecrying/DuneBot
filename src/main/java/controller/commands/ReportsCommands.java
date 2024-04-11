@@ -863,7 +863,7 @@ public class ReportsCommands {
                     victoryType = "G";
                 else if (winnersString.contains(":guild: victory condition"))
                     victoryType = "G";
-                else if (winnersString.contains(":guild: Default"))
+                else if (winnersString.contains(tagEmojis(event,":guild: Default")))
                     victoryType = "G";
                 else if (gameName.equals("Discord 26"))
                     victoryType = "F";
@@ -952,6 +952,8 @@ public class ReportsCommands {
                 }
                 if (gameName.equals("Discord 32"))
                     jsonGameRecord.addProperty("Fremen", "@jefwiodrade");
+                else if (gameName.equals("Discord 47"))
+                    jsonGameRecord.addProperty("Richese", "@jadedaf");
                 jsonGameRecord.addProperty("winner1Player", jsonGameRecord.get(jsonGameRecord.get("winner1Faction").getAsString()).getAsString());
                 if (!winner2Faction.isEmpty())
                     jsonGameRecord.addProperty("winner2Player", jsonGameRecord.get(jsonGameRecord.get("winner2Faction").getAsString()).getAsString());
