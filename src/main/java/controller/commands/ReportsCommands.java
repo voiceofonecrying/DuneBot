@@ -326,7 +326,7 @@ public class ReportsCommands {
         for (PlayerPerformance pp : allPlayerPerformance) {
             String winPercentage = new DecimalFormat("%#0.0").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
-            String tensEmoji = tensDigit == 0 ? ":black-small-square:" : numberBoxes.get(tensDigit);
+            String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
             playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(pp.playerName).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
         }
@@ -1105,7 +1105,9 @@ public class ReportsCommands {
                                 jsonGameRecord.addProperty("gameStartDate", posts.getTimeCreated().toLocalDate().toString());
                                 progress += "started " + posts.getTimeCreated().toLocalDate().toString() + ", ";
                                 MessageHistory postsHistory = posts.getHistory();
+                                progress += " got history, ";
                                 postsHistory.retrievePast(1).complete();
+                                progress += " retrieved past, ";
                                 ml = postsHistory.getRetrievedHistory();
                                 progress += "ml.size() = " + ml.size() + "\n";
                                 if (!ml.isEmpty()) {
@@ -1113,6 +1115,7 @@ public class ReportsCommands {
                                 }
                             }
                         } catch (Exception e) {
+                            progress += e.getMessage() + " at line " + e.getStackTrace()[1].getLineNumber();
                             // Can't get game start and end, but save everything else
                         }
                     }
