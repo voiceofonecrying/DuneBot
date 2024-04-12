@@ -792,9 +792,9 @@ public class ReportsCommands {
         StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
         MessageHistory messageHistory;
         if (lastMessageID.isEmpty())
-            messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).complete();
+            messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).limit(10).complete();
         else
-            messageHistory = MessageHistory.getHistoryAfter(gameResults, lastMessageID).complete();
+            messageHistory = MessageHistory.getHistoryAfter(gameResults, lastMessageID).limit(10).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
         JsonArray jsonNewGameResults = new JsonArray();
         for (Message m : messages) {
@@ -832,12 +832,17 @@ public class ReportsCommands {
                             foundChannelId = true;
                         }
                     }
-                    if (!foundChannelId) {
-                        if (gameName.equals("Dune 22b")) {
+                    switch (gameName) {
+                        case "Dune 22b" -> {
                             channelString = "952976095697829918";
                             foundChannelId = true;
-                        } else if (gameName.equals("Dune 22c")) {
+                        }
+                        case "Dune 22c" -> {
                             channelString = "962367250101325975";
+                            foundChannelId = true;
+                        }
+                        case "Discord 23" -> {
+                            channelString = "1097244553947389992";
                             foundChannelId = true;
                         }
                     }
@@ -1086,7 +1091,7 @@ public class ReportsCommands {
                 String gameName = raw.split("\n")[0];
                 if (gameName.indexOf("__") == 0)
                     gameName = gameName.substring(2, gameName.length() - 2);
-                if (!gameName.equals("Discord 13") && !gameName.equals("Discord 10"))
+                if (!gameName.equals("Dune 22b") && !gameName.equals("Dune 22c"))
                     continue;
                 progress += "gameName = " + gameName + "\n";
                 jsonGameRecord.addProperty("gameName", gameName);
@@ -1117,6 +1122,20 @@ public class ReportsCommands {
                             channelString = channelString.substring(channelIdStart + 1, channelString.indexOf("\n"));
                             foundChannelId = true;
                             progress += channelString + "(2), ";
+                        }
+                    }
+                    switch (gameName) {
+                        case "Dune 22b" -> {
+                            channelString = "952976095697829918";
+                            foundChannelId = true;
+                        }
+                        case "Dune 22c" -> {
+                            channelString = "962367250101325975";
+                            foundChannelId = true;
+                        }
+                        case "Discord 23" -> {
+                            channelString = "1097244553947389992";
+                            foundChannelId = true;
                         }
                     }
                     if (foundChannelId) {
