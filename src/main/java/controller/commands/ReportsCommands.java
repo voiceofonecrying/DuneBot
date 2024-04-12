@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -548,7 +549,7 @@ public class ReportsCommands {
     }
 
     public static String getHeader() {
-        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Rich,Turn,Win Type,Faction 1,Faction 2,Winner 1,Winner 2,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Archived";
+        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Rich,Turn,Win Type,Faction 1,Faction 2,Winner 1,Winner 2,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
     }
 
     public static String getChrisHeader() {
@@ -629,7 +630,9 @@ public class ReportsCommands {
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "moderator") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "gameStartDate") + ",";
         gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "gameEndDate") + ",";
-        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "archiveDate");
+        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "gameDuration") + ",";
+        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "archiveDate") + ",";
+        gameRecord += getJsonRecordValueOrBlankString(jsonGameObject, "daysUntilArchive");
         return gameRecord;
     }
 
@@ -803,7 +806,8 @@ public class ReportsCommands {
                     gameName = gameName.substring(2, gameName.length() - 2);
                 jsonGameRecord.addProperty("gameName", gameName);
                 jsonGameRecord.addProperty("messageID", m.getId());
-                jsonGameRecord.addProperty("archiveDate", m.getTimeCreated().toLocalDate().toString());
+                LocalDate archiveDate = m.getTimeCreated().toLocalDate();
+                jsonGameRecord.addProperty("archiveDate", archiveDate.toString());
                 int modStart = raw.indexOf("Moderator");
                 int factionsStart = raw.indexOf("Factions");
                 if (modStart == -1)
@@ -828,16 +832,32 @@ public class ReportsCommands {
                             foundChannelId = true;
                         }
                     }
+                    if (!foundChannelId) {
+                        if (gameName.equals("Dune 22b")) {
+                            channelString = "952976095697829918";
+                            foundChannelId = true;
+                        } else if (gameName.equals("Dune 22c")) {
+                            channelString = "962367250101325975";
+                            foundChannelId = true;
+                        }
+                    }
                     if (foundChannelId) {
                         try {
                             TextChannel posts = Objects.requireNonNull(event.getGuild()).getTextChannelById(channelString);
                             if (posts != null) {
-                                jsonGameRecord.addProperty("gameStartDate", posts.getTimeCreated().toLocalDate().toString());
+                                LocalDate startDate = posts.getTimeCreated().toLocalDate();
+                                jsonGameRecord.addProperty("gameStartDate", startDate.toString());
                                 MessageHistory postsHistory = posts.getHistory();
                                 postsHistory.retrievePast(1).complete();
                                 ml = postsHistory.getRetrievedHistory();
                                 if (!ml.isEmpty()) {
-                                    jsonGameRecord.addProperty("gameEndDate", ml.get(0).getTimeCreated().toLocalDate().toString());
+                                    LocalDate endDate = ml.get(0).getTimeCreated().toLocalDate();
+                                    jsonGameRecord.addProperty("gameEndDate", endDate.toString());
+                                    jsonGameRecord.addProperty("gameDuration", "" + startDate.datesUntil(endDate).count());
+                                    if (endDate.isAfter(archiveDate))
+                                        jsonGameRecord.addProperty("daysUntilArchive", "-" + archiveDate.datesUntil(endDate).count());
+                                    else
+                                        jsonGameRecord.addProperty("daysUntilArchive", "" + endDate.datesUntil(archiveDate).count());
                                 }
                             }
                         } catch (Exception e) {
@@ -897,7 +917,7 @@ public class ReportsCommands {
                     turn = turnMatcher.group(1);
                 jsonGameRecord.addProperty("victoryType", victoryType);
                 jsonGameRecord.addProperty("turn", turn);
-                if (winnersString.contains("victory condition"))
+                if (!winnersString.toLowerCase().contains("predict"))
                     winnersString = winnersString.substring(winnersString.indexOf("\n"));
                 Matcher taggedMatcher = taggedEmojis.matcher(winnersString);
                 Matcher untaggedMatcher = untaggedEmojis.matcher(winnersString);
@@ -1066,12 +1086,13 @@ public class ReportsCommands {
                 String gameName = raw.split("\n")[0];
                 if (gameName.indexOf("__") == 0)
                     gameName = gameName.substring(2, gameName.length() - 2);
-                if (!gameName.equals("Dune 24") && !gameName.equals("Dune 24b") && !gameName.equals("Discord 1") && !gameName.equals("Discord 2"))
+                if (!gameName.equals("Discord 13") && !gameName.equals("Discord 10"))
                     continue;
                 progress += "gameName = " + gameName + "\n";
                 jsonGameRecord.addProperty("gameName", gameName);
                 jsonGameRecord.addProperty("messageID", m.getId());
-                jsonGameRecord.addProperty("archiveDate", m.getTimeCreated().toLocalDate().toString());
+                LocalDate archiveDate = m.getTimeCreated().toLocalDate();
+                jsonGameRecord.addProperty("archiveDate", archiveDate.toString());
                 int modStart = raw.indexOf("Moderator");
                 int factionsStart = raw.indexOf("Factions");
                 if (modStart == -1)
