@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
+import net.dv8tion.jda.internal.utils.tuple.MutableTriple;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 import java.io.IOException;
@@ -53,7 +54,9 @@ public class ReportsCommands {
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions),
                 new SubcommandData("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
-                new SubcommandData("o6-players", "Who has played all original six factions?")
+                new SubcommandData("o6-players", "Who has played all original six factions?"),
+                new SubcommandData("o6-winners", "Who has won with all original six factions?"),
+                new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?")
         ));
 
         return commandData;
@@ -70,6 +73,8 @@ public class ReportsCommands {
             case "update-stats" -> responseMessage = updateStats(event);
             case "player-record" -> responseMessage = playerRecord(event);
             case "o6-players" -> responseMessage = o6Players(event);
+            case "o6-winners" -> responseMessage = o6Winners(event);
+            case "high-faction-plays" -> responseMessage = highFactionPlays(event);
         }
         return responseMessage;
     }
@@ -327,7 +332,7 @@ public class ReportsCommands {
         for (String player : players) {
             allPlayerPerformance.add(playerPerformance(gameResults, player));
         }
-        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? Long.compare(a.numGames, b.numGames) : Long.compare(b.numWins, a.numWins));
+        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         StringBuilder playerStatsString = new StringBuilder("__Supreme Ruler of Arrakis__");
         for (PlayerPerformance pp : allPlayerPerformance) {
             String winPercentage = new DecimalFormat("%#0.0").format(pp.winPercentage);
@@ -353,14 +358,14 @@ public class ReportsCommands {
         }
     }
 
-    private static long playerFactionGames(JsonArray gameResults, String playerName, String factionName) {
+    private static int playerFactionGames(JsonArray gameResults, String playerName, String factionName) {
         return gameResults.asList().stream()
                 .map(gr -> gr.getAsJsonObject().get(factionName)).filter(v -> v != null && v.getAsString().equals(playerName))
-                .count();
+                .toList().size();
     }
 
     private static PlayerPerformance playerPerformance(JsonArray gameResults, String playerName) {
-        long numGames = playerFactionGames(gameResults, playerName, "Atreides")
+        int numGames = playerFactionGames(gameResults, playerName, "Atreides")
                 + playerFactionGames(gameResults, playerName, "BG")
                 + playerFactionGames(gameResults, playerName, "BT")
                 + playerFactionGames(gameResults, playerName, "CHOAM")
@@ -372,12 +377,12 @@ public class ReportsCommands {
                 + playerFactionGames(gameResults, playerName, "Ix")
                 + playerFactionGames(gameResults, playerName, "Moritani")
                 + playerFactionGames(gameResults, playerName, "Richese");
-        long numWins = gameResults.asList().stream()
+        int numWins = gameResults.asList().stream()
                 .map(JsonElement::getAsJsonObject)
                 .filter(jo -> jo.get("winner1Player").getAsString().equals(playerName) || jo.get("winner2Player") != null && jo.get("winner2Player").getAsString().equals(playerName))
-                .count();
+                .toList().size();
         float winPercentage = numWins/(float)numGames;
-        return new PlayerPerformance(playerName, (int) numGames, (int) numWins, winPercentage);
+        return new PlayerPerformance(playerName, numGames, numWins, winPercentage);
     }
 
     public static String writeModeratorStats(JsonArray gameResults) {
@@ -405,11 +410,11 @@ public class ReportsCommands {
 
     private static class FactionPerformance {
         String factionEmoji;
-        long numGames;
-        long numWins;
+        int numGames;
+        int numWins;
         float winPercentage;
 
-        public FactionPerformance(String factionEmoji, long numGames, long numWins, float winPercentage) {
+        public FactionPerformance(String factionEmoji, int numGames, int numWins, float winPercentage) {
             this.factionEmoji = factionEmoji;
             this.numGames = numGames;
             this.numWins = numWins;
@@ -418,13 +423,13 @@ public class ReportsCommands {
     }
 
     private static FactionPerformance factionPerformance(JsonArray gameResults, String factionName, String factionEmoji) {
-        long numGames = gameResults.asList().stream()
+        int numGames = gameResults.asList().stream()
                 .map(gr -> gr.getAsJsonObject().get(factionName)).filter(v -> v != null && !v.getAsString().isEmpty())
-                .count();
-        long numWins = gameResults.asList().stream()
+                .toList().size();
+        int numWins = gameResults.asList().stream()
                 .map(JsonElement::getAsJsonObject)
                 .filter(jo -> jo.get("winner1Faction").getAsString().equals(factionName) || jo.get("winner2Faction") != null && jo.get("winner2Faction").getAsString().equals(factionName))
-                .count();
+                .toList().size();
         float winPercentage = numWins/(float)numGames;
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage);
     }
@@ -454,11 +459,11 @@ public class ReportsCommands {
 
     private static class TurnStats {
         String turn;
-        long numGames;
-        long numWins;
+        int numGames;
+        int numWins;
         float winPercentage;
 
-        public TurnStats(String turn, long numGames, long numWins, float winPercentage) {
+        public TurnStats(String turn, int numGames, int numWins, float winPercentage) {
             this.turn = turn;
             this.numGames = numGames;
             this.numWins = numWins;
@@ -467,52 +472,52 @@ public class ReportsCommands {
     }
 
     private static TurnStats turnStats(JsonArray gameResults, String turn) {
-        long numGames;
-        long numWins;
+        int numGames;
+        int numWins;
         String marker;
 
         switch (turn) {
             case "F" -> {
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Fremen")).filter(v -> v != null && !v.getAsString().isEmpty())
-                        .count();
+                        .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("F"))
-                        .count();
+                        .toList().size();
                 marker = Emojis.FREMEN;
             }
             case "G" -> {
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Guild")).filter(v -> v != null && !v.getAsString().isEmpty())
-                        .count();
+                        .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("G"))
-                        .count();
+                        .toList().size();
                 marker = Emojis.GUILD;
             }
             case "BG" -> {
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("BG")).filter(v -> v != null && !v.getAsString().isEmpty())
-                        .count();
+                        .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("BG"))
-                        .count();
+                        .toList().size();
                 marker = Emojis.BG;
             }
             case "Ecaz" -> {
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Ecaz")).filter(v -> v != null && !v.getAsString().isEmpty())
-                        .count();
+                        .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("Ecaz"))
-                        .count();
+                        .toList().size();
                 marker = Emojis.ECAZ;
             }
             default -> {
                 numGames = gameResults.asList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("turn")).filter(v -> v != null && v.getAsString().equals(turn))
-                        .count();
+                        .toList().size();
                 marker = numberBoxes.get(Integer.parseInt(turn));
             }
         }
@@ -545,10 +550,10 @@ public class ReportsCommands {
     }
 
     private static String soloVictories(JsonArray gameResults) {
-        long numGames = gameResults.asList().size();
-        long numWins = gameResults.asList().stream()
+        int numGames = gameResults.asList().size();
+        int numWins = gameResults.asList().stream()
                 .map(gr -> gr.getAsJsonObject().get("winner2Faction")).filter(v -> v == null || v.getAsString().isEmpty())
-                .count();
+                .toList().size();
         String winPercentage = new DecimalFormat("%#0.0").format(numWins / (float) numGames);
         return "__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames;
     }
@@ -1103,29 +1108,30 @@ public class ReportsCommands {
         StringBuilder playedSix = new StringBuilder();
         StringBuilder playedFive = new StringBuilder();
         for (String playerName : players) {
+            PlayerRecord pr = getPlayerRecord(gameResults, playerName);
             int factionsPlayed = 0;
             String missedFactionEmojis = "";
-            if (playerFactionGames(gameResults, playerName, "Atreides") != 0)
+            if (pr.atreidesGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.ATREIDES;
-            if (playerFactionGames(gameResults, playerName, "BG") != 0)
+            if (pr.bgGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.BG;
-            if (playerFactionGames(gameResults, playerName, "Emperor") != 0)
+            if (pr.emperorGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.EMPEROR;
-            if (playerFactionGames(gameResults, playerName, "Fremen") != 0)
+            if (pr.fremenGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.FREMEN;
-            if (playerFactionGames(gameResults, playerName, "Guild") != 0)
+            if (pr.guildGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.GUILD;
-            if (playerFactionGames(gameResults, playerName, "Harkonnen") != 0)
+            if (pr.harkonnenGames != 0)
                 factionsPlayed++;
             else
                 missedFactionEmojis += Emojis.HARKONNEN;
@@ -1136,8 +1142,77 @@ public class ReportsCommands {
                 playedFive.append(playerName).append(" is missing only ").append(missedFactionEmojis).append("\n");
         }
         if (playedSix.isEmpty() && playedFive.isEmpty())
-            return "No players have played 5 of the original 6 factions.";
+            return "No players have played all original 6 factions.";
         return tagEmojis(event, playedSix + playedFive.toString());
+    }
+
+    public static String o6Winners(SlashCommandInteractionEvent event) {
+        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        Set<String> players = getAllPlayers(gameResults);
+        StringBuilder wonAsSix = new StringBuilder();
+        StringBuilder wonAsFive = new StringBuilder();
+        for (String playerName : players) {
+            PlayerRecord pr = getPlayerRecord(gameResults, playerName);
+            int factionsWonAs = 0;
+            String missedFactionEmojis = "";
+            if (pr.atreidesWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.ATREIDES;
+            if (pr.bgWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.BG;
+            if (pr.emperorWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.EMPEROR;
+            if (pr.fremenWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.FREMEN;
+            if (pr.guildWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.GUILD;
+            if (pr.harkonnenWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.HARKONNEN;
+
+            if (factionsWonAs == 6)
+                wonAsSix.append(playerName).append(" has won as all 6.\n");
+            else if (factionsWonAs == 5)
+                wonAsFive.append(playerName).append(" has won as 5, missing only ").append(missedFactionEmojis).append("\n");
+        }
+        if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
+            return "No players have won with all original 6 factions.";
+        return tagEmojis(event, wonAsSix + wonAsFive.toString());
+    }
+
+    private static final List<String> factionNames = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
+
+    private static String highFactionPlays(SlashCommandInteractionEvent event) {
+        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        Set<String> players = getAllPlayers(gameResults);
+        StringBuilder maxFactionPlays = new StringBuilder();
+        StringBuilder maxMinusOne = new StringBuilder();
+        List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
+        for (String playerName : players) {
+            for (String factionName : factionNames) {
+                playerFactionCounts.add(MutableTriple.of(playerName, factionName, playerFactionGames(gameResults, playerName, factionName)));
+            }
+        }
+        int maxGames = playerFactionCounts.stream().map(t -> t.right).mapToInt(t -> t).filter(t -> t >= 0).max().orElse(0);
+        for (MutableTriple<String, String, Integer> t : playerFactionCounts) {
+            if (t.right == maxGames)
+                maxFactionPlays.append(t.left).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times!\n");
+            else if (t.right == maxGames - 1)
+                maxMinusOne.append(t.left).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times.\n");
+        }
+        if (maxFactionPlays.isEmpty() && maxMinusOne.isEmpty())
+            return "No players have won.";
+        return tagEmojis(event, maxFactionPlays + maxMinusOne.toString());
     }
 
     private static String playerRecord(SlashCommandInteractionEvent event, String playerName) {
