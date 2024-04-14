@@ -1227,18 +1227,6 @@ public class ReportsCommands {
             returnString += "\n" + Emojis.BG + " " + pr.bgGames + " games";
             if (pr.bgWins > 0) returnString += ", " + pr.bgWins + " wins";
         }
-        if (pr.btGames > 0) {
-            returnString += "\n" + Emojis.BT + " " + pr.btGames + " games";
-            if (pr.btWins > 0) returnString += ", " + pr.btWins + " wins";
-        }
-        if (pr.choamGames > 0) {
-            returnString += "\n" + Emojis.CHOAM + " " + pr.choamGames + " games";
-            if (pr.choamWins > 0) returnString += ", " + pr.choamWins + " wins";
-        }
-        if (pr.ecazGames > 0) {
-            returnString += "\n" + Emojis.ECAZ + " " + pr.ecazGames + " games";
-            if (pr.ecazWins > 0) returnString += ", " + pr.ecazWins + " wins";
-        }
         if (pr.emperorGames > 0) {
             returnString += "\n" + Emojis.EMPEROR + " " + pr.emperorGames + " games";
             if (pr.emperorWins > 0) returnString += ", " + pr.emperorWins + " wins";
@@ -1255,17 +1243,29 @@ public class ReportsCommands {
             returnString += "\n" + Emojis.HARKONNEN + " " + pr.harkonnenGames + " games";
             if (pr.harkonnenWins > 0) returnString += ", " + pr.harkonnenWins + " wins";
         }
+        if (pr.btGames > 0) {
+            returnString += "\n" + Emojis.BT + " " + pr.btGames + " games";
+            if (pr.btWins > 0) returnString += ", " + pr.btWins + " wins";
+        }
         if (pr.ixGames > 0) {
             returnString += "\n" + Emojis.IX + " " + pr.ixGames + " games";
             if (pr.ixWins > 0) returnString += ", " + pr.ixWins + " wins";
         }
-        if (pr.moritaniGames > 0) {
-            returnString += "\n" + Emojis.MORITANI + " " + pr.moritaniGames + " games";
-            if (pr.moritaniWins > 0) returnString += ", " + pr.moritaniWins + " wins";
+        if (pr.choamGames > 0) {
+            returnString += "\n" + Emojis.CHOAM + " " + pr.choamGames + " games";
+            if (pr.choamWins > 0) returnString += ", " + pr.choamWins + " wins";
         }
         if (pr.richGames > 0) {
             returnString += "\n" + Emojis.RICHESE + " " + pr.richGames + " games";
             if (pr.richWins > 0) returnString += ", " + pr.richWins + " wins";
+        }
+        if (pr.ecazGames > 0) {
+            returnString += "\n" + Emojis.ECAZ + " " + pr.ecazGames + " games";
+            if (pr.ecazWins > 0) returnString += ", " + pr.ecazWins + " wins";
+        }
+        if (pr.moritaniGames > 0) {
+            returnString += "\n" + Emojis.MORITANI + " " + pr.moritaniGames + " games";
+            if (pr.moritaniWins > 0) returnString += ", " + pr.moritaniWins + " wins";
         }
         return tagEmojis(event, returnString);
     }
