@@ -489,6 +489,7 @@ public class Game {
         phase = 1;
         phaseForTracker = 1;
         subPhase = 1;
+        factions.forEach(Faction::clearWhisperCounts);
         setUpdated(UpdateType.MAP);
     }
 
@@ -496,6 +497,7 @@ public class Game {
         phaseForTracker = phase;
         phase++;
         subPhase = 1;
+        factions.forEach(Faction::clearWhisperCountsPerPhase);
 
         if (turn >= 1 && phase > 10) {
             advanceTurn();

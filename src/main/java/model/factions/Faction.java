@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 
@@ -65,6 +67,10 @@ public class Faction {
     private boolean isHighThreshold;
     private Boolean ornithoperToken;
     private Map<String, String> lastWhisper;
+    private Map<String, Integer> whisperCount;
+    private Map<String, Integer> whispersToTurnSummary;
+    private Map<String, Integer> whisperCountPerPhase;
+    private Map<String, Integer> whispersToTurnSummaryPerPhase;
     @Exclude
     protected Game game;
     @Exclude
@@ -688,14 +694,54 @@ public class Faction {
         this.ornithoperToken = ornithoperToken;
     }
 
-    public String getWhisperTime(String recipient) {
-        if (lastWhisper == null)
-            lastWhisper = new HashMap<>();
-        return lastWhisper.get(recipient);
+    public void clearWhisperCounts() {
+        whisperCount = null;
+        whispersToTurnSummary = null;
     }
 
-    public void setWhisperTime(String recipient, String whisperTime) {
-        lastWhisper.put(recipient, whisperTime);
+    public void clearWhisperCountsPerPhase() {
+        whisperCountPerPhase = null;
+        whispersToTurnSummaryPerPhase = null;
+    }
+
+    public String getWhisperTime(String recipientName) {
+        if (lastWhisper == null)
+            lastWhisper = new HashMap<>();
+        if (whisperCount == null)
+            whisperCount = new HashMap<>();
+        if (whispersToTurnSummary == null)
+            whispersToTurnSummary = new HashMap<>();
+        if (whisperCountPerPhase == null)
+            whisperCountPerPhase = new HashMap<>();
+        if (whispersToTurnSummaryPerPhase == null)
+            whispersToTurnSummaryPerPhase = new HashMap<>();
+        return lastWhisper.get(recipientName);
+    }
+
+    public void sendWhisper(Faction recipient, String whisperedMessage) {
+        recipient.getChat().publish(":speaking_head: from " + emoji + ": " + whisperedMessage);
+        chat.publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
+
+        String recipientName = recipient.getName();
+        String lastWhisperString = getWhisperTime(recipientName);
+        whisperCount.putIfAbsent(recipientName, 0);
+        whispersToTurnSummary.putIfAbsent(recipientName, 0);
+        whisperCountPerPhase.putIfAbsent(recipientName, 0);
+        whispersToTurnSummaryPerPhase.putIfAbsent(recipientName, 0);
+        boolean announceWhisperToTurnSummary = lastWhisperString == null;
+        if (lastWhisperString != null) {
+            Instant lastWhisperTime = Instant.parse(lastWhisperString);
+            if (lastWhisperTime.plus(120, ChronoUnit.MINUTES).isBefore(Instant.now()))
+                announceWhisperToTurnSummary = true;
+        }
+        if (announceWhisperToTurnSummary) {
+            game.getTurnSummary().publish(emoji + " is whispering to " + recipient.getEmoji());
+            whispersToTurnSummary.put(recipientName, whispersToTurnSummary.get(recipientName) + 1);
+            whispersToTurnSummaryPerPhase.put(recipientName, whispersToTurnSummaryPerPhase.get(recipientName) + 1);
+        }
+        whisperCount.put(recipientName, whisperCount.get(recipientName) + 1);
+        whisperCountPerPhase.put(recipientName, whisperCountPerPhase.get(recipientName) + 1);
+        lastWhisper.put(recipientName, Instant.now().toString());
     }
 
     public boolean isHomeworldOccupied() {

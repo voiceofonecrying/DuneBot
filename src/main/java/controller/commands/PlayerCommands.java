@@ -16,8 +16,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -358,18 +356,8 @@ public class PlayerCommands {
         if (sender.getAlly().equals(recipient.getName()) || recipient.getAlly().equals(sender.getName()))
             throw new IllegalArgumentException("Please use your alliance thread to communicate with your ally.");
         String whisperedMessage = discordGame.required(message).getAsString();
-        recipient.getChat().publish(":speaking_head: from " + sender.getEmoji() + ": " + whisperedMessage);
-        sender.getChat().publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
-        String lastWhisperString = sender.getWhisperTime(recipient.getName());
-        boolean announceWhisperToTurnSummary = lastWhisperString == null;
-        if (lastWhisperString != null) {
-            Instant lastWhisperTime = Instant.parse(lastWhisperString);
-            if (lastWhisperTime.plus(30, ChronoUnit.MINUTES).isBefore(Instant.now()))
-                announceWhisperToTurnSummary = true;
-        }
-        if (announceWhisperToTurnSummary)
-            game.getTurnSummary().publish(sender.getEmoji() + " is whispering to " + recipient.getEmoji());
-        sender.setWhisperTime(recipient.getName(), Instant.now().toString());
+
+        sender.sendWhisper(recipient, whisperedMessage);
         return "";
     }
 
