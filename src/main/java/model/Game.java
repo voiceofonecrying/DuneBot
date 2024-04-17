@@ -69,6 +69,7 @@ public class Game {
     private boolean setupFinished;
     private int storm;
     private int stormMovement;
+    private final ArrayList<Integer> stormDeck;
     private boolean onHold;
 
     @Exclude
@@ -116,6 +117,7 @@ public class Game {
         this.gameRoleMention = "";
         this.storm = 18;
         this.stormMovement = 0;
+        this.stormDeck = null;
         this.onHold = false;
         this.quotes = new HashMap<>();
 
@@ -419,10 +421,6 @@ public class Game {
         return phaseForTracker;
     }
 
-    public boolean hasPhaseForTracker() {
-        return phaseForTracker != 0;
-    }
-
     public void setPhase(int phase) {
         this.phase = phase;
     }
@@ -433,6 +431,10 @@ public class Game {
 
     public int getStorm() {
         return storm;
+    }
+
+    public ArrayList<Integer> getStormDeck() {
+        return stormDeck;
     }
 
     public void setStorm(int storm) {

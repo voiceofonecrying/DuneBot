@@ -100,7 +100,7 @@ public class RunCommands {
             IxButtons.hmsSubPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
-            if (game.isIxHMSActionRequired()) throw new InvalidGameStateException(Emojis.IX + " must choose to move the HMS before advancing.");
+            if (game.isIxHMSActionRequired()) throw new InvalidGameStateException("Ix must choose to move the HMS before advancing.");
             startStormPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 3) {
@@ -231,7 +231,10 @@ public class RunCommands {
         }
         ShowCommands.showBoard(discordGame, game);
 
-        game.setStormMovement(new Random().nextInt(6) + 1);
+        int stormMovement;
+        ArrayList<Integer> stormDeck = game.getStormDeck();
+        stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()) + 1);
+        game.setStormMovement(stormMovement);
         if (game.hasFaction("Fremen")) {
             discordGame.getFremenChat().queueMessage("The storm will move " + game.getStormMovement() + " sectors next turn.");
         }

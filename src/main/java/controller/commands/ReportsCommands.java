@@ -263,18 +263,18 @@ public class ReportsCommands {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
                 response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
-                int phase = game.getPhaseForTracker();
-                response.append(phaseName(phase));
-                if (!game.hasPhaseForTracker())
-                    response.append(" (old tracker)");
-                if (phase == 4) {
-                    Bidding bidding = game.getBidding();
-                    response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
-                } else if (phase == 6) {
-                    int factionsLeftToGo = game.getTurnOrder().size();
-                    if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
-                        factionsLeftToGo++;
-                    response.append(", ").append(factionsLeftToGo).append(" factions remaining");
+                if (game.getTurn() != 0) {
+                    int phase = game.getPhaseForTracker();
+                    response.append(phaseName(phase));
+                    if (phase == 4) {
+                        Bidding bidding = game.getBidding();
+                        response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
+                    } else if (phase == 6) {
+                        int factionsLeftToGo = game.getTurnOrder().size();
+                        if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
+                            factionsLeftToGo++;
+                        response.append(", ").append(factionsLeftToGo).append(" factions remaining");
+                    }
                 }
                 response.append("\nMod: ").append(game.getMod());
                 if (showFactionsinGames) {
