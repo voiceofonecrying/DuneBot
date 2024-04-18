@@ -23,9 +23,10 @@ public class FactionButtons {
         faction.selectTraitor(traitorName);
         discordGame.queueMessage("You selected " + traitorName);
         if (game.getFactions().stream().anyMatch(f -> !(f instanceof HarkonnenFaction) && !(f instanceof BTFaction) && f.getTraitorHand().size() != 1)) {
+            discordGame.pushGame();
+        } else {
             game.getModInfo().publish("All traitors have been selected. Game is auto-advancing.");
             RunCommands.advance(discordGame, game);
-        } else
-            discordGame.pushGame();
+        }
     }
 }
