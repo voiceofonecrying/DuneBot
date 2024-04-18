@@ -19,7 +19,9 @@ public class FactionButtons {
 
     public static void selectTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.selectTraitor(event.getComponentId().split("-")[1]);
+        String traitorName = event.getComponentId().split("-")[1];
+        faction.selectTraitor(traitorName);
+        discordGame.queueMessage("You selected " + traitorName);
         if (game.getFactions().stream().anyMatch(f -> !(f instanceof HarkonnenFaction) && !(f instanceof BTFaction) && f.getTraitorHand().size() != 1)) {
             game.getModInfo().publish("All traitors have been selected. Game is auto-advancing.");
             RunCommands.advance(discordGame, game);
