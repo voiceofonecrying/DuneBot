@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static controller.commands.CommandOptions.*;
 import static model.Initializers.getCSVFile;
@@ -629,12 +630,9 @@ public class SetupCommands {
     public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         for (Faction faction : game.getFactions()) {
             if (!(faction instanceof BTFaction) && faction.getTraitorHand().isEmpty()) {
-                for (int j = 0; j < 4; j++) {
-                    game.drawCard("traitor deck", faction.getName());
-                }
-                if (!(faction instanceof HarkonnenFaction)) {
-                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " please select your traitor.");
-                }
+                IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", faction.getName()));
+                if (!(faction instanceof HarkonnenFaction))
+                    faction.presentTraitorSelection();
             }
         }
         discordGame.getTurnSummary().queueMessage("__**Setup: Traitors**__");

@@ -265,6 +265,11 @@ public class Faction {
         return traitorHand;
     }
 
+    public void presentTraitorSelection() {
+        List<DuneChoice> traitors = traitorHand.stream().map(t -> new DuneChoice(t.name(), "traitorselection-" + t.name())).toList();
+        chat.publish("Please select your traitor " + player, traitors);
+    }
+
     public List<LeaderSkillCard> getLeaderSkillsHand() {
         return leaderSkillsHand;
     }

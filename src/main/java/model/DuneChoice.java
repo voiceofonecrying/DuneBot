@@ -5,13 +5,13 @@ public class DuneChoice {
     private final String id;
     private final String label;
 
-    DuneChoice(String type, String id, String label) {
+    public DuneChoice(String type, String id, String label) {
         this.type = type;
         this.id = id;
         this.label = label;
     }
 
-    DuneChoice(String id, String label) {
+    public DuneChoice(String id, String label) {
         this.type = "primary";
         this.id = id;
         this.label = label;
