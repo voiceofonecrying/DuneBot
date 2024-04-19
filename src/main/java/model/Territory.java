@@ -139,6 +139,7 @@ public class Territory {
     // Returns list of factions that have active forces in the territories (not Advisors)
     public List<Faction> getActiveFactions(Game game) {
         return getActiveFactionNames().stream()
+                .filter(n -> !n.equals("Hidden Mobile Stronghold"))
                 .map(game::getFaction)
                 .toList();
     }
