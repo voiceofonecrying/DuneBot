@@ -1,7 +1,7 @@
 package controller.buttons;
 
 import controller.DiscordGame;
-import controller.commands.RunCommands;
+import controller.commands.SetupCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -26,7 +26,7 @@ public class FactionButtons {
             discordGame.pushGame();
         } else {
             game.getModInfo().publish("All traitors have been selected. Game is auto-advancing.");
-            RunCommands.advance(discordGame, game);
+            SetupCommands.advance(event.getGuild(), discordGame, game);
         }
     }
 }

@@ -10,6 +10,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.*;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
@@ -73,7 +74,7 @@ public class SetupCommands {
             case "remove-game-option" -> removeGameOption(discordGame, game);
             case "ix-hand-selection" -> ixHandSelection(discordGame, game);
             case "traitor" -> selectTraitor(discordGame, game);
-            case "advance" -> advance(event, discordGame, game);
+            case "advance" -> advance(event.getGuild(), discordGame, game);
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
@@ -87,7 +88,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void advance(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    public static void advance(Guild discordGuild, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (game.getTurn() != 0 || game.isSetupFinished()) {
             return;
         }
@@ -102,7 +103,7 @@ public class SetupCommands {
 
         do {
             SetupStep setupStep = game.getSetupSteps().remove(0);
-            stepStatus = runSetupStep(event, discordGame, game, setupStep);
+            stepStatus = runSetupStep(discordGuild, discordGame, game, setupStep);
 
         } while (stepStatus == StepStatus.CONTINUE);
 
@@ -213,7 +214,7 @@ public class SetupCommands {
         discordGame.getModInfo().queueMessage(stringBuilder);
     }
 
-    public static StepStatus runSetupStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, SetupStep setupStep) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    public static StepStatus runSetupStep(Guild discordGuild, DiscordGame discordGame, Game game, SetupStep setupStep) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         discordGame.getModInfo().queueMessage("Starting step " + setupStep.name());
 
         StepStatus stepStatus = StepStatus.STOP;
@@ -228,7 +229,7 @@ public class SetupCommands {
             case IX_CARD_SELECTION -> stepStatus = ixCardSelectionStep(discordGame, game);
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
-            case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(event, discordGame, game);
+            case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(discordGuild, discordGame, game);
             case ECAZ_LOYALTY -> stepStatus = ecazLoyaltyStep(discordGame, game);
             case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(discordGame, game);
             case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
@@ -537,7 +538,7 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus showLeaderSkillCardsStep(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static StepStatus showLeaderSkillCardsStep(Guild discordGuild, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         List<Map<String, String>> leaderSkills = new ArrayList<>();
 
@@ -564,7 +565,7 @@ public class SetupCommands {
                     leaderSkill.get("skill")
             );
 
-            Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(event.getGuild(), leaderSkill.get("skill"));
+            Optional<FileUpload> fileUpload = CardImages.getLeaderSkillImage(discordGuild, leaderSkill.get("skill"));
 
             if (fileUpload.isEmpty()) {
                 turnSummary.queueMessage(message);
