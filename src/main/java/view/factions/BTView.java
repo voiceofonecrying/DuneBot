@@ -38,11 +38,13 @@ public class BTView extends FactionView {
 
     private MessageEmbed.Field getFaceDancerField(TraitorCard faceDancer) {
         return new MessageEmbed.Field(
-                MessageFormat.format(
-                        "{0} {1}",
-                        game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
+                discordGame.tagEmojis(
+                        MessageFormat.format(
+                                "{0} {1}",
+                                game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
+                        )
                 ),
-                null,
+                "",
                 false
         );
     }
