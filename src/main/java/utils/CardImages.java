@@ -135,6 +135,10 @@ public class CardImages {
         return getMessageLink(guild, "homeworld-cards", pattern);
     }
 
+    private static void clearChennalMessageCache(String channelName) {
+        cardChannelMessages.remove(channelName);
+    }
+
     private static List<Message> getChannelMessages(Guild guild, String channelName) {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);
@@ -196,7 +200,9 @@ public class CardImages {
         return attachment.getUrl();
     }
 
-    private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
+    private static Optional<FileUpload> getCardImageAttachmentFileUpload(
+            Guild guild, String channelName, Pattern pattern, String cardName
+    ) throws ExecutionException, InterruptedException {
         Optional<Message.Attachment> optionalAttachment = getCardImageAttachment(guild, channelName, pattern);
 
         if (optionalAttachment.isEmpty()) return Optional.empty();
@@ -204,13 +210,21 @@ public class CardImages {
         Message.Attachment attachment = optionalAttachment.get();
         CompletableFuture<InputStream> future = attachment.getProxy().download();
 
+        InputStream inputStream = future.get();
+        FileUpload fileUpload = FileUpload.fromData(inputStream, cardName + ".jpg");
+        return Optional.of(fileUpload);
+    }
+
+    private static Optional<FileUpload> getCardImage(Guild guild, String channelName, Pattern pattern, String cardName) {
         try {
-            InputStream inputStream = future.get();
-            FileUpload fileUpload = FileUpload.fromData(inputStream, cardName + ".jpg");
-            return Optional.of(fileUpload);
+            return getCardImageAttachmentFileUpload(guild, channelName, pattern, cardName);
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-            return Optional.empty();
+            clearChennalMessageCache(channelName);
+            try {
+                return getCardImageAttachmentFileUpload(guild, channelName, pattern, cardName);
+            } catch (InterruptedException | ExecutionException ex) {
+                return Optional.empty();
+            }
         }
     }
 }
