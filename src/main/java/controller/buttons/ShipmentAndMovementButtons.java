@@ -433,6 +433,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             String turnSummaryMessage = Emojis.RICHESE + " ship a no-field to " + territoryName;
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
             territory.setRicheseNoField(noField);
+            if (faction instanceof RicheseFaction) {
+                ((RicheseFaction) faction).noFieldMessage(noField, territoryName);
+            }
             int spice = territory.isStronghold() ? 1 : 2;
             turnSummaryMessage += " for " + spice + " " + Emojis.SPICE;
             int support = 0;
