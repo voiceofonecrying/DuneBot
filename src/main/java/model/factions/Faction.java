@@ -723,9 +723,9 @@ public class Faction {
         return lastWhisper.get(recipientName);
     }
 
-    public void sendWhisper(Faction recipient, String whisperedMessage) {
-        recipient.getChat().publish(":speaking_head: from " + emoji + ": " + whisperedMessage);
-        chat.publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
+    public void sendWhisper(Faction recipient, String whisperedMessage, DuneTopic senderWhispers, DuneTopic recipientWhispers) {
+        recipientWhispers.publish(":speaking_head: from " + emoji + ": " + whisperedMessage);
+        senderWhispers.publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
 
         String recipientName = recipient.getName();
         String lastWhisperString = getWhisperTime(recipientName);
@@ -740,10 +740,11 @@ public class Faction {
                 announceWhisperToTurnSummary = true;
         }
         if (announceWhisperToTurnSummary) {
-            game.getTurnSummary().publish(emoji + " is whispering to " + recipient.getEmoji());
+//            game.getTurnSummary().publish(emoji + " is whispering to " + recipient.getEmoji());
             whispersToTurnSummary.put(recipientName, whispersToTurnSummary.get(recipientName) + 1);
             whispersToTurnSummaryPerPhase.put(recipientName, whispersToTurnSummaryPerPhase.get(recipientName) + 1);
         }
+        game.getWhispers().publish(emoji + " is whispering to " + recipient.getEmoji());
         whisperCount.put(recipientName, whisperCount.get(recipientName) + 1);
         whisperCountPerPhase.put(recipientName, whisperCountPerPhase.get(recipientName) + 1);
         lastWhisper.put(recipientName, Instant.now().toString());

@@ -817,6 +817,10 @@ public class CommandManager extends ListenerAdapter {
                 .setInvitable(false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_3_DAYS)
                 .complete();
+        fosChannel.createThreadChannel("whispers", true)
+                .setInvitable(false)
+                .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
+                .complete();
 
         String[] readWriteChannels = {"game-actions", "bribes", "bidding-phase", "rules"};
         for (String channel : readWriteChannels) {

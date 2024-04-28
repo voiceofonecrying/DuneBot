@@ -77,6 +77,8 @@ public class Game {
     @Exclude
     private DuneTopic turnSummary;
     @Exclude
+    private DuneTopic whispers;
+    @Exclude
     private DuneTopic gameActions;
     @Exclude
     private DuneTopic modInfo;
@@ -638,6 +640,14 @@ public class Game {
 
     public void setTurnSummary(DuneTopic turnSummary) {
         this.turnSummary = turnSummary;
+    }
+
+    public DuneTopic getWhispers() {
+        return whispers;
+    }
+
+    public void setWhispers(DuneTopic whispers) {
+        this.whispers = whispers;
     }
 
     public DuneTopic getGameActions() {

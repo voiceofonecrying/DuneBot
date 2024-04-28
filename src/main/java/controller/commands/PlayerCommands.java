@@ -1,6 +1,7 @@
 package controller.commands;
 
 import constants.Emojis;
+import controller.channels.FactionWhispers;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -35,7 +36,7 @@ public class PlayerCommands {
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
                 new SubcommandData("battle-plan-kh", "Submit your plan using Kwisatz-Haderach for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
-                new SubcommandData("whisper", "Whisper to another player.").addOptions(faction, message),
+                new SubcommandData("whisper", "Whisper to another player.").addOptions(message, whisperFaction),
                 new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
 
@@ -350,14 +351,32 @@ public class PlayerCommands {
 
     private static String whisper(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction sender = discordGame.getFactionByPlayer(event.getUser().toString());
-        Faction recipient = game.getFaction(discordGame.required(faction).getAsString());
+        Faction recipient;
+        if (discordGame.optional(whisperFaction) == null) {
+            String channelName = event.getChannel().getName();
+            if (channelName.endsWith("-whispers")) {
+                String name = channelName.replace("-whispers", "");
+                if (name.equals("bg") || name.equals("bt") || name.equals("choam"))
+                    name = name.toUpperCase();
+                if (name.equals("rich"))
+                    name = "Richese";
+                name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                recipient = game.getFaction(name);
+            } else {
+                throw new IllegalArgumentException("Recipient faction must be specified unless sending from a -whispers thread.");
+            }
+        } else {
+            recipient = game.getFaction(discordGame.required(whisperFaction).getAsString());
+        }
         if (sender == recipient)
             throw new IllegalArgumentException("You cannot whisper to yourself.");
         if (sender.getAlly().equals(recipient.getName()) || recipient.getAlly().equals(sender.getName()))
             throw new IllegalArgumentException("Please use your alliance thread to communicate with your ally.");
         String whisperedMessage = discordGame.required(message).getAsString();
+        FactionWhispers senderWhispers = discordGame.getFactionWhispers(sender, recipient);
+        FactionWhispers recipientWhispers = discordGame.getFactionWhispers(recipient, sender);
 
-        sender.sendWhisper(recipient, whisperedMessage);
+        sender.sendWhisper(recipient, whisperedMessage, senderWhispers, recipientWhispers);
         return "";
     }
 

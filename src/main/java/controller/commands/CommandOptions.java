@@ -63,6 +63,8 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData otherWinnerFaction = new OptionData(OptionType.STRING, "other-winner", "The allied faction that also won", false)
             .setAutoComplete(true);
+    public static final OptionData whisperFaction = new OptionData(OptionType.STRING, "whisper-recipient", "The faction you want to whisper to. Omit in -whisper threads to reply.", false)
+            .setAutoComplete(true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
     public static final OptionData fremenSpecialWin = new OptionData(OptionType.BOOLEAN, "fremen-special", "Was this a Fremen special victory condition?", false);
@@ -244,7 +246,7 @@ public class CommandOptions {
         List<Command.Choice> choices = new ArrayList<>();
 
         switch (optionName) {
-            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner" ->
+            case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner", "whisper-recipient" ->
                     choices = factions(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);

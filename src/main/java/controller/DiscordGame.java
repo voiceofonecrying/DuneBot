@@ -240,6 +240,14 @@ public class DiscordGame {
         return new TurnSummary(this, game);
     }
 
+    public Whispers getWhispers() throws ChannelNotFoundException {
+        return getWhispers(this.game);
+    }
+
+    public Whispers getWhispers(Game game) throws ChannelNotFoundException {
+        return new Whispers(this, game);
+    }
+
     public GameActions getGameActions() throws ChannelNotFoundException {
         return new GameActions(this);
     }
@@ -360,6 +368,14 @@ public class DiscordGame {
         return new FactionLedger(this, "Richese");
     }
 
+    public FactionWhispers getFactionWhispers(String factionName, String interlocutorName) throws ChannelNotFoundException {
+        return new FactionWhispers(this, this.game, factionName, interlocutorName);
+    }
+
+    public FactionWhispers getFactionWhispers(Faction faction, Faction interlocutor) throws ChannelNotFoundException {
+        return new FactionWhispers(this, this.game, faction.getName(), interlocutor.getName());
+    }
+
     public GenericInteractionCreateEvent getEvent() {
         return this.event;
     }
@@ -445,6 +461,7 @@ public class DiscordGame {
         }
 
         game.setTurnSummary(getTurnSummary(game));
+        game.setWhispers(getWhispers(game));
         game.setGameActions(getGameActions());
         game.setModInfo(getModInfo());
         return game;

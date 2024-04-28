@@ -12,13 +12,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class TurnSummary extends DiscordChannel {
-    boolean thread;
-
     public TurnSummary(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         super(discordGame);
         TextChannel frontOfShield = discordGame.getTextChannel("front-of-shield");
 
-        thread = true;
         String turnNumSummaryName = "turn-" + game.getTurn() + "-summary";
         Optional<ThreadChannel> optThread = discordGame.getOptionalThreadChannel("front-of-shield", turnNumSummaryName);
         if (optThread.isPresent()) {
@@ -41,6 +38,6 @@ public class TurnSummary extends DiscordChannel {
     }
 
     public void addUser(String playerName) {
-        if (thread) discordGame.addUsersToThread((ThreadChannel) messageChannel, List.of(playerName));
+        discordGame.addUsersToThread((ThreadChannel) messageChannel, List.of(playerName));
     }
 }
