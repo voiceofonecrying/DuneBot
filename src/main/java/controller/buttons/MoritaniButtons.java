@@ -140,8 +140,10 @@ public class MoritaniButtons implements Pressable {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("moritani-accept-offer-" + territory + "-" + terror, "Yes"));
         buttons.add(Button.danger("moritani-deny-offer-" + territory + "-" + terror, "No"));
+        String emoji  = discordGame.getGame().getFaction(factionName).getEmoji();
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " are offering an alliance to " + emoji + " in exchange for safety from their terror token!");
         discordGame.getFactionChat(factionName).queueMessage("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept?", buttons);
-        discordGame.queueMessage(Emojis.MORITANI + " are offering an alliance in exchange for safety from their terror token!");
+        discordGame.queueMessage("You have offered an alliance to " + emoji + " in exchange for safety from your terror token!");
         discordGame.queueDeleteMessage();
     }
 }

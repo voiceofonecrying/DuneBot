@@ -124,11 +124,14 @@ public class EcazButtons implements Pressable {
 
 
     private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        String factionName = event.getComponentId().replace("ecaz-offer-alliance-", "");
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("ecaz-accept-offer", "Yes"));
         buttons.add(Button.danger("ecaz-deny-offer", "No"));
-        FactionChat chatChannel = discordGame.getFactionChat(event.getComponentId().replace("ecaz-offer-alliance-", ""));
-        chatChannel.queueMessage("An ambassador of Ecaz has approached you to offer a formal alliance.  Do you accept?", buttons);
+        FactionChat chatChannel = discordGame.getFactionChat(factionName);
+        String emoji = discordGame.getGame().getFaction(factionName).getEmoji();
+        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have offered alliance to " + emoji);
+        chatChannel.queueMessage("An ambassador of " + Emojis.ECAZ + " has approached you to offer a formal alliance.  Do you accept?", buttons);
         discordGame.queueMessage("Your ambassador has been sent to negotiate an alliance.");
         discordGame.queueDeleteMessage();
     }
