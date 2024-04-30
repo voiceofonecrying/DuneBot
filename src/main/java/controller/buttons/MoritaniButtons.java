@@ -29,7 +29,12 @@ public class MoritaniButtons implements Pressable {
             triggerTerrorToken(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-remove-terror-"))
             removeTerrorToken(event, game, discordGame);
-        else if (event.getComponentId().startsWith("moritani-deny-offer-")) denyAlliance(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-deny-offer-"))
+            denyAlliance(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-sabotage-give-card-"))
+            giveCard(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-sabotage-no-card-"))
+            dontGiveCard(event, game, discordGame);
         switch (event.getComponentId()) {
             case "moritani-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
@@ -146,5 +151,22 @@ public class MoritaniButtons implements Pressable {
         discordGame.getFactionChat(factionName).queueMessage("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept?", buttons);
         discordGame.queueMessage("You have offered an alliance to " + emoji + " in exchange for safety from your terror token!");
         discordGame.queueDeleteMessage();
+    }
+
+    private static void giveCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String factionName = event.getComponentId().split("-")[4];
+        String cardName = event.getComponentId().split("-")[5];
+        String emoji = game.getFaction(factionName).getEmoji();
+        game.transferCard("Moritani", factionName, cardName);
+        discordGame.queueMessage("You have given " + cardName + " to " + emoji);
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " have given a " + Emojis.TREACHERY + " card to " + emoji + " with Sabotage.");
+        discordGame.pushGame();
+    }
+
+    private static void dontGiveCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String factionName = event.getComponentId().split("-")[4];
+        String emoji = game.getFaction(factionName).getEmoji();
+        discordGame.queueMessage("You did not give a card to " + emoji);
+        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " did not give a " + Emojis.TREACHERY + " card to " + emoji + " with Sabotage.");
     }
 }

@@ -83,9 +83,9 @@ public class MoritaniFaction extends Faction {
                 game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(cardName));
                 List<Button> treacheryCards = new LinkedList<>();
                 for (TreacheryCard card : getTreacheryHand()) {
-                    treacheryCards.add(Button.primary("moritani-sabotage-give-card-" + card.name(), card.name()));
+                    treacheryCards.add(Button.primary("moritani-sabotage-give-card-" + triggeringFaction.getName() + "-" + card.name(), card.name()));
                 }
-                treacheryCards.add(Button.secondary("moritani-sabotage-no-card", "Don't send a card"));
+                treacheryCards.add(Button.secondary("moritani-sabotage-no-card-" + triggeringFaction.getName(), "Don't send a card"));
                 discordGame.getMoritaniChat().queueMessage("Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?", treacheryCards);
             }
             case "Sneak Attack" -> {
