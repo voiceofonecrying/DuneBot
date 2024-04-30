@@ -78,8 +78,9 @@ public class MoritaniFaction extends Faction {
             }
             case "Sabotage" -> {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
-                turnSummary.queueMessage(triggeringFaction.getEmoji() + " discarded " + triggeringFaction.getTreacheryHand().get(0));
-                game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(triggeringFaction.getTreacheryHand().get(0).name()));
+                String cardName = triggeringFaction.getTreacheryHand().get(0).name();
+                turnSummary.queueMessage(Emojis.MORITANI + " took " + cardName + " from " + triggeringFaction.getEmoji() + " and discarded it.");
+                game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(cardName));
                 List<Button> treacheryCards = new LinkedList<>();
                 for (TreacheryCard card : getTreacheryHand()) {
                     treacheryCards.add(Button.primary("moritani-sabotage-give-card-" + card.name(), card.name()));
