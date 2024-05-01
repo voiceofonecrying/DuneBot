@@ -458,7 +458,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
-                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, territory, faction);
+                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(territory, faction);
             }
         }
         if (shipment.isToReserves()) {

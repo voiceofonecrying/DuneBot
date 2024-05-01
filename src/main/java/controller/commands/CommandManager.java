@@ -332,7 +332,7 @@ public class CommandManager extends ListenerAdapter {
                 if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
                     turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
                 } else {
-                    ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, targetTerritory, targetFaction);
+                    ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(targetTerritory, targetFaction);
                 }
             }
         }
@@ -466,7 +466,7 @@ public class CommandManager extends ListenerAdapter {
             if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
                 turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
             } else {
-                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(game, discordGame, to, targetFaction);
+                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(to, targetFaction);
             }
         }
         game.setUpdated(UpdateType.MAP);

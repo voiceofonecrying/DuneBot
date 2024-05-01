@@ -76,7 +76,7 @@ public class Faction {
     @Exclude
     private DuneTopic ledger;
     @Exclude
-    private DuneTopic chat;
+    protected DuneTopic chat;
 
     public Faction(String name, String player, String userName, Game game) throws IOException {
         this.handLimit = 4;

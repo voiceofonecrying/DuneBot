@@ -86,13 +86,13 @@ public class MoritaniButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         if (!(ButtonManager.getButtonPresser(event, game) instanceof MoritaniFaction)) return;
         String terror = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
-        moritani.triggerTerrorToken(game, discordGame, triggeringFaction, territory, terror);
+        moritani.triggerTerrorToken(triggeringFaction, territory, terror);
         discordGame.queueMessage("You have triggered your " + terror + " token in " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
@@ -102,27 +102,27 @@ public class MoritaniButtons implements Pressable {
         MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
         String terror = event.getComponentId().split("-")[3];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
-        moritaniFaction.placeTerrorToken(game, territory, terror);
+        moritaniFaction.placeTerrorToken(territory, terror);
         discordGame.getTurnSummary().queueMessage("A " + Emojis.MORITANI + " terror token has been placed in " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueMessage("The " + terror + " token has been sent to " + territory.getTerritoryName());
         discordGame.queueDeleteMessage();
     }
 
-    private static void queueTerrorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void queueTerrorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
-        moritaniFaction.sendTerrorTokenMessage(discordGame, territory.getTerritoryName());
+        moritaniFaction.sendTerrorTokenMessage(territory.getTerritoryName());
         discordGame.queueDeleteMessage();
     }
 
-    private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You have sent the emissary away empty-handed. Time to prepare for the worst.");
         discordGame.getMoritaniChat().queueMessage("Your ambassador has returned with news that no alliance will take place.");
         discordGame.queueDeleteMessage();
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         String terror = event.getComponentId().split("-")[4];
-        ((MoritaniFaction) game.getFaction("Moritani")).triggerTerrorToken(game, discordGame, ButtonManager.getButtonPresser(event, game), territory, terror);
+        ((MoritaniFaction) game.getFaction("Moritani")).triggerTerrorToken(ButtonManager.getButtonPresser(event, game), territory, terror);
         discordGame.pushGame();
     }
 

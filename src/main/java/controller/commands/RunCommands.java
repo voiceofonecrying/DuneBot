@@ -861,7 +861,7 @@ public class RunCommands {
             ));
         if (game.hasFaction("Moritani")) {
             MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-            moritani.sendTerrorTokenLocationMessage(game, discordGame);
+            moritani.sendTerrorTokenLocationMessage();
         }
     }
 

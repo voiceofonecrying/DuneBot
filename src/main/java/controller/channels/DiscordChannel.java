@@ -33,12 +33,14 @@ public class DiscordChannel implements DuneTopic {
     public void publish(String message, List<DuneChoice> choices) {
         List<Button> buttons = new ArrayList<>();
         for (DuneChoice choice : choices) {
+            Button button;
             switch (choice.getType()) {
-                case "secondary" -> buttons.add(Button.secondary(choice.getId(), choice.getLabel()));
-                case "danger" -> buttons.add(Button.danger(choice.getId(), choice.getLabel()));
-                case "success" -> buttons.add(Button.success(choice.getId(), choice.getLabel()));
-                default -> buttons.add(Button.primary(choice.getId(), choice.getLabel()));
+                case "secondary" -> button = Button.secondary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                case "danger" -> button = Button.danger(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                case "success" -> button = Button.success(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                default -> button = Button.primary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
             }
+            buttons.add(button);
         }
         queueMessage(message, buttons);
     }
