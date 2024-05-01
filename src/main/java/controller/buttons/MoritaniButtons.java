@@ -93,6 +93,7 @@ public class MoritaniButtons implements Pressable {
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
         moritani.triggerTerrorToken(game, discordGame, triggeringFaction, territory, terror);
+        discordGame.queueMessage("You have triggered your " + terror + " token in " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }

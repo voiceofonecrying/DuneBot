@@ -91,11 +91,11 @@ public class MoritaniFaction extends Faction {
             case "Sneak Attack" -> {
                 Force reserves = game.getTerritory("Grumman").getForce("Moritani");
                 List<Button> buttons = new LinkedList<>();
-                buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength() >= 1));
-                buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength() >= 2));
-                buttons.add(Button.primary("moritani-sneak-attack-3", "3").withDisabled(reserves.getStrength() >= 3));
-                buttons.add(Button.primary("moritani-sneak-attack-4", "4").withDisabled(reserves.getStrength() >= 4));
-                buttons.add(Button.primary("moritani-sneak-attack-5", "5").withDisabled(reserves.getStrength() >= 5));
+                buttons.add(Button.primary("moritani-sneak-attack-1", "1").withDisabled(reserves.getStrength() < 1));
+                buttons.add(Button.primary("moritani-sneak-attack-2", "2").withDisabled(reserves.getStrength() < 2));
+                buttons.add(Button.primary("moritani-sneak-attack-3", "3").withDisabled(reserves.getStrength() < 3));
+                buttons.add(Button.primary("moritani-sneak-attack-4", "4").withDisabled(reserves.getStrength() < 4));
+                buttons.add(Button.primary("moritani-sneak-attack-5", "5").withDisabled(reserves.getStrength() < 5));
                 discordGame.getMoritaniChat().queueMessage("How many forces do you want to send on your sneak attack?", buttons);
             }
         }
