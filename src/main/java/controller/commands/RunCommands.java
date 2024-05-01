@@ -614,7 +614,7 @@ public class RunCommands {
 
         if (game.hasFaction("Ecaz")) {
             EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
-            ecaz.sendAmbassadorLocationMessage(game, discordGame, 1);
+            ecaz.sendAmbassadorLocationMessage(1);
         }
 
         game.setUpdated(UpdateType.MAP);

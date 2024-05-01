@@ -1,11 +1,8 @@
 package model.factions;
 
 import constants.Emojis;
-import controller.DiscordGame;
 import enums.UpdateType;
-import exceptions.ChannelNotFoundException;
 import model.*;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -64,54 +61,52 @@ public class EcazFaction extends Faction {
         ambassadorSupply.add("Ecaz");
     }
 
-    public void triggerAmbassador(Game game, DiscordGame discordGame, Faction triggeringFaction, String ambassador) throws ChannelNotFoundException {
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You have triggered your " + ambassador + " ambassador!");
-        discordGame.getTurnSummary().queueMessage("The " + ambassador + " ambassador has been triggered!");
+    public void triggerAmbassador(Faction triggeringFaction, String ambassador) {
+        game.getTurnSummary().publish("The " + ambassador + " ambassador has been triggered!");
 
         switch (ambassador) {
             case "Ecaz" -> {
-                Button getVidal = Button.primary("ecaz-get-vidal", "Get Duke Vidal");
-                Button offerAlliance = Button.primary("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
+                DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
+                DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
                 if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
                         || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
                         || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
-                    getVidal = getVidal.asDisabled();
+                    getVidal.setDisabled(true);
                 if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly())
-                    offerAlliance = offerAlliance.asDisabled();
-                List<Button> buttons = new LinkedList<>();
-                buttons.add(getVidal);
-                buttons.add(offerAlliance);
-                discordGame.getEcazChat().queueMessage("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", buttons);
+                    offerAlliance.setDisabled(true);
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(getVidal);
+                choices.add(offerAlliance);
+                chat.publish("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", choices);
                 ambassadorSupply.add("Ecaz");
             }
             case "Atreides" ->
-                    discordGame.getModInfo().queueMessage("Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
+                    game.getModInfo().publish("Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
             case "BG" -> {
-                List<Button> buttons = new LinkedList<>();
+                List<DuneChoice> choices = new LinkedList<>();
                 for (String option : ambassadorPool) {
-                    buttons.add(Button.primary("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option));
+                    choices.add(new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option));
                 }
-                discordGame.getEcazChat().queueMessage("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", buttons);
+                chat.publish("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", choices);
             }
             case "CHOAM" ->
-                    discordGame.getModInfo().queueMessage("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
+                    game.getModInfo().publish("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
             case "Emperor" -> {
                 addSpice(5);
                 spiceMessage(5, Emojis.EMPEROR + " ambassador token", true);
             }
             case "Fremen" ->
-                    discordGame.getModInfo().queueMessage("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
+                    game.getModInfo().publish("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
             case "Harkonnen" ->
-                    discordGame.getModInfo().queueMessage("Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
+                    game.getModInfo().publish("Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
             case "Ix" ->
-                    discordGame.getModInfo().queueMessage("Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
+                    game.getModInfo().publish("Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
             case "Richese" ->
-                    discordGame.getModInfo().queueMessage("Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
+                    game.getModInfo().publish("Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
             case "Guild" ->
-                    discordGame.getModInfo().queueMessage("Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
+                    game.getModInfo().publish("Guild ambassador token was triggered, Ecaz may place 4 forces to any territory from reserves for free.");
             case "BT" ->
-                    discordGame.getModInfo().queueMessage("BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
+                    game.getModInfo().publish("BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
         }
 
         for (Territory territory : game.getTerritories().values()) {
@@ -134,29 +129,28 @@ public class EcazFaction extends Faction {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void sendAmbassadorLocationMessage(Game game, DiscordGame discordGame, int cost) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
+    public void sendAmbassadorLocationMessage(int cost) {
+        List<DuneChoice> choices = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold") && !game.hasFaction("Ix")) continue;
-            Button stronghold = Button.primary("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
+            DuneChoice stronghold = new DuneChoice("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
             if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector())
-                stronghold = stronghold.asDisabled();
-            buttons.add(stronghold);
+                stronghold.setDisabled(true);
+            choices.add(stronghold);
         }
-        buttons.add(Button.secondary("ecaz-no-more-ambassadors", "No more ambassadors."));
-        discordGame.getEcazChat().queueMessage("Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer(), buttons);
+        choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more ambassadors."));
+        chat.publish("Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer(), choices);
     }
 
-    public void sendAmbassadorMessage(DiscordGame discordGame, String territory, int cost) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        for (String ambassador : ambassadorSupply) {
-            buttons.add(Button.primary("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
-        }
-        discordGame.getEcazChat().queueMessage("Which ambassador would you like to send?", buttons);
+    public void sendAmbassadorMessage(String territory, int cost) {
+        List<DuneChoice> choices = new LinkedList<>();
+        for (String ambassador : ambassadorSupply)
+            choices.add(new DuneChoice("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
+        chat.publish("Which ambassador would you like to send?", choices);
     }
 
-    public void placeAmbassador(Game game, Territory territory, String ambassador) {
+    public void placeAmbassador(Territory territory, String ambassador) {
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);

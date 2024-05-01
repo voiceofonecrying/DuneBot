@@ -43,7 +43,7 @@ public class EcazButtons implements Pressable {
 
     private static void resetAmbassadors(DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction ecazFaction = (EcazFaction) discordGame.getGame().getFaction("Ecaz");
-        ecazFaction.sendAmbassadorLocationMessage(discordGame.getGame(), discordGame, 1);
+        ecazFaction.sendAmbassadorLocationMessage(1);
     }
 
     private static void noMoreAmbassadors(DiscordGame discordGame) {
@@ -63,7 +63,9 @@ public class EcazButtons implements Pressable {
         String ambassador = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
-        ecaz.triggerAmbassador(game, discordGame, triggeringFaction, ambassador);
+        ecaz.triggerAmbassador(triggeringFaction, ambassador);
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You have triggered your " + ambassador + " ambassador!");
         discordGame.pushGame();
     }
 
@@ -79,14 +81,14 @@ public class EcazButtons implements Pressable {
         }
         ecazFaction.subtractSpice(cost);
         ecazFaction.spiceMessage(cost, " ambassador to " + territory.getTerritoryName(), false);
-        ecazFaction.placeAmbassador(game, territory, ambassador);
+        ecazFaction.placeAmbassador(territory, ambassador);
         discordGame.getTurnSummary().queueMessage("An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
         discordGame.pushGame();
         discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
-        ecazFaction.sendAmbassadorLocationMessage(game, discordGame, cost + 1);
+        ecazFaction.sendAmbassadorLocationMessage(cost + 1);
     }
 
-    private static void queueAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void queueAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         int cost = Integer.parseInt(event.getComponentId().split("-")[4]);
@@ -94,7 +96,7 @@ public class EcazButtons implements Pressable {
             discordGame.queueMessage("You can't afford to send your ambassador.");
             return;
         }
-        ecazFaction.sendAmbassadorMessage(discordGame, territory.getTerritoryName(), cost);
+        ecazFaction.sendAmbassadorMessage(territory.getTerritoryName(), cost);
         discordGame.queueMessage("You selected " + territory.getTerritoryName());
     }
 
@@ -102,7 +104,7 @@ public class EcazButtons implements Pressable {
         EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         discordGame.queueMessage("Your Bene Gesserit token will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         discordGame.queueDeleteMessage();
-        faction.triggerAmbassador(game, discordGame, game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
+        faction.triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
         discordGame.pushGame();
     }
 
