@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
+import model.topics.DuneTopic;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -851,7 +852,7 @@ public class Battle {
         resolution += aggressorPlan.checkAuditor(defender.getEmoji());
         resolution += defenderPlan.checkAuditor(aggressor.getEmoji());
 
-        String resolutionOptions = "";
+        String resolutionDecisions = "";
         RicheseFaction richeseFaction;
         boolean saphoHasBeenAuctioned = false;
         boolean portableSnooperHasBeenAuctioned = false;
@@ -860,57 +861,62 @@ public class Battle {
             saphoHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Juice of Sapho"));
             portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
         }
-        if (saphoHasBeenAuctioned && defenderPlan.getTotalStrengthString().equals(aggressorPlan.getTotalStrengthString())) {
-            resolutionOptions += defender.getEmoji() + " may play Juice of Sapho to win the battle if they have it.\n";
-            if (publishToTurnSummary && defender.hasTreacheryCard("Juice of Sapho"))
-                defender.getChat().publish("Will you play Juice of Sapho to win the battle in " + wholeTerritoryName + "? " + defender.getPlayer());
+        String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
+        if (saphoHasBeenAuctioned) {
+            boolean defenderHasSapho = defender.hasTreacheryCard("Juice of Sapho");
+            if (publishToTurnSummary || defenderHasSapho)
+                resolutionDecisions += defender.getEmoji() + " may play Juice of Sapho to be the aggressor in " + wholeTerritoryName + ifTheyHaveIt + ".\n";
+            if (publishToTurnSummary && defenderHasSapho)
+                defender.getChat().publish("Will you play Juice of Sapho to be the aggressor in " + wholeTerritoryName + "? " + defender.getPlayer());
         }
         if (portableSnooperHasBeenAuctioned && aggressorPlan.getDefense() == null) {
-            resolutionOptions += aggressor.getEmoji() + " may play Portable Snooper if they have it.\n";
-            if (publishToTurnSummary && aggressor.hasTreacheryCard("Portable Snooper"))
+            boolean aggressorHasPortableSnooper = aggressor.hasTreacheryCard("Portable Snooper");
+            if (publishToTurnSummary || aggressorHasPortableSnooper)
+                resolutionDecisions += aggressor.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
+            if (publishToTurnSummary && aggressorHasPortableSnooper)
                 aggressor.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + aggressor.getPlayer());
         }
         if (portableSnooperHasBeenAuctioned && defenderPlan.getDefense() == null) {
-            resolutionOptions += defender.getEmoji() + " may play Portable Snooper if they have it.\n";
-            if (publishToTurnSummary && defender.hasTreacheryCard("Portable Snooper"))
+            boolean defenderHasPortableSnooper = defender.hasTreacheryCard("Portable Snooper");
+            if (publishToTurnSummary || defenderHasPortableSnooper)
+                resolutionDecisions += defender.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
+            if (publishToTurnSummary && defenderHasPortableSnooper)
                 defender.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + defender.getPlayer());
         }
         if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Stone Burner")) {
-            resolutionOptions += aggressor.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
+            resolutionDecisions += aggressor.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
             if (publishToTurnSummary)
                 aggressor.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + aggressor.getPlayer());
             if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Mirror Weapon")) {
-                resolutionOptions += "If not, " + defender.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
+                resolutionDecisions += defender.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
                 if (publishToTurnSummary)
-                    defender.getChat().publish("Will you kill both leaders in " + wholeTerritoryName + " if " + aggressor.getEmoji() + " does not? " + defender.getPlayer());
+                    defender.getChat().publish("Will you kill both leaders with Mirror Weapon in " + wholeTerritoryName + "? " + defender.getPlayer());
             }
         }
         if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Stone Burner")) {
-            resolutionOptions += defender.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
+            resolutionDecisions += defender.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
+            if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Mirror Weapon")) {
+                resolutionDecisions += aggressor.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
+                if (publishToTurnSummary)
+                    aggressor.getChat().publish("Will you kill both leaders with Mirror Weapon in " + wholeTerritoryName + "? " + aggressor.getPlayer());
+            }
             if (publishToTurnSummary)
                 defender.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + defender.getPlayer());
-            if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Mirror Weapon")) {
-                resolutionOptions += "If not, " + aggressor.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
-                if (publishToTurnSummary)
-                    aggressor.getChat().publish("Will you kill both leaders in " + wholeTerritoryName + " if " + defender.getEmoji() + " does not? " + aggressor.getPlayer());
-            }
         }
         if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Poison Tooth")) {
-            resolutionOptions += aggressor.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
+            resolutionDecisions += aggressor.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
             if (publishToTurnSummary)
                 aggressor.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + aggressor.getPlayer());
         }
         if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Poison Tooth")) {
-            resolutionOptions += defender.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
+            resolutionDecisions += defender.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
             if (publishToTurnSummary)
-                defender.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + defender.getPlayer());
+                defender.getChat().publish("Will you remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + defender.getPlayer());
         }
-        if (!resolutionOptions.isEmpty())
-            resolution += "\n" + resolutionOptions;
+        if (!resolutionDecisions.isEmpty())
+            resolution += "\n" + resolutionDecisions;
 
-        if (publishToTurnSummary)
-            game.getTurnSummary().publish(resolution);
-        else
-            game.getModInfo().publish(resolution);
+        DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
+        resultsChannel.publish(resolution);
     }
 }
