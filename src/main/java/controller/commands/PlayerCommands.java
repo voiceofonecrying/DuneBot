@@ -152,7 +152,7 @@ public class PlayerCommands {
             });
             discordGame.getFactionChat(faction).queueMessage("How much would you like to spend with Spice Banker?", buttons);
         }
-        currentBattle.checkJuiceOfSapho(game, faction);
+//        currentBattle.checkJuiceOfSapho(game, faction);
         return returnString;
     }
 
@@ -206,7 +206,7 @@ public class PlayerCommands {
         if (discordGame.optional(autoPassAfterMax) != null) {
             boolean enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
             faction.setAutoBid(enableAutoPass);
-            modMessage += enableAutoPass ? " Auto-pass enabled." : "No auto-pass.";
+            modMessage += enableAutoPass ? " Auto-pass enabled." : " No auto-pass.";
         }
         discordGame.getModInfo().queueMessage(modMessage);
         String responseMessage2 = "";
