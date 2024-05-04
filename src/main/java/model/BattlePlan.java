@@ -137,6 +137,10 @@ public class BattlePlan {
         return leaderSkillsInFront != null && leaderSkillsInFront.stream().anyMatch(s -> s.name().equals(skillName));
     }
 
+    public boolean isSkillInFrontAndLeaderAlive(String skillName) {
+        return leader != null && isLeaderAlive() && leaderSkillsInFront != null && leaderSkillsInFront.stream().anyMatch(s -> s.name().equals(skillName));
+    }
+
     private boolean isOpponentWeaponPoison() {
         return opponentWeapon != null
                 && (opponentWeapon.type().equals("Weapon - Poison")
@@ -217,7 +221,7 @@ public class BattlePlan {
                 leaderString += "\n  +3 for Swordmaster of Ginaz";
             if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
                 leaderString += "\n  +1 for Swordmaster of Ginaz";
-            if (spiceBankerSupport > 0)
+            if (isSkillBehindAndLeaderAlive("Spice Banker"))
                 leaderString += "\n  +" + spiceBankerSupport + " for Spice Banker";
             if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
                 leaderString += "\n  +3 for Warmaster";
@@ -235,11 +239,11 @@ public class BattlePlan {
             bonuses += 2;
         if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
             bonuses += 3;
-        if (isSkillInFront("Killer Medic") && isPoisonDefense())
+        if (isSkillInFrontAndLeaderAlive("Killer Medic") && isPoisonDefense())
             bonuses += 1;
         if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
             bonuses += 3;
-        if (isSkillInFront("Master of Assassins") && isPoisonWeapon())
+        if (isSkillInFrontAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
             bonuses += 1;
         if (isSkillBehindAndLeaderAlive("Mentat"))
             bonuses += 2;
@@ -247,15 +251,17 @@ public class BattlePlan {
             bonuses += 2;
         if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
             bonuses += 3;
-        if (isSkillInFront("Prana Bindu Adept") && isProjectileDefense())
+        if (isSkillInFrontAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
             bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Spice Banker"))
+            bonuses += spiceBankerSupport;
         if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
             bonuses += 3;
-        if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
+        if (isSkillInFrontAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
             bonuses += 1;
         if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
             bonuses += 3;
-        if (isSkillInFront("Warmaster") && hasWorthlessCard())
+        if (isSkillInFrontAndLeaderAlive("Warmaster") && hasWorthlessCard())
             bonuses += 1;
         if (opponentHasBureaucrat)
             bonuses -= numStrongholdsOccupied;
