@@ -581,15 +581,24 @@ public class BattlePlanTest {
     void testKillerMedicInFrontPoisonDefense() {
         LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(killerMedic);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testKillerMedicInFrontLeaderDies() {
+        LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(killerMedic);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(poisonBladePlan);
+        assertEquals(0, battlePlan.getDoubleBattleStrength());
     }
 
     @Test
     void testKillerMedicInFrontNoDefense() {
         LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(killerMedic);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -599,7 +608,7 @@ public class BattlePlanTest {
         LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
         duncanIdaho.setSkillCard(killerMedic);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, snooper, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -609,7 +618,7 @@ public class BattlePlanTest {
         LeaderSkillCard killerMedic = new LeaderSkillCard("Killer Medic");
         duncanIdaho.setSkillCard(killerMedic);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -617,15 +626,24 @@ public class BattlePlanTest {
     void testMasterOfAssassinsInFrontPoisonWeapon() {
         LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(masterOfAssassins);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testMasterOfAssassinsInFrontLeaderDies() {
+        LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(masterOfAssassins);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(poisonBladePlan);
+        assertEquals(0, battlePlan.getDoubleBattleStrength());
     }
 
     @Test
     void testMasterOfAssassinsInFrontNoWeapon() {
         LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(masterOfAssassins);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -635,7 +653,7 @@ public class BattlePlanTest {
         LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
         duncanIdaho.setSkillCard(masterOfAssassins);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -645,7 +663,7 @@ public class BattlePlanTest {
         LeaderSkillCard masterOfAssassins = new LeaderSkillCard("Master of Assassins");
         duncanIdaho.setSkillCard(masterOfAssassins);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -653,7 +671,7 @@ public class BattlePlanTest {
     void testMentatInFront() {
         LeaderSkillCard mentat = new LeaderSkillCard("Mentat");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(mentat);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -663,7 +681,7 @@ public class BattlePlanTest {
         LeaderSkillCard mentat = new LeaderSkillCard("Mentat");
         duncanIdaho.setSkillCard(mentat);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(8, battlePlan.getDoubleBattleStrength());
     }
 
@@ -671,15 +689,24 @@ public class BattlePlanTest {
     void testPranaBinduAdeptInFrontProjectileDefense() {
         LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(pranaBinduAdept);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testPranaBinduAdeptInFrontLeaderDies() {
+        LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(pranaBinduAdept);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(poisonBladePlan);
+        assertEquals(0, battlePlan.getDoubleBattleStrength());
     }
 
     @Test
     void testPranaBinduAdeptInFrontNoDefense() {
         LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(pranaBinduAdept);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -689,7 +716,7 @@ public class BattlePlanTest {
         LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
         duncanIdaho.setSkillCard(pranaBinduAdept);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -699,7 +726,7 @@ public class BattlePlanTest {
         LeaderSkillCard pranaBinduAdept = new LeaderSkillCard("Prana Bindu Adept");
         duncanIdaho.setSkillCard(pranaBinduAdept);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -707,15 +734,24 @@ public class BattlePlanTest {
     void testSwordmasterOfGinazInFrontProjectileWeapon() {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(swordmasterOfGinaz);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
+    void testSwordmasterOfGinazInFrontLeaderDies() {
+        LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
+        List<LeaderSkillCard> leaderSkillsInFront = List.of(swordmasterOfGinaz);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
+        battlePlan.revealOpponentBattlePlan(poisonBladePlan);
+        assertEquals(0, battlePlan.getDoubleBattleStrength());
     }
 
     @Test
     void testSwordmasterOfGinazInFrontNoWeapon() {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(swordmasterOfGinaz);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -725,7 +761,7 @@ public class BattlePlanTest {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, crysknife, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -735,7 +771,7 @@ public class BattlePlanTest {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -743,7 +779,7 @@ public class BattlePlanTest {
     void testWarmasterInFrontWorthlessWeapon() {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
     }
 
@@ -751,7 +787,7 @@ public class BattlePlanTest {
     void testWarmasterInFrontWorthlessDefense() {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
     }
 
@@ -759,7 +795,7 @@ public class BattlePlanTest {
     void testWarmasterInFrontNoWorthless() {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         List<LeaderSkillCard> leaderSkillsInFront = List.of(warmaster);
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
@@ -769,7 +805,7 @@ public class BattlePlanTest {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         duncanIdaho.setSkillCard(warmaster);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, kulon, shield, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -779,7 +815,7 @@ public class BattlePlanTest {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         duncanIdaho.setSkillCard(warmaster);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, chaumas, kulon, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
     }
 
@@ -789,7 +825,7 @@ public class BattlePlanTest {
         LeaderSkillCard warmaster = new LeaderSkillCard("Warmaster");
         duncanIdaho.setSkillCard(warmaster);
         List<LeaderSkillCard> leaderSkillsInFront = new ArrayList<>();
-        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, true, 0, 0, 0);
+        BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, null, null, 0, false, 0, 0, 0, leaderSkillsInFront, false, 0, 0, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
     }
 
