@@ -381,7 +381,7 @@ public class BattlePlanTest {
     void testPoisonToothNotDiscardedIfNotUsed() {
         BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         battlePlan.revokePoisonTooth();
-        assertFalse(battlePlan.weaponMustBeDiscarded(false));
+        assertFalse(battlePlan.weaponMustBeDiscarded(true));
     }
 
     @Test
@@ -444,7 +444,7 @@ public class BattlePlanTest {
         BattlePlan battlePlan = new BattlePlan(true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0, 0, 0, null, false, 0, 0, 0);
         assertTrue(battlePlan.revokePoisonTooth());
         assertNotNull(battlePlan.getWeapon());
-        assertEquals("Weapon: Poison Tooth (not used)", battlePlan.getWeaponString());
+        assertEquals("Weapon: ~~Poison Tooth~~ (removed from plan)", battlePlan.getWeaponString());
         assertTrue(battlePlan.isInactivePoisonTooth());
         assertTrue(battlePlan.isLeaderAlive());
     }
@@ -456,7 +456,7 @@ public class BattlePlanTest {
         assertTrue(opponentBattlePlan.revokePoisonTooth());
         opponentBattlePlan.revealOpponentBattlePlan(battlePlan);
         battlePlan.revealOpponentBattlePlan(opponentBattlePlan);
-        assertEquals("Weapon: Poison Tooth (not used)", opponentBattlePlan.getWeaponString());
+        assertEquals("Weapon: ~~Poison Tooth~~ (removed from plan)", opponentBattlePlan.getWeaponString());
         assertTrue(opponentBattlePlan.isInactivePoisonTooth());
         assertTrue(battlePlan.isLeaderAlive());
     }

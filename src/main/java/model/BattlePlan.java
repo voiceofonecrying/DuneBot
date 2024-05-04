@@ -364,8 +364,10 @@ public class BattlePlan {
     }
 
     public String getWeaponString() {
+        if (inactivePoisonTooth)
+            return "Weapon: ~~" + weapon.name() + "~~ (removed from plan)";
         return "Weapon: " + (weapon == null ? "-"
-                : weapon.name()) + (inactivePoisonTooth ? " (not used)" : stoneBurnerNoKill ? " (leaders not killed)" : "");
+                : weapon.name()) + (stoneBurnerNoKill ? " (leaders not killed)" : "");
     }
 
     public String getDefenseString() {
@@ -454,7 +456,9 @@ public class BattlePlan {
     }
 
     public boolean weaponMustBeDiscarded(boolean loser) {
-        return weapon != null & (loser || cardMustBeDiscarded(weapon));
+        if (inactivePoisonTooth)
+            return false;
+        return weapon != null && (loser || cardMustBeDiscarded(weapon));
     }
 
     public boolean defenseMustBeDiscarded(boolean loser) {
