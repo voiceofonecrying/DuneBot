@@ -26,8 +26,8 @@ public class BattleCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
-                new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerKills, useJuiceOfSapho),
+                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho),
+                new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader),
                 new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(starredForcesFaction),
@@ -61,7 +61,7 @@ public class BattleCommands {
     public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
         Battle currentBattle = game.getBattles().getCurrentBattle();
         boolean playedJuiceOfSapho = discordGame.optional(useJuiceOfSapho) != null && discordGame.required(useJuiceOfSapho).getAsBoolean();
-        boolean killerStoneBurner = discordGame.optional(stoneBurnerKills) != null && discordGame.required(stoneBurnerKills).getAsBoolean();
+        boolean noKillStoneBurner = discordGame.optional(stoneBurnerDoesNotKill) != null && discordGame.required(stoneBurnerDoesNotKill).getAsBoolean();
         boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
         boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
 
@@ -71,10 +71,9 @@ public class BattleCommands {
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
 
         defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
-        boolean stoneBurnerNoKill = !killerStoneBurner;
         boolean aggressorNoKillStoneBurner = false;
         boolean defenderNoKillStoneBurner = false;
-        if (stoneBurnerNoKill) {
+        if (noKillStoneBurner) {
             aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
             defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
             aggressorPlan.revealOpponentBattlePlan(defenderPlan);
