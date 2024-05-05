@@ -555,6 +555,7 @@ public class CommandManager extends ListenerAdapter {
                 case "discard" -> discard(discordGame, game);
                 case "transfer-card" -> transferCard(discordGame, game);
                 case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
+                case "set-hand-limit" -> setHandLimit(discordGame, game);
                 case "place-forces" -> placeForcesEventHandler(discordGame, game);
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
                 case "remove-forces" -> removeForcesEventHandler(discordGame, game);
@@ -685,6 +686,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
+        commandData.add(Commands.slash("set-hand-limit", "Change the hand limit for a faction.").addOptions(faction, amount));
         commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
@@ -1042,6 +1044,11 @@ public class CommandManager extends ListenerAdapter {
         game.getTreacheryDiscard().remove(card);
         discordGame.getFactionLedger(receiver).queueMessage("Received " + cardName + " from discard.");
 
+        discordGame.pushGame();
+    }
+
+    public void setHandLimit(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        game.getFaction(discordGame.required(faction).getAsString()).setHandLimit(discordGame.required(amount).getAsInt());
         discordGame.pushGame();
     }
 
