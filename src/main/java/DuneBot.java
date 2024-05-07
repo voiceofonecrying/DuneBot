@@ -36,7 +36,7 @@ public class DuneBot {
 
             jda.getGuilds().forEach((guild) -> {
                 EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
-//                guild.loadMembers().onSuccess(cm::gatherMembers);
+                guild.loadMembers().onSuccess(cm::gatherMembers);
             });
         } catch (DotenvException e) {
             System.err.println("Dotenv file or Token not found.");
