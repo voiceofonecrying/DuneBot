@@ -13,9 +13,7 @@ import model.Bidding;
 import model.Game;
 import model.factions.BGFaction;
 import model.factions.Faction;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -52,7 +50,6 @@ public class ReportsCommands {
         commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions),
-                new SubcommandData("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
                 new SubcommandData("o6-players", "Who has played all original six factions?"),
                 new SubcommandData("o6-winners", "Who has won with all original six factions?"),
@@ -70,7 +67,6 @@ public class ReportsCommands {
         switch (name) {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event);
             case "active-games" -> responseMessage = activeGames(event);
-            case "update-stats" -> responseMessage = updateStats(event);
             case "player-record" -> responseMessage = playerRecord(event);
             case "o6-players" -> responseMessage = o6Players(event);
             case "o6-winners" -> responseMessage = o6Winners(event);
@@ -326,7 +322,7 @@ public class ReportsCommands {
         return players;
     }
 
-    public static String writePlayerStats(JsonArray gameResults) {
+    public static String writePlayerStats(JsonArray gameResults, Guild guild, List<Member> members) {
         Set<String> players = getAllPlayers(gameResults);
         List<PlayerPerformance> allPlayerPerformance = new ArrayList<>();
         for (String player : players) {
@@ -339,7 +335,13 @@ public class ReportsCommands {
             int tensDigit = pp.numWins % 100 / 10;
             String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
-            playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(pp.playerName).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
+            Member member = null;
+            if (members != null)
+                member = members.stream().filter(m -> m.getGuild() == guild)
+                        .filter(m -> pp.playerName.equals("@" + m.getUser().getName()))
+                        .findFirst().orElse(null);
+            String player = member != null ? member.getUser().getAsMention() : pp.playerName;
+            playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(player).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
         }
         return playerStatsString.toString();
     }
@@ -385,20 +387,32 @@ public class ReportsCommands {
         return new PlayerPerformance(playerName, numGames, numWins, winPercentage);
     }
 
-    public static String writeModeratorStats(JsonArray gameResults) {
+    public static String listMembers(SlashCommandInteractionEvent event, List<Member> members) {
+        int num = (int) members.stream().filter(m -> m.getGuild() == event.getGuild()).count();
+        return members.stream()
+                .filter(m -> m.getGuild() == event.getGuild())
+                .map(m -> m.getUser().getName() + "\n")
+                .collect(Collectors.joining("", num + " members\n", ""));
+    }
+
+    public static String writeModeratorStats(JsonArray gameResults, Guild guild, List<Member> members) {
         Set<String> mods = gameResults.asList().stream().map(gr -> gr.getAsJsonObject().get("moderator").getAsString()).collect(Collectors.toSet());
         List<Pair<String, Integer>> modAndNumGames = new ArrayList<>();
         mods.forEach(m -> modAndNumGames.add(new ImmutablePair<>(m, gameResults.asList().stream().filter(gr -> gr.getAsJsonObject().get("moderator").getAsString().equals(m)).toList().size())));
         modAndNumGames.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
         StringBuilder moderatorsString = new StringBuilder("__Moderators__");
         for (Pair<String, Integer> p : modAndNumGames) {
-            moderatorsString.append("\n").append(p.getRight()).append(" - ").append(p.getLeft());
+            Member member = members.stream().filter(m -> m.getGuild() == guild)
+                    .filter(m -> p.getLeft().equals("@" + m.getUser().getName()))
+                    .findFirst().orElse(null);
+            String moderator = member != null ? member.getUser().getAsMention() : p.getLeft();
+            moderatorsString.append("\n").append(p.getRight()).append(" - ").append(moderator);
         }
         return moderatorsString.toString();
     }
 
-    public static String updateStats(SlashCommandInteractionEvent event) {
-        GameResults gameResults = gatherGameResults(event, true);
+    public static String updateStats(SlashCommandInteractionEvent event, List<Member> members) {
+        GameResults gameResults = gatherGameResults(event, true, members);
         return gameResults.numNewEntries + " new games were added to parsed results.";
     }
 
@@ -504,12 +518,12 @@ public class ReportsCommands {
                         .toList().size();
                 marker = Emojis.BG;
             }
-            case "Ecaz" -> {
+            case "E" -> {
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Ecaz")).filter(v -> v != null && !v.getAsString().isEmpty())
                         .toList().size();
                 numWins = gameResults.asList().stream()
-                        .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("Ecaz"))
+                        .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("E"))
                         .toList().size();
                 marker = Emojis.ECAZ;
             }
@@ -540,7 +554,7 @@ public class ReportsCommands {
         allTurnStats.add(turnStats(gameResults, "F"));
         allTurnStats.add(turnStats(gameResults, "G"));
         allTurnStats.add(turnStats(gameResults, "BG"));
-        allTurnStats.add(turnStats(gameResults, "Ecaz"));
+        allTurnStats.add(turnStats(gameResults, "E"));
         StringBuilder turnStatsString = new StringBuilder("__Turns__");
         for (TurnStats ts : allTurnStats) {
             String winPercentage = new DecimalFormat("%#0.0").format(ts.winPercentage);
@@ -686,6 +700,7 @@ public class ReportsCommands {
         else if (getJsonRecordValueOrBlankString(gameResult, "Guild").equals(playerName)) return true;
         else if (getJsonRecordValueOrBlankString(gameResult, "Harkonnen").equals(playerName)) return true;
         else if (getJsonRecordValueOrBlankString(gameResult, "Ix").equals(playerName)) return true;
+        else if (getJsonRecordValueOrBlankString(gameResult, "Moritani").equals(playerName)) return true;
         else return getJsonRecordValueOrBlankString(gameResult, "Richese").equals(playerName);
     }
 
@@ -760,7 +775,11 @@ public class ReportsCommands {
         return strippedEmoji.substring(0, 1).toUpperCase() + strippedEmoji.substring(1);
     }
 
-    private static GameResults gatherGameResults(SlashCommandInteractionEvent event, boolean loadNewGames) {
+    private static GameResults gatherGameResults(SlashCommandInteractionEvent event) {
+        return gatherGameResults(event, false, null);
+    }
+
+    private static GameResults gatherGameResults(SlashCommandInteractionEvent event, boolean loadNewGames, List<Member> members) {
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
         if (category == null)
@@ -1036,20 +1055,23 @@ public class ReportsCommands {
             ThreadChannel moderatorStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats-test")).findFirst().orElse(null);
             if (moderatorStats == null)
                 moderatorStats = playerStatsChannel.createThreadChannel("moderator-stats-test").complete();
-            moderatorStats.sendMessage(writeModeratorStats(jsonGameResults)).queue();
+            moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
             ThreadChannel playerStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats-test")).findFirst().orElse(null);
             if (playerStats == null)
                 playerStats = playerStatsChannel.createThreadChannel("player-stats-test").complete();
             StringBuilder playerStatsString = new StringBuilder();
-            String[] playerStatsLines = writePlayerStats(jsonGameResults).split("\n");
+            String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
+            int mentions = 0;
             for (String s : playerStatsLines) {
-                if (playerStatsString.length() + s.length() > 2000) {
+                if (playerStatsString.length() + s.length() > 2000 || mentions > 20) {
                     playerStats.sendMessage(playerStatsString.toString()).queue();
                     playerStatsString = new StringBuilder();
                 }
                 if (!playerStatsString.isEmpty())
                     playerStatsString.append("\n");
                 playerStatsString.append(s);
+                if (s.contains("<@"))
+                    mentions++;
             }
             if (!playerStatsString.isEmpty())
                 playerStats.sendMessage(playerStatsString.toString()).queue();
@@ -1103,7 +1125,7 @@ public class ReportsCommands {
     }
 
     public static String o6Players(SlashCommandInteractionEvent event) {
-        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder playedSix = new StringBuilder();
         StringBuilder playedFive = new StringBuilder();
@@ -1147,7 +1169,7 @@ public class ReportsCommands {
     }
 
     public static String o6Winners(SlashCommandInteractionEvent event) {
-        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder wonAsSix = new StringBuilder();
         StringBuilder wonAsFive = new StringBuilder();
@@ -1193,7 +1215,7 @@ public class ReportsCommands {
     private static final List<String> factionNames = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
 
     private static String highFactionPlays(SlashCommandInteractionEvent event) {
-        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder maxFactionPlays = new StringBuilder();
         StringBuilder maxMinusOne = new StringBuilder();
@@ -1216,7 +1238,7 @@ public class ReportsCommands {
     }
 
     private static String playerRecord(SlashCommandInteractionEvent event, String playerName) {
-        JsonArray gameResults = gatherGameResults(event, false).gameResults;
+        JsonArray gameResults = gatherGameResults(event).gameResults;
         PlayerRecord pr = getPlayerRecord(gameResults, "@" + playerName);
         String returnString = playerName + " has played in " + pr.games + " games and won " + pr.wins;
         if (pr.atreidesGames > 0) {

@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -43,6 +44,16 @@ import static controller.commands.ShowCommands.refreshChangedInfo;
 import static controller.commands.ShowCommands.showFactionInfo;
 
 public class CommandManager extends ListenerAdapter {
+    public List<Member> members = new ArrayList<>();
+
+    public void gatherMembers(List<Member> members) {
+        this.members.addAll(members);
+    }
+
+    @Override
+    public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+        this.members.add(event.getMember());
+    }
 
     public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
@@ -487,6 +498,12 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
+            } else if (name.equals("update-stats") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                String result = ReportsCommands.updateStats(event, members);
+                event.getHook().editOriginal(result).queue();
+            } else if (name.equals("list-members") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                String result = ReportsCommands.listMembers(event, members);
+                event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.runCommand(event);
                 event.getHook().editOriginal(result).queue();
@@ -720,6 +737,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
+        commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."));
+        commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
