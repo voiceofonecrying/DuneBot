@@ -21,13 +21,18 @@ public class DuneBot {
         System.out.println("There are " + CommandManager.getAllCommands().size() + " commands in Dunebot.");
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         try {
-            String token = Dotenv.configure().load().get("TOKEN");
+            Dotenv dotenv = Dotenv.configure().load();
+            String token = dotenv.get("TOKEN");
 
             JDA jda = JDABuilder.createDefault(token)
                     .setStatus(OnlineStatus.ONLINE)
                     .setActivity(Activity.playing("Dune"))
                     .enableIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
                     .build();
+
+            if ("1".equals(dotenv.get("ALLOW_MOD_BUTTON_PRESS"))) {
+                ButtonManager.setAllowModButtonPress();
+            }
 
             CommandManager cm = new CommandManager();
             jda.addEventListener(new EventListener(), cm, new ButtonManager());

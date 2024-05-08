@@ -8,6 +8,7 @@ import model.Game;
 import model.MentatPause;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -20,12 +21,29 @@ import java.util.concurrent.CompletableFuture;
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class ButtonManager extends ListenerAdapter {
+    static boolean allowModButtonPress = false;
+
+    public static void setAllowModButtonPress() {
+        allowModButtonPress = true;
+    }
+
     public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
         try {
-            return game.getFactions().stream()
-                    .filter(f -> f.getPlayer().contains(Objects.requireNonNull(event.getMember()).getUser().getId()))
-                    .findAny()
-                    .orElseThrow();
+            if (allowModButtonPress) {
+                String channelName = event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD) ?
+                        event.getChannel().asThreadChannel().getParentMessageChannel().getName() :
+                        event.getChannel().getName();
+
+                return game.getFactions().stream()
+                        .filter(f -> (f.getName().toLowerCase() + "-info").equals(channelName))
+                        .findAny()
+                        .orElseThrow();
+            } else {
+                return game.getFactions().stream()
+                        .filter(f -> f.getPlayer().contains(Objects.requireNonNull(event.getMember()).getUser().getId()))
+                        .findAny()
+                        .orElseThrow();
+            }
         } catch (Exception e) {
             System.out.println(Objects.requireNonNull(event.getMember()).getUser().getId());
             for (Faction faction : game.getFactions()) {
