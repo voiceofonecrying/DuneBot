@@ -218,7 +218,7 @@ public class CommandOptions {
     public static final OptionData buttonName =
             new OptionData(OptionType.STRING, "button-name", "Name for the button", false);
 
-    public static final OptionData months = new OptionData(OptionType.INTEGER, "months", "List players from games that finished within this many months (default = 1)");
+    public static final OptionData months = new OptionData(OptionType.INTEGER, "months", "List players from games that finished within this many months");
 
     public static final OptionData clockDirection =
             new OptionData(OptionType.STRING, "clock-direction", "Clockwise is default", false)

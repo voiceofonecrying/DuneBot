@@ -505,7 +505,7 @@ public class CommandManager extends ListenerAdapter {
                 String result = ReportsCommands.listMembers(event, members);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
-                String result = ReportsCommands.runCommand(event);
+                String result = ReportsCommands.runCommand(event, members);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("my-record")) {
                 event.getHook().editOriginal(ReportsCommands.playerRecord(event)).queue();

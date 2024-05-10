@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
-import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
 import net.dv8tion.jda.internal.utils.tuple.MutableTriple;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
@@ -33,7 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -59,13 +58,13 @@ public class ReportsCommands {
         return commandData;
     }
 
-    public static String runCommand(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
+    public static String runCommand(SlashCommandInteractionEvent event, List<Member> members) throws ChannelNotFoundException, IOException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         String responseMessage = "";
         switch (name) {
-            case "games-per-player" -> responseMessage = gamesPerPlayer(event);
+            case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
             case "player-record" -> responseMessage = playerRecord(event);
             case "o6-players" -> responseMessage = o6Players(event);
@@ -118,25 +117,13 @@ public class ReportsCommands {
         }
     }
 
-    private static void addRecentlyFinishedPlayers(HashMap<String, List<String>> playerGamesMap, Category category, int monthsAgo) {
-        Optional<TextChannel> optChannel = category.getTextChannels().stream()
-                .filter(c -> c.getName().equalsIgnoreCase("game-results"))
-                .findFirst();
-        if (optChannel.isPresent()) {
-            Calendar c = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-            c.add(Calendar.MONTH, -1 * monthsAgo);
-            long timestamp = c.getTimeInMillis();
-            String discordTimestamp = Long.toUnsignedString(TimeUtil.getDiscordTimestamp(timestamp));
-            TextChannel gameResults = optChannel.get();
-            MessageHistory messageHistory = MessageHistory.getHistoryAfter(gameResults, discordTimestamp).complete();
-            List<Message> messages = messageHistory.getRetrievedHistory();
-            for (Message m : messages) {
-                for (String player : findPlayerTags(m.getContentRaw())) {
-                    List<String> games = playerGamesMap.computeIfAbsent(player, k -> new ArrayList<>());
-                    if (games.isEmpty()) {
-                        games.add("recently-finished");
-                    }
-                }
+    private static void addRecentlyFinishedPlayers(List<Member> members, GameResults gameResults2, HashMap<String, List<String>> playerGamesMap, int monthsAgo) {
+        HashSet<String> filteredPlayers = getAllPlayers(gameResults2.gameResults, monthsAgo);
+        for (String player : filteredPlayers) {
+            String playerTag = members.stream().filter(member -> player.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(player);
+            List<String> games = playerGamesMap.computeIfAbsent(playerTag, k -> new ArrayList<>());
+            if (games.isEmpty()) {
+                games.add("recently-finished");
             }
         }
     }
@@ -189,18 +176,18 @@ public class ReportsCommands {
         return message.toString();
     }
 
-    public static String gamesPerPlayer(SlashCommandInteractionEvent event) {
+    public static String gamesPerPlayer(SlashCommandInteractionEvent event, List<Member> members) {
         String message = "**Number of games players are in**\n";
         HashMap<String, List<String>> playerGamesMap = new HashMap<>();
         OptionMapping optionMapping = event.getOption(months.getName());
-        int monthsAgo = (optionMapping != null ? optionMapping.getAsInt() : 1);
+        int monthsAgo = (optionMapping != null ? optionMapping.getAsInt() : 0);
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         for (Category category : categories) {
             String categoryName = category.getName();
             if (categoryName.equalsIgnoreCase("staging area")) {
                 addWaitingListPlayers(playerGamesMap, category);
             } else if (categoryName.equalsIgnoreCase("dune statistics")) {
-                addRecentlyFinishedPlayers(playerGamesMap, category, monthsAgo);
+                addRecentlyFinishedPlayers(members, gatherGameResults(event), playerGamesMap, monthsAgo);
             } else {
                 addGamePlayers(playerGamesMap, category, categoryName);
             }
@@ -305,6 +292,23 @@ public class ReportsCommands {
     static List<String> numberBoxes = List.of(":zero:", ":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:", ":keycap_ten:");
 
     private static HashSet<String> getAllPlayers(JsonArray gameResults) {
+        return getAllPlayers(gameResults, Integer.MAX_VALUE);
+    }
+
+    private static HashSet<String> getAllPlayers(JsonArray allResults, int monthsAgo) {
+        JsonArray gameResults = new JsonArray();
+        allResults.asList().stream().filter(gr -> {
+            String endString = getJsonRecordValueOrBlankString(gr.getAsJsonObject(), "gameEndDate");
+            if (monthsAgo == Integer.MAX_VALUE) {
+                return true;
+            } else if (endString.isEmpty() || monthsAgo == 0) {
+                return false;
+            } else {
+                Instant endDate = ZonedDateTime.of(LocalDate.parse(endString).atStartOfDay(), ZoneOffset.UTC).toInstant();
+                Instant pastDate = ZonedDateTime.now(ZoneOffset.UTC).minusMonths(monthsAgo).toInstant();
+                return pastDate.isBefore(endDate);
+            }
+        }).toList().forEach(gameResults::add);
         HashSet<String> players = new HashSet<>();
         players.addAll(gameResults.asList().stream().map(gr -> getJsonRecordValueOrBlankString(gr.getAsJsonObject(), "Atreides")).collect(Collectors.toSet()));
         players.addAll(gameResults.asList().stream().map(gr -> getJsonRecordValueOrBlankString(gr.getAsJsonObject(), "BG")).collect(Collectors.toSet()));
