@@ -504,7 +504,7 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("list-members") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.listMembers(event, members);
                 event.getHook().editOriginal(result).queue();
-            } else if (name.equals("reports") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+            } else if (name.equals("reports")) {
                 String result = ReportsCommands.runCommand(event, members);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("my-record")) {

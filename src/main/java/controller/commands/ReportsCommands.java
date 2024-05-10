@@ -54,6 +54,7 @@ public class ReportsCommands {
                 new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
                 new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
                 new SubcommandData("won-as-all-original-six", "Who has won with all original six factions?"),
+                new SubcommandData("won-as-all-expansion", "Who has won with all six expansion factions?"),
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?")
         ));
 
@@ -72,6 +73,7 @@ public class ReportsCommands {
             case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event, members);
             case "played-all-expansion" -> responseMessage = playedAllExpansion(event, members);
             case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event, members);
+            case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event, members);
             case "high-faction-plays" -> responseMessage = highFactionPlays(event, members);
         }
         return responseMessage;
@@ -1263,6 +1265,51 @@ public class ReportsCommands {
         }
         if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
             return "No players have won with all original 6 factions.";
+        return tagEmojis(event, wonAsSix + wonAsFive.toString());
+    }
+
+    public static String wonAsAllExpansion(SlashCommandInteractionEvent event, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(event).gameResults;
+        Set<String> players = getAllPlayers(gameResults);
+        StringBuilder wonAsSix = new StringBuilder();
+        StringBuilder wonAsFive = new StringBuilder();
+        for (String playerName : players) {
+            PlayerRecord pr = getPlayerRecord(gameResults, playerName);
+            int factionsWonAs = 0;
+            String missedFactionEmojis = "";
+            if (pr.btWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.BT;
+            if (pr.ixWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.IX;
+            if (pr.choamWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.CHOAM;
+            if (pr.richWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.RICHESE;
+            if (pr.ecazWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.ECAZ;
+            if (pr.moritaniWins != 0)
+                factionsWonAs++;
+            else
+                missedFactionEmojis += Emojis.MORITANI;
+
+            String playerTag = members.stream().filter(member -> playerName.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(playerName);
+            if (factionsWonAs == 6)
+                wonAsSix.append(playerTag).append(" has won as all 6.\n");
+            else if (factionsWonAs == 5)
+                wonAsFive.append(playerTag).append(" has won as 5, missing only ").append(missedFactionEmojis).append("\n");
+        }
+        if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
+            return "No players have won with all 6 expansion factions.";
         return tagEmojis(event, wonAsSix + wonAsFive.toString());
     }
 
