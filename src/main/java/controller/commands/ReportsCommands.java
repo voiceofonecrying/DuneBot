@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static controller.commands.CommandOptions.*;
 
@@ -50,8 +51,9 @@ public class ReportsCommands {
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
-                new SubcommandData("o6-players", "Who has played all original six factions?"),
-                new SubcommandData("o6-winners", "Who has won with all original six factions?"),
+                new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
+                new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
+                new SubcommandData("won-as-all-original-six", "Who has won with all original six factions?"),
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?")
         ));
 
@@ -67,9 +69,10 @@ public class ReportsCommands {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
             case "player-record" -> responseMessage = playerRecord(event);
-            case "o6-players" -> responseMessage = o6Players(event);
-            case "o6-winners" -> responseMessage = o6Winners(event);
-            case "high-faction-plays" -> responseMessage = highFactionPlays(event);
+            case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event, members);
+            case "played-all-expansion" -> responseMessage = playedAllExpansion(event, members);
+            case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event, members);
+            case "high-faction-plays" -> responseMessage = highFactionPlays(event, members);
         }
         return responseMessage;
     }
@@ -1125,10 +1128,10 @@ public class ReportsCommands {
         User thePlayer = (optionMapping != null ? optionMapping.getAsUser() : null);
         if (thePlayer == null)
             thePlayer = event.getUser();
-        return playerRecord(event, thePlayer.getName());
+        return playerRecord(event, thePlayer.getName(), thePlayer.getAsMention());
     }
 
-    public static String o6Players(SlashCommandInteractionEvent event) {
+    public static String playedAllOriginalSix(SlashCommandInteractionEvent event, List<Member> members) {
         JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder playedSix = new StringBuilder();
@@ -1162,17 +1165,63 @@ public class ReportsCommands {
             else
                 missedFactionEmojis += Emojis.HARKONNEN;
 
+            String playerTag = members.stream().filter(member -> playerName.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(playerName);
             if (factionsPlayed == 6)
-                playedSix.append(playerName).append(" has played all 6.\n");
+                playedSix.append(playerTag).append(" has played all 6.\n");
             else if (factionsPlayed == 5)
-                playedFive.append(playerName).append(" is missing only ").append(missedFactionEmojis).append("\n");
+                playedFive.append(playerTag).append(" is missing only ").append(missedFactionEmojis).append("\n");
         }
         if (playedSix.isEmpty() && playedFive.isEmpty())
             return "No players have played all original 6 factions.";
         return tagEmojis(event, playedSix + playedFive.toString());
     }
 
-    public static String o6Winners(SlashCommandInteractionEvent event) {
+    public static String playedAllExpansion(SlashCommandInteractionEvent event, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(event).gameResults;
+        Set<String> players = getAllPlayers(gameResults);
+        StringBuilder playedSix = new StringBuilder();
+        StringBuilder playedFive = new StringBuilder();
+        for (String playerName : players) {
+            PlayerRecord pr = getPlayerRecord(gameResults, playerName);
+            int factionsPlayed = 0;
+            String missedFactionEmojis = "";
+            if (pr.btGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.BT;
+            if (pr.ixGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.IX;
+            if (pr.choamGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.CHOAM;
+            if (pr.richGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.RICHESE;
+            if (pr.ecazGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.ECAZ;
+            if (pr.moritaniGames != 0)
+                factionsPlayed++;
+            else
+                missedFactionEmojis += Emojis.MORITANI;
+
+            String playerTag = members.stream().filter(member -> playerName.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(playerName);
+            if (factionsPlayed == 6)
+                playedSix.append(playerTag).append(" has played all 6.\n");
+            else if (factionsPlayed == 5)
+                playedFive.append(playerTag).append(" is missing only ").append(missedFactionEmojis).append("\n");
+        }
+        if (playedSix.isEmpty() && playedFive.isEmpty())
+            return "No players have played all 6 expansion factions.";
+        return tagEmojis(event, playedSix + playedFive.toString());
+    }
+
+    public static String wonAsAllOriginalSix(SlashCommandInteractionEvent event, List<Member> members) {
         JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder wonAsSix = new StringBuilder();
@@ -1206,10 +1255,11 @@ public class ReportsCommands {
             else
                 missedFactionEmojis += Emojis.HARKONNEN;
 
+            String playerTag = members.stream().filter(member -> playerName.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(playerName);
             if (factionsWonAs == 6)
-                wonAsSix.append(playerName).append(" has won as all 6.\n");
+                wonAsSix.append(playerTag).append(" has won as all 6.\n");
             else if (factionsWonAs == 5)
-                wonAsFive.append(playerName).append(" has won as 5, missing only ").append(missedFactionEmojis).append("\n");
+                wonAsFive.append(playerTag).append(" has won as 5, missing only ").append(missedFactionEmojis).append("\n");
         }
         if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
             return "No players have won with all original 6 factions.";
@@ -1218,11 +1268,9 @@ public class ReportsCommands {
 
     private static final List<String> factionNames = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
 
-    private static String highFactionPlays(SlashCommandInteractionEvent event) {
+    private static String highFactionPlays(SlashCommandInteractionEvent event, List<Member> members) {
         JsonArray gameResults = gatherGameResults(event).gameResults;
         Set<String> players = getAllPlayers(gameResults);
-        StringBuilder maxFactionPlays = new StringBuilder();
-        StringBuilder maxMinusOne = new StringBuilder();
         List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
         for (String playerName : players) {
             for (String factionName : factionNames) {
@@ -1230,21 +1278,35 @@ public class ReportsCommands {
             }
         }
         int maxGames = playerFactionCounts.stream().map(t -> t.right).mapToInt(t -> t).filter(t -> t >= 0).max().orElse(0);
+        ArrayList<StringBuilder> highFactionPlays = new ArrayList<>();
+        IntStream.range(0, maxGames).forEach(i -> highFactionPlays.add(new StringBuilder()));
         for (MutableTriple<String, String, Integer> t : playerFactionCounts) {
-            if (t.right == maxGames)
-                maxFactionPlays.append(t.left).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times!\n");
-            else if (t.right == maxGames - 1)
-                maxMinusOne.append(t.left).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times.\n");
+            String punct = t.right == maxGames ? "!\n" : ".\n";
+            if (t.right != 0) {
+                String playerTag = members.stream().filter(member -> t.left.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(t.left);
+                highFactionPlays.get(t.right - 1).append(playerTag).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct);
+            }
         }
-        if (maxFactionPlays.isEmpty() && maxMinusOne.isEmpty())
+        StringBuilder result = new StringBuilder();
+        int lines = 0;
+        int numPlays = maxGames - 1;
+        while (numPlays >= 0 && lines < 5) {
+            String hfpString = highFactionPlays.get(numPlays).toString();
+            for (char c : hfpString.toCharArray())
+                if (c == '\n')
+                    lines++;
+            result.append(hfpString);
+            numPlays--;
+        }
+        if (maxGames == 0)
             return "No players have won.";
-        return tagEmojis(event, maxFactionPlays + maxMinusOne.toString());
+        return tagEmojis(event, result.toString());
     }
 
-    private static String playerRecord(SlashCommandInteractionEvent event, String playerName) {
+    private static String playerRecord(SlashCommandInteractionEvent event, String playerName, String playerTag) {
         JsonArray gameResults = gatherGameResults(event).gameResults;
         PlayerRecord pr = getPlayerRecord(gameResults, "@" + playerName);
-        String returnString = playerName + " has played in " + pr.games + " games and won " + pr.wins;
+        String returnString = playerTag + " has played in " + pr.games + " games and won " + pr.wins;
         if (pr.atreidesGames > 0) {
             returnString += "\n" + Emojis.ATREIDES + " " + pr.atreidesGames + " games";
             if (pr.atreidesWins > 0) returnString += ", " + pr.atreidesWins + " wins";
