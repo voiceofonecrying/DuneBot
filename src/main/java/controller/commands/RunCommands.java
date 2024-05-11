@@ -656,12 +656,15 @@ public class RunCommands {
         while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0)
             game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        if (game.hasFaction("Richese") && ((RicheseFaction) game.getFaction("Richese")).getTreacheryCardCache().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")) &&
-                game.getTreacheryDiscard().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
+        List<Faction> factions = game.getFactionsWithTreacheryCard("Juice of Sapho");
+        if (!factions.isEmpty()) {
+            Faction saphoFaction = factions.get(0);
+            List<Button> buttons = List.of(
+                    Button.primary("juice-of-sapho-first", "Go first this phase."),
+                    Button.primary("juice-of-sapho-last", "Go last this phase."),
+                    Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase."));
+            discordGame.getFactionChat(saphoFaction).queueMessage("Do you want to play Juice of Sapho to be first or last in shipment and movement? " + saphoFaction.getPlayer(), buttons);
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
-            discordGame.prepareMessage("game-actions", "Juice of Sapho is in play. Use buttons to play Juice of Sapho to be " +
-                    "considered first or last this shipment and movement phase.").addActionRow(Button.primary("juice-of-sapho-first", "Go first this phase."),
-                    Button.primary("juice-of-sapho-last", "Go last this phase."), Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase.")).queue();
         } else if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
             ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame, game);

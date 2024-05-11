@@ -327,7 +327,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             game.getTurnOrder().addFirst(faction.getName());
         }
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Juice of Sapho"));
-        discordGame.queueMessageToEphemeral("Button pressed.  You will go " + lastFirst + " this turn.");
+        discordGame.queueMessage("You will go " + lastFirst + " this turn.");
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " plays Juice of Sapho to ship and move " + lastFirst + " this turn.");
         if (last && game.hasFaction("Guild") && !(faction instanceof GuildFaction)) {
             game.getTurnOrder().addFirst("Guild");
