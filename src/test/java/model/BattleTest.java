@@ -63,6 +63,88 @@ class BattleTest {
     void tearDown() {
     }
 
+    @Test
+    void testJuiceOfSaphoAdded() throws InvalidGameStateException {
+        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
+        richese.addTreacheryCard(cheapHero);
+        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
+        richese.addTreacheryCard(chaumas);
+        Leader alia = new Leader("Alia", 5, null, false);
+        bg.addLeader(alia);
+        Force richeseForces = new Force("Richese", 3, "Richese");
+        Force bgForces = new Force("BG", 1, "BG");
+        bg.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+        assertEquals(Emojis.RICHESE, battle.getWinnerEmojis(game));
+        assertEquals("0", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(0, turnSummary.getMessages().size());
+        battle.juiceOfSaphoAdd(game, bg);
+        assertEquals(Emojis.BG, battle.getWinnerEmojis(game));
+        assertEquals("0", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(1, turnSummary.getMessages().size());
+    }
+
+    @Test
+    void testPortableSnooperAdded() throws InvalidGameStateException {
+        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
+        richese.addTreacheryCard(cheapHero);
+        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
+        richese.addTreacheryCard(chaumas);
+        TreacheryCard portableSnooper = new TreacheryCard("Portable Snooper");
+        bg.addTreacheryCard(portableSnooper);
+        Leader alia = new Leader("Alia", 5, null, false);
+        bg.addLeader(alia);
+        Force richeseForces = new Force("Richese", 3, "Richese");
+        Force bgForces = new Force("BG", 1, "BG");
+        bg.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
+        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+        assertFalse(bgPlan.isLeaderAlive());
+        assertEquals("2", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(0, turnSummary.getMessages().size());
+        battle.portableSnooperAdd(game, bg);
+        assertTrue(bgPlan.isLeaderAlive());
+        assertEquals("2", richesePlan.getTotalStrengthString());
+        assertEquals("5", bgPlan.getTotalStrengthString());
+        assertEquals(1, turnSummary.getMessages().size());
+    }
+
+    @Test
+    void testPoisonToothRemoved() throws InvalidGameStateException {
+        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
+        richese.addTreacheryCard(cheapHero);
+        TreacheryCard poisonTooth = new TreacheryCard("Poison Tooth");
+        bg.addTreacheryCard(poisonTooth);
+        Leader alia = new Leader("Alia", 5, null, false);
+        bg.addLeader(alia);
+        Force richeseForces = new Force("Richese", 3, "Richese");
+        Force bgForces = new Force("BG", 1, "BG");
+        bg.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
+        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, poisonTooth, null);
+        assertFalse(richesePlan.isLeaderAlive());
+        assertFalse(bgPlan.isLeaderAlive());
+        assertEquals("2", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(0, turnSummary.getMessages().size());
+        battle.removePoisonTooth(game, bg);
+        assertTrue(richesePlan.isLeaderAlive());
+        assertTrue(bgPlan.isLeaderAlive());
+        assertEquals("2", richesePlan.getTotalStrengthString());
+        assertEquals("5", bgPlan.getTotalStrengthString());
+        assertEquals(1, turnSummary.getMessages().size());
+    }
+
     @Nested
     @DisplayName("#numForcesNotDialed")
     class NumForcesNotDialed {
@@ -623,132 +705,6 @@ class BattleTest {
             crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
             chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
             shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
-        }
-
-        @Test
-        void testDefenderHasJuiceOfSapho() throws InvalidGameStateException {
-            assertInstanceOf(HarkonnenFaction.class, battle1.getDefender(game));
-            assertInstanceOf(AtreidesFaction.class, battle1.getAggressor(game));
-            TreacheryCard juiceOfSapho = new TreacheryCard("Juice of Sapho");
-            harkonnen.addTreacheryCard(juiceOfSapho);
-            TestTopic harkonnenChat = new TestTopic();
-            harkonnen.setChat(harkonnenChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle1.setBattlePlan(game, harkonnen, harkonnen.getLeader("Feyd Rautha").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle1.checkJuiceOfSapho(game, harkonnen);
-            assertEquals(3, harkonnenChat.getMessages().size());
-            assertEquals("Do you want to play Juice of Sapho to be aggressor in the battle of Arrakeen?", harkonnenChat.getMessages().get(2));
-            assertEquals(1, harkonnenChat.getChoices().size());
-            assertEquals(2, harkonnenChat.getChoices().get(0).size());
-            assertEquals("battlesapho-yes", harkonnenChat.getChoices().get(0).get(0).getId());
-            assertEquals("Yes", harkonnenChat.getChoices().get(0).get(0).getLabel());
-            assertEquals("battlesapho-no", harkonnenChat.getChoices().get(0).get(1).getId());
-            assertEquals("No", harkonnenChat.getChoices().get(0).get(1).getLabel());
-        }
-
-        @Test
-        void testDefenderDoesNotHaveJuiceOfSapho() throws InvalidGameStateException {
-            assertInstanceOf(HarkonnenFaction.class, battle1.getDefender(game));
-            assertInstanceOf(AtreidesFaction.class, battle1.getAggressor(game));
-            TestTopic harkonnenChat = new TestTopic();
-            harkonnen.setChat(harkonnenChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle1.setBattlePlan(game, harkonnen, harkonnen.getLeader("Feyd Rautha").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle1.checkJuiceOfSapho(game, harkonnen);
-            assertEquals(2, harkonnenChat.getMessages().size());
-            assertEquals(0, harkonnenChat.getChoices().size());
-        }
-
-        @Test
-        void testAggressorHasJuiceOfSapho() throws InvalidGameStateException {
-            assertInstanceOf(HarkonnenFaction.class, battle1.getDefender(game));
-            assertInstanceOf(AtreidesFaction.class, battle1.getAggressor(game));
-            TestTopic atreidesChat = new TestTopic();
-            atreides.setChat(atreidesChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle1.setBattlePlan(game, atreides, atreides.getLeader("Duncan Idaho").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle1.checkJuiceOfSapho(game, atreides);
-            assertEquals(2, atreidesChat.getMessages().size());
-            assertEquals(0, atreidesChat.getChoices().size());
-        }
-
-        @Test
-        void testEcazHasJuiceOfSapho() throws InvalidGameStateException {
-            battle2a.setEcazCombatant(game, "Atreides");
-            assertInstanceOf(AtreidesFaction.class, battle2a.getDefender(game));
-            assertInstanceOf(HarkonnenFaction.class, battle2a.getAggressor(game));
-            TreacheryCard juiceOfSapho = new TreacheryCard("Juice of Sapho");
-            ecaz.addTreacheryCard(juiceOfSapho);
-            TestTopic ecazChat = new TestTopic();
-            ecaz.setChat(ecazChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle2a.setBattlePlan(game, atreides, atreides.getLeader("Duncan Idaho").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle2a.checkJuiceOfSapho(game, atreides);
-            assertEquals(1, ecazChat.getMessages().size());
-            assertEquals("Do you want to play Juice of Sapho to be aggressor in the battle of Carthag? " + ecaz.getPlayer(), ecazChat.getMessages().get(0));
-            assertEquals(1, ecazChat.getChoices().size());
-            assertEquals(2, ecazChat.getChoices().get(0).size());
-            assertEquals("battlesapho-yes", ecazChat.getChoices().get(0).get(0).getId());
-            assertEquals("Yes", ecazChat.getChoices().get(0).get(0).getLabel());
-            assertEquals("battlesapho-no", ecazChat.getChoices().get(0).get(1).getId());
-            assertEquals("No", ecazChat.getChoices().get(0).get(1).getLabel());
-        }
-
-        @Test
-        void testEcazAllyHasJuiceOfSapho() throws InvalidGameStateException {
-            battle2a.setEcazCombatant(game, "Ecaz");
-            assertInstanceOf(EcazFaction.class, battle2a.getDefender(game));
-            assertInstanceOf(HarkonnenFaction.class, battle2a.getAggressor(game));
-            TreacheryCard juiceOfSapho = new TreacheryCard("Juice of Sapho");
-            atreides.addTreacheryCard(juiceOfSapho);
-            TestTopic atreidesChat = new TestTopic();
-            atreides.setChat(atreidesChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle2a.setBattlePlan(game, ecaz, ecaz.getLeader("Ilesa Ecaz").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle2a.checkJuiceOfSapho(game, ecaz);
-            assertEquals(1, atreidesChat.getMessages().size());
-            assertEquals("Do you want to play Juice of Sapho to be aggressor in the battle of Carthag? " + atreides.getPlayer(), atreidesChat.getMessages().get(0));
-            assertEquals(1, atreidesChat.getChoices().size());
-            assertEquals(2, atreidesChat.getChoices().get(0).size());
-            assertEquals("battlesapho-yes", atreidesChat.getChoices().get(0).get(0).getId());
-            assertEquals("Yes", atreidesChat.getChoices().get(0).get(0).getLabel());
-            assertEquals("battlesapho-no", atreidesChat.getChoices().get(0).get(1).getId());
-            assertEquals("No", atreidesChat.getChoices().get(0).get(1).getLabel());
-        }
-
-        @Test
-        void testEcazDoesNotHaveJuiceOfSapho() throws InvalidGameStateException {
-            battle2a.setEcazCombatant(game, "Atreides");
-            assertInstanceOf(AtreidesFaction.class, battle2a.getDefender(game));
-            assertInstanceOf(HarkonnenFaction.class, battle2a.getAggressor(game));
-            TestTopic ecazChat = new TestTopic();
-            ecaz.setChat(ecazChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle2a.setBattlePlan(game, atreides, atreides.getLeader("Duncan Idaho").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle2a.checkJuiceOfSapho(game, atreides);
-            assertEquals(0, ecazChat.getMessages().size());
-            assertEquals(0, ecazChat.getChoices().size());
-        }
-
-        @Test
-        void testEcazAllyDoesNotHaveJuiceOfSapho() throws InvalidGameStateException {
-            battle2a.setEcazCombatant(game, "Ecaz");
-            assertInstanceOf(EcazFaction.class, battle2a.getDefender(game));
-            assertInstanceOf(HarkonnenFaction.class, battle2a.getAggressor(game));
-            TestTopic atreidesChat = new TestTopic();
-            atreides.setChat(atreidesChat);
-            TestTopic modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            battle2a.setBattlePlan(game, ecaz, ecaz.getLeader("Ilesa Ecaz").orElseThrow(), null, false, 0, false, 0, null, null);
-            battle2a.checkJuiceOfSapho(game, ecaz);
-            assertEquals(0, atreidesChat.getMessages().size());
-            assertEquals(0, atreidesChat.getChoices().size());
         }
 
         @Test

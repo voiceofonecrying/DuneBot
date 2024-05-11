@@ -140,6 +140,7 @@ public class PlayerCommands {
                 discordGame.getModInfo().queueMessage(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
                 List<Button> buttons = strongholdNames.stream().map(strongholdName -> Button.primary("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
                 discordGame.getFactionChat(faction).queueMessage("Which Stronghold Card would you like to use in the HMS battle?", buttons);
+                currentBattle.hmsCardDecisionNeeded(faction);
             }
         }
         int availableSpice = faction.getSpice() - spice;
@@ -151,6 +152,7 @@ public class PlayerCommands {
                 buttons.add(availableSpice >= i ? button : button.asDisabled());
             });
             discordGame.getFactionChat(faction).queueMessage("How much would you like to spend with Spice Banker?", buttons);
+            currentBattle.spiceBankerDecisionNeeded(faction);
         }
 //        currentBattle.checkJuiceOfSapho(game, faction);
         return returnString;

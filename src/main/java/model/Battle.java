@@ -22,6 +22,21 @@ public class Battle {
     private boolean cyborgsNegated;
     private boolean fremenMustPay;
 
+    public enum DecisionStatus {
+        NA,
+        OPEN,
+        CLOSED
+    }
+    private DecisionStatus hmsStrongholdCardTBD;
+    private String hmsStrongholdCardFactionEmoji;
+    private DecisionStatus spiceBankerTBD;
+    private String spiceBankerFactionEmoji;
+    private DecisionStatus juiceOfSaphoTBD;
+    private DecisionStatus portableSnooperTBD;
+    private DecisionStatus stoneBurnerTBD;
+    public DecisionStatus mirrorWeaponStoneBurnerTBD;
+    private DecisionStatus poisonToothTBD;
+
     public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
         this.wholeTerritoryName = wholeTerritoryName;
         this.territorySectors = territorySectors;
@@ -35,6 +50,13 @@ public class Battle {
         this.sardaukarNegated = factionNames.stream().anyMatch(n -> n.equals("Emperor")) && factionNames.stream().anyMatch(n -> n.equals("Fremen"));
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
+        this.hmsStrongholdCardTBD = DecisionStatus.NA;
+        this.spiceBankerTBD = DecisionStatus.NA;
+        this.juiceOfSaphoTBD = DecisionStatus.NA;
+        this.portableSnooperTBD = DecisionStatus.NA;
+        this.stoneBurnerTBD = DecisionStatus.NA;
+        this.mirrorWeaponStoneBurnerTBD = DecisionStatus.NA;
+        this.poisonToothTBD = DecisionStatus.NA;
     }
 
     public String getWholeTerritoryName() {
@@ -321,27 +343,6 @@ public class Battle {
         return numForcesInReserve;
     }
 
-    private void presentJuiceOfSaphoChoices(Game game, Faction faction, boolean tag) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("battlesapho-yes", "Yes"));
-        choices.add(new DuneChoice("battlesapho-no", "No"));
-        faction.getChat().publish("Do you want to play Juice of Sapho to be aggressor in the battle of " + wholeTerritoryName + "?" + (tag ? " " + faction.getPlayer() : ""), choices);
-        game.getModInfo().publish(faction.getEmoji() + " may choose to play Juice of Sapho in " + wholeTerritoryName + ". Please wait to resolve the battle.");
-    }
-
-    public void checkJuiceOfSapho(Game game, Faction faction) {
-        if (getDefenderName().equals(faction.getName())) {
-            if (faction.hasTreacheryCard("Juice of Sapho"))
-                presentJuiceOfSaphoChoices(game, faction, false);
-            else if (hasEcazAndAlly()) {
-                if (faction instanceof EcazFaction && game.getFaction(faction.getAlly()).hasTreacheryCard("Juice of Sapho"))
-                    presentJuiceOfSaphoChoices(game, game.getFaction(faction.getAlly()), true);
-                else if (faction.getAlly().equals("Ecaz") && game.getFaction("Ecaz").hasTreacheryCard("Juice of Sapho"))
-                    presentJuiceOfSaphoChoices(game, game.getFaction("Ecaz"), true);
-            }
-        }
-    }
-
     public void negateSpecialForces(Faction targetFaction) throws InvalidGameStateException {
         String targetFactionName = targetFaction.getName();
         boolean aggressorNegated = targetFactionName.equals(getAggressorName());
@@ -516,6 +517,59 @@ public class Battle {
                 aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         }
         return battlePlan;
+    }
+
+    public void hmsCardDecisionNeeded(Faction faction) {
+        hmsStrongholdCardFactionEmoji = faction.getEmoji();
+        hmsStrongholdCardTBD = DecisionStatus.OPEN;
+    }
+
+    public void hmsCardDecisionMade() {
+        hmsStrongholdCardTBD = DecisionStatus.CLOSED;
+    }
+
+    public boolean isHMSCardDecisionOpen() {
+        return hmsStrongholdCardTBD == DecisionStatus.OPEN;
+    }
+
+    public String getHmsStrongholdCardFactionEmoji() {
+        return hmsStrongholdCardFactionEmoji;
+    }
+
+    public void setHMSStrongholdCard(Faction faction, String strongholdCard) throws InvalidGameStateException {
+        faction.setHmsStrongholdProxy(new StrongholdCard(strongholdCard));
+        if (strongholdCard.equals("Carthag")) {
+            if (faction.getName().equals(getAggressorName()) && aggressorBattlePlan != null)
+                aggressorBattlePlan.addCarthagStrongholdPower();
+            else if (faction.getName().equals(getDefenderName()) && defenderBattlePlan != null)
+                defenderBattlePlan.addCarthagStrongholdPower();
+        }
+        hmsStrongholdCardTBD = DecisionStatus.CLOSED;
+    }
+
+    public void spiceBankerDecisionNeeded(Faction faction) {
+        spiceBankerFactionEmoji = faction.getEmoji();
+        spiceBankerTBD = DecisionStatus.OPEN;
+    }
+
+    public void spiceBankerDecisionMade() {
+        spiceBankerTBD = DecisionStatus.CLOSED;
+    }
+
+    public boolean isSpiceBankerDecisionOpen() {
+        return spiceBankerTBD == DecisionStatus.OPEN;
+    }
+
+    public String getSpiceBankerFactionEmoji() {
+        return spiceBankerFactionEmoji;
+    }
+
+    public void setSpiceBankerSupport(Faction faction, int spice) {
+        if (faction.getName().equals(getAggressorName()) && aggressorBattlePlan != null)
+            aggressorBattlePlan.setSpiceBankerSupport(spice);
+        else if (faction.getName().equals(getDefenderName()) && defenderBattlePlan != null)
+            defenderBattlePlan.setSpiceBankerSupport(spice);
+        spiceBankerTBD = DecisionStatus.CLOSED;
     }
 
     public String updateTroopsDialed(String factionName, int regularDialed, int specialDialed, int notDialed) throws InvalidGameStateException {
@@ -815,11 +869,30 @@ public class Battle {
         return resolution;
     }
 
+    private String getWinnerString(Game game) throws InvalidGameStateException {
+        String resolution = "";
+        if (aggressorBattlePlan.isLasgunShieldExplosion())
+            resolution += "**KABOOM!**";
+        else {
+            BattlePlan winnerPlan = isAggressorWin(game) ? aggressorBattlePlan : defenderBattlePlan;
+            BattlePlan loserPlan = isAggressorWin(game) ? defenderBattlePlan : aggressorBattlePlan;
+            resolution += MessageFormat.format("{0} **wins {1} - {2}**",
+                    getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loserPlan.getTotalStrengthString()
+            );
+            if (winnerPlan.getTotalStrengthString().equals(loserPlan.getTotalStrengthString())
+                    && !isAggressorWin(game)) {
+                if (winnerPlan.isJuiceOfSapho())
+                    resolution += getWinnerEmojis(game) + " wins tie due to Juice of Sapho.";
+                else
+                    resolution += getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.";
+            }
+        }
+        return resolution;
+    }
+
     public void printBattleResolution(Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
-        BattlePlan aggressorPlan = getAggressorBattlePlan();
-        BattlePlan defenderPlan = getDefenderBattlePlan();
         String wholeTerritoryName = getWholeTerritoryName();
         String resolution = MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 getAggressorEmojis(game), getDefenderEmojis(game), wholeTerritoryName
@@ -828,29 +901,19 @@ public class Battle {
         if (noFieldValue != null)
             resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
         resolution += getAggressorEmojis(game) + "\n";
-        resolution += aggressorPlan.getPlanMessage(true) + "\n\n";
+        resolution += aggressorBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getDefenderEmojis(game) + "\n";
-        resolution += defenderPlan.getPlanMessage(true) + "\n\n";
-        if (aggressorPlan.isLasgunShieldExplosion())
-            resolution += "**KABOOM!**\n";
-        else {
-            BattlePlan winnerPlan = isAggressorWin(game) ? aggressorPlan : defenderPlan;
-            BattlePlan loserPlan = isAggressorWin(game) ? defenderPlan : aggressorPlan;
-            resolution += MessageFormat.format("{0} **wins {1} - {2}**\n",
-                    getWinnerEmojis(game), winnerPlan.getTotalStrengthString(), loserPlan.getTotalStrengthString()
-            );
-            if (winnerPlan.getTotalStrengthString().equals(loserPlan.getTotalStrengthString())
-                    && !isAggressorWin(game)) {
-                if (winnerPlan.isJuiceOfSapho())
-                    resolution += getWinnerEmojis(game) + " wins tie due to Juice of Sapho.\n";
-                else
-                    resolution += getWinnerEmojis(game) + " wins tie due to Habbanya Sietch stronghold card.\n";
-            }
-        }
+        resolution += defenderBattlePlan.getPlanMessage(true) + "\n\n";
+        resolution += getWinnerString(game) + "\n";
         resolution += factionBattleResults(game, true);
         resolution += factionBattleResults(game, false);
-        resolution += aggressorPlan.checkAuditor(defender.getEmoji());
-        resolution += defenderPlan.checkAuditor(aggressor.getEmoji());
+        resolution += aggressorBattlePlan.checkAuditor(defender.getEmoji());
+        resolution += defenderBattlePlan.checkAuditor(aggressor.getEmoji());
+
+        if (isSpiceBankerDecisionOpen() && !publishToTurnSummary)
+            resolution += "\nBattle cannot be resolved yet.\n" + spiceBankerFactionEmoji + " must decide on Spice Banker\n";
+        if (isHMSCardDecisionOpen() && !publishToTurnSummary)
+            resolution += "\nBattle cannot be resolved yet.\n" + hmsStrongholdCardFactionEmoji + " must decide on HMS Stronghold Card\n";
 
         String resolutionDecisions = "";
         RicheseFaction richeseFaction;
@@ -861,62 +924,251 @@ public class Battle {
             saphoHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Juice of Sapho"));
             portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
         }
-        String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-        if (saphoHasBeenAuctioned) {
-            boolean defenderHasSapho = defender.hasTreacheryCard("Juice of Sapho");
-            if (publishToTurnSummary || defenderHasSapho)
-                resolutionDecisions += defender.getEmoji() + " may play Juice of Sapho to be the aggressor in " + wholeTerritoryName + ifTheyHaveIt + ".\n";
-            if (publishToTurnSummary && defenderHasSapho)
-                defender.getChat().publish("Will you play Juice of Sapho to be the aggressor in " + wholeTerritoryName + "? " + defender.getPlayer());
-        }
-        if (portableSnooperHasBeenAuctioned && aggressorPlan.getDefense() == null) {
-            boolean aggressorHasPortableSnooper = aggressor.hasTreacheryCard("Portable Snooper");
-            if (publishToTurnSummary || aggressorHasPortableSnooper)
-                resolutionDecisions += aggressor.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
-            if (publishToTurnSummary && aggressorHasPortableSnooper)
-                aggressor.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + aggressor.getPlayer());
-        }
-        if (portableSnooperHasBeenAuctioned && defenderPlan.getDefense() == null) {
-            boolean defenderHasPortableSnooper = defender.hasTreacheryCard("Portable Snooper");
-            if (publishToTurnSummary || defenderHasPortableSnooper)
-                resolutionDecisions += defender.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
-            if (publishToTurnSummary && defenderHasPortableSnooper)
-                defender.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + defender.getPlayer());
-        }
-        if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Stone Burner")) {
-            resolutionDecisions += aggressor.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
-            if (publishToTurnSummary)
-                aggressor.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + aggressor.getPlayer());
-            if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Mirror Weapon")) {
-                resolutionDecisions += defender.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
-                if (publishToTurnSummary)
-                    defender.getChat().publish("Will you kill both leaders with Mirror Weapon in " + wholeTerritoryName + "? " + defender.getPlayer());
-            }
-        }
-        if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Stone Burner")) {
-            resolutionDecisions += defender.getEmoji() + " must decide if they will kill both leaders with Stone Burner.\n";
-            if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Mirror Weapon")) {
-                resolutionDecisions += aggressor.getEmoji() + " must decide if they will kill both leaders with Mirror Weapon.\n";
-                if (publishToTurnSummary)
-                    aggressor.getChat().publish("Will you kill both leaders with Mirror Weapon in " + wholeTerritoryName + "? " + aggressor.getPlayer());
-            }
-            if (publishToTurnSummary)
-                defender.getChat().publish("Will you kill both leaders with Stone Burner in " + wholeTerritoryName + "? " + defender.getPlayer());
-        }
-        if (aggressorPlan.getWeapon() != null && aggressorPlan.getWeapon().name().equals("Poison Tooth")) {
-            resolutionDecisions += aggressor.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
-            if (publishToTurnSummary)
-                aggressor.getChat().publish("Will remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + aggressor.getPlayer());
-        }
-        if (defenderPlan.getWeapon() != null && defenderPlan.getWeapon().name().equals("Poison Tooth")) {
-            resolutionDecisions += defender.getEmoji() + " must decide if they will remove Poison Tooth from their plan.\n";
-            if (publishToTurnSummary)
-                defender.getChat().publish("Will you remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + defender.getPlayer());
-        }
+        if (portableSnooperHasBeenAuctioned)
+            resolutionDecisions += portableSnooperDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
+        resolutionDecisions += stoneBurnerDecision(aggressor, true, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
+        resolutionDecisions += poisonToothDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
+        if (saphoHasBeenAuctioned)
+            resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, publishToTurnSummary);
+        if (portableSnooperHasBeenAuctioned)
+            resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, publishToTurnSummary);
+        resolutionDecisions += stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
+        resolutionDecisions += poisonToothDecision(defender, defenderBattlePlan, publishToTurnSummary);
         if (!resolutionDecisions.isEmpty())
             resolution += "\n" + resolutionDecisions;
 
         DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
         resultsChannel.publish(resolution);
+    }
+
+    private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+        String decisionAnnouncement = "";
+        if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
+            juiceOfSaphoTBD = DecisionStatus.OPEN;
+            boolean factionHasJuiceOfSapho = faction.hasTreacheryCard("Juice of Sapho");
+            String ifTheyHaveIt = publishToTurnSummary ? " if they have it." : ".";
+            if (publishToTurnSummary || factionHasJuiceOfSapho)
+                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
+            if (publishToTurnSummary && factionHasJuiceOfSapho) {
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
+                choices.add(new DuneChoice("battle-juice-of-sapho-don't-add", "No, keep it out"));
+                faction.getChat().publish("Will you play Juice of Sapho to become the aggressor in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            }
+        }
+        return decisionAnnouncement;
+    }
+
+    private String portableSnooperDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+        String decisionAnnouncement = "";
+        if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
+            portableSnooperTBD = DecisionStatus.OPEN;
+            boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
+            String ifTheyHaveIt = publishToTurnSummary ? " if they have it." : ".";
+            if (publishToTurnSummary || factionHasPortableSnooper)
+                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
+            if (publishToTurnSummary && factionHasPortableSnooper) {
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
+                choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
+                faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            }
+        }
+        return decisionAnnouncement;
+    }
+
+    private String stoneBurnerDecision(Faction faction, boolean isAggressor, BattlePlan battlePlan, BattlePlan opponentPlan, boolean publishToTurnSummary) {
+        String decisionAnnouncement = "";
+        boolean askNow = false;
+        boolean playedMirrorWeapon = battlePlan.getWeapon() != null && battlePlan.getWeapon().name().equals("Mirror Weapon");
+        if (stoneBurnerTBD != DecisionStatus.CLOSED && battlePlan.getWeapon() != null && battlePlan.getWeapon().name().equals("Stone Burner")) {
+            stoneBurnerTBD = DecisionStatus.OPEN;
+            if (isAggressor || mirrorWeaponStoneBurnerTBD != DecisionStatus.OPEN)
+                askNow = true;
+        } else if (mirrorWeaponStoneBurnerTBD != DecisionStatus.CLOSED && playedMirrorWeapon
+                && opponentPlan.getWeapon() != null && opponentPlan.getWeapon().name().equals("Stone Burner")) {
+            mirrorWeaponStoneBurnerTBD = DecisionStatus.OPEN;
+            if (isAggressor || stoneBurnerTBD != DecisionStatus.OPEN)
+                askNow = true;
+        }
+        if (askNow) {
+            String weapon = battlePlan.getWeapon().name() + (playedMirrorWeapon ? " (Stone Burner)" : "");
+            decisionAnnouncement += faction.getEmoji() + " must decide if they will kill both leaders with " + weapon + ".\n";
+            if (publishToTurnSummary) {
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(new DuneChoice("battle-stone-burner-kill", "Yes, kill them both"));
+                choices.add(new DuneChoice("battle-stone-burner-no-kill", "No, let them live"));
+                faction.getChat().publish("Will you kill both leaders in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            }
+        }
+        return decisionAnnouncement;
+    }
+
+    private String poisonToothDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+        String decisionAnnouncement = "";
+        if (poisonToothTBD != DecisionStatus.CLOSED && battlePlan.getWeapon() != null && battlePlan.getWeapon().name().equals("Poison Tooth")) {
+            poisonToothTBD = DecisionStatus.OPEN;
+            decisionAnnouncement += faction.getEmoji() + " must decide if they will remove Poison Tooth.\n";
+            if (publishToTurnSummary) {
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(new DuneChoice("battle-poison-tooth-remove", "Yes, remove it"));
+                choices.add(new DuneChoice("battle-poison-tooth-keep", "No, keep it in"));
+                faction.getChat().publish("Will you remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            }
+        }
+        return decisionAnnouncement;
+    }
+
+    public void juiceOfSaphoAdd(Game game, Faction faction) throws InvalidGameStateException {
+        boolean wasAggressorLeaderAlive = aggressorBattlePlan.isLeaderAlive();
+        boolean wasDefenderLeaderAlive = defenderBattlePlan.isLeaderAlive();
+        String oldResolutionString = getWinnerString(game);
+        int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
+        if (getDefenderName().equals(faction.getName())) {
+            defenderBattlePlan.setJuiceOfSapho(true);
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+        } else {
+            throw new InvalidGameStateException(faction.getEmoji() + " is not the defender in this battle.");
+        }
+        String turnSummaryString = faction.getEmoji() + " played Juice of Sapho to become the aggressor.\n";
+        turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
+        game.getTurnSummary().publish(turnSummaryString);
+        juiceOfSaphoTBD = DecisionStatus.CLOSED;
+    }
+
+    public void juiceOfSaphoDontAdd() {
+        juiceOfSaphoTBD = DecisionStatus.CLOSED;
+    }
+
+    public void portableSnooperAdd(Game game, Faction faction) throws InvalidGameStateException {
+        boolean wasAggressorLeaderAlive = aggressorBattlePlan.isLeaderAlive();
+        boolean wasDefenderLeaderAlive = defenderBattlePlan.isLeaderAlive();
+        String oldResolutionString = getWinnerString(game);
+        int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
+        if (getAggressorName().equals(faction.getName())) {
+            if (!aggressorBattlePlan.addPortableSnooper())
+                throw new InvalidGameStateException(faction.getEmoji() + " cannot add Portable Snooper");
+            defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
+        } else if (getDefenderName().equals(faction.getName())) {
+            if (!defenderBattlePlan.addPortableSnooper())
+                throw new InvalidGameStateException(faction.getEmoji() + " cannot add Portable Snooper");
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+        } else {
+            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+        }
+        String turnSummaryString = faction.getEmoji() + " added Portable Snooper to their Battle Plan.\n";
+        turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
+        game.getTurnSummary().publish(turnSummaryString);
+        portableSnooperTBD = DecisionStatus.CLOSED;
+    }
+
+    public void portableSnooperDontAdd() {
+        portableSnooperTBD = DecisionStatus.CLOSED;
+    }
+
+    public void stoneBurnerNoKill(Game game, Faction faction) throws InvalidGameStateException {
+        boolean wasAggressorLeaderAlive = aggressorBattlePlan.isLeaderAlive();
+        boolean wasDefenderLeaderAlive = defenderBattlePlan.isLeaderAlive();
+        String oldResolutionString = getWinnerString(game);
+        int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
+        String nextDecision = "";
+        if (getAggressorName().equals(faction.getName())) {
+            String aggressorWeapon = aggressorBattlePlan.getWeapon().name();
+            Faction defender = getDefender(game);
+            if (aggressorWeapon.equals("Stone Burner")) {
+                stoneBurnerTBD = DecisionStatus.CLOSED;
+                if (mirrorWeaponStoneBurnerTBD == DecisionStatus.OPEN)
+                    nextDecision = stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, true);
+                else
+                    aggressorBattlePlan.dontKillWithStoneBurner();
+            } else if (aggressorWeapon.equals("Mirror Weapon")) {
+                mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
+                if (stoneBurnerTBD == DecisionStatus.OPEN)
+                    nextDecision = stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, true);
+                else
+                    defenderBattlePlan.dontKillWithStoneBurner();
+            } else {
+                throw new InvalidGameStateException(faction.getEmoji() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
+            }
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+            defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
+        } else if (getDefenderName().equals(faction.getName())) {
+            String defenderWeapon = defenderBattlePlan.getWeapon().name();
+            if (defenderWeapon.equals("Stone Burner")) {
+                stoneBurnerTBD = DecisionStatus.CLOSED;
+                defenderBattlePlan.dontKillWithStoneBurner();
+            } else if (defenderWeapon.equals("Mirror Weapon")) {
+                mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
+                aggressorBattlePlan.dontKillWithStoneBurner();
+            } else {
+                throw new InvalidGameStateException(faction.getEmoji() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
+            }
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+            defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
+        } else {
+            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+        }
+        String turnSummaryString = faction.getEmoji() + " does not kill both leaders.\n";
+        if (nextDecision.isEmpty())
+            turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, true, oldResolutionString, combatWaterBefore);
+        else
+            turnSummaryString += "\n" + nextDecision;
+        game.getTurnSummary().publish(turnSummaryString);
+    }
+
+    public void stoneBurnerKill(Game game, Faction faction) {
+        game.getTurnSummary().publish(faction.getEmoji() + " kills both leaders.");
+        stoneBurnerTBD = DecisionStatus.CLOSED;
+        mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
+    }
+
+    public void removePoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
+        boolean wasAggressorLeaderAlive = aggressorBattlePlan.isLeaderAlive();
+        boolean wasDefenderLeaderAlive = defenderBattlePlan.isLeaderAlive();
+        String oldResolutionString = getWinnerString(game);
+        int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
+        if (getAggressorName().equals(faction.getName())) {
+            if (!aggressorBattlePlan.revokePoisonTooth())
+                throw new InvalidGameStateException(faction.getEmoji() + " did not use Poison Tooth");
+            defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
+        } else if (getDefenderName().equals(faction.getName())) {
+            if (!defenderBattlePlan.revokePoisonTooth())
+                throw new InvalidGameStateException(faction.getEmoji() + " did not use Poison Tooth");
+            aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
+        } else {
+            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+        }
+        String turnSummaryString = faction.getEmoji() + " removed Poison Tooth from their Battle Plan.\n";
+        turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, true, oldResolutionString, combatWaterBefore);
+        game.getTurnSummary().publish(turnSummaryString);
+        poisonToothTBD = DecisionStatus.CLOSED;
+    }
+
+    public void keepPoisonTooth(Game game, Faction faction) {
+        game.getTurnSummary().publish(faction.getEmoji() + " kept Poison Tooth in their Battle Plan.");
+        poisonToothTBD = DecisionStatus.CLOSED;
+    }
+
+    public String outcomeDifferences(Game game, boolean wasAggressorLeaderAlive, boolean wasDefenderLeaderAlive, boolean announceStillDead, String oldResolutionString, int combatWaterBefore) throws InvalidGameStateException {
+        String changes = "";
+        String newResolutionString = getWinnerString(game);
+        if (!newResolutionString.equals(oldResolutionString))
+            changes += "\n" + newResolutionString;
+        if (aggressorBattlePlan.getLeader() != null || aggressorBattlePlan.getCheapHero() != null && aggressorBattlePlan.hasKwisatzHaderach()) {
+            if (aggressorBattlePlan.isLeaderAlive() && !wasAggressorLeaderAlive)
+                changes += "\n" + getAggressor(game).getEmoji() + " " + aggressorBattlePlan.getLeaderString(false) + " survives.";
+            else if (announceStillDead)
+                changes += "\n" + getAggressor(game).getEmoji() + " " + aggressorBattlePlan.getLeaderString(false) + " still dies.";
+        }
+        if (defenderBattlePlan.getLeader() != null || defenderBattlePlan.getCheapHero() != null && defenderBattlePlan.hasKwisatzHaderach()) {
+            if (defenderBattlePlan.isLeaderAlive() && !wasDefenderLeaderAlive)
+                changes += "\n" + getDefender(game).getEmoji() + " " + defenderBattlePlan.getLeaderString(false) + " survives.";
+            else if (announceStillDead)
+                changes += "\n" + getDefender(game).getEmoji() + " " + defenderBattlePlan.getLeaderString(false) + " still dies.";
+        }
+        int combatWaterNow = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
+        if (combatWaterNow != combatWaterBefore)
+            changes += "\n" + getWinnerEmojis(game) + " gains " + combatWaterNow + " " + Emojis.SPICE + " combat water\n";
+        return changes;
     }
 }

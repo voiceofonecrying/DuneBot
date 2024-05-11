@@ -31,7 +31,9 @@ public class BattleCommands {
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader),
                 new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(starredForcesFaction),
-                new SubcommandData("karama-fremen-must-pay-spice", "Require Fremen to pay spice for full force value in the current battle.")
+                new SubcommandData("karama-fremen-must-pay-spice", "Require Fremen to pay spice for full force value in the current battle."),
+                new SubcommandData("set-hms-stronghold-card", "Set the HMS Stronghold Card.").addOptions(hmsStrongoldCard),
+                new SubcommandData("set-spice-banker-support", "Set the amount of spice to be spent with Spice Banker.").addOptions(spiceBankerPayment)
         ));
         return commandData;
     }
@@ -47,6 +49,8 @@ public class BattleCommands {
             case "remove-leader-from-territory" -> removeLeaderFromTerritory(discordGame, game);
             case "karama-starred-forces" -> karamaStarredForces(discordGame, game);
             case "karama-fremen-must-pay-spice" -> karamaFremenMustPay(discordGame, game);
+            case "set-hms-stronghold-card" -> setHMSStrongholdCard(discordGame, game);
+            case "set-spice-banker-support" -> setSpiceBankerSupport(discordGame, game);
         }
     }
 
@@ -54,8 +58,9 @@ public class BattleCommands {
         battleResolution(discordGame, game, false);
     }
 
-    public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+    public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         battleResolution(discordGame, game, true);
+        discordGame.pushGame();
     }
 
     public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
@@ -64,11 +69,16 @@ public class BattleCommands {
         boolean noKillStoneBurner = discordGame.optional(stoneBurnerDoesNotKill) != null && discordGame.required(stoneBurnerDoesNotKill).getAsBoolean();
         boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
         boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
+        boolean overrideDecisions = discordGame.optional(forceResolution) != null && discordGame.required(forceResolution).getAsBoolean();
 
         BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
         BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
         if (aggressorPlan == null || defenderPlan == null)
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        if (currentBattle.isSpiceBankerDecisionOpen() && !overrideDecisions && publishToTurnSummary)
+            throw new InvalidGameStateException(currentBattle.getSpiceBankerFactionEmoji() + " must decide on Spice Banker");
+        if (currentBattle.isHMSCardDecisionOpen() && !overrideDecisions && publishToTurnSummary)
+            throw new InvalidGameStateException(currentBattle.getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
 
         defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
         boolean aggressorNoKillStoneBurner = false;
@@ -134,6 +144,30 @@ public class BattleCommands {
 
     public static void karamaFremenMustPay(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         game.getBattles().getCurrentBattle().karamaFremenMustPay(game);
+        discordGame.pushGame();
+    }
+
+    public static void setHMSStrongholdCard(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        String strongHoldCard = discordGame.required(hmsStrongoldCard).getAsString();
+        Faction faction = game.getFactions().stream()
+                .filter(f -> f.getStrongholdCards().stream()
+                        .anyMatch(c -> c.name().equals(strongHoldCard)))
+                .findAny().orElseThrow(() -> new InvalidGameStateException("No faction has " + strongHoldCard + " Stronghold Card"));
+        game.getBattles().getCurrentBattle().setHMSStrongholdCard(faction, strongHoldCard);
+        discordGame.pushGame();
+    }
+
+    public static void setSpiceBankerSupport(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        int spice = discordGame.required(spiceBankerPayment).getAsInt();
+        if (spice < 0 || spice > 3)
+            throw new InvalidGameStateException("Spice Banker support must be 0-3");
+        Faction faction = game.getFactions().stream()
+                .filter(f -> f.getLeaderSkillsHand().stream()
+                        .anyMatch(c -> c.name().equals("Spice Banker")))
+                .findAny().orElseThrow(() -> new InvalidGameStateException("No faction has Spice Banker"));
+        if (faction.getSpice() < spice)
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough spice.");
+        game.getBattles().getCurrentBattle().setSpiceBankerSupport(faction, spice);
         discordGame.pushGame();
     }
 

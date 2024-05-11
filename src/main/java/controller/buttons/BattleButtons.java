@@ -19,8 +19,11 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("hmsstrongholdpower-")) hmsStrongholdPower(event, discordGame, game);
         else if (event.getComponentId().startsWith("spicebanker-")) spiceBanker(event, discordGame, game);
         else if (event.getComponentId().startsWith("pullleader-")) pullLeader(event, discordGame, game);
-        else if (event.getComponentId().startsWith("battlesapho-")) battleSapho(event, discordGame, game);
         else if (event.getComponentId().startsWith("forcesdialed-")) forcesDialed(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-juice-of-sapho")) juiceOfSaphoDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-portable-snooper")) portableSnooperDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-poison-tooth")) poisonToothDecision(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -60,10 +63,10 @@ public class BattleButtons implements Pressable {
         discordGame.queueMessage("You selected " + strongholdName + " Stronghold Card.");
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " selected " + strongholdName + " Stronghold Card for HMS battle.");
         faction.setHmsStrongholdProxy(new StrongholdCard(strongholdName));
-        if (strongholdName.equals("Carthag")) {
-            Battles battles = game.getBattles();
-            battles.getCurrentBattle().addCarthagStrongholdPower(faction);
-        }
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        if (strongholdName.equals("Carthag"))
+            currentBattle.addCarthagStrongholdPower(faction);
+        currentBattle.hmsCardDecisionMade();
         discordGame.pushGame();
     }
 
@@ -73,13 +76,14 @@ public class BattleButtons implements Pressable {
         int spice = Integer.parseInt(event.getComponentId().split("-")[1]);
         discordGame.queueMessage("You will spend " + spice + " " + Emojis.SPICE + " with Spice Banker to increase your leader strength.");
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " will spend " + spice + " " + Emojis.SPICE + " with Spice Banker.");
-        Battle battle = game.getBattles().getCurrentBattle();
-        BattlePlan plan = faction.getName().equals(battle.getAggressorName()) ? battle.getAggressorBattlePlan() : battle.getDefenderBattlePlan();
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        BattlePlan plan = faction.getName().equals(currentBattle.getAggressorName()) ? currentBattle.getAggressorBattlePlan() : currentBattle.getDefenderBattlePlan();
         plan.setSpiceBankerSupport(spice);
         if (spice > 0) {
             discordGame.getModInfo().queueMessage(faction.getEmoji() + " updated battle plan:\n" + plan.getPlanMessage(false));
             discordGame.getFactionChat(faction).queueMessage("Your updated battle plan has been submitted:\n" + plan.getPlanMessage(false));
         }
+        currentBattle.spiceBankerDecisionMade();
         discordGame.pushGame();
     }
 
@@ -110,25 +114,6 @@ public class BattleButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void battleSapho(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        discordGame.queueDeleteMessage();
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        String response = event.getComponentId().split("-")[1];
-        Battle battle = game.getBattles().getCurrentBattle();
-        BattlePlan plan = faction.getName().equals(battle.getAggressorName()) ? battle.getAggressorBattlePlan() : battle.getDefenderBattlePlan();
-        String territoryName = battle.getWholeTerritoryName();
-        if (response.equals("yes")) {
-            discordGame.queueMessage("You will play Juice of Sapho to become the aggressor in " + territoryName + ".");
-            discordGame.getModInfo().queueMessage(faction.getEmoji() + " will play Juice of Sapho to become the aggressor in " + territoryName + ".");
-            plan.setJuiceOfSapho(true);
-        } else {
-            discordGame.queueMessage("You will not play Juice of Sapho and will remain the defender in " + territoryName + ".");
-            discordGame.getModInfo().queueMessage(faction.getEmoji() + " will not play Juice of Sapho in " + territoryName + ".");
-            plan.setJuiceOfSapho(false);
-        }
-        discordGame.pushGame();
-    }
-
     private static void forcesDialed(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         String factionName = event.getComponentId().split("-")[1];
@@ -137,6 +122,70 @@ public class BattleButtons implements Pressable {
         int notDialed = Integer.parseInt(event.getComponentId().split("-")[4]);
         Battle battle = game.getBattles().getCurrentBattle();
         discordGame.queueMessage(battle.updateTroopsDialed(factionName, regularDialed, specialDialed, notDialed));
+        discordGame.pushGame();
+    }
+
+    private static void juiceOfSaphoDecision(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (event.getComponentId().equals("battle-juice-of-sapho-add")) {
+            battle.juiceOfSaphoAdd(game, faction);
+            discordGame.queueMessage("You will play Juice of Sapho.");
+        } else if (event.getComponentId().equals("battle-juice-of-sapho-don't-add")) {
+            battle.juiceOfSaphoDontAdd();
+            discordGame.queueMessage("You will not play Juice of Sapho.");
+        } else {
+            throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
+        }
+        discordGame.pushGame();
+    }
+
+    private static void portableSnooperDecision(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (event.getComponentId().equals("battle-portable-snooper-add")) {
+            battle.portableSnooperAdd(game, faction);
+            discordGame.queueMessage("You will add Portable Snooper to your plan.");
+        } else if (event.getComponentId().equals("battle-portable-snooper-don't-add")) {
+            battle.portableSnooperDontAdd();
+            discordGame.queueMessage("You will not add Portable Snooper.");
+        } else {
+            throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
+        }
+        discordGame.pushGame();
+    }
+
+    private static void stoneBurnerDecision(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (event.getComponentId().equals("battle-stone-burner-no-kill")) {
+            battle.stoneBurnerNoKill(game, faction);
+            discordGame.queueMessage("You will not kill both leaders.");
+        } else if (event.getComponentId().equals("battle-stone-burner-kill")) {
+            battle.stoneBurnerKill(game, faction);
+            discordGame.queueMessage("You will kill both leaders.");
+        } else {
+            throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
+        }
+        discordGame.pushGame();
+    }
+
+    private static void poisonToothDecision(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (event.getComponentId().equals("battle-poison-tooth-remove")) {
+            battle.removePoisonTooth(game, faction);
+            discordGame.queueMessage("You removed Poison Tooth from your plan.");
+        } else if (event.getComponentId().equals("battle-poison-tooth-keep")) {
+            battle.keepPoisonTooth(game, faction);
+            discordGame.queueMessage("You kept Poison Tooth in your plan.");
+        } else {
+            throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
+        }
         discordGame.pushGame();
     }
 }

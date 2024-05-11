@@ -112,10 +112,13 @@ public class CommandOptions {
     public static final OptionData combatSpice = new OptionData(OptionType.INTEGER, "combat-spice", "Spice used for backing troops", true);
     public static final OptionData weapon = new OptionData(OptionType.STRING, "weapon", "Weapon or Worthless.", true).setAutoComplete(true);
     public static final OptionData defense = new OptionData(OptionType.STRING, "defense", "Defense or Worthless.", true).setAutoComplete(true);
+    public static final OptionData hmsStrongoldCard = new OptionData(OptionType.STRING, "hms-stronghold-card", "The Stronghold Card power to use for HMS", true).setAutoComplete(true);
+    public static final OptionData spiceBankerPayment = new OptionData(OptionType.INTEGER, "spice-banker-payment", "Spice spent for Spice Banker support", true);
     public static final OptionData deactivatePoisonTooth = new OptionData(OptionType.BOOLEAN, "deactivate-poison-tooth", "Allow battle plan resolution with Poison Tooth not used (default = False)", false);
     public static final OptionData addPortableSnooper = new OptionData(OptionType.BOOLEAN, "add-portable-snooper", "Allow battle plan resolution with Portable Snooper added (default = False)", false);
     public static final OptionData stoneBurnerDoesNotKill = new OptionData(OptionType.BOOLEAN, "stone-burner-does-not-kill", "Prevent Stone Burner from killing leaders (default = False)", false);
     public static final OptionData useJuiceOfSapho = new OptionData(OptionType.BOOLEAN, "use-juice-of-sapho", "Use Juice of Sapho", false);
+    public static final OptionData forceResolution = new OptionData(OptionType.BOOLEAN, "force-resolution", "Override outstanding player decisions and print resolution", false);
     public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
@@ -264,6 +267,7 @@ public class CommandOptions {
             case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
             case "weapon" -> choices = weapon(event, discordGame, searchValue);
             case "defense" -> choices = defense(event, discordGame, searchValue);
+            case "hms-stronghold-card" -> choices = hmsStrongoldCardChoices(discordGame, searchValue);
             case "factionleaderskill" -> choices = factionLeaderSkill(event, game, searchValue);
             case "richese-card" -> choices = richeseCard(game, searchValue);
             case "bt-face-dancer" -> choices = btFaceDancers(game, searchValue);
@@ -543,6 +547,19 @@ public class CommandOptions {
             choices.addAll(faction.getTreacheryHand().stream()
                     .map(TreacheryCard::name)
                     .filter(name -> name.equals("Reinforcements"))
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .toList()
+            );
+        return choices;
+    }
+
+    private static List<Command.Choice> hmsStrongoldCardChoices(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Faction faction = discordGame.getGame().getFactions().stream().filter(f -> f.hasStrongholdCard("Hidden Mobile Stronghold")).findAny().orElse(null);
+        List<Command.Choice> choices = new ArrayList<>();
+        if (faction != null)
+            choices.addAll(faction.getStrongholdCards().stream().map(StrongholdCard::name)
+                    .filter(name -> !name.equals("Hidden Mobile Stronghold"))
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice(card, card))
                     .toList()

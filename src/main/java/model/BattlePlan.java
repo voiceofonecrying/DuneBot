@@ -33,7 +33,7 @@ public class BattlePlan {
     private boolean opponentHasBureaucrat;
     private boolean inactivePoisonTooth;
     private boolean portableSnooperAdded;
-    private boolean stoneBurnerNoKill;
+    public boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
 
     public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, List<LeaderSkillCard> leaderSkillsInFront, boolean carthagStrongholdCard, int homeworldDialAdvantage, int numStrongholdsOccupied, int numForcesInReserve) {
@@ -103,6 +103,10 @@ public class BattlePlan {
 
     public int getSpice() {
         return spice;
+    }
+
+    public boolean hasKwisatzHaderach() {
+        return kwisatzHaderach;
     }
 
     public TreacheryCard getWeapon() {
@@ -422,7 +426,7 @@ public class BattlePlan {
                     || opponentWeapon.type().equals("Spice Blow - Special"))
                 opponentWeapon = null;
             else if (opponentWeapon.name().equals("Mirror Weapon"))
-                opponentWeapon = weapon;
+                opponentWeapon = stoneBurnerNoKill ? null : weapon;
         }
         opponentDefense = opponentPlan.getDefense();
         if (isSkillInFront("Diplomat") && (defense == null && weapon.type().equals("Worthless Card") || defense.type().equals("Worthless Card")))
