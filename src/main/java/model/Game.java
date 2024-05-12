@@ -1087,6 +1087,8 @@ public class Game {
         faction1.getLedger().publish("You are now allies with " + faction2.getEmoji() + "!");
         faction2.getLedger().publish("You are now allies with " + faction1.getEmoji() + "!");
 
+        faction1.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        faction2.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MAP);
     }
 
@@ -1103,6 +1105,8 @@ public class Game {
             faction.getLedger().publish("Your alliance with " + allyFaction.getEmoji() + " has been dissolved!");
             allyFaction.getLedger().publish("Your alliance with " + faction.getEmoji() + " has been dissolved!");
 
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            allyFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
             setUpdated(UpdateType.MAP);
         }
     }

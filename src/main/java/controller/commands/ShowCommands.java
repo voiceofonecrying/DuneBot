@@ -900,24 +900,24 @@ public class ShowCommands {
         }
 
         List<TreacheryCard> treacheryCards = faction.getTreacheryHand();
-        if (treacheryCards.isEmpty()) return;
+        if (!treacheryCards.isEmpty()) {
+            MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
+            StringBuilder treacheryString = new StringBuilder();
+            treacheryString.append("\n__Treachery Cards:__\n");
+            for (TreacheryCard treachery : treacheryCards) {
+                treacheryString.append(Emojis.TREACHERY)
+                        .append(" ")
+                        .append(treachery.name())
+                        .append("\n");
 
-        MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
-        StringBuilder treacheryString = new StringBuilder();
-        treacheryString.append("\n__Treachery Cards:__\n");
-        for (TreacheryCard treachery : treacheryCards) {
-            treacheryString.append(Emojis.TREACHERY)
-                    .append(" ")
-                    .append(treachery.name())
-                    .append("\n");
+                Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treachery.name());
+                if (image.isPresent())
+                    treacheryCardMessageBuilder = treacheryCardMessageBuilder.addFiles(image.get());
+            }
 
-            Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treachery.name());
-            if (image.isPresent())
-                treacheryCardMessageBuilder = treacheryCardMessageBuilder.addFiles(image.get());
+            treacheryCardMessageBuilder.addContent(treacheryString.toString());
+            discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
         }
-
-        treacheryCardMessageBuilder.addContent(treacheryString.toString());
-        discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
     }
 
