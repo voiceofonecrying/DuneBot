@@ -533,6 +533,9 @@ public class RunCommands {
         int factionsWithRevivals = 0;
 
         for (Faction faction : factions) {
+            if (faction instanceof BTFaction)
+                // This can be removed after D50 and D53 finish
+                faction.setMaxRevival(20);
             int revived = 0;
             boolean revivedStar = false;
             int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
@@ -580,7 +583,8 @@ public class RunCommands {
             if (faction.getMaxRevival() > revived) {
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
                     List<Button> buttons = new LinkedList<>();
-                    for (int i = 0; i <= faction.getMaxRevival() - revived; i++) {
+                    int maxButton = Math.min(game.getForceFromTanks(faction.getName()).getStrength(), faction.getMaxRevival() - revived);
+                    for (int i = 0; i <= maxButton; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
                         if ((!(faction instanceof BTFaction || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
                             button = button.asDisabled();

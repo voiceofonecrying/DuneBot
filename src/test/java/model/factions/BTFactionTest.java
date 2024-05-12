@@ -35,6 +35,11 @@ class BTFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testMaxRevivals() {
+        assertEquals(faction.getMaxRevival(), 20);
+    }
+
+    @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
     }

@@ -38,6 +38,7 @@ public class Faction {
     protected int handLimit;
     protected int spice;
     protected int freeRevival;
+    protected int maxRevival;
     protected boolean hasMiningEquipment;
     protected int highThreshold;
     protected int lowThreshold;
@@ -63,7 +64,6 @@ public class Faction {
     private Movement movement;
     private int allySpiceShipment;
     private int allySpiceBidding;
-    private int maxRevival;
     private boolean isHighThreshold;
     private Boolean ornithoperToken;
     private Map<String, String> lastWhisper;

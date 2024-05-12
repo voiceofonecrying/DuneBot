@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import helpers.Exclude;
 import model.Force;
 import model.Game;
 import model.Territory;
@@ -14,8 +13,6 @@ import java.util.*;
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
 
-    @Exclude
-    private int revivalRatesSet;
     private Set<String> factionRevivalRatesSet;
 
     public BTFaction(String player, String userName, Game game) throws IOException {
@@ -23,6 +20,7 @@ public class BTFaction extends Faction {
 
         setSpice(5);
         this.freeRevival = 2;
+        this.maxRevival = 20;
         this.emoji = Emojis.BT;
         this.factionRevivalRatesSet = new HashSet<>();
         this.highThreshold = 9;
