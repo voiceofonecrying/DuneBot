@@ -561,10 +561,6 @@ public class Game {
         this.stormMovement = stormMovement;
     }
 
-    public boolean hasLeaderSkills() {
-        return hasGameOption(GameOption.LEADER_SKILLS);
-    }
-
     public boolean hasStrongholdSkills() {
         return hasGameOption(GameOption.STRONGHOLD_SKILLS);
     }
@@ -606,6 +602,13 @@ public class Game {
 
     public LinkedList<NexusCard> getNexusDiscard() {
         return nexusDiscard;
+    }
+
+    public void discardNexusCard(Faction faction) {
+        nexusDiscard.add(faction.getNexusCard());
+        faction.setNexusCard(null);
+        turnSummary.publish(faction.getEmoji() + " has discarded a Nexus Card.");
+        faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public HashMap<String, String> getHomeworlds() {
@@ -1077,6 +1080,11 @@ public class Game {
      * @param faction2 The second faction.
      */
     public void createAlliance(Faction faction1, Faction faction2) {
+        if (faction1.getNexusCard() != null)
+            discardNexusCard(faction1);
+        if (faction2.getNexusCard() != null)
+            discardNexusCard(faction2);
+
         removeAlliance(faction1);
         removeAlliance(faction2);
 

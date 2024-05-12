@@ -1374,6 +1374,21 @@ class GameTest {
         }
 
         @Test
+        void noCurrentAllianceWithNexusCard() {
+            fremen.setNexusCard(new NexusCard("Atreides"));
+            game.createAlliance(fremen, guild);
+            assertEquals(Emojis.FREMEN + " has discarded a Nexus Card.", turnSummary.messages.get(0));
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.get(1));
+            assertEquals("Guild", fremen.getAlly());
+            assertEquals("Fremen", guild.getAlly());
+            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().get(0));
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().get(0));
+            assertNull(fremen.getNexusCard());
+
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
         void withCurrentAlliance() {
             game.createAlliance(fremen, guild);
             turnSummary = new TestTopic();
