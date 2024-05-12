@@ -576,7 +576,9 @@ public class RunCommands {
                 } else nonBTRevival = true;
                 if (message.isEmpty()) message.append("Free Revivals:\n");
                 message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
-                if (game.getForceFromTanks(faction.getName()).getStrength() > 0 && revived < 3) {
+            }
+            if (faction.getMaxRevival() > revived) {
+                if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
                     List<Button> buttons = new LinkedList<>();
                     for (int i = 0; i <= faction.getMaxRevival() - revived; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
