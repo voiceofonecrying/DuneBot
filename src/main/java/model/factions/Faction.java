@@ -724,8 +724,9 @@ public class Faction {
     }
 
     public void sendWhisper(Faction recipient, String whisperedMessage, DuneTopic senderWhispers, DuneTopic recipientWhispers) {
-        recipientWhispers.publish(":speaking_head: from " + emoji + ": " + whisperedMessage);
-        senderWhispers.publish(":speaking_head: to " + recipient.getEmoji() + ": " + whisperedMessage);
+        String fullMessage = emoji + " :speaking_head: " + whisperedMessage;
+        recipientWhispers.publish(fullMessage);
+        senderWhispers.publish(fullMessage);
 
         String recipientName = recipient.getName();
         String lastWhisperString = getWhisperTime(recipientName);

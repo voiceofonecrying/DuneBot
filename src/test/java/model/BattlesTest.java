@@ -29,6 +29,7 @@ public class BattlesTest {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        game.setWhispers(new TestTopic());
         atreides = new AtreidesFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);
@@ -45,6 +46,7 @@ public class BattlesTest {
     void testAggregateForces() throws IOException, InvalidGameStateException {
         game = new Game();
         game.setTurnSummary(turnSummary);
+        game.setWhispers(new TestTopic());
         ecaz = new EcazFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);
@@ -75,6 +77,7 @@ public class BattlesTest {
     void aggregateForcesMultipleSectorsPlusNoField() throws IOException, InvalidGameStateException {
         game = new Game();
         game.setTurnSummary(turnSummary);
+        game.setWhispers(new TestTopic());
         ecaz = new EcazFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);
@@ -251,6 +254,7 @@ public class BattlesTest {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        game.setWhispers(new TestTopic());
         atreides = new AtreidesFaction("aPlayer", "aUser", game);
         ecaz = new EcazFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);

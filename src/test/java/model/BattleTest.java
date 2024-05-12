@@ -38,6 +38,7 @@ class BattleTest {
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
         game.setModInfo(new TestTopic());
+        game.setWhispers(new TestTopic());
         ecaz = new EcazFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
         emperor = new EmperorFaction("ePlayer", "eUser", game);

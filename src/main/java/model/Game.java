@@ -982,6 +982,8 @@ public class Game {
     public void startBattlePhase() {
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("Turn " + turn + " Battle Phase:");
+        if (whispers != null)
+            whispers.publish("Turn " + turn + " BattlePhase has started");
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
         // Get list of aggregate territory names with multiple factions
