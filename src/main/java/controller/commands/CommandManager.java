@@ -1306,7 +1306,7 @@ public class CommandManager extends ListenerAdapter {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction1 = game.getFaction(discordGame.required(faction).getAsString());
         Faction faction2 = game.getFaction(discordGame.required(otherFaction).getAsString());
 

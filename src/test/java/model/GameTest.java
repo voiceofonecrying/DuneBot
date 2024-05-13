@@ -1069,6 +1069,49 @@ class GameTest {
     }
 
     @Nested
+    @DisplayName("reviveForces")
+    class ReviveForces {
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            emperor.setLedger(new TestTopic());
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
+        }
+
+        @Test
+        void removeEmperorTroopAndSardaukarToTanks() {
+            List<Force> tanks = game.getTanks();
+            assertTrue(tanks.isEmpty());
+            tanks.add(new Force(emperor.getName(), 1));
+            tanks.add(new Force(emperor.getName() + "*", 1));
+            assertEquals(1, game.getForceFromTanks(emperor.getName()).getStrength());
+            assertEquals(1, game.getForceFromTanks(emperor.getName() + "*").getStrength());
+
+            assertThrows(IllegalArgumentException.class, () -> game.reviveForces(emperor, false, 2, 0));
+            assertThrows(IllegalArgumentException.class, () -> game.reviveForces(emperor, false, 0, 2));
+            assertDoesNotThrow(() -> game.reviveForces(emperor, false, 1, 1));
+        }
+    }
+
+    @Nested
     @DisplayName("#putTerritoryInAnotherTerritory")
     class PutTerritoryInAnotherTerritory {
         Territory hms;

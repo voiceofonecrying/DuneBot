@@ -931,10 +931,17 @@ public class Game {
         if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
 
         Force force = getForceFromTanks(faction.getName());
-        force.setStrength(force.getStrength() - regularAmount);
+        int strength = force.getStrength();
+        if (strength < regularAmount)
+            throw new IllegalArgumentException("There are only " + strength + " " + force.getName() + " forces in the tanks.");
+        force.setStrength(strength - regularAmount);
         faction.addReserves(regularAmount);
+
         force = getForceFromTanks(faction.getName() + "*");
-        force.setStrength(force.getStrength() - starredAmount);
+        strength = force.getStrength();
+        if (strength < starredAmount)
+            throw new IllegalArgumentException("There are only " + strength + " " + force.getName() + " forces in the tanks.");
+        force.setStrength(strength - starredAmount);
         faction.addSpecialReserves(starredAmount);
 
         String costString = " for free";
