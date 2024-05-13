@@ -937,7 +937,7 @@ public class Game {
         force.setStrength(force.getStrength() - starredAmount);
         faction.addSpecialReserves(starredAmount);
 
-        String costString = "";
+        String costString = " for free";
         if (isPaid) {
             faction.subtractSpice(revivalCost);
             faction.spiceMessage(revivalCost, "Revivals", false);
@@ -986,7 +986,7 @@ public class Game {
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("Turn " + turn + " Battle Phase:");
         if (whispers != null)
-            whispers.publish("Turn " + turn + " BattlePhase has started");
+            whispers.publish("Turn " + turn + " Battle Phase has started");
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
         // Get list of aggregate territory names with multiple factions

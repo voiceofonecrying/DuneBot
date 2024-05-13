@@ -536,54 +536,36 @@ public class RunCommands {
             if (faction instanceof BTFaction)
                 // This can be removed after D50 and D53 finish
                 faction.setMaxRevival(20);
-            int revived = 0;
-            boolean revivedStar = false;
             int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
             if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) freeRevivals++;
 
-            for (int i = freeRevivals; i > 0; i--) {
-                if (game.getForceFromTanks(faction.getName()).getStrength() == 0
-                        && game.getForceFromTanks(faction.getName() + "*").getStrength() == 0) continue;
-                revived++;
-                if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0 && !revivedStar) {
-                    if (faction instanceof EmperorFaction emperorFaction && game.hasGameOption(GameOption.HOMEWORLDS) && !emperorFaction.isSecundusHighThreshold()) {
-                        revived--;
-                        i++;
-                        revivedStar = true;
-                        continue;
+            int starRevived = 0;
+            if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0) {
+                if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold())
+                    starRevived++;
+                if (faction instanceof FremenFaction && game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) {
+                    List<Button> buttons = new LinkedList<>();
+                    for (Territory territory : game.getTerritories().values()) {
+                        if (!territory.getActiveFactionNames().contains("Fremen")) continue;
+                        buttons.add(Button.primary("fremen-ht-" + territory.getTerritoryName(), territory.getTerritoryName()));
                     }
-                    if (faction instanceof FremenFaction && game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) {
-                        List<Button> buttons = new LinkedList<>();
-                        for (Territory territory : game.getTerritories().values()) {
-                            if (!territory.getActiveFactionNames().contains("Fremen")) continue;
-                            buttons.add(Button.primary("fremen-ht-" + territory.getTerritoryName(), territory.getTerritoryName()));
-                        }
-                        buttons.add(Button.danger("fremen-cancel", "Don't use HT advantage"));
-                        discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
-                    }
-                    Force force = game.getForceFromTanks(faction.getName() + "*");
-                    force.setStrength(force.getStrength() - 1);
-                    revivedStar = true;
-                    faction.addSpecialReserves(1);
-                } else if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
-                    Force force = game.getForceFromTanks(faction.getName());
-                    force.setStrength(force.getStrength() - 1);
-                    faction.addReserves(1);
+                    buttons.add(Button.danger("fremen-cancel", "Don't use HT advantage"));
+                    discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
                 }
             }
-            if (revived > 0) {
+            int regularRevived = Math.min(freeRevivals - starRevived, game.getForceFromTanks(faction.getName()).getStrength());
+            if (regularRevived + starRevived > 0) {
+                game.reviveForces(faction, false, regularRevived, starRevived);
                 factionsWithRevivals++;
                 if (faction instanceof BTFaction btFaction) {
                     if (game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
                         discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
                 } else nonBTRevival = true;
-                if (message.isEmpty()) message.append("Free Revivals:\n");
-                message.append(game.getFaction(faction.getName()).getEmoji()).append(": ").append(revived).append("\n");
             }
-            if (faction.getMaxRevival() > revived) {
+            if (faction.getMaxRevival() > starRevived + regularRevived) {
                 if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
                     List<Button> buttons = new LinkedList<>();
-                    int maxButton = Math.min(game.getForceFromTanks(faction.getName()).getStrength(), faction.getMaxRevival() - revived);
+                    int maxButton = Math.min(game.getForceFromTanks(faction.getName()).getStrength(), faction.getMaxRevival() - regularRevived - starRevived);
                     for (int i = 0; i <= maxButton; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
                         if ((!(faction instanceof BTFaction || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
