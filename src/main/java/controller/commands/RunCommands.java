@@ -590,8 +590,6 @@ public class RunCommands {
             btFaction.spiceMessage(factionsWithRevivals, "for free revivals", true);
         }
 
-        flipToHighThresholdIfApplicable(discordGame, game);
-
         if (!message.isEmpty()) {
             turnSummary.queueMessage(message.toString());
         }
@@ -606,27 +604,7 @@ public class RunCommands {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public static void flipToHighThresholdIfApplicable(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        for (Faction faction : game.getFactions()) {
-            if (faction instanceof EmperorFaction emperor) {
-                if (!emperor.isHighThreshold() && emperor.getReserves().getStrength() > emperor.getLowThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                    emperor.setHighThreshold(true);
-                }
-                if (!emperor.isSecundusHighThreshold() && emperor.getSpecialReserves().getStrength() > emperor.getSecundusLowThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(emperor.getSecondHomeworld() + " has flipped to High Threshold");
-                    emperor.setSecundusHighThreshold(true);
-                }
-            } else if (!faction.isHighThreshold() && faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() > faction.getLowThreshold()) {
-                discordGame.getTurnSummary().queueMessage(faction.getHomeworld() + " has flipped to High Threshold");
-                faction.setHighThreshold(true);
-            }
-        }
-    }
-
     public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.AXLOTL_TANKS);
 
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Shipment and Movement Phase:");

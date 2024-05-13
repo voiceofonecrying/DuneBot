@@ -215,14 +215,7 @@ public class CommandManager extends ListenerAdapter {
 
     public static void reviveForces(Faction faction, boolean isPaid, int revivedValue, int starredAmountValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         game.reviveForces(faction, isPaid, revivedValue, starredAmountValue);
-        RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
         discordGame.pushGame();
-    }
-
-    public static void revival(boolean starred, Faction faction, boolean isPaid, int revivedValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        int regularValue = starred ? 0 : revivedValue;
-        int starredValue = starred ? revivedValue : 0;
-        reviveForces(faction, isPaid, regularValue, starredValue, game, discordGame);
     }
 
     private static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
@@ -382,23 +375,7 @@ public class CommandManager extends ListenerAdapter {
                 MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
         Force territoryForce = territory.getForce(forceName);
         territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
-
-        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
-            Force reserves = faction.getReserves();
-            Force specialReserves = faction.getSpecialReserves();
-            if (faction instanceof EmperorFaction emperorFaction) {
-                if (reserves.getStrength() < faction.getHighThreshold() && faction.isHighThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " is now at Low Threshold.");
-                    faction.setHighThreshold(false);
-                } else if (specialReserves.getStrength() < emperorFaction.getSecundusHighThreshold() && emperorFaction.isSecundusHighThreshold()) {
-                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " Salusa Secundus is now at Low Threshold.");
-                    emperorFaction.setSecundusHighThreshold(false);
-                }
-            } else if (reserves.getStrength() + specialReserves.getStrength() < faction.getHighThreshold() && faction.isHighThreshold()) {
-                discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " is now at Low Threshold.");
-                faction.setHighThreshold(false);
-            }
-        }
+        faction.checkForLowThreshold();
         game.setUpdated(UpdateType.MAP);
     }
 
@@ -1152,7 +1129,7 @@ public class CommandManager extends ListenerAdapter {
             throw new InvalidGameStateException("Negative numbers are invalid.");
         if (amountValue == 0 && specialAmount == 0) {
 //            throw new InvalidGameStateException("Both force amounts cannot be 0.");
-            RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
+            targetFaction.checkForHighThreshold();
             discordGame.pushGame();
             return;
         }
@@ -1165,7 +1142,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getTurnSummary().queueMessage(MessageFormat.format(
                 "{0}in {1} were sent to {2}.", forcesString, territoryName, (isToTanks ? "the tanks" : "reserves")
         ));
-        RunCommands.flipToHighThresholdIfApplicable(discordGame, game);
+        targetFaction.checkForHighThreshold();
         discordGame.pushGame();
     }
 

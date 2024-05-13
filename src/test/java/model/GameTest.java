@@ -984,8 +984,6 @@ class GameTest {
             assertTrue(emperor.isSecundusHighThreshold());
 
             assertTrue(emperor.isHighThreshold());
-            assertEquals(5, emperor.getHighThreshold());
-            assertEquals(2, emperor.getSecundusHighThreshold());
             assertEquals(15, kaitain.getForce("Emperor").getStrength());
             assertEquals(5, salusaSecundus.getForce("Emperor*").getStrength());
             assertEquals(0, kaitain.getForce("Emperor*").getStrength());
@@ -994,7 +992,7 @@ class GameTest {
             assertEquals(1, emperor.getReserves().getStrength());
             assertFalse(emperor.isHighThreshold());
             assertEquals(1, turnSummary.messages.size());
-            assertEquals("Kaitain has flipped to low threshold.", turnSummary.messages.get(0));
+            assertEquals("Kaitain has flipped to Low Threshold.", turnSummary.messages.get(0));
 
             game.removeForces("Salusa Secundus", emperor, 0, 3, true);
             assertEquals(2, salusaSecundus.getForce("Emperor*").getStrength());
@@ -1006,7 +1004,7 @@ class GameTest {
             assertEquals(1, emperor.getSpecialReserves().getStrength());
             assertFalse(emperor.isSecundusHighThreshold());
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Salusa Secundus has flipped to low threshold.", turnSummary.messages.get(1));
+            assertEquals("Salusa Secundus has flipped to Low Threshold.", turnSummary.messages.get(1));
         }
 
         @Test
@@ -1097,7 +1095,7 @@ class GameTest {
         }
 
         @Test
-        void removeEmperorTroopAndSardaukarToTanks() {
+        void testReviveMoreThanAreInTanks () {
             List<Force> tanks = game.getTanks();
             assertTrue(tanks.isEmpty());
             tanks.add(new Force(emperor.getName(), 1));
@@ -1108,6 +1106,24 @@ class GameTest {
             assertThrows(IllegalArgumentException.class, () -> game.reviveForces(emperor, false, 2, 0));
             assertThrows(IllegalArgumentException.class, () -> game.reviveForces(emperor, false, 0, 2));
             assertDoesNotThrow(() -> game.reviveForces(emperor, false, 1, 1));
+        }
+
+        @Test
+        void testRevivalFlipsToHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            List<Force> tanks = game.getTanks();
+            assertTrue(tanks.isEmpty());
+            game.removeForces("Kaitain", emperor, 15, 0, true);
+            assertFalse(emperor.isHighThreshold());
+            game.removeForces("Salusa Secundus", emperor, 0, 5, true);
+            assertFalse(emperor.isSecundusHighThreshold());
+
+            game.reviveForces(emperor, false, 4, 2);
+            assertFalse(emperor.isHighThreshold());
+            assertFalse(emperor.isSecundusHighThreshold());
+            game.reviveForces(emperor, false, 1, 1);
+            assertTrue(emperor.isHighThreshold());
+            assertTrue(emperor.isSecundusHighThreshold());
         }
     }
 

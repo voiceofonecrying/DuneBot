@@ -1060,7 +1060,7 @@ class BattleTest {
         @Test
         void testHomeworldDialAdvantageKaitainHigh() {
             Territory kaitain = game.getTerritory("Kaitain");
-            emperor.setHighThreshold(true);
+            assertTrue(emperor.isHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, kaitain, emperor));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(0, battle3.homeworldDialAdvantage(game, kaitain, bt));
@@ -1069,10 +1069,11 @@ class BattleTest {
 
         @Test
         void testHomeworldDialAdvantageKaitainLow() {
+            game.setTurnSummary(new TestTopic());
             Territory kaitain = game.getTerritory("Kaitain");
-            emperor.setHighThreshold(false);
-            assertEquals(0, battle3.homeworldDialAdvantage(game, kaitain, emperor));
             game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Kaitain", emperor, 12, 0, true);
+            assertFalse(emperor.isHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, kaitain, bt));
             assertEquals(3, battle3.homeworldDialAdvantage(game, kaitain, emperor));
         }
@@ -1080,7 +1081,7 @@ class BattleTest {
         @Test
         void testHomeworldDialAdvantageSalusaSecundusHigh() {
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
-            emperor.setSecundusHighThreshold(true);
+            assertTrue(emperor.isSecundusHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, salusaSecundus, emperor));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(0, battle3.homeworldDialAdvantage(game, salusaSecundus, bt));
@@ -1089,30 +1090,33 @@ class BattleTest {
 
         @Test
         void testHomeworldDialAdvantageSalusaSecundusLow() {
+            game.setTurnSummary(new TestTopic());
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
-            emperor.setSecundusHighThreshold(false);
-            assertEquals(0, battle3.homeworldDialAdvantage(game, salusaSecundus, emperor));
             game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Salusa Secundus", emperor, 0, 4, true);
+            assertFalse(emperor.isSecundusHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, salusaSecundus, bt));
             assertEquals(2, battle3.homeworldDialAdvantage(game, salusaSecundus, emperor));
         }
 
         @Test
         void testHomeworldDialAdvantageTleilax() {
+            game.setTurnSummary(new TestTopic());
             Territory tleilax = game.getTerritory("Tleilax");
-            bt.setHighThreshold(true);
+            assertTrue(bt.isHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, tleilax, bt));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(2, battle3.homeworldDialAdvantage(game, tleilax, bt));
             assertEquals(0, battle3.homeworldDialAdvantage(game, tleilax, emperor));
-            bt.setHighThreshold(false);
+            game.removeForces("Tleilax", bt, 12, 0, true);
+            assertFalse(bt.isHighThreshold());
             assertEquals(2, battle3.homeworldDialAdvantage(game, tleilax, bt));
         }
 
         @Test
         void testHomeworldDialAdvantageWallachIXHigh() {
             Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
-            bg.setHighThreshold(true);
+            assertTrue(bg.isHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, wallachIX, bg));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(0, battle3.homeworldDialAdvantage(game, wallachIX, bt));
@@ -1121,10 +1125,11 @@ class BattleTest {
 
         @Test
         void testHomeworldDialAdvantageWallachIXLow() {
+            game.setTurnSummary(new TestTopic());
             Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
-            bg.setHighThreshold(false);
-            assertEquals(0, battle3.homeworldDialAdvantage(game, wallachIX, bg));
             game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Wallach IX", bg, 10, 0, true);
+            assertFalse(bg.isHighThreshold());
             assertEquals(0, battle3.homeworldDialAdvantage(game, wallachIX, bt));
             assertEquals(2, battle3.homeworldDialAdvantage(game, wallachIX, bg));
         }
@@ -1136,7 +1141,7 @@ class BattleTest {
             Force sardaukarForce = new Force("Emperor*", 3, "Emperor");
             Force bgForce = new Force("BG", 15, "BG");
             game.addGameOption(GameOption.HOMEWORLDS);
-            emperor.setSecundusHighThreshold(true);
+            assertTrue(emperor.isSecundusHighThreshold());
             Battle battle = new Battle("Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
             Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
@@ -1144,14 +1149,16 @@ class BattleTest {
 
         @Test
         void testSalusaSecundusLowSpiceNeededForSardaukar() {
+            game.setTurnSummary(new TestTopic());
             Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
             Force emperorForce = new Force("Emperor", 9, "Emperor");
-            Force sardaukarForce = new Force("Emperor*", 3, "Emperor");
+            Force sardaukarForce = new Force("Emperor*", 1, "Emperor");
             Force bgForce = new Force("BG", 15, "BG");
             game.addGameOption(GameOption.HOMEWORLDS);
-            emperor.setSecundusHighThreshold(false);
+            game.removeForces("Salusa Secundus", emperor, 0, 4, true);
+            assertFalse(emperor.isSecundusHighThreshold());
             Battle battle = new Battle("Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
-            Leader burseg = new Leader("Burseg", 3, null, false);
+            Leader burseg = new Leader("Burseg", 1, null, false);
             assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
         }
     }

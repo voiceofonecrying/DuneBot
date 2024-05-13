@@ -18,7 +18,7 @@ public class RevivalButtons implements Pressable {
             discordGame.queueMessage("You will not revive any extra forces.");
             return;
         }
-        CommandManager.revival(false, faction, true, revival, game, discordGame);
+        CommandManager.reviveForces(faction, true, revival, 0, game, discordGame);
         discordGame.queueMessage("Your revival request has been submitted to the " + Emojis.BT);
     }
 }

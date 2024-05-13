@@ -30,7 +30,6 @@ public class Faction {
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
     private StrongholdCard hmsStrongholdProxy;
-    private final List<Long> buttonMessages;
     private final List<Leader> leaders;
     @Exclude
     public Force reserves;
@@ -64,7 +63,7 @@ public class Faction {
     private Movement movement;
     private int allySpiceShipment;
     private int allySpiceBidding;
-    private boolean isHighThreshold;
+    protected boolean isHighThreshold;
     private Boolean ornithoperToken;
     private Map<String, String> lastWhisper;
     private Map<String, Integer> whisperCount;
@@ -87,7 +86,6 @@ public class Faction {
         this.treacheryHand = new LinkedList<>();
         this.frontOfShieldSpice = 0;
         this.hasMiningEquipment = false;
-        this.buttonMessages = new LinkedList<>();
 
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
@@ -649,24 +647,12 @@ public class Faction {
         this.graphicDisplay = graphicDisplay;
     }
 
-    public List<Long> getButtonMessages() {
-        return buttonMessages;
-    }
-
     public int getMaxRevival() {
         return maxRevival;
     }
 
     public void setMaxRevival(int maxRevival) {
         this.maxRevival = maxRevival;
-    }
-
-    public int getHighThreshold() {
-        return highThreshold;
-    }
-
-    public int getLowThreshold() {
-        return lowThreshold;
     }
 
     public int getOccupiedIncome() {
@@ -686,8 +672,20 @@ public class Faction {
         return isHighThreshold;
     }
 
-    public void setHighThreshold(boolean highThreshold) {
-        isHighThreshold = highThreshold;
+    public void checkForHighThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (!isHighThreshold && getReserves().getStrength() + getSpecialReserves().getStrength() > lowThreshold) {
+            game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
+            isHighThreshold = true;
+        }
+    }
+
+    public void checkForLowThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (isHighThreshold && getReserves().getStrength() + getSpecialReserves().getStrength() < highThreshold) {
+            game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
+            isHighThreshold = false;
+        }
     }
 
     public boolean hasOrnithoperToken() {

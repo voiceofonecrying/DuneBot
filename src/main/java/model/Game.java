@@ -892,25 +892,10 @@ public class Game {
     }
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
-        Territory territory = getTerritory(territoryName);
-
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        targetFaction.checkForLowThreshold();
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
-            Faction homeworldFaction = factions.stream().filter(f -> f.getHomeworld().equals(territoryName) || (f instanceof EmperorFaction && territoryName.equals("Salusa Secundus"))).findFirst().orElseThrow();
-            String homeworldFactionName = homeworldFaction.getName();
-            if (territoryName.equals("Salusa Secundus") && ((EmperorFaction) homeworldFaction).getSecundusHighThreshold() > territory.getForce("Emperor*").getStrength() && ((EmperorFaction) homeworldFaction).isSecundusHighThreshold()) {
-                ((EmperorFaction) homeworldFaction).setSecundusHighThreshold(false);
-                turnSummary.publish("Salusa Secundus has flipped to low threshold.");
-
-            } else if (homeworldFaction.isHighThreshold() &&
-                    homeworldFaction.getHighThreshold() >
-                            territory.getForce(homeworldFactionName).getStrength() + territory.getForce(homeworldFactionName + "*").getStrength()
-            ) {
-                homeworldFaction.setHighThreshold(false);
-                turnSummary.publish(homeworldFaction.getHomeworld() + " has flipped to low threshold.");
-            }
-
             if (territoryName.equals("Ecaz") && getFaction("Ecaz").isHomeworldOccupied()) {
                 for (Faction faction1 : factions) {
                     faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
@@ -943,6 +928,8 @@ public class Game {
             throw new IllegalArgumentException("There are only " + strength + " " + force.getName() + " forces in the tanks.");
         force.setStrength(strength - starredAmount);
         faction.addSpecialReserves(starredAmount);
+
+        faction.checkForHighThreshold();
 
         String costString = " for free";
         if (isPaid) {

@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import model.Force;
 import model.Game;
@@ -12,8 +13,7 @@ import java.text.MessageFormat;
 public class EmperorFaction extends Faction {
     private final int secundusHighThreshold;
     private final int secundusLowThreshold;
-    private final int secundusOccupiedIncome;
-    private String secondHomeworld;
+    private final String secondHomeworld;
     private boolean isSecundusHighThreshold;
 
     public EmperorFaction(String player, String userName, Game game) throws IOException {
@@ -35,7 +35,6 @@ public class EmperorFaction extends Faction {
         this.occupiedIncome = 2;
         this.secundusHighThreshold = 2;
         this.secundusLowThreshold = 2;
-        this.secundusOccupiedIncome = 0;
         this.isSecundusHighThreshold = true;
     }
 
@@ -53,32 +52,38 @@ public class EmperorFaction extends Faction {
         removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
     }
 
-    public int getSecundusHighThreshold() {
-        return secundusHighThreshold;
-    }
-
-    public int getSecundusLowThreshold() {
-        return secundusLowThreshold;
-    }
-
-    public int getSecundusOccupiedIncome() {
-        return secundusOccupiedIncome;
-    }
-
     public String getSecondHomeworld() {
         return secondHomeworld;
-    }
-
-    public void setSecondHomeworld(String secondHomeworld) {
-        this.secondHomeworld = secondHomeworld;
     }
 
     public boolean isSecundusHighThreshold() {
         return isSecundusHighThreshold;
     }
 
-    public void setSecundusHighThreshold(boolean secundusHighThreshold) {
-        isSecundusHighThreshold = secundusHighThreshold;
+    @Override
+    public void checkForHighThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (!isHighThreshold && getReserves().getStrength() > lowThreshold) {
+            game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
+            isHighThreshold = true;
+        }
+        if (!isSecundusHighThreshold && getSpecialReserves().getStrength() > secundusLowThreshold) {
+            game.getTurnSummary().publish(secondHomeworld + " has flipped to High Threshold");
+            isSecundusHighThreshold = true;
+        }
+    }
+
+    @Override
+    public void checkForLowThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (isHighThreshold && getReserves().getStrength() < highThreshold) {
+            game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
+            isHighThreshold = false;
+        }
+        if (isSecundusHighThreshold && getSpecialReserves().getStrength() < secundusHighThreshold) {
+            game.getTurnSummary().publish("Salusa Secundus has flipped to Low Threshold.");
+            isSecundusHighThreshold = false;
+        }
     }
 
     @Override
