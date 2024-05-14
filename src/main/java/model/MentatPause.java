@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.ChoamInflationType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
+import model.factions.BTFaction;
 import model.factions.ChoamFaction;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
@@ -18,9 +19,17 @@ public class MentatPause {
 
     public MentatPause(Game game) {
         List<DuneChoice> choices;
+
+        try {
+            BTFaction bt = (BTFaction) game.getFaction("BT");
+            bt.getChat().publish("Would you like to swap a Face Dancer? " + bt.getPlayer());
+        } catch (IllegalArgumentException e) {
+            // BT is not in the game
+        }
+
         ChoamFaction choam = null;
         try {
-            choam = (ChoamFaction)game.getFaction("CHOAM");
+            choam = (ChoamFaction) game.getFaction("CHOAM");
         } catch (IllegalArgumentException e) {
             // CHOAM is not in the game
         }
@@ -43,7 +52,7 @@ public class MentatPause {
         }
 
         try {
-            MoritaniFaction moritani = (MoritaniFaction)game.getFaction("Moritani");
+            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
             if (moritani.isNewAssassinationTargetNeeded()) {
                 moritani.getTraitorHand().add(game.getTraitorDeck().pollFirst());
                 game.getTurnSummary().publish(Emojis.MORITANI + " have drawn a new traitor.");
