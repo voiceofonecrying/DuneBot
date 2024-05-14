@@ -918,6 +918,17 @@ class GameTest {
         }
 
         @Test
+        void removeNotToTanksFlipsToHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Caladan", atreides, 5, 0, true);
+            assertFalse(atreides.isHighThreshold());
+            Territory territory = game.getTerritory("Sihaya Ridge");
+            territory.setForceStrength("Atreides", 3);
+            game.removeForces("Sihaya Ridge", atreides, 1, 0, false);
+            assertTrue(atreides.isHighThreshold());
+        }
+
+        @Test
         void removeEmperorTroopAndSardaukarToTanks() {
             Territory territory = game.getTerritory("Sihaya Ridge");
             territory.setForceStrength("Emperor", 3);

@@ -894,6 +894,7 @@ public class Game {
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
         if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        targetFaction.checkForHighThreshold();
         targetFaction.checkForLowThreshold();
         if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
             if (territoryName.equals("Ecaz") && getFaction("Ecaz").isHomeworldOccupied()) {
