@@ -242,11 +242,13 @@ public class RunCommands {
 
     public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Spice Blow Phase:");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
     }
 
     public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " CHOAM Charity Phase:");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " CHOAM Charity Phase\n");
         int multiplier = 1;
 
         if (game.hasFaction("CHOAM")) {
@@ -313,7 +315,7 @@ public class RunCommands {
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Bidding Phase:");
-        discordGame.getWhispers().queueMessage("Turn " + game.getTurn() + " Bidding Phase has started");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Bidding Phase\n");
         game.startBidding();
         game.getFactions().forEach(faction -> {
             faction.setBid("");
@@ -526,7 +528,7 @@ public class RunCommands {
     public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Revival Phase:");
-        discordGame.getWhispers().queueMessage("Turn " + game.getTurn() + " Revival Phase has started");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");
         List<Faction> factions = game.getFactions();
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
@@ -608,7 +610,7 @@ public class RunCommands {
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.AXLOTL_TANKS);
 
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Shipment and Movement Phase:");
-        discordGame.getWhispers().queueMessage("Turn " + game.getTurn() + " Shipment and Movement Phase has started");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Shipment and Movement Phase\n");
         game.getTurnOrder().clear();
         for (Faction faction : game.getFactions()) {
             game.getTurnOrder().add(faction.getName());
@@ -673,6 +675,7 @@ public class RunCommands {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (game.hasFaction("Moritani") && game.getFaction("Moritani").getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal"))) turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
         turnSummary.queueMessage("Turn " + game.getTurn() + " Spice Harvest Phase:");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Harvest Phase\n");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
             if (territory.getForces().size() != 1) continue;
@@ -785,7 +788,8 @@ public class RunCommands {
 
     public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage("Turn " + game.getTurn() + " Mentat Pause Phase:");
+        turnSummary.publish("Turn " + game.getTurn() + " Mentat Pause Phase:");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Mentat Pause Phase\n");
         game.startMentatPause();
         for (Faction faction : game.getFactions()) {
             if (faction.getFrontOfShieldSpice() > 0) {

@@ -59,6 +59,7 @@ public class Game {
     private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
+    private String phaseForWhispers;
     private Set<GameOption> gameOptions;
     private String mod;
     private String gameRoleMention;
@@ -115,6 +116,7 @@ public class Game {
         this.treacheryDeck = new LinkedList<>();
         this.treacheryDiscard = new LinkedList<>();
         this.shieldWallDestroyed = false;
+        this.phaseForWhispers = "";
         this.mod = "";
         this.gameRoleMention = "";
         this.storm = 18;
@@ -337,6 +339,15 @@ public class Game {
 
     public void setGameRoleMention(String gameRoleMention) {
         this.gameRoleMention = gameRoleMention;
+    }
+
+    public void setPhaseForWhispers(String phaseForWhispers) {
+        this.phaseForWhispers = phaseForWhispers;
+    }
+
+    public void publishWhisper(String whisper) {
+        whispers.publish(phaseForWhispers + whisper);
+        phaseForWhispers = "";
     }
 
     public Boolean getMute() {
@@ -721,6 +732,7 @@ public class Game {
 
     public void startStormPhase() {
         turnSummary.publish("Turn " + turn + " Storm Phase:");
+        phaseForWhispers = "Turn " + turn + " Storm Phase\n";
 
         Faction factionWithAtomics = null;
         try {
@@ -980,8 +992,7 @@ public class Game {
     public void startBattlePhase() {
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("Turn " + turn + " Battle Phase:");
-        if (whispers != null)
-            whispers.publish("Turn " + turn + " Battle Phase has started");
+        phaseForWhispers = "Turn " + turn + " Battle Phase\n";
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
         // Get list of aggregate territory names with multiple factions

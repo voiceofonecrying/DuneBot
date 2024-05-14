@@ -743,7 +743,7 @@ public class Faction {
             whispersToTurnSummary.put(recipientName, whispersToTurnSummary.get(recipientName) + 1);
             whispersToTurnSummaryPerPhase.put(recipientName, whispersToTurnSummaryPerPhase.get(recipientName) + 1);
         }
-        game.getWhispers().publish(emoji + " is whispering to " + recipient.getEmoji());
+        game.publishWhisper(emoji + " is whispering to " + recipient.getEmoji());
         whisperCount.put(recipientName, whisperCount.get(recipientName) + 1);
         whisperCountPerPhase.put(recipientName, whisperCountPerPhase.get(recipientName) + 1);
         lastWhisper.put(recipientName, Instant.now().toString());
