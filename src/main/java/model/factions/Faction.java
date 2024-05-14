@@ -38,6 +38,7 @@ public class Faction {
     protected int spice;
     protected int freeRevival;
     protected int maxRevival;
+    private boolean starRevived;
     protected boolean hasMiningEquipment;
     protected int highThreshold;
     protected int lowThreshold;
@@ -104,6 +105,7 @@ public class Faction {
         this.allySpiceBidding = 0;
         this.nexusCard = null;
         this.maxRevival = 3;
+        this.starRevived = false;
         this.isHighThreshold = true;
         this.ornithoperToken = false;
 
@@ -653,6 +655,14 @@ public class Faction {
 
     public void setMaxRevival(int maxRevival) {
         this.maxRevival = maxRevival;
+    }
+
+    public boolean isStarRevived() {
+        return starRevived;
+    }
+
+    public void setStarRevived(boolean starRevived) {
+        this.starRevived = starRevived;
     }
 
     public int getOccupiedIncome() {

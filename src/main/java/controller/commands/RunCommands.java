@@ -542,9 +542,12 @@ public class RunCommands {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) freeRevivals++;
 
             int starRevived = 0;
+            faction.setStarRevived(false);
             if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0) {
-                if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold())
+                if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold()) {
                     starRevived++;
+                    faction.setStarRevived(true);
+                }
                 if (faction instanceof FremenFaction && game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) {
                     List<Button> buttons = new LinkedList<>();
                     for (Territory territory : game.getTerritories().values()) {
