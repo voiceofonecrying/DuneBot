@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class IxFactionTest extends FactionTestTemplate {
-
-    private IxFaction faction;
+public class EcazFactionTest extends FactionTestTemplate {
+    private EcazFaction faction;
 
     @Override
     Faction getFaction() {
@@ -21,17 +21,17 @@ class IxFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new IxFaction("player", "player", game);
+        faction = new EcazFaction("player", "player", game);
     }
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 10);
+        assertEquals(12, faction.getSpice());
     }
 
     @Test
     public void testFreeRevival() {
-        assertEquals(1, faction.getFreeRevival());
+        assertEquals(2, faction.getFreeRevival());
     }
 
     @Test
@@ -44,10 +44,9 @@ class IxFactionTest extends FactionTestTemplate {
     public void testFreeRevivalLowThreshold() {
         game.addGameOption(GameOption.HOMEWORLDS);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
-        assertEquals(2, faction.getFreeRevival());
+        assertEquals(3, faction.getFreeRevival());
     }
 
     @Test
@@ -55,7 +54,6 @@ class IxFactionTest extends FactionTestTemplate {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -68,26 +66,18 @@ class IxFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 10);
-        assertEquals(faction.getReserves().getName(), "Ix");
-
-        assertEquals(faction.getSpecialReserves().getStrength(), 4);
-        assertEquals(faction.getSpecialReserves().getName(), "Ix*");
+        assertEquals(14, faction.getReserves().getStrength());
+        assertEquals("Ecaz", faction.getReserves().getName());
     }
 
     @Test
     public void testInitialForcePlacement() {
-        assertTrue(game.getTerritories().containsKey("Hidden Mobile Stronghold"));
-
         for (String territoryName : game.getTerritories().keySet()) {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
-            if (territoryName.equals("Hidden Mobile Stronghold")) {
-                assertEquals(territory.getForces().get(0).getStrength(), 3);
-                assertEquals(territory.getForces().get(0).getName(), "Ix");
-
-                assertEquals(territory.getForces().get(1).getStrength(), 3);
-                assertEquals(territory.getForces().get(1).getName(), "Ix*");
+            if (territoryName.equals("Imperial Basin (Center Sector)")) {
+                assertEquals(territory.getForces().get(0).getStrength(), 6);
+                assertEquals(territory.getForces().get(0).getName(), "Ecaz");
             } else {
                 assertEquals(territory.getForces().size(), 0);
             }
@@ -96,7 +86,7 @@ class IxFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.IX);
+        assertEquals(faction.getEmoji(), Emojis.ECAZ);
     }
 
     @Test

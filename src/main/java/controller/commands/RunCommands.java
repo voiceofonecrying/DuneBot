@@ -538,9 +538,6 @@ public class RunCommands {
             if (faction instanceof BTFaction)
                 // This can be removed after D50 and D53 finish
                 faction.setMaxRevival(20);
-            int freeRevivals = faction.hasAlly() && faction.getAlly().equals("Fremen") ? 3 : faction.getFreeRevival();
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) freeRevivals++;
-
             int starRevived = 0;
             faction.setStarRevived(false);
             if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0) {
@@ -558,7 +555,7 @@ public class RunCommands {
                     discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
                 }
             }
-            int regularRevived = Math.min(freeRevivals - starRevived, game.getForceFromTanks(faction.getName()).getStrength());
+            int regularRevived = Math.min(faction.getFreeRevival() - starRevived, game.getForceFromTanks(faction.getName()).getStrength());
             if (regularRevived + starRevived > 0) {
                 game.reviveForces(faction, false, regularRevived, starRevived);
                 factionsWithRevivals++;

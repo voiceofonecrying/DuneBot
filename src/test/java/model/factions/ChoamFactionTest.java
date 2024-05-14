@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.ChoamInflationType;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.Territory;
 import model.TestTopic;
@@ -35,8 +36,33 @@ class ChoamFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivals() {
-        assertEquals(faction.getFreeRevival(), 0);
+    public void testFreeRevival() {
+        assertEquals(0, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalAlliedToFremen() {
+        faction.setAlly("Fremen");
+        assertEquals(3, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalLowThreshold() {
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(1, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalLowThresholdAlliedToFremen() {
+        faction.setAlly("Fremen");
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(4, faction.getFreeRevival());
     }
 
     @Test

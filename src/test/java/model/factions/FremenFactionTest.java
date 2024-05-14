@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,8 +31,18 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivals() {
-        assertEquals(faction.getFreeRevival(), 3);
+    public void testFreeRevival() {
+        assertEquals(3, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalLowThreshold() {
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(4, faction.getFreeRevival());
     }
 
     @Test

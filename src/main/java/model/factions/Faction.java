@@ -382,7 +382,12 @@ public class Faction {
     }
 
     public int getFreeRevival() {
-        return freeRevival;
+        int adjustedFreeRevival = freeRevival;
+        if (ally != null && ally.equals("Fremen"))
+            adjustedFreeRevival = 3;
+        if (!isHighThreshold)
+            adjustedFreeRevival++;
+        return adjustedFreeRevival;
     }
 
     public Optional<Leader> getLeader(String leaderName) {

@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,8 +29,33 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivals() {
+    public void testFreeRevival() {
         assertEquals(2, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalAlliedToFremen() {
+        faction.setAlly("Fremen");
+        assertEquals(3, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalLowThreshold() {
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(3, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalLowThresholdAlliedToFremen() {
+        faction.setAlly("Fremen");
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(4, faction.getFreeRevival());
     }
 
     @Test

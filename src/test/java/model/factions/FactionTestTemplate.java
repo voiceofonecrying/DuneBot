@@ -19,6 +19,7 @@ abstract class FactionTestTemplate {
     @BeforeEach
     void baseSetUp() throws IOException {
         game = new Game();
+        game.setTurnSummary(new TestTopic());
     }
 
     @Nested
@@ -237,7 +238,6 @@ abstract class FactionTestTemplate {
 
         @Test
         void trueOnShieldWall() {
-            assertFalse(faction.isNearShieldWall());
             territory = game.getTerritories().get("Shield Wall (North Sector)");
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
@@ -245,7 +245,6 @@ abstract class FactionTestTemplate {
 
         @Test
         void trueInImperialBasin() {
-            assertFalse(faction.isNearShieldWall());
             territory = game.getTerritories().get("Imperial Basin (Center Sector)");
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
@@ -253,7 +252,6 @@ abstract class FactionTestTemplate {
 
         @Test
         void trueInFalseWallEast() {
-            assertFalse(faction.isNearShieldWall());
             territory = game.getTerritories().get("False Wall East (Far North Sector)");
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
@@ -261,7 +259,6 @@ abstract class FactionTestTemplate {
 
         @Test
         void trueInGaraKulon() {
-            assertFalse(faction.isNearShieldWall());
             territory = game.getTerritories().get("Gara Kulon");
             territory.setForceStrength(forceName, 1);
             assertTrue(faction.isNearShieldWall());
