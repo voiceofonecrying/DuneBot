@@ -12,6 +12,6 @@ FROM maven:3.9.2-amazoncorretto-20 as runtime
 
 COPY --from=build /app/target/DuneBot-*-SNAPSHOT.jar /
 
-COPY scripts/env-to-dotenv.sh /
+STOPSIGNAL SIGUSR1
 
-CMD sh /env-to-dotenv.sh && java -jar /DuneBot-*-SNAPSHOT.jar
+CMD java -jar /DuneBot-*-SNAPSHOT.jar

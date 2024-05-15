@@ -1,6 +1,7 @@
 package controller.listeners;
 
 import constants.Emojis;
+import controller.CommandCompletionGuard;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
@@ -26,7 +27,10 @@ public class EventListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        CompletableFuture.runAsync(() -> runOnMessageReceived(event));
+        CommandCompletionGuard.incrementCommandCount();
+        CompletableFuture
+                .runAsync(() -> runOnMessageReceived(event))
+                .thenRunAsync(CommandCompletionGuard::decrementCommandCount);
     }
 
     public void runOnMessageReceived(@NotNull MessageReceivedEvent event) {

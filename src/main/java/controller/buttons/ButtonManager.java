@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import controller.CommandCompletionGuard;
 import controller.Queue;
 import controller.commands.ShowCommands;
 import exceptions.InvalidGameStateException;
@@ -66,10 +67,13 @@ public class ButtonManager extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        CommandCompletionGuard.incrementCommandCount();
         event.deferReply().queue();
         String categoryName = DiscordGame.categoryFromEvent(event).getName();
         CompletableFuture<Void> future = Queue.getFuture(categoryName);
-        Queue.putFuture(categoryName, future.thenRunAsync(() -> runButtonCommand(event)));
+        Queue.putFuture(categoryName, future
+                .thenRunAsync(() -> runButtonCommand(event))
+                .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
     }
 
     private void runButtonCommand(@NotNull ButtonInteractionEvent event) {
