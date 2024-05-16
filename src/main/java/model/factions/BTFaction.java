@@ -12,8 +12,7 @@ import java.util.*;
 
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
-
-    private Set<String> factionRevivalRatesSet;
+    private List<String> factionsNeedingRevivalLimit;
 
     public BTFaction(String player, String userName, Game game) throws IOException {
         super("BT", player, userName, game);
@@ -22,7 +21,7 @@ public class BTFaction extends Faction {
         this.freeRevival = 2;
         this.maxRevival = 20;
         this.emoji = Emojis.BT;
-        this.factionRevivalRatesSet = new HashSet<>();
+        this.factionsNeedingRevivalLimit = new ArrayList<>();
         this.highThreshold = 9;
         this.lowThreshold = 8;
         this.occupiedIncome = 2;
@@ -63,18 +62,35 @@ public class BTFaction extends Faction {
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
-    public void addRevivalRatesSet(String revivalRatesSet) {
-        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
-        this.factionRevivalRatesSet.add(revivalRatesSet);
+    public List<String> getFactionsNeedingRevivalLimit() {
+        if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
+        return factionsNeedingRevivalLimit;
     }
 
-    public boolean hasSetAllRevivalRates() {
-        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
-        return this.factionRevivalRatesSet.size() == getGame().getFactions().size() - 1;
+    public void addFactionNeedingRevivalLimit(String factionName) {
+        if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
+        factionsNeedingRevivalLimit.add(factionName);
     }
 
-    public void clearRevivalRatesSet() {
-        if (this.factionRevivalRatesSet == null) this.factionRevivalRatesSet = new HashSet<>();
-        this.factionRevivalRatesSet.clear();
+    public boolean hasSetAllRevivalLimits() {
+        if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
+        return factionsNeedingRevivalLimit.isEmpty();
+    }
+
+    public void leaveRevivalLimitsUnchanged() {
+        if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
+        for (String name : factionsNeedingRevivalLimit) {
+            Faction faction = game.getFaction(name);
+            game.getTurnSummary().publish(faction.getEmoji() + " revival limit was left at " + faction.getMaxRevival());
+        }
+        factionsNeedingRevivalLimit.clear();
+    }
+
+    public void setRevivalLimit(String factionName, int revivalLimit) {
+        Faction faction = game.getFaction(factionName);
+        faction.setMaxRevival(revivalLimit);
+        if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
+        factionsNeedingRevivalLimit.removeIf(name -> name.equals(factionName));
+        game.getTurnSummary().publish(faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival());
     }
 }

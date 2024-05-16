@@ -46,6 +46,23 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testFreeRevivalWithRecruits() {
+        game.setRecruitsInPlay(true);
+        assertEquals(6, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalWithRecruitsLowThreshold() {
+        game.setRecruitsInPlay(true);
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(7, faction.getFreeRevival());
+    }
+
+    @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
     }

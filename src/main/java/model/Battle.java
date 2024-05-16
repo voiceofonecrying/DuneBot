@@ -715,10 +715,10 @@ public class Battle {
             }
             String troopLosses = troopFactionEmoji + " loses ";
             if (regularForcesTotal > 0)
-                troopLosses += regularForcesTotal + " " + Emojis.getForceEmoji(troopFactionName);
+                troopLosses += regularForcesTotal + " " + Emojis.getForceEmoji(troopFactionName) + " ";
             if (specialForcesTotal > 0)
-                troopLosses += specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*");
-            troopLosses += " to the tanks\n";
+                troopLosses += specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*") + " ";
+            troopLosses += "to the tanks\n";
             if (regularForcesTotal > 0 || specialForcesTotal > 0)
                 resolution += troopLosses;
         } else if (regularForcesDialed > 0 || specialForcesDialed > 0) {

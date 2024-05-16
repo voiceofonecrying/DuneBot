@@ -5,7 +5,6 @@ import controller.DiscordGame;
 import controller.buttons.IxButtons;
 import controller.buttons.ShipmentAndMovementButtons;
 import controller.channels.DiscordChannel;
-import controller.channels.FactionChat;
 import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
@@ -125,12 +124,13 @@ public class RunCommands {
             if (finishBiddingPhase(discordGame, game))
                 game.advancePhase();
         } else if (phase == 5 && subPhase == 1) {
-            if (game.hasFaction("BT")) {
-                btSetRevivalRates(discordGame, game);
+            if (game.startRevival()) {
+                game.advanceSubPhase();
+                startRevivingForces(discordGame, game);
             }
             game.advanceSubPhase();
         } else if (phase == 5 && subPhase == 2) {
-            startRevivalPhase(discordGame, game);
+            startRevivingForces(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 5 && subPhase == 3) {
             discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement.");
@@ -506,26 +506,17 @@ public class RunCommands {
         return false;
     }
 
-    public static void btSetRevivalRates(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        BTFaction bt = (BTFaction) game.getFaction("BT");
-        bt.clearRevivalRatesSet();
-
-        FactionChat btChat = discordGame.getBTChat();
-        btChat.queueMessage("Please set revival rates for each faction." + game.getFaction("BT").getPlayer());
-
-        for (Faction faction : game.getFactions()) {
-            if (faction instanceof BTFaction) continue;
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-3", "3"));
-            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-4", "4"));
-            buttons.add(Button.primary("bt-revival-rate-set-" + faction.getName() + "-5", "5"));
-            btChat.queueMessage(faction.getEmoji(), buttons);
+    public static void startRevivingForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        try {
+            BTFaction bt = (BTFaction) game.getFaction("BT");
+            List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
+            if (!factionsNeedingLimits.isEmpty()) {
+                String names = String.join(", ", factionsNeedingLimits);
+                throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
+            }
+        } catch (IllegalArgumentException e) {
+            // BT are not in the game
         }
-
-        game.setUpdated(UpdateType.MAP);
-    }
-
-    public static void startRevivalPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage("Turn " + game.getTurn() + " Revival Phase:");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");

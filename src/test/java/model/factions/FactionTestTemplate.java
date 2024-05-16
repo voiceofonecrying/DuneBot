@@ -22,6 +22,19 @@ abstract class FactionTestTemplate {
         game.setTurnSummary(new TestTopic());
     }
 
+    @Test
+    void testMaxRevival() {
+        Faction faction = getFaction();
+        if (faction instanceof BTFaction)
+            assertEquals(20, faction.getMaxRevival());
+        else
+            assertEquals(3, faction.getMaxRevival());
+        faction.setMaxRevival(5);
+        assertEquals(5, faction.getMaxRevival());
+        game.setRecruitsInPlay(true);
+        assertEquals(7, faction.getMaxRevival());
+    }
+
     @Nested
     @DisplayName("#addSpice")
     class AddSpice {

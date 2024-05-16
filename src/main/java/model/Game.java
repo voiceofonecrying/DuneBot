@@ -56,6 +56,7 @@ public class Game {
     private boolean extortionTokenRevealed;
     private int hmsRotation = 0;
     private boolean ixHMSActionRequired;
+    private boolean recruitsInPlay;
     private HashMap<Integer, List<String>> quotes;
     private String modRole;
     private Boolean mute;
@@ -115,6 +116,9 @@ public class Game {
         this.smugglerTokens = new LinkedList<>();
         this.treacheryDeck = new LinkedList<>();
         this.treacheryDiscard = new LinkedList<>();
+        this.extortionTokenRevealed = false;
+        this.ixHMSActionRequired = false;
+        this.recruitsInPlay = false;
         this.shieldWallDestroyed = false;
         this.phaseForWhispers = "";
         this.mod = "";
@@ -189,6 +193,50 @@ public class Game {
 
     public void endBidding() {
         bidding = null;
+    }
+
+    public boolean startRevival() {
+        recruitsInPlay = false;
+        return !askAboutRevivalLimits();
+    }
+
+    public boolean askAboutRevivalLimits() {
+        if (turn > 1 && hasFaction("BT")) {
+            BTFaction bt = (BTFaction) getFaction("BT");
+            bt.getChat().publish("Please set revival rates for each faction." + bt.getPlayer());
+            List<String> limitsNotNeededMessages = new ArrayList<>();
+            factions.stream().filter(faction -> !(faction instanceof BTFaction)).forEach(faction -> {
+                int regularInTanks = getForceFromTanks(faction.getName()).getStrength();
+                int starredInTanks = getForceFromTanks(faction.getName() + "*").getStrength();
+                int starredForRevival = 0;
+                if (faction instanceof EmperorFaction || faction instanceof FremenFaction)
+                    starredForRevival = starredInTanks == 0 ? 0 : 1;
+                if (regularInTanks + starredForRevival > 3) {
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-3", "3" + (faction.getMaxRevival() == 3 ? " (no change)" : "")));
+                    choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-4", "4" + (faction.getMaxRevival() == 4 ? " (no change)" : "")));
+                    choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-5", "5" + (faction.getMaxRevival() == 5 ? " (no change)" : "")));
+                    bt.getChat().publish(faction.getEmoji(), choices);
+                    bt.addFactionNeedingRevivalLimit(faction.getName());
+                } else {
+                    if (regularInTanks + starredInTanks == 0) {
+                        limitsNotNeededMessages.add(faction.getEmoji() + " has no forces in the tanks.");
+                    } else {
+                        String troopsInTanks = "";
+                        if (regularInTanks > 0)
+                            troopsInTanks += regularInTanks + " " + Emojis.getForceEmoji(faction.getName()) + " ";
+                        if (starredForRevival > 0)
+                            troopsInTanks += starredForRevival + " " + Emojis.getForceEmoji(faction.getName() + "*") + " ";
+                        limitsNotNeededMessages.add(faction.getEmoji() + " has only " + troopsInTanks + " revivable forces.");
+                    }
+                }
+            });
+            String leaveAllTheSameMessage = String.join("\n", limitsNotNeededMessages);
+            leaveAllTheSameMessage += "\n\nOr leave all the same (any changes made above will be retained)";
+            bt.getChat().publish(leaveAllTheSameMessage, List.of(new DuneChoice("secondary", "bt-revival-rate-no-change", "Leave limits as they are")));
+            return !bt.hasSetAllRevivalLimits();
+        }
+        return false;
     }
 
     public Set<GameOption> getGameOptions() {
@@ -267,6 +315,14 @@ public class Game {
 
     public void setIxHMSActionRequired(boolean ixHMSActionRequired) {
         this.ixHMSActionRequired = ixHMSActionRequired;
+    }
+
+    public boolean isRecruitsInPlay() {
+        return recruitsInPlay;
+    }
+
+    public void setRecruitsInPlay(boolean recruitsInPlay) {
+        this.recruitsInPlay = recruitsInPlay;
     }
 
     public boolean isOnHold() {

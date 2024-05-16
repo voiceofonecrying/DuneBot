@@ -62,6 +62,42 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testFreeRevivalWithRecruits() {
+        game.setRecruitsInPlay(true);
+        assertEquals(2, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalWithRecruitsAlliedWithFremen() {
+        game.setRecruitsInPlay(true);
+        faction.setAlly("Fremen");
+        assertEquals(6, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalWithRecruitsLowThreshold() {
+        game.setRecruitsInPlay(true);
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(4, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testFreeRevivalWithRecruitsLowThresholdAlliedToFremen() {
+        game.setRecruitsInPlay(true);
+        faction.setAlly("Fremen");
+        game.addGameOption(GameOption.HOMEWORLDS);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        faction.checkForLowThreshold();
+        assertFalse(faction.isHighThreshold());
+        assertEquals(7, faction.getFreeRevival());
+    }
+
+    @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
     }

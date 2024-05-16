@@ -387,6 +387,8 @@ public class Faction {
             adjustedFreeRevival = 3;
         if (!isHighThreshold)
             adjustedFreeRevival++;
+        if (game.isRecruitsInPlay())
+            adjustedFreeRevival = Math.min(7, adjustedFreeRevival * 2);
         return adjustedFreeRevival;
     }
 
@@ -655,7 +657,7 @@ public class Faction {
     }
 
     public int getMaxRevival() {
-        return maxRevival;
+        return game.isRecruitsInPlay() ? 7 : maxRevival;
     }
 
     public void setMaxRevival(int maxRevival) {
