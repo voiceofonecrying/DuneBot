@@ -1,4 +1,4 @@
-FROM maven:3.9.2-amazoncorretto-20 as build
+FROM maven:3.9.6-amazoncorretto-21 as build
 
 COPY ./ /app
 
@@ -8,7 +8,7 @@ WORKDIR /app
 RUN mvn package -Dmaven.test.skip=true
 
 # Setup smaller Image to run the application
-FROM maven:3.9.2-amazoncorretto-20 as runtime
+FROM maven:3.9.6-amazoncorretto-21 as runtime
 
 COPY --from=build /app/target/DuneBot-*-SNAPSHOT.jar /
 
