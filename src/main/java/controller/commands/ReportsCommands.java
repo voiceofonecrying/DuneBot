@@ -1057,24 +1057,22 @@ public class ReportsCommands {
         newGames.forEach(reversedNewGames::add);
         jsonGameResults.addAll(reversedNewGames);
         if (!jsonNewGameResults.isEmpty()) {
-            ThreadChannel factionStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats-test")).findFirst().orElse(null);
-            if (factionStats == null)
-                factionStats = playerStatsChannel.createThreadChannel("faction-stats-test").complete();
-            factionStats.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
-            ThreadChannel moderatorStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats-test")).findFirst().orElse(null);
-            if (moderatorStats == null)
-                moderatorStats = playerStatsChannel.createThreadChannel("moderator-stats-test").complete();
-            moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
-            ThreadChannel playerStats = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats-test")).findFirst().orElse(null);
-            if (playerStats == null)
-                playerStats = playerStatsChannel.createThreadChannel("player-stats-test").complete();
+            TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElse(null);
+            if (factionStatsChannel == null)
+                throw new IllegalStateException("The moderator-thanks channel was not found.");
+            factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
+            TextChannel moderatorThanks = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-thanks")).findFirst().orElse(null);
+            if (moderatorThanks == null)
+                throw new IllegalStateException("The moderator-thanks channel was not found.");
+            moderatorThanks.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
             StringBuilder playerStatsString = new StringBuilder();
             String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
             int mentions = 0;
             for (String s : playerStatsLines) {
-                if (playerStatsString.length() + s.length() > 2000 || mentions > 20) {
-                    playerStats.sendMessage(playerStatsString.toString()).queue();
+                if (playerStatsString.length() + s.length() > 2000 || mentions == 20) {
+                    playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
                     playerStatsString = new StringBuilder();
+                    mentions = 0;
                 }
                 if (!playerStatsString.isEmpty())
                     playerStatsString.append("\n");
@@ -1083,7 +1081,7 @@ public class ReportsCommands {
                     mentions++;
             }
             if (!playerStatsString.isEmpty())
-                playerStats.sendMessage(playerStatsString.toString()).queue();
+                playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
 
             List<JsonElement> jsonElements = jsonGameResults.asList();
             for (JsonElement element : jsonElements) {
