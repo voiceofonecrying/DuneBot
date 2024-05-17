@@ -531,7 +531,9 @@ public class RunCommands {
                 faction.setMaxRevival(20);
             int starRevived = 0;
             faction.setStarRevived(false);
+            boolean starsInTanks = false;
             if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0) {
+                starsInTanks = true;
                 if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold()) {
                     starRevived++;
                     faction.setStarRevived(true);
@@ -556,17 +558,20 @@ public class RunCommands {
                 } else nonBTRevival = true;
             }
             if (faction.getMaxRevival() > starRevived + regularRevived) {
-                if (game.getForceFromTanks(faction.getName()).getStrength() > 0) {
+                boolean emperorCanPayForOneSardaukar = faction instanceof EmperorFaction && !faction.isStarRevived() && starsInTanks;
+                int revivableForces = game.getForceFromTanks(faction.getName()).getStrength() +
+                        (emperorCanPayForOneSardaukar ? 1 : 0);
+                if (revivableForces > 0) {
                     List<Button> buttons = new LinkedList<>();
-                    int maxButton = Math.min(game.getForceFromTanks(faction.getName()).getStrength(), faction.getMaxRevival() - regularRevived - starRevived);
+                    int maxButton = Math.min(revivableForces, faction.getMaxRevival() - regularRevived - starRevived);
                     for (int i = 0; i <= maxButton; i++) {
                         Button button = Button.primary("revive-" + i, Integer.toString(i));
                         if ((!(faction instanceof BTFaction || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
                             button = button.asDisabled();
                         buttons.add(button);
                     }
-
-                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals?", buttons);
+                    String sardaukarString = emperorCanPayForOneSardaukar ? " including 1 " + Emojis.EMPEROR_SARDAUKAR : "";
+                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals" + sardaukarString + "?", buttons);
                 }
             }
 
