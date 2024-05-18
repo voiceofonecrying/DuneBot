@@ -9,6 +9,7 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import controller.DiscordGame;
 import model.factions.AtreidesFaction;
+import model.factions.BGFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -182,13 +183,21 @@ public class PlayerCommands {
         return responseMessage;
     }
 
+    private static boolean factionDoesNotHaveKarama(Faction faction) {
+        List<TreacheryCard> hand = faction.getTreacheryHand();
+        if (faction instanceof BGFaction && hand.stream().anyMatch(c -> c.type().equals("Worthless Card"))) {
+            return false;
+        }
+        return hand.stream().noneMatch(c -> c.name().equals("Karama"));
+    }
+
     private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         boolean silentAuction = game.getBidding().isSilentAuction();
         boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
         int bidAmount = discordGame.required(amount).getAsInt();
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
-                && faction.getTreacheryHand().stream().noneMatch(c -> c.name().equals("Karama")))
+                && factionDoesNotHaveKarama(faction))
             throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
 
         faction.setUseExact(useExact);
