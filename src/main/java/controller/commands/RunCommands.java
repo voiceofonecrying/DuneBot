@@ -624,7 +624,7 @@ public class RunCommands {
             List<Button> buttons = List.of(
                     Button.primary("juice-of-sapho-first", "Go first this phase."),
                     Button.primary("juice-of-sapho-last", "Go last this phase."),
-                    Button.secondary("juice-of-sapho-don't-play", "Don't play Juice of Sapho this phase."));
+                    Button.secondary("juice-of-sapho-don't-play", "Ask again on my turn."));
             discordGame.getFactionChat(saphoFaction).queueMessage("Do you want to play Juice of Sapho to be first or last in shipment and movement? " + saphoFaction.getPlayer(), buttons);
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
         } else if (game.hasFaction("Guild")) {

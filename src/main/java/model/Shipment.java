@@ -8,6 +8,7 @@ public class Shipment {
     private int noField;
     private boolean toReserves;
     private String crossShipFrom;
+    private boolean mayPlaySapho;
 
     public Shipment() {
     }
@@ -20,6 +21,7 @@ public class Shipment {
         this.noField = -1;
         this.toReserves = false;
         this.crossShipFrom = "";
+        this.mayPlaySapho = false;
     }
 
     public int getForce() {
@@ -77,5 +79,13 @@ public class Shipment {
 
     public void setCrossShipFrom(String crossShipFrom) {
         this.crossShipFrom = crossShipFrom;
+    }
+
+    public boolean isMayPlaySapho() {
+        return mayPlaySapho;
+    }
+
+    public void setMayPlaySapho(boolean mayPlaySapho) {
+        this.mayPlaySapho = mayPlaySapho;
     }
 }

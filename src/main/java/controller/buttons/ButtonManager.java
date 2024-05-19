@@ -31,7 +31,8 @@ public class ButtonManager extends ListenerAdapter {
     public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
         try {
             if (allowModButtonPress) {
-                String channelName = event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD) ?
+                String channelName = event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD) ||
+                        event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD) ?
                         event.getChannel().asThreadChannel().getParentMessageChannel().getName() :
                         event.getChannel().getName();
 

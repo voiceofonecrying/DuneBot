@@ -299,8 +299,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.queueMessageToEphemeral("These buttons were not intended for you");
             return;
         }
-        discordGame.getTurnSummary().queueMessage("Juice of Sapho is not played at this time.");
-        discordGame.queueMessage("You will not play Juice of Sapho this turn.");
+        faction.getShipment().setMayPlaySapho(true);
+        discordGame.queueMessage("You will not play Juice of Sapho now. You will have the option to go last when it is your turn.");
         game.getTurnOrder().pollFirst();
         if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
@@ -316,6 +316,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.queueMessageToEphemeral("These buttons were not intended for you");
             return;
         }
+        faction.getShipment().setMayPlaySapho(false);
         game.getTurnOrder().pollFirst();
         String lastFirst = last ? "last" : "first";
         game.getTurnOrder().remove(faction.getName());
@@ -1014,6 +1015,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("shipment", "Begin a ship action"));
         buttons.add(Button.danger("pass-shipment", "Pass shipment"));
+        if (faction.getShipment().isMayPlaySapho())
+            buttons.add(Button.secondary("juice-of-sapho-last", "Play Juice of Sapho to go last"));
         discordGame.getFactionChat(factionName).queueMessage("Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(factionName).getPlayer(), buttons);
     }
 
