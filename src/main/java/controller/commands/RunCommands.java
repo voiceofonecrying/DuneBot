@@ -722,12 +722,19 @@ public class RunCommands {
         }
 
         boolean altSpiceProductionTriggered = false;
-        boolean orgizActive = territories.get("Orgiz Processing Station") != null && territories.get("Orgiz Processing Station").getActiveFactions(game).size() == 1;
         Territory orgiz = territories.get("Orgiz Processing Station");
+        boolean orgizActive = orgiz != null && orgiz.getActiveFactions(game).size() == 1;
         for (Territory territory : territories.values()) {
             if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
-            Faction faction = territory.getActiveFactions(game).getFirst();
+            if (orgizActive) {
+                Faction orgizFaction = orgiz.getActiveFactions(game).getFirst();
+                orgizFaction.addSpice(1);
+                orgizFaction.spiceMessage(1, "for Orgiz Processing Station", true);
+                territory.setSpice(territory.getSpice() - 1);
+                turnSummary.queueMessage(orgizFaction.getEmoji() + " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " with Orgiz Processing Station");
+            }
 
+            Faction faction = territory.getActiveFactions(game).getFirst();
             int spice = faction.getSpiceCollectedFromTerritory(territory);
             if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
                 faction.getOccupier().addSpice(Math.floorDiv(spice, 2));
@@ -740,13 +747,6 @@ public class RunCommands {
             faction.addSpice(spice);
             faction.spiceMessage(spice, "for Spice Blow", true);
             territory.setSpice(territory.getSpice() - spice);
-            if (orgizActive) {
-                faction.subtractSpice(1);
-                faction.spiceMessage(1, "for Orgiz Processing Station", false);
-                orgiz.getActiveFactions(game).getFirst().addSpice(1);
-                orgiz.getActiveFactions(game).getFirst().spiceMessage(1, "for Orgiz Processing Station", true);
-                spice--;
-            }
 
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
                     && (!(faction instanceof FremenFaction) || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
@@ -757,10 +757,6 @@ public class RunCommands {
                 faction.addSpice(2);
                 faction.spiceMessage(2, "for High Threshold advantage", true);
                 harkonnenFaction.setTriggeredHT(true);
-            }
-            if (orgizActive) {
-                turnSummary.queueMessage(orgiz.getActiveFactions(game).getFirst().getEmoji() +
-                        " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
             }
         }
         if (game.hasFaction("Harkonnen")) ((HarkonnenFaction)game.getFaction("Harkonnen")).setTriggeredHT(false);

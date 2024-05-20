@@ -133,6 +133,7 @@ public class MoritaniFaction extends Faction {
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            if (territory.getTerritoryName().equals("Orgiz Processing Station")) continue;
             DuneChoice stronghold = new DuneChoice("moritani-place-terror-" + territory.getTerritoryName(), "Place Terror Token in " + territory.getTerritoryName());
             if (!this.isHighThreshold() && (!territory.getTerrorTokens().isEmpty() || game.getStorm() == territory.getSector()))
                 stronghold.setDisabled(true);
@@ -143,7 +144,7 @@ public class MoritaniFaction extends Faction {
             }
             choices.add(stronghold);
         }
-        chat.publish("Use these buttons to place Terror Tokens from your supply.", choices);
+        chat.publish("Use these buttons to place a Terror Token from your supply. " + getPlayer(), choices);
     }
 
     public void sendTerrorTokenTriggerMessage(Territory targetTerritory, Faction targetFaction) {
