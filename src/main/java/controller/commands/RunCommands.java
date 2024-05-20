@@ -619,13 +619,22 @@ public class RunCommands {
             game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
         List<Faction> factions = game.getFactionsWithTreacheryCard("Juice of Sapho");
+        Faction saphoFaction = null;
         if (!factions.isEmpty()) {
-            Faction saphoFaction = factions.getFirst();
+            saphoFaction = factions.getFirst();
+            saphoFaction.getShipment().setMayPlaySapho(true);
+        }
+        if (saphoFaction != null &&
+                (!game.getTurnOrder().getFirst().equals(factions.getFirst().getName()) || game.hasFaction("Guild"))) {
+            String message = "Do you want to play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
+            if (!game.getTurnOrder().getLast().equals(saphoFaction.getName()))
+                message += "\nIf not, you will have the option to play it to go last on your turn.";
+            else if (game.hasFaction("Guild"))
+                message += "\nIf not, you will have the option to play it to go last if " + Emojis.GUILD + " defers to you.";
             List<Button> buttons = List.of(
-                    Button.primary("juice-of-sapho-first", "Go first this phase."),
-                    Button.primary("juice-of-sapho-last", "Go last this phase."),
-                    Button.secondary("juice-of-sapho-don't-play", "Ask again on my turn."));
-            discordGame.getFactionChat(saphoFaction).queueMessage("Do you want to play Juice of Sapho to be first or last in shipment and movement? " + saphoFaction.getPlayer(), buttons);
+                    Button.primary("juice-of-sapho-first", "Yes, go first"),
+                    Button.secondary("juice-of-sapho-don't-play", "No"));
+            discordGame.getFactionChat(saphoFaction).queueMessage(message, buttons);
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
         } else if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
