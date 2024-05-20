@@ -55,7 +55,7 @@ public class Territories extends HashMap<String, Territory> {
         List<Force> forces = new ArrayList<>();
         boolean addRichese = false;
         for (Territory territory : territorySectors) {
-            if (territorySectors.get(0).getTerritoryName().equals("Polar Sink")) continue;
+            if (territorySectors.getFirst().getTerritoryName().equals("Polar Sink")) continue;
             forces.addAll(territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))

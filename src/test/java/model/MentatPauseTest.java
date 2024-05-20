@@ -33,7 +33,7 @@ public class MentatPauseTest {
         game.startMentatPause();
         assertEquals(1, choamChat.getMessages().size());
         assertEquals(1, choamChat.getChoices().size());
-        assertEquals(3, choamChat.getChoices().get(0).size());
+        assertEquals(3, choamChat.getChoices().getFirst().size());
     }
 
     @Test

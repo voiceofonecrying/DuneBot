@@ -144,7 +144,7 @@ public class CardImages {
             return cardChannelMessages.get(channelName);
         } else {
             if (guild.getCategoriesByName("Game Resources", true).isEmpty()) return new ArrayList<>();
-            Category gameResources = guild.getCategoriesByName("Game Resources", true).get(0);
+            Category gameResources = guild.getCategoriesByName("Game Resources", true).getFirst();
 
             Optional<TextChannel> channel = gameResources.getTextChannels().stream()
                     .filter(c -> c.getName().equalsIgnoreCase(channelName))
@@ -157,7 +157,7 @@ public class CardImages {
             while (!MessageHistory.getHistoryAfter(channel.get(), id).complete().isEmpty()) {
                 MessageHistory history = MessageHistory.getHistoryAfter(channel.get(), id).complete();
                 messages.addAll(history.getRetrievedHistory());
-                id = history.getRetrievedHistory().get(0).getId();
+                id = history.getRetrievedHistory().getFirst().getId();
             }
 
             cardChannelMessages.put(channelName, messages);
@@ -173,7 +173,7 @@ public class CardImages {
 
         if (attachments.isEmpty()) return Optional.empty();
 
-        Message.Attachment attachment = attachments.get(0);
+        Message.Attachment attachment = attachments.getFirst();
         return Optional.of(attachment);
     }
 

@@ -102,7 +102,7 @@ public class SetupCommands {
         StepStatus stepStatus;
 
         do {
-            SetupStep setupStep = game.getSetupSteps().remove(0);
+            SetupStep setupStep = game.getSetupSteps().removeFirst();
             stepStatus = runSetupStep(discordGuild, discordGame, game, setupStep);
 
         } while (stepStatus == StepStatus.CONTINUE);
@@ -299,7 +299,7 @@ public class SetupCommands {
         discordGame.getTurnSummary().addUser(playerName);
         discordGame.getTurnSummary().addUser(game.getMod());
 
-        TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).get(0);
+        TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
         List<Message> messagesToDelete = new ArrayList<>();
         for (Message m : messageHistory.getRetrievedHistory()) {
@@ -604,7 +604,7 @@ public class SetupCommands {
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
         List<Leader> leaders = ecaz.getLeaders();
         Collections.shuffle(leaders);
-        ecaz.setLoyalLeader(leaders.get(0));
+        ecaz.setLoyalLeader(leaders.getFirst());
         game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().getName()));
         discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().getName() + " as their loyal leader.");
         return StepStatus.CONTINUE;
@@ -651,8 +651,8 @@ public class SetupCommands {
     }
 
     public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction faction1 = game.getFactions().get(0);
-        Faction faction2 = game.getFactions().get(game.getFactions().size() - 1);
+        Faction faction1 = game.getFactions().getFirst();
+        Faction faction2 = game.getFactions().getLast();
         discordGame.getFactionChat(faction1.getName()).queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         discordGame.getFactionChat(faction2.getName()).queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);

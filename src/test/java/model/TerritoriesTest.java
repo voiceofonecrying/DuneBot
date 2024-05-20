@@ -50,33 +50,33 @@ public class TerritoriesTest {
     void getTerritorySectorsForBattleWindPassNorthNoStorm() {
         List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Wind Pass North", 10);
         assertEquals(1, territorySectorsList.size());
-        assertEquals(2, territorySectorsList.get(0).size());
+        assertEquals(2, territorySectorsList.getFirst().size());
     }
 
     @Test
     void getTerritorySectorsForBattleWindPassNoStorm() {
         List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Wind Pass", 10);
         assertEquals(1, territorySectorsList.size());
-        assertEquals(4, territorySectorsList.get(0).size());
+        assertEquals(4, territorySectorsList.getFirst().size());
     }
 
     @Test
     void getTerritorySectorsForBattleCielagoNoStorm() {
         List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Cielago North", 10);
         assertEquals(1, territorySectorsList.size());
-        assertEquals(3, territorySectorsList.get(0).size());
-        assertTrue(territorySectorsList.get(0).stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (West Sector)")));
-        assertTrue(territorySectorsList.get(0).stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (Center Sector)")));
-        assertTrue(territorySectorsList.get(0).stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (East Sector)")));
+        assertEquals(3, territorySectorsList.getFirst().size());
+        assertTrue(territorySectorsList.getFirst().stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (West Sector)")));
+        assertTrue(territorySectorsList.getFirst().stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (Center Sector)")));
+        assertTrue(territorySectorsList.getFirst().stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (East Sector)")));
     }
 
     @Test
     void getTerritorySectorsForBattleCielagoStormEast() {
         List<List<Territory>> territorySectorsList = territories.getTerritorySectorsForBattle("Cielago North", 2);
         assertEquals(1, territorySectorsList.size());
-        assertEquals(2, territorySectorsList.get(0).size());
-        assertTrue(territorySectorsList.get(0).stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (West Sector)")));
-        assertTrue(territorySectorsList.get(0).stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (Center Sector)")));
+        assertEquals(2, territorySectorsList.getFirst().size());
+        assertTrue(territorySectorsList.getFirst().stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (West Sector)")));
+        assertTrue(territorySectorsList.getFirst().stream().anyMatch(t -> t.getTerritoryName().equals("Cielago North (Center Sector)")));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class TerritoriesTest {
     void fighterNamesInAggTerritoryTwoFighters() {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 1, "Fremen"));
         game.getTerritory("Cielago North (East Sector)").addForce(new Force("Atreides", 1, "Atreides"));
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(2, fighterNames.size());
     }
@@ -114,7 +114,7 @@ public class TerritoriesTest {
     void fighterNamesInAggTerritoryFighterAndAdvisor() {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 1, "Fremen"));
         game.getTerritory("Cielago North (East Sector)").addForce(new Force("Advisor", 1, "BG"));
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -122,7 +122,7 @@ public class TerritoriesTest {
     @Test
     void fighterNamesInAggTerritoryFighterAlone() {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 1, "Fremen"));
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -131,7 +131,7 @@ public class TerritoriesTest {
     void fighterNamesInAggTerritoryFighterAloneWithSpecial() {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 1, "Fremen"));
         game.getTerritory("Cielago North (East Sector)").addForce(new Force("Fremen*", 1, "Fremen"));
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -141,7 +141,7 @@ public class TerritoriesTest {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 1, "Fremen"));
         game.getTerritory("Cielago North (East Sector)").addForce(new Force("BG", 1, "BG"));
         game.getTerritory("Cielago North (Center Sector)").setRicheseNoField(3);
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Cielago North", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(3, fighterNames.size());
     }
@@ -151,7 +151,7 @@ public class TerritoriesTest {
         game.getTerritory("Polar Sink").addForce(new Force("Fremen", 1, "Fremen"));
         game.getTerritory("Polar Sink").addForce(new Force("BG", 1, "BG"));
         game.getTerritory("Polar Sink").setRicheseNoField(3);
-        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Polar Sink", 10).get(0);
+        List<Territory> territorySectors = territories.getTerritorySectorsForBattle("Polar Sink", 10).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(0, fighterNames.size());
     }
@@ -160,7 +160,7 @@ public class TerritoriesTest {
     void fighterNamesInAggTerritoryFightersSeparatedByStorm() {
         game.getTerritory("Cielago North (West Sector)").addForce(new Force("Fremen", 3, "Fremen"));
         game.getTerritory("Cielago North (East Sector)").addForce(new Force("BG", 1, "BG"));
-        List<Territory> territorySectorsBefore = territories.getTerritorySectorsForBattle("Cielago North", 1).get(0);
+        List<Territory> territorySectorsBefore = territories.getTerritorySectorsForBattle("Cielago North", 1).getFirst();
         assertEquals(1, territories.getFighterNamesInAggTerritory(territorySectorsBefore).size());
     }
 

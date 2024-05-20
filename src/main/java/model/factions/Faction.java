@@ -234,7 +234,7 @@ public class Faction {
      * @return Treachery Card
      */
     public TreacheryCard getLastTreacheryCard() {
-        return treacheryHand.get(treacheryHand.size() - 1);
+        return treacheryHand.getLast();
     }
 
     public TreacheryCard removeTreacheryCard(String name) {
@@ -768,11 +768,11 @@ public class Faction {
 
     public boolean isHomeworldOccupied() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
-        return game.getTerritory(homeworld).countActiveFactions() == 1 && !game.getTerritory(homeworld).getActiveFactions(game).get(0).getName().equals(this.name);
+        return game.getTerritory(homeworld).countActiveFactions() == 1 && !game.getTerritory(homeworld).getActiveFactions(game).getFirst().getName().equals(this.name);
     }
 
     public Faction getOccupier() {
-        if (isHomeworldOccupied()) return game.getTerritory(homeworld).getActiveFactions(game).get(0);
+        if (isHomeworldOccupied()) return game.getTerritory(homeworld).getActiveFactions(game).getFirst();
         return null;
     }
 

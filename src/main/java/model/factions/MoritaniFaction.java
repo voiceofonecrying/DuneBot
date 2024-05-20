@@ -71,7 +71,7 @@ public class MoritaniFaction extends Faction {
             }
             case "Sabotage" -> {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
-                String cardName = triggeringFaction.getTreacheryHand().get(0).name();
+                String cardName = triggeringFaction.getTreacheryHand().getFirst().name();
                 turnSummary.publish(Emojis.MORITANI + " took " + cardName + " from " + triggeringFaction.getEmoji() + " and discarded it.");
                 game.getTreacheryDiscard().add(triggeringFaction.removeTreacheryCard(cardName));
                 List<DuneChoice> treacheryCards = new LinkedList<>();

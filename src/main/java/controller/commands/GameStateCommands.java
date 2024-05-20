@@ -65,7 +65,7 @@ public class GameStateCommands {
 
         if (attachments.isEmpty()) throw new IllegalArgumentException("No state found");
 
-        Message.Attachment attachment = attachments.get(0);
+        Message.Attachment attachment = attachments.getFirst();
         CompletableFuture<InputStream> future = attachment.getProxy().download();
         InputStream inputStream = future.get();
         FileUpload fileUpload = FileUpload.fromData(inputStream, "gamestate.json");

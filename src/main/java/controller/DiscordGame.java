@@ -402,7 +402,7 @@ public class DiscordGame {
             h.retrievePast(1).complete();
 
             List<Message> ml = h.getRetrievedHistory();
-            String gameJson = getGameJson(ml.get(0));
+            String gameJson = getGameJson(ml.getFirst());
             Game game = gameJsonToGame(gameJson);
             GameCache.setGameJson(gameName, gameJson);
             this.game = game;
@@ -426,7 +426,7 @@ public class DiscordGame {
     }
 
     public String getGameJson(Message message) {
-        Message.Attachment encoded = message.getAttachments().get(0);
+        Message.Attachment encoded = message.getAttachments().getFirst();
         CompletableFuture<InputStream> future = encoded.getProxy().download();
 
         try {
@@ -516,7 +516,7 @@ public class DiscordGame {
     private static List<MessageCreateBuilder> splitMessageBuilders(MessageCreateBuilder inMessageCreateBuilder) {
         List<MessageCreateBuilder> messageCreateBuilders = new ArrayList<>();
         messageCreateBuilders.add(new MessageCreateBuilder());
-        messageCreateBuilders.get(0).setContent(inMessageCreateBuilder.getContent());
+        messageCreateBuilders.getFirst().setContent(inMessageCreateBuilder.getContent());
 
         int totalEmbedCount = 0;
         int totalEmbedLength = 0;
@@ -530,10 +530,10 @@ public class DiscordGame {
                 totalEmbedLength = messageEmbed.getLength();
             }
 
-            messageCreateBuilders.get(messageCreateBuilders.size() - 1).addEmbeds(messageEmbed);
+            messageCreateBuilders.getLast().addEmbeds(messageEmbed);
         }
 
-        messageCreateBuilders.get(messageCreateBuilders.size() - 1).setFiles(inMessageCreateBuilder.getAttachments());
+        messageCreateBuilders.getLast().setFiles(inMessageCreateBuilder.getAttachments());
         return messageCreateBuilders;
     }
 

@@ -134,8 +134,8 @@ public class PlayerCommands {
         if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && currentBattle.getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
             List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
             if (strongholdNames.size() == 1) {
-                discordGame.getFactionChat(faction).queueMessage(strongholdNames.get(0) + " Stronghold card will be applied in the HMS battle.");
-                if (strongholdNames.get(0).equals("Carthag"))
+                discordGame.getFactionChat(faction).queueMessage(strongholdNames.getFirst() + " Stronghold card will be applied in the HMS battle.");
+                if (strongholdNames.getFirst().equals("Carthag"))
                     battlePlan.addCarthagStrongholdPower();
             } else if (strongholdNames.size() >= 2) {
                 discordGame.getModInfo().queueMessage(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
@@ -333,7 +333,7 @@ public class PlayerCommands {
             }
 
             boolean tag = true;
-            if (bidding.getCurrentBidder().equals(eligibleBidOrder.get(eligibleBidOrder.size() - 1))) {
+            if (bidding.getCurrentBidder().equals(eligibleBidOrder.getLast())) {
                 if (bidding.isRicheseBidding()) onceAroundFinished = true;
                 if (bidding.getBidLeader().isEmpty()) allPlayersPassed = true;
                 if (onceAroundFinished || allPlayersPassed) tag = false;

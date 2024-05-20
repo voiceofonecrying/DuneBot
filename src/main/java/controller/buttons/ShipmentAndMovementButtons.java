@@ -394,7 +394,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (ornithopter || game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
                 game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())))
             spacesCanMove = 3;
-        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
+        if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().getFirst().getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
             spacesCanMove++;
         Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
@@ -697,7 +697,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             arrangeButtonsAndSend(message, forcesButtons, discordGame);
 
-            if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().get(0).getSkillCard().name().equals("Planetologist")) {
+            if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().getFirst().getSkillCard().name().equals("Planetologist")) {
                 int spacesCanMove = 1;
                 if (faction instanceof FremenFaction) spacesCanMove = 2;
                 if (game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
@@ -759,8 +759,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         ).toList();
 
         if (territory.size() == 1) {
-            if (isShipment) faction.getShipment().setTerritoryName(territory.get(0).getTerritoryName());
-            else faction.getMovement().setMovingTo(territory.get(0).getTerritoryName());
+            if (isShipment) faction.getShipment().setTerritoryName(territory.getFirst().getTerritoryName());
+            else faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
             queueForcesButtons(event, game, discordGame, faction, isShipment);
             deleteShipMoveButtonsInChannel(event.getMessageChannel());
 //            discordGame.pushGame();

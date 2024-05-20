@@ -63,7 +63,7 @@ public class CopyCardChannel {
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName("Game Resources", true);
         if (categories.isEmpty()) throw new ChannelNotFoundException("Category Game Resources not found");
-        Category category = categories.get(0);
+        Category category = categories.getFirst();
         List<TextChannel> channels = category.getTextChannels();
         Optional<TextChannel> channel = channels.stream().filter(c -> c.getName().equalsIgnoreCase(channelName))
                 .findFirst();

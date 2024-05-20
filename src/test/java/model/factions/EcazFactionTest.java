@@ -110,8 +110,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Imperial Basin (Center Sector)")) {
-                assertEquals(territory.getForces().get(0).getStrength(), 6);
-                assertEquals(territory.getForces().get(0).getName(), "Ecaz");
+                assertEquals(territory.getForces().getFirst().getStrength(), 6);
+                assertEquals(territory.getForces().getFirst().getName(), "Ecaz");
             } else {
                 assertEquals(territory.getForces().size(), 0);
             }

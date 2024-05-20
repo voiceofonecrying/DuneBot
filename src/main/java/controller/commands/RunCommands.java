@@ -156,14 +156,14 @@ public class RunCommands {
         if (game.getSubPhase() != 1) return;
         if (game.getQuotes().get(phase).isEmpty()) return;
         Collections.shuffle(game.getQuotes().get(phase));
-        discordGame.getTurnSummary().queueMessage(game.getQuotes().get(phase).remove(0));
+        discordGame.getTurnSummary().queueMessage(game.getQuotes().get(phase).removeFirst());
     }
 
     public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.startStormPhase();
 
         if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
-            Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).get(0);
+            Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).getFirst();
             discordGame.getFactionChat(faction.getName()).queueMessage("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
                     List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
         }
@@ -452,7 +452,7 @@ public class RunCommands {
                 }
                 TreacheryCard bidCard = bidding.nextBidCard(game);
                 AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1));
+                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
                 bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
                 String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
                         game.getGameRoleMention(), game.getTurn(), bidding.getBidCardNumber());
@@ -620,7 +620,7 @@ public class RunCommands {
         game.getTurnOrder().removeIf(name -> name.equals("Guild"));
         List<Faction> factions = game.getFactionsWithTreacheryCard("Juice of Sapho");
         if (!factions.isEmpty()) {
-            Faction saphoFaction = factions.get(0);
+            Faction saphoFaction = factions.getFirst();
             List<Button> buttons = List.of(
                     Button.primary("juice-of-sapho-first", "Go first this phase."),
                     Button.primary("juice-of-sapho-last", "Go last this phase."),
@@ -710,7 +710,7 @@ public class RunCommands {
 
             Territory homeworld = game.getTerritory(faction.getHomeworld());
             if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
-                Faction occupyingFaction = homeworld.getActiveFactions(game).get(0);
+                Faction occupyingFaction = homeworld.getActiveFactions(game).getFirst();
                 if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
                     faction.addSpice(2);
                     faction.spiceMessage(2, "for High Threshold advantage", true);
@@ -726,7 +726,7 @@ public class RunCommands {
         Territory orgiz = territories.get("Orgiz Processing Station");
         for (Territory territory : territories.values()) {
             if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
-            Faction faction = territory.getActiveFactions(game).get(0);
+            Faction faction = territory.getActiveFactions(game).getFirst();
 
             int spice = faction.getSpiceCollectedFromTerritory(territory);
             if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
@@ -743,8 +743,8 @@ public class RunCommands {
             if (orgizActive) {
                 faction.subtractSpice(1);
                 faction.spiceMessage(1, "for Orgiz Processing Station", false);
-                orgiz.getActiveFactions(game).get(0).addSpice(1);
-                orgiz.getActiveFactions(game).get(0).spiceMessage(1, "for Orgiz Processing Station", true);
+                orgiz.getActiveFactions(game).getFirst().addSpice(1);
+                orgiz.getActiveFactions(game).getFirst().spiceMessage(1, "for Orgiz Processing Station", true);
                 spice--;
             }
 
@@ -759,7 +759,7 @@ public class RunCommands {
                 harkonnenFaction.setTriggeredHT(true);
             }
             if (orgizActive) {
-                turnSummary.queueMessage(orgiz.getActiveFactions(game).get(0).getEmoji() +
+                turnSummary.queueMessage(orgiz.getActiveFactions(game).getFirst().getEmoji() +
                         " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " Because of Orgiz Processing Station");
             }
         }
@@ -767,7 +767,7 @@ public class RunCommands {
 
         for (Territory territory : territories.values()) {
             if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
-            Faction faction = territory.getActiveFactions(game).get(0);
+            Faction faction = territory.getActiveFactions(game).getFirst();
             List<Button> buttons = new LinkedList<>();
             buttons.add(Button.primary("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
             buttons.add(Button.danger("don't-reveal-discovery-token", "No"));

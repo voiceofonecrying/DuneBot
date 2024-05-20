@@ -74,7 +74,7 @@ public class Bidding {
             throw new InvalidGameStateException("All cards from the bidding market have already been bid on.");
         }
 
-        bidCard = market.remove(0);
+        bidCard = market.removeFirst();
         bidCardNumber++;
         cardFromMarket = true;
 
@@ -150,7 +150,7 @@ public class Bidding {
             throw new InvalidGameStateException("There are no cards in the bidding market.");
         }
         TreacheryCard cardFromIx = faction.removeTreacheryCard(cardName);
-        TreacheryCard newCard = market.remove(0);
+        TreacheryCard newCard = market.removeFirst();
         faction.addTreacheryCard(newCard);
         market.addFirst(cardFromIx);
         ixTechnologyUsed = true;
@@ -273,7 +273,7 @@ public class Bidding {
 
     public void setRicheseBidOrder(Game game, List<String> bidOrder) {
         this.richeseBidOrder = bidOrder;
-        nextBidder = getEligibleBidOrder(game).get(0);
+        nextBidder = getEligibleBidOrder(game).getFirst();
     }
 
     public List<String> getEligibleBidOrder(Game game) {
@@ -288,13 +288,13 @@ public class Bidding {
             List<Faction> bidOrderFactions = game.getFactionsInStormOrder();
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
         } else {
-            bidOrder.add(bidOrder.remove(0));
+            bidOrder.add(bidOrder.removeFirst());
         }
 
-        String firstFaction = bidOrder.get(0);
+        String firstFaction = bidOrder.getFirst();
         String faction = firstFaction;
         while (game.getFaction(faction).getHandLimit() <= game.getFaction(faction).getTreacheryHand().size()) {
-            faction = bidOrder.remove(0);
+            faction = bidOrder.removeFirst();
             bidOrder.add(faction);
             if (faction.equalsIgnoreCase(firstFaction)) {
                 break;

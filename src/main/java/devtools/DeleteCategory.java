@@ -26,7 +26,7 @@ public class DeleteCategory {
             throw new IllegalArgumentException("There is not exactly one occurrence of the category");
         }
 
-        Category category = categories.get(0);
+        Category category = categories.getFirst();
 
         List<GuildChannel> channels = category.getChannels();
 

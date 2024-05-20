@@ -50,7 +50,7 @@ public class Battles {
             Set<String> factionNames;
             for (List<Territory> territorySectors : territorySectorsForBattle) {
                 factionNames = territories.getFighterNamesInAggTerritory(territorySectors);
-                if (game.hasFaction("Moritani") && territorySectors.get(0).isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani")
+                if (game.hasFaction("Moritani") && territorySectors.getFirst().isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani")
                         && !factionNames.contains("Ecaz")) dukeVidalCount++;
                 List<Faction> factions = factionNames.stream()
                         .sorted(Comparator.comparingInt(game::getFactionTurnIndex))
@@ -70,16 +70,16 @@ public class Battles {
         }
         if (dukeVidalCount >= 2) moritaniCanTakeVidal = true;
         battles.sort(Comparator
-                .comparingInt(o -> game.getFactionTurnIndex(o.getFactions(game).get(0).getName())));
+                .comparingInt(o -> game.getFactionTurnIndex(o.getFactions(game).getFirst().getName())));
         return battles;
     }
 
     public Faction getAggressor(Game game) {
-        return battles.get(0).getFactions(game).get(0);
+        return battles.getFirst().getFactions(game).getFirst();
     }
 
     public List<Battle> getDefaultAggressorsBattles() {
-        return battles.stream().filter(b -> b.getFactionNames().get(0).equals(battles.get(0).getFactionNames().get(0))).toList();
+        return battles.stream().filter(b -> b.getFactionNames().getFirst().equals(battles.getFirst().getFactionNames().getFirst())).toList();
     }
 
     boolean isMoritaniCanTakeVidal() {
@@ -93,17 +93,17 @@ public class Battles {
 
     public boolean aggressorMustChooseBattle() {
         if (battles.size() <= 1) return false;
-        else return battles.get(0).getFactionNames().get(0).equals(battles.get(1).getFactionNames().get(0));
+        else return battles.get(0).getFactionNames().getFirst().equals(battles.get(1).getFactionNames().getFirst());
     }
 
     public boolean aggressorMustChooseOpponent() {
-        return !battles.isEmpty() && battles.get(0).aggressorMustChooseOpponent();
+        return !battles.isEmpty() && battles.getFirst().aggressorMustChooseOpponent();
     }
 
     public void setTerritoryByIndex(int territoryIndex) {
         currentBattle = battles.get(territoryIndex);
         Battle battle = battles.remove(territoryIndex);
-        battles.add(0, battle);
+        battles.addFirst(battle);
     }
 
     public void setOpponent(Game game, String opponent) throws InvalidGameStateException {
@@ -142,18 +142,18 @@ public class Battles {
 
         game.getFactions().forEach(f -> f.getLeaders().forEach(l -> l.setPulledBehindShield(false)));
         StringBuilder nextBattle = new StringBuilder();
-        Faction aggressor = battles.get(0).getAggressor(game);
+        Faction aggressor = battles.getFirst().getAggressor(game);
         if (aggressorMustChooseBattle()) {
             nextBattle.append(aggressor.getEmoji()).append(" must choose where they will fight:");
             for (Battle battle : battles) {
-                if (aggressor != battle.getFactions(game).get(0)) break;
+                if (aggressor != battle.getFactions(game).getFirst()) break;
                 nextBattle.append(MessageFormat.format("\n{1}: {0}",
                         battle.getForcesMessage(game),
                         battle.getWholeTerritoryName()
                 ));
             }
         } else {
-            Battle battle = battles.get(0);
+            Battle battle = battles.getFirst();
             nextBattle.append(MessageFormat.format("Next battle: {0} in {1}",
                     battle.getForcesMessage(game),
                     battle.getWholeTerritoryName()

@@ -764,8 +764,8 @@ public class CommandManager extends ListenerAdapter {
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         Role gameRoleValue = Objects.requireNonNull(event.getOption(gameRole.getName())).getAsRole();
         Role modRoleValue = Objects.requireNonNull(event.getOption(modRole.getName())).getAsRole();
-        Role observerRole = Objects.requireNonNull(event.getGuild()).getRolesByName("Observer", true).get(0);
-        Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).get(0);
+        Role observerRole = Objects.requireNonNull(event.getGuild()).getRolesByName("Observer", true).getFirst();
+        Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).getFirst();
         String name = Objects.requireNonNull(event.getOption(gameName.getName())).getAsString();
 
         // Create category and set base permissions to deny everything for everyone except the mod role.
@@ -778,7 +778,7 @@ public class CommandManager extends ListenerAdapter {
                 .addPermissionOverride(observerRole, null, ChannelPermissions.all)
                 .complete();
 
-        Category category = event.getGuild().getCategoriesByName(name, true).get(0);
+        Category category = event.getGuild().getCategoriesByName(name, true).getFirst();
 
         category.createTextChannel("chat")
                 .addPermissionOverride(
@@ -998,7 +998,7 @@ public class CommandManager extends ListenerAdapter {
         String factionName = discordGame.required(faction).getAsString();
         game.drawTreacheryCard(factionName);
         List<TreacheryCard> treacheryHand = game.getFaction(factionName).getTreacheryHand();
-        TreacheryCard cardDrawn = treacheryHand.get(treacheryHand.size() - 1);
+        TreacheryCard cardDrawn = treacheryHand.getLast();
         discordGame.getFactionLedger(factionName).queueMessage(cardDrawn.name() + " drawn from deck.");
         discordGame.pushGame();
     }
@@ -1157,7 +1157,7 @@ public class CommandManager extends ListenerAdapter {
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        String assassinated = moritani.getTraitorHand().get(0).name();
+        String assassinated = moritani.getTraitorHand().getFirst().name();
         moritani.getAssassinationTargets().add(assassinated);
         moritani.getTraitorHand().clear();
         moritani.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
@@ -1357,7 +1357,7 @@ public class CommandManager extends ListenerAdapter {
         game.setMod(event.getUser().getAsMention());
         List<Role> roles = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
         if (!roles.isEmpty()) {
-            game.setGameRoleMention(roles.get(0).getAsMention());
+            game.setGameRoleMention(roles.getFirst().getAsMention());
         }
         discordGame.pushGame();
     }
@@ -1372,7 +1372,7 @@ public class CommandManager extends ListenerAdapter {
 
     public void waitingList(SlashCommandInteractionEvent event) {
         String userTag = event.getUser().getId();
-        TextChannel textChannel = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).get(0);
+        TextChannel textChannel = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
         String message = "Speed: ";
         message += waitingListItemResult(":scooter:", DiscordGame.required(slowGame, event).getAsString());
         message += " -- ";

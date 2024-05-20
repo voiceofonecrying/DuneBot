@@ -528,7 +528,7 @@ public class Game {
         if (forces.size() > 1) {
             throw new IllegalArgumentException("Duplicate forces found in tanks list.");
         } else if (forces.size() == 1) {
-            return forces.get(0);
+            return forces.getFirst();
         } else {
             force = new Force(forceName, 0);
             this.tanks.add(force);
@@ -792,20 +792,16 @@ public class Game {
 
         Faction factionWithAtomics = null;
         try {
-            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics").get(0);
-        } catch (IndexOutOfBoundsException e) {
-            // No faction has Family Atomics
-        }
+            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics").getFirst();
+        } catch (NoSuchElementException ignore) {}
         if (factionWithAtomics != null && factionWithAtomics.isNearShieldWall()) {
             factionWithAtomics.getChat().publish(factionWithAtomics.getPlayer() + " will you play Family Atomics?");
         }
 
         Faction factionWithWeatherControl = null;
         try {
-            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control").get(0);
-        } catch (IndexOutOfBoundsException e) {
-            // No faction has Weather Control
-        }
+            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control").getFirst();
+        } catch (NoSuchElementException ignore) {}
         if (factionWithWeatherControl != null && turn != 1) {
             factionWithWeatherControl.getChat().publish(factionWithWeatherControl.getPlayer() + " will you play Weather Control?");
         }
@@ -941,8 +937,8 @@ public class Game {
             }
             message.append(drawn.discoveryToken()).append(" has been placed in ").append(drawn.tokenLocation()).append("\n");
             if (drawn.discoveryToken().equals("Hiereg"))
-                getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.remove(0));
-            else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.remove(0));
+                getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.removeFirst());
+            else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.removeFirst());
             getTerritory(drawn.tokenLocation()).setDiscovered(false);
             if (hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) getFaction("Guild").getChat()
                     .publish("The discovery token at " + drawn.tokenLocation() + " is a(n) " + getTerritory(drawn.tokenLocation()).getDiscoveryToken());
@@ -1118,11 +1114,11 @@ public class Game {
                     .toList();
 
             strongholds.stream().filter(t -> t.countActiveFactions() == 1)
-                    .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), t.getActiveFactions(this).get(0))));
+                    .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), t.getActiveFactions(this).getFirst())));
             if (hasFaction("Ecaz"))
                 strongholds.stream().filter(t -> t.countActiveFactions() == 2)
-                        .filter(t -> t.getActiveFactions(this).get(0).getName().equals("Ecaz") && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
-                                || t.getActiveFactions(this).get(1).getName().equals("Ecaz") && t.getActiveFactions(this).get(0).getAlly().equals("Ecaz"))
+                        .filter(t -> t.getActiveFactions(this).getFirst().getName().equals("Ecaz") && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
+                                || t.getActiveFactions(this).get(1).getName().equals("Ecaz") && t.getActiveFactions(this).getFirst().getAlly().equals("Ecaz"))
                         .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), getFaction("Ecaz"))));
 
             for (Pair<String, Faction> controllingFaction : controllingFactions) {

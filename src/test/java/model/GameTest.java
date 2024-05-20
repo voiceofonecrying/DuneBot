@@ -200,12 +200,12 @@ class GameTest {
             assertEquals(18, game.getStorm());
 
             assertEquals(1, atreides.getTechTokens().size());
-            assertNotEquals(TechToken.SPICE_PRODUCTION, atreides.getTechTokens().get(0).getName());
+            assertNotEquals(TechToken.SPICE_PRODUCTION, atreides.getTechTokens().getFirst().getName());
             assertEquals(1, bg.getTechTokens().size());
-            assertNotEquals(TechToken.SPICE_PRODUCTION, bg.getTechTokens().get(0).getName());
+            assertNotEquals(TechToken.SPICE_PRODUCTION, bg.getTechTokens().getFirst().getName());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertEquals(1, fremen.getTechTokens().size());
-            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().get(0).getName());
+            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().getFirst().getName());
             assertTrue(guild.getTechTokens().isEmpty());
             assertTrue(harkonnen.getTechTokens().isEmpty());
         }
@@ -226,11 +226,11 @@ class GameTest {
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertEquals(1, fremen.getTechTokens().size());
-            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().get(0).getName());
+            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().getFirst().getName());
             assertEquals(1, guild.getTechTokens().size());
-            assertNotEquals(TechToken.SPICE_PRODUCTION, guild.getTechTokens().get(0).getName());
+            assertNotEquals(TechToken.SPICE_PRODUCTION, guild.getTechTokens().getFirst().getName());
             assertEquals(1, harkonnen.getTechTokens().size());
-            assertNotEquals(TechToken.SPICE_PRODUCTION, harkonnen.getTechTokens().get(0).getName());
+            assertNotEquals(TechToken.SPICE_PRODUCTION, harkonnen.getTechTokens().getFirst().getName());
         }
 
         @Test
@@ -246,11 +246,11 @@ class GameTest {
             assertEquals(18, game.getStorm());
 
             assertEquals(1, bt.getTechTokens().size());
-            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().get(0).getName());
+            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().getFirst().getName());
             assertEquals(1, ix.getTechTokens().size());
-            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().get(0).getName());
+            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().getFirst().getName());
             assertEquals(1, fremen.getTechTokens().size());
-            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().get(0).getName());
+            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().getFirst().getName());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(atreides.getTechTokens().isEmpty());
@@ -269,11 +269,11 @@ class GameTest {
             assertEquals(9, game.getStorm());
 
             assertEquals(1, bt.getTechTokens().size());
-            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().get(0).getName());
+            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().getFirst().getName());
             assertEquals(1, ix.getTechTokens().size());
-            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().get(0).getName());
+            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().getFirst().getName());
             assertEquals(1, fremen.getTechTokens().size());
-            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().get(0).getName());
+            assertEquals(TechToken.SPICE_PRODUCTION, fremen.getTechTokens().getFirst().getName());
             assertTrue(emperor.getTechTokens().isEmpty());
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(atreides.getTechTokens().isEmpty());
@@ -292,12 +292,12 @@ class GameTest {
             assertEquals(9, game.getStorm());
 
             assertEquals(1, bt.getTechTokens().size());
-            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().get(0).getName());
+            assertEquals(TechToken.AXLOTL_TANKS, bt.getTechTokens().getFirst().getName());
             assertEquals(1, ix.getTechTokens().size());
-            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().get(0).getName());
+            assertEquals(TechToken.HEIGHLINERS, ix.getTechTokens().getFirst().getName());
             assertTrue(harkonnen.getTechTokens().isEmpty());
             assertEquals(1, emperor.getTechTokens().size());
-            assertEquals(TechToken.SPICE_PRODUCTION, emperor.getTechTokens().get(0).getName());
+            assertEquals(TechToken.SPICE_PRODUCTION, emperor.getTechTokens().getFirst().getName());
             assertTrue(bg.getTechTokens().isEmpty());
             assertTrue(atreides.getTechTokens().isEmpty());
         }
@@ -522,7 +522,7 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(1, turnSummary.messages.size());
-            assertEquals("Turn 1 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("Turn 1 Storm Phase:", turnSummary.messages.getFirst());
             assertEquals(0, fremenChat.messages.size());
         }
 
@@ -555,7 +555,7 @@ class GameTest {
             assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
             assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, fremenChat.messages.size());
-            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.get(0));
+            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.getFirst());
         }
 
         @Test
@@ -613,7 +613,7 @@ class GameTest {
             assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, guildChat.messages.size());
-            assertEquals("fp5 will you play Family Atomics?", guildChat.messages.get(0));
+            assertEquals("fp5 will you play Family Atomics?", guildChat.messages.getFirst());
         }
 
         @Test
@@ -705,8 +705,8 @@ class GameTest {
             assertEquals(0, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(5, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(3, game.getForceFromTanks("Emperor").getStrength());
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} devoured by Shai-Hulud", Emojis.EMPEROR_SARDAUKAR)));
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} devoured by Shai-Hulud", Emojis.EMPEROR_TROOP)));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf(MessageFormat.format("5 {0} devoured by Shai-Hulud", Emojis.EMPEROR_SARDAUKAR)));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf(MessageFormat.format("3 {0} devoured by Shai-Hulud", Emojis.EMPEROR_TROOP)));
         }
 
         @Test
@@ -726,7 +726,7 @@ class GameTest {
             assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
             assertEquals(0, game.getForceFromTanks("Fremen*").getStrength());
             assertEquals(0, game.getForceFromTanks("Fremen").getStrength());
-            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+            assertEquals(-1, turnSummary.messages.getFirst().indexOf("devoured"));
         }
 
         @Test
@@ -748,7 +748,7 @@ class GameTest {
             assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
-            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+            assertEquals(-1, turnSummary.messages.getFirst().indexOf("devoured"));
         }
 
         @Test
@@ -768,8 +768,8 @@ class GameTest {
             assertEquals(0, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(5, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(3, game.getForceFromTanks("Emperor").getStrength());
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("5 {0} devoured by Great Maker", Emojis.EMPEROR_SARDAUKAR)));
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf(MessageFormat.format("3 {0} devoured by Great Maker", Emojis.EMPEROR_TROOP)));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf(MessageFormat.format("5 {0} devoured by Great Maker", Emojis.EMPEROR_SARDAUKAR)));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf(MessageFormat.format("3 {0} devoured by Great Maker", Emojis.EMPEROR_TROOP)));
         }
 
         @Test
@@ -789,7 +789,7 @@ class GameTest {
             assertEquals(5, sihayaRidge.getForce("Fremen").getStrength());
             assertEquals(0, game.getForceFromTanks("Fremen*").getStrength());
             assertEquals(0, game.getForceFromTanks("Fremen").getStrength());
-            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+            assertEquals(-1, turnSummary.messages.getFirst().indexOf("devoured"));
         }
 
         @Test
@@ -811,7 +811,7 @@ class GameTest {
             assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
-            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+            assertEquals(-1, turnSummary.messages.getFirst().indexOf("devoured"));
         }
 
         @Test
@@ -832,7 +832,7 @@ class GameTest {
             assertEquals(3, sihayaRidge.getForce("Emperor").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor*").getStrength());
             assertEquals(0, game.getForceFromTanks("Emperor").getStrength());
-            assertEquals(-1, turnSummary.messages.get(0).indexOf("devoured"));
+            assertEquals(-1, turnSummary.messages.getFirst().indexOf("devoured"));
         }
 
         @Test
@@ -852,7 +852,7 @@ class GameTest {
             assertEquals(0, funeralPlain.getForce("Fremen").getStrength());
             assertEquals(3, game.getForceFromTanks("Fremen*").getStrength());
             assertEquals(5, game.getForceFromTanks("Fremen").getStrength());
-            assertNotEquals(-1, turnSummary.messages.get(0).indexOf("all forces in the territory were killed in the spice blow!\n"));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf("all forces in the territory were killed in the spice blow!\n"));
         }
     }
 
@@ -1003,7 +1003,7 @@ class GameTest {
             assertEquals(1, emperor.getReserves().getStrength());
             assertFalse(emperor.isHighThreshold());
             assertEquals(1, turnSummary.messages.size());
-            assertEquals("Kaitain has flipped to Low Threshold.", turnSummary.messages.get(0));
+            assertEquals("Kaitain has flipped to Low Threshold.", turnSummary.messages.getFirst());
 
             game.removeForces("Salusa Secundus", emperor, 0, 3, true);
             assertEquals(2, salusaSecundus.getForce("Emperor*").getStrength());
@@ -1247,11 +1247,11 @@ class GameTest {
         void firstPlayerPays() {
             game.startMentatPause();
             game.getMentatPause().factionWouldPayExtortion(game, guild);
-            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.getFirst());
             assertEquals(2, guild.getSpice());
-            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.getFirst());
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.getFirst());
             game.getMentatPause().factionDeclinesExtortion(game, ix);
         }
 
@@ -1262,11 +1262,11 @@ class GameTest {
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionWouldPayExtortion(game, guild);
-            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.getFirst());
             assertEquals(2, guild.getSpice());
-            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, guildLedger.messages.getFirst());
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.GUILD + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.getFirst());
         }
 
         @Test
@@ -1276,11 +1276,11 @@ class GameTest {
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
-            assertEquals(Emojis.RICHESE + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.get(0));
+            assertEquals(Emojis.RICHESE + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.getFirst());
             assertEquals(2, richese.getSpice());
-            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, richeseLedger.messages.get(0));
+            assertEquals("-3 " + Emojis.SPICE + " " + Emojis.MORITANI + " Extortion " + "= 2 " + Emojis.SPICE, richeseLedger.messages.getFirst());
             assertEquals(15, moritani.getSpice());
-            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.RICHESE + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.get(0));
+            assertEquals("+3 " + Emojis.SPICE + " " + Emojis.RICHESE + " paid Extortion " + "= 15 " + Emojis.SPICE, moritaniLedger.messages.getFirst());
         }
 
         @Test
@@ -1291,7 +1291,7 @@ class GameTest {
             game.getMentatPause().factionDeclinesExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, atreides);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
-            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
+            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.getFirst());
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
         }
@@ -1315,7 +1315,7 @@ class GameTest {
             game.getMentatPause().factionDeclinesExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, atreides);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
-            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.get(0));
+            assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.getFirst());
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
         }
@@ -1434,11 +1434,11 @@ class GameTest {
         @Test
         void noCurrentAlliance() {
             game.createAlliance(fremen, guild);
-            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.get(0));
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.getFirst());
             assertEquals("Guild", fremen.getAlly());
             assertEquals("Fremen", guild.getAlly());
-            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().get(0));
-            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().get(0));
+            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().getFirst());
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().getFirst());
 
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
@@ -1451,8 +1451,8 @@ class GameTest {
             assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.get(1));
             assertEquals("Guild", fremen.getAlly());
             assertEquals("Fremen", guild.getAlly());
-            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().get(0));
-            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().get(0));
+            assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().getFirst());
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().getFirst());
             assertNull(fremen.getNexusCard());
 
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
@@ -1478,10 +1478,10 @@ class GameTest {
             assertEquals("Fremen", bt.getAlly());
 
             assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().get(0));
-            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().get(0));
+            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().getFirst());
 
             assertEquals("You are now allies with " + Emojis.BT + "!", fremenLedger.getMessages().get(1));
-            assertEquals("You are now allies with " + Emojis.FREMEN + "!", btLedger.getMessages().get(0));
+            assertEquals("You are now allies with " + Emojis.FREMEN + "!", btLedger.getMessages().getFirst());
         }
     }
 
@@ -1528,9 +1528,9 @@ class GameTest {
             game.removeAlliance(fremen);
             assertEquals("", fremen.getAlly());
             assertEquals("", guild.getAlly());
-            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " are no longer allies.", turnSummary.messages.get(0));
-            assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().get(0));
-            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().get(0));
+            assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " are no longer allies.", turnSummary.messages.getFirst());
+            assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().getFirst());
+            assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().getFirst());
 
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }

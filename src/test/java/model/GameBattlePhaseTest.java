@@ -172,7 +172,7 @@ public class GameBattlePhaseTest {
             game.startBattlePhase();
 
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
         }
 
         @Test
@@ -200,9 +200,9 @@ public class GameBattlePhaseTest {
             game.startBattlePhase();
 
             assertFalse(ecaz.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!", ecazChat.messages.get(0));
+            assertEquals("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!", ecazChat.messages.getFirst());
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
         }
 
         @Test
@@ -230,9 +230,9 @@ public class GameBattlePhaseTest {
             game.startBattlePhase();
 
             assertFalse(harkonnen.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!", harkonnenChat.messages.get(0));
+            assertEquals("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!", harkonnenChat.messages.getFirst());
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.get(0));
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
         }
 
         @Test

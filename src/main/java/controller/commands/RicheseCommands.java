@@ -155,7 +155,7 @@ public class RicheseCommands {
                 f.setAutoBid(false);
                 f.setBid("");
             }
-            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.get(bidOrder.size() - 1));
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             RunCommands.createBidMessage(discordGame, game);
             bidding.advanceBidder(game);
@@ -301,7 +301,7 @@ public class RicheseCommands {
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
             bidding.setRicheseBidOrder(game, bidOrder);
             List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1));
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
         } else {
             StringBuilder message = new StringBuilder();
@@ -335,7 +335,7 @@ public class RicheseCommands {
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
             bidding.setRicheseBidOrder(game, bidOrder);
             List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.get(filteredBidOrder.size() - 1));
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             discordGame.queueMessage("bidding-phase", message.toString());
             RunCommands.createBidMessage(discordGame, game);

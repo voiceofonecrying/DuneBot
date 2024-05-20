@@ -80,11 +80,11 @@ public class Battle {
     }
 
     public String getAggressorName() {
-        return factionNames.get(0);
+        return factionNames.getFirst();
     }
 
     public Faction getAggressor(Game game) {
-        return game.getFaction(factionNames.get(0));
+        return game.getFaction(factionNames.getFirst());
     }
 
     public void setEcazCombatant(Game game, String combatant) {
@@ -498,7 +498,7 @@ public class Battle {
         int numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getFactionName().equals(faction.getName()) && f.getStrength() > 0) || (faction instanceof RicheseFaction) && t.hasRicheseNoField()).toList().size();
         if (faction instanceof BGFaction)
             numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getName().equals("BG") && f.getStrength() > 0)).toList().size();
-        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, leaderSkillsInFront, hasCarthagStrongholdPower, homeworldDialAdvantage(game, territorySectors.get(0), faction), numStrongholdsOccupied, getNumForcesInReserve(game, faction));
+        BattlePlan battlePlan = new BattlePlan(planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice, troopsNotDialed, ecazTroops, leaderSkillsInFront, hasCarthagStrongholdPower, homeworldDialAdvantage(game, territorySectors.getFirst(), faction), numStrongholdsOccupied, getNumForcesInReserve(game, faction));
         battlePlan.setRegularDialed(forcesDialed.regularForcesDialed);
         battlePlan.setSpecialDialed(forcesDialed.specialForcesDialed);
         game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + battlePlan.getPlanMessage(false));
@@ -824,7 +824,7 @@ public class Battle {
             if (loser) {
                 List<TechToken> techTokens = faction.getTechTokens();
                 if (techTokens.size() == 1)
-                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.get(0).getName()) + "\n";
+                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + "\n";
                 else if (techTokens.size() > 1) {
                     resolution += emojis + " loses a Tech Token: ";
                     resolution += techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).reduce("", String::concat);

@@ -423,7 +423,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -431,7 +431,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                     "6 {0} vs 7 {1}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -456,7 +456,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -464,7 +464,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 7 {1} 2 {2}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -490,7 +490,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -498,7 +498,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 1 {1} vs 7 {2} 2 {3}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -524,7 +524,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.RICHESE, Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -532,7 +532,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} vs 6 {1} vs 7 {2} 2 {3}", Emojis.NO_FIELD, Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -561,7 +561,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0}{1} vs {2} vs {3}", Emojis.ECAZ, Emojis.FREMEN, Emojis.BG, Emojis.EMPEROR),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -569,7 +569,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} 7 {1} 2 {2} vs 6 {3} vs 1 {4}", Emojis.ECAZ_TROOP, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -598,7 +598,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.ECAZ),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -606,7 +606,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "6 {0} vs 1 {1} vs 1 {2}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.ECAZ_TROOP),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }
@@ -635,7 +635,7 @@ class BattleTest {
         void getFactionsMessage() {
             assertEquals(MessageFormat.format(
                             "{0} vs {1}{2} vs {3}", Emojis.EMPEROR, Emojis.FREMEN, Emojis.ECAZ, Emojis.BG),
-                    battles.getBattles(game).get(0).getFactionsMessage(game)
+                    battles.getBattles(game).getFirst().getFactionsMessage(game)
             );
         }
 
@@ -643,7 +643,7 @@ class BattleTest {
         void getForcesMessage() {
             assertEquals(MessageFormat.format(
                             "1 {0} vs 7 {1} 2 {2} 1 {3} vs 6 {4}", Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.ECAZ_TROOP, Emojis.BG_FIGHTER),
-                    battles.getBattles(game).get(0).getForcesMessage(game)
+                    battles.getBattles(game).getFirst().getForcesMessage(game)
             );
         }
     }

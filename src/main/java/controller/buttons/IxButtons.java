@@ -129,7 +129,7 @@ public class IxButtons implements Pressable {
         ).toList();
 
         if (territory.size() == 1) {
-            faction.getMovement().setMovingTo(territory.get(0).getTerritoryName());
+            faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
             hmsExecuteFactionMovement(event, discordGame, game, faction);
             discordGame.pushGame();
             return;

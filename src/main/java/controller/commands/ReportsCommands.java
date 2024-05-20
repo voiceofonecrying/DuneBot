@@ -204,11 +204,11 @@ public class ReportsCommands {
             PlayerGame pg = new PlayerGame();
             pg.player = entry.getKey();
             pg.games = entry.getValue();
-            if (pg.games.get(0).equals("waiting-list")) {
-                pg.games.remove(0);
+            if (pg.games.getFirst().equals("waiting-list")) {
+                pg.games.removeFirst();
                 pg.onWaitingList = true;
-            } else if (pg.games.get(0).equals("recently-finished")) {
-                pg.games.remove(0);
+            } else if (pg.games.getFirst().equals("recently-finished")) {
+                pg.games.removeFirst();
                 if (pg.games.isEmpty()) {
                     pg.recentlyFinished = true;
                 }
@@ -809,9 +809,9 @@ public class ReportsCommands {
         List<Message> ml = h.getRetrievedHistory();
         String lastMessageID = "";
         if (ml.size() == 1) {
-            List<Message.Attachment> messageList =  ml.get(0).getAttachments();
+            List<Message.Attachment> messageList =  ml.getFirst().getAttachments();
             if (!messageList.isEmpty()) {
-                Message.Attachment encoded = ml.get(0).getAttachments().get(0);
+                Message.Attachment encoded = ml.getFirst().getAttachments().getFirst();
                 CompletableFuture<InputStream> future = encoded.getProxy().download();
                 try {
                     String jsonResults = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
@@ -898,7 +898,7 @@ public class ReportsCommands {
                                 postsHistory.retrievePast(1).complete();
                                 ml = postsHistory.getRetrievedHistory();
                                 if (!ml.isEmpty()) {
-                                    LocalDate endDate = ml.get(0).getTimeCreated().toLocalDate();
+                                    LocalDate endDate = ml.getFirst().getTimeCreated().toLocalDate();
                                     jsonGameRecord.addProperty("gameEndDate", endDate.toString());
                                     jsonGameRecord.addProperty("gameDuration", "" + startDate.datesUntil(endDate).count());
                                     if (endDate.isAfter(archiveDate))

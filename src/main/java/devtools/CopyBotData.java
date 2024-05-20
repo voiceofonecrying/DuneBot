@@ -68,7 +68,7 @@ public class CopyBotData {
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
         List<Category> categories = guild.getCategoriesByName(category, true);
         if (categories.isEmpty()) throw new ChannelNotFoundException("Category " + category + " not found");
-        Category mainCategory = categories.get(0);
+        Category mainCategory = categories.getFirst();
         return new DiscordGame(mainCategory);
     }
 }

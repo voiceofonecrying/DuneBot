@@ -347,7 +347,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTraitorHand().stream().map(TraitorCard::name)
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(traitor -> new Command.Choice(traitor, traitor))
@@ -366,7 +366,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
@@ -381,7 +381,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForce(faction.getName()).getStrength() > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
@@ -396,7 +396,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> leaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getLeaders().stream().map(Leader::getName)
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
@@ -404,7 +404,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getLeaderSkillsHand().stream().map(LeaderSkillCard::name)
                 .filter(leaderSkillCardName -> leaderSkillCardName.matches(searchRegex(searchValue)))
                 .map(leaderSkillCardName -> new Command.Choice(leaderSkillCardName, leaderSkillCardName))
@@ -464,7 +464,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> removeLeaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").get(0).getAsString());
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getLeaders().stream()
                 .filter(l -> l.getBattleTerritoryName() != null)
                 .filter(l -> l.getName().matches(searchRegex(searchValue)))

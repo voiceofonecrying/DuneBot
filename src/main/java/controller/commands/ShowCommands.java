@@ -465,7 +465,7 @@ public class ShowCommands {
             if (territory.isAftermathToken()) {
                 BufferedImage aftermath = getResourceImage("Atomics");
                 aftermath = resize(aftermath, 50, 50);
-                Point placement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                Point placement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                 Point placementCorner = new Point(placement.x, placement.y);
                 board = overlay(board, aftermath, placementCorner, 1);
             }
@@ -497,42 +497,42 @@ public class ShowCommands {
                     if (spice >= 10) {
                         BufferedImage spiceImage = getResourceImage("10 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 10;
                     } else if (spice >= 8) {
                         BufferedImage spiceImage = getResourceImage("8 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 8;
                     } else if (spice >= 6) {
                         BufferedImage spiceImage = getResourceImage("6 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 6;
                     } else if (spice == 5) {
                         BufferedImage spiceImage = getResourceImage("5 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 5;
                     } else if (spice >= 2) {
                         BufferedImage spiceImage = getResourceImage("2 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 2;
                     } else {
                         BufferedImage spiceImage = getResourceImage("1 Spice");
                         spiceImage = resize(spiceImage, 25, 25);
-                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).get(0);
+                        Point spicePlacement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                         Point spicePlacementOffset = new Point(spicePlacement.x + offset, spicePlacement.y - offset);
                         board = overlay(board, spiceImage, spicePlacementOffset, 1);
                         spice -= 1;
