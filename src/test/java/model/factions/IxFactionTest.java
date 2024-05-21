@@ -104,10 +104,10 @@ class IxFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 10);
+        assertEquals(10, faction.getReservesStrength(), 10);
         assertEquals(faction.getReserves().getName(), "Ix");
 
-        assertEquals(faction.getSpecialReserves().getStrength(), 4);
+        assertEquals(4, faction.getSpecialReservesStrength(), 4);
         assertEquals(faction.getSpecialReserves().getName(), "Ix*");
     }
 

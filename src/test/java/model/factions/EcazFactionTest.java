@@ -100,7 +100,7 @@ public class EcazFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(14, faction.getReserves().getStrength());
+        assertEquals(14, faction.getReservesStrength());
         assertEquals("Ecaz", faction.getReserves().getName());
     }
 

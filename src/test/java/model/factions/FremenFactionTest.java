@@ -69,10 +69,10 @@ class FremenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 17);
+        assertEquals(17, faction.getReservesStrength());
         assertEquals(faction.getReserves().getName(), "Fremen");
 
-        assertEquals(faction.getSpecialReserves().getStrength(), 3);
+        assertEquals(3, faction.getSpecialReservesStrength(), 3);
         assertEquals(faction.getSpecialReserves().getName(), "Fremen*");
     }
 

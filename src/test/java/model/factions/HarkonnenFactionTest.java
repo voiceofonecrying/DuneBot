@@ -100,7 +100,7 @@ class HarkonnenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 10);
+        assertEquals(10, faction.getReservesStrength(), 10);
         assertEquals(faction.getReserves().getName(), "Harkonnen");
     }
 

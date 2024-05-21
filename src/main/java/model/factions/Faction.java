@@ -372,6 +372,18 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public int getReservesStrength() {
+        return getReserves().getStrength();
+    }
+
+    public int getSpecialReservesStrength() {
+        return getSpecialReserves().getStrength();
+    }
+
+    public int getTotalReservesStrength() {
+        return getReservesStrength() + getSpecialReservesStrength();
+    }
+
     public int getFrontOfShieldSpice() {
         return frontOfShieldSpice;
     }
@@ -691,7 +703,7 @@ public class Faction {
 
     public void checkForHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (!isHighThreshold && getReserves().getStrength() + getSpecialReserves().getStrength() > lowThreshold) {
+        if (!isHighThreshold && getReservesStrength() + getSpecialReservesStrength() > lowThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
             isHighThreshold = true;
         }
@@ -699,7 +711,7 @@ public class Faction {
 
     public void checkForLowThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (isHighThreshold && getReserves().getStrength() + getSpecialReserves().getStrength() < highThreshold) {
+        if (isHighThreshold && getReservesStrength() + getSpecialReservesStrength() < highThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
             isHighThreshold = false;
         }

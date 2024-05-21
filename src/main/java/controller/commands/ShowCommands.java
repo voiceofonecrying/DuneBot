@@ -108,8 +108,8 @@ public class ShowCommands {
         table = resize(table, 5000, 5000);
 
         //Place reserves
-        int reserves = faction.getReserves().getStrength();
-        int specialReserves = faction.getSpecialReserves().getStrength();
+        int reserves = faction.getReservesStrength();
+        int specialReserves = faction.getSpecialReservesStrength();
 
         if (reserves > 0) {
             BufferedImage reservesImage = buildForceImage(faction.getName(), reserves);

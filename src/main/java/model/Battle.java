@@ -331,7 +331,7 @@ public class Battle {
     }
 
     private int getNumForcesInReserve(Game game, Faction faction) {
-        int numForcesInReserve = faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength();
+        int numForcesInReserve = faction.getTotalReservesStrength();
         if (faction instanceof RicheseFaction) {
             numForcesInReserve -= game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).map(Territory::getRicheseNoField).findFirst().orElse(0);
         } else if (faction instanceof EmperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)) {
@@ -860,7 +860,7 @@ public class Battle {
         if (!loser && atreidesWin) {
             Faction atreides = game.getFaction("Atreides");
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
-                    && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReserves().getStrength() > 0 || regularForcesDialed > 0)) {
+                    && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReservesStrength() > 0 || regularForcesDialed > 0)) {
                 resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
             }
         }

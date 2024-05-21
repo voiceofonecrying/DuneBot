@@ -102,7 +102,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 10);
+        assertEquals(faction.getReservesStrength(), 10);
         assertEquals(faction.getReserves().getName(), "Atreides");
     }
 

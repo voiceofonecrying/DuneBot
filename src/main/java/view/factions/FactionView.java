@@ -70,9 +70,9 @@ public class FactionView {
     }
 
     public static String getTaggedReservesString(DiscordGame discordGame, Faction faction) {
-        String reservesString = faction.getReserves().getStrength() + " " + Emojis.getForceEmoji(faction.getName());
+        String reservesString = faction.getReservesStrength() + " " + Emojis.getForceEmoji(faction.getName());
         if (faction instanceof EmperorFaction || faction instanceof FremenFaction ||faction instanceof IxFaction)
-            reservesString += " " + faction.getSpecialReserves().getStrength() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            reservesString += " " + faction.getSpecialReservesStrength() + " " + Emojis.getForceEmoji(faction.getName() + "*");
         return discordGame.tagEmojis(reservesString);
     }
 

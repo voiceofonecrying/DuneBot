@@ -99,7 +99,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(20, faction.getReserves().getStrength());
+        assertEquals(20, faction.getReservesStrength());
         assertEquals("Moritani", faction.getReserves().getName());
     }
 

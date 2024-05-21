@@ -102,10 +102,10 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 15);
+        assertEquals(15, faction.getReservesStrength(), 15);
         assertEquals(faction.getReserves().getName(), "Emperor");
 
-        assertEquals(faction.getSpecialReserves().getStrength(), 5);
+        assertEquals(5, faction.getSpecialReservesStrength(), 5);
         assertEquals(faction.getSpecialReserves().getName(), "Emperor*");
     }
 

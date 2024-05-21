@@ -506,7 +506,7 @@ public class CommandOptions {
                     .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
                     .toList()
             );
-            if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+            if (faction.getTotalReservesStrength() >= 3)
                 choices.addAll(faction.getTreacheryHand().stream()
                         .map(TreacheryCard::name)
                         .filter(name -> name.equals("Reinforcements"))
@@ -543,7 +543,7 @@ public class CommandOptions {
                 .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
                 .toList()
         );
-        if (faction.getReserves().getStrength() + faction.getSpecialReserves().getStrength() >= 3)
+        if (faction.getTotalReservesStrength() >= 3)
             choices.addAll(faction.getTreacheryHand().stream()
                     .map(TreacheryCard::name)
                     .filter(name -> name.equals("Reinforcements"))

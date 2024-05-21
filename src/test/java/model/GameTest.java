@@ -951,24 +951,17 @@ class GameTest {
         void removeEmperorTroopAndSardaukarToReserves() {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
+            // Replace with placeForces after that method is moved to Game
             territory.setForceStrength("Emperor", 3);
             territory.setForceStrength("Emperor*", 5);
             assertEquals(3, territory.getForce("Emperor").getStrength());
             assertEquals(5, territory.getForce("Emperor*").getStrength());
-            // Change to 12 after placeForces is used instead of setForceStrength
-            assertEquals(15, emperor.getReserves().getStrength());
-            // Change to 0 after placeForces is used instead of setForceStrength
-            assertEquals(5, emperor.getSpecialReserves().getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
 
             game.removeForces("Sihaya Ridge", emperor, 1, 1, false);
             assertEquals(2, territory.getForce("Emperor").getStrength());
             assertEquals(4, territory.getForce("Emperor*").getStrength());
-            // Change to 13 after placeForces is used instead of setForceStrength
-            assertEquals(16, emperor.getReserves().getStrength());
-            // Change to 1 after placeForces is used instead of setForceStrength
-            // assertEquals(6, emperor.getSpecialReserves().getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
             assertEquals(0, turnSummary.messages.size());
@@ -981,14 +974,11 @@ class GameTest {
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+            // Replace with placeForces after that method is moved to Game
             kaitain.setForceStrength("Emperor", 15);
             salusaSecundus.setForceStrength("Emperor*", 5);
             assertEquals(15, kaitain.getForce("Emperor").getStrength());
             assertEquals(5, salusaSecundus.getForce("Emperor*").getStrength());
-            // Change to 12 after placeForces is used instead of setForceStrength
-            assertEquals(15, emperor.getReserves().getStrength());
-            // Change to 0 after placeForces is used instead of setForceStrength
-            assertEquals(5, emperor.getSpecialReserves().getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
             assertEquals(0, game.getForceFromTanks(emperor.getName() + "*").getStrength());
             assertTrue(emperor.isHighThreshold());
@@ -1000,19 +990,18 @@ class GameTest {
             assertEquals(0, kaitain.getForce("Emperor*").getStrength());
             game.removeForces("Kaitain", emperor, 14, 0, true);
             assertEquals(1, kaitain.getForce("Emperor").getStrength());
-            assertEquals(1, emperor.getReserves().getStrength());
             assertFalse(emperor.isHighThreshold());
             assertEquals(1, turnSummary.messages.size());
             assertEquals("Kaitain has flipped to Low Threshold.", turnSummary.messages.getFirst());
 
             game.removeForces("Salusa Secundus", emperor, 0, 3, true);
             assertEquals(2, salusaSecundus.getForce("Emperor*").getStrength());
-            assertEquals(2, emperor.getSpecialReserves().getStrength());
+            assertEquals(2, emperor.getSpecialReservesStrength());
             assertTrue(emperor.isSecundusHighThreshold());
             assertFalse(emperor.isHighThreshold());
             game.removeForces("Salusa Secundus", emperor, 0, 1, true);
             assertEquals(1, salusaSecundus.getForce("Emperor*").getStrength());
-            assertEquals(1, emperor.getSpecialReserves().getStrength());
+            assertEquals(1, emperor.getSpecialReservesStrength());
             assertFalse(emperor.isSecundusHighThreshold());
             assertEquals(2, turnSummary.messages.size());
             assertEquals("Salusa Secundus has flipped to Low Threshold.", turnSummary.messages.get(1));
@@ -1022,24 +1011,17 @@ class GameTest {
         void removeFremenTroopAndFedaykinToReserves() {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
+            // Replace with placeForces after that method is moved to Game
             territory.setForceStrength("Fremen", 3);
             territory.setForceStrength("Fremen*", 3);
             assertEquals(3, territory.getForce("Fremen").getStrength());
             assertEquals(3, territory.getForce("Fremen*").getStrength());
-            // Change to 14 after placeForces is used instead of setForceStrength
-            assertEquals(17, fremen.getReserves().getStrength());
-            // Change to 0 after placeForces is used instead of setForceStrength
-            assertEquals(3, fremen.getSpecialReserves().getStrength());
             assertEquals(0, game.getForceFromTanks(fremen.getName()).getStrength());
             assertEquals(0, game.getForceFromTanks(fremen.getName() + "*").getStrength());
 
             game.removeForces("Sihaya Ridge", fremen, 1, 1, false);
             assertEquals(2, territory.getForce("Fremen").getStrength());
             assertEquals(2, territory.getForce("Fremen*").getStrength());
-            // Change to 13 after placeForces is used instead of setForceStrength
-            assertEquals(18, fremen.getReserves().getStrength());
-            // Change to 1 after placeForces is used instead of setForceStrength
-            assertEquals(4, fremen.getSpecialReserves().getStrength());
             assertEquals(0, game.getForceFromTanks(fremen.getName()).getStrength());
             assertEquals(0, game.getForceFromTanks(fremen.getName() + "*").getStrength());
             assertEquals(0, turnSummary.messages.size());

@@ -106,7 +106,7 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(faction.getReserves().getStrength(), 20);
+        assertEquals(faction.getReservesStrength(), 20);
         assertEquals(faction.getReserves().getName(), "BT");
     }
 

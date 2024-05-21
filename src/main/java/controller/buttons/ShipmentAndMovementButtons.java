@@ -595,11 +595,11 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         TreeSet<Button> forcesButtons = new TreeSet<>(getButtonComparator());
         String shipOrMove = isShipment ? "shipment" : "movement";
-        int buttonLimitForces = isShipment ? faction.getReserves().getStrength() - faction.getShipment().getForce() :
+        int buttonLimitForces = isShipment ? faction.getReservesStrength() - faction.getShipment().getForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName()).getStrength() - faction.getMovement().getForce();
         if (faction instanceof BGFaction && !isShipment && game.getTerritory(faction.getMovement().getMovingFrom()).hasForce("Advisor"))
             buttonLimitForces = game.getTerritory(faction.getMovement().getMovingFrom()).getForce("Advisor").getStrength();
-        int buttonLimitSpecialForces = isShipment ? faction.getSpecialReserves().getStrength() - faction.getShipment().getSpecialForce() :
+        int buttonLimitSpecialForces = isShipment ? faction.getSpecialReservesStrength() - faction.getShipment().getSpecialForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName() + "*").getStrength() - faction.getMovement().getSpecialForce();
 
         if (faction.getShipment().isToReserves()) {
@@ -1011,7 +1011,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     public static void sendShipmentMessage(String factionName, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction = game.getFaction(factionName);
-        if (faction.getReserves().getStrength() == 0 && faction.getSpecialReserves().getStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese")) {
+        if (faction.getReservesStrength() == 0 && faction.getSpecialReservesStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese")) {
             List<Button> passButton = List.of(Button.danger("pass-shipment", "Pass shipment"));
             discordGame.getFactionChat(factionName).queueMessage("You have no troops in reserves to ship.", passButton);
             return;
