@@ -569,7 +569,6 @@ public class CommandManager extends ListenerAdapter {
                             starredAmountValue, Emojis.getForceEmoji(from.getForce(targetFaction.getName() + "*").getName())
                     )
             );
-
         }
 
         message.append(
@@ -577,6 +576,8 @@ public class CommandManager extends ListenerAdapter {
                         from.getTerritoryName(), to.getTerritoryName()
                 )
         );
+        targetFaction.checkForHighThreshold();
+        targetFaction.checkForLowThreshold();
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage(message.toString());
 

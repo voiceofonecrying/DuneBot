@@ -391,7 +391,8 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void queueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", "").replace("ornithopter-", ""));
-        faction.getMovement().setMovingFrom(from.getTerritoryName());
+        String territoryName = from.getTerritoryName();
+        faction.getMovement().setMovingFrom(territoryName);
         int spacesCanMove = 1;
         if (faction instanceof FremenFaction || (faction instanceof IxFaction && !Objects.equals(from.getForce(faction.getSpecialReserves().getName()).getName(), "")))
             spacesCanMove = 2;
@@ -400,7 +401,13 @@ public class ShipmentAndMovementButtons implements Pressable {
             spacesCanMove = 3;
         if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().getFirst().getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
             spacesCanMove++;
-        Set<String> moveableTerritories = getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
+        Set<String> moveableTerritories;
+        if (territoryName.equals("Kaitain"))
+            moveableTerritories = Set.of("Salusa Secundus");
+        else if (territoryName.equals("Salusa Secundus"))
+            moveableTerritories = Set.of("Kaitain");
+        else
+            moveableTerritories = getAdjacentTerritoryNames(territoryName.replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
         for (String territory : moveableTerritories) {
@@ -514,7 +521,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.queueDeleteMessage();
-//        discordGame.pushGame();
+        discordGame.pushGame();
     }
 
     private static void resetForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
@@ -683,7 +690,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             Movement movement = faction.getMovement();
             if (faction instanceof RicheseFaction && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
                 forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token"));
-            String specialForces = faction.getSpecialReserves().getStrength() == 0 ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            String specialForces = faction.getSpecialReserves().getName().isEmpty() ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
 
             String message = "Use buttons below to add forces to your movement." +
@@ -969,16 +976,19 @@ public class ShipmentAndMovementButtons implements Pressable {
         TreeSet<Button> movingFromButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
         for (Territory territory : game.getTerritories().values()) {
-            if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
-            if (territory.getForces().stream().anyMatch(force -> force.getFactionName().equals(faction.getName()))
+            String territoryName = territory.getTerritoryName();
+            if (game.getHomeworlds().containsValue(territoryName) &&
+                    (!(faction instanceof EmperorFaction) || !territoryName.equals("Kaitain") && !territoryName.equals("Salusa Secundus")))
+                continue;
+            if (territory.getForces().stream().anyMatch(force -> force.getStrength() > 0 && force.getFactionName().equals(faction.getName()))
                     || (faction instanceof RicheseFaction
                             && (!game.hasGameOption (GameOption.HOMEWORLDS) || (game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()))
                             && territory.hasRicheseNoField())
                     || (faction instanceof BGFaction && territory.hasForce("Advisor"))) {
-                movingFromButtons.add(Button.primary("moving-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
+                movingFromButtons.add(Button.primary("moving-from-" + territoryName, territoryName));
                 if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
-                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territory.getTerritoryName(), territory.getTerritoryName() + " (use Ornithopter)"));
-                if (faction.hasOrnithoperToken()) movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territory.getTerritoryName(), territory.getTerritoryName() + " (use Ornithopter Token)"));
+                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, territoryName + " (use Ornithopter)"));
+                if (faction.hasOrnithoperToken()) movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territoryName, territoryName + " (use Ornithopter Token)"));
             }
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));

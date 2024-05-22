@@ -1008,6 +1008,30 @@ class GameTest {
         }
 
         @Test
+        void removeEmperorTroopButSardaukarCountForHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            // Change to placeForces after placeForces moves to Game
+            Territory kaitain = game.getTerritory("Kaitain");
+            kaitain.setForceStrength("Emperor", 15);
+            kaitain.setForceStrength("Emperor*", 1);
+            assertTrue(emperor.isHighThreshold());
+            game.removeForces("Kaitain", emperor, 11, 0, true);
+            assertTrue(emperor.isHighThreshold());
+        }
+
+        @Test
+        void removeSardaukarButRegularDoNotCountForHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            // Change to placeForces after placeForces moves to Game
+            Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+            salusaSecundus.setForceStrength("Emperor", 1);
+            salusaSecundus.setForceStrength("Emperor*", 5);
+            assertTrue(emperor.isSecundusHighThreshold());
+            game.removeForces("Salusa Secundus", emperor, 0, 4, true);
+            assertFalse(emperor.isSecundusHighThreshold());
+        }
+
+        @Test
         void removeFremenTroopAndFedaykinToReserves() {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
@@ -1117,6 +1141,34 @@ class GameTest {
             game.reviveForces(emperor, false, 1, 1);
             assertTrue(emperor.isHighThreshold());
             assertTrue(emperor.isSecundusHighThreshold());
+        }
+
+        @Test
+        void testSardaukarOnKaitainCountForHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            List<Force> tanks = game.getTanks();
+            assertTrue(tanks.isEmpty());
+            // Replace with game.moveForces after that is refactored
+            game.getTerritory("Kaitain").addForce(new Force("Emperor*", 1));
+            game.removeForces("Kaitain", emperor, 15, 0, true);
+            assertFalse(emperor.isHighThreshold());
+
+            game.reviveForces(emperor, false, 4, 0);
+            assertTrue(emperor.isHighThreshold());
+        }
+
+        @Test
+        void testRegularOnSalusaSecundusDoNotCountForHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            List<Force> tanks = game.getTanks();
+            assertTrue(tanks.isEmpty());
+            // Replace with game.moveForces after that is refactored
+            game.getTerritory("Salusa Secundus").addForce(new Force("Emperor", 1));
+            game.removeForces("Salusa Secundus", emperor, 0, 5, true);
+            assertFalse(emperor.isSecundusHighThreshold());
+
+            game.reviveForces(emperor, false, 0, 2);
+            assertFalse(emperor.isSecundusHighThreshold());
         }
     }
 

@@ -175,4 +175,22 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertEquals(15, game.getTerritory("Kaitain").getForce("Emperor").getStrength());
         assertEquals(5, game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength());
     }
+
+    @Test
+    public void testRemovePullsFromSecundusIfNecessary() {
+        Territory kaitain = game.getTerritory("Kaitain");
+        Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+        kaitain.setForceStrength("Emperor", 1);
+        salusaSecundus.setForceStrength("Emperor", 1);
+        assertDoesNotThrow(() -> faction.removeReserves(2));
+    }
+
+    @Test
+    public void testRemoveSpecialPullsFromKaitainIfNecessary() {
+        Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+        Territory kaitain = game.getTerritory("Kaitain");
+        salusaSecundus.setForceStrength("Emperor*", 1);
+        kaitain.setForceStrength("Emperor*", 1);
+        assertDoesNotThrow(() -> faction.removeSpecialReserves(2));
+    }
 }
