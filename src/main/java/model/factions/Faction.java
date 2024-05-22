@@ -57,6 +57,7 @@ public class Faction {
     private int maxBid;
     private boolean useExact;
     private boolean autoBid;
+    private boolean autoBidTurn;
     private boolean outbidAlly;
     private boolean specialKaramaPowerUsed;
     private NexusCard nexusCard;
@@ -96,6 +97,7 @@ public class Faction {
         this.spice = 0;
         this.bid = "";
         this.autoBid = false;
+        this.autoBidTurn = false;
         this.useExact = true;
         this.outbidAlly = false;
         this.specialKaramaPowerUsed = false;
@@ -505,6 +507,14 @@ public class Faction {
 
     public void setAutoBid(boolean autoBid) {
         this.autoBid = autoBid;
+    }
+
+    public void setAutoBidTurn(boolean autoBidTurn) {
+        this.autoBidTurn = autoBidTurn;
+    }
+
+    public boolean isAutoBidTurn() {
+        return autoBidTurn;
     }
 
     public boolean isOutbidAlly() {

@@ -34,6 +34,7 @@ public class PlayerCommands {
         commandData.add(Commands.slash("player", "Commands for the players of the game.").addSubcommands(
                 new SubcommandData("bid", "Place a bid during bidding phase (silent auction will be exact bid only).").addOptions(incrementOrExact, amount, autoPassAfterMax, outbidAlly),
                 new SubcommandData("set-auto-pass", "Enable or disable auto-pass setting.").addOptions(autoPass),
+                new SubcommandData("set-auto-pass-entire-turn", "Enable or disable auto-pass setting for the rest of the turn.").addOptions(autoPass),
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
                 new SubcommandData("battle-plan-kh", "Submit your plan using Kwisatz-Haderach for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
@@ -59,6 +60,7 @@ public class PlayerCommands {
             case "bid" -> responseMessage = bid(event, discordGame, game);
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
+            case "set-auto-pass-entire-turn" -> responseMessage = setAutoPassEntireTurn(event, discordGame, game);
             case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game, false);
             case "battle-plan-kh" -> responseMessage = battlePlanKH(event, discordGame, game);
             case "whisper" -> responseMessage = whisper(event, discordGame, game);
@@ -183,6 +185,23 @@ public class PlayerCommands {
         return responseMessage;
     }
 
+    private static String setAutoPassEntireTurn(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        boolean enabled = discordGame.required(autoPass).getAsBoolean();
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        faction.setAutoBidTurn(enabled);
+        faction.setAutoBid(enabled);
+        String responseMessage = faction.getEmoji() + " set auto-pass-entire-turn to " + enabled;
+        discordGame.getModInfo().queueMessage(responseMessage);
+        tryBid(discordGame, game, faction);
+        responseMessage = "You set auto-pass-entire-turn to " + enabled + ".";
+        if (enabled) {
+            responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher on this card then auto-pass on remaining cards this turn.";
+        } else {
+            responseMessage += "\nYou are back to normal bidding, and auto-pass is diabled for this card.";
+        }
+        return responseMessage;
+    }
+
     private static boolean factionDoesNotHaveKarama(Faction faction) {
         List<TreacheryCard> hand = faction.getTreacheryHand();
         if (faction instanceof BGFaction && hand.stream().anyMatch(c -> c.type().equals("Worthless Card"))) {
@@ -279,7 +298,7 @@ public class PlayerCommands {
         return false;
     }
 
-    private static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+    protected static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
         List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
         if (eligibleBidOrder.isEmpty() && !bidding.isSilentAuction()) {

@@ -74,15 +74,17 @@ public class Bidding {
             throw new InvalidGameStateException("All cards from the bidding market have already been bid on.");
         }
 
+        for (Faction faction : game.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setBid("");
+            if (bidCardNumber == 0)
+                faction.setAutoBidTurn(false);
+            faction.setAutoBid(faction.isAutoBidTurn());
+        }
+
         bidCard = market.removeFirst();
         bidCardNumber++;
         cardFromMarket = true;
-
-        for (Faction faction : game.getFactions()) {
-            faction.setMaxBid(0);
-            faction.setAutoBid(false);
-            faction.setBid("");
-        }
         return bidCard;
     }
 
@@ -294,8 +296,8 @@ public class Bidding {
         String firstFaction = bidOrder.getFirst();
         String faction = firstFaction;
         while (game.getFaction(faction).getHandLimit() <= game.getFaction(faction).getTreacheryHand().size()) {
-            faction = bidOrder.removeFirst();
-            bidOrder.add(faction);
+            bidOrder.add(bidOrder.removeFirst());
+            faction = bidOrder.getFirst();
             if (faction.equalsIgnoreCase(firstFaction)) {
                 break;
             }
