@@ -877,7 +877,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Faction f : game.getFactions()) {
             if (faction.getName().equals(f.getName())) continue;
             buttons.add(Button.primary("ship-" + f.getHomeworld(), f.getHomeworld()));
+            if (faction instanceof EmperorFaction emperorFaction)
+                buttons.add(Button.primary("ship-" + emperorFaction.getSecondHomeworld(), emperorFaction.getSecondHomeworld()));
         }
+        buttons.add(Button.secondary("reset-shipment", "Start over"));
 
         MessageCreateBuilder message = new MessageCreateBuilder()
                 .setContent("Which Homeworld?")
