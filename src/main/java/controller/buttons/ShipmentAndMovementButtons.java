@@ -877,14 +877,19 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Faction f : game.getFactions()) {
             if (faction.getName().equals(f.getName())) continue;
             buttons.add(Button.primary("ship-" + f.getHomeworld(), f.getHomeworld()));
-            if (faction instanceof EmperorFaction emperorFaction)
+            if (f instanceof EmperorFaction emperorFaction)
                 buttons.add(Button.primary("ship-" + emperorFaction.getSecondHomeworld(), emperorFaction.getSecondHomeworld()));
         }
         buttons.add(Button.secondary("reset-shipment", "Start over"));
 
         MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which Homeworld?")
-                .addActionRow(buttons);
+                .setContent("Which Homeworld?");
+        if (buttons.size() > 5) {
+            message.addActionRow(buttons.subList(0, 5));
+            message.addActionRow(buttons.subList(5, buttons.size()));
+        } else {
+            message.addActionRow(buttons);
+        }
         discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
     }
