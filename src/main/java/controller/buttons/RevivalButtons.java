@@ -19,7 +19,7 @@ public class RevivalButtons implements Pressable {
             discordGame.queueMessage("You will not revive any extra forces.");
             return;
         }
-        if (faction instanceof EmperorFaction && !faction.isStarRevived())
+        if (faction instanceof EmperorFaction && !faction.isStarRevived() && game.getForceFromTanks("Emperor*").getStrength() > 0)
             CommandManager.reviveForces(faction, true, revival - 1, 1, game, discordGame);
         else
             CommandManager.reviveForces(faction, true, revival, 0, game, discordGame);
