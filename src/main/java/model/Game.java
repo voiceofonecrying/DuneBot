@@ -1017,6 +1017,50 @@ public class Game {
         faction.setUpdated(UpdateType.MAP);
     }
 
+    public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama) {
+        int baseCost = amountToShip * targetTerritory.costToShipInto();
+        if (targetFaction instanceof FremenFaction && !getHomeworlds().containsValue(targetTerritory.getTerritoryName()))
+            return 0;
+        else if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama)
+            return Math.ceilDiv(baseCost, 2);
+        else
+            return baseCost;
+    }
+
+    public String payForShipment(Faction faction, int spice, Territory territory, boolean karamaShipment, boolean noField) {
+        String paymentMessage = " for " + spice + " " + Emojis.SPICE;
+        int allyMaxSupport = faction.getAllySpiceShipment();
+        int support = 0;
+        int guildSupport = 0;
+        if (faction.getAllySpiceShipment() > 0 && faction.getAlly().isEmpty()) {
+            modInfo.publish(faction.getEmoji() + " had ally shipment support of " + allyMaxSupport + " but has no ally. Support has been reset to 0.");
+            faction.setAllySpiceShipment(0);
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
+        if (faction.getAllySpiceShipment() > 0) {
+            support = Math.min(faction.getAllySpiceShipment(), spice);
+            Faction allyFaction = getFaction(faction.getAlly());
+            if (allyFaction instanceof GuildFaction)
+                guildSupport = support;
+            allyFaction.subtractSpice(support);
+            allyFaction.spiceMessage(support, faction.getEmoji() + " shipment support", false);
+            paymentMessage += MessageFormat.format(" ({0} from {1})", support, getFaction(faction.getAlly()).getEmoji());
+            faction.setAllySpiceShipment(0);
+        }
+        faction.subtractSpice(spice - support);
+        String noFieldString = noField ? Emojis.NO_FIELD + " " : "";
+        faction.spiceMessage(spice - support, noFieldString + "shipment to " + territory.getTerritoryName(), false);
+        if (!karamaShipment && !(faction instanceof GuildFaction) && hasFaction("Guild")) {
+            if (guildSupport != 0)
+                paymentMessage += ", " + (spice - guildSupport) + " " + Emojis.SPICE;
+            paymentMessage += " paid to " + Emojis.GUILD;
+            Faction guildFaction = getFaction("Guild");
+            guildFaction.addSpice(spice - guildSupport);
+            guildFaction.spiceMessage(spice - guildSupport, faction.getEmoji() + " shipment", true);
+        }
+        return paymentMessage;
+    }
+
     public void putTerritoryInAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
         String insertedName = insertedTerritory.getTerritoryName();
         String containingName = containingTerritory.getTerritoryName().replaceAll("\\(.*\\)", "").strip();

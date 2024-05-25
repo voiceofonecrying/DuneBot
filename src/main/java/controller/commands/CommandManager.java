@@ -388,21 +388,9 @@ public class CommandManager extends ListenerAdapter {
 
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
-            int costPerForce = targetTerritory.isStronghold() || targetTerritory.getTerritoryName().matches("Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station") ? 1 : 2;
-            int baseCost = costPerForce * (amountValue + starredAmountValue);
-            int cost;
-
-            if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama) {
-                cost = Math.ceilDiv(baseCost, 2);
-            } else if (targetFaction instanceof FremenFaction &&
-                    !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())) {
-                cost = 0;
-            } else {
-                cost = baseCost;
-            }
+            int cost = game.shipmentCost(targetFaction, amountValue + starredAmountValue, targetTerritory, karama);
 
             StringBuilder message = new StringBuilder();
-
             message.append(targetFaction.getEmoji())
                     .append(": ");
 
@@ -420,34 +408,8 @@ public class CommandManager extends ListenerAdapter {
                     )
             );
 
-            if (cost > 0) {
-                message.append(
-                        MessageFormat.format(" for {0} {1}",
-                                cost, Emojis.SPICE
-                        )
-                );
-                int support = 0;
-                if (targetFaction.getAllySpiceShipment() > 0) {
-                    support = Math.min(targetFaction.getAllySpiceShipment(), cost);
-                    Faction allyFaction = game.getFaction(targetFaction.getAlly());
-                    allyFaction.subtractSpice(support);
-                    allyFaction.spiceMessage(support, targetFaction.getEmoji() + " shipment support", false);
-                    message.append(MessageFormat.format(" ({0} from {1})", support, game.getFaction(targetFaction.getAlly()).getEmoji()));
-                    targetFaction.setAllySpiceShipment(0);
-                }
-
-                targetFaction.subtractSpice(cost - support);
-                targetFaction.spiceMessage(cost - support, "shipment to " + targetTerritory.getTerritoryName(), false);
-
-                if (game.hasFaction("Guild") && !(targetFaction instanceof GuildFaction) && !karama) {
-                    Faction guildFaction = game.getFaction("Guild");
-                    guildFaction.addSpice(cost);
-                    message.append(" paid to ")
-                            .append(Emojis.GUILD);
-                    guildFaction.spiceMessage(cost, targetFaction.getEmoji() + " shipment", true);
-                }
-
-            }
+            if (cost > 0)
+                message.append(game.payForShipment(targetFaction, cost, targetTerritory, karama, false));
 
             if (
                     !(targetFaction instanceof GuildFaction) &&

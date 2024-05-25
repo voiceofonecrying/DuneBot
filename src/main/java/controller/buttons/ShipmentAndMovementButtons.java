@@ -23,7 +23,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.*;
 
 public class ShipmentAndMovementButtons implements Pressable {
@@ -448,25 +447,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (faction instanceof RicheseFaction) {
                 ((RicheseFaction) faction).noFieldMessage(noField, territoryName);
             }
-            int spice = territory.isStronghold() ? 1 : 2;
-            turnSummaryMessage += " for " + spice + " " + Emojis.SPICE;
-            int support = 0;
-            if (faction.getAllySpiceShipment() > 0) {
-                support = Math.min(faction.getAllySpiceShipment(), spice);
-                Faction allyFaction = game.getFaction(faction.getAlly());
-                allyFaction.subtractSpice(support);
-                allyFaction.spiceMessage(support, faction.getEmoji() + " shipment support", false);
-                turnSummaryMessage += MessageFormat.format(" ({0} from {1})", support, game.getFaction(faction.getAlly()).getEmoji());
-                faction.setAllySpiceShipment(0);
-            }
-            faction.subtractSpice(spice - support);
-            faction.spiceMessage(spice - support, Emojis.NO_FIELD + " shipment to " + territory.getTerritoryName(), false);
-            if (game.hasFaction("Guild") && !karama) {
-                turnSummaryMessage += " paid to " + Emojis.GUILD;
-                Faction guildFaction = game.getFaction("Guild");
-                guildFaction.addSpice(spice);
-                guildFaction.spiceMessage(spice, faction.getEmoji() + " shipment", true);
-            }
+            int spice = game.shipmentCost(faction, 1, territory, karama);
+            turnSummaryMessage += game.payForShipment(faction, spice, territory, karama, true);
             BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
@@ -492,12 +474,9 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
-        if (faction instanceof FremenFaction) spice = 0;
-        if (faction.getShipment().getNoField() >= 0) spice = 1;
-        spice *= game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() ? 1 : 2;
-        if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")) || karama)
-            spice = Math.ceilDiv(spice, 2);
+        int totalForces = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
+        Territory territory = game.getTerritory(faction.getShipment().getTerritoryName());
+        int spice = game.shipmentCost(faction, totalForces, territory, karama);
         if (spice > faction.getSpice() + faction.getAllySpiceShipment()) {
             discordGame.queueMessage("You cannot afford this shipment.");
             return;

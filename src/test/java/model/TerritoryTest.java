@@ -136,4 +136,49 @@ public class TerritoryTest {
             assertEquals("Wind Pass", windPass_northSector.getAggregateTerritoryName());
         }
     }
+
+    @Nested
+    @DisplayName("#costToShipInto")
+    class CostToShip {
+        @Test
+        void testStronghold() {
+            Territory carthag = game.getTerritory("Carthag");
+            assertEquals(1, carthag.costToShipInto());
+        }
+
+        @Test
+        void testNonStronghold() {
+            assertEquals(2, sihayaRidge.costToShipInto());
+        }
+
+        @Test
+        void testCistern() {
+            Territory cistern = new Territory("Cistern", 1, true, false, false);
+            assertEquals(1, cistern.costToShipInto());
+        }
+
+        @Test
+        void testEcologicalTestingStation() {
+            Territory ecologicalTestingStation = new Territory("Ecological Testing Station", 1, true, false, false);
+            assertEquals(1, ecologicalTestingStation.costToShipInto());
+        }
+
+        @Test
+        void testJacurutuSietch() {
+            Territory jacurutuSietch = new Territory("Jacurutu Sietch", 1, true, true, false);
+            assertEquals(1, jacurutuSietch.costToShipInto());
+        }
+
+        @Test
+        void testOrgizProcessingStation() {
+            Territory orgizProcessingStation = new Territory("Orgiz Processing Station", 1, true, false, false);
+            assertEquals(1, orgizProcessingStation.costToShipInto());
+        }
+
+        @Test
+        void testShrine() {
+            Territory shrine = new Territory("Shrine", 1, true, false, false);
+            assertEquals(1, shrine.costToShipInto());
+        }
+    }
 }

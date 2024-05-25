@@ -61,6 +61,21 @@ public class Territory {
         return isStronghold;
     }
 
+    public boolean isDiscoveryTokenTerritory() {
+        return switch (territoryName) {
+            case "Cistern" -> true;
+            case "Ecological Testing Station" -> true;
+            case "Jacurutu Sietch" -> true;
+            case "Orgiz Processing Station" -> true;
+            case "Shrine" -> true;
+            default -> false;
+        };
+    }
+
+    public int costToShipInto() {
+        return isStronghold || isDiscoveryTokenTerritory() ? 1 : 2;
+    }
+
     public boolean isNearShieldWall() {
         // Temporary patch until all games have started with the isNearShieldWall boolean in Territories.csv
         if (territoryName.startsWith("False Wall East")) return true;

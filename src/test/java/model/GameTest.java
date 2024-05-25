@@ -57,6 +57,90 @@ class GameTest {
 
     }
 
+    @Nested
+    @DisplayName("#shippingPhase")
+    class ShippingPhase {
+        @BeforeEach
+        void setUp() throws IOException {
+            emperor = new EmperorFaction("ePlayer", "eUser", game);
+            emperor.setLedger(new TestTopic());
+            guild = new GuildFaction("gPlayer", "gUser", game);
+            guild.setLedger(new TestTopic());
+            richese = new RicheseFaction("rPlayer", "rUser", game);
+            richese.setLedger(new TestTopic());
+            fremen = new FremenFaction("fPlayer", "fUser", game);
+            fremen.setLedger(new TestTopic());
+            game.addFaction(emperor);
+            game.addFaction(guild);
+            game.addFaction(richese);
+            game.addFaction(fremen);
+        }
+
+        @Test
+        void testFremenAlliedWithGuildShipFree() {
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            fremen.setAlly("Guild");
+            guild.setAlly("Fremen");
+            assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false));
+        }
+
+        @Test
+        void testFremenShipToOtherHomeworld() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            String junction = game.getHomeworlds().get("Guild");
+            assertEquals("Junction", game.getHomeworlds().get("Guild"));
+            assertEquals(4, game.shipmentCost(fremen, 2, game.getTerritory(junction), false));
+        }
+
+        @Test
+        void testNormalPaymentToGuild() {
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 10 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
+                    game.payForShipment(emperor, 10, habbanyaSietch, false, false));
+            assertEquals(0, emperor.getSpice());
+            assertEquals(15, guild.getSpice());
+        }
+
+        @Test
+        void testNormalPaymentToGuildAsAlly() {
+            emperor.setAlly("Guild");
+            guild.setAlly("Emperor");
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
+                    game.payForShipment(emperor, 5, habbanyaSietch, false, false));
+            assertEquals(5, emperor.getSpice());
+            assertEquals(10, guild.getSpice());
+        }
+
+        @Test
+        void testPaymentToGuildAsAllyWithGuildSupport() {
+            emperor.setAlly("Guild");
+            guild.setAlly("Emperor");
+            emperor.setAllySpiceShipment(3);
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.GUILD + "), 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
+                    game.payForShipment(emperor, 5, habbanyaSietch, false, false));
+            assertEquals(8, emperor.getSpice());
+            assertEquals(4, guild.getSpice());
+        }
+
+        @Test
+        void testKaramaPayment() {
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE,
+                    game.payForShipment(emperor, 5, habbanyaSietch, true, false));
+            assertEquals(5, emperor.getSpice());
+            assertEquals(5, guild.getSpice());
+        }
+
+        @Test
+        void testGuildPaysSpiceBank() {
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE,
+                    game.payForShipment(guild, 5, habbanyaSietch, false, false));
+            assertEquals(0, guild.getSpice());
+        }
+    }
 
     @Nested
     @DisplayName("#battlePhase")
