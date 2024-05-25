@@ -526,6 +526,7 @@ public class RunCommands {
         boolean nonBTRevival = false;
         int factionsWithRevivals = 0;
 
+        boolean btWasHighThreshold = false;
         for (Faction faction : factions) {
             if (faction instanceof BTFaction)
                 // This can be removed after D50 and D53 finish
@@ -549,14 +550,16 @@ public class RunCommands {
                     discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
                 }
             }
+            if (faction instanceof BTFaction btFaction && game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
+                btWasHighThreshold = true;
             int regularRevived = Math.min(faction.getFreeRevival() - starRevived, game.getForceFromTanks(faction.getName()).getStrength());
             if (regularRevived + starRevived > 0) {
-                game.reviveForces(faction, false, regularRevived, starRevived);
-                factionsWithRevivals++;
                 if (faction instanceof BTFaction btFaction) {
-                    if (game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
+                    if (btWasHighThreshold)
                         discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
                 } else nonBTRevival = true;
+                game.reviveForces(faction, false, regularRevived, starRevived);
+                factionsWithRevivals++;
             }
             if (faction.getMaxRevival() > starRevived + regularRevived) {
                 boolean emperorCanPayForOneSardaukar = faction instanceof EmperorFaction && !faction.isStarRevived() && starsInTanks;
@@ -575,10 +578,9 @@ public class RunCommands {
                     discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals" + sardaukarString + "?", buttons);
                 }
             }
-
         }
 
-        if (factionsWithRevivals > 0 && game.hasFaction("BT") && game.getFaction("BT").isHighThreshold()) {
+        if (btWasHighThreshold && factionsWithRevivals > 0) {
             Faction btFaction = game.getFaction("BT");
             btFaction.addSpice(factionsWithRevivals);
             message.append(btFaction.getEmoji())
