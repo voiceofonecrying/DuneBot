@@ -347,6 +347,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         TurnSummary turnSummary = discordGame.getTurnSummary();
         turnSummary.queueMessage(faction.getEmoji() + " does not move.");
         game.getTurnOrder().pollFirst();
+        if (game.getTurnOrder().size() == 1 && game.getTurnOrder().getFirst().equals("juice-of-sapho-last"))
+            game.getTurnOrder().removeFirst();
         if (isGuildNeedsToShip(game)) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(discordGame, game);
@@ -369,6 +371,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         executeFactionMovement(discordGame, game, faction);
         game.getTurnOrder().pollFirst();
+        if (game.getTurnOrder().size() == 1 && game.getTurnOrder().getFirst().equals("juice-of-sapho-last"))
+            game.getTurnOrder().removeFirst();
         if (isGuildNeedsToShip(game)) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(discordGame, game);
