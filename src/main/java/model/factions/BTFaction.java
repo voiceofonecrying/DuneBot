@@ -26,9 +26,9 @@ public class BTFaction extends Faction {
         this.lowThreshold = 8;
         this.occupiedIncome = 2;
         this.homeworld = "Tleilax";
-        game.getTerritories().put("Tleilax", new Territory("Tleilax", -1, false, false, false));
-        game.getTerritory("Tleilax").addForce(new Force("BT", 20));
-        game.getHomeworlds().put(getName(), homeworld);
+        Territory tleilax = game.getTerritories().addHomeworld(homeworld);
+        tleilax.addForce(new Force(name, 20));
+        game.getHomeworlds().put(name, homeworld);
     }
 
     /**

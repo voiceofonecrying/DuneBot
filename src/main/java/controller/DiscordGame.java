@@ -454,6 +454,21 @@ public class DiscordGame {
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
             }
         }
+        // Temporary migration to properly mark Homeworlds and Discovery Token Territory objects
+        game.getHomeworlds().values().forEach(homeworld -> game.getTerritories().get(homeworld).setHomeworld(true));
+        Territory t = game.getTerritories().get("Jacurutu Sietch");
+        if (t != null) t.setDiscoveryToken(true);
+        t = game.getTerritories().get("Cistern");
+        if (t != null) t.setDiscoveryToken(true);
+        t = game.getTerritories().get("Ecological Testing Station");
+        if (t != null) t.setDiscoveryToken(true);
+        t = game.getTerritories().get("Shrine");
+        if (t != null) t.setDiscoveryToken(true);
+        t = game.getTerritories().get("Orgiz Processing Station");
+        if (t != null) {
+            t.setDiscoveryToken(true);
+            t.setStronghold(false);
+        }
 
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));

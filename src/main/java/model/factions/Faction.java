@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.List;
 
 public class Faction {
-    private final String name;
+    protected final String name;
     private final List<TechToken> techTokens;
     private final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
@@ -332,6 +332,10 @@ public class Faction {
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
         updateAllySupport();
         setUpdated(UpdateType.SPICE_BACK);
+    }
+
+    public boolean hasStarredForces() {
+        return false;
     }
 
     public Force getReserves() {

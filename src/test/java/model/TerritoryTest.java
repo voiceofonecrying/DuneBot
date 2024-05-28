@@ -152,32 +152,38 @@ public class TerritoryTest {
         }
 
         @Test
+        void testHomeworlds() {
+            Territory caladan = new Territory("Caladan", -1, false, false, true, false, false);
+            assertEquals(1, caladan.costToShipInto());
+        }
+
+        @Test
         void testCistern() {
-            Territory cistern = new Territory("Cistern", 1, true, false, false);
+            Territory cistern = new Territory("Cistern", 1, true, false, false, true, false);
             assertEquals(1, cistern.costToShipInto());
         }
 
         @Test
         void testEcologicalTestingStation() {
-            Territory ecologicalTestingStation = new Territory("Ecological Testing Station", 1, true, false, false);
+            Territory ecologicalTestingStation = new Territory("Ecological Testing Station", 1, true, false, false, true, false);
             assertEquals(1, ecologicalTestingStation.costToShipInto());
         }
 
         @Test
         void testJacurutuSietch() {
-            Territory jacurutuSietch = new Territory("Jacurutu Sietch", 1, true, true, false);
+            Territory jacurutuSietch = new Territory("Jacurutu Sietch", 1, true, true, false, true, false);
             assertEquals(1, jacurutuSietch.costToShipInto());
         }
 
         @Test
         void testOrgizProcessingStation() {
-            Territory orgizProcessingStation = new Territory("Orgiz Processing Station", 1, true, false, false);
+            Territory orgizProcessingStation = new Territory("Orgiz Processing Station", 1, true, false, false, true, false);
             assertEquals(1, orgizProcessingStation.costToShipInto());
         }
 
         @Test
         void testShrine() {
-            Territory shrine = new Territory("Shrine", 1, true, false, false);
+            Territory shrine = new Territory("Shrine", 1, true, false, false, true, false);
             assertEquals(1, shrine.costToShipInto());
         }
     }

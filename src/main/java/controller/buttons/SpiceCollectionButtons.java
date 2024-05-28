@@ -1,11 +1,11 @@
 package controller.buttons;
 
 import constants.Emojis;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
+import model.Territories;
 import model.Territory;
 import model.TreacheryCard;
 import model.factions.Faction;
@@ -33,33 +33,34 @@ public class SpiceCollectionButtons  implements Pressable{
             Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
             String token = territory.getDiscoveryToken();
 
+            Territories territories = game.getTerritories();
             switch (token) {
                 case "Jacurutu Sietch" -> {
-                    Territory jacurutuSietch = new Territory("Jacurutu Sietch", territory.getSector(), true, true, false);
+                    Territory jacurutuSietch = territories.addDiscoveryToken("Jacurutu Sietch", true);
                     game.putTerritoryInAnotherTerritory(jacurutuSietch, territory);
                     discordGame.getTurnSummary().queueMessage("Jacurutu Sietch has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Cistern" -> {
-                    Territory cistern = new Territory("Cistern", territory.getSector(), true, false, false);
+                    Territory cistern = territories.addDiscoveryToken("Cistern", false);
                     game.putTerritoryInAnotherTerritory(cistern, territory);
                     discordGame.getTurnSummary().queueMessage("A Cistern has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Ecological Testing Station" -> {
-                    Territory ecologicalTestingStation = new Territory("Ecological Testing Station", territory.getSector(), true, false, false);
+                    Territory ecologicalTestingStation = territories.addDiscoveryToken("Ecological Testing Station", false);
                     game.putTerritoryInAnotherTerritory(ecologicalTestingStation, territory);
                     discordGame.getTurnSummary().queueMessage("An Ecological Testing Station has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Shrine" -> {
-                    Territory shrine = new Territory("Shrine", territory.getSector(), true, false, false);
+                    Territory shrine = territories.addDiscoveryToken("Shrine", false);
                     game.putTerritoryInAnotherTerritory(shrine, territory);
                     discordGame.getTurnSummary().queueMessage("A Shrine has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Orgiz Processing Station" -> {
-                    Territory orgizProcessingStation = new Territory("Orgiz Processing Station", territory.getSector(), true, true, false);
+                    Territory orgizProcessingStation = territories.addDiscoveryToken("Orgiz Processing Station", false);
                     game.putTerritoryInAnotherTerritory(orgizProcessingStation, territory);
                     discordGame.getTurnSummary().queueMessage("The Orgiz Processing Station has been discovered in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);

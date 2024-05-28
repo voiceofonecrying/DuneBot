@@ -18,10 +18,15 @@ public class FremenFaction extends Faction {
         this.lowThreshold = 2;
         this.occupiedIncome = 0;
         this.homeworld = "Southern Hemisphere";
-        game.getTerritories().put("Southern Hemisphere", new Territory("Southern Hemisphere", -1, false, false, false));
-        game.getTerritory("Southern Hemisphere").addForce(new Force("Fremen", 17));
-        game.getTerritory("Southern Hemisphere").addForce(new Force("Fremen*", 3));
-        game.getHomeworlds().put(getName(), homeworld);
+        Territory southernHemisphere = game.getTerritories().addHomeworld(homeworld);
+        southernHemisphere.addForce(new Force(name, 17));
+        southernHemisphere.addForce(new Force(name + "*", 3));
+        game.getHomeworlds().put(name, homeworld);
+    }
+
+    @Override
+    public boolean hasStarredForces() {
+        return true;
     }
 
     /**

@@ -22,10 +22,9 @@ public class BGFaction extends Faction {
         this.lowThreshold = 10;
         this.occupiedIncome = 1;
         this.homeworld = "Wallach IX";
-        game.getTerritories().put("Wallach IX", new Territory("Wallach IX", -1, false, false, false));
-        game.getTerritory("Wallach IX").addForce(new Force("BG", 20));
-        game.getHomeworlds().put(getName(), homeworld);
-
+        Territory wallachIX = game.getTerritories().addHomeworld(homeworld);
+        wallachIX.addForce(new Force(name, 20));
+        game.getHomeworlds().put(name, homeworld);
     }
 
     /**

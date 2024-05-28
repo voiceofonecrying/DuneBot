@@ -18,12 +18,17 @@ public class IxFaction extends Faction {
         this.lowThreshold = 4;
         this.occupiedIncome = 2;
         this.homeworld = "Ix";
-        game.getTerritories().put("Ix", new Territory("Ix", -1, false, false, false));
-        game.getTerritory("Ix").addForce(new Force("Ix", 10));
-        game.getTerritory("Ix").addForce(new Force("Ix*", 4));
-        game.getHomeworlds().put(getName(), homeworld);
         game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
         game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix*", 3));
+        Territory ix = game.getTerritories().addHomeworld(homeworld);
+        ix.addForce(new Force(name, 10));
+        ix.addForce(new Force(name + "*", 4));
+        game.getHomeworlds().put(name, homeworld);
+    }
+
+    @Override
+    public boolean hasStarredForces() {
+        return true;
     }
 
     /**

@@ -7,6 +7,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Territories extends HashMap<String, Territory> {
+    public Territory addHomeworld(String name) {
+        Territory homeworld = new Territory(name, -1, false, false, true, false, false);
+        put(name, homeworld);
+        return homeworld;
+    }
+
+    public Territory addDiscoveryToken(String name, boolean isStronghold) {
+        Territory discoveryToken = new Territory(name, -1, false, isStronghold, false, true, false);
+        put(name, discoveryToken);
+        return discoveryToken;
+    }
 
     /**
      * Returns the territory sector with the given name.

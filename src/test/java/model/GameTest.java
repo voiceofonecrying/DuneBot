@@ -89,7 +89,7 @@ class GameTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             String junction = game.getHomeworlds().get("Guild");
             assertEquals("Junction", game.getHomeworlds().get("Guild"));
-            assertEquals(4, game.shipmentCost(fremen, 2, game.getTerritory(junction), false));
+            assertEquals(2, game.shipmentCost(fremen, 2, game.getTerritory(junction), false));
         }
 
         @Test

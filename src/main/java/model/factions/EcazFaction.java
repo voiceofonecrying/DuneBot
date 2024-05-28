@@ -28,9 +28,9 @@ public class EcazFaction extends Faction {
         this.highThreshold = 7;
         this.lowThreshold = 6;
         this.homeworld = "Ecaz";
-        game.getTerritories().put("Ecaz", new Territory("Ecaz", -1, false, false, false));
-        game.getTerritory("Ecaz").addForce(new Force("Ecaz", 14));
-        game.getHomeworlds().put(getName(), homeworld);
+        Territory ecaz = game.getTerritories().addHomeworld(homeworld);
+        ecaz.addForce(new Force(name, 14));
+        game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
         game.getTerritories().get("Imperial Basin (Center Sector)").getForces().add(new Force("Ecaz", 6));
         this.ambassadorPool = new LinkedList<>();

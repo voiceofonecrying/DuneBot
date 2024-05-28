@@ -26,16 +26,21 @@ public class EmperorFaction extends Faction {
         this.lowThreshold = 4;
         this.homeworld = "Kaitain";
         this.secondHomeworld = "Salusa Secundus";
-        game.getTerritories().put("Kaitain", new Territory("Kaitain", -1, false, false, false));
-        game.getTerritory("Kaitain").addForce(new Force("Emperor", 15));
-        game.getTerritories().put("Salusa Secundus", new Territory("Salusa Secundus", -1, false, false, false));
-        game.getTerritory("Salusa Secundus").addForce(new Force("Emperor*", 5));
-        game.getHomeworlds().put(getName(), homeworld);
-        game.getHomeworlds().put(getName() + "*", secondHomeworld);
+        Territory kaitain = game.getTerritories().addHomeworld(homeworld);
+        kaitain.addForce(new Force(name, 15));
+        Territory salusaSecundus = game.getTerritories().addHomeworld(secondHomeworld);
+        salusaSecundus.addForce(new Force(name + "*", 5));
+        game.getHomeworlds().put(name, homeworld);
+        game.getHomeworlds().put(name + "*", secondHomeworld);
         this.occupiedIncome = 2;
         this.secundusHighThreshold = 2;
         this.secundusLowThreshold = 2;
         this.isSecundusHighThreshold = true;
+    }
+
+    @Override
+    public boolean hasStarredForces() {
+        return true;
     }
 
     /**

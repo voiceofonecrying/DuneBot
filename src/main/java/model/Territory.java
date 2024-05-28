@@ -11,7 +11,9 @@ import java.util.stream.Collectors;
 public class Territory {
     private final String territoryName;
     private final int sector;
-    private final boolean isStronghold;
+    private boolean isStronghold;
+    private boolean isHomeworld;
+    private boolean isDiscoveryToken;
     private final boolean isNearShieldWall;
     private final List<Force> forces;
     private final List<String> adjacencyList;
@@ -26,11 +28,13 @@ public class Territory {
     private String discoveryToken;
     private boolean discovered;
 
-    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
+    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isHomeworld, boolean isDiscoveryToken, boolean isNearShieldWall) {
         this.territoryName = territoryName;
         this.sector = sector;
         this.isRock = isRock;
         this.isStronghold = isStronghold;
+        this.isHomeworld = isHomeworld;
+        this.isDiscoveryToken = isDiscoveryToken;
         this.isNearShieldWall = isNearShieldWall;
         this.spice = 0;
         this.forces = new ArrayList<>();
@@ -39,6 +43,10 @@ public class Territory {
         this.adjacencyList = new LinkedList<>();
         this.aftermathToken = false;
         this.terrorTokens = new LinkedList<>();
+    }
+
+    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
+        this(territoryName, sector, isRock, isStronghold, false, false, isNearShieldWall);
     }
 
     public String getTerritoryName() {
@@ -61,32 +69,31 @@ public class Territory {
         return isStronghold;
     }
 
-    public boolean isDiscoveryTokenTerritory() {
-        return switch (territoryName) {
-            case "Cistern" -> true;
-            case "Ecological Testing Station" -> true;
-            case "Jacurutu Sietch" -> true;
-            case "Orgiz Processing Station" -> true;
-            case "Shrine" -> true;
-            default -> false;
-        };
+    public void setStronghold(boolean isStronghold) {
+        this.isStronghold = isStronghold;
+    }
+
+    public boolean isHomeworld() {
+        return isHomeworld;
+    }
+
+    public void setHomeworld(boolean isHomeworld) {
+        this.isHomeworld = isHomeworld;
+    }
+
+    public boolean isDiscoveryToken() {
+        return isDiscoveryToken;
+    }
+
+    public void setDiscoveryToken(boolean isDiscoveryToken) {
+        this.isDiscoveryToken = isDiscoveryToken;
     }
 
     public int costToShipInto() {
-        return isStronghold || isDiscoveryTokenTerritory() ? 1 : 2;
+        return isStronghold || isHomeworld || isDiscoveryToken ? 1 : 2;
     }
 
     public boolean isNearShieldWall() {
-        // Temporary patch until all games have started with the isNearShieldWall boolean in Territories.csv
-        if (territoryName.startsWith("False Wall East")) return true;
-        else if (territoryName.startsWith("Hole In The Rock")) return true;
-        else if (territoryName.startsWith("Gara Kulon")) return true;
-        else if (territoryName.startsWith("Imperial Basin")) return true;
-        else if (territoryName.startsWith("Pasty Mesa")) return true;
-        else if (territoryName.startsWith("Shield Wall")) return true;
-        else if (territoryName.startsWith("Sihaya Ridge")) return true;
-        else if (territoryName.startsWith("The Minor Erg")) return true;
-
         return isNearShieldWall;
     }
 

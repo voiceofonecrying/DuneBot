@@ -193,4 +193,18 @@ class EmperorFactionTest extends FactionTestTemplate {
         kaitain.setForceStrength("Emperor*", 1);
         assertDoesNotThrow(() -> faction.removeSpecialReserves(2));
     }
+
+    @Test
+    public void testSecondHomeworld() {
+        String homeworldName = faction.getSecondHomeworld();
+        Territory territory = game.getTerritories().get(homeworldName);
+        assertNotNull(territory);
+        assertEquals(homeworldName, territory.getTerritoryName());
+        assertEquals(-1, territory.getSector());
+        assertFalse(territory.isStronghold());
+        assertTrue(territory.isHomeworld());
+        assertFalse(territory.isDiscoveryToken());
+        assertFalse(territory.isNearShieldWall());
+        assertFalse(territory.isRock());
+    }
 }

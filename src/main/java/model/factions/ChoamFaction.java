@@ -22,9 +22,9 @@ public class ChoamFaction extends Faction {
         this.highThreshold = 11;
         this.lowThreshold = 10;
         this.homeworld = "Tupile";
-        game.getTerritories().put("Tupile", new Territory("Tupile", -1, false, false, false));
-        game.getTerritory("Tupile").addForce(new Force("CHOAM", 20));
-        game.getHomeworlds().put(getName(), homeworld);
+        Territory tupile = game.getTerritories().addHomeworld(homeworld);
+        tupile.addForce(new Force(name, 20));
+        game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
         this.handLimit = 5;
         clearInflation();

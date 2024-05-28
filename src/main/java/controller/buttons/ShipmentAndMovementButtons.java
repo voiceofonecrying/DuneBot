@@ -561,8 +561,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void richeseNoFieldShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = game.getFaction("Richese");
-        int spice = 1;
-        if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold()) spice *= 2;
+        int spice = game.getTerritory(faction.getShipment().getTerritoryName()).costToShipInto();
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                 .addContent(
                         "The No-Field ship is ready to depart for Arrakis!" +
@@ -621,14 +620,13 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!faction.getShipment().getCrossShipFrom().isEmpty())
                 territory = territory + " cross shipping from " + faction.getShipment().getCrossShipFrom();
 
-            if (!game.getTerritory(faction.getShipment().getTerritoryName()).isStronghold() && !faction.getShipment().isToReserves()
-            && !game.getTerritory(faction.getShipment().getTerritoryName()).getTerritoryName().matches("Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station"))
+            if (game.getTerritory(territory).costToShipInto() == 2 && !faction.getShipment().isToReserves())
                 spice *= 2;
 
             if (faction instanceof FremenFaction) spice = 0;
             if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")))
                 spice = Math.ceilDiv(spice, 2);
-            String specialForces = faction.getSpecialReserves().getName().isEmpty() ? "" : "\n" + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            String specialForces = faction.hasStarredForces() ? " " + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
             String noFieldMessage = faction.getShipment().getNoField() >= 0 ? "\n" + faction.getShipment().getNoField() + " " + Emojis.NO_FIELD + "\n": "";
             String message = "Use buttons below to add forces to your shipment." +
                     " Currently shipping:\n**" + faction.getShipment().getForce() + " " + Emojis.getForceEmoji(faction.getName())
@@ -673,7 +671,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             Movement movement = faction.getMovement();
             if (faction instanceof RicheseFaction && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
                 forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token"));
-            String specialForces = faction.getSpecialReserves().getName().isEmpty() ? "" : "\n" + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*");
+            String specialForces = faction.hasStarredForces() ? " " + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
 
             String message = "Use buttons below to add forces to your movement." +

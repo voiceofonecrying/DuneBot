@@ -35,6 +35,20 @@ abstract class FactionTestTemplate {
         assertEquals(7, faction.getMaxRevival());
     }
 
+    @Test
+    public void testHomeworld() {
+        String homeworldName = getFaction().getHomeworld();
+        Territory territory = game.getTerritories().get(homeworldName);
+        assertNotNull(territory);
+        assertEquals(homeworldName, territory.getTerritoryName());
+        assertEquals(-1, territory.getSector());
+        assertFalse(territory.isStronghold());
+        assertTrue(territory.isHomeworld());
+        assertFalse(territory.isDiscoveryToken());
+        assertFalse(territory.isNearShieldWall());
+        assertFalse(territory.isRock());
+    }
+
     @Nested
     @DisplayName("#addSpice")
     class AddSpice {

@@ -25,9 +25,9 @@ public class MoritaniFaction extends Faction {
         this.lowThreshold = 7;
         this.occupiedIncome = 2;
         this.homeworld = "Grumman";
-        game.getTerritories().put("Grumman", new Territory("Grumman", -1, false, false, false));
-        game.getTerritory("Grumman").addForce(new Force("Moritani", 20));
-        game.getHomeworlds().put(getName(), homeworld);
+        Territory grumman = game.getTerritories().addHomeworld(homeworld);
+        grumman.addForce(new Force(name, 20));
+        game.getHomeworlds().put(name, homeworld);
         this.terrorTokens = new LinkedList<>();
         this.assassinationTargets = new LinkedList<>();
         this.newAssassinationTargetNeeded = false;
