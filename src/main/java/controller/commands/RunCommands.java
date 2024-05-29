@@ -240,7 +240,7 @@ public class RunCommands {
 
         int stormMovement;
         ArrayList<Integer> stormDeck = game.getStormDeck();
-        stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()) + 1);
+        stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
         game.setStormMovement(stormMovement);
         if (game.hasFaction("Fremen")) {
             discordGame.getFremenChat().queueMessage("The storm will move " + game.getStormMovement() + " sectors next turn.");

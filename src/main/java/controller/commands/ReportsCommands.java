@@ -340,7 +340,7 @@ public class ReportsCommands {
         allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         StringBuilder playerStatsString = new StringBuilder("__Supreme Ruler of Arrakis__");
         for (PlayerPerformance pp : allPlayerPerformance) {
-            String winPercentage = new DecimalFormat("%#0.0").format(pp.winPercentage);
+            String winPercentage = new DecimalFormat("#0.0%").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
             String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
@@ -474,7 +474,7 @@ public class ReportsCommands {
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         StringBuilder factionStatsString = new StringBuilder("__Factions__");
         for (FactionPerformance fs : allFactionPerformance) {
-            String winPercentage = new DecimalFormat("%#0.0").format(fs.winPercentage);
+            String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
             factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames);
         }
         return tagEmojis(event, factionStatsString.toString());
@@ -566,7 +566,7 @@ public class ReportsCommands {
         allTurnStats.add(turnStats(gameResults, "E"));
         StringBuilder turnStatsString = new StringBuilder("__Turns__");
         for (TurnStats ts : allTurnStats) {
-            String winPercentage = new DecimalFormat("%#0.0").format(ts.winPercentage);
+            String winPercentage = new DecimalFormat("#0.0%").format(ts.winPercentage);
             turnStatsString.append("\n").append(ts.turn).append(" ").append(winPercentage).append(" - ").append(ts.numWins).append("/").append(ts.numGames);
         }
         return tagEmojis(event, turnStatsString.toString());
@@ -577,7 +577,7 @@ public class ReportsCommands {
         int numWins = gameResults.asList().stream()
                 .map(gr -> gr.getAsJsonObject().get("winner2Faction")).filter(v -> v == null || v.getAsString().isEmpty())
                 .toList().size();
-        String winPercentage = new DecimalFormat("%#0.0").format(numWins / (float) numGames);
+        String winPercentage = new DecimalFormat("#0.0%").format(numWins / (float) numGames);
         return "__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames;
     }
 
