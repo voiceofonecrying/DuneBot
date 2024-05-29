@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import exceptions.InvalidGameStateException;
 import model.Force;
 import model.Territory;
 import model.TestTopic;
@@ -62,21 +63,24 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalWithRecruits() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruits() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         assertEquals(2, faction.getFreeRevival());
     }
 
     @Test
-    public void testFreeRevivalWithRecruitsAlliedWithFremen() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruitsAlliedWithFremen() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         faction.setAlly("Fremen");
         assertEquals(6, faction.getFreeRevival());
     }
 
     @Test
-    public void testFreeRevivalWithRecruitsLowThreshold() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruitsLowThreshold() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
         faction.checkForLowThreshold();
@@ -85,8 +89,9 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalWithRecruitsLowThresholdAlliedToFremen() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruitsLowThresholdAlliedToFremen() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);

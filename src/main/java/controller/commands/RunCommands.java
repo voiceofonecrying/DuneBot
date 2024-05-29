@@ -121,18 +121,25 @@ public class RunCommands {
             cardCountsInBiddingPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 3) {
-            if (finishBiddingPhase(discordGame, game))
+            if (finishBiddingPhase(discordGame, game)) {
                 game.advancePhase();
+                game.startRevival();
+                if (!game.getRevival().isRecruitsDecisionNeeded())
+                    discordGame.getModInfo().queueMessage("Bidding phase ended. Run advance to start revivals.");
+            }
         } else if (phase == 5 && subPhase == 1) {
-            if (game.startRevival()) {
-                game.advanceSubPhase();
+            if (game.getRevival().performPreSteps(game)) {
                 startRevivingForces(discordGame, game);
+                game.advanceSubPhase();
             }
             game.advanceSubPhase();
         } else if (phase == 5 && subPhase == 2) {
-            startRevivingForces(discordGame, game);
-            game.advanceSubPhase();
+            if (game.getRevival().performPreSteps(game)) {
+                startRevivingForces(discordGame, game);
+                game.advanceSubPhase();
+            }
         } else if (phase == 5 && subPhase == 3) {
+            game.endRevival();
             discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement.");
             game.advancePhase();
         } else if (phase == 6) {
@@ -410,7 +417,6 @@ public class RunCommands {
             discordGame.getEmperorChat().queueMessage("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", buttons);
         }
         game.endBidding();
-        discordGame.getModInfo().queueMessage("Bidding phase ended. Run advance to start revivals.");
         return true;
     }
 
@@ -508,6 +514,9 @@ public class RunCommands {
     }
 
     public static void startRevivingForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Revival revival = game.getRevival();
+        if (revival.isRecruitsDecisionNeeded())
+            throw new InvalidGameStateException(revival.getRecruitsHolder() + " must decide if they will play recruits before the game can be advanced.");
         try {
             BTFaction bt = (BTFaction) game.getFaction("BT");
             List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();

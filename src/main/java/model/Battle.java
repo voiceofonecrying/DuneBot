@@ -946,7 +946,7 @@ public class Battle {
         if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
             juiceOfSaphoTBD = DecisionStatus.OPEN;
             boolean factionHasJuiceOfSapho = faction.hasTreacheryCard("Juice of Sapho");
-            String ifTheyHaveIt = publishToTurnSummary ? " if they have it." : ".";
+            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
             if (publishToTurnSummary || factionHasJuiceOfSapho)
                 decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
             if (publishToTurnSummary && factionHasJuiceOfSapho) {
@@ -964,7 +964,7 @@ public class Battle {
         if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
             portableSnooperTBD = DecisionStatus.OPEN;
             boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
-            String ifTheyHaveIt = publishToTurnSummary ? " if they have it." : ".";
+            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
             if (publishToTurnSummary || factionHasPortableSnooper)
                 decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
             if (publishToTurnSummary && factionHasPortableSnooper) {

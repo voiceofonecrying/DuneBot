@@ -23,7 +23,7 @@ abstract class FactionTestTemplate {
     }
 
     @Test
-    void testMaxRevival() {
+    void testMaxRevival() throws InvalidGameStateException {
         Faction faction = getFaction();
         if (faction instanceof BTFaction)
             assertEquals(20, faction.getMaxRevival());
@@ -31,7 +31,8 @@ abstract class FactionTestTemplate {
             assertEquals(3, faction.getMaxRevival());
         faction.setMaxRevival(5);
         assertEquals(5, faction.getMaxRevival());
-        game.setRecruitsInPlay(true);
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         assertEquals(7, faction.getMaxRevival());
     }
 

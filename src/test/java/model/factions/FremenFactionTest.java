@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import exceptions.InvalidGameStateException;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,14 +47,16 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalWithRecruits() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruits() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         assertEquals(6, faction.getFreeRevival());
     }
 
     @Test
-    public void testFreeRevivalWithRecruitsLowThreshold() {
-        game.setRecruitsInPlay(true);
+    public void testFreeRevivalWithRecruitsLowThreshold() throws InvalidGameStateException {
+        game.startRevival();
+        game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
         game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
