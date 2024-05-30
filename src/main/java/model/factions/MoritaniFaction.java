@@ -155,7 +155,7 @@ public class MoritaniFaction extends Faction {
         }
         choices.add(new DuneChoice("danger", "moritani-don't-trigger-terror", "Don't Trigger"));
         game.getTurnSummary().publish(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
-        chat.publish("Will you trigger your terror token now?" + game.getFaction("Moritani").getPlayer(), choices);
+        chat.publish("Will you trigger your terror token in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("Moritani").getPlayer(), choices);
     }
 
     public List<String> getAssassinationTargets() {
