@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import model.*;
 import model.topics.DuneTopic;
@@ -109,6 +110,7 @@ public class MoritaniFaction extends Faction {
     public void placeTerrorToken(Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
 
@@ -127,22 +129,38 @@ public class MoritaniFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public void sendTerrorTokenHighThresholdMessage() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS) || !isHighThreshold())
+            return;
+        List<DuneChoice> choices = new LinkedList<>();
+        List<DuneChoice> removeChoices = new LinkedList<>();
+        for (Territory territory : game.getTerritories().values()) {
+            if (!territory.isStronghold()) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            if (territory.getTerritoryName().equals("Orgiz Processing Station")) continue;
+            DuneChoice stronghold = new DuneChoice("moritani-place-terror-" + territory.getTerritoryName(), "Place in " + territory.getTerritoryName());
+            stronghold.setDisabled(!territory.hasTerrorToken());
+            choices.add(stronghold);
+            for (String terror : territory.getTerrorTokens()) {
+                removeChoices.add(new DuneChoice("secondary", "moritani-remove-terror-" + territory.getTerritoryName() + "-" + terror, "Remove " + terror + " from " + territory.getTerritoryName()));
+            }
+        }
+        choices.addAll(removeChoices);
+        choices.add(new DuneChoice("danger", "moritani-don't-place-terror", "Don't place or remove"));
+        chat.publish("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. " + getPlayer(), choices);
+    }
+
     public void sendTerrorTokenLocationMessage() {
         List<DuneChoice> choices = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             if (territory.getTerritoryName().equals("Orgiz Processing Station")) continue;
-            DuneChoice stronghold = new DuneChoice("moritani-place-terror-" + territory.getTerritoryName(), "Place Terror Token in " + territory.getTerritoryName());
-            if (!this.isHighThreshold() && (!territory.getTerrorTokens().isEmpty() || game.getStorm() == territory.getSector()))
-                stronghold.setDisabled(true);
-            else if (this.isHighThreshold() && !territory.getTerrorTokens().isEmpty()) {
-                for (String terror : territory.getTerrorTokens()) {
-                    choices.add(new DuneChoice("secondary", "moritani-remove-terror-" + territory.getTerritoryName() + "-" + terror, "Remove " + terror + " Token from " + territory.getTerritoryName() + " (gain 4 " + Emojis.SPICE + ")"));
-                }
-            }
+            DuneChoice stronghold = new DuneChoice("moritani-place-terror-" + territory.getTerritoryName(), "Place in " + territory.getTerritoryName());
+            stronghold.setDisabled(territory.hasTerrorToken());
             choices.add(stronghold);
         }
+//        choices.add(new DuneChoice("secondary", "moritani-move-terror", "Move a Terror Token to a different stronghold."));
         chat.publish("Use these buttons to place a Terror Token from your supply. " + getPlayer(), choices);
     }
 

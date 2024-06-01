@@ -3,6 +3,7 @@ package controller.buttons;
 import constants.Emojis;
 import controller.Alliance;
 import controller.commands.CommandManager;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
@@ -43,6 +44,7 @@ public class MoritaniButtons implements Pressable {
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
             case "moritani-pay-extortion" -> payExtortion(event, game, discordGame);
             case "moritani-pass-extortion" -> passExtortion(event, game, discordGame);
+            case "moritani-don't-place-terror" -> dontPlaceTerrorToken(discordGame);
         }
 
     }
@@ -57,8 +59,15 @@ public class MoritaniButtons implements Pressable {
 
         moritani.getTerrorTokens().add(terror);
         territory.getTerrorTokens().removeIf(t -> t.equals(terror));
+        game.setUpdated(UpdateType.MAP);
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " have removed a Terror Token from " + territory.getTerritoryName() + " for 4 " + Emojis.SPICE);
+        discordGame.queueMessage("You removed " + terror + " from " + territory.getTerritoryName() + ".");
         discordGame.pushGame();
+    }
+
+    private static void dontPlaceTerrorToken(DiscordGame discordGame) {
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You will leave your Terror Tokens as they are.");
     }
 
     private static void passExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -116,6 +125,7 @@ public class MoritaniButtons implements Pressable {
         MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         moritaniFaction.sendTerrorTokenMessage(territory.getTerritoryName());
+        discordGame.queueMessage("You selected " + territory.getTerritoryName());
         discordGame.queueDeleteMessage();
     }
 
