@@ -82,12 +82,11 @@ public class MoritaniFaction extends Faction {
                 chat.publish("Give a treachery card from your hand to " + triggeringFaction.getEmoji() + "?", treacheryCards);
             }
             case "Sneak Attack" -> {
-                Force reserves = game.getTerritory("Grumman").getForce("Moritani");
                 List<DuneChoice> choices = new LinkedList<>();
                 for (int i = 1; i < 6; i++) {
                     String digit = String.valueOf(i);
-                    DuneChoice choice = new DuneChoice("moritani-sneak-attack-" + digit, digit);
-                    choice.setDisabled(reserves.getStrength() < i);
+                    DuneChoice choice = new DuneChoice("moritani-sneak-attack-" + digit + "-" + location.getTerritoryName(), digit);
+                    choice.setDisabled(getReservesStrength() < i);
                     choices.add(choice);
                 }
                 chat.publish("How many forces do you want to send on your sneak attack?", choices);

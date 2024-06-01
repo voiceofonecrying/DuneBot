@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.Alliance;
+import controller.commands.CommandManager;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
@@ -35,6 +36,8 @@ public class MoritaniButtons implements Pressable {
             giveCard(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-sabotage-no-card-"))
             dontGiveCard(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-sneak-attack-"))
+            sneakAttack(event, game, discordGame);
         switch (event.getComponentId()) {
             case "moritani-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
@@ -126,7 +129,7 @@ public class MoritaniButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the emissary away with news of their new alliance!");
         discordGame.queueDeleteMessage();
@@ -169,5 +172,18 @@ public class MoritaniButtons implements Pressable {
         String emoji = game.getFaction(factionName).getEmoji();
         discordGame.queueMessage("You did not give a card to " + emoji);
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " did not give a " + Emojis.TREACHERY + " card to " + emoji + " with Sabotage.");
+    }
+
+    private static void sneakAttack(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String[] components = event.getComponentId().split("-");
+        int amount = Integer.parseInt(components[3]);
+        String strongholdName = components[4];
+        System.out.println("Placing " + amount + " in " + strongholdName);
+        Territory territory = game.getTerritory(strongholdName);
+        CommandManager.placeForces(territory, faction, amount, 0, false, true, discordGame, game, false);
+        game.getTurnSummary().publish(amount + " " + Emojis.MORITANI_TROOP + " placed in " + strongholdName + " with Sneak Attack.");
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You placed " + amount + " " + Emojis.MORITANI_TROOP + " in " + strongholdName + " with Sneak Attack.");
     }
 }
