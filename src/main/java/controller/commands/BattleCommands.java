@@ -138,7 +138,7 @@ public class BattleCommands {
 
     public static void karamaStarredForces(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(starredForcesFaction).getAsString());
-        game.getBattles().getCurrentBattle().negateSpecialForces(targetFaction);
+        game.getBattles().getCurrentBattle().negateSpecialForces(game, targetFaction);
         discordGame.pushGame();
     }
 

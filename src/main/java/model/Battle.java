@@ -343,10 +343,16 @@ public class Battle {
         return numForcesInReserve;
     }
 
-    public void negateSpecialForces(Faction targetFaction) throws InvalidGameStateException {
+    public void negateSpecialForces(Game game, Faction targetFaction) throws InvalidGameStateException {
         String targetFactionName = targetFaction.getName();
-        boolean aggressorNegated = targetFactionName.equals(getAggressorName());
-        boolean defenderNegated = targetFactionName.equals(getDefenderName());
+        Faction ecaz = null;
+        try {
+            ecaz = game.getFaction("Ecaz");
+        } catch (IllegalArgumentException ignored) {}
+        boolean aggressorNegated = targetFactionName.equals(getAggressorName())
+                || ecaz != null && ecaz.getAlly().equals(targetFactionName) && getAggressorName().equals("Ecaz");
+        boolean defenderNegated = targetFactionName.equals(getDefenderName())
+                || ecaz != null && ecaz.getAlly().equals(targetFactionName) && getDefenderName().equals("Ecaz");
         if (!aggressorNegated && !defenderNegated)
             throw new InvalidGameStateException(targetFactionName + " is not in the current battle.");
 
