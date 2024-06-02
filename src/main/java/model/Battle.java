@@ -401,14 +401,19 @@ public class Battle {
     }
 
     public String getForcesRemainingString(String factionName, int regularDialed, int specialDialed) {
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        String dialFactionName = hasEcazAndAlly() && factionName.equals("Ecaz") ? ecazAllyName : factionName;
+        int regularStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName)).findFirst().map(Force::getStrength).orElse(0);
+        int specialStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularNotDialed = regularStrength - regularDialed;
         int specialNotDialed = specialStrength - specialDialed;
         String forcesRemaining = "";
-        if (regularNotDialed > 0) forcesRemaining += regularNotDialed + " " + Emojis.getForceEmoji(factionName) + " ";
-        if (specialNotDialed > 0) forcesRemaining += specialNotDialed + " " + Emojis.getForceEmoji(factionName + "*") + " ";
-        if (forcesRemaining.isEmpty()) forcesRemaining = "no " + Emojis.getFactionEmoji(factionName) + " forces ";
+        if (regularNotDialed > 0) forcesRemaining += regularNotDialed + " " + Emojis.getForceEmoji(dialFactionName) + " ";
+        if (specialNotDialed > 0) forcesRemaining += specialNotDialed + " " + Emojis.getForceEmoji(dialFactionName + "*") + " ";
+        if (forcesRemaining.isEmpty()) forcesRemaining = "no " + Emojis.getFactionEmoji(dialFactionName) + " forces ";
+        if (hasEcazAndAlly()) {
+            int ecazStrength = forces.stream().filter(f -> f.getName().equals("Ecaz")).findFirst().map(Force::getStrength).orElse(0);
+            forcesRemaining += Math.floorDiv(ecazStrength, 2) + " " + Emojis.ECAZ_TROOP + " ";
+        }
         return "This will leave " + forcesRemaining + "in " + wholeTerritoryName + " if you win.";
     }
 
@@ -585,7 +590,10 @@ public class Battle {
             defenderBattlePlan.setForcesDialed(regularDialed, specialDialed, notDialed);
         else
             throw new InvalidGameStateException(factionName + " is not in the current battle.");
-        String planUpdatedString = "Battle plan updated to dial " + regularDialed + " " + Emojis.getForceEmoji(factionName) + " " + specialDialed + " " + Emojis.getForceEmoji(factionName + "*") +".";
+        String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
+        String regularEmoji = Emojis.getForceEmoji(emojiFactionName);
+        String starredEmoji = Emojis.getForceEmoji(emojiFactionName + "*");
+        String planUpdatedString = "Battle plan updated to dial " + regularDialed + " " + regularEmoji + " " + specialDialed + " " + starredEmoji +".";
         String forcesRemainingString = getForcesRemainingString(factionName, regularDialed, specialDialed);
         return planUpdatedString + "\n" + forcesRemainingString;
     }

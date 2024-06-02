@@ -402,6 +402,51 @@ class BattleTest {
     }
 
     @Test
+    void testForcesRemainingEcazNotAllied() {
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Ecaz", 3));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, ecaz), garaKulon.getForces(), null);
+        assertEquals(ecaz, battle.getDefender(game));
+        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, false, 0, null, null));
+        assertEquals("This will leave 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 0, 0));
+    }
+
+    @Test
+    void testEcazAllyNoForcesLeft() {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 3));
+        garaKulon.addForce(new Force("Emperor*", 1));
+        garaKulon.addForce(new Force("Ecaz", 1));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
+        battle.setEcazCombatant(game, "Ecaz");
+        assertEquals(ecaz, battle.getDefender(game));
+        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+        assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
+    }
+
+    @Test
+    void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
+        emperor.setAlly("Ecaz");
+        ecaz.setAlly("Emperor");
+        garaKulon.addForce(new Force("Harkonnen", 10));
+        garaKulon.addForce(new Force("Emperor", 6));
+        garaKulon.addForce(new Force("Emperor*", 1));
+        garaKulon.addForce(new Force("Ecaz", 7));
+        Battle battle = new Battle("Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
+        battle.setEcazCombatant(game, "Ecaz");
+        assertEquals(ecaz, battle.getDefender(game));
+        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
+        battle.updateTroopsDialed("Ecaz", 5, 0, 2);
+        assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 5, 0));
+    }
+
+    @Test
     void testBattleResolved() {
         Force emperorTroops = new Force("Emperor", 5);
         carthag.addForce(emperorTroops);
