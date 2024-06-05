@@ -32,7 +32,7 @@ public class EcazFaction extends Faction {
         ecaz.addForce(new Force(name, 14));
         game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
-        game.getTerritories().get("Imperial Basin (Center Sector)").getForces().add(new Force("Ecaz", 6));
+        game.getTerritories().get("Imperial Basin (Center Sector)").addForces("Ecaz", 6);
         this.ambassadorPool = new LinkedList<>();
         this.ambassadorSupply = new LinkedList<>();
         this.triggeredAmbassadors = new LinkedList<>();

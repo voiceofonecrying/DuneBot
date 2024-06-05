@@ -26,10 +26,10 @@ public class Battles {
         List<Force> forces = new ArrayList<>();
         for (Faction f: factions) {
             Optional<Integer> optInt;
-            optInt = territorySectors.stream().map(t -> t.getForce(f.getName() + "*").getStrength()).reduce(Integer::sum);
+            optInt = territorySectors.stream().map(t -> t.getForceStrength(f.getName() + "*")).reduce(Integer::sum);
             int totalSpecialStrength = optInt.orElse(0);
             if (totalSpecialStrength > 0) forces.add(new Force(f.getName() + "*", totalSpecialStrength));
-            optInt  = territorySectors.stream().map(t -> t.getForce(f.getName()).getStrength()).reduce(Integer::sum);
+            optInt  = territorySectors.stream().map(t -> t.getForceStrength(f.getName())).reduce(Integer::sum);
             int totalForceStrength = optInt.orElse(0);
             if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
             Integer noField = territorySectors.stream().map(Territory::getRicheseNoField).filter(Objects::nonNull).findFirst().orElse(null);

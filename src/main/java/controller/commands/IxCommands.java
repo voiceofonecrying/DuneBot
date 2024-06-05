@@ -3,7 +3,6 @@ package controller.commands;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.TurnSummary;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -149,9 +148,9 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static Territory placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static Territory placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(hmsTerritory).getAsString());
-        targetTerritory.getForces().add(new Force("Hidden Mobile Stronghold", 1));
+        targetTerritory.addForces("Hidden Mobile Stronghold", 1);
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
         discordGame.pushGame();
@@ -159,7 +158,7 @@ public class IxCommands {
         return targetTerritory;
     }
 
-    public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElse(null);
         for (Territory territory : game.getTerritories().values()) {
             territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
@@ -172,7 +171,7 @@ public class IxCommands {
             discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
     }
 
-    public static void rotateHMSGraphic(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void rotateHMSGraphic(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (discordGame.optional(clockDirection) != null && discordGame.optional(clockDirection).getAsString().equals("CCW")) {
             game.rotateHMS90degrees();
             game.rotateHMS90degrees();

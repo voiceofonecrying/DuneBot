@@ -67,9 +67,9 @@ public class BGCommands {
             amount = 1;
         }
         CommandManager.placeForceInTerritory(discordGame, game, territory, bg, amount, false);
-        int fighters = territory.getForce("BG").getStrength();
+        int fighters = territory.getForceStrength("BG");
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
-        territory.getForces().add(new Force("Advisor", fighters));
+        territory.addForces("Advisor", fighters);
         discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         discordGame.getTurnSummary().queueMessage(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         discordGame.pushGame();
@@ -91,8 +91,8 @@ public class BGCommands {
             }
         }
         territory.getForces().removeIf(force -> force.getName().equals("BG") || force.getName().equals("Advisor"));
-        if (found.equals("Advisor")) territory.getForces().add(new Force("BG", strength));
-        else if (found.equals("BG")) territory.getForces().add(new Force("Advisor", strength));
+        if (found.equals("Advisor")) territory.addForces("BG", strength);
+        else if (found.equals("BG")) territory.addForces("Advisor", strength);
         else {
             discordGame.getModInfo().queueMessage("No Bene Gesserit were found in that territory.");
             return;

@@ -126,7 +126,7 @@ public class EmperorFaction extends Faction {
             getSpecialReserves().addStrength(amount);
         } else {
             Territory territory = getGame().getTerritory(getSecondHomeworld());
-            territory.setForceStrength("Emperor*", territory.getForce("Emperor*").getStrength() + amount);
+            territory.addForces("Emperor*", amount);
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }

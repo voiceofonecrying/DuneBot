@@ -83,24 +83,6 @@ public class RicheseFaction extends Faction {
         return treacheryCardCache;
     }
 
-    /**
-     * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
-     * spice.  It only calculates the total
-     *
-     * @param territory The territory to calculate the spice from
-     * @return The total spice that would be collected from the territory
-     */
-    @Override
-    public int getSpiceCollectedFromTerritory(Territory territory) {
-        int multiplier = hasMiningEquipment() ? 3 : 2;
-        int totalForces = territory.hasRicheseNoField() ? 1 : 0;
-        if (territory.hasForce("Richese")) {
-            totalForces += territory.getForce("Richese").getStrength();
-        }
-
-        return Math.min(multiplier * totalForces, territory.getSpice());
-    }
-
     public void noFieldMessage(int noField, String territoryName) {
         getLedger().publish(
                 MessageFormat.format(

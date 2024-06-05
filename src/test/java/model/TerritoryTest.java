@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class TerritoryTest {
     private Game game;
+    Territory arrakeen;
     Territory sihayaRidge;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_middleSector;
@@ -27,11 +28,104 @@ public class TerritoryTest {
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
+        arrakeen = game.getTerritory("Arrakeen");
         sihayaRidge = game.getTerritory("Sihaya Ridge");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
         cielagoNorth_middleSector = game.getTerritory("Cielago North (Center Sector)");
         windPassNorth_northSector = game.getTerritory("Wind Pass North (North Sector)");
         windPass_northSector = game.getTerritory("Wind Pass (North Sector)");
+    }
+
+    @Nested
+    @DisplayName("#getFactionCount")
+    class GetFactionCount {
+        Faction fremen;
+        Faction atreides;
+        final int numFremen = 4;
+        Force fremenForce;
+        final int numFedaykin = 2;
+        Force fedaykinForce;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("fakePlayer1", "userName1", game);
+            fremenForce = new Force("Fremen", numFremen);
+            fedaykinForce = new Force("Fremen*", numFedaykin);
+            game.addFaction(fremen);
+            atreides = new AtreidesFaction("fakePlayer2", "userName2", game);
+            game.addFaction(atreides);
+        }
+
+        @Test
+        void fremenForceOnly() {
+            sihayaRidge.addForce(fremenForce);
+            assertEquals(1, sihayaRidge.countFactions());
+        }
+
+        @Test
+        void fedaykinOnly() {
+            sihayaRidge.addForce(fedaykinForce);
+            assertEquals(1, sihayaRidge.countFactions());
+        }
+
+        @Test
+        void fremenAndFedaykin() {
+            sihayaRidge.addForce(fremenForce);
+            sihayaRidge.addForce(fedaykinForce);
+            assertEquals(1, sihayaRidge.countFactions());
+        }
+
+        @Test
+        void fremenAndAtreides() {
+            arrakeen.addForce(fremenForce);
+            arrakeen.addForce(fedaykinForce);
+            assertEquals(2, arrakeen.countFactions());
+        }
+    }
+
+    @Nested
+    @DisplayName("#getTotalForceCount")
+    class GetTotalForceCount {
+        Faction fremen;
+        Faction atreides;
+        final int numFremen = 4;
+        Force fremenForce;
+        final int numFedaykin = 2;
+        Force fedaykinForce;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("fakePlayer1", "userName1", game);
+            fremenForce = new Force("Fremen", numFremen);
+            fedaykinForce = new Force("Fremen*", numFedaykin);
+            game.addFaction(fremen);
+            atreides = new AtreidesFaction("fakePlayer2", "userName2", game);
+            game.addFaction(atreides);
+        }
+
+        @Test
+        void fremenForceOnly() {
+            sihayaRidge.addForce(fremenForce);
+            assertEquals(numFremen, sihayaRidge.getTotalForceCount(fremen));
+        }
+
+        @Test
+        void fedaykinOnly() {
+            sihayaRidge.addForce(fedaykinForce);
+            assertEquals(numFedaykin, sihayaRidge.getTotalForceCount(fremen));
+        }
+
+        @Test
+        void fremenAndFedaykin() {
+            sihayaRidge.addForce(fremenForce);
+            sihayaRidge.addForce(fedaykinForce);
+            assertEquals(numFremen + numFedaykin, sihayaRidge.getTotalForceCount(fremen));
+        }
+
+        @Test
+        void factionWithoutStars() {
+            assertEquals(10, arrakeen.getTotalForceCount(atreides));
+        }
     }
 
     @Nested
@@ -50,19 +144,19 @@ public class TerritoryTest {
             Force fedaykinForce = new Force("Fremen*", numFedaykin);
             sihayaRidge.addForce(fremenForce);
             sihayaRidge.addForce(fedaykinForce);
-            assertEquals(numFremen, sihayaRidge.getForce("Fremen").getStrength());
-            assertEquals(numFedaykin, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(numFremen, sihayaRidge.getForceStrength("Fremen"));
+            assertEquals(numFedaykin, sihayaRidge.getForceStrength("Fremen*"));
             response = sihayaRidge.stormTroopsFremen(List.of(fremenForce, fedaykinForce), game);
         }
 
         @Test
         void testTroopCount() {
-            assertEquals(1, sihayaRidge.getForce("Fremen").getStrength());
+            assertEquals(1, sihayaRidge.getForceStrength("Fremen"));
         }
 
         @Test
         void testFedaykinCount() {
-            assertEquals(2, sihayaRidge.getForce("Fremen*").getStrength());
+            assertEquals(2, sihayaRidge.getForceStrength("Fremen*"));
         }
 
         @Test
@@ -71,7 +165,7 @@ public class TerritoryTest {
         }
     }
 
-        @Nested
+    @Nested
     @DisplayName("#stormRemoveTroops")
     class StormRemoveTroops {
         String response;
@@ -85,7 +179,7 @@ public class TerritoryTest {
             Force atreidesForce = new Force("Atreides", numForces);
             sihayaRidge.addForce(atreidesForce);
             Force force = sihayaRidge.getForce("Atreides");
-            assertEquals(numForces, sihayaRidge.getForce("Atreides").getStrength());
+            assertEquals(numForces, sihayaRidge.getForceStrength("Atreides"));
             response = sihayaRidge.stormRemoveTroops(force, numForces, game);
         }
 

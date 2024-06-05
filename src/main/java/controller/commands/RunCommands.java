@@ -219,7 +219,7 @@ public class RunCommands {
                     RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
 
                 List<Territory> territoriesWithTroops = territoriesInStorm.stream()
-                        .filter(t -> !t.getForces().isEmpty()).toList();
+                        .filter(t -> t.countFactions() > 0).toList();
 
                 List<Territory> territoriesWithSpice = territoriesInStorm.stream()
                         .filter(t -> t.getSpice() > 0).toList();
@@ -664,10 +664,13 @@ public class RunCommands {
             for (Territory territory : game.getTerritories().values()) {
                 if (territory.getTerritoryName().equals("Polar Sink")) continue;
                 StringBuilder message = new StringBuilder();
-                if (territory.getForce("Advisor").getStrength() > 0) {
+                if (territory.getForceStrength("Advisor") > 0) {
                     String bgAllyName = bgFaction.getAlly();
-                    if ((territory.getForce(bgAllyName).getStrength() > 0 || territory.getForce(bgAllyName + "*").getStrength() > 0)
-                            && !bgAllyName.equals("Ecaz")) continue;
+                    if (!bgAllyName.isEmpty()) {
+                        Faction bgAlly = game.getFaction(bgAllyName);
+                        if (territory.getTotalForceCount(bgAlly) > 0 && !bgAllyName.equals("Ecaz"))
+                            continue;
+                    }
                     if (territory.getSector() == game.getStorm()) {
                         discordGame.queueMessage("game-actions", territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
                         continue;
@@ -701,7 +704,6 @@ public class RunCommands {
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Harvest Phase\n");
         Map<String, Territory> territories = game.getTerritories();
         for (Territory territory : territories.values()) {
-            if (territory.getForces().size() != 1) continue;
             if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
                 BGFaction bg = (BGFaction) game.getFaction("BG");
                 bg.flipForces(territory);

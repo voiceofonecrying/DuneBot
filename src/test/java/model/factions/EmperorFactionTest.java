@@ -3,7 +3,6 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
-import model.Force;
 import model.Territory;
 import model.TestTopic;
 import model.TreacheryCard;
@@ -119,7 +118,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         for (String territoryName : game.getTerritories().keySet()) {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
-            assertEquals(territory.getForces().size(), 0);
+            assertEquals(0, territory.countFactions());
         }
     }
 
@@ -163,22 +162,20 @@ class EmperorFactionTest extends FactionTestTemplate {
 
         int regularAmount = 2;
         faction.removeReserves(regularAmount);
-        Force territoryForce = territory.getForce("Emperor");
-        territory.setForceStrength("Emperor", territoryForce.getStrength() + regularAmount);
+        territory.addForces("Emperor", regularAmount);
 
         int specialAmount = 1;
         faction.removeSpecialReserves(specialAmount);
-        territoryForce = territory.getForce("Emperor*");
-        territory.setForceStrength("Emperor*", territoryForce.getStrength() + specialAmount);
+        territory.addForces("Emperor*", specialAmount);
 
-        assertEquals(13, game.getTerritory("Kaitain").getForce("Emperor").getStrength());
-        assertEquals(4, game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength());
+        assertEquals(13, game.getTerritory("Kaitain").getForceStrength("Emperor"));
+        assertEquals(4, game.getTerritory("Salusa Secundus").getForceStrength("Emperor*"));
 
         faction.removeForces("Habbanya Sietch", 2, false, false);
         faction.removeForces("Habbanya Sietch", 1, true, false);
 
-        assertEquals(15, game.getTerritory("Kaitain").getForce("Emperor").getStrength());
-        assertEquals(5, game.getTerritory("Salusa Secundus").getForce("Emperor*").getStrength());
+        assertEquals(15, game.getTerritory("Kaitain").getForceStrength("Emperor"));
+        assertEquals(5, game.getTerritory("Salusa Secundus").getForceStrength("Emperor*"));
     }
 
     @Test

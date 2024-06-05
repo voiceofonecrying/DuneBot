@@ -115,10 +115,10 @@ class HarkonnenFactionTest extends FactionTestTemplate {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Carthag")) {
-                assertEquals(territory.getForces().getFirst().getStrength(), 10);
-                assertEquals(territory.getForces().getFirst().getName(), "Harkonnen");
+                assertEquals(10, territory.getForceStrength("Harkonnen"));
+                assertEquals(1, territory.countFactions());
             } else {
-                assertEquals(territory.getForces().size(), 0);
+                assertEquals(0, territory.countFactions());
             }
         }
     }

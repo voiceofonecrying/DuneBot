@@ -117,10 +117,10 @@ class AtreidesFactionTest extends FactionTestTemplate {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Arrakeen")) {
-                assertEquals(territory.getForces().getFirst().getStrength(), 10);
-                assertEquals(territory.getForces().getFirst().getName(), "Atreides");
+                assertEquals(10, territory.getForceStrength("Atreides"));
+                assertEquals(1, territory.countFactions());
             } else {
-                assertEquals(territory.getForces().size(), 0);
+                assertEquals(0, territory.countFactions());
             }
         }
     }

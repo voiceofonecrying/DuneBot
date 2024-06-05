@@ -470,25 +470,24 @@ public class CommandManager extends ListenerAdapter {
             forceName = faction.getReserves().getName();
             if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
                 // Also need to report Advisors to ledger
-                int advisors = territory.getForce("Advisor").getStrength();
-                territory.getForces().add(new Force("BG", advisors));
+                int advisors = territory.getForceStrength("Advisor");
+                territory.addForces("BG", advisors);
                 territory.removeForce("Advisor");
             }
         }
         discordGame.getFactionLedger(faction).queueMessage(
                 MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
-        Force territoryForce = territory.getForce(forceName);
-        territory.setForceStrength(forceName, territoryForce.getStrength() + amount);
+        territory.setForceStrength(forceName, territory.getForceStrength(forceName) + amount);
         faction.checkForLowThreshold();
         game.setUpdated(UpdateType.MAP);
     }
 
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
 
-        int fromForceStrength = from.getForce(targetFaction.getName()).getStrength();
-        if (targetFaction instanceof BGFaction && from.getForce("Advisor").getStrength() > 0)
-            fromForceStrength = from.getForce("Advisor").getStrength();
-        int fromStarredForceStrength = from.getForce(targetFaction.getName() + "*").getStrength();
+        int fromForceStrength = from.getForceStrength(targetFaction.getName());
+        if (targetFaction instanceof BGFaction && from.getForceStrength("Advisor") > 0)
+            fromForceStrength = from.getForceStrength("Advisor");
+        int fromStarredForceStrength = from.getForceStrength(targetFaction.getName() + "*");
 
         if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
             throw new InvalidOptionException("Not enough forces in territory.");
@@ -512,7 +511,7 @@ public class CommandManager extends ListenerAdapter {
                 if (to.hasForce("Advisor")) targetForceName = "Advisor";
             }
             from.setForceStrength(forceName, fromForceStrength - amountValue);
-            to.setForceStrength(targetForceName, to.getForce(targetForceName).getStrength() + amountValue);
+            to.setForceStrength(targetForceName, to.getForceStrength(targetForceName) + amountValue);
 
             message.append(
                     MessageFormat.format("{0} {1} ",
@@ -524,7 +523,7 @@ public class CommandManager extends ListenerAdapter {
         if (starredAmountValue > 0) {
             from.setForceStrength(targetFaction.getName() + "*", fromStarredForceStrength - starredAmountValue);
             to.setForceStrength(targetFaction.getName() + "*",
-                    to.getForce(targetFaction.getName() + "*").getStrength() + starredAmountValue);
+                    to.getForceStrength(targetFaction.getName() + "*") + starredAmountValue);
 
             message.append(
                     MessageFormat.format("{0} {1} ",

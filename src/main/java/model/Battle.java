@@ -334,11 +334,9 @@ public class Battle {
         int numForcesInReserve = faction.getTotalReservesStrength();
         if (faction instanceof RicheseFaction) {
             numForcesInReserve -= game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).map(Territory::getRicheseNoField).findFirst().orElse(0);
-        } else if (faction instanceof EmperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)) {
-            numForcesInReserve = game.getTerritory("Kaitain").getForces().stream().filter(f -> f.getName().equals("Emperor")).map(Force::getStrength).findFirst().orElse(0);
-            numForcesInReserve += game.getTerritory("Kaitain").getForces().stream().filter(f -> f.getName().equals("Emperor*")).map(Force::getStrength).findFirst().orElse(0);
-            numForcesInReserve += game.getTerritory("Salusa Secundus").getForces().stream().filter(f -> f.getName().equals("Emperor")).map(Force::getStrength).findFirst().orElse(0);
-            numForcesInReserve += game.getTerritory("Salusa Secundus").getForces().stream().filter(f -> f.getName().equals("Emperor*")).map(Force::getStrength).findFirst().orElse(0);
+        } else if (faction instanceof EmperorFaction emperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)) {
+            numForcesInReserve = game.getTerritory("Kaitain").getTotalForceCount(emperorFaction);
+            numForcesInReserve += game.getTerritory("Salusa Secundus").getTotalForceCount(emperorFaction);
         }
         return numForcesInReserve;
     }

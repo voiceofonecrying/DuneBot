@@ -348,7 +348,7 @@ public class Faction {
             getReserves().addStrength(amount);
         } else if (amount > 0) {
             Territory territory = game.getTerritory(homeworld);
-            territory.setForceStrength(name, territory.getForce(name).getStrength() + amount);
+            territory.addForces(name, amount);
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
@@ -368,7 +368,7 @@ public class Faction {
             getSpecialReserves().addStrength(amount);
         } else {
             Territory territory = game.getTerritory(homeworld);
-            territory.setForceStrength(name + "*", territory.getForce(name + "*").getStrength() + amount);
+            territory.addForces(name + "*", amount);
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
@@ -539,8 +539,7 @@ public class Faction {
 
     public boolean isNearShieldWall() {
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.isNearShieldWall() &&
-                    (territory.getForce(name).getStrength() > 0 || territory.getForce(name + "*").getStrength() > 0)) {
+            if (territory.isNearShieldWall() && territory.getTotalForceCount(this) > 0) {
                 return true;
             }
         }
@@ -578,18 +577,7 @@ public class Faction {
                              String targetForceName) {
         if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative amount from a territory.");
 
-        Territory territory = game.getTerritory(territoryName);
-
-        Force force = territory.getForce(forceName);
-        int forceStrength = force.getStrength();
-
-        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in territory.");
-
-        if (forceStrength == amount) {
-            territory.removeForce(forceName);
-        } else {
-            force.setStrength(forceStrength - amount);
-        }
+        game.getTerritory(territoryName).removeForces(forceName, amount);
 
         if (toTanks) {
             game.getForceFromTanks(targetForceName).addStrength(amount);
@@ -612,7 +600,7 @@ public class Faction {
      */
     public int getSpiceCollectedFromTerritory(Territory territory) {
         int multiplier = hasMiningEquipment() ? 3 : 2;
-        int totalForces = territory.getForces(this).stream().map(Force::getStrength).reduce(0, Integer::sum);
+        int totalForces = territory.getTotalForceCount(this);
         return Math.min(multiplier * totalForces, territory.getSpice());
     }
 

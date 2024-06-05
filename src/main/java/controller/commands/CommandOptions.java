@@ -384,8 +384,8 @@ public class CommandOptions {
         Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForce(faction.getName()).getStrength() > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
-                    || (faction instanceof BGFaction && territory.getForce("Advisor").getStrength() > 0)) {
+            if (territory.getForceStrength(faction.getName()) > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
+                    || (faction instanceof BGFaction && territory.getForceStrength("Advisor") > 0)) {
                 territories.add(territory);
             }
         }
@@ -570,7 +570,7 @@ public class CommandOptions {
     private static List<Command.Choice> bgTerritories(Game game, String searchValue) {
         List<Territory> territories = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForce("Advisor").getStrength() > 0 || territory.getForce("BG").getStrength() > 0) {
+            if (territory.getForceStrength("Advisor") > 0 || territory.getForce("BG").getStrength() > 0) {
                 territories.add(territory);
             }
         }

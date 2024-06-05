@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import helpers.Exclude;
 import model.factions.Faction;
+import model.factions.RicheseFaction;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -130,13 +131,32 @@ public class Territory {
     }
 
     /**
-     * Returns a list of forces in the territory that belong to the given faction.
+     * Gives the total count of the faction's forces in the territory.
+     * Counts a Richese No-Field token as 1 force.
      *
      * @param faction The faction to filter by.
-     * @return A list of forces in the territory that belong to the given faction.
+     * @return the total of regular, starred, and No-Field the faction has in the territory.
      */
-    public List<Force> getForces(Faction faction) {
-        return forces.stream().filter(force -> force.getFactionName().equals(faction.getName())).toList();
+    public int getTotalForceCount(Faction faction) {
+        int amount = forces.stream()
+                .filter(force -> force.getFactionName().equals(faction.getName()))
+                .map(Force::getStrength)
+                .reduce(0, Integer::sum);
+        if (faction instanceof RicheseFaction && hasRicheseNoField()) amount++;
+        return amount;
+    }
+
+    /**
+     * Gives the total count of factions with forces in the territory.
+     *
+     * @return the number of factions in the territory.
+     */
+    public int countFactions() {
+        Set<String> factionNames = new HashSet<>();
+        forces.stream().filter(force -> !force.getName().equals("Hidden Mobile Stronghold"))
+                .forEach(force -> factionNames.add(force.getFactionName()));
+        if (hasRicheseNoField()) factionNames.add("Richese");
+        return factionNames.size();
     }
 
     public void removeForce(String name) {
@@ -149,7 +169,8 @@ public class Territory {
 
     public List<String> getActiveFactionNames() {
         Set<String> factions = forces.stream()
-                .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
+                .filter(force -> !(force.getName().equals("Advisor")))
+                .filter(force -> !(force.getName().equals("Hidden Mobile Stronghold")))
                 .map(Force::getFactionName)
                 .collect(Collectors.toSet());
 
@@ -161,7 +182,6 @@ public class Territory {
     // Returns list of factions that have active forces in the territories (not Advisors)
     public List<Faction> getActiveFactions(Game game) {
         return getActiveFactionNames().stream()
-                .filter(n -> !n.equals("Hidden Mobile Stronghold"))
                 .map(game::getFaction)
                 .toList();
     }
@@ -174,10 +194,25 @@ public class Territory {
         return getActiveFactionNames().size();
     }
 
+    public int getForceStrength(String forceName) {
+        return getForce(forceName).getStrength();
+    }
+
     public void setForceStrength(String name, int strength) {
         if (strength <= 0) forces.remove(getForce(name));
         else if (getForce(name).getStrength() == 0) forces.add(new Force(name, strength));
         else getForce(name).setStrength(strength);
+    }
+
+    public void addForces(String forceName, int amount) {
+        int forceStrength = getForceStrength(forceName);
+        setForceStrength(forceName, forceStrength + amount);
+    }
+
+    public void removeForces(String forceName, int amount) {
+        int forceStrength = getForceStrength(forceName);
+        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in territory.");
+        setForceStrength(forceName, forceStrength - amount);
     }
 
     public void addSpice(Integer spice) {

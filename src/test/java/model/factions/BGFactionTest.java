@@ -114,7 +114,7 @@ class BGFactionTest extends FactionTestTemplate {
         for (String territoryName : game.getTerritories().keySet()) {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
-            assertEquals(territory.getForces().size(), 0);
+            assertEquals(0, territory.countFactions());
         }
     }
 
@@ -154,5 +154,19 @@ class BGFactionTest extends FactionTestTemplate {
     public void testSetPredictionFactionName() {
         faction.setPredictionFactionName("Atreides");
         assertEquals(faction.getPredictionFactionName(), "Atreides");
+    }
+
+    @Test
+    public void testFlipForces() {
+        Territory carthag = game.getTerritory("Carthag");
+        carthag.addForces("BG", 1);
+        assertEquals(1, carthag.getForceStrength("BG"));
+        assertEquals(0, carthag.getForceStrength("Advisor"));
+        faction.flipForces(carthag);
+        assertEquals(0, carthag.getForceStrength("BG"));
+        assertEquals(1, carthag.getForceStrength("Advisor"));
+        faction.flipForces(carthag);
+        assertEquals(1, carthag.getForceStrength("BG"));
+        assertEquals(0, carthag.getForceStrength("Advisor"));
     }
 }

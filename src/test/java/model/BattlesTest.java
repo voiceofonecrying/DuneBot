@@ -467,7 +467,7 @@ public class BattlesTest {
                 turnSummary.messages.get(2));
 
         carthag.removeForce("BG");
-        assertEquals(0, carthag.getForce("BG").getStrength());
+        assertEquals(0, carthag.getForceStrength("BG"));
 
         battles.nextBattle(game);
 

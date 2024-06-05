@@ -117,8 +117,7 @@ class RicheseFactionTest extends FactionTestTemplate {
         for (String territoryName : game.getTerritories().keySet()) {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
-
-            assertEquals(territory.getForces().size(), 0);
+            assertEquals(0, territory.countFactions());
         }
     }
 
@@ -130,6 +129,24 @@ class RicheseFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
+    }
+
+    @Test
+    public void testSpiceCollectedFromTerritory() {
+        Territory theGreatFlat = game.getTerritory("The Great Flat");
+        theGreatFlat.setForceStrength("Richese", 2);
+        theGreatFlat.setRicheseNoField(5);
+        theGreatFlat.setSpice(10);
+        assertEquals(6, faction.getSpiceCollectedFromTerritory(theGreatFlat));
+        theGreatFlat.setSpice(3);
+        assertEquals(3, faction.getSpiceCollectedFromTerritory(theGreatFlat));
+    }
+
+    @Test
+    public void testNoFieldNearShieldWall() {
+        Territory sihayaRidge = game.getTerritory("Sihaya Ridge");
+        sihayaRidge.setRicheseNoField(0);
+        assertTrue(faction.isNearShieldWall());
     }
 
     @RepeatedTest(20)

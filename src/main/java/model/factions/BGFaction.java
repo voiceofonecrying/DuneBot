@@ -103,8 +103,8 @@ public class BGFaction extends Faction {
             throw new IllegalStateException("Territory does not have BG forces");
         }
 
-        Force force = territory.getForce(from);
+        int count = territory.getForceStrength(from);
         territory.removeForce(from);
-        territory.addForce(new Force(to, force.getStrength(), "BG"));
+        territory.addForces(to, count);
     }
 }

@@ -18,8 +18,8 @@ public class IxFaction extends Faction {
         this.lowThreshold = 4;
         this.occupiedIncome = 2;
         this.homeworld = "Ix";
-        game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix", 3));
-        game.getTerritories().get("Hidden Mobile Stronghold").getForces().add(new Force("Ix*", 3));
+        game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix", 3);
+        game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix*", 3);
         Territory ix = game.getTerritories().addHomeworld(homeworld);
         ix.addForce(new Force(name, 10));
         ix.addForce(new Force(name + "*", 4));
@@ -54,8 +54,8 @@ public class IxFaction extends Faction {
     @Override
     public int getSpiceCollectedFromTerritory(Territory territory) {
         int multiplier = hasMiningEquipment() ? 3 : 2;
-        int spiceFromSuboids = territory.hasForce("Ix") ? territory.getForce("Ix").getStrength() * multiplier : 0;
-        int spiceFromCyborgs = territory.hasForce("Ix*") ? territory.getForce("Ix*").getStrength() * 3 : 0;
+        int spiceFromSuboids = territory.getForceStrength("Ix") * multiplier;
+        int spiceFromCyborgs = territory.getForceStrength("Ix*") * 3;
 
         int totalSpice = spiceFromSuboids + spiceFromCyborgs;
         return Math.min(totalSpice, territory.getSpice());

@@ -585,23 +585,23 @@ public class ShipmentAndMovementButtons implements Pressable {
         TreeSet<Button> forcesButtons = new TreeSet<>(getButtonComparator());
         String shipOrMove = isShipment ? "shipment" : "movement";
         int buttonLimitForces = isShipment ? faction.getReservesStrength() - faction.getShipment().getForce() :
-                game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName()).getStrength() - faction.getMovement().getForce();
+                game.getTerritory(faction.getMovement().getMovingFrom()).getForceStrength(faction.getName()) - faction.getMovement().getForce();
         if (faction instanceof BGFaction && !isShipment && game.getTerritory(faction.getMovement().getMovingFrom()).hasForce("Advisor"))
-            buttonLimitForces = game.getTerritory(faction.getMovement().getMovingFrom()).getForce("Advisor").getStrength();
+            buttonLimitForces = game.getTerritory(faction.getMovement().getMovingFrom()).getForceStrength("Advisor");
         int buttonLimitSpecialForces = isShipment ? faction.getSpecialReservesStrength() - faction.getShipment().getSpecialForce() :
-                game.getTerritory(faction.getMovement().getMovingFrom()).getForce(faction.getName() + "*").getStrength() - faction.getMovement().getSpecialForce();
+                game.getTerritory(faction.getMovement().getMovingFrom()).getForceStrength(faction.getName() + "*") - faction.getMovement().getSpecialForce();
 
         if (faction.getShipment().isToReserves()) {
             if (event.getComponentId().startsWith("ship-to-reserves-")) {
                 faction.getShipment().setToReserves(true);
                 faction.getShipment().setTerritoryName(event.getComponentId().replace("ship-to-reserves-", ""));
             }
-            buttonLimitForces = game.getTerritory(faction.getShipment().getTerritoryName()).getForce("Guild").getStrength() - faction.getShipment().getForce();
+            buttonLimitForces = game.getTerritory(faction.getShipment().getTerritoryName()).getForceStrength("Guild") - faction.getShipment().getForce();
         }
 
         if (!faction.getShipment().getCrossShipFrom().isEmpty()) {
-            buttonLimitForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce(faction.getName()).getStrength() - faction.getShipment().getForce();
-            buttonLimitSpecialForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForce(faction.getName() + "*").getStrength() - faction.getShipment().getSpecialForce();
+            buttonLimitForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForceStrength(faction.getName()) - faction.getShipment().getForce();
+            buttonLimitSpecialForces = game.getTerritory(faction.getShipment().getCrossShipFrom()).getForceStrength(faction.getName() + "*") - faction.getShipment().getSpecialForce();
         }
 
         for (int i = 0; i < buttonLimitForces; i++) {
@@ -670,7 +670,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else {
             Movement movement = faction.getMovement();
             if (faction instanceof RicheseFaction && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
-                forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token"));
+                forcesButtons.add(Button.primary("richese-no-field-move", "+1 no-field token")
+                        .withDisabled(game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()));
             String specialForces = faction.hasStarredForces() ? " " + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
 
@@ -705,10 +706,10 @@ public class ShipmentAndMovementButtons implements Pressable {
                         continue;
 
                     TreeSet<Button> secondForcesButtons = new TreeSet<>(getButtonComparator());
-                    int secondForcesButtonLimit = territory.getForce(faction.getName()).getStrength();
+                    int secondForcesButtonLimit = territory.getForceStrength(faction.getName());
                     if (faction instanceof BGFaction && game.getTerritory(faction.getMovement().getMovingFrom()).hasForce("Advisor"))
-                        secondForcesButtonLimit = territory.getForce("Advisor").getStrength();
-                    int secondSpecialForcesButtonLimit = territory.getForce(faction.getName() + "*").getStrength();
+                        secondForcesButtonLimit = territory.getForceStrength("Advisor");
+                    int secondSpecialForcesButtonLimit = territory.getForceStrength(faction.getName() + "*");
 
                     if (territory.getTerritoryName().equals(faction.getMovement().getSecondMovingFrom())) {
                         secondForcesButtonLimit -= faction.getMovement().getSecondForce();
@@ -969,11 +970,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (game.getHomeworlds().containsValue(territoryName) &&
                     (!(faction instanceof EmperorFaction) || !territoryName.equals("Kaitain") && !territoryName.equals("Salusa Secundus")))
                 continue;
-            if (territory.getForces().stream().anyMatch(force -> force.getStrength() > 0 && force.getFactionName().equals(faction.getName()))
-                    || (faction instanceof RicheseFaction
-                            && (!game.hasGameOption (GameOption.HOMEWORLDS) || (game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()))
-                            && territory.hasRicheseNoField())
-                    || (faction instanceof BGFaction && territory.hasForce("Advisor"))) {
+            int count = territory.getTotalForceCount(faction);
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && territory.hasRicheseNoField() && faction instanceof RicheseFaction && !faction.isHighThreshold())
+                count--;
+            if (count > 0) {
                 movingFromButtons.add(Button.primary("moving-from-" + territoryName, territoryName));
                 if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
                     movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, territoryName + " (use Ornithopter)"));

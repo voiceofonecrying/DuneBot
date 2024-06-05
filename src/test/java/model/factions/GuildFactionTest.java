@@ -116,10 +116,10 @@ class GuildFactionTest extends FactionTestTemplate {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Tuek's Sietch")) {
-                assertEquals(territory.getForces().getFirst().getStrength(), 5);
-                assertEquals(territory.getForces().getFirst().getName(), "Guild");
+                assertEquals(5, territory.getForceStrength("Guild"));
+                assertEquals(1, territory.countFactions());
             } else {
-                assertEquals(territory.getForces().size(), 0);
+                assertEquals(0, territory.countFactions());
             }
         }
     }

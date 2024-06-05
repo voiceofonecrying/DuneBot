@@ -124,13 +124,11 @@ class IxFactionTest extends FactionTestTemplate {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
             if (territoryName.equals("Hidden Mobile Stronghold")) {
-                assertEquals(territory.getForces().get(0).getStrength(), 3);
-                assertEquals(territory.getForces().get(0).getName(), "Ix");
-
-                assertEquals(territory.getForces().get(1).getStrength(), 3);
-                assertEquals(territory.getForces().get(1).getName(), "Ix*");
+                assertEquals(3, territory.getForceStrength("Ix"));
+                assertEquals(3, territory.getForceStrength("Ix*"));
+                assertEquals(1, territory.countFactions());
             } else {
-                assertEquals(territory.getForces().size(), 0);
+                assertEquals(0, territory.countFactions());
             }
         }
     }
@@ -143,5 +141,16 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
+    }
+
+    @Test
+    public void testSpiceCollectedFromTerritory() {
+        Territory theGreatFlat = game.getTerritory("The Great Flat");
+        theGreatFlat.setForceStrength("Ix", 1);
+        theGreatFlat.setForceStrength("Ix*", 1);
+        theGreatFlat.setSpice(10);
+        assertEquals(5, faction.getSpiceCollectedFromTerritory(theGreatFlat));
+        theGreatFlat.setSpice(3);
+        assertEquals(3, faction.getSpiceCollectedFromTerritory(theGreatFlat));
     }
 }

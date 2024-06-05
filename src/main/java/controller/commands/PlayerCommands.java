@@ -11,7 +11,6 @@ import controller.DiscordGame;
 import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
 import model.factions.Faction;
-import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -91,7 +90,7 @@ public class PlayerCommands {
         else if (!leaderName.equals("None")) {
             leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
             Territory battleTerritory = currentBattle.getTerritorySectors().stream()
-                    .filter(t -> !t.getForces(faction).isEmpty() || faction instanceof RicheseFaction && t.hasRicheseNoField())
+                    .filter(t -> t.getTotalForceCount(faction) > 0)
                     .findAny().orElseThrow();
             leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
             faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);

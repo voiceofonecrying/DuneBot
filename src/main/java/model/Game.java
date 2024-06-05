@@ -747,8 +747,8 @@ public class Game {
     public boolean ixCanMoveHMS() {
         if (hasFaction("Ix")) {
             Territory hms = getTerritory("Hidden Mobile Stronghold");
-            int cyborgsInHMS = hms.getForce("Ix*").getStrength();
-            int suboidsInHMS = hms.getForce("Ix").getStrength();
+            int cyborgsInHMS = hms.getForceStrength("Ix*");
+            int suboidsInHMS = hms.getForceStrength("Ix");
             return (cyborgsInHMS + suboidsInHMS > 0);
         }
         return false;
@@ -842,7 +842,7 @@ public class Game {
                             message.append(" is eaten by the worm!\n");
                             territories.get(lastCard.name()).setSpice(0);
                         }
-                        if (!getTerritory(lastCard.name()).getForces().isEmpty()) {
+                        if (getTerritory(lastCard.name()).countFactions() > 0) {
                             List<Force> forcesToRemove = new ArrayList<>();
                             for (Force force : getTerritory(lastCard.name()).getForces()) {
                                 if (force.getName().contains("Fremen")) continue;
@@ -896,7 +896,7 @@ public class Game {
         if (drawn.discoveryToken() == null) territories.get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
         else {
             getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
-            if (!getTerritory(drawn.name()).getForces().isEmpty()) {
+            if (getTerritory(drawn.name()).countFactions() > 0) {
                 message.append("all forces in the territory were killed in the spice blow!\n");
                 List<Force> forcesToRemove = new ArrayList<>(getTerritory(drawn.name()).getForces());
                 for (Force force : forcesToRemove) {

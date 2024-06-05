@@ -113,7 +113,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         for (String territoryName : game.getTerritories().keySet()) {
             if (game.getHomeworlds().containsValue(territoryName)) continue;
             Territory territory = game.getTerritories().get(territoryName);
-            assertEquals(territory.getForces().size(), 0);
+            assertEquals(0, territory.countFactions());
         }
     }
 

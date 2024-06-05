@@ -202,9 +202,9 @@ abstract class FactionTestTemplate {
         void validToReserves() {
             int reservesStrength = faction.getReservesStrength();
             faction.removeForces(territory.getTerritoryName(), forceName, 2, false, false, forceName);
-            assertEquals(territory.getForce(forceName).getStrength(), 3);
+            assertEquals(3, territory.getForceStrength(forceName));
             assertEquals(reservesStrength + 2, faction.getReservesStrength());
-            assertEquals(game.getTanks().stream().filter(tank -> tank.getName().equals(forceName)).count(), 0);
+            assertEquals(0, game.getTanks().stream().filter(tank -> tank.getName().equals(forceName)).count());
         }
 
         @Test
@@ -212,7 +212,7 @@ abstract class FactionTestTemplate {
             int reservesStrength = faction.getReservesStrength();
             int tanksStrength = game.getForceFromTanks(forceName).getStrength();
             faction.removeForces(territory.getTerritoryName(), forceName, 2, true, true, forceName);
-            assertEquals(territory.getForce(forceName).getStrength(), 3);
+            assertEquals(3, territory.getForceStrength(forceName));
             assertEquals(tanksStrength + 2, game.getForceFromTanks(forceName).getStrength());
             assertEquals(reservesStrength, faction.getReservesStrength());
         }
