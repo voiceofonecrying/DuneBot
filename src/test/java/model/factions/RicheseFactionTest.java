@@ -108,7 +108,7 @@ class RicheseFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(20, faction.getReservesStrength(), 20);
+        assertEquals(20, faction.getReservesStrength());
         assertEquals(faction.getReserves().getName(), "Richese");
     }
 

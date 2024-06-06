@@ -106,7 +106,7 @@ class GuildFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(15, faction.getReservesStrength(), 15);
+        assertEquals(15, faction.getReservesStrength());
         assertEquals(faction.getReserves().getName(), "Guild");
     }
 

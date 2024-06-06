@@ -28,7 +28,7 @@ public class RicheseFaction extends Faction {
         this.occupiedIncome = 1;
         this.homeworld = "Richese";
         Territory richese = game.getTerritories().addHomeworld(homeworld);
-        richese.addForce(new Force(name, 10));
+        richese.addForce(new Force(name, 20));
         game.getHomeworlds().put(name, homeworld);
         this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);
