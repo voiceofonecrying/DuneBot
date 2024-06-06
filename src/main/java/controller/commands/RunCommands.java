@@ -179,27 +179,6 @@ public class RunCommands {
         }
     }
 
-    public static String stormTroops(Territory territory, Game game) {
-        StringBuilder message = new StringBuilder();
-        List<Force> fremenForces = territory.getForces().stream()
-                .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
-                .toList();
-
-        List<Force> nonFremenForces = territory.getForces().stream()
-                .filter(f -> !fremenForces.contains(f))
-                .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
-                .toList();
-
-        if (!fremenForces.isEmpty())
-            message.append(territory.stormTroopsFremen(fremenForces, game));
-
-        for (Force force : nonFremenForces) {
-            message.append(territory.stormRemoveTroops(force, force.getStrength(), game));
-        }
-
-        return message.toString();
-    }
-
     public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Map<String, Territory> territories = game.getTerritories();
         if (game.getTurn() != 1) {
@@ -225,7 +204,7 @@ public class RunCommands {
                         .filter(t -> t.getSpice() > 0).toList();
 
                 for (Territory territory : territoriesWithTroops) {
-                    message.append(stormTroops(territory, game));
+                    message.append(territory.stormTroops(game));
                 }
 
                 territoriesWithSpice.stream().map(Territory::stormRemoveSpice).forEach(message::append);

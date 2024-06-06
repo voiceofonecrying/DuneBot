@@ -60,17 +60,14 @@ public class BattlesTest {
         game.addFaction(harkonnen);
         game.addFaction(richese);
         Territory carthag = game.getTerritory("Carthag");
-        Force emperorTroops = new Force("Emperor", 5);
-        carthag.addForce(emperorTroops);
-        Force sardaukar = new Force("Emperor*", 2);
-        carthag.addForce(sardaukar);
+        carthag.addForces("Emperor", 5);
+        carthag.addForces("Emperor*", 2);
         game.startBattlePhase();
         Battles battles = game.getBattles();
-        Force harkonnenTroops = carthag.getForce("Harkonnen");
         List<Force> battleForces = battles.aggregateForces(List.of(carthag), List.of(emperor, harkonnen));
-        assertEquals(sardaukar.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
-        assertEquals(emperorTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
-        assertEquals(harkonnenTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
+        assertEquals(carthag.getForceStrength("Emperor*"), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
+        assertEquals(carthag.getForceStrength("Emperor"), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
+        assertEquals(carthag.getForceStrength("Harkonnen"), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
     }
 
     @Test
@@ -92,12 +89,10 @@ public class BattlesTest {
         game.addFaction(richese);
         Territory cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         Territory cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
-        Force harkonnenTroops = new Force("Harkonnen", 3);
-        cielagoNorth_eastSector.addForce(new Force("Emperor", 2));
-        cielagoNorth_eastSector.addForce(harkonnenTroops);
-        Force sardaukar = new Force("Emperor*", 2);
-        cielagoNorth_westSector.addForce(new Force("Emperor", 2));
-        cielagoNorth_westSector.addForce(sardaukar);
+        cielagoNorth_eastSector.addForces("Emperor", 2);
+        cielagoNorth_eastSector.addForces("Harkonnen", 3);
+        cielagoNorth_westSector.addForces("Emperor", 2);
+        cielagoNorth_westSector.addForces("Emperor*", 2);
         cielagoNorth_westSector.setRicheseNoField(5);
         List<Territory> cielagoNorthSectors = List.of(
                 game.getTerritory("Cielago North (West Sector)"),
@@ -106,13 +101,11 @@ public class BattlesTest {
         );
         game.startBattlePhase();
         Battles battles = game.getBattles();
-        Force emperorTroops = new Force("Emperor", 4);
-        Force noFieldForce = new Force("NoField", 5, "Richese");
         List<Force> battleForces = battles.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese));
-        assertEquals(sardaukar.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
-        assertEquals(emperorTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
-        assertEquals(harkonnenTroops.getStrength(), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
-        assertEquals(noFieldForce.getStrength(), battleForces.stream().filter(f -> f.getName().equals("NoField")).findFirst().orElseThrow().getStrength());
+        assertEquals(2, battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
+        assertEquals(4, battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
+        assertEquals(3, battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
+        assertEquals(5, battleForces.stream().filter(f -> f.getName().equals("NoField")).findFirst().orElseThrow().getStrength());
     }
 
     @Test

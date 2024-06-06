@@ -515,7 +515,7 @@ public class CommandManager extends ListenerAdapter {
 
             message.append(
                     MessageFormat.format("{0} {1} ",
-                            amountValue, Emojis.getForceEmoji(from.getForce(forceName).getName())
+                            amountValue, Emojis.getForceEmoji(forceName)
                     )
             );
         }
@@ -527,7 +527,7 @@ public class CommandManager extends ListenerAdapter {
 
             message.append(
                     MessageFormat.format("{0} {1} ",
-                            starredAmountValue, Emojis.getForceEmoji(from.getForce(targetFaction.getName() + "*").getName())
+                            starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")
                     )
             );
         }

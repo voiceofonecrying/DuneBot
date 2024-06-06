@@ -191,9 +191,7 @@ abstract class FactionTestTemplate {
             Force force = faction.getReserves();
             forceName = force.getName();
 
-            territory.getForce("someforce").setStrength(8);
             territory.setForceStrength(force.getName(), 5);
-            territory.getForce("someotherforce").setStrength(4);
 
             force.setStrength(force.getStrength() - 5);
         }

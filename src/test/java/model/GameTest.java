@@ -530,8 +530,9 @@ class GameTest {
             ix = new IxFaction("fp6", "un6", game);
             game.addFaction(ix);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-            hms.getForce("Ix*").setStrength(0);
-            hms.getForce("Ix").setStrength(0);
+            hms.removeForce("Ix");
+            hms.removeForce("Ix*");
+            assertEquals(0, hms.getTotalForceCount(ix));
             assertFalse(game.ixCanMoveHMS());
         }
     }

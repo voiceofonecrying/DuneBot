@@ -382,13 +382,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> fromTerritories(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
-        List<Territory> territories = new LinkedList<>();
-        for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForceStrength(faction.getName()) > 0 || territory.getForce(faction.getName() + "*").getStrength() > 0
-                    || (faction instanceof BGFaction && territory.getForceStrength("Advisor") > 0)) {
-                territories.add(territory);
-            }
-        }
+        List<Territory> territories = game.getTerritories().values().stream().filter(territory -> territory.getTotalForceCount(faction) > 0).toList();
         return territories.stream().map(Territory::getTerritoryName)
                 .filter(territory -> territory.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(territory -> new Command.Choice(territory, territory))
@@ -568,12 +562,9 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> bgTerritories(Game game, String searchValue) {
-        List<Territory> territories = new LinkedList<>();
-        for (Territory territory : game.getTerritories().values()) {
-            if (territory.getForceStrength("Advisor") > 0 || territory.getForce("BG").getStrength() > 0) {
-                territories.add(territory);
-            }
-        }
+        List<Territory> territories = game.getTerritories().values().stream()
+                .filter(territory -> territory.getForceStrength("Advisor") > 0 || territory.getForceStrength("BG") > 0)
+                .toList();
         return territories.stream().map(Territory::getTerritoryName)
                 .filter(territory -> territory.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(territory -> new Command.Choice(territory, territory))

@@ -318,24 +318,45 @@ public class Territory {
         int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
 
         if (lostRegularForces > 0)
-            message.append(stormRemoveTroops(regularForce, lostRegularForces, game));
+            message.append(stormRemoveTroops("Fremen", "Fremen", lostRegularForces, game));
 
         if (lostFedaykin > 0)
-            message.append(stormRemoveTroops(fedaykin, lostFedaykin, game));
+            message.append(stormRemoveTroops("Fremen*", "Fremen", lostFedaykin, game));
 
         return message.toString();
     }
 
-    public String stormRemoveTroops(Force force, int strength, Game game) {
-        setForceStrength(force.getName(), force.getStrength() - strength);
-        game.addToTanks(force.getName(), strength);
+    public String stormRemoveTroops(String forceName, String factionName, int strength, Game game) {
+        removeForces(forceName, strength);
+        game.addToTanks(forceName, strength);
 
         return MessageFormat.format(
                 "{0} lose {1} {2} to the storm in {3}\n",
-                game.getFaction(force.getFactionName()).getEmoji(),
-                strength, Emojis.getForceEmoji(force.getName()),
+                Emojis.getFactionEmoji(factionName),
+                strength, Emojis.getForceEmoji(forceName),
                 territoryName
         );
+    }
+
+    public String stormTroops(Game game) {
+        StringBuilder message = new StringBuilder();
+        List<Force> fremenForces = forces.stream()
+                .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
+                .toList();
+
+        List<Force> nonFremenForces = forces.stream()
+                .filter(f -> !fremenForces.contains(f))
+                .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
+                .toList();
+
+        if (!fremenForces.isEmpty())
+            message.append(stormTroopsFremen(fremenForces, game));
+
+        for (Force force : nonFremenForces) {
+            message.append(stormRemoveTroops(force.getName(), force.getFactionName(), force.getStrength(), game));
+        }
+
+        return message.toString();
     }
 
     public String stormRemoveSpice() {
