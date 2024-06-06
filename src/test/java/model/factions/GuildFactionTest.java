@@ -45,7 +45,9 @@ class GuildFactionTest extends FactionTestTemplate {
     @Test
     public void testFreeRevivalLowThreshold() {
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(2, faction.getFreeRevival());
@@ -55,7 +57,9 @@ class GuildFactionTest extends FactionTestTemplate {
     public void testFreeRevivalLowThresholdAlliedToFremen() {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -81,7 +85,9 @@ class GuildFactionTest extends FactionTestTemplate {
         game.startRevival();
         game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -93,7 +99,9 @@ class GuildFactionTest extends FactionTestTemplate {
         game.getRevival().setRecruitsInPlay(true);
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
@@ -107,7 +115,6 @@ class GuildFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialReserves() {
         assertEquals(15, faction.getReservesStrength());
-        assertEquals(faction.getReserves().getName(), "Guild");
     }
 
     @Test

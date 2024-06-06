@@ -377,8 +377,6 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
-        Force reserves = targetFaction.getReserves();
-        Force specialReserves = targetFaction.getSpecialReserves();
         TurnSummary turnSummary = discordGame.getTurnSummary();
 
         if (amountValue > 0)
@@ -394,13 +392,10 @@ public class CommandManager extends ListenerAdapter {
             message.append(targetFaction.getEmoji())
                     .append(": ");
 
-            if (amountValue > 0) {
-                message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(reserves.getName())));
-            }
-
-            if (starredAmountValue > 0) {
-                message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(specialReserves.getName())));
-            }
+            if (amountValue > 0)
+                message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
+            if (starredAmountValue > 0)
+                message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
 
             message.append(
                     MessageFormat.format("placed on {0}",
@@ -464,10 +459,10 @@ public class CommandManager extends ListenerAdapter {
         if (special) {
             // Are Sardaukar being reported to ledger?
             faction.removeSpecialReserves(amount);
-            forceName = faction.getSpecialReserves().getName();
+            forceName = faction.getName();
         } else {
             faction.removeReserves(amount);
-            forceName = faction.getReserves().getName();
+            forceName = faction.getName() + "*";
             if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
                 // Also need to report Advisors to ledger
                 int advisors = territory.getForceStrength("Advisor");
@@ -477,21 +472,12 @@ public class CommandManager extends ListenerAdapter {
         }
         discordGame.getFactionLedger(faction).queueMessage(
                 MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
-        territory.setForceStrength(forceName, territory.getForceStrength(forceName) + amount);
+        territory.addForces(forceName, amount);
         faction.checkForLowThreshold();
         game.setUpdated(UpdateType.MAP);
     }
 
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
-
-        int fromForceStrength = from.getForceStrength(targetFaction.getName());
-        if (targetFaction instanceof BGFaction && from.getForceStrength("Advisor") > 0)
-            fromForceStrength = from.getForceStrength("Advisor");
-        int fromStarredForceStrength = from.getForceStrength(targetFaction.getName() + "*");
-
-        if (fromForceStrength < amountValue || fromStarredForceStrength < starredAmountValue) {
-            throw new InvalidOptionException("Not enough forces in territory.");
-        }
         if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
                 (!(targetFaction instanceof EcazFaction && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
                         && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction)))) {
@@ -499,7 +485,6 @@ public class CommandManager extends ListenerAdapter {
         }
 
         StringBuilder message = new StringBuilder();
-
         message.append(targetFaction.getEmoji())
                 .append(": ");
 
@@ -510,8 +495,8 @@ public class CommandManager extends ListenerAdapter {
                 forceName = "Advisor";
                 if (to.hasForce("Advisor")) targetForceName = "Advisor";
             }
-            from.setForceStrength(forceName, fromForceStrength - amountValue);
-            to.setForceStrength(targetForceName, to.getForceStrength(targetForceName) + amountValue);
+            from.removeForces(forceName, amountValue);
+            to.addForces(targetForceName, amountValue);
 
             message.append(
                     MessageFormat.format("{0} {1} ",
@@ -521,9 +506,8 @@ public class CommandManager extends ListenerAdapter {
         }
 
         if (starredAmountValue > 0) {
-            from.setForceStrength(targetFaction.getName() + "*", fromStarredForceStrength - starredAmountValue);
-            to.setForceStrength(targetFaction.getName() + "*",
-                    to.getForceStrength(targetFaction.getName() + "*") + starredAmountValue);
+            from.removeForces(targetFaction.getName() + "*", starredAmountValue);
+            to.addForces(targetFaction.getName() + "*", starredAmountValue);
 
             message.append(
                     MessageFormat.format("{0} {1} ",

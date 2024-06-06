@@ -39,8 +39,10 @@ class FremenFactionTest extends FactionTestTemplate {
     @Test
     public void testFreeRevivalLowThreshold() {
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -58,8 +60,10 @@ class FremenFactionTest extends FactionTestTemplate {
         game.startRevival();
         game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
@@ -73,10 +77,7 @@ class FremenFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialReserves() {
         assertEquals(17, faction.getReservesStrength());
-        assertEquals(faction.getReserves().getName(), "Fremen");
-
-        assertEquals(3, faction.getSpecialReservesStrength(), 3);
-        assertEquals(faction.getSpecialReserves().getName(), "Fremen*");
+        assertEquals(3, faction.getSpecialReservesStrength());
     }
 
     @Test

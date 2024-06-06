@@ -198,10 +198,11 @@ public class Territory {
         return getForce(forceName).getStrength();
     }
 
-    public void setForceStrength(String name, int strength) {
-        if (strength <= 0) forces.remove(getForce(name));
-        else if (getForce(name).getStrength() == 0) forces.add(new Force(name, strength));
-        else getForce(name).setStrength(strength);
+    private void setForceStrength(String name, int strength) {
+        if (strength < 0) throw new IllegalArgumentException("You cannot set a negative strength value for a force.");
+        forces.remove(getForce(name));
+        if (strength > 0)
+            forces.add(new Force(name, strength));
     }
 
     public void addForces(String forceName, int amount) {
@@ -210,8 +211,9 @@ public class Territory {
     }
 
     public void removeForces(String forceName, int amount) {
+        if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative strength value from a force.");
         int forceStrength = getForceStrength(forceName);
-        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in territory.");
+        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in " + territoryName + ".");
         setForceStrength(forceName, forceStrength - amount);
     }
 

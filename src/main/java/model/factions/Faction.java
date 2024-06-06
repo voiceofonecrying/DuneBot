@@ -31,8 +31,6 @@ public class Faction {
     private final List<StrongholdCard> strongholdCards;
     private StrongholdCard hmsStrongholdProxy;
     private final List<Leader> leaders;
-    @Exclude
-    public Force reserves;
     protected String emoji;
     protected int handLimit;
     protected int spice;
@@ -44,8 +42,6 @@ public class Faction {
     protected int lowThreshold;
     protected int occupiedIncome;
     protected String homeworld;
-    @Exclude
-    protected Force specialReserves;
     @Exclude
     private Set<UpdateType> updateTypes;
     private String player;
@@ -338,52 +334,35 @@ public class Faction {
         return false;
     }
 
-    public Force getReserves() {
-        if (reserves != null) return reserves;
-        return game.getTerritory(homeworld).getForce(name);
-    }
-
     public void addReserves(int amount) {
-        if (reserves != null) {
-            getReserves().addStrength(amount);
-        } else if (amount > 0) {
-            Territory territory = game.getTerritory(homeworld);
-            territory.addForces(name, amount);
-        }
+        Territory territory = game.getTerritory(homeworld);
+        territory.addForces(name, amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeReserves(int amount) {
-        getReserves().removeStrength(amount);
+        game.getTerritory(homeworld).removeForces(name, amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public Force getSpecialReserves() {
-        if (specialReserves != null) return specialReserves;
-        return game.getTerritory(homeworld).getForce(name + "*");
-    }
-
     public void addSpecialReserves(int amount) {
-        if (specialReserves != null) {
-            getSpecialReserves().addStrength(amount);
-        } else {
-            Territory territory = game.getTerritory(homeworld);
-            territory.addForces(name + "*", amount);
-        }
+        Territory territory = game.getTerritory(homeworld);
+        territory.addForces(name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeSpecialReserves(int amount) {
-        getSpecialReserves().removeStrength(amount);
+        Territory territory = game.getTerritory(homeworld);
+        territory.removeForces(name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public int getReservesStrength() {
-        return getReserves().getStrength();
+        return game.getTerritory(homeworld).getForceStrength(name);
     }
 
     public int getSpecialReservesStrength() {
-        return getSpecialReserves().getStrength();
+        return game.getTerritory(homeworld).getForceStrength(name + "*");
     }
 
     public int getTotalReservesStrength() {

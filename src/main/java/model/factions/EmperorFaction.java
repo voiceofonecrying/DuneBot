@@ -68,11 +68,11 @@ public class EmperorFaction extends Faction {
     @Override
     public void checkForHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (!isHighThreshold && getReserves().getStrength() + getSpecialReservesOnKaitain().getStrength() > lowThreshold) {
+        if (!isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() > lowThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
             isHighThreshold = true;
         }
-        if (!isSecundusHighThreshold && getSpecialReserves().getStrength() > secundusLowThreshold) {
+        if (!isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() > secundusLowThreshold) {
             game.getTurnSummary().publish(secondHomeworld + " has flipped to High Threshold");
             isSecundusHighThreshold = true;
         }
@@ -81,11 +81,11 @@ public class EmperorFaction extends Faction {
     @Override
     public void checkForLowThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (isHighThreshold && getReserves().getStrength() + getSpecialReservesOnKaitain().getStrength() < highThreshold) {
+        if (isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() < highThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
             isHighThreshold = false;
         }
-        if (isSecundusHighThreshold && getSpecialReserves().getStrength() < secundusHighThreshold) {
+        if (isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() < secundusHighThreshold) {
             game.getTurnSummary().publish("Salusa Secundus has flipped to Low Threshold.");
             isSecundusHighThreshold = false;
         }
@@ -93,67 +93,73 @@ public class EmperorFaction extends Faction {
 
     @Override
     public void removeReserves(int amount) {
-        int kaitainAmount = getReserves().getStrength();
-        int secundusAmount = getRegularReservesOnSalusaSecundus().getStrength();
+        int kaitainAmount = super.getReservesStrength();
+        int secundusAmount = getRegularStrengthOnSalusaSecundus();
         if (amount > kaitainAmount + secundusAmount) {
             // Produce exception as would also result from Faction::removeReserves
             super.removeReserves(amount);
         } else {
-            getReserves().removeStrength(Math.min(amount, kaitainAmount));
+            super.removeReserves(Math.min(amount, kaitainAmount));
             if (amount > kaitainAmount)
-                getRegularReservesOnSalusaSecundus().removeStrength(amount - kaitainAmount);
+                removeRegularForcesFromSalusaSecundus(amount - kaitainAmount);
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    @Override
-    public Force getSpecialReserves() {
-        if (this.specialReserves != null) return this.specialReserves;
-        return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor*");
+    private int getSpecialStrengthOnKaitain() {
+        return game.getTerritory(homeworld).getForceStrength(name + "*");
     }
 
-    public Force getSpecialReservesOnKaitain() {
-        return getGame().getTerritory(getHomeworld()).getForce("Emperor*");
+    private void removeSpecialForcesFromKaitain(int amount) {
+        game.getTerritory(homeworld).removeForces(name + "*", amount);
     }
 
-    public Force getRegularReservesOnSalusaSecundus() {
-        return getGame().getTerritory(getSecondHomeworld()).getForce("Emperor");
+    private int getSpecialStrengthOnSalusaSecundus() {
+        return game.getTerritory(secondHomeworld).getForceStrength(name + "*");
+    }
+
+    private int getRegularStrengthOnSalusaSecundus() {
+        return game.getTerritory(secondHomeworld).getForceStrength(name);
+    }
+
+    private void removeRegularForcesFromSalusaSecundus(int amount) {
+        game.getTerritory(secondHomeworld).removeForces(name, amount);
+    }
+
+    private void removeSpecialForcesFromSalusaSecundus(int amount) {
+        game.getTerritory(secondHomeworld).removeForces(name + "*", amount);
     }
 
     @Override
     public void addSpecialReserves(int amount) {
-        if (specialReserves != null) {
-            getSpecialReserves().addStrength(amount);
-        } else {
-            Territory territory = getGame().getTerritory(getSecondHomeworld());
-            territory.addForces("Emperor*", amount);
-        }
+        Territory territory = getGame().getTerritory(getSecondHomeworld());
+        territory.addForces(name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     @Override
     public void removeSpecialReserves(int amount) {
-        int secundusAmount = getSpecialReserves().getStrength();
-        int kaitainAmount = getSpecialReservesOnKaitain().getStrength();
+        int secundusAmount = getGame().getTerritory(getSecondHomeworld()).getForceStrength(name + "*");
+        int kaitainAmount = getGame().getTerritory(getHomeworld()).getForceStrength(name + "*");
         if (amount > secundusAmount + kaitainAmount) {
             // Produce exception as would also result from Faction::removeReserves
             super.removeSpecialReserves(amount);
         } else {
-            getSpecialReserves().removeStrength(Math.min(amount, secundusAmount));
+            removeSpecialForcesFromSalusaSecundus(Math.min(amount, secundusAmount));
             if (amount > secundusAmount)
-                getSpecialReservesOnKaitain().removeStrength(amount - secundusAmount);
+                removeSpecialForcesFromKaitain(amount - secundusAmount);
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     @Override
     public int getReservesStrength() {
-        return getReserves().getStrength() + getRegularReservesOnSalusaSecundus().getStrength();
+        return super.getReservesStrength() + getRegularStrengthOnSalusaSecundus();
     }
 
     @Override
     public int getSpecialReservesStrength() {
-        return getSpecialReserves().getStrength() + getSpecialReservesOnKaitain().getStrength();
+        return getSpecialStrengthOnSalusaSecundus() + getSpecialStrengthOnKaitain();
     }
 
     public void kaitainHighDiscard(String cardName) {

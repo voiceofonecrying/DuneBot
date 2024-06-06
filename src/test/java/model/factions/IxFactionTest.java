@@ -44,8 +44,10 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testFreeRevivalLowThreshold() {
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(2, faction.getFreeRevival());
@@ -55,8 +57,10 @@ class IxFactionTest extends FactionTestTemplate {
     public void testFreeRevivalLowThresholdAlliedToFremen() {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -82,8 +86,10 @@ class IxFactionTest extends FactionTestTemplate {
         game.startRevival();
         game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -95,8 +101,10 @@ class IxFactionTest extends FactionTestTemplate {
         game.getRevival().setRecruitsInPlay(true);
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName(), faction.highThreshold - 1);
-        game.getTerritory(faction.homeworld).setForceStrength(faction.getName() + "*", 0);
+        Territory homeworld = game.getTerritory(faction.getHomeworld());
+        int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
+        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
@@ -109,11 +117,8 @@ class IxFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialReserves() {
-        assertEquals(10, faction.getReservesStrength(), 10);
-        assertEquals(faction.getReserves().getName(), "Ix");
-
-        assertEquals(4, faction.getSpecialReservesStrength(), 4);
-        assertEquals(faction.getSpecialReserves().getName(), "Ix*");
+        assertEquals(10, faction.getReservesStrength());
+        assertEquals(4, faction.getSpecialReservesStrength());
     }
 
     @Test
@@ -146,8 +151,8 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testSpiceCollectedFromTerritory() {
         Territory theGreatFlat = game.getTerritory("The Great Flat");
-        theGreatFlat.setForceStrength("Ix", 1);
-        theGreatFlat.setForceStrength("Ix*", 1);
+        theGreatFlat.addForces("Ix", 1);
+        theGreatFlat.addForces("Ix*", 1);
         theGreatFlat.setSpice(10);
         assertEquals(5, faction.getSpiceCollectedFromTerritory(theGreatFlat));
         theGreatFlat.setSpice(3);

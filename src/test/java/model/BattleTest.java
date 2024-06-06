@@ -753,19 +753,19 @@ class BattleTest {
             emperor.setChat(new TestTopic());
             harkonnen.setChat(new TestTopic());
             arrakeen = game.getTerritory("Arrakeen");
-            arrakeen.setForceStrength("Harkonnen", 1);
+            arrakeen.addForces("Harkonnen", 1);
             battle1 = new Battle("Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
             ecaz.setAlly("Atreides");
             atreides.setAlly("Ecaz");
             carthag = game.getTerritory("Carthag");
-            carthag.setForceStrength("Ecaz", 5);
-            carthag.setForceStrength("Atreides", 1);
+            carthag.addForces("Ecaz", 5);
+            carthag.addForces("Atreides", 1);
             battle2 = new Battle("Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
             battle2a = new Battle("Carthag", List.of(carthag), List.of(harkonnen, atreides, ecaz), carthag.getForces(), "Atreides");
             habbanyaSietch = game.getTerritory("Habbanya Sietch");
-            habbanyaSietch.setForceStrength("BT", 6);
-            habbanyaSietch.setForceStrength("Emperor", 6);
-            habbanyaSietch.setForceStrength("Emperor*", 5);
+            habbanyaSietch.addForces("BT", 6);
+            habbanyaSietch.addForces("Emperor", 6);
+            habbanyaSietch.addForces("Emperor*", 5);
             battle3 = new Battle("Habbanya Sietch", List.of(habbanyaSietch), List.of(bt, emperor), habbanyaSietch.getForces(), "Atreides");
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();

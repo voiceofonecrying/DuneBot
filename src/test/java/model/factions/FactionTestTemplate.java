@@ -187,13 +187,11 @@ abstract class FactionTestTemplate {
         void setUp() {
             faction = getFaction();
 
-            territory = game.getTerritories().get("Arrakeen");
-            Force force = faction.getReserves();
-            forceName = force.getName();
+            territory = game.getTerritories().get("Sihaya Ridge");
+            forceName = faction.getName();
 
-            territory.setForceStrength(force.getName(), 5);
-
-            force.setStrength(force.getStrength() - 5);
+            territory.addForces(forceName, 5);
+            faction.removeReserves(5);
         }
 
         @Test
@@ -248,45 +246,36 @@ abstract class FactionTestTemplate {
         String forceName;
 
         @BeforeEach
-        void setUpRemoveSpice() {
+        void setUp() {
             faction = getFaction();
-
-            Force force = faction.getReserves();
-            forceName = force.getName();
-
-            territory = game.getTerritories().get("Arrakeen");
-            territory.setForceStrength(forceName, 1);
-            territory = game.getTerritories().get("Polar Sink");
-            territory.setForceStrength(forceName, 1);
-            territory = game.getTerritories().get("Hidden Mobile Stronghold");
-            territory.setForceStrength(forceName, 1);
+            forceName = faction.getName();
         }
 
         @Test
         void trueOnShieldWall() {
             territory = game.getTerritories().get("Shield Wall (North Sector)");
-            territory.setForceStrength(forceName, 1);
+            territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInImperialBasin() {
             territory = game.getTerritories().get("Imperial Basin (Center Sector)");
-            territory.setForceStrength(forceName, 1);
+            territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInFalseWallEast() {
             territory = game.getTerritories().get("False Wall East (Far North Sector)");
-            territory.setForceStrength(forceName, 1);
+            territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInGaraKulon() {
             territory = game.getTerritories().get("Gara Kulon");
-            territory.setForceStrength(forceName, 1);
+            territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
     }

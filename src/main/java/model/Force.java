@@ -48,12 +48,6 @@ public class Force {
         this.strength += amount;
     }
 
-    public void removeStrength(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative strength value from a force.");
-        this.strength -= amount;
-        if (this.strength < 0) throw new IllegalArgumentException("Not enough strength in the reserves!");
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

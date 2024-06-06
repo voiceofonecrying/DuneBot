@@ -650,7 +650,7 @@ class GameTest {
             assertEquals(2, game.getTurn());
 
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Guild", 1);
+            territory.addForces("Guild", 1);
 
             game.setStorm(3);
             game.setStormMovement(5);
@@ -667,7 +667,7 @@ class GameTest {
             assertEquals(2, game.getTurn());
 
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Guild", 1);
+            territory.addForces("Guild", 1);
             game.getTreacheryDeck().remove(familyAtomics);
             emperor.addTreacheryCard(familyAtomics);
 
@@ -687,7 +687,7 @@ class GameTest {
             assertEquals(2, game.getTurn());
 
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Guild", 1);
+            territory.addForces("Guild", 1);
             game.getTreacheryDeck().remove(familyAtomics);
             guild.addTreacheryCard(familyAtomics);
 
@@ -708,7 +708,7 @@ class GameTest {
             assertEquals(2, game.getTurn());
 
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Guild", 1);
+            territory.addForces("Guild", 1);
 
             game.setStorm(8);
             game.setStormMovement(5);
@@ -726,7 +726,7 @@ class GameTest {
             assertEquals(2, game.getTurn());
 
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Guild", 1);
+            territory.addForces("Guild", 1);
             game.getTreacheryDeck().remove(familyAtomics);
 
             game.setStorm(8);
@@ -778,8 +778,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
-            sihayaRidge.setForceStrength("Emperor", 3);
-            sihayaRidge.setForceStrength("Emperor*", 5);
+            sihayaRidge.addForces("Emperor", 3);
+            sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
             assertEquals(3, sihayaRidge.getForceStrength("Emperor"));
 
@@ -799,8 +799,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
-            sihayaRidge.setForceStrength("Fremen", 5);
-            sihayaRidge.setForceStrength("Fremen*", 3);
+            sihayaRidge.addForces("Fremen", 5);
+            sihayaRidge.addForces("Fremen*", 3);
             assertEquals(3, sihayaRidge.getForceStrength("Fremen*"));
             assertEquals(5, sihayaRidge.getForceStrength("Fremen"));
 
@@ -821,8 +821,8 @@ class GameTest {
 
             emperor.setAlly("Fremen");
             fremen.setAlly("Emperor");
-            sihayaRidge.setForceStrength("Emperor", 3);
-            sihayaRidge.setForceStrength("Emperor*", 5);
+            sihayaRidge.addForces("Emperor", 3);
+            sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
             assertEquals(3, sihayaRidge.getForceStrength("Emperor"));
 
@@ -841,8 +841,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
-            sihayaRidge.setForceStrength("Emperor", 3);
-            sihayaRidge.setForceStrength("Emperor*", 5);
+            sihayaRidge.addForces("Emperor", 3);
+            sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
             assertEquals(3, sihayaRidge.getForceStrength("Emperor"));
 
@@ -862,8 +862,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
-            sihayaRidge.setForceStrength("Fremen", 5);
-            sihayaRidge.setForceStrength("Fremen*", 3);
+            sihayaRidge.addForces("Fremen", 5);
+            sihayaRidge.addForces("Fremen*", 3);
             assertEquals(3, sihayaRidge.getForceStrength("Fremen*"));
             assertEquals(5, sihayaRidge.getForceStrength("Fremen"));
 
@@ -884,8 +884,8 @@ class GameTest {
 
             emperor.setAlly("Fremen");
             fremen.setAlly("Emperor");
-            sihayaRidge.setForceStrength("Emperor", 3);
-            sihayaRidge.setForceStrength("Emperor*", 5);
+            sihayaRidge.addForces("Emperor", 3);
+            sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
             assertEquals(3, sihayaRidge.getForceStrength("Emperor"));
 
@@ -905,8 +905,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(sandtrout);
             assertEquals(sandtrout, game.getSpiceDeck().getFirst());
 
-            sihayaRidge.setForceStrength("Emperor", 3);
-            sihayaRidge.setForceStrength("Emperor*", 5);
+            sihayaRidge.addForces("Emperor", 3);
+            sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
             assertEquals(3, sihayaRidge.getForceStrength("Emperor"));
 
@@ -925,8 +925,8 @@ class GameTest {
             game.getSpiceDeck().addFirst(nextBlow);
             assertEquals(nextBlow, game.getSpiceDeck().getFirst());
 
-            funeralPlain.setForceStrength("Fremen", 5);
-            funeralPlain.setForceStrength("Fremen*", 3);
+            funeralPlain.addForces("Fremen", 5);
+            funeralPlain.addForces("Fremen*", 3);
             assertEquals(3, funeralPlain.getForceStrength("Fremen*"));
             assertEquals(5, funeralPlain.getForceStrength("Fremen"));
 
@@ -965,7 +965,7 @@ class GameTest {
             game.advanceTurn();
             game.advanceTurn();
             Territory shaiHuludTerritory = game.getTerritory("Cielago North (East Sector)");
-            shaiHuludTerritory.setForceStrength("Atreides", 3);
+            shaiHuludTerritory.addForces("Atreides", 3);
             SpiceCard lastBlow = game.getSpiceDeck().stream().filter(c -> c.name().equals("Cielago North (East Sector)")).findFirst().orElseThrow();
             game.getSpiceDiscardA().add(lastBlow);
 
@@ -1008,7 +1008,7 @@ class GameTest {
             game.removeForces("Caladan", atreides, 5, 0, true);
             assertFalse(atreides.isHighThreshold());
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Atreides", 3);
+            territory.addForces("Atreides", 3);
             game.removeForces("Sihaya Ridge", atreides, 1, 0, false);
             assertTrue(atreides.isHighThreshold());
         }
@@ -1016,8 +1016,8 @@ class GameTest {
         @Test
         void removeEmperorTroopAndSardaukarToTanks() {
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Emperor", 3);
-            territory.setForceStrength("Emperor*", 5);
+            territory.addForces("Emperor", 3);
+            territory.addForces("Emperor*", 5);
             assertEquals(3, territory.getForceStrength("Emperor"));
             assertEquals(5, territory.getForceStrength("Emperor*"));
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
@@ -1037,8 +1037,8 @@ class GameTest {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
             // Replace with placeForces after that method is moved to Game
-            territory.setForceStrength("Emperor", 3);
-            territory.setForceStrength("Emperor*", 5);
+            territory.addForces("Emperor", 3);
+            territory.addForces("Emperor*", 5);
             assertEquals(3, territory.getForceStrength("Emperor"));
             assertEquals(5, territory.getForceStrength("Emperor*"));
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
@@ -1059,9 +1059,6 @@ class GameTest {
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
-            // Replace with placeForces after that method is moved to Game
-            kaitain.setForceStrength("Emperor", 15);
-            salusaSecundus.setForceStrength("Emperor*", 5);
             assertEquals(15, kaitain.getForceStrength("Emperor"));
             assertEquals(5, salusaSecundus.getForceStrength("Emperor*"));
             assertEquals(0, game.getForceFromTanks(emperor.getName()).getStrength());
@@ -1097,8 +1094,7 @@ class GameTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
-            kaitain.setForceStrength("Emperor", 15);
-            kaitain.setForceStrength("Emperor*", 1);
+            kaitain.addForces("Emperor*", 1);
             assertTrue(emperor.isHighThreshold());
             game.removeForces("Kaitain", emperor, 11, 0, true);
             assertTrue(emperor.isHighThreshold());
@@ -1109,8 +1105,7 @@ class GameTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
-            salusaSecundus.setForceStrength("Emperor", 1);
-            salusaSecundus.setForceStrength("Emperor*", 5);
+            salusaSecundus.addForces("Emperor", 1);
             assertTrue(emperor.isSecundusHighThreshold());
             game.removeForces("Salusa Secundus", emperor, 0, 4, true);
             assertFalse(emperor.isSecundusHighThreshold());
@@ -1121,8 +1116,8 @@ class GameTest {
             // Change to placeForces after placeForces moves to Game
             Territory territory = game.getTerritory("Sihaya Ridge");
             // Replace with placeForces after that method is moved to Game
-            territory.setForceStrength("Fremen", 3);
-            territory.setForceStrength("Fremen*", 3);
+            territory.addForces("Fremen", 3);
+            territory.addForces("Fremen*", 3);
             assertEquals(3, territory.getForceStrength("Fremen"));
             assertEquals(3, territory.getForceStrength("Fremen*"));
             assertEquals(0, game.getForceFromTanks(fremen.getName()).getStrength());
@@ -1140,7 +1135,7 @@ class GameTest {
         @Test
         void removeBGAdvisorToTanks() {
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Advisor", 1);
+            territory.addForces("Advisor", 1);
             assertEquals(1, territory.getForceStrength("Advisor"));
 
             game.removeForces("Sihaya Ridge", bg, 1, 0, true);
@@ -1152,7 +1147,7 @@ class GameTest {
         @Test
         void removeSpecialFailsForBG() {
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Advisor", 1);
+            territory.addForces("Advisor", 1);
             assertEquals(1, territory.getForceStrength("Advisor"));
 
             assertThrows(IllegalArgumentException.class, () -> game.removeForces("Sihaya Ridge", bg, 1, 1, true));
@@ -1161,7 +1156,7 @@ class GameTest {
         @Test
         void removeTooManyBG() {
             Territory territory = game.getTerritory("Sihaya Ridge");
-            territory.setForceStrength("Advisor", 1);
+            territory.addForces("Advisor", 1);
             assertEquals(1, territory.getForceStrength("Advisor"));
 
             assertThrows(IllegalArgumentException.class, () -> game.removeForces("Sihaya Ridge", bg, 2, 0, true));
