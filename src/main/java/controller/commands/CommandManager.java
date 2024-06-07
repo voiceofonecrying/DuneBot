@@ -459,10 +459,10 @@ public class CommandManager extends ListenerAdapter {
         if (special) {
             // Are Sardaukar being reported to ledger?
             faction.removeSpecialReserves(amount);
-            forceName = faction.getName();
+            forceName = faction.getName() + "*";
         } else {
             faction.removeReserves(amount);
-            forceName = faction.getName() + "*";
+            forceName = faction.getName();
             if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
                 // Also need to report Advisors to ledger
                 int advisors = territory.getForceStrength("Advisor");
