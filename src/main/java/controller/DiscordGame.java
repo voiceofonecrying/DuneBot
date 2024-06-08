@@ -470,6 +470,11 @@ public class DiscordGame {
             t.setStronghold(false);
         }
 
+        // Temporary migration of Game::tanks to Game::tleilaxuTanks
+        if (!game.hasTleilaxuTanks)
+            game.getTanks().forEach(force -> game.getTleilaxuTanks().getForces().add(force));
+        game.clearOldTanks();
+
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));

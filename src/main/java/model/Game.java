@@ -46,7 +46,9 @@ public class Game {
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
     private final LinkedList<NexusCard> nexusDeck;
     private final LinkedList<NexusCard> nexusDiscard;
-    private final LinkedList<Force> tanks;
+    private final TleilaxuTanks tleilaxuTanks;
+    public boolean hasTleilaxuTanks;
+    private LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
@@ -108,6 +110,7 @@ public class Game {
         this.leaderSkillDeck = new LinkedList<>();
         this.spiceDiscardA = new LinkedList<>();
         this.spiceDiscardB = new LinkedList<>();
+        this.tleilaxuTanks = new TleilaxuTanks();
         this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.nexusDeck = new LinkedList<>();
@@ -478,30 +481,23 @@ public class Game {
         this.storm = ((storm - 1) % 18) + 1;
     }
 
-    public LinkedList<Force> getTanks() {
+    public TleilaxuTanks getTleilaxuTanks() {
+        return tleilaxuTanks;
+    }
+
+    public List<Force> getTanks() {
+        if (hasTleilaxuTanks)
+            return tleilaxuTanks.getForces();
         return tanks;
     }
 
-    public void removeZeroStrengthTanks() {
-        this.tanks.removeIf(f -> f.getStrength() == 0);
+    public void clearOldTanks() {
+        hasTleilaxuTanks = true;
+        tanks = new LinkedList<>();
     }
 
     public Force getForceFromTanks(String forceName) {
-        // This is a temporary fix for duplicates in the tanks list.
-        removeZeroStrengthTanks();
-
-        List<Force> forces = this.tanks.stream().filter(f -> f.getName().equalsIgnoreCase(forceName)).toList();
-
-        Force force;
-        if (forces.size() > 1) {
-            throw new IllegalArgumentException("Duplicate forces found in tanks list.");
-        } else if (forces.size() == 1) {
-            return forces.getFirst();
-        } else {
-            force = new Force(forceName, 0);
-            this.tanks.add(force);
-            return force;
-        }
+        return tleilaxuTanks.getForceFromTanks(forceName);
     }
 
     public void addToTanks(String forceName, int amount) {

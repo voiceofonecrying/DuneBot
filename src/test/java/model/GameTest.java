@@ -1195,8 +1195,8 @@ class GameTest {
         void testReviveMoreThanAreInTanks () {
             List<Force> tanks = game.getTanks();
             assertTrue(tanks.isEmpty());
-            tanks.add(new Force(emperor.getName(), 1));
-            tanks.add(new Force(emperor.getName() + "*", 1));
+            game.getForceFromTanks(emperor.getName()).addStrength(1);
+            game.getForceFromTanks(emperor.getName() + "*").addStrength(1);
             assertEquals(1, game.getForceFromTanks(emperor.getName()).getStrength());
             assertEquals(1, game.getForceFromTanks(emperor.getName() + "*").getStrength());
 
