@@ -330,7 +330,7 @@ public class Territory {
 
     public String stormRemoveTroops(String forceName, String factionName, int strength, Game game) {
         removeForces(forceName, strength);
-        game.addToTanks(forceName, strength);
+        game.getTleilaxuTanks().addForces(forceName, strength);
 
         return MessageFormat.format(
                 "{0} lose {1} {2} to the storm in {3}\n",

@@ -496,15 +496,6 @@ public class Game {
         tanks = new LinkedList<>();
     }
 
-    public Force getForceFromTanks(String forceName) {
-        return tleilaxuTanks.getForceFromTanks(forceName);
-    }
-
-    public void addToTanks(String forceName, int amount) {
-        Force force = getForceFromTanks(forceName);
-        force.addStrength(amount);
-    }
-
     public LinkedList<Leader> getLeaderTanks() {
         return leaderTanks;
     }
@@ -944,20 +935,10 @@ public class Game {
         else revivalCost = (regularAmount + starredAmount) * 2;
         if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
 
-        Force force = getForceFromTanks(faction.getName());
-        int strength = force.getStrength();
-        if (strength < regularAmount)
-            throw new IllegalArgumentException("There are only " + strength + " " + force.getName() + " forces in the tanks.");
-        force.setStrength(strength - regularAmount);
+        tleilaxuTanks.removeForces(faction.getName(), regularAmount);
         faction.addReserves(regularAmount);
-
-        force = getForceFromTanks(faction.getName() + "*");
-        strength = force.getStrength();
-        if (strength < starredAmount)
-            throw new IllegalArgumentException("There are only " + strength + " " + force.getName() + " forces in the tanks.");
-        force.setStrength(strength - starredAmount);
+        tleilaxuTanks.removeForces(faction.getName() + "*", starredAmount);
         faction.addSpecialReserves(starredAmount);
-
         faction.checkForHighThreshold();
 
         String costString = " for free";

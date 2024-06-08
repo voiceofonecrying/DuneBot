@@ -197,7 +197,7 @@ abstract class FactionTestTemplate {
         @Test
         void validToReserves() {
             int reservesStrength = faction.getReservesStrength();
-            faction.removeForces(territory.getTerritoryName(), forceName, 2, false, false, forceName);
+            faction.removeForces(territory.getTerritoryName(), forceName, 2, false, false);
             assertEquals(3, territory.getForceStrength(forceName));
             assertEquals(reservesStrength + 2, faction.getReservesStrength());
             assertEquals(0, game.getTanks().stream().filter(tank -> tank.getName().equals(forceName)).count());
@@ -206,35 +206,36 @@ abstract class FactionTestTemplate {
         @Test
         void validToTanks() {
             int reservesStrength = faction.getReservesStrength();
-            int tanksStrength = game.getForceFromTanks(forceName).getStrength();
-            faction.removeForces(territory.getTerritoryName(), forceName, 2, true, true, forceName);
+            TleilaxuTanks tanks = game.getTleilaxuTanks();
+            int tanksStrength = tanks.getForceStrength(forceName);
+            faction.removeForces(territory.getTerritoryName(), forceName, 2, true, true);
             assertEquals(3, territory.getForceStrength(forceName));
-            assertEquals(tanksStrength + 2, game.getForceFromTanks(forceName).getStrength());
+            assertEquals(tanksStrength + 2, tanks.getForceStrength(forceName));
             assertEquals(reservesStrength, faction.getReservesStrength());
         }
 
         @Test
         void invalidToReservesTooMany() {
             assertThrows(IllegalArgumentException.class,
-                    () -> faction.removeForces(territory.getTerritoryName(), forceName, 6, false, false, forceName));
+                    () -> faction.removeForces(territory.getTerritoryName(), forceName, 6, false, false));
         }
 
         @Test
         void invalidToReservesNegatives() {
             assertThrows(IllegalArgumentException.class,
-                    () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, false, false, forceName));
+                    () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, false, false));
         }
 
         @Test
         void invalidToTanksTooMany() {
             assertThrows(IllegalArgumentException.class,
-                    () -> faction.removeForces(territory.getTerritoryName(), forceName, 6, true, false, forceName));
+                    () -> faction.removeForces(territory.getTerritoryName(), forceName, 6, true, false));
         }
 
         @Test
         void invalidToTanksNegatives() {
             assertThrows(IllegalArgumentException.class,
-                    () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, true, false, forceName));
+                    () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, true, false));
         }
     }
 

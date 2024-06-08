@@ -79,9 +79,9 @@ public class BGFaction extends Faction {
         }
 
         if (territory.hasForce("BG")) {
-            removeForces(territoryName, "BG", amount, toTanks, false, "BG");
+            removeForces(territoryName, "BG", amount, toTanks, false);
         } else {
-            removeForces(territoryName, "Advisor", amount, toTanks, false, "BG");
+            removeForces(territoryName, "Advisor", amount, toTanks, false);
         }
     }
 

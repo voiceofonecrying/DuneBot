@@ -540,7 +540,7 @@ public class Faction {
         }
 
         String forceName = getName();
-        removeForces(territoryName, forceName, amount, toTanks, false, forceName);
+        removeForces(territoryName, forceName, amount, toTanks, false);
     }
 
     /**
@@ -552,14 +552,10 @@ public class Faction {
      * @param toTanks       Weather the force is going to the tanks or not.
      * @param isSpecial     Whether the force is special or not.
      */
-    public void removeForces(String territoryName, String forceName, int amount, boolean toTanks, boolean isSpecial,
-                             String targetForceName) {
-        if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative amount from a territory.");
-
+    public void removeForces(String territoryName, String forceName, int amount, boolean toTanks, boolean isSpecial) {
         game.getTerritory(territoryName).removeForces(forceName, amount);
-
         if (toTanks) {
-            game.getForceFromTanks(targetForceName).addStrength(amount);
+            game.getTleilaxuTanks().addForces(forceName, amount);
         } else {
             if (isSpecial)
                 addSpecialReserves(amount);
@@ -567,7 +563,6 @@ public class Faction {
                 addReserves(amount);
             setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         }
-
     }
 
     /**

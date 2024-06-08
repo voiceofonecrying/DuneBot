@@ -522,7 +522,8 @@ public class RunCommands {
             int starRevived = 0;
             faction.setStarRevived(false);
             boolean starsInTanks = false;
-            if (game.getForceFromTanks(faction.getName() + "*").getStrength() > 0) {
+            TleilaxuTanks tanks = game.getTleilaxuTanks();
+            if (tanks.getForceStrength(faction.getName() + "*") > 0) {
                 starsInTanks = true;
                 if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold()) {
                     starRevived++;
@@ -540,7 +541,7 @@ public class RunCommands {
             }
             if (faction instanceof BTFaction btFaction && game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
                 btWasHighThreshold = true;
-            int regularRevived = Math.min(faction.getFreeRevival() - starRevived, game.getForceFromTanks(faction.getName()).getStrength());
+            int regularRevived = Math.min(faction.getFreeRevival() - starRevived, tanks.getForceStrength(faction.getName()));
             if (regularRevived + starRevived > 0) {
                 if (faction instanceof BTFaction btFaction) {
                     if (btWasHighThreshold)
@@ -551,7 +552,7 @@ public class RunCommands {
             }
             if (faction.getMaxRevival() > starRevived + regularRevived) {
                 boolean emperorCanPayForOneSardaukar = faction instanceof EmperorFaction && !faction.isStarRevived() && starsInTanks;
-                int revivableForces = game.getForceFromTanks(faction.getName()).getStrength() +
+                int revivableForces = tanks.getForceStrength(faction.getName()) +
                         (emperorCanPayForOneSardaukar ? 1 : 0);
                 if (revivableForces > 0) {
                     List<Button> buttons = new LinkedList<>();

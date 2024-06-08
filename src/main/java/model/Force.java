@@ -2,12 +2,10 @@ package model;
 
 import java.util.Objects;
 
-//Name = the faction name, or the special troop type (Sardaukar, Advisor, etc.)
-//value = the strength of the force
 public class Force {
     private final String name;
-    private String factionName;
-    private int strength;
+    private final String factionName;
+    private final int strength;
 
     public Force(String name, int strength) {
         this.name = name;
@@ -29,23 +27,11 @@ public class Force {
     }
 
     public String getFactionName() {
-        if (factionName == null) {
-            factionName = name.replace("*", "");
-        }
         return factionName;
     }
 
     public int getStrength() {
         return strength;
-    }
-
-    public void setStrength(int strength) {
-        this.strength = strength;
-    }
-
-    public void addStrength(int amount) {
-        if (amount < 0) throw new IllegalArgumentException("You cannot add a negative strength value to a force.");
-        this.strength += amount;
     }
 
     @Override

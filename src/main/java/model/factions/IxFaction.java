@@ -41,7 +41,7 @@ public class IxFaction extends Faction {
      */
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
-        removeForces(territoryName, forceName, amount, toTanks, isSpecial, forceName);
+        removeForces(territoryName, forceName, amount, toTanks, isSpecial);
     }
 
     /**

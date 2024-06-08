@@ -77,8 +77,9 @@ public class Revival {
             bt.getChat().publish("Please set revival rates for each faction." + bt.getPlayer());
             List<String> limitsNotNeededMessages = new ArrayList<>();
             game.getFactions().stream().filter(faction -> !(faction instanceof BTFaction)).forEach(faction -> {
-                int regularInTanks = game.getForceFromTanks(faction.getName()).getStrength();
-                int starredInTanks = game.getForceFromTanks(faction.getName() + "*").getStrength();
+                TleilaxuTanks tanks = game.getTleilaxuTanks();
+                int regularInTanks = tanks.getForceStrength(faction.getName());
+                int starredInTanks = tanks.getForceStrength(faction.getName() + "*");
                 int starredForRevival = 0;
                 if (faction instanceof EmperorFaction || faction instanceof FremenFaction)
                     starredForRevival = starredInTanks == 0 ? 0 : 1;
