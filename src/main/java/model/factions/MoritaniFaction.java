@@ -55,8 +55,13 @@ public class MoritaniFaction extends Faction {
                 int numLeaders = leaders.size();
                 if (numLeaders == 0)
                     game.getTurnSummary().publish(triggeringFaction.getEmoji() + " has no leaders to assassinate.");
-                else
-                    game.killLeader(triggeringFaction, leaders.getFirst().getName());
+                else {
+                    Leader assassinatedLeader = leaders.getFirst();
+                    int assassinationSpice = assassinatedLeader.getValue();
+                    game.killLeader(triggeringFaction, assassinatedLeader.getName());
+                    addSpice(assassinationSpice);
+                    spiceMessage(assassinationSpice, assassinatedLeader. getName() + " water", true);
+                }
             }
             case "Atomics" -> {
                 this.handLimit = 3;
