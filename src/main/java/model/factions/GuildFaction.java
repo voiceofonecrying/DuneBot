@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -20,7 +19,7 @@ public class GuildFaction extends Faction {
         this.homeworld = "Junction";
         game.getTerritories().get("Tuek's Sietch").addForces("Guild", 5);
         Territory junction = game.getTerritories().addHomeworld(homeworld);
-        junction.addForce(new Force(name, 15));
+        junction.addForces(name, 15);
         game.getHomeworlds().put(name, homeworld);
     }
 }

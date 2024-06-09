@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.Force;
 import model.Game;
 import model.Territory;
 import model.TreacheryCard;
@@ -28,7 +27,7 @@ public class RicheseFaction extends Faction {
         this.occupiedIncome = 1;
         this.homeworld = "Richese";
         Territory richese = game.getTerritories().addHomeworld(homeworld);
-        richese.addForce(new Force(name, 20));
+        richese.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
         this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);

@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -24,7 +23,7 @@ public class AtreidesFaction extends Faction {
         this.homeworld = "Caladan";
         game.getTerritory("Arrakeen").addForces("Atreides", 10);
         Territory caladan = game.getTerritories().addHomeworld(homeworld);
-        caladan.addForce(new Force(name, 10));
+        caladan.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
 
         this.forcesLost = 0;

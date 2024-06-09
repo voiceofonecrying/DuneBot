@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -23,7 +22,7 @@ public class HarkonnenFaction extends Faction {
         this.hasTriggeredHT = false;
         game.getTerritories().get("Carthag").addForces("Harkonnen", 10);
         Territory giediPrime = game.getTerritories().addHomeworld(homeworld);
-        giediPrime.addForce(new Force(name, 10));
+        giediPrime.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
         this.handLimit = 8;
     }

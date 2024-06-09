@@ -41,8 +41,8 @@ public class GameBattlePhaseTest {
         void testBattleDetected() {
             game.setStorm(14);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("BG", 6));
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForces("BG", 6);
+            eastCielagoNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -55,8 +55,8 @@ public class GameBattlePhaseTest {
         void testBattleInWindPassNorth() {
             game.setStorm(14);
             Territory windPassNorthNorth = game.getTerritory("Wind Pass North (North Sector)");
-            windPassNorthNorth.addForce(new Force("BG", 6));
-            windPassNorthNorth.addForce(new Force("Fremen", 7));
+            windPassNorthNorth.addForces("BG", 6);
+            windPassNorthNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -72,7 +72,7 @@ public class GameBattlePhaseTest {
             RicheseFaction richeseFaction = new RicheseFaction("rPlayer", "rName", game);
             game.addFaction(richeseFaction);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("BG", 6));
+            eastCielagoNorth.addForces("BG", 6);
             eastCielagoNorth.setRicheseNoField(5);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
@@ -86,8 +86,8 @@ public class GameBattlePhaseTest {
         void testNoBattleInPolarSink() {
             game.setStorm(1);
             Territory polarSink = game.getTerritory("Polar Sink");
-            polarSink.addForce(new Force("BG", 6));
-            polarSink.addForce(new Force("Fremen", 7));
+            polarSink.addForces("BG", 6);
+            polarSink.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -100,8 +100,8 @@ public class GameBattlePhaseTest {
         void testNoBattleUnderStorm() {
             game.setStorm(2);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("BG", 6));
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForces("BG", 6);
+            eastCielagoNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -114,8 +114,8 @@ public class GameBattlePhaseTest {
         void testNoBattleWithAdvisor() {
             game.setStorm(14);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("Advisor", 6));
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForces("Advisor", 6);
+            eastCielagoNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -128,9 +128,9 @@ public class GameBattlePhaseTest {
         void testBattleAcrossSectors() {
             game.setStorm(10);
             Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForce(new Force("BG", 6));
+            westCielagoNorth.addForces("BG", 6);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -143,9 +143,9 @@ public class GameBattlePhaseTest {
         void testNoBattleAcrossSectorsDueToStorm() {
             game.setStorm(1);
             Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForce(new Force("BG", 6));
+            westCielagoNorth.addForces("BG", 6);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
+            eastCielagoNorth.addForces("Fremen", 7);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -160,10 +160,10 @@ public class GameBattlePhaseTest {
             game.addFaction(moritani);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-            arrakeen.addForce(new Force("Moritani", 6));
-            arrakeen.addForce(new Force("BG", 1));
-            tueksSietch.addForce(new Force("Moritani", 6));
-            tueksSietch.addForce(new Force("BG", 1));
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("BG", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("BG", 1);
             TestTopic moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             TestTopic turnSummary = new TestTopic();
@@ -186,10 +186,10 @@ public class GameBattlePhaseTest {
             assertFalse(moritani.getLeader("Duke Vidal").isPresent());
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-            arrakeen.addForce(new Force("Moritani", 6));
-            arrakeen.addForce(new Force("BG", 1));
-            tueksSietch.addForce(new Force("Moritani", 6));
-            tueksSietch.addForce(new Force("BG", 1));
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("BG", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("BG", 1);
             TestTopic moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             TestTopic ecazChat = new TestTopic();
@@ -216,10 +216,10 @@ public class GameBattlePhaseTest {
             assertFalse(moritani.getLeader("Duke Vidal").isPresent());
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-            arrakeen.addForce(new Force("Moritani", 6));
-            arrakeen.addForce(new Force("BG", 1));
-            tueksSietch.addForce(new Force("Moritani", 6));
-            tueksSietch.addForce(new Force("BG", 1));
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("BG", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("BG", 1);
             TestTopic moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             TestTopic harkonnenChat = new TestTopic();
@@ -241,10 +241,10 @@ public class GameBattlePhaseTest {
             game.addFaction(moritani);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-            arrakeen.addForce(new Force("Moritani", 6));
-            arrakeen.addForce(new Force("Advisor", 1));
-            tueksSietch.addForce(new Force("Moritani", 6));
-            tueksSietch.addForce(new Force("Advisor", 1));
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("Advisor", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("Advisor", 1);
             TestTopic moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             TestTopic turnSummary = new TestTopic();
@@ -265,10 +265,10 @@ public class GameBattlePhaseTest {
             game.addFaction(ecaz);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-            arrakeen.addForce(new Force("Moritani", 6));
-            arrakeen.addForce(new Force("Ecaz", 1));
-            tueksSietch.addForce(new Force("Moritani", 6));
-            tueksSietch.addForce(new Force("Ecaz", 1));
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("Ecaz", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("Ecaz", 1);
             TestTopic moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             TestTopic turnSummary = new TestTopic();
@@ -287,9 +287,9 @@ public class GameBattlePhaseTest {
             ecaz.setAlly("Fremen");
             fremen.setAlly("Ecaz");
             Territory carthag = game.getTerritory("Carthag");
-            carthag.addForce(new Force("Ecaz", 6));
-            carthag.addForce(new Force("Fremen", 7));
-            carthag.addForce(new Force("Advisor", 1));
+            carthag.addForces("Ecaz", 6);
+            carthag.addForces("Fremen", 7);
+            carthag.addForces("Advisor", 1);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -307,9 +307,9 @@ public class GameBattlePhaseTest {
             ecaz.setAlly("Moritani");
             moritani.setAlly("Ecaz");
             Territory carthag = game.getTerritory("Carthag");
-            carthag.addForce(new Force("Ecaz", 6));
-            carthag.addForce(new Force("Moritani", 7));
-            carthag.addForce(new Force("Advisor", 1));
+            carthag.addForces("Ecaz", 6);
+            carthag.addForces("Moritani", 7);
+            carthag.addForces("Advisor", 1);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -328,9 +328,9 @@ public class GameBattlePhaseTest {
             moritani.setAlly("Ecaz");
             game.addFaction(fremen);
             Territory carthag = game.getTerritory("Carthag");
-            carthag.addForce(new Force("Ecaz", 6));
-            carthag.addForce(new Force("Moritani", 7));
-            carthag.addForce(new Force("Fremen", 1));
+            carthag.addForces("Ecaz", 6);
+            carthag.addForces("Moritani", 7);
+            carthag.addForces("Fremen", 1);
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
 
@@ -360,12 +360,12 @@ public class GameBattlePhaseTest {
             ecaz.setAlly("Fremen");
             fremen.setAlly("Ecaz");
             Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForce(new Force("BG", 6));
-            westCielagoNorth.addForce(new Force("Emperor*", 1));
-            westCielagoNorth.addForce(new Force("Ecaz", 1));
+            westCielagoNorth.addForces("BG", 6);
+            westCielagoNorth.addForces("Emperor*", 1);
+            westCielagoNorth.addForces("Ecaz", 1);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForce(new Force("Fremen", 7));
-            eastCielagoNorth.addForce(new Force("Fremen*", 2));
+            eastCielagoNorth.addForces("Fremen", 7);
+            eastCielagoNorth.addForces("Fremen*", 2);
 
             game.startBattlePhase();
 

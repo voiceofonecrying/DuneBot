@@ -3,7 +3,6 @@ package model.factions;
 import constants.Emojis;
 import enums.ChoamInflationType;
 import exceptions.InvalidGameStateException;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -23,7 +22,7 @@ public class ChoamFaction extends Faction {
         this.lowThreshold = 10;
         this.homeworld = "Tupile";
         Territory tupile = game.getTerritories().addHomeworld(homeworld);
-        tupile.addForce(new Force(name, 20));
+        tupile.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
         this.handLimit = 5;

@@ -29,7 +29,7 @@ public class EcazFaction extends Faction {
         this.lowThreshold = 6;
         this.homeworld = "Ecaz";
         Territory ecaz = game.getTerritories().addHomeworld(homeworld);
-        ecaz.addForce(new Force(name, 14));
+        ecaz.addForces(name, 14);
         game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
         game.getTerritories().get("Imperial Basin (Center Sector)").addForces("Ecaz", 6);

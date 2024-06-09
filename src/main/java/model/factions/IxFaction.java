@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -21,8 +20,8 @@ public class IxFaction extends Faction {
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix", 3);
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix*", 3);
         Territory ix = game.getTerritories().addHomeworld(homeworld);
-        ix.addForce(new Force(name, 10));
-        ix.addForce(new Force(name + "*", 4));
+        ix.addForces(name, 10);
+        ix.addForces(name + "*", 4);
         game.getHomeworlds().put(name, homeworld);
     }
 

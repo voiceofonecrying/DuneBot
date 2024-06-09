@@ -133,9 +133,9 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForces("Fremen", 7);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -155,9 +155,9 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForces("Fremen", 7);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -178,12 +178,12 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForces("Fremen", 7);
         Territory sietchTabr = game.getTerritory("Sietch Tabr");
-        sietchTabr.addForce(new Force("Fremen*", 3));
-        sietchTabr.addForce(new Force("BG", 1));
+        sietchTabr.addForces("Fremen*", 3);
+        sietchTabr.addForces("BG", 1);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -203,12 +203,12 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForces("Fremen", 7);
         Territory sietchTabr = game.getTerritory("Sietch Tabr");
-        sietchTabr.addForce(new Force("Fremen*", 3));
-        sietchTabr.addForce(new Force("BG", 1));
+        sietchTabr.addForces("Fremen*", 3);
+        sietchTabr.addForces("BG", 1);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -229,10 +229,10 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Atreides", 4));
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -265,10 +265,10 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("Ecaz", 6));
+        westCielagoNorth.addForces("Ecaz", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Atreides", 4));
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -288,10 +288,10 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Atreides", 4));
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -312,10 +312,10 @@ public class BattlesTest {
 
         game.setStorm(10);
         Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForce(new Force("BG", 6));
+        westCielagoNorth.addForces("BG", 6);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Atreides", 4));
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -339,11 +339,11 @@ public class BattlesTest {
 
         game.setStorm(5);
         Territory northWindPassNorth = game.getTerritory("Wind Pass North (North Sector)");
-        northWindPassNorth.addForce(new Force("Fremen", 3));
-        northWindPassNorth.addForce(new Force("Emperor", 2));
-        northWindPassNorth.addForce(new Force("Emperor*", 1));
+        northWindPassNorth.addForces("Fremen", 3);
+        northWindPassNorth.addForces("Emperor", 2);
+        northWindPassNorth.addForces("Emperor*", 1);
         Territory southWindPassNorth = game.getTerritory("Wind Pass North (South Sector)");
-        southWindPassNorth.addForce(new Force("Atreides", 1));
+        southWindPassNorth.addForces("Atreides", 1);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -367,8 +367,8 @@ public class BattlesTest {
 
         game.setStorm(14);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("BG", 6));
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
+        eastCielagoNorth.addForces("BG", 6);
+        eastCielagoNorth.addForces("Fremen", 7);
         game.setTurnSummary(turnSummary);
         game.startBattlePhase();
         battles = game.getBattles();
@@ -405,17 +405,17 @@ public class BattlesTest {
 
         game.setStorm(14);
         Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-//        tueksSietch.addForce(new Force("Guild", 5));
-        tueksSietch.addForce(new Force("Harkonnen", 2));
+//        tueksSietch.addForces("Guild", 5);
+        tueksSietch.addForces("Harkonnen", 2);
         Territory carthag = game.getTerritory("Carthag");
-        carthag.addForce(new Force("BG", 2));
-//        carthag.addForce(new Force("Harkonnen", 10));
+        carthag.addForces("BG", 2);
+//        carthag.addForces("Harkonnen", 10);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("BG", 6));
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Fremen*", 1));
-        eastCielagoNorth.addForce(new Force("Emperor", 4));
-        eastCielagoNorth.addForce(new Force("Emperor*", 3));
+        eastCielagoNorth.addForces("BG", 6);
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Fremen*", 1);
+        eastCielagoNorth.addForces("Emperor", 4);
+        eastCielagoNorth.addForces("Emperor*", 3);
         game.setTurnSummary(turnSummary);
         game.startBattlePhase();
         battles = game.getBattles();
@@ -438,17 +438,17 @@ public class BattlesTest {
 
         game.setStorm(14);
         Territory tueksSietch = game.getTerritory("Tuek's Sietch");
-//        tueksSietch.addForce(new Force("Guild", 5));
-        tueksSietch.addForce(new Force("Harkonnen", 2));
+//        tueksSietch.addForces("Guild", 5);
+        tueksSietch.addForces("Harkonnen", 2);
         Territory carthag = game.getTerritory("Carthag");
-        carthag.addForce(new Force("BG", 2));
-//        carthag.addForce(new Force("Harkonnen", 10));
+        carthag.addForces("BG", 2);
+//        carthag.addForces("Harkonnen", 10);
         Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForce(new Force("BG", 6));
-        eastCielagoNorth.addForce(new Force("Fremen", 7));
-        eastCielagoNorth.addForce(new Force("Fremen*", 1));
-        eastCielagoNorth.addForce(new Force("Emperor", 4));
-        eastCielagoNorth.addForce(new Force("Emperor*", 3));
+        eastCielagoNorth.addForces("BG", 6);
+        eastCielagoNorth.addForces("Fremen", 7);
+        eastCielagoNorth.addForces("Fremen*", 1);
+        eastCielagoNorth.addForces("Emperor", 4);
+        eastCielagoNorth.addForces("Emperor*", 3);
         game.setTurnSummary(turnSummary);
         game.startBattlePhase();
         battles = game.getBattles();

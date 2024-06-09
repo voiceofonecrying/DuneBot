@@ -160,9 +160,9 @@ class GameTest {
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
             game.addFaction(harkonnen);
             garaKulon = game.getTerritory("Gara Kulon");
-            garaKulon.addForce(new Force("Harkonnen", 10));
-            garaKulon.addForce(new Force("Emperor", 5));
-            garaKulon.addForce(new Force("Ecaz", 3));
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
         }
@@ -1229,7 +1229,7 @@ class GameTest {
             List<Force> tanks = game.getTanks();
             assertTrue(tanks.isEmpty());
             // Replace with game.moveForces after that is refactored
-            game.getTerritory("Kaitain").addForce(new Force("Emperor*", 1));
+            game.getTerritory("Kaitain").addForces("Emperor*", 1);
             game.removeForces("Kaitain", emperor, 15, 0, true);
             assertFalse(emperor.isHighThreshold());
 
@@ -1243,7 +1243,7 @@ class GameTest {
             List<Force> tanks = game.getTanks();
             assertTrue(tanks.isEmpty());
             // Replace with game.moveForces after that is refactored
-            game.getTerritory("Salusa Secundus").addForce(new Force("Emperor", 1));
+            game.getTerritory("Salusa Secundus").addForces("Emperor", 1);
             game.removeForces("Salusa Secundus", emperor, 0, 5, true);
             assertFalse(emperor.isSecundusHighThreshold());
 
@@ -1487,7 +1487,7 @@ class GameTest {
         void testWithStrongholdCardsEcazAlly() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             Territory arrakeen = game.getTerritory("Arrakeen");
-            arrakeen.addForce(new Force("Ecaz", 1, "Ecaz"));
+            arrakeen.addForces("Ecaz", 1);
             atreides.setLedger(new TestTopic());
             ecaz.setLedger(new TestTopic());
             game.createAlliance(atreides, ecaz);
@@ -1506,7 +1506,7 @@ class GameTest {
         void testWithStrongholdCardsEcazAllyFalse() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             Territory arrakeen = game.getTerritory("Arrakeen");
-            arrakeen.addForce(new Force("Harkonnen", 1, "Harkonnen"));
+            arrakeen.addForces("Harkonnen", 1);
             atreides.setLedger(new TestTopic());
             ecaz.setLedger(new TestTopic());
             game.createAlliance(atreides, ecaz);

@@ -3,7 +3,6 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -27,9 +26,9 @@ public class EmperorFaction extends Faction {
         this.homeworld = "Kaitain";
         this.secondHomeworld = "Salusa Secundus";
         Territory kaitain = game.getTerritories().addHomeworld(homeworld);
-        kaitain.addForce(new Force(name, 15));
+        kaitain.addForces(name, 15);
         Territory salusaSecundus = game.getTerritories().addHomeworld(secondHomeworld);
-        salusaSecundus.addForce(new Force(name + "*", 5));
+        salusaSecundus.addForces(name + "*", 5);
         game.getHomeworlds().put(name, homeworld);
         game.getHomeworlds().put(name + "*", secondHomeworld);
         this.occupiedIncome = 2;

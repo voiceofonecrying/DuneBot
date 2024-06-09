@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -19,8 +18,8 @@ public class FremenFaction extends Faction {
         this.occupiedIncome = 0;
         this.homeworld = "Southern Hemisphere";
         Territory southernHemisphere = game.getTerritories().addHomeworld(homeworld);
-        southernHemisphere.addForce(new Force(name, 17));
-        southernHemisphere.addForce(new Force(name + "*", 3));
+        southernHemisphere.addForces(name, 17);
+        southernHemisphere.addForces(name + "*", 3);
         game.getHomeworlds().put(name, homeworld);
     }
 

@@ -34,7 +34,7 @@ public class Battles {
             if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
             Integer noField = territorySectors.stream().map(Territory::getRicheseNoField).filter(Objects::nonNull).findFirst().orElse(null);
             if (noField != null && f.getName().equals("Richese")) {
-                forces.add(new Force("NoField", noField, "Richese"));
+                forces.add(new Force("NoField", noField));
             }
         }
         return forces;

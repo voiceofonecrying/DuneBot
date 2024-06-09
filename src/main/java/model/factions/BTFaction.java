@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.Force;
 import model.Game;
 import model.Territory;
 import model.TraitorCard;
@@ -27,7 +26,7 @@ public class BTFaction extends Faction {
         this.occupiedIncome = 2;
         this.homeworld = "Tleilax";
         Territory tleilax = game.getTerritories().addHomeworld(homeworld);
-        tleilax.addForce(new Force(name, 20));
+        tleilax.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
     }
 

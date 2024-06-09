@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.Force;
 import model.Game;
 import model.Territory;
 
@@ -23,7 +22,7 @@ public class BGFaction extends Faction {
         this.occupiedIncome = 1;
         this.homeworld = "Wallach IX";
         Territory wallachIX = game.getTerritories().addHomeworld(homeworld);
-        wallachIX.addForce(new Force(name, 20));
+        wallachIX.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
     }
 

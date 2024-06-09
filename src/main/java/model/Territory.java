@@ -115,10 +115,9 @@ public class Territory {
         if (forceObjects.size() > 1) {
             // Combine same name Forces if they got split
             int totalStrength = forceObjects.stream().mapToInt(Force::getStrength).sum();
-            String factionName = forceObjects.getFirst().getFactionName();
             forces.removeAll(forceObjects);
             if (totalStrength > 0)
-                forces.add(new Force(name, totalStrength, factionName));
+                forces.add(new Force(name, totalStrength));
         } else if (forceObjects.size() == 1 && forceObjects.getFirst().getStrength() == 0) {
             // Remove 0 strength Force
             forces.remove(forceObjects.getFirst());
@@ -306,10 +305,13 @@ public class Territory {
         this.discovered = discovered;
     }
 
-    public String stormTroopsFremen(List<Force> forces, Game game) {
+    public String stormTroopsFremen(Game game) {
+        List<Force> fremenForces = forces.stream()
+                .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
+                .toList();
         StringBuilder message = new StringBuilder();
 
-        int totalTroops = forces.stream().mapToInt(Force::getStrength).sum();
+        int totalTroops = fremenForces.stream().mapToInt(Force::getStrength).sum();
         int totalLostTroops = Math.ceilDiv(totalTroops, 2);
 
         Force regularForce = getForce("Fremen");
@@ -342,22 +344,15 @@ public class Territory {
 
     public String stormTroops(Game game) {
         StringBuilder message = new StringBuilder();
-        List<Force> fremenForces = forces.stream()
-                .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
-                .toList();
-
         List<Force> nonFremenForces = forces.stream()
-                .filter(f -> !fremenForces.contains(f))
+                .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen"))
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                 .toList();
 
-        if (!fremenForces.isEmpty())
-            message.append(stormTroopsFremen(fremenForces, game));
-
+        message.append(stormTroopsFremen(game));
         for (Force force : nonFremenForces) {
             message.append(stormRemoveTroops(force.getName(), force.getFactionName(), force.getStrength(), game));
         }
-
         return message.toString();
     }
 
