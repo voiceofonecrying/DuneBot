@@ -1013,10 +1013,7 @@ public class CommandManager extends ListenerAdapter {
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         String leaderName = discordGame.required(leader).getAsString();
-        game.getLeaderTanks().add(targetFaction.removeLeader(leaderName));
-        String message = leaderName + " was sent to the tanks.";
-        discordGame.getFactionLedger(targetFaction).queueMessage(message);
-        discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " " + message);
+        game.killLeader(targetFaction, leaderName);
         discordGame.pushGame();
     }
 

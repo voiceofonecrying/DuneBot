@@ -927,6 +927,13 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
+    public void killLeader(Faction targetFaction, String leaderName) {
+        leaderTanks.add(targetFaction.removeLeader(leaderName));
+        String message = leaderName + " was sent to the tanks.";
+        targetFaction.getLedger().publish(message);
+        turnSummary.publish(targetFaction.getEmoji() + " " + message);
+    }
+
     public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount) {
         int revivalCost;
         if (faction instanceof ChoamFaction) revivalCost = regularAmount + starredAmount;

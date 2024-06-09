@@ -46,8 +46,18 @@ public class MoritaniFaction extends Faction {
         turnSummary.publish("The " + terror + " token has been triggered!");
 
         switch (terror) {
-            case "Assassination" -> game.getModInfo().publish("Send a random " + triggeringFaction.getEmoji()
-                    + " leader to the tanks. " + Emojis.MORITANI + " collects " + Emojis.SPICE + " for it.");
+            case "Assassination" -> {
+                List<Leader> leaders = new ArrayList<>();
+                triggeringFaction.getLeaders().stream()
+                        .filter(l -> !l.getName().equals("Kwisatz Haderach"))
+                        .forEach(leaders::add);
+                Collections.shuffle(leaders);
+                int numLeaders = leaders.size();
+                if (numLeaders == 0)
+                    game.getTurnSummary().publish(triggeringFaction.getEmoji() + " has no leaders to assassinate.");
+                else
+                    game.killLeader(triggeringFaction, leaders.getFirst().getName());
+            }
             case "Atomics" -> {
                 this.handLimit = 3;
                 location.setAftermathToken(true);

@@ -1166,6 +1166,63 @@ class GameTest {
     }
 
     @Nested
+    @DisplayName("killLeader")
+    class KillLeader {
+        List<Leader> leaders;
+        TestTopic emperorLedger;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            bg = new BGFaction("fakePlayer2", "userName2", game);
+            emperor = new EmperorFaction("fp3", "un3", game);
+            fremen = new FremenFaction("fp4", "un4", game);
+            guild = new GuildFaction("fp5", "un5", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            emperorLedger = new TestTopic();
+            emperor.setLedger(emperorLedger);
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
+
+            leaders = emperor.getLeaders();
+            assertEquals(5, leaders.size());
+            game.killLeader(emperor, "Caid");
+        }
+
+        @Test
+        void testOneFewerLeader () {
+            assertEquals(4, leaders.size());
+        }
+
+        @Test
+        void testMessageSentToTurnSummary() {
+            assertEquals(Emojis.EMPEROR + " Caid was sent to the tanks.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testMessageSentToLedger() {
+            assertEquals("Caid was sent to the tanks.", emperorLedger.getMessages().getFirst());
+        }
+
+        @Test
+        void testCantKillLeaderInTanks() {
+            assertThrows(IllegalArgumentException.class, () -> game.killLeader(emperor, "Caid"));
+        }
+    }
+
+    @Nested
     @DisplayName("reviveForces")
     class ReviveForces {
         @BeforeEach
