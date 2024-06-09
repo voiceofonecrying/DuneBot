@@ -41,6 +41,14 @@ public class MoritaniFaction extends Faction {
         terrorTokens.add("Sneak Attack");
     }
 
+    public void assassinateLeader(Faction triggeringFaction, Leader leader) {
+        int spiceGained = leader.getName().equals("Zoal") ? 3 : leader.getValue();
+        game.getTurnSummary().publish(Emojis.MORITANI + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
+        game.killLeader(triggeringFaction, leader.getName());
+        addSpice(spiceGained);
+        spiceMessage(spiceGained, "assassination of " + leader. getName(), true);
+    }
+
     public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) {
         DuneTopic turnSummary = game.getTurnSummary();
         turnSummary.publish("The " + terror + " token has been triggered!");
@@ -55,13 +63,8 @@ public class MoritaniFaction extends Faction {
                 int numLeaders = leaders.size();
                 if (numLeaders == 0)
                     turnSummary.publish(triggeringFaction.getEmoji() + " has no leaders to assassinate.");
-                else {
-                    Leader assassinatedLeader = leaders.getFirst();
-                    int assassinationSpice = assassinatedLeader.getValue();
-                    game.killLeader(triggeringFaction, assassinatedLeader.getName());
-                    addSpice(assassinationSpice);
-                    spiceMessage(assassinationSpice , assassinatedLeader. getName() + " water", true);
-                }
+                else
+                    assassinateLeader(triggeringFaction, leaders.getFirst());
             }
             case "Atomics" -> {
                 this.handLimit = 3;
