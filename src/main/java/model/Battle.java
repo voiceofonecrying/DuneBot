@@ -354,12 +354,12 @@ public class Battle {
         if (!aggressorNegated && !defenderNegated)
             throw new InvalidGameStateException(targetFactionName + " is not in the current battle.");
 
-        if (targetFaction instanceof FremenFaction)
-            fedaykinNegated = true;
-        else if (targetFaction instanceof EmperorFaction)
-            sardaukarNegated = true;
-        else if (targetFaction instanceof IxFaction)
-            cyborgsNegated = true;
+        switch (targetFaction) {
+            case FremenFaction ignored -> fedaykinNegated = true;
+            case EmperorFaction ignored -> sardaukarNegated = true;
+            case IxFaction ignored -> cyborgsNegated = true;
+            default -> {}
+        }
 
         boolean battlePlanRemoved = false;
         if (aggressorNegated && aggressorBattlePlan != null) {
@@ -958,9 +958,10 @@ public class Battle {
         if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
             juiceOfSaphoTBD = DecisionStatus.OPEN;
             boolean factionHasJuiceOfSapho = faction.hasTreacheryCard("Juice of Sapho");
-            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (publishToTurnSummary || factionHasJuiceOfSapho)
-                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
+//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
+            if (!publishToTurnSummary && factionHasJuiceOfSapho)
+//                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
+                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho.\n";
             if (publishToTurnSummary && factionHasJuiceOfSapho) {
                 List<DuneChoice> choices = new LinkedList<>();
                 choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
@@ -976,9 +977,10 @@ public class Battle {
         if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
             portableSnooperTBD = DecisionStatus.OPEN;
             boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
-            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (publishToTurnSummary || factionHasPortableSnooper)
-                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
+//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
+            if (!publishToTurnSummary && factionHasPortableSnooper)
+//                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
+                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
             if (publishToTurnSummary && factionHasPortableSnooper) {
                 List<DuneChoice> choices = new LinkedList<>();
                 choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
