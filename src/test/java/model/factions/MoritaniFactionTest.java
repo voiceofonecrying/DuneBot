@@ -26,6 +26,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new MoritaniFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

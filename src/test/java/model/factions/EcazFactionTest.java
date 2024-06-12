@@ -23,6 +23,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new EcazFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

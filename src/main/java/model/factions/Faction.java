@@ -145,6 +145,7 @@ public class Faction {
 
     public void setGame(Game game) {
         this.game = game;
+        getHomeworldTerritory().setGame(game);
     }
 
     public String getName() {
@@ -677,9 +678,29 @@ public class Faction {
         return isHighThreshold;
     }
 
+    protected HomeworldTerritory getHomeworldTerritory() {
+        return (HomeworldTerritory) game.getTerritory(homeworld);
+    }
+
+    public void resetOccupation() {
+        getHomeworldTerritory().resetOccupation();
+    }
+
+    public boolean isHomeworldOccupied() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
+        return getHomeworldTerritory().getOccupierName() != null;
+    }
+
+    public Faction getOccupier() {
+        if (isHomeworldOccupied()) return getHomeworldTerritory().getOccupyingFaction();
+        return null;
+    }
+
     public void checkForHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (!isHighThreshold && getReservesStrength() + getSpecialReservesStrength() > lowThreshold) {
+        if (getHomeworldTerritory().getOccupyingFaction() != null)
+            isHighThreshold = false;
+        else if (!isHighThreshold && getReservesStrength() + getSpecialReservesStrength() > lowThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
             isHighThreshold = true;
         }
@@ -752,16 +773,6 @@ public class Faction {
         whisperCount.put(recipientName, whisperCount.get(recipientName) + 1);
         whisperCountPerPhase.put(recipientName, whisperCountPerPhase.get(recipientName) + 1);
         lastWhisper.put(recipientName, Instant.now().toString());
-    }
-
-    public boolean isHomeworldOccupied() {
-        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
-        return game.getTerritory(homeworld).countActiveFactions() == 1 && !game.getTerritory(homeworld).getActiveFactions(game).getFirst().getName().equals(this.name);
-    }
-
-    public Faction getOccupier() {
-        if (isHomeworldOccupied()) return game.getTerritory(homeworld).getActiveFactions(game).getFirst();
-        return null;
     }
 
     public void setLedger(DuneTopic ledger) {

@@ -22,7 +22,7 @@ public class AtreidesFaction extends Faction {
         this.occupiedIncome = 2;
         this.homeworld = "Caladan";
         game.getTerritory("Arrakeen").addForces("Atreides", 10);
-        Territory caladan = game.getTerritories().addHomeworld(homeworld);
+        Territory caladan = game.getTerritories().addHomeworld(game, homeworld, name);
         caladan.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
 

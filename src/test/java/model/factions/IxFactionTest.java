@@ -23,6 +23,7 @@ class IxFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new IxFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

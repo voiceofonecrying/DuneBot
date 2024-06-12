@@ -10,12 +10,16 @@ public class Force {
     public Force(String name, int strength) {
         this.name = name;
         this.strength = strength;
-        if (name.equals("Advisor"))
-            this.factionName = "BG";
-        else if (name.equals("NoField"))
-            this.factionName = "Richese";
+        this.factionName = getFactionNameFromForceName(name);
+    }
+
+    public static String getFactionNameFromForceName(String forceName) {
+        if (forceName.equals("Advisor"))
+            return "BG";
+        else if (forceName.equals("NoField"))
+            return "Richese";
         else
-            this.factionName = name.replace("*", "");
+            return forceName.replace("*", "");
     }
 
     public String getName() {

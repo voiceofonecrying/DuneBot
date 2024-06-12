@@ -26,6 +26,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new RicheseFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

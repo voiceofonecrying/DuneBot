@@ -157,6 +157,7 @@ public class CommandManager extends ListenerAdapter {
                 case "place-forces" -> placeForcesEventHandler(discordGame, game);
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
                 case "remove-forces" -> removeForcesEventHandler(discordGame, game);
+                case "homeworld-occupy" -> homeworldOccupy(discordGame, game);
                 case "display" -> displayGameState(discordGame, game);
                 case "revive-forces" -> reviveForcesEventHandler(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
@@ -273,7 +274,7 @@ public class CommandManager extends ListenerAdapter {
                     turnSummary.queueMessage(
                             MessageFormat.format(
                                     "{0} is paid {1} {2} for {3} (homeworld occupied)",
-                                    paidToFaction.getOccupier().getEmoji(),
+                                    occupier.getEmoji(),
                                     Math.floorDiv(spentValue, 2),
                                     Emojis.SPICE,
                                     currentCard
@@ -290,7 +291,7 @@ public class CommandManager extends ListenerAdapter {
                 turnSummary.queueMessage(
                         MessageFormat.format(
                                 "{0} is paid {1} {2} for {3} (homeworld occupied)",
-                                paidToFaction.getOccupier().getEmoji(),
+                                occupier.getEmoji(),
                                 Math.floorDiv(spentValue, 2),
                                 Emojis.SPICE,
                                 currentCard
@@ -639,6 +640,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
+        commandData.add(Commands.slash("homeworld-occupy", "Set the occupying faction in a homeworld.").addOptions(homeworld, faction));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
@@ -1096,6 +1098,18 @@ public class CommandManager extends ListenerAdapter {
         ));
         targetFaction.checkForHighThreshold();
         discordGame.pushGame();
+    }
+
+    private void homeworldOccupy(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS))
+            throw new InvalidGameStateException("This game does not have Homeworlds.");
+        String homeworldName = discordGame.required(homeworld).getAsString();
+        String occupierName = discordGame.required(faction).getAsString();
+        HomeworldTerritory homeworld = (HomeworldTerritory) game.getTerritory(homeworldName);
+        if (homeworld.getNativeName().equals(occupierName))
+            homeworld.clearOccupier();
+        else
+            homeworld.setOccupierName(occupierName);
     }
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

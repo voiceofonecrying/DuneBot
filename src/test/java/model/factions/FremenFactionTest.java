@@ -24,6 +24,7 @@ class FremenFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new FremenFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

@@ -37,7 +37,7 @@ public class Battle {
     public DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
 
-    public Battle(String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
+    public Battle(Game game, String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
         this.wholeTerritoryName = wholeTerritoryName;
         this.territorySectors = territorySectors;
         this.factionNames = new ArrayList<>();
@@ -48,6 +48,11 @@ public class Battle {
         this.ecazAllyName = ecazAllyName;
         this.fedaykinNegated = false;
         this.sardaukarNegated = factionNames.stream().anyMatch(n -> n.equals("Emperor")) && factionNames.stream().anyMatch(n -> n.equals("Fremen"));
+        try {
+            EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
+            if (emperor.isSecundusOccupied())
+                this.sardaukarNegated = true;
+        } catch (IllegalArgumentException ignored) {}
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
         this.hmsStrongholdCardTBD = DecisionStatus.NA;

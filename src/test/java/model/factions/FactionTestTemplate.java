@@ -1,5 +1,6 @@
 package model.factions;
 
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,18 +37,51 @@ abstract class FactionTestTemplate {
         assertEquals(7, faction.getMaxRevival());
     }
 
-    @Test
-    public void testHomeworld() {
-        String homeworldName = getFaction().getHomeworld();
-        Territory territory = game.getTerritories().get(homeworldName);
-        assertNotNull(territory);
-        assertEquals(homeworldName, territory.getTerritoryName());
-        assertEquals(-1, territory.getSector());
-        assertFalse(territory.isStronghold());
-        assertTrue(territory.isHomeworld());
-        assertFalse(territory.isDiscoveryToken());
-        assertFalse(territory.isNearShieldWall());
-        assertFalse(territory.isRock());
+    @Nested
+    @DisplayName("#homeworld")
+    class Homeworld {
+        String homeworldName;
+        HomeworldTerritory territory;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            game.addFaction(new HarkonnenFaction("p", "u", game));
+            game.addFaction(new EmperorFaction("p", "u", game));
+            homeworldName = getFaction().getHomeworld();
+            territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
+        }
+
+        @Test
+        public void testHomeworld() {
+            assertNotNull(territory);
+            assertEquals(homeworldName, territory.getTerritoryName());
+            assertEquals(-1, territory.getSector());
+            assertFalse(territory.isStronghold());
+            assertInstanceOf(HomeworldTerritory.class, territory);
+            assertFalse(territory.isDiscoveryToken());
+            assertFalse(territory.isNearShieldWall());
+            assertFalse(territory.isRock());
+        }
+
+        @Test
+        public void testNativeStartsAtHighThreshold() {
+            assertTrue(getFaction().isHighThreshold());
+        }
+
+        @Test
+        public void testNoReturnToHighThresholdWhileOccupied() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            int strength = territory.getForceStrength(getFaction().getName());
+            territory.removeForce(getFaction().getName());
+            territory.removeForce(getFaction().getName() + "*");
+            getFaction().checkForLowThreshold();
+            assertFalse(getFaction().isHighThreshold());
+            String occupierName = getFaction().getName().equals("Harkonnen") ? "Emperor" : "Harkonnen";
+            territory.addForces(occupierName, 1);
+            territory.addForces(getFaction().getName(), strength);
+            assertTrue(getFaction().isHomeworldOccupied());
+            assertFalse(getFaction().isHighThreshold());
+        }
     }
 
     @Nested

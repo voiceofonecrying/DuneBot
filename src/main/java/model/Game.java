@@ -516,6 +516,7 @@ public class Game {
         phaseForTracker = 1;
         subPhase = 1;
         factions.forEach(Faction::clearWhisperCounts);
+        factions.forEach(Faction::resetOccupation);
         setUpdated(UpdateType.MAP);
     }
 

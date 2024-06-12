@@ -21,7 +21,7 @@ public class ChoamFaction extends Faction {
         this.highThreshold = 11;
         this.lowThreshold = 10;
         this.homeworld = "Tupile";
-        Territory tupile = game.getTerritories().addHomeworld(homeworld);
+        Territory tupile = game.getTerritories().addHomeworld(game, homeworld, name);
         tupile.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;

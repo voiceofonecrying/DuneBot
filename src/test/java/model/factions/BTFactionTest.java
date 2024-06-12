@@ -24,6 +24,7 @@ class BTFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new BTFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

@@ -19,7 +19,7 @@ public class IxFaction extends Faction {
         this.homeworld = "Ix";
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix", 3);
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix*", 3);
-        Territory ix = game.getTerritories().addHomeworld(homeworld);
+        Territory ix = game.getTerritories().addHomeworld(game, homeworld, name);
         ix.addForces(name, 10);
         ix.addForces(name + "*", 4);
         game.getHomeworlds().put(name, homeworld);

@@ -21,7 +21,7 @@ public class HarkonnenFaction extends Faction {
         this.homeworld = "Giedi Prime";
         this.hasTriggeredHT = false;
         game.getTerritories().get("Carthag").addForces("Harkonnen", 10);
-        Territory giediPrime = game.getTerritories().addHomeworld(homeworld);
+        Territory giediPrime = game.getTerritories().addHomeworld(game, homeworld, name);
         giediPrime.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
         this.handLimit = 8;

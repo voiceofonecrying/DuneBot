@@ -65,7 +65,7 @@ public class Battles {
                 }
                 String ecazAllyName = factions.stream().filter(f -> f instanceof EcazFaction).map(Faction::getAlly).findFirst().orElse(null);
                 List<Force> forces = aggregateForces(territorySectors, factions);
-                if (addBattle) battles.add(new Battle(aggregateTerritoryName, territorySectors, factions, forces, ecazAllyName));
+                if (addBattle) battles.add(new Battle(game, aggregateTerritoryName, territorySectors, factions, forces, ecazAllyName));
             }
         }
         if (dukeVidalCount >= 2) moritaniCanTakeVidal = true;
@@ -122,7 +122,7 @@ public class Battles {
             else if (f.getFactionName().equals(aggressor.getName())) newForces.add(f);
             else if (f.getFactionName().equals("Ecaz") && aggressorIsEcazAlly) newForces.add(f);
         }
-        currentBattle = new Battle(currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
+        currentBattle = new Battle(game, currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))

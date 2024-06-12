@@ -3,10 +3,13 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import model.TestTopic;
 import model.TreacheryCard;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -24,6 +27,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new EmperorFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test
@@ -211,9 +215,64 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertEquals(homeworldName, territory.getTerritoryName());
         assertEquals(-1, territory.getSector());
         assertFalse(territory.isStronghold());
-        assertTrue(territory.isHomeworld());
+        assertInstanceOf(HomeworldTerritory.class, territory);
         assertFalse(territory.isDiscoveryToken());
         assertFalse(territory.isNearShieldWall());
         assertFalse(territory.isRock());
+    }
+
+    @Nested
+    @DisplayName("#secondHomeworldOccupation")
+    class SecondHomeworldOccupation {
+        @BeforeEach
+        public void setUp() throws IOException {
+            game.addFaction(new HarkonnenFaction("p", "u", game));
+        }
+
+        @Test
+        public void testNoReturnToHighThresholdWhileOccupied() {
+            String homeworldName = faction.getSecondHomeworld();
+            HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            territory.removeForce(faction.getName() + "*");
+            assertFalse(faction.isSecundusHighThreshold());
+            territory.addForces("Harkonnen", 1);
+            territory.addForces(faction.getName() + "*", 3);
+            assertTrue(faction.isSecundusOccupied());
+            assertFalse(faction.isSecundusHighThreshold());
+        }
+
+        @Test
+        public void testNoReturnToHighThresholdWith2Sardaukar() {
+            String homeworldName = faction.getSecondHomeworld();
+            HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            territory.removeForce(faction.getName() + "*");
+            assertFalse(faction.isSecundusHighThreshold());
+            territory.addForces("Harkonnen", 1);
+            territory.addForces(faction.getName() + "*", 3);
+            assertFalse(faction.isSecundusHighThreshold());
+            assertTrue(faction.isSecundusOccupied());
+            territory.removeForces(faction.getName() + "*", 1);
+            territory.removeForce("Harkonnen");
+            assertFalse(faction.isSecundusHighThreshold());
+            assertFalse(faction.isSecundusOccupied());
+        }
+
+        @Test
+        public void testReturnToHighThresholdWith3Sardaukar() {
+            String homeworldName = faction.getSecondHomeworld();
+            HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            territory.removeForce(faction.getName() + "*");
+            assertFalse(faction.isSecundusHighThreshold());
+            territory.addForces("Harkonnen", 1);
+            territory.addForces(faction.getName() + "*", 3);
+            assertFalse(faction.isSecundusHighThreshold());
+            assertTrue(faction.isSecundusOccupied());
+            territory.removeForce("Harkonnen");
+            assertTrue(faction.isSecundusHighThreshold());
+            assertFalse(faction.isSecundusOccupied());
+        }
     }
 }

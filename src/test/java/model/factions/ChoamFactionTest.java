@@ -27,6 +27,7 @@ class ChoamFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new ChoamFaction("player", "player", game);
+        game.addFaction(faction);
         game.setTurnSummary(new TestTopic());
     }
 

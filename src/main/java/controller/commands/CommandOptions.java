@@ -119,8 +119,9 @@ public class CommandOptions {
     public static final OptionData stoneBurnerDoesNotKill = new OptionData(OptionType.BOOLEAN, "stone-burner-does-not-kill", "Prevent Stone Burner from killing leaders (default = False)", false);
     public static final OptionData useJuiceOfSapho = new OptionData(OptionType.BOOLEAN, "use-juice-of-sapho", "Use Juice of Sapho", false);
     public static final OptionData forceResolution = new OptionData(OptionType.BOOLEAN, "force-resolution", "Override outstanding player decisions and print resolution", false);
-    public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "the territory.", true).setAutoComplete(true);
+    public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "The territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
+    public static final OptionData homeworld = new OptionData(OptionType.STRING, "homeworld", "The homeworld.", true).setAutoComplete(true);
     public static final OptionData starredAmount = new OptionData(OptionType.INTEGER, "starredamount", "Starred amount", true);
     public static final OptionData bgTerritories = new OptionData(OptionType.STRING, "bgterritories", "Territory to flip the BG force", true).setAutoComplete(true);
     public static final OptionData token = new OptionData(OptionType.STRING, "token", "The Tech Token", true)
@@ -253,6 +254,7 @@ public class CommandOptions {
                     choices = factions(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
+            case "homeworld" -> choices = homeworldNames(game, searchValue);
             case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
@@ -344,6 +346,16 @@ public class CommandOptions {
                 .limit(24)
                 .toList());
         return returnlist;
+    }
+
+    private static List<Command.Choice> homeworldNames(@NotNull Game game, String searchValue) {
+        return game.getTerritories().values().stream()
+                .filter(t -> t instanceof HomeworldTerritory)
+                .map(Territory::getTerritoryName)
+                .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(territoryName -> new Command.Choice(territoryName, territoryName))
+                .limit(25)
+                .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {

@@ -137,6 +137,7 @@ public class DiscordGame {
     public static Gson createGsonDeserializer() {
         GsonFireBuilder builder = new GsonFireBuilder()
                 .registerTypeSelector(Faction.class, new FactionTypeSelector())
+                .registerTypeSelector(Territory.class, new TerritoryTypeSelector())
                 .registerPreProcessor(TreacheryCard.class, (clazz, src, gson) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
@@ -455,7 +456,6 @@ public class DiscordGame {
             }
         }
         // Temporary migration to properly mark Homeworlds and Discovery Token Territory objects
-        game.getHomeworlds().values().forEach(homeworld -> game.getTerritories().get(homeworld).setHomeworld(true));
         Territory t = game.getTerritories().get("Jacurutu Sietch");
         if (t != null) t.setDiscoveryToken(true);
         t = game.getTerritories().get("Cistern");
@@ -469,6 +469,34 @@ public class DiscordGame {
             t.setDiscoveryToken(true);
             t.setStronghold(false);
         }
+
+        // Temporary migration to set native Faction for each homeworld
+        HomeworldTerritory h = (HomeworldTerritory) game.getTerritories().get("Caladan");
+        if (h != null) h.setNativeName("Atreides");
+        h = (HomeworldTerritory) game.getTerritories().get("Wallach IX");
+        if (h != null) h.setNativeName("BG");
+        h = (HomeworldTerritory) game.getTerritories().get("Tleilax");
+        if (h != null) h.setNativeName("BT");
+        h = (HomeworldTerritory) game.getTerritories().get("Tupile");
+        if (h != null) h.setNativeName("CHOAM");
+        h = (HomeworldTerritory) game.getTerritories().get("Ecaz");
+        if (h != null) h.setNativeName("Ecaz");
+        h = (HomeworldTerritory) game.getTerritories().get("Kaitain");
+        if (h != null) h.setNativeName("Emperor");
+        h = (HomeworldTerritory) game.getTerritories().get("Salusa Secundus");
+        if (h != null) h.setNativeName("Emperor");
+        h = (HomeworldTerritory) game.getTerritories().get("Southern Hemisphere");
+        if (h != null) h.setNativeName("Fremen");
+        h = (HomeworldTerritory) game.getTerritories().get("Junction");
+        if (h != null) h.setNativeName("Guild");
+        h = (HomeworldTerritory) game.getTerritories().get("Giedi Prime");
+        if (h != null) h.setNativeName("Harkonnen");
+        h = (HomeworldTerritory) game.getTerritories().get("Ix");
+        if (h != null) h.setNativeName("Ix");
+        h = (HomeworldTerritory) game.getTerritories().get("Grumman");
+        if (h != null) h.setNativeName("Moritani");
+        h = (HomeworldTerritory) game.getTerritories().get("Richese");
+        if (h != null) h.setNativeName("Richese");
 
         // Temporary migration of Game::tanks to Game::tleilaxuTanks
         if (!game.hasTleilaxuTanks)

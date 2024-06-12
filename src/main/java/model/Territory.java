@@ -13,10 +13,9 @@ public class Territory {
     private final String territoryName;
     private final int sector;
     private boolean isStronghold;
-    private boolean isHomeworld;
     private boolean isDiscoveryToken;
     private final boolean isNearShieldWall;
-    private final List<Force> forces;
+    protected final List<Force> forces;
     private final List<String> adjacencyList;
     private boolean isRock;
     private int spice;
@@ -29,12 +28,11 @@ public class Territory {
     private String discoveryToken;
     private boolean discovered;
 
-    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isHomeworld, boolean isDiscoveryToken, boolean isNearShieldWall) {
+    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isDiscoveryToken, boolean isNearShieldWall) {
         this.territoryName = territoryName;
         this.sector = sector;
         this.isRock = isRock;
         this.isStronghold = isStronghold;
-        this.isHomeworld = isHomeworld;
         this.isDiscoveryToken = isDiscoveryToken;
         this.isNearShieldWall = isNearShieldWall;
         this.spice = 0;
@@ -47,7 +45,7 @@ public class Territory {
     }
 
     public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
-        this(territoryName, sector, isRock, isStronghold, false, false, isNearShieldWall);
+        this(territoryName, sector, isRock, isStronghold, false, isNearShieldWall);
     }
 
     public String getTerritoryName() {
@@ -74,14 +72,6 @@ public class Territory {
         this.isStronghold = isStronghold;
     }
 
-    public boolean isHomeworld() {
-        return isHomeworld;
-    }
-
-    public void setHomeworld(boolean isHomeworld) {
-        this.isHomeworld = isHomeworld;
-    }
-
     public boolean isDiscoveryToken() {
         return isDiscoveryToken;
     }
@@ -91,7 +81,7 @@ public class Territory {
     }
 
     public int costToShipInto() {
-        return isStronghold || isHomeworld || isDiscoveryToken ? 1 : 2;
+        return isStronghold || isDiscoveryToken ? 1 : 2;
     }
 
     public boolean isNearShieldWall() {
@@ -159,11 +149,8 @@ public class Territory {
     }
 
     public void removeForce(String name) {
-        forces.remove(getForce(name));
-    }
-
-    public void addForce(Force force) {
-        forces.add(force);
+        int forceStrength = getForceStrength(name);
+        removeForces(name, forceStrength);
     }
 
     public List<String> getActiveFactionNames() {

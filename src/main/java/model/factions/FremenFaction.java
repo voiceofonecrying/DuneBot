@@ -17,7 +17,7 @@ public class FremenFaction extends Faction {
         this.lowThreshold = 2;
         this.occupiedIncome = 0;
         this.homeworld = "Southern Hemisphere";
-        Territory southernHemisphere = game.getTerritories().addHomeworld(homeworld);
+        Territory southernHemisphere = game.getTerritories().addHomeworld(game, homeworld, name);
         southernHemisphere.addForces(name, 17);
         southernHemisphere.addForces(name + "*", 3);
         game.getHomeworlds().put(name, homeworld);

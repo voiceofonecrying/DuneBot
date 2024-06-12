@@ -26,7 +26,7 @@ public class RicheseFaction extends Faction {
         this.lowThreshold = 9;
         this.occupiedIncome = 1;
         this.homeworld = "Richese";
-        Territory richese = game.getTerritories().addHomeworld(homeworld);
+        Territory richese = game.getTerritories().addHomeworld(game, homeworld, name);
         richese.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
         this.behindShieldNoField = new ArrayList<>();

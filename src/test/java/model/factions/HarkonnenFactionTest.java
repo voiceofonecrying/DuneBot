@@ -23,6 +23,7 @@ class HarkonnenFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new HarkonnenFaction("player", "player", game);
+        game.addFaction(faction);
     }
 
     @Test

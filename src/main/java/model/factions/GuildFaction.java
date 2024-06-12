@@ -18,7 +18,7 @@ public class GuildFaction extends Faction {
         this.occupiedIncome = 2;
         this.homeworld = "Junction";
         game.getTerritories().get("Tuek's Sietch").addForces("Guild", 5);
-        Territory junction = game.getTerritories().addHomeworld(homeworld);
+        Territory junction = game.getTerritories().addHomeworld(game, homeworld, name);
         junction.addForces(name, 15);
         game.getHomeworlds().put(name, homeworld);
     }

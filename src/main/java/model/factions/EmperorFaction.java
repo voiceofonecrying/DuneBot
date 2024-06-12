@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import model.Game;
+import model.HomeworldTerritory;
 import model.Territory;
 
 import java.io.IOException;
@@ -25,9 +26,9 @@ public class EmperorFaction extends Faction {
         this.lowThreshold = 4;
         this.homeworld = "Kaitain";
         this.secondHomeworld = "Salusa Secundus";
-        Territory kaitain = game.getTerritories().addHomeworld(homeworld);
+        Territory kaitain = game.getTerritories().addHomeworld(game, homeworld, name);
         kaitain.addForces(name, 15);
-        Territory salusaSecundus = game.getTerritories().addHomeworld(secondHomeworld);
+        Territory salusaSecundus = game.getTerritories().addHomeworld(game, secondHomeworld, name);
         salusaSecundus.addForces(name + "*", 5);
         game.getHomeworlds().put(name, homeworld);
         game.getHomeworlds().put(name + "*", secondHomeworld);
@@ -35,6 +36,12 @@ public class EmperorFaction extends Faction {
         this.secundusHighThreshold = 2;
         this.secundusLowThreshold = 2;
         this.isSecundusHighThreshold = true;
+    }
+
+    @Override
+    public void setGame(Game game) {
+        super.setGame(game);
+        getSecondHomeworldTerritory().setGame(game);
     }
 
     @Override
@@ -61,17 +68,37 @@ public class EmperorFaction extends Faction {
     }
 
     public boolean isSecundusHighThreshold() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return true;
         return isSecundusHighThreshold;
+    }
+
+    private HomeworldTerritory getSecondHomeworldTerritory() {
+        return (HomeworldTerritory) game.getTerritory(secondHomeworld);
+    }
+
+    @Override
+    public void resetOccupation() {
+        super.resetOccupation();
+        getSecondHomeworldTerritory().resetOccupation();
+    }
+
+    public boolean isSecundusOccupied() {
+        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
+        return getSecondHomeworldTerritory().getOccupierName() != null;
     }
 
     @Override
     public void checkForHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (!isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() > lowThreshold) {
+        if (getHomeworldTerritory().getOccupyingFaction() != null)
+            isHighThreshold = false;
+        else if (!isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() > lowThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to High Threshold");
             isHighThreshold = true;
         }
-        if (!isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() > secundusLowThreshold) {
+        if (getSecondHomeworldTerritory().getOccupyingFaction() != null)
+            isSecundusHighThreshold = false;
+        else if (!isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() > secundusLowThreshold) {
             game.getTurnSummary().publish(secondHomeworld + " has flipped to High Threshold");
             isSecundusHighThreshold = true;
         }
@@ -80,11 +107,15 @@ public class EmperorFaction extends Faction {
     @Override
     public void checkForLowThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
-        if (isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() < highThreshold) {
+        if (getHomeworldTerritory().getOccupyingFaction() != null)
+            isHighThreshold = false;
+        else if (isHighThreshold && super.getReservesStrength() + getSpecialStrengthOnKaitain() < highThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
             isHighThreshold = false;
         }
-        if (isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() < secundusHighThreshold) {
+        if (getSecondHomeworldTerritory().getOccupyingFaction() != null)
+            isSecundusHighThreshold = false;
+        else if (isSecundusHighThreshold && getSpecialStrengthOnSalusaSecundus() < secundusHighThreshold) {
             game.getTurnSummary().publish("Salusa Secundus has flipped to Low Threshold.");
             isSecundusHighThreshold = false;
         }
