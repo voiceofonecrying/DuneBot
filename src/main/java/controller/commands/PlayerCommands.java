@@ -299,6 +299,8 @@ public class PlayerCommands {
 
     protected static void tryBid(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         Bidding bidding = game.getBidding();
+        if (bidding.getBidCard() == null)
+            throw new InvalidGameStateException("There is no card currently up for bid.");
         List<String> eligibleBidOrder = bidding.getEligibleBidOrder(game);
         if (eligibleBidOrder.isEmpty() && !bidding.isSilentAuction()) {
             throw new InvalidGameStateException("All hands are full.");
