@@ -11,10 +11,7 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidOptionException;
 import controller.DiscordGame;
-import model.Game;
-import model.Movement;
-import model.Shipment;
-import model.Territory;
+import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -448,13 +445,15 @@ public class ShipmentAndMovementButtons implements Pressable {
             String turnSummaryMessage = Emojis.RICHESE + " ship a no-field to " + territoryName;
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
             territory.setRicheseNoField(noField);
-            if (faction instanceof RicheseFaction) {
-                ((RicheseFaction) faction).noFieldMessage(noField, territoryName);
+            if (faction instanceof RicheseFaction richeseFaction) {
+                richeseFaction.noFieldMessage(noField, territoryName);
             }
             int spice = game.shipmentCost(faction, 1, territory, karama);
             turnSummaryMessage += game.payForShipment(faction, spice, territory, karama, true);
             BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
+            if (game.hasGameOption(GameOption.TECH_TOKENS))
+                TechToken.addSpice(game, TechToken.HEIGHLINERS);
             if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(territory, faction);
             }
