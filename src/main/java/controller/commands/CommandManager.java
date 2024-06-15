@@ -409,7 +409,7 @@ public class CommandManager extends ListenerAdapter {
             turnSummary.queueMessage(message.toString());
 
             if (!(targetFaction instanceof GuildFaction)
-                    && !(targetFaction instanceof FremenFaction && cost == 0)
+                    && !(targetFaction instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
                     && game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
