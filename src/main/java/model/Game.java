@@ -966,7 +966,7 @@ public class Game {
 
     public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama) {
         int baseCost = amountToShip * targetTerritory.costToShipInto();
-        if (targetFaction instanceof FremenFaction && !getHomeworlds().containsValue(targetTerritory.getTerritoryName()))
+        if (targetFaction instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
             return 0;
         else if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama)
             return Math.ceilDiv(baseCost, 2);

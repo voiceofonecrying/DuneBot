@@ -458,7 +458,7 @@ public class ShowCommands {
                     && !territory.isAftermathToken() && !territory.hasTerrorToken()
                     && territory.getDiscoveryToken() == null) continue;
             if (territory.getTerritoryName().matches("Hidden Mobile Stronghold|Cistern|Ecological Testing Station|Shrine|Orgiz Processing Station")) continue;
-            if (game.getHomeworlds().containsValue(territory.getTerritoryName())) continue;
+            if (territory instanceof HomeworldTerritory) continue;
             int offset = 0;
             int i = 0;
 

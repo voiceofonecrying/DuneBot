@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.ChoamInflationType;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import model.TestTopic;
 import org.junit.jupiter.api.*;
@@ -170,9 +171,8 @@ class ChoamFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialForcePlacement() {
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
             assertEquals(0, territory.countFactions());
         }
     }

@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -259,10 +260,9 @@ class IxFactionTest extends FactionTestTemplate {
     public void testInitialForcePlacement() {
         assertTrue(game.getTerritories().containsKey("Hidden Mobile Stronghold"));
 
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
-            if (territoryName.equals("Hidden Mobile Stronghold")) {
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) {
                 assertEquals(3, territory.getForceStrength("Ix"));
                 assertEquals(3, territory.getForceStrength("Ix*"));
                 assertEquals(1, territory.countFactions());

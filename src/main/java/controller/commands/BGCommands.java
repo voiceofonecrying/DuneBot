@@ -7,6 +7,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Force;
 import model.Game;
+import model.HomeworldTerritory;
 import model.Territory;
 import model.factions.BGFaction;
 import model.factions.Faction;
@@ -107,7 +108,7 @@ public class BGCommands {
                 && !(
                 game.hasGameOption(GameOption.HOMEWORLDS)
                         && !game.getFaction("BG").isHighThreshold()
-                        && !game.getHomeworlds().containsValue(targetTerritory.getTerritoryName())
+                        && !(targetTerritory instanceof HomeworldTerritory)
         )) {
             List<Button> buttons = new LinkedList<>();
             String territoryName = targetTerritory.getTerritoryName();

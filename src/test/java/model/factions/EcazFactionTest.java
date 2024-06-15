@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,10 +120,9 @@ public class EcazFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialForcePlacement() {
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
-            if (territoryName.equals("Imperial Basin (Center Sector)")) {
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
+            if (territory.getTerritoryName().equals("Imperial Basin (Center Sector)")) {
                 assertEquals(6, territory.getForceStrength("Ecaz"));
                 assertEquals(1, territory.countFactions());
             } else {
