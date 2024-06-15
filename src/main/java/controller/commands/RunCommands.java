@@ -496,6 +496,7 @@ public class RunCommands {
         Revival revival = game.getRevival();
         if (revival.isRecruitsDecisionNeeded())
             throw new InvalidGameStateException(revival.getRecruitsHolder() + " must decide if they will play recruits before the game can be advanced.");
+        boolean btWasHighThreshold = false;
         try {
             BTFaction bt = (BTFaction) game.getFaction("BT");
             List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
@@ -503,6 +504,7 @@ public class RunCommands {
                 String names = String.join(", ", factionsNeedingLimits);
                 throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
             }
+            btWasHighThreshold = game.hasGameOption(GameOption.HOMEWORLDS) && bt.isHighThreshold();
         } catch (IllegalArgumentException e) {
             // BT are not in the game
         }
@@ -513,60 +515,14 @@ public class RunCommands {
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
         int factionsWithRevivals = 0;
-
-        boolean btWasHighThreshold = false;
         for (Faction faction : factions) {
-            if (faction instanceof BTFaction)
-                // This can be removed after D50 and D53 finish
-                faction.setMaxRevival(20);
-            int starRevived = 0;
-            faction.setStarRevived(false);
-            boolean starsInTanks = false;
-            TleilaxuTanks tanks = game.getTleilaxuTanks();
-            if (tanks.getForceStrength(faction.getName() + "*") > 0) {
-                starsInTanks = true;
-                if (!(faction instanceof EmperorFaction emperorFaction) || !game.hasGameOption(GameOption.HOMEWORLDS) || emperorFaction.isSecundusHighThreshold()) {
-                    starRevived++;
-                    faction.setStarRevived(true);
-                }
-                if (faction instanceof FremenFaction && game.hasGameOption(GameOption.HOMEWORLDS) && faction.isHighThreshold()) {
-                    List<Button> buttons = new LinkedList<>();
-                    for (Territory territory : game.getTerritories().values()) {
-                        if (!territory.getActiveFactionNames().contains("Fremen")) continue;
-                        buttons.add(Button.primary("fremen-ht-" + territory.getTerritoryName(), territory.getTerritoryName()));
-                    }
-                    buttons.add(Button.danger("fremen-cancel", "Don't use HT advantage"));
-                    discordGame.getFremenChat().queueMessage("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", buttons);
-                }
-            }
-            if (faction instanceof BTFaction btFaction && game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold())
-                btWasHighThreshold = true;
-            int regularRevived = Math.min(faction.getFreeRevival() - starRevived, tanks.getForceStrength(faction.getName()));
-            if (regularRevived + starRevived > 0) {
-                if (faction instanceof BTFaction btFaction) {
-                    if (btWasHighThreshold)
-                        discordGame.getBTChat().queueMessage("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
-                } else nonBTRevival = true;
-                game.reviveForces(faction, false, regularRevived, starRevived);
+            int numFreeRevived = faction.performFreeRevivals();
+            if (numFreeRevived > 0) {
                 factionsWithRevivals++;
+                if (!(faction instanceof BTFaction))
+                    nonBTRevival = true;
             }
-            if (faction.getMaxRevival() > starRevived + regularRevived) {
-                boolean emperorCanPayForOneSardaukar = faction instanceof EmperorFaction && !faction.isStarRevived() && starsInTanks;
-                int revivableForces = tanks.getForceStrength(faction.getName()) +
-                        (emperorCanPayForOneSardaukar ? 1 : 0);
-                if (revivableForces > 0) {
-                    List<Button> buttons = new LinkedList<>();
-                    int maxButton = Math.min(revivableForces, faction.getMaxRevival() - regularRevived - starRevived);
-                    for (int i = 0; i <= maxButton; i++) {
-                        Button button = Button.primary("revive-" + i, Integer.toString(i));
-                        if ((!(faction instanceof BTFaction || faction.getAlly().equals("BT")) && faction.getSpice() < i * 2) || faction.getSpice() < i)
-                            button = button.asDisabled();
-                        buttons.add(button);
-                    }
-                    String sardaukarString = emperorCanPayForOneSardaukar ? " including 1 " + Emojis.EMPEROR_SARDAUKAR : "";
-                    discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + " Would you like to purchase additional revivals" + sardaukarString + "?", buttons);
-                }
-            }
+            faction.presentPaidRevivalChoices(numFreeRevived);
         }
 
         if (btWasHighThreshold && factionsWithRevivals > 0) {

@@ -5,6 +5,8 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -29,6 +31,120 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 10);
+    }
+
+    @Nested
+    @DisplayName("#revival")
+    class Revival extends FactionTestTemplate.Revival {
+        @Test
+        @Override
+        public void testFreeReviveStars() {
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            assertEquals(1, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        public void testFreeReviveStarsNoneInTanks() {
+            assertEquals(0, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        public void testFreeReviveStarsAlliedToFremen() {
+            faction.setAlly("Fremen");
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            assertEquals(3, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        @Override
+        public void testRevivalCost() {
+            assertEquals(5, faction.revivalCost(1, 1));
+        }
+
+        @Test
+        @Override
+        public void testRevivalCostAlliedWithBT() {
+            faction.setAlly("BT");
+            assertEquals(3, faction.revivalCost(1, 1));
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalChoices() throws InvalidGameStateException {
+            game.startRevival();
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+//            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("There are no " + Emojis.IX_CYBORG + " in the tanks."));
+            assertEquals("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? " + faction.player, chat.getMessages().getFirst());
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? "));
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+            assertEquals("revive-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("1 Suboid", chat.getChoices().getFirst().get(1).getLabel());
+        }
+
+        @Test
+        public void testPaidRevivalOneCyborgInTanksWithSuboids() throws InvalidGameStateException {
+            game.startRevival();
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            faction.removeForces(faction.getHomeworld(), 1, true, true);
+            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+//            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("There are no " + Emojis.IX_CYBORG + " in the tanks."));
+            assertEquals("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? " + faction.player, chat.getMessages().getFirst());
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? "));
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+            assertEquals("revive-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("1 Suboid", chat.getChoices().getFirst().get(1).getLabel());
+        }
+
+        @Test
+        public void testPaidRevivalOneCyborgInTanksNoSuboids() throws InvalidGameStateException {
+            game.startRevival();
+            faction.removeForces(faction.getHomeworld(), 0, false, true);
+            faction.removeForces(faction.getHomeworld(), 1, true, true);
+            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(0, chat.getMessages().size());
+        }
+
+        @Test
+        public void testPaidRevivalMultipleCyborgsInTanksWithSuboids() throws InvalidGameStateException {
+            game.startRevival();
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? " + faction.player + "\n" + Emojis.IX_SUBOID + " revivals if possible would be the next step.", chat.getMessages().getFirst());
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? "));
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("\n" + Emojis.IX_SUBOID + " revivals if possible would be the next step."));
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+            assertEquals("revive*-1-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("1 Cyborg", chat.getChoices().getFirst().get(1).getLabel());
+        }
+
+        @Test
+        public void testPaidRevivalMultipleCyborgsInTanksNoSuboids() throws InvalidGameStateException {
+            game.startRevival();
+            faction.removeForces(faction.getHomeworld(), 0, false, true);
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? " + faction.player + "\nThere are no " + Emojis.IX_SUBOID + " in the tanks.", chat.getMessages().getFirst());
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? "));
+            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("\nThere are no " + Emojis.IX_SUBOID + " in the tanks."));
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+            assertEquals("revive*-1-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("1 Cyborg", chat.getChoices().getFirst().get(1).getLabel());
+        }
     }
 
     @Test

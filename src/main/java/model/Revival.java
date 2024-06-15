@@ -17,6 +17,7 @@ public class Revival {
     private boolean recruitsDeclined;
     private boolean recruitsInPlay;
     private boolean btAskedAboutLimits;
+    private boolean cyborgRevivalComplete;
 
     public Revival(Game game) throws InvalidGameStateException {
         List<Faction> factions = game.getFactionsWithTreacheryCard("Recruits");
@@ -24,6 +25,7 @@ public class Revival {
         recruitsDeclined = false;
         recruitsInPlay = false;
         btAskedAboutLimits = false;
+        cyborgRevivalComplete = false;
         if (!factions.isEmpty()) {
             recruitsHolder = factions.getFirst().getName();
             askAboutRecruits(game);
@@ -134,5 +136,13 @@ public class Revival {
 
     public void setRecruitsInPlay(boolean recruitsInPlay) {
         this.recruitsInPlay = recruitsInPlay;
+    }
+
+    public boolean isCyborgRevivalComplete() {
+        return cyborgRevivalComplete;
+    }
+
+    public void setCyborgRevivalComplete(boolean cyborgRevivalComplete) {
+        this.cyborgRevivalComplete = cyborgRevivalComplete;
     }
 }

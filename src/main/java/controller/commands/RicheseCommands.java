@@ -189,8 +189,13 @@ public class RicheseCommands {
     }
 
     public static void karamaBuy(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        String cardName = discordGame.required(richeseCard).getAsString();
         RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+        if (faction.isSpecialKaramaPowerUsed()) {
+            throw new InvalidGameStateException(Emojis.RICHESE + " has already used their special Karama power.");
+        } else if (faction.getSpice() < 3) {
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have 3 spice for this action.");
+        }
+        String cardName = discordGame.required(richeseCard).getAsString();
         TreacheryCard karama;
         try {
             karama = faction.removeTreacheryCard("Karama ");
@@ -198,14 +203,10 @@ public class RicheseCommands {
         } catch (Exception e) {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have a Karama.");
         }
-        if (faction.isSpecialKaramaPowerUsed()) {
-            throw new InvalidGameStateException(Emojis.RICHESE + " has already used their special Karama power.");
-        } else if (faction.getSpice() < 3) {
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have 3 spice for this action.");
-        }
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
         faction.subtractSpice(3);
+        faction.setSpecialKaramaPowerUsed(true);
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
         discordGame.pushGame();
     }

@@ -936,13 +936,6 @@ public class Game {
     }
 
     public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount) {
-        int revivalCost;
-        if (faction instanceof ChoamFaction) revivalCost = regularAmount + starredAmount;
-        else if (faction instanceof BTFaction) revivalCost = regularAmount + starredAmount;
-        else if (faction instanceof IxFaction) revivalCost = regularAmount * 2 + starredAmount * 3;
-        else revivalCost = (regularAmount + starredAmount) * 2;
-        if (faction.getAlly().equals("BT")) revivalCost = Math.ceilDiv(revivalCost, 2);
-
         tleilaxuTanks.removeForces(faction.getName(), regularAmount);
         faction.addReserves(regularAmount);
         tleilaxuTanks.removeForces(faction.getName() + "*", starredAmount);
@@ -951,6 +944,7 @@ public class Game {
 
         String costString = " for free";
         if (isPaid) {
+            int revivalCost = faction.revivalCost(regularAmount, starredAmount);
             faction.subtractSpice(revivalCost);
             faction.spiceMessage(revivalCost, "Revivals", false);
             costString = "for " + revivalCost + " " + Emojis.SPICE;

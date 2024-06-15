@@ -5,6 +5,8 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -30,6 +32,32 @@ class FremenFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 3);
+    }
+
+    @Nested
+    @DisplayName("#revival")
+    class Revival extends FactionTestTemplate.Revival {
+        @Test
+        @Override
+        public void testFreeReviveStars() {
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            assertEquals(1, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        public void testFreeReviveStarsNoneInTanks() {
+            assertEquals(0, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalChoices() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(0, chat.getChoices().size());
+        }
     }
 
     @Test

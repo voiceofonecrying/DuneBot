@@ -36,7 +36,7 @@ public class Faction {
     protected int spice;
     protected int freeRevival;
     protected int maxRevival;
-    private boolean starRevived;
+    protected boolean starRevived;
     protected boolean hasMiningEquipment;
     protected int highThreshold;
     protected int lowThreshold;
@@ -44,7 +44,7 @@ public class Faction {
     protected String homeworld;
     @Exclude
     private Set<UpdateType> updateTypes;
-    private String player;
+    protected String player;
     private String userName;
     private boolean graphicDisplay;
     private int frontOfShieldSpice;
@@ -827,5 +827,67 @@ public class Faction {
                         "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
                         traitor.name()
                 ));
+    }
+
+    public int countFreeStarredRevival() {
+        return 0;
+    }
+
+    public int performFreeRevivals() {
+        if (this instanceof BTFaction)
+            // This can be removed after D50 and D53 finish
+            setMaxRevival(20);
+        if (this instanceof ChoamFaction)
+            // This can be removed after D63 and D65 finish
+            setMaxRevival(20);
+        int numStarRevived = countFreeStarredRevival();
+        starRevived = numStarRevived > 0;
+        TleilaxuTanks tanks = game.getTleilaxuTanks();
+        boolean btWasHighThreshold = this instanceof BTFaction btFaction && game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold();
+        int numRegularRevived = Math.min(getFreeRevival() - numStarRevived, tanks.getForceStrength(name));
+        if (numRegularRevived + numStarRevived > 0) {
+            if (this instanceof BTFaction btFaction) {
+                if (btWasHighThreshold)
+                    chat.publish("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
+            }
+            game.reviveForces(this, false, numRegularRevived, numStarRevived);
+        }
+        return numRegularRevived + numStarRevived;
+    }
+
+    public int baseRevivalCost(int regular, int starred) {
+        return regular * 2 + starred * 2;
+    }
+
+    public int revivalCost(int regular, int starred) {
+        int cost = baseRevivalCost(regular, starred);
+        if (getAlly().equals("BT"))
+            cost = Math.ceilDiv(cost, 2);
+        return cost;
+    }
+
+    protected int getRevivableForces() {
+        return game.getTleilaxuTanks().getForceStrength(name);
+    }
+
+    protected String paidRevivalMessage() {
+        return "Would you like to purchase additional revivals? " + player;
+    }
+
+    public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
+        if (getMaxRevival() > numRevived) {
+            int revivableForces = getRevivableForces();
+            if (revivableForces > 0) {
+                List<DuneChoice> choices = new ArrayList<>();
+                int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
+                for (int i = 0; i <= maxButton; i++) {
+                    DuneChoice choice = new DuneChoice("revive-" + i, Integer.toString(i));
+                    if (spice < revivalCost(i, 0))
+                        choice.setDisabled(true);
+                    choices.add(choice);
+                }
+                chat.publish(paidRevivalMessage(), choices);
+            }
+        }
     }
 }

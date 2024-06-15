@@ -6,6 +6,7 @@ import enums.UpdateType;
 import model.Game;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TleilaxuTanks;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -201,5 +202,34 @@ public class EmperorFaction extends Faction {
                 "{0} paid 2 {1} to discard {2} (Kaitain High Threshold ability)",
                 Emojis.EMPEROR, Emojis.SPICE, cardName.trim()
         ));
+    }
+
+    @Override
+    public int countFreeStarredRevival() {
+        int numStarRevived = 0;
+        TleilaxuTanks tanks = game.getTleilaxuTanks();
+        if (tanks.getForceStrength(name + "*") > 0) {
+            if (!game.hasGameOption(GameOption.HOMEWORLDS) || isSecundusHighThreshold()) {
+                numStarRevived++;
+                starRevived = true;
+            }
+        }
+        return numStarRevived;
+    }
+
+    @Override
+    protected int getRevivableForces() {
+        boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
+        boolean emperorCanPayForOneSardaukar = !isStarRevived() && starsInTanks;
+        return game.getTleilaxuTanks().getForceStrength(name) +
+                (emperorCanPayForOneSardaukar ? 1 : 0);
+    }
+
+    @Override
+    protected String paidRevivalMessage() {
+        boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
+        boolean emperorCanPayForOneSardaukar = !isStarRevived() && starsInTanks;
+        String sardaukarString = emperorCanPayForOneSardaukar ? " including 1 " + Emojis.EMPEROR_SARDAUKAR : "";
+        return "Would you like to purchase additional revivals" + sardaukarString + "? " + player;
     }
 }

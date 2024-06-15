@@ -6,10 +6,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.Territory;
 import model.TestTopic;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.RepetitionInfo;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 
@@ -34,6 +31,55 @@ class ChoamFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 2);
+    }
+
+    @Nested
+    @DisplayName("#revival")
+    class Revival extends FactionTestTemplate.Revival {
+        @Test
+        @Override
+        public void testInitialMaxRevival() {
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testMaxRevivalSetTo5() {
+            faction.setMaxRevival(5);
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testMaxRevivalWithRecruits() throws InvalidGameStateException {
+            game.startRevival();
+            game.getRevival().setRecruitsInPlay(true);
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testRevivalCost() {
+            assertEquals(2, faction.revivalCost(2, 0));
+        }
+
+        @Test
+        @Override
+        public void testRevivalCostAlliedWithBT() {
+            faction.setAlly("BT");
+            assertEquals(1, faction.revivalCost(2, 0));
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalChoices() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(5 - freeRevivals + 1, chat.getChoices().getFirst().size());
+        }
     }
 
     @Test

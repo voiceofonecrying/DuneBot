@@ -15,11 +15,13 @@ import java.io.IOException;
 
 public class RevivalButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        if (event.getComponentId().startsWith("recruits-yes")) playRecruits(event, discordGame, game);
+        if (event.getComponentId().startsWith("revive-")) revive(event, discordGame, game);
+        else if (event.getComponentId().startsWith("revive*-")) reviveCyborgs(event, discordGame, game);
+        else if (event.getComponentId().startsWith("recruits-yes")) playRecruits(event, discordGame, game);
         else if (event.getComponentId().startsWith("recruits-no")) dontPlayRecruits(discordGame, game);
+    }
 
-        if (!event.getComponentId().startsWith("revive-")) return;
-
+    private static void revive(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int revival = Integer.parseInt(event.getComponentId().replace("revive-", ""));
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (revival == 0) {
@@ -31,6 +33,20 @@ public class RevivalButtons implements Pressable {
         else
             CommandManager.reviveForces(faction, true, revival, 0, game, discordGame);
         discordGame.queueMessage("Your revival request has been submitted to the " + Emojis.BT);
+    }
+
+    private static void reviveCyborgs(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        int revival = Integer.parseInt(event.getComponentId().split("-")[1]);
+        int freeRevived = Integer.parseInt(event.getComponentId().split("-")[2]);
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (revival == 0) {
+            discordGame.queueMessage("You will not revive any extra " + Emojis.IX_CYBORG + ".");
+            return;
+        }
+        CommandManager.reviveForces(faction, true, 0, revival, game, discordGame);
+        discordGame.queueMessage("You will revive " + revival + " " + Emojis.IX_CYBORG + ".");
+        game.getRevival().setCyborgRevivalComplete(true);
+        faction.presentPaidRevivalChoices(freeRevived + revival);
     }
 
     private static void playRecruits(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException, IOException {

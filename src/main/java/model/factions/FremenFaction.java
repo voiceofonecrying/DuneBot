@@ -1,10 +1,15 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
+import model.DuneChoice;
 import model.Game;
 import model.Territory;
+import model.TleilaxuTanks;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FremenFaction extends Faction {
     public FremenFaction(String player, String userName, Game game) throws IOException {
@@ -39,5 +44,22 @@ public class FremenFaction extends Faction {
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
         removeForces(territoryName, forceName, amount, toTanks, isSpecial);
+    }
+
+    public int countFreeStarredRevival() {
+        TleilaxuTanks tanks = game.getTleilaxuTanks();
+        if (tanks.getForceStrength(name + "*") > 0) {
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && isHighThreshold()) {
+                List<DuneChoice> choices = new ArrayList<>();
+                for (Territory territory : game.getTerritories().values()) {
+                    if (!territory.getActiveFactionNames().contains("Fremen")) continue;
+                    choices.add(new DuneChoice("danger", "fremen-ht-" + territory.getTerritoryName(), territory.getTerritoryName()));
+                }
+                choices.add(new DuneChoice("fremen-cancel", "Don't use HT advantage"));
+                chat.publish("You are at high threshold, where would you like to place your revived " + Emojis.FREMEN_FEDAYKIN + "?", choices);
+            }
+            return 1;
+        }
+        return 0;
     }
 }

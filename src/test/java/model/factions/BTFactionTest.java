@@ -6,6 +6,8 @@ import exceptions.InvalidGameStateException;
 import model.Territory;
 import model.TraitorCard;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -30,6 +32,56 @@ class BTFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 5);
+    }
+
+    @Nested
+    @DisplayName("#revival")
+    class Revival extends FactionTestTemplate.Revival {
+        @Test
+        @Override
+        public void testInitialMaxRevival() {
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testMaxRevivalSetTo5() {
+            faction.setMaxRevival(5);
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testMaxRevivalWithRecruits() throws InvalidGameStateException {
+            game.startRevival();
+            game.getRevival().setRecruitsInPlay(true);
+            assertEquals(20, faction.getMaxRevival());
+        }
+
+        @Test
+        @Override
+        public void testRevivalCost() {
+            assertEquals(2, faction.revivalCost(2, 0));
+        }
+
+        @Test
+        @Override
+        public void testRevivalCostAlliedWithBT() {
+            // Not really a valid scenario, but test needed for completeness
+            faction.setAlly("BT");
+            assertEquals(1, faction.revivalCost(2, 0));
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalChoices() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(5 - freeRevivals + 1, chat.getChoices().getFirst().size());
+        }
     }
 
     @Test
@@ -106,11 +158,6 @@ class BTFactionTest extends FactionTestTemplate {
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
-    }
-
-    @Test
-    public void testMaxRevivals() {
-        assertEquals(faction.getMaxRevival(), 20);
     }
 
     @Test

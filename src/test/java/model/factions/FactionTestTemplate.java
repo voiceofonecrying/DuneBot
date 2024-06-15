@@ -23,18 +23,67 @@ abstract class FactionTestTemplate {
         game.setTurnSummary(new TestTopic());
     }
 
-    @Test
-    void testMaxRevival() throws InvalidGameStateException {
-        Faction faction = getFaction();
-        if (faction instanceof BTFaction)
-            assertEquals(20, faction.getMaxRevival());
-        else
+    @Nested
+    @DisplayName("#revival")
+    class Revival {
+        Faction faction;
+        TestTopic chat;
+        TestTopic ledger;
+        int freeRevivals;
+
+        @BeforeEach
+        public void setUp() {
+            faction = getFaction();
+            freeRevivals =  faction.getFreeRevival();
+            chat = new TestTopic();
+            faction.setChat(chat);
+            ledger = new TestTopic();
+            faction.setLedger(ledger);
+        }
+
+        @Test
+        public void testInitialMaxRevival() {
             assertEquals(3, faction.getMaxRevival());
-        faction.setMaxRevival(5);
-        assertEquals(5, faction.getMaxRevival());
-        game.startRevival();
-        game.getRevival().setRecruitsInPlay(true);
-        assertEquals(7, faction.getMaxRevival());
+        }
+
+        @Test
+        public void testMaxRevivalSetTo5() {
+            faction.setMaxRevival(5);
+            assertEquals(5, faction.getMaxRevival());
+        }
+
+        @Test
+        public void testMaxRevivalWithRecruits() throws InvalidGameStateException {
+            game.startRevival();
+            game.getRevival().setRecruitsInPlay(true);
+            assertEquals(7, faction.getMaxRevival());
+        }
+
+        @Test
+        public void testRevivalCost() {
+            assertEquals(4, faction.revivalCost(1, 1));
+        }
+
+        @Test
+        public void testRevivalCostAlliedWithBT() {
+            faction.setAlly("BT");
+            assertEquals(2, faction.revivalCost(1, 1));
+        }
+
+        @Test
+        public void testFreeReviveStars() {
+            assertThrows(IllegalArgumentException.class, () -> faction.removeForces(faction.getHomeworld(), 1, true, true));
+        }
+
+        @Test
+        public void testPaidRevivalChoices() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+        }
     }
 
     @Nested

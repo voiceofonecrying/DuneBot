@@ -30,6 +30,17 @@ public class BTFaction extends Faction {
         game.getHomeworlds().put(name, homeworld);
     }
 
+    @Override
+    public int getMaxRevival() {
+        return maxRevival;
+    }
+
+    @Override
+    public void setMaxRevival(int maxRevival) {
+        // BT revival limit always remains 20
+        this.maxRevival = 20;
+    }
+
     /**
      * @return the revealed Face Dancers
      */
@@ -91,5 +102,10 @@ public class BTFaction extends Faction {
         if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
         factionsNeedingRevivalLimit.removeIf(name -> name.equals(factionName));
         game.getTurnSummary().publish(faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival());
+    }
+
+    @Override
+    public int baseRevivalCost(int regular, int starred) {
+        return regular + starred;
     }
 }

@@ -35,6 +35,23 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertEquals(faction.getSpice(), 10);
     }
 
+    @Nested
+    @DisplayName("#revival")
+    class Revival extends FactionTestTemplate.Revival {
+        @Test
+        @Override
+        public void testFreeReviveStars() {
+            EmperorFaction emp = (EmperorFaction) faction;
+            faction.removeForces(emp.getSecondHomeworld(), 3, true, true);
+            assertEquals(1, faction.countFreeStarredRevival());
+        }
+    }
+
+    @Test
+    public void testFreeReviveStarsNoneInTanks() {
+        assertEquals(0, faction.countFreeStarredRevival());
+    }
+
     @Test
     public void testFreeRevival() {
         assertEquals(1, faction.getFreeRevival());
@@ -109,6 +126,21 @@ class EmperorFactionTest extends FactionTestTemplate {
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testEmperorCanPayForOneSardaukar() throws InvalidGameStateException {
+        TestTopic chat = new TestTopic();
+        faction.setChat(chat);
+        TestTopic ledger = new TestTopic();
+        faction.setLedger(ledger);
+        faction.removeForces(faction.getHomeworld(), 1, false, true);
+        faction.removeForces(faction.getSecondHomeworld(), 1, true, true);
+        faction.setStarRevived(false);
+        faction.presentPaidRevivalChoices(1);
+        assertEquals("Would you like to purchase additional revivals including 1 " + Emojis.EMPEROR_SARDAUKAR + "? " + faction.getPlayer(), chat.getMessages().getFirst());
+        assertEquals(2, faction.getRevivableForces());
+        assertEquals(3, chat.getChoices().getFirst().size());
     }
 
     @Test

@@ -17,6 +17,7 @@ public class ChoamFaction extends Faction {
 
         setSpice(2);
         this.freeRevival = 0;
+        this.maxRevival = 20;
         this.emoji = Emojis.CHOAM;
         this.highThreshold = 11;
         this.lowThreshold = 10;
@@ -27,6 +28,17 @@ public class ChoamFaction extends Faction {
         this.occupiedIncome = 2;
         this.handLimit = 5;
         clearInflation();
+    }
+
+    @Override
+    public int getMaxRevival() {
+        return maxRevival;
+    }
+
+    @Override
+    public void setMaxRevival(int maxRevival) {
+        // CHOAM revival limit always remains 20
+        this.maxRevival = 20;
     }
 
     /**
@@ -104,5 +116,10 @@ public class ChoamFaction extends Faction {
         } else {
             return 1;
         }
+    }
+
+    @Override
+    public int baseRevivalCost(int regular, int starred) {
+        return regular + starred;
     }
 }
