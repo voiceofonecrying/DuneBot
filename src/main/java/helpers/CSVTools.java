@@ -2,6 +2,7 @@ package helpers;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.DuplicateHeaderMode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class CSVTools {
                 .setRecordSeparator("\r\n")
                 .setIgnoreEmptyLines(false)
                 .setAllowMissingColumnNames(true)
-                .setAllowDuplicateHeaderNames(true)
+                .setDuplicateHeaderMode(DuplicateHeaderMode.ALLOW_ALL)
                 .build();
     }
 
