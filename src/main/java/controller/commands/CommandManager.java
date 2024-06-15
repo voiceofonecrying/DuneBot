@@ -406,20 +406,17 @@ public class CommandManager extends ListenerAdapter {
 
             if (cost > 0)
                 message.append(game.payForShipment(targetFaction, cost, targetTerritory, karama, false));
+            turnSummary.queueMessage(message.toString());
 
-            if (
-                    !(targetFaction instanceof GuildFaction) &&
-                            !(targetFaction instanceof FremenFaction) &&
-                            game.hasGameOption(GameOption.TECH_TOKENS)
-            ) {
+            if (!(targetFaction instanceof GuildFaction)
+                    && !(targetFaction instanceof FremenFaction && cost == 0)
+                    && game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
-            }
 
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
                 bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
             }
             BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
-            turnSummary.queueMessage(message.toString());
         }
 
         if (canTrigger) {
