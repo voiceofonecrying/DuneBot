@@ -31,6 +31,8 @@ public class MoritaniButtons implements Pressable {
             triggerTerrorToken(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-remove-terror-"))
             removeTerrorToken(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-accept-offer-"))
+            acceptAlliance(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-deny-offer-"))
             denyAlliance(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-sabotage-give-card-"))
@@ -40,7 +42,6 @@ public class MoritaniButtons implements Pressable {
         else if (event.getComponentId().startsWith("moritani-sneak-attack-"))
             sneakAttack(event, game, discordGame);
         switch (event.getComponentId()) {
-            case "moritani-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
             case "moritani-pay-extortion" -> payExtortion(event, game, discordGame);
             case "moritani-pass-extortion" -> passExtortion(event, game, discordGame);
