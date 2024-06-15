@@ -41,10 +41,10 @@ public class RevivalButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (revival == 0) {
             discordGame.queueMessage("You will not revive any extra " + Emojis.IX_CYBORG + ".");
-            return;
+        } else {
+            CommandManager.reviveForces(faction, true, 0, revival, game, discordGame);
+            discordGame.queueMessage("You will revive " + revival + " " + Emojis.IX_CYBORG + ".");
         }
-        CommandManager.reviveForces(faction, true, 0, revival, game, discordGame);
-        discordGame.queueMessage("You will revive " + revival + " " + Emojis.IX_CYBORG + ".");
         game.getRevival().setCyborgRevivalComplete(true);
         faction.presentPaidRevivalChoices(freeRevived + revival);
     }

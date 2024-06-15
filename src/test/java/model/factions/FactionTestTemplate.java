@@ -1,5 +1,6 @@
 package model.factions;
 
+import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -32,13 +33,14 @@ abstract class FactionTestTemplate {
         int freeRevivals;
 
         @BeforeEach
-        public void setUp() {
+        public void setUp() throws InvalidGameStateException {
             faction = getFaction();
             freeRevivals =  faction.getFreeRevival();
             chat = new TestTopic();
             faction.setChat(chat);
             ledger = new TestTopic();
             faction.setLedger(ledger);
+            game.startRevival();
         }
 
         @Test
@@ -54,7 +56,6 @@ abstract class FactionTestTemplate {
 
         @Test
         public void testMaxRevivalWithRecruits() throws InvalidGameStateException {
-            game.startRevival();
             game.getRevival().setRecruitsInPlay(true);
             assertEquals(7, faction.getMaxRevival());
         }
@@ -83,6 +84,18 @@ abstract class FactionTestTemplate {
             assertEquals(1, chat.getMessages().size());
             assertEquals(1, chat.getChoices().size());
             assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        public void testPaidRevivalChoicesInsufficientSpice() throws InvalidGameStateException {
+            faction.setSpice(0);
+            faction.setMaxRevival(5);
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.presentPaidRevivalChoices(freeRevivals);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
         }
     }
 

@@ -78,7 +78,7 @@ public class IxFaction extends Faction {
     @Override
     public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
         TleilaxuTanks tanks = game.getTleilaxuTanks();
-        if (tanks.getForceStrength(name + "*") == 0)
+        if (tanks.getForceStrength(name + "*") == 0 || spice < revivalCost(0, 1))
             game.getRevival().setCyborgRevivalComplete(true);
         boolean cyborgRevivalComplete = game.getRevival().isCyborgRevivalComplete();
         String idPrefix;
@@ -103,15 +103,19 @@ public class IxFaction extends Faction {
         if (getMaxRevival() > numRevived) {
             int revivableForces = cyborgRevivalComplete ? tanks.getForceStrength(name) : tanks.getForceStrength(name + "*");
             if (revivableForces > 0) {
-                List<DuneChoice> choices = new ArrayList<>();
-                int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
-                for (int i = 0; i <= maxButton; i++) {
-                    DuneChoice choice = new DuneChoice(idPrefix + i + idSuffix, i + labelSuffix);
-                    if (cyborgRevivalComplete && spice < revivalCost(i, 0) || !cyborgRevivalComplete && spice < revivalCost(0, 1))
-                        choice.setDisabled(true);
-                    choices.add(choice);
+                if (spice < revivalCost(1, 0)) {
+                    chat.publish("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.");
+                } else {
+                    List<DuneChoice> choices = new ArrayList<>();
+                    int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
+                    for (int i = 0; i <= maxButton; i++) {
+                        DuneChoice choice = new DuneChoice(idPrefix + i + idSuffix, i + labelSuffix);
+                        if (cyborgRevivalComplete && spice < revivalCost(i, 0) || !cyborgRevivalComplete && spice < revivalCost(0, 1))
+                            choice.setDisabled(true);
+                        choices.add(choice);
+                    }
+                    chat.publish(chatMessage, choices);
                 }
-                chat.publish(chatMessage, choices);
             }
         }
     }
