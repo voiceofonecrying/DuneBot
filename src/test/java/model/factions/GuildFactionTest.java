@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -120,10 +121,9 @@ class GuildFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialForcePlacement() {
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
-            if (territoryName.equals("Tuek's Sietch")) {
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
+            if (territory.getTerritoryName().equals("Tuek's Sietch")) {
                 assertEquals(5, territory.getForceStrength("Guild"));
                 assertEquals(1, territory.countFactions());
             } else {

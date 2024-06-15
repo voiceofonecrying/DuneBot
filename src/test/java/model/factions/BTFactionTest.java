@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import model.TraitorCard;
 import org.junit.jupiter.api.BeforeEach;
@@ -172,9 +173,8 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialForcePlacement() {
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
             assertEquals(0, territory.countFactions());
         }
     }

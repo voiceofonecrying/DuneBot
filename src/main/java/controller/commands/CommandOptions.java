@@ -319,8 +319,8 @@ public class CommandOptions {
             // Initial placement of HMS
             return allTerritories.values().stream()
                     .filter(t -> !t.isStronghold())
+                    .filter(t -> !(t instanceof HomeworldTerritory))
                     .map(Territory::getTerritoryName)
-                    .filter(tn -> !game.getHomeworlds().containsValue(tn))
                     .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(territoryName -> new Command.Choice(territoryName, territoryName))
                     .limit(25)

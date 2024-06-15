@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
@@ -121,10 +122,9 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialForcePlacement() {
-        for (String territoryName : game.getTerritories().keySet()) {
-            if (game.getHomeworlds().containsValue(territoryName)) continue;
-            Territory territory = game.getTerritories().get(territoryName);
-            if (territoryName.equals("Arrakeen")) {
+        for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof HomeworldTerritory) continue;
+            if (territory.getTerritoryName().equals("Arrakeen")) {
                 assertEquals(10, territory.getForceStrength("Atreides"));
                 assertEquals(1, territory.countFactions());
             } else {
