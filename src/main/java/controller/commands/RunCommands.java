@@ -672,7 +672,9 @@ public class RunCommands {
                 turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cistern");
                 faction.setHasMiningEquipment(true);
             }
+        }
 
+        for (Faction faction : game.getFactions()) {
             Territory homeworld = game.getTerritory(faction.getHomeworld());
             if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
                 Faction occupyingFaction = homeworld.getActiveFactions(game).getFirst();
@@ -681,8 +683,9 @@ public class RunCommands {
                     faction.spiceMessage(2, "for High Threshold advantage", true);
                     harkonnenFaction.setTriggeredHT(true);
                 }
-                turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " from " + faction.getHomeworld());
+                turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " " + Emojis.SPICE + " for occupying " + faction.getHomeworld());
                 occupyingFaction.addSpice(faction.getOccupiedIncome());
+                occupyingFaction.spiceMessage(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld(), true);
             }
         }
 
