@@ -78,6 +78,9 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("list-members") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.listMembers(event, members);
                 event.getHook().editOriginal(result).queue();
+            } else if (name.equals("average-days-per-turn") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                String result = ReportsCommands.averageDaysPerTurn(event, members);
+                event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports")) {
                 String result = ReportsCommands.runCommand(event, members);
                 event.getHook().editOriginal(result).queue();
@@ -665,6 +668,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
         commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
+        commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
@@ -680,7 +684,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(AtreidesCommands.getCommands());
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
-        commandData.addAll(ReportsCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(
@@ -689,6 +692,7 @@ public class CommandManager extends ListenerAdapter {
                 .collect(Collectors.toList());
 
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
+        commandDataWithPermissions.addAll(ReportsCommands.getCommands());
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
                 .addOptions(slowGame, midGame, fastGame, originalSixFactions, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
         commandDataWithPermissions.add(Commands.slash("my-record", "View your record in an ephemeral message"));

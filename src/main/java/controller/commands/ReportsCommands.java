@@ -802,6 +802,9 @@ public class ReportsCommands {
         ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElse(null);
         if (parsedResults == null)
             parsedResults = playerStatsChannel.createThreadChannel("parsed-results").complete();
+        TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElse(null);
+        if (statsDiscussionChannel == null)
+            throw new IllegalStateException("The stats-discussion channel was not found.");
 
         JsonArray jsonGameResults = new JsonArray();
         MessageHistory h = parsedResults.getHistory();
@@ -1059,12 +1062,23 @@ public class ReportsCommands {
         if (!jsonNewGameResults.isEmpty()) {
             TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElse(null);
             if (factionStatsChannel == null)
-                throw new IllegalStateException("The moderator-thanks channel was not found.");
+                throw new IllegalStateException("The faction-stats channel was not found.");
+            messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
+            messages = messageHistory.getRetrievedHistory();
+            messages.forEach(msg -> msg.delete().queue());
             factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
-            TextChannel moderatorThanks = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-thanks")).findFirst().orElse(null);
+
+            TextChannel moderatorThanks = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElse(null);
             if (moderatorThanks == null)
-                throw new IllegalStateException("The moderator-thanks channel was not found.");
+                throw new IllegalStateException("The moderator-stats channel was not found.");
+            messageHistory = MessageHistory.getHistoryFromBeginning(moderatorThanks).complete();
+            messages = messageHistory.getRetrievedHistory();
+            messages.forEach(msg -> msg.delete().queue());
             moderatorThanks.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
+
+            messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
+            messages = messageHistory.getRetrievedHistory();
+            messages.forEach(msg -> msg.delete().queue());
             StringBuilder playerStatsString = new StringBuilder();
             String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
             int mentions = 0;
@@ -1096,10 +1110,12 @@ public class ReportsCommands {
                     reportsCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
             );
             parsedResults.sendFiles(fileUpload).complete();
+            statsDiscussionChannel.sendFiles(fileUpload).queue();
             fileUpload = FileUpload.fromData(
                     jsonGameResults.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
             );
             parsedResults.sendFiles(fileUpload).complete();
+            statsDiscussionChannel.sendFiles(fileUpload).queue();
         }
         return new GameResults(jsonGameResults, jsonNewGameResults.size());
     }
@@ -1346,6 +1362,51 @@ public class ReportsCommands {
         if (maxGames == 0)
             return "No players have won.";
         return tagEmojis(event, result.toString());
+    }
+
+    public static String averageDaysPerTurn(SlashCommandInteractionEvent event, List<Member> members) {
+        int minGames = 5;
+        JsonArray gameResults = gatherGameResults(event).gameResults;
+        Set<String> players = getAllPlayers(gameResults);
+        List<Pair<String, Integer>> playerAverageDuration = new ArrayList<>();
+        String overallAverage = "";
+        for (String playerName : players) {
+            int overallTotalDuration = 0;
+            int totalDuration = 0;
+            int overallTotalTurns = 0;
+            int totalTurns = 0;
+            int totalGames = 0;
+            for (JsonElement gr : gameResults.asList()) {
+                JsonObject gameResult = gr.getAsJsonObject();
+                if (getJsonRecordValueOrBlankString(gameResult, "gameDuration").isBlank())
+                    continue;
+                int duration = Integer.parseInt(getJsonRecordValueOrBlankString(gameResult, "gameDuration"));
+                int numTurns;
+                String turnString = getJsonRecordValueOrBlankString(gameResult, "turn");
+                if (turnString.isBlank())
+                    numTurns = 10;
+                else
+                    numTurns = Integer.parseInt(turnString);
+                overallTotalDuration += duration;
+                overallTotalTurns += numTurns;
+                if (!isPlayer(gameResult, playerName))
+                    continue;
+                totalDuration += duration;
+                totalTurns += numTurns;
+                totalGames++;
+            }
+            overallAverage = new DecimalFormat("#0.0").format((float)overallTotalDuration/overallTotalTurns) + " days per turn - " + "Overall average\n(Minimum " + minGames + " games played to be in list below)\n";
+            if (totalGames < minGames)
+                continue;
+            playerAverageDuration.add(new ImmutablePair<>(playerName, totalDuration * 10 / totalTurns));
+        }
+        Comparator<Pair<String, Integer>> numGamesComparator = Comparator.comparingInt(Pair::getRight);
+        playerAverageDuration.sort(numGamesComparator);
+        StringBuilder response = new StringBuilder();
+        response.append(overallAverage);
+        for (Pair<String, Integer> pair : playerAverageDuration)
+            response.append(new DecimalFormat("#0.0").format((float)pair.getRight()/10)).append(" ").append(pair.getLeft()).append("\n");
+        return response.toString();
     }
 
     private static String playerRecord(SlashCommandInteractionEvent event, String playerName, String playerTag) {
