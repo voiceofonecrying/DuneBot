@@ -118,7 +118,7 @@ public class HarkCommands {
         discordGame.pushGame();
     }
 
-    public static void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
 
@@ -133,7 +133,7 @@ public class HarkCommands {
 
         Faction harkonnenFaction = game.getFaction("Harkonnen");
 
-        harkonnenFaction.addSpice(2);
+        harkonnenFaction.addSpice(2, "killing " + leader.getName());
 
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (leader.getSkillCard() != null) {
@@ -156,7 +156,6 @@ public class HarkCommands {
         discordGame.getFactionChat(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         discordGame.getFactionLedger(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.getName());
-        harkonnenFaction.spiceMessage(2, "from the killed leader", true);
 
         game.setUpdated(UpdateType.MAP);
 

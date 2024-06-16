@@ -945,14 +945,12 @@ public class Game {
         String costString = " for free";
         if (isPaid) {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
-            faction.subtractSpice(revivalCost);
-            faction.spiceMessage(revivalCost, "Revivals", false);
+            faction.subtractSpice(revivalCost, "Revivals");
             costString = "for " + revivalCost + " " + Emojis.SPICE;
             if (hasFaction("BT") && !(faction instanceof BTFaction)) {
                 Faction btFaction = getFaction("BT");
-                btFaction.addSpice(revivalCost);
                 costString += " paid to " + Emojis.BT;
-                btFaction.spiceMessage(revivalCost, faction.getEmoji() + " revivals", true);
+                btFaction.addSpice(revivalCost, faction.getEmoji() + " revivals");
             }
         }
 
@@ -989,21 +987,18 @@ public class Game {
             Faction allyFaction = getFaction(faction.getAlly());
             if (allyFaction instanceof GuildFaction)
                 guildSupport = support;
-            allyFaction.subtractSpice(support);
-            allyFaction.spiceMessage(support, faction.getEmoji() + " shipment support", false);
+            allyFaction.subtractSpice(support, faction.getEmoji() + " shipment support");
             paymentMessage += MessageFormat.format(" ({0} from {1})", support, getFaction(faction.getAlly()).getEmoji());
             faction.setAllySpiceShipment(0);
         }
-        faction.subtractSpice(spice - support);
         String noFieldString = noField ? Emojis.NO_FIELD + " " : "";
-        faction.spiceMessage(spice - support, noFieldString + "shipment to " + territory.getTerritoryName(), false);
+        faction.subtractSpice(spice - support, noFieldString + "shipment to " + territory.getTerritoryName());
         if (!karamaShipment && !(faction instanceof GuildFaction) && hasFaction("Guild")) {
             if (guildSupport != 0)
                 paymentMessage += ", " + (spice - guildSupport) + " " + Emojis.SPICE;
             paymentMessage += " paid to " + Emojis.GUILD;
             Faction guildFaction = getFaction("Guild");
-            guildFaction.addSpice(spice - guildSupport);
-            guildFaction.spiceMessage(spice - guildSupport, faction.getEmoji() + " shipment", true);
+            guildFaction.addSpice(spice - guildSupport, faction.getEmoji() + " shipment");
         }
         return paymentMessage;
     }

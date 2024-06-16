@@ -205,7 +205,7 @@ public class RicheseCommands {
         }
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
-        faction.subtractSpice(3);
+        faction.subtractSpice(3, "one time Karama ability to purchase a " + faction.getEmoji() + " cache card.");
         faction.setSpecialKaramaPowerUsed(true);
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
         discordGame.pushGame();

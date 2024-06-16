@@ -78,8 +78,7 @@ public class SpiceCollectionButtons  implements Pressable{
 
                 }
                 case "Spice Stash" -> {
-                    faction.addSpice(7);
-                    faction.spiceMessage(7, Emojis.SPICE + " stash discovery token", true);
+                    faction.addSpice(7, Emojis.SPICE + " stash discovery token");
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.SPICE + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);

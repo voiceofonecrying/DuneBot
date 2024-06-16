@@ -315,22 +315,6 @@ public class Faction {
         setUpdated(UpdateType.SPICE_BACK);
     }
 
-    public void addSpice(int spice) {
-        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
-        if (spice == 0) return;
-        this.spice += spice;
-        setUpdated(UpdateType.SPICE_BACK);
-    }
-
-    public void subtractSpice(int spice) {
-        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
-        if (spice == 0) return;
-        this.spice -= spice;
-        if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
-        updateAllySupport();
-        setUpdated(UpdateType.SPICE_BACK);
-    }
-
     public boolean hasStarredForces() {
         return false;
     }
@@ -791,7 +775,25 @@ public class Faction {
         return chat;
     }
 
-    public void spiceMessage(int amount, String message, boolean plus) {
+    public void addSpice(int spice, String message) {
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
+        this.spice += spice;
+        spiceMessage(spice, message, true);
+        setUpdated(UpdateType.SPICE_BACK);
+    }
+
+    public void subtractSpice(int spice, String message) {
+        if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
+        if (spice == 0) return;
+        this.spice -= spice;
+        if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
+        updateAllySupport();
+        spiceMessage(spice, message, false);
+        setUpdated(UpdateType.SPICE_BACK);
+    }
+
+    private void spiceMessage(int amount, String message, boolean plus) {
         if (amount == 0) return;
         String plusSign = plus ? "+" : "-";
         ledger.publish(

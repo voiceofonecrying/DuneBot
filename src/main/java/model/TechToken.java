@@ -33,9 +33,8 @@ public class TechToken {
             if (faction.getTechTokens().isEmpty()) continue;
             for (TechToken tt : faction.getTechTokens()) {
                 if (tt.getName().equals(techToken) && tt.spice > 0) {
-                    faction.addSpice(tt.spice);
                     game.getTurnSummary().publish(faction.getEmoji() + " collects " + tt.spice + " " + Emojis.SPICE + " for " + Emojis.getTechTokenEmoji(techToken));
-                    faction.spiceMessage(tt.spice, "for " + Emojis.getTechTokenEmoji(techToken), true);
+                    faction.addSpice(tt.spice, "for " + Emojis.getTechTokenEmoji(techToken));
                     tt.spice = 0;
                     break;
                 }

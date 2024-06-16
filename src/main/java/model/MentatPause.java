@@ -91,11 +91,9 @@ public class MentatPause {
             if (f instanceof MoritaniFaction) continue;
             if (wouldPayExtortion.contains(f.getName())) {
                 game.getTurnSummary().publish(f.getEmoji() + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
-                f.subtractSpice(3);
-                f.spiceMessage(3, Emojis.MORITANI + " Extortion", false);
+                f.subtractSpice(3, Emojis.MORITANI + " Extortion");
                 Faction moritani = game.getFaction("Moritani");
-                moritani.addSpice(3);
-                moritani.spiceMessage(3, f.getEmoji() + " paid Extortion", true);
+                moritani.addSpice(3, f.getEmoji() + " paid Extortion");
                 extortionActive = false;
                 break;
             } else if (!declinedExtortion.contains(f.getName())) {

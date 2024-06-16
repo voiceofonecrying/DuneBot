@@ -155,23 +155,25 @@ abstract class FactionTestTemplate {
         void setUpAddSpice() {
             faction = getFaction();
             faction.setSpice(10);
+            TestTopic ledger = new TestTopic();
+            faction.setLedger(ledger);
         }
 
         @Test
         void validPositive() {
-            faction.addSpice(2);
+            faction.addSpice(2, "test");
             assertEquals(faction.getSpice(), 12);
         }
 
         @Test
         void zero() {
-            faction.addSpice(0);
+            faction.addSpice(0, "test");
             assertEquals(faction.getSpice(), 10);
         }
 
         @Test
         void negative() {
-            assertThrows(IllegalArgumentException.class, () -> faction.addSpice(-1));
+            assertThrows(IllegalArgumentException.class, () -> faction.addSpice(-1, "test"));
         }
     }
 
@@ -184,28 +186,30 @@ abstract class FactionTestTemplate {
         void setUpRemoveSpice() {
             faction = getFaction();
             faction.setSpice(10);
+            TestTopic ledger = new TestTopic();
+            faction.setLedger(ledger);
         }
 
         @Test
         void validPositive() {
-            faction.subtractSpice(2);
+            faction.subtractSpice(2, "test");
             assertEquals(faction.getSpice(), 8);
         }
 
         @Test
         void zero() {
-            faction.subtractSpice(0);
+            faction.subtractSpice(0, "test");
             assertEquals(faction.getSpice(), 10);
         }
 
         @Test
         void negative() {
-            assertThrows(IllegalArgumentException.class, () -> faction.subtractSpice(-2));
+            assertThrows(IllegalArgumentException.class, () -> faction.subtractSpice(-2, "test"));
         }
 
         @Test
         void tooMuch() {
-            assertThrows(IllegalStateException.class, () -> faction.subtractSpice(11));
+            assertThrows(IllegalStateException.class, () -> faction.subtractSpice(11, "test"));
         }
     }
 

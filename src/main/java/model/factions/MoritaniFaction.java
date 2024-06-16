@@ -45,8 +45,7 @@ public class MoritaniFaction extends Faction {
         int spiceGained = leader.getName().equals("Zoal") ? 3 : leader.getValue();
         game.getTurnSummary().publish(Emojis.MORITANI + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
         game.killLeader(triggeringFaction, leader.getName());
-        addSpice(spiceGained);
-        spiceMessage(spiceGained, "assassination of " + leader. getName(), true);
+        addSpice(spiceGained, "assassination of " + leader.getName());
     }
 
     public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) {

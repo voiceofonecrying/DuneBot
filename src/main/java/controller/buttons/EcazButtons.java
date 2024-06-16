@@ -79,8 +79,7 @@ public class EcazButtons implements Pressable {
             discordGame.queueMessage("You can't afford to send your ambassador.");
             return;
         }
-        ecazFaction.subtractSpice(cost);
-        ecazFaction.spiceMessage(cost, " ambassador to " + territory.getTerritoryName(), false);
+        ecazFaction.subtractSpice(cost, " ambassador to " + territory.getTerritoryName());
         ecazFaction.placeAmbassador(territory, ambassador);
         discordGame.getTurnSummary().queueMessage("An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
         discordGame.pushGame();
@@ -114,7 +113,7 @@ public class EcazButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the Ambassador away with news of their new alliance!");
         discordGame.queueDeleteMessage();

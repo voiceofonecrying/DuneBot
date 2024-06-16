@@ -252,12 +252,10 @@ public class CommandManager extends ListenerAdapter {
         );
 
         // Winner pays for the card
-        winner.subtractSpice(spentValue - allySupport);
         winner.setAllySpiceBidding(Math.max(winner.getAllySpiceBidding() - spentValue, 0));
-        winner.spiceMessage(spentValue - allySupport, currentCard, false);
+        winner.subtractSpice(spentValue - allySupport, currentCard);
         if (winner.hasAlly()) {
-            game.getFaction(winner.getAlly()).subtractSpice(allySupport);
-            game.getFaction(winner.getAlly()).spiceMessage(allySupport, currentCard + " (ally support)", false);
+            game.getFaction(winner.getAlly()).subtractSpice(allySupport, currentCard + " (ally support)");
         }
 
         if (game.hasFaction(paidToFactionName)) {
@@ -269,8 +267,7 @@ public class CommandManager extends ListenerAdapter {
                 spicePaid = Math.ceilDiv(spentValue, 2);
                 if (paidToFaction.isHomeworldOccupied()) {
                     Faction occupier = paidToFaction.getOccupier();
-                    occupier.addSpice(Math.floorDiv(spentValue, 2));
-                    occupier.spiceMessage(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard, true);
+                    occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
                     turnSummary.queueMessage(
                             MessageFormat.format(
                                     "{0} is paid {1} {2} for {3} (homeworld occupied)",
@@ -286,8 +283,7 @@ public class CommandManager extends ListenerAdapter {
             if (paidToFaction instanceof RicheseFaction && paidToFaction.isHomeworldOccupied()) {
                 spicePaid = Math.ceilDiv(spentValue, 2);
                 Faction occupier = paidToFaction.getOccupier();
-                occupier.addSpice(Math.floorDiv(spentValue, 2));
-                occupier.spiceMessage(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard, true);
+                occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
                 turnSummary.queueMessage(
                         MessageFormat.format(
                                 "{0} is paid {1} {2} for {3} (homeworld occupied)",
@@ -299,8 +295,7 @@ public class CommandManager extends ListenerAdapter {
                 );
             }
 
-            paidToFaction.addSpice(spicePaid);
-            paidToFaction.spiceMessage(spicePaid, currentCard, true);
+            paidToFaction.addSpice(spicePaid, currentCard);
 
             turnSummary.queueMessage(
                     MessageFormat.format(
@@ -880,9 +875,9 @@ public class CommandManager extends ListenerAdapter {
             }
         } else {
             if (add) {
-                faction.addSpice(amountValue);
+                faction.addSpice(amountValue, messageValue);
             } else {
-                faction.subtractSpice(amountValue);
+                faction.subtractSpice(amountValue, messageValue);
             }
         }
         String frontOfShieldMessage = add ? "to front of shield" : "from front of shield";
@@ -897,10 +892,6 @@ public class CommandManager extends ListenerAdapter {
                         messageValue
                 )
         );
-
-        if (!toFrontOfShield)
-            faction.spiceMessage(amountValue, messageValue, add);
-
         discordGame.pushGame();
     }
 
@@ -965,8 +956,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getFactionLedger(factionName).queueMessage(cardName + " discarded from hand.");
 
         if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
-            game.getFaction("Ecaz").addSpice(3);
-            game.getFaction("Ecaz").spiceMessage(3, "Poison weapon was discarded", true);
+            game.getFaction("Ecaz").addSpice(3, "Poison weapon was discarded");
             discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " gain 3 " + Emojis.SPICE + " for the discarded poison weapon");
         }
         discordGame.pushGame();
@@ -1168,8 +1158,7 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getModInfo().queueMessage("Faction does not have enough spice to pay the bribe!");
                 return;
             }
-            fromFaction.subtractSpice(amountValue);
-            fromFaction.spiceMessage(amountValue, "bribe to " + recipientFaction.getEmoji(), false);
+            fromFaction.subtractSpice(amountValue, "bribe to " + recipientFaction.getEmoji());
             discordGame.getTurnSummary().queueMessage(
                     MessageFormat.format(
                             "{0} places {1} {2} in front of {3} shield.",

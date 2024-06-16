@@ -265,35 +265,31 @@ public class RunCommands {
                 int charity = multiplier * 2;
                 choamGiven += charity;
                 if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                faction.addSpice(charity);
                 turnSummary.queueMessage(faction.getEmoji() + " have received " +
                         2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
-                faction.spiceMessage(2 * multiplier, "CHOAM Charity", true);
+                faction.addSpice(2 * multiplier, "CHOAM Charity");
             } else if (spice < 2) {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
                 if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                faction.addSpice(charity);
                 turnSummary.queueMessage(
                         faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
                                 " in CHOAM Charity."
                 );
                 if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
                     TechToken.addSpice(game, TechToken.SPICE_PRODUCTION);
-                faction.spiceMessage(charity, "CHOAM Charity", true);
+                faction.addSpice(charity, "CHOAM Charity");
             }
         }
         if (game.hasFaction("CHOAM")) {
             Faction choamFaction = game.getFaction("CHOAM");
             int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
-            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne);
-            choamFaction.spiceMessage(game.getFactions().size() * 2 * multiplier, "CHOAM Charity", true);
+            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne, "CHOAM Charity");
             turnSummary.queueMessage(
                     choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
             );
-            choamFaction.subtractSpice(choamGiven);
-            choamFaction.spiceMessage(choamGiven, "CHOAM Charity given", false);
+            choamFaction.subtractSpice(choamGiven, "CHOAM Charity given");
         }
         if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
             TechToken.collectSpice(game, TechToken.SPICE_PRODUCTION);
@@ -527,13 +523,12 @@ public class RunCommands {
 
         if (btWasHighThreshold && factionsWithRevivals > 0) {
             Faction btFaction = game.getFaction("BT");
-            btFaction.addSpice(factionsWithRevivals);
             message.append(btFaction.getEmoji())
                     .append(" receives ")
                     .append(factionsWithRevivals)
                     .append(Emojis.SPICE)
                     .append(" from free revivals\n");
-            btFaction.spiceMessage(factionsWithRevivals, "for free revivals", true);
+            btFaction.addSpice(factionsWithRevivals, "for free revivals");
         }
 
         if (!message.isEmpty()) {
@@ -650,25 +645,21 @@ public class RunCommands {
         for (Faction faction : game.getFactions()) {
             faction.setHasMiningEquipment(false);
             if (territories.get("Arrakeen").hasActiveFaction(faction)) {
-                faction.addSpice(2);
-                faction.spiceMessage(2, "for Arrakeen", true);
+                faction.addSpice(2, "for Arrakeen");
                 turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Arrakeen");
                 faction.setHasMiningEquipment(true);
             }
             if (territories.get("Carthag").hasActiveFaction(faction)) {
-                faction.addSpice(2);
-                faction.spiceMessage(2, "for Carthag", true);
+                faction.addSpice(2, "for Carthag");
                 turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Carthag");
                 faction.setHasMiningEquipment(true);
             }
             if (territories.get("Tuek's Sietch").hasActiveFaction(faction)) {
                 turnSummary.queueMessage(faction.getEmoji() + " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
-                faction.addSpice(1);
-                faction.spiceMessage(1, "for Tuek's Sietch", true);
+                faction.addSpice(1, "for Tuek's Sietch");
             }
             if (territories.get("Cistern") != null && territories.get("Cistern").hasActiveFaction(faction)) {
-                faction.addSpice(2);
-                faction.spiceMessage(2, "for Cistern", true);
+                faction.addSpice(2, "for Cistern");
                 turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cistern");
                 faction.setHasMiningEquipment(true);
             }
@@ -679,13 +670,11 @@ public class RunCommands {
             if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
                 Faction occupyingFaction = homeworld.getActiveFactions(game).getFirst();
                 if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                    faction.addSpice(2);
-                    faction.spiceMessage(2, "for High Threshold advantage", true);
+                    faction.addSpice(2, "for High Threshold advantage");
                     harkonnenFaction.setTriggeredHT(true);
                 }
                 turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " " + Emojis.SPICE + " for occupying " + faction.getHomeworld());
-                occupyingFaction.addSpice(faction.getOccupiedIncome());
-                occupyingFaction.spiceMessage(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld(), true);
+                occupyingFaction.addSpice(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld());
             }
         }
 
@@ -696,8 +685,7 @@ public class RunCommands {
             if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
             if (orgizActive) {
                 Faction orgizFaction = orgiz.getActiveFactions(game).getFirst();
-                orgizFaction.addSpice(1);
-                orgizFaction.spiceMessage(1, "for Orgiz Processing Station", true);
+                orgizFaction.addSpice(1, "for Orgiz Processing Station");
                 territory.setSpice(territory.getSpice() - 1);
                 turnSummary.queueMessage(orgizFaction.getEmoji() + " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " with Orgiz Processing Station");
             }
@@ -705,15 +693,13 @@ public class RunCommands {
             Faction faction = territory.getActiveFactions(game).getFirst();
             int spice = faction.getSpiceCollectedFromTerritory(territory);
             if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
-                faction.getOccupier().addSpice(Math.floorDiv(spice, 2));
-                faction.getOccupier().spiceMessage(Math.floorDiv(spice, 2),
-                        "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).", true);
+                faction.getOccupier().addSpice(Math.floorDiv(spice, 2),
+                        "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
                 turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                         " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
                 spice = Math.ceilDiv(spice, 2);
             }
-            faction.addSpice(spice);
-            faction.spiceMessage(spice, "for Spice Blow", true);
+            faction.addSpice(spice, "for Spice Blow");
             territory.setSpice(territory.getSpice() - spice);
 
             if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
@@ -722,8 +708,7 @@ public class RunCommands {
             turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
             if (game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                faction.addSpice(2);
-                faction.spiceMessage(2, "for High Threshold advantage", true);
+                faction.addSpice(2, "for High Threshold advantage");
                 harkonnenFaction.setTriggeredHT(true);
             }
         }
@@ -755,8 +740,7 @@ public class RunCommands {
             if (faction.getFrontOfShieldSpice() > 0) {
                 turnSummary.queueMessage(faction.getEmoji() + " collects " +
                         faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
-                faction.addSpice(faction.getFrontOfShieldSpice());
-                faction.spiceMessage(faction.getFrontOfShieldSpice(), "front of shield", true);
+                faction.addSpice(faction.getFrontOfShieldSpice(), "front of shield");
                 faction.setFrontOfShieldSpice(0);
             }
             for (TreacheryCard card : faction.getTreacheryHand()) {

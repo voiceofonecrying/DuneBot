@@ -461,8 +461,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (shipment.isToReserves()) {
             game.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
-            faction.subtractSpice(spice);
-            faction.spiceMessage(spice, "shipment from " + territory.getTerritoryName() + " back to reserves", false);
+            faction.subtractSpice(spice, "shipment from " + territory.getTerritoryName() + " back to reserves");
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else if (!crossShipFrom.isEmpty()) {
             game.removeForces(crossShipFrom, faction, force, 0, false);

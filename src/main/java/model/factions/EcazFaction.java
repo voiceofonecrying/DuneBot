@@ -91,10 +91,8 @@ public class EcazFaction extends Faction {
             }
             case "CHOAM" ->
                     game.getModInfo().publish("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
-            case "Emperor" -> {
-                addSpice(5);
-                spiceMessage(5, Emojis.EMPEROR + " ambassador token", true);
-            }
+            case "Emperor" ->
+                    addSpice(5, Emojis.EMPEROR + " ambassador token");
             case "Fremen" ->
                     game.getModInfo().publish("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
             case "Harkonnen" ->

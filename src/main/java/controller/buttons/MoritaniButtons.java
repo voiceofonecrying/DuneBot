@@ -55,8 +55,7 @@ public class MoritaniButtons implements Pressable {
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
 
-        moritani.addSpice(4);
-        moritani.spiceMessage(4, "terror token returned to supply", true);
+        moritani.addSpice(4, "terror token returned to supply");
 
         moritani.getTerrorTokens().add(terror);
         territory.getTerrorTokens().removeIf(t -> t.equals(terror));
@@ -87,7 +86,7 @@ public class MoritaniButtons implements Pressable {
 
     private static void payExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.subtractSpice(3);
+        faction.subtractSpice(3, "remove Extortion from the game.");
         discordGame.queueMessage(faction.getEmoji() + " has paid 3 " + Emojis.SPICE + " to remove Extortion from the game.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
