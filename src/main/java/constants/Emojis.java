@@ -49,41 +49,41 @@ public final class Emojis {
     }
 
     public static String getFactionEmoji(String factionName) {
-        switch (factionName) {
-            case "Fremen" -> {
+        switch (factionName.toLowerCase()) {
+            case "fremen" -> {
                 return FREMEN;
             }
-            case "Atreides" -> {
+            case "atreides" -> {
                 return ATREIDES;
             }
-            case "Harkonnen" -> {
+            case "harkonnen" -> {
                 return HARKONNEN;
             }
-            case "BG" -> {
+            case "bg" -> {
                 return BG;
             }
-            case "Guild" -> {
+            case "guild" -> {
                 return GUILD;
             }
-            case "Emperor" -> {
+            case "emperor" -> {
                 return EMPEROR;
             }
-            case "CHOAM" -> {
+            case "choam" -> {
                 return CHOAM;
             }
-            case "BT" -> {
+            case "bt" -> {
                 return BT;
             }
-            case "Richese" -> {
+            case "richese" -> {
                 return RICHESE;
             }
-            case "Ix" -> {
+            case "ix" -> {
                 return IX;
             }
-            case "Ecaz" -> {
+            case "ecaz" -> {
                 return ECAZ;
             }
-            case "Moritani" -> {
+            case "moritani" -> {
                 return MORITANI;
             }
         }

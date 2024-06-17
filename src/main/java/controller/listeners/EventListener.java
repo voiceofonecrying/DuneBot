@@ -6,6 +6,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -99,6 +100,18 @@ public class EventListener extends ListenerAdapter {
             }
         }
 
-        event.getChannel().sendMessage(StringUtils.join(mentionedPlayers, " ")).queue();
+        if (!mentionedPlayers.isEmpty())
+            event.getChannel().sendMessage(StringUtils.join(mentionedPlayers, " ")).queue();
+
+        if (event.getChannel() instanceof ThreadChannel threadChannel) {
+            String channelName = threadChannel.getName();
+            game.getFactions().stream()
+                    .filter(f -> channelName.endsWith("-whispers")
+                            && threadChannel.getParentChannel().getName().equals(f.getName().toLowerCase() + "-info"))
+                    .map(f -> channelName.substring(0, channelName.indexOf("-")))
+                    .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
+                    .findFirst().ifPresent(emoji -> event.getChannel()
+                            .sendMessage("Use /player whisper if you wish to send a private message to " + emoji + ".").queue());
+        }
     }
 }

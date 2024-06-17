@@ -9,7 +9,7 @@ import model.Game;
 import model.MentatPause;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -31,8 +31,7 @@ public class ButtonManager extends ListenerAdapter {
     public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
         try {
             if (allowModButtonPress) {
-                String channelName = event.getChannelType().equals(ChannelType.GUILD_PRIVATE_THREAD) ||
-                        event.getChannelType().equals(ChannelType.GUILD_PUBLIC_THREAD) ?
+                String channelName = event.getChannel() instanceof ThreadChannel ?
                         event.getChannel().asThreadChannel().getParentMessageChannel().getName() :
                         event.getChannel().getName();
 
