@@ -618,7 +618,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!faction.getShipment().getCrossShipFrom().isEmpty())
                 territory = territory + " cross shipping from " + faction.getShipment().getCrossShipFrom();
 
-            if (game.getTerritory(territory).costToShipInto() == 2 && !faction.getShipment().isToReserves())
+            if (game.getTerritory(faction.getShipment().getTerritoryName()).costToShipInto() == 2 && !faction.getShipment().isToReserves())
                 spice *= 2;
 
             if (faction instanceof FremenFaction) spice = 0;
