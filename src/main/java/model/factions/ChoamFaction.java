@@ -41,6 +41,11 @@ public class ChoamFaction extends Faction {
         this.maxRevival = 20;
     }
 
+    @Override
+    public void setDecliningCharity(boolean decliningCharity) throws InvalidGameStateException {
+        throw new InvalidGameStateException("CHOAM never declines charity.");
+    }
+
     /**
      * @return the first round where inflation is active.
      */

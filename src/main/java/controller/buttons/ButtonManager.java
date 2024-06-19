@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import constants.Emojis;
 import controller.CommandCompletionGuard;
 import controller.Queue;
 import controller.commands.ShowCommands;
@@ -106,6 +107,18 @@ public class ButtonManager extends ListenerAdapter {
                 case "text" -> {
                     getButtonPresser(event, game).setGraphicDisplay(false);
                     discordGame.queueMessage("Text mode active");
+                    discordGame.pushGame();
+                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                }
+                case "charity-accept" -> {
+                    getButtonPresser(event, game).setDecliningCharity(false);
+                    discordGame.queueMessage("You will receive CHOAM charity if you have less than 2 " + Emojis.SPICE + ".");
+                    discordGame.pushGame();
+                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                }
+                case "charity-decline" -> {
+                    getButtonPresser(event, game).setDecliningCharity(true);
+                    discordGame.queueMessage("You will not receive CHOAM charity even if you have less than 2 " + Emojis.SPICE + ".");
                     discordGame.pushGame();
                     ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
                 }

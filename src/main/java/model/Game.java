@@ -299,6 +299,68 @@ public class Game {
         this.onHold = onHold;
     }
 
+    public void choamCharity() {
+        turnSummary.publish("Turn " + turn + " CHOAM Charity Phase:");
+        setPhaseForWhispers("Turn " + turn + " CHOAM Charity Phase\n");
+        int multiplier = 1;
+
+        if (hasFaction("CHOAM")) {
+            multiplier = ((ChoamFaction) getFaction("CHOAM")).getChoamMultiplier(turn);
+
+            if (multiplier == 0) {
+                turnSummary.publish("CHOAM Charity is cancelled!");
+                return;
+            } else if (multiplier == 2) {
+                turnSummary.publish("CHOAM charity is doubled! No bribes may be made while the Inflation token is Double side up.");
+            }
+        }
+
+        int choamGiven = 0;
+        if (hasFaction("CHOAM")) {
+            int plusOne = (hasGameOption(GameOption.HOMEWORLDS) && !getFaction("CHOAM").isHighThreshold()) ? 1 : 0;
+            turnSummary.publish(
+                    getFaction("CHOAM").getEmoji() + " receives " +
+                            ((factions.size() * 2 * multiplier) + plusOne) +
+                            " " + Emojis.SPICE + " in dividends from their many investments."
+            );
+        }
+        for (Faction faction : factions) {
+            if (faction instanceof ChoamFaction || faction.isDecliningCharity()) continue;
+            int spice = faction.getSpice();
+            if (faction instanceof BGFaction) {
+                int charity = multiplier * 2;
+                choamGiven += charity;
+                if (hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
+                turnSummary.publish(faction.getEmoji() + " have received " +
+                        2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
+                faction.addSpice(charity, "CHOAM Charity");
+            } else if (spice < 2) {
+                int charity = multiplier * (2 - spice);
+                choamGiven += charity;
+                if (hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
+                turnSummary.publish(
+                        faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
+                                " in CHOAM Charity."
+                );
+                if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
+                    TechToken.addSpice(this, TechToken.SPICE_PRODUCTION);
+                faction.addSpice(charity, "CHOAM Charity");
+            }
+        }
+        if (hasFaction("CHOAM")) {
+            Faction choamFaction = getFaction("CHOAM");
+            int plusOne = (hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
+            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne, "CHOAM Charity");
+            turnSummary.publish(
+                    choamFaction.getEmoji() + " has paid " + choamGiven +
+                            " " + Emojis.SPICE + " to factions in need."
+            );
+            choamFaction.subtractSpice(choamGiven, "CHOAM Charity given");
+        }
+        if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
+            TechToken.collectSpice(this, TechToken.SPICE_PRODUCTION);
+    }
+
     public Bidding getBidding() throws InvalidGameStateException {
         if (bidding == null) throw new InvalidGameStateException("Game is not in bidding phase.");
         return bidding;

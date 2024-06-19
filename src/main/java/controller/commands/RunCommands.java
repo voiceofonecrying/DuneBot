@@ -109,7 +109,7 @@ public class RunCommands {
             spiceBlow(discordGame, game);
             game.advancePhase();
         } else if (phase == 3) {
-            choamCharity(discordGame, game);
+            game.choamCharity();
             game.advancePhase();
         } else if (phase == 4 && subPhase == 1) {
             if (startBiddingPhase(discordGame, game)) {
@@ -229,70 +229,6 @@ public class RunCommands {
     public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Spice Blow Phase:");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
-    }
-
-    public static void choamCharity(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage("Turn " + game.getTurn() + " CHOAM Charity Phase:");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " CHOAM Charity Phase\n");
-        int multiplier = 1;
-
-        if (game.hasFaction("CHOAM")) {
-            multiplier = ((ChoamFaction) game.getFaction("CHOAM")).getChoamMultiplier(game.getTurn());
-
-            if (multiplier == 0) {
-                turnSummary.queueMessage("CHOAM Charity is cancelled!");
-                return;
-            } else if (multiplier == 2) {
-                turnSummary.queueMessage("CHOAM charity is doubled! No bribes may be made while the Inflation token is Double side up.");
-            }
-        }
-
-        int choamGiven = 0;
-        List<Faction> factions = game.getFactions();
-        if (game.hasFaction("CHOAM")) {
-            int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !game.getFaction("CHOAM").isHighThreshold()) ? 1 : 0;
-            turnSummary.queueMessage(
-                    game.getFaction("CHOAM").getEmoji() + " receives " +
-                            ((game.getFactions().size() * 2 * multiplier) + plusOne) +
-                            " " + Emojis.SPICE + " in dividends from their many investments."
-            );
-        }
-        for (Faction faction : factions) {
-            if (faction instanceof ChoamFaction) continue;
-            int spice = faction.getSpice();
-            if (faction instanceof BGFaction) {
-                int charity = multiplier * 2;
-                choamGiven += charity;
-                if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                turnSummary.queueMessage(faction.getEmoji() + " have received " +
-                        2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
-                faction.addSpice(2 * multiplier, "CHOAM Charity");
-            } else if (spice < 2) {
-                int charity = multiplier * (2 - spice);
-                choamGiven += charity;
-                if (game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                turnSummary.queueMessage(
-                        faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
-                                " in CHOAM Charity."
-                );
-                if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
-                    TechToken.addSpice(game, TechToken.SPICE_PRODUCTION);
-                faction.addSpice(charity, "CHOAM Charity");
-            }
-        }
-        if (game.hasFaction("CHOAM")) {
-            Faction choamFaction = game.getFaction("CHOAM");
-            int plusOne = (game.hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
-            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne, "CHOAM Charity");
-            turnSummary.queueMessage(
-                    choamFaction.getEmoji() + " has paid " + choamGiven +
-                            " " + Emojis.SPICE + " to factions in need."
-            );
-            choamFaction.subtractSpice(choamGiven, "CHOAM Charity given");
-        }
-        if (game.hasGameOption(GameOption.TECH_TOKENS) && !game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
-            TechToken.collectSpice(game, TechToken.SPICE_PRODUCTION);
     }
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

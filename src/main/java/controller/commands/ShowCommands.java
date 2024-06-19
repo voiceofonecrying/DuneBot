@@ -345,16 +345,26 @@ public class ShowCommands {
     }
 
     public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
-        discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("Use these buttons to take the corresponding actions.")
-                .addActionRow(Button.secondary("graphic", "-info channel graphic mode"), Button.secondary("text", "-info channel text mode")).build());
+        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        if (faction.isGraphicDisplay())
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("text", "Try Text mode. It's easier to read!")).build());
+        else
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("graphic", "Try Graphic mode. It's cool and beautiful!")).build());
+
+        if (!(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
+            if (faction.isDecliningCharity())
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("charity-accept", "Accept CHOAM charity")).build());
+            else
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
+        }
 
         if (faction.hasAlly()) {
             if (game.getFaction(faction.getAlly()).getAllySpiceBidding() > faction.getSpice()) game.getFaction(faction.getAlly()).setAllySpiceBidding(faction.getSpice());
             if (game.getFaction(faction.getAlly()).getAllySpiceShipment() > faction.getSpice()) game.getFaction(faction.getAlly()).setAllySpiceShipment(faction.getSpice());
-            discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + " to your ally for shipping.\nSet ally shipping support:")
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + " to your ally for shipping.\nSet ally shipping support:")
                     .addActionRow(Button.primary("support-max", "Max support"),
                             Button.secondary("support-number", "Pick a number"), Button.danger("support-reset", "Reset support")).build());
-            discordGame.queueMessage(faction.getName().toLowerCase() + "-info", new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceBidding() + " " + Emojis.SPICE + " to your ally for bidding.\nSet ally bidding support:")
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent("You are currently offering " + game.getFaction(faction.getAlly()).getAllySpiceBidding() + " " + Emojis.SPICE + " to your ally for bidding.\nSet ally bidding support:")
                     .addActionRow(Button.primary("bid-support-max", "Max support"),
                             Button.secondary("bid-support-number", "Pick a number"), Button.danger("bid-support-reset", "Reset support")).build());
         }

@@ -33,6 +33,7 @@ class GameTest {
     private Faction harkonnen;
     private Faction bt;
     private Faction ix;
+    private ChoamFaction choam;
     private Faction richese;
     private Faction ecaz;
     private Faction moritani;
@@ -44,8 +45,10 @@ class GameTest {
 
 
     @BeforeEach
-    void setUp() throws IOException {
+    public void setUp() throws IOException {
         game = new Game();
+        turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
         tanks = game.getTleilaxuTanks();
 
         familyAtomics = game.getTreacheryDeck().stream()
@@ -56,7 +59,126 @@ class GameTest {
                 .filter(t -> t.name().equals("Weather Control"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
+    }
 
+    @Nested
+    @DisplayName("#choamCharityPhase")
+    class ChoamCharity {
+        @BeforeEach
+        public void setUp() throws IOException {
+            emperor = new EmperorFaction("p", "u", game);
+            emperor.setLedger(new TestTopic());
+            bg = new BGFaction("p", "u", game);
+            bg.setLedger(new TestTopic());
+            choam = new ChoamFaction("p", "u", game);
+            choam.setLedger(new TestTopic());
+            atreides = new AtreidesFaction("p", "u", game);
+            fremen = new FremenFaction("p", "u", game);
+            richese = new RicheseFaction("p", "u", game);
+
+            game.addFaction(emperor);
+            game.addFaction(bg);
+            game.addFaction(choam);
+            game.addFaction(atreides);
+            game.addFaction(fremen);
+            game.addFaction(richese);
+        }
+
+        @Test
+        public void testEmperorHasSpiceDoesNotCollect() {
+            assertEquals(10, emperor.getSpice());
+            game.choamCharity();
+            assertEquals(10, emperor.getSpice());
+        }
+
+        @Test
+        public void testEmperorLacksSpiceDoesCollect() {
+            emperor.setSpice(0);
+            game.choamCharity();
+            assertEquals(2, emperor.getSpice());
+            emperor.setSpice(1);
+            game.choamCharity();
+            assertEquals(2, emperor.getSpice());
+        }
+
+        @Test
+        public void testEmperorCollectsAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            emperor.removeReserves(15);
+            assertFalse(emperor.isHighThreshold());
+            emperor.setSpice(0);
+            game.choamCharity();
+            assertEquals(3, emperor.getSpice());
+            emperor.setSpice(1);
+            game.choamCharity();
+            assertEquals(3, emperor.getSpice());
+            emperor.setSpice(2);
+            game.choamCharity();
+            assertEquals(2, emperor.getSpice());
+        }
+
+        @Test
+        public void testEmperorLacksSpiceDeclinesCharity() throws InvalidGameStateException {
+            emperor.setDecliningCharity(true);
+            emperor.setSpice(0);
+            game.choamCharity();
+            assertEquals(0, emperor.getSpice());
+            emperor.setSpice(1);
+            game.choamCharity();
+            assertEquals(1, emperor.getSpice());
+        }
+
+        @Test
+        public void testBGAlwaysCollectsCharity() {
+            assertEquals(5, bg.getSpice());
+            game.choamCharity();
+            assertEquals(7, bg.getSpice());
+        }
+
+        @Test
+        public void testBGAlwaysCollectsAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            bg.removeReserves(10);
+            assertEquals(5, bg.getSpice());
+            assertFalse(bg.isHighThreshold());
+            game.choamCharity();
+            assertEquals(8, bg.getSpice());
+        }
+
+        @Test
+        public void testBGDoesNotDeclineCharity() {
+            assertThrows(InvalidGameStateException.class, () -> bg.setDecliningCharity(true));
+            bg.setSpice(0);
+            assertEquals(0, bg.getSpice());
+            game.choamCharity();
+            assertEquals(2, bg.getSpice());
+        }
+
+        @Test
+        public void testCHOAMAlwaysCollectsCharity() {
+            assertEquals(2, choam.getSpice());
+            game.choamCharity();
+            assertEquals(12, choam.getSpice());
+        }
+
+        @Test
+        public void testCHOAMAlwaysCollectsAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            choam.removeReserves(20);
+            assertEquals(2, choam.getSpice());
+            assertFalse(choam.isHighThreshold());
+            game.choamCharity();
+            assertEquals(13, choam.getSpice());
+        }
+
+        @Test
+        public void testCHOAMDoesNotDeclineCharity() {
+            assertThrows(InvalidGameStateException.class, () -> choam.setDecliningCharity(true));
+            choam.setSpice(0);
+            assertEquals(0, choam.getSpice());
+            game.choamCharity();
+            assertEquals(10, choam.getSpice());
+        }
     }
 
     @Nested
@@ -163,8 +285,6 @@ class GameTest {
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
         }
 
         @Test
@@ -268,8 +388,6 @@ class GameTest {
             harkonnen = new HarkonnenFaction("fp6", "un6", game);
             bt = new BTFaction("fp7", "un7", game);
             ix = new IxFaction("fp8", "un8", game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             game.addGameOption(GameOption.TECH_TOKENS);
         }
 
@@ -577,12 +695,8 @@ class GameTest {
     @Nested
     @DisplayName("#startNewTurn")
     class StartNewTurn {
-        TestTopic turnSummary;
-
         @BeforeEach
         void setUp() throws IOException {
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             FremenFaction fremen = new FremenFaction("p", "u", game);
             game.addFaction(fremen);
         }
@@ -637,8 +751,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             guildChat = new TestTopic();
@@ -804,8 +916,6 @@ class GameTest {
             fremen = new FremenFaction("fp4", "un4", game);
             game.addFaction(emperor);
             game.addFaction(fremen);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
 
             game.advanceTurn();
             game.advanceTurn();
@@ -1006,8 +1116,6 @@ class GameTest {
             game.addFaction(emperor);
             game.addFaction(harkonnen);
             game.addFaction(ix);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
 
             game.advanceTurn();
             game.advanceTurn();
@@ -1040,8 +1148,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             bgChat = new TestTopic();
             bg.setChat(bgChat);
             emperorChat = new TestTopic();
@@ -1231,8 +1337,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             bgChat = new TestTopic();
             bg.setChat(bgChat);
             emperorChat = new TestTopic();
@@ -1285,8 +1389,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             bgChat = new TestTopic();
             bg.setChat(bgChat);
             emperorChat = new TestTopic();
@@ -1422,6 +1524,43 @@ class GameTest {
     }
 
     @Nested
+    @DisplayName("#mentatPauseDecliningCharity")
+    class DecliningCharity {
+        TestTopic emperorChat;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            emperor = new EmperorFaction("p", "u", game);
+            emperorChat = new TestTopic();
+            emperor.setChat(emperorChat);
+            game.addFaction(emperor);
+        }
+
+        @Test
+        public void testHasSpiceNoDeclineMessage() throws InvalidGameStateException {
+            emperor.setDecliningCharity(true);
+            game.startMentatPause();
+            assertEquals(0, emperorChat.getMessages().size());
+        }
+
+        @Test
+        public void testNotDecliningNoDeclineMessage() {
+            emperor.setSpice(0);
+            game.startMentatPause();
+            assertEquals(0, emperorChat.getMessages().size());
+        }
+
+        @Test
+        public void testGetsDeclineMessage() throws InvalidGameStateException {
+            emperor.setSpice(0);
+            emperor.setDecliningCharity(true);
+            game.startMentatPause();
+            assertEquals(1, emperorChat.getMessages().size());
+            assertEquals("You have only 0 " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. p", emperorChat.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#extortion")
     class Extortion {
         final TestTopic moritaniLedger = new TestTopic();
@@ -1451,8 +1590,6 @@ class GameTest {
             game.addFaction(guild);
             guild.setLedger(guildLedger);
 
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
             game.advanceTurn();
             game.advanceTurn();
             game.setStorm(14);
@@ -1556,8 +1693,6 @@ class GameTest {
             ecaz = new EcazFaction("ePlayer", "eUser", game);
             game.addFaction(ecaz);
 
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
         }
 
         @Test
@@ -1644,8 +1779,6 @@ class GameTest {
             game.addFaction(bt);
             bt.setLedger(btLedger);
 
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
         }
 
         @Test
@@ -1718,8 +1851,6 @@ class GameTest {
             game.addFaction(guild);
             guild.setLedger(guildLedger);
 
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
         }
         @Test
         void noAlliance() {

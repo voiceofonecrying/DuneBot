@@ -38,6 +38,7 @@ public class Faction {
     protected int maxRevival;
     protected boolean starRevived;
     protected boolean hasMiningEquipment;
+    protected boolean decliningCharity;
     protected int highThreshold;
     protected int lowThreshold;
     protected int occupiedIncome;
@@ -84,7 +85,7 @@ public class Faction {
         this.treacheryHand = new LinkedList<>();
         this.frontOfShieldSpice = 0;
         this.hasMiningEquipment = false;
-
+        this.decliningCharity = false;
         this.traitorHand = new LinkedList<>();
         this.leaders = new LinkedList<>();
         this.techTokens = new LinkedList<>();
@@ -439,6 +440,14 @@ public class Faction {
 
     public void setHasMiningEquipment(boolean hasMiningEquipment) {
         this.hasMiningEquipment = hasMiningEquipment;
+    }
+
+    public boolean isDecliningCharity() {
+        return decliningCharity;
+    }
+
+    public void setDecliningCharity(boolean decliningCharity) throws InvalidGameStateException {
+        this.decliningCharity = decliningCharity;
     }
 
     public List<TechToken> getTechTokens() {

@@ -19,6 +19,11 @@ public class MentatPause {
 
     public MentatPause(Game game) {
         List<DuneChoice> choices;
+        for (Faction faction : game.getFactions()) {
+            int spice = faction.getSpice();
+            if (faction.isDecliningCharity() && spice < 2)
+                faction.getChat().publish("You have only " + spice + " " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. " + faction.getPlayer());
+        }
 
         try {
             BTFaction bt = (BTFaction) game.getFaction("BT");

@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 
@@ -59,6 +60,11 @@ public class BGFaction extends Faction {
         }
         this.predictionRound = predictionRound;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
+    @Override
+    public void setDecliningCharity(boolean decliningCharity) throws InvalidGameStateException {
+        throw new InvalidGameStateException("BG never decline charity.");
     }
 
     /**
