@@ -415,7 +415,8 @@ public class CommandManager extends ListenerAdapter {
             if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
                 bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
             }
-            BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
+            if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
+                BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
         }
 
         if (canTrigger) {
