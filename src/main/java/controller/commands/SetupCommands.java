@@ -294,10 +294,10 @@ public class SetupCommands {
                 )
                 .complete();
         discordGame.createPrivateThread(channel, "notes", List.of(playerName));
-        discordGame.createPrivateThread(channel, "chat", List.of(playerName, game.getMod()));
+        discordGame.createPrivateThread(channel, "chat", List.of(playerName, game.getModOrRoleMention()));
         discordGame.createPrivateThread(channel, "ledger", List.of(playerName));
         discordGame.getTurnSummary().addUser(playerName);
-        discordGame.getTurnSummary().addUser(game.getMod());
+        discordGame.getTurnSummary().addUser(game.getModOrRoleMention());
 
         TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();

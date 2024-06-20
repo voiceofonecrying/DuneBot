@@ -3,7 +3,6 @@ package controller.channels;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
-import model.factions.Faction;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 
@@ -22,10 +21,9 @@ public class TurnSummary extends DiscordChannel {
             this.messageChannel = optThread.get();
         } else {
             List<String> userIds = new ArrayList<>();
-            for (Faction faction : game.getFactions()) {
-                userIds.add(faction.getPlayer());
-            }
-            userIds.add(game.getMod());
+//            for (Faction faction : game.getFactions()) {
+//                userIds.add(faction.getPlayer());
+//            }
             discordGame.createPublicThread(frontOfShield, turnNumSummaryName, userIds);
             optThread = frontOfShield.getThreadChannels().stream()
                     .filter(channel -> channel.getName().equals(turnNumSummaryName))

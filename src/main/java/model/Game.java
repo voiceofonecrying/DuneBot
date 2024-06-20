@@ -27,6 +27,8 @@ import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
 public class Game {
+    private boolean teamMod = false;
+    private String modRoleMention;
     private String gameRole;
     private int turn;
     private int phase;
@@ -414,12 +416,28 @@ public class Game {
         this.modRole = modRole;
     }
 
+    public void setTeamMod(boolean teamMod) {
+        this.teamMod = teamMod;
+    }
+
     public String getMod() {
         return mod;
     }
 
     public void setMod(String mod) {
         this.mod = mod;
+    }
+
+    public String getModRoleMention() {
+        return modRoleMention;
+    }
+
+    public void setModRoleMention(String modRoleMention) {
+        this.modRoleMention = modRoleMention;
+    }
+
+    public String getModOrRoleMention() {
+        return teamMod ? modRoleMention : mod;
     }
 
     public String getGameRoleMention() {

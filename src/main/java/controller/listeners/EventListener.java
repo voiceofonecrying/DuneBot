@@ -92,7 +92,7 @@ public class EventListener extends ListenerAdapter {
             String emojiName = mentionMatcher.group(1);
 
             if (emojiName.equals(Emojis.MOD_EMPEROR)) {
-                mentionedPlayers.add(game.getMod());
+                mentionedPlayers.add(game.getModOrRoleMention());
             } else {
                 game.getFactions().stream()
                         .filter(faction -> emojiName.equals(Emojis.getFactionEmoji(faction.getName())))

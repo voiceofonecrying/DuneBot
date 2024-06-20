@@ -61,6 +61,8 @@ public class RunCommands {
             game.endMentatPause();
             game.advanceTurn();
             game.setTurnSummary(discordGame.getTurnSummary());
+            game.getTurnSummary().publish(game.getModOrRoleMention());
+            game.getTurnSummary().publish(game.getGameRoleMention());
             game.updateStrongholdSkills();
         }
 

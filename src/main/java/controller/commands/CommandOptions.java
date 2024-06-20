@@ -39,6 +39,7 @@ public class CommandOptions {
     public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
     public static final OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
     public static final OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
+    public static final OptionData teamModSwitch = new OptionData(OptionType.BOOLEAN, "enable-team-mod", "True enables team mod, False disables", true);
     public static final OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
     public static final OptionData allFactions = new OptionData(OptionType.STRING, "faction", "The faction", true)
             .addChoice("Atreides", "Atreides")

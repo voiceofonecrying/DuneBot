@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -455,6 +456,14 @@ public class DiscordGame {
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
             }
         }
+
+        // Migrate modRoleMention into existing games
+        if (game.getModRoleMention() == null) {
+            List<Role> roles = gameCategory.getGuild().getRolesByName(game.getModRole(), false);
+            if (roles.size() == 1)
+                game.setModRoleMention(roles.getFirst().getAsMention());
+        }
+
         // Temporary migration to properly mark Homeworlds and Discovery Token Territory objects
         Territory t = game.getTerritories().get("Jacurutu Sietch");
         if (t != null) t.setDiscoveryToken(true);

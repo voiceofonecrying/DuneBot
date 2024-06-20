@@ -181,6 +181,7 @@ public class CommandManager extends ListenerAdapter {
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
                 case "reassign-mod" -> reassignMod(event, discordGame, game);
+                case "team-mod" -> teamMod(event, discordGame, game);
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
@@ -661,6 +662,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
+        commandData.add(Commands.slash("team-mod", "Enable or disable team mod where all users with the game mod role get tagged").addOptions(teamModSwitch));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
@@ -813,6 +815,7 @@ public class CommandManager extends ListenerAdapter {
         game.setGameRole(gameRoleValue.getName());
         game.setGameRoleMention(gameRoleValue.getAsMention());
         game.setModRole(modRoleValue.getName());
+        game.setModRoleMention(modRoleValue.getAsMention());
         game.setMod(event.getUser().getAsMention());
         game.setMute(false);
         discordGame.setGame(game);
@@ -1297,10 +1300,12 @@ public class CommandManager extends ListenerAdapter {
 
     public void reassignMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.setMod(event.getUser().getAsMention());
-        List<Role> roles = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
-        if (!roles.isEmpty()) {
-            game.setGameRoleMention(roles.getFirst().getAsMention());
-        }
+        discordGame.pushGame();
+    }
+
+    public void teamMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        boolean enableTeamMod = discordGame.required(teamModSwitch).getAsBoolean();
+        game.setTeamMod(enableTeamMod);
         discordGame.pushGame();
     }
 
