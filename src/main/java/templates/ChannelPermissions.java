@@ -46,7 +46,6 @@ public class ChannelPermissions {
             Permission.MESSAGE_ADD_REACTION,
             Permission.MESSAGE_EXT_EMOJI,
             Permission.MESSAGE_EXT_STICKER,
-            Permission.MESSAGE_MENTION_EVERYONE,
             Permission.MESSAGE_HISTORY,
             Permission.USE_APPLICATION_COMMANDS
     );
@@ -65,7 +64,6 @@ public class ChannelPermissions {
             Permission.MESSAGE_ADD_REACTION,
             Permission.MESSAGE_EXT_EMOJI,
             Permission.MESSAGE_EXT_STICKER,
-            Permission.MESSAGE_MENTION_EVERYONE,
             Permission.MESSAGE_HISTORY
     );
 
