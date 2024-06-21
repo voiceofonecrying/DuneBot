@@ -293,7 +293,7 @@ public class RunCommands {
         if (numCardsForBid == 0) {
             discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
         } else if (bidding.isRicheseCacheCardOutstanding()) {
-            RicheseCommands.cacheCard(discordGame, game);
+            bidding.presentCacheCardChoices(game);
             discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for selling their cache card.");
         } else {
             discordGame.getModInfo().queueMessage("Start running commands to bid and then advance when all the bidding is done.");

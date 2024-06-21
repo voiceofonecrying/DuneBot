@@ -96,7 +96,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
-            RicheseCommands.cacheCard(discordGame, game);
+            game.getBidding().presentCacheCardChoices(game);
         } else {
             String method = event.getComponentId().split("-")[2];
             discordGame.queueMessage("You selected " + method);
@@ -109,7 +109,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
-            RicheseCommands.cacheCard(discordGame, game);
+            game.getBidding().presentCacheCardChoices(game);
         } else {
             String method = event.getComponentId().split("-")[2];
             discordGame.queueMessage("You are selling " + cardName.trim() + " by " + method + " auction.");

@@ -349,7 +349,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() - 1 && bidding.isRicheseCacheCardOutstanding()) {
-            RicheseCommands.cacheCard(discordGame, game);
+            bidding.presentCacheCardChoices(game);
             discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
         discordGame.pushGame();
