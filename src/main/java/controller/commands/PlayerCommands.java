@@ -272,7 +272,7 @@ public class PlayerCommands {
                 bidding.decrementBidCardNumber();
                 discordGame.queueMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
                 discordGame.getModInfo().queueMessage("The black market card has been returned to " + Emojis.RICHESE);
-                discordGame.getModInfo().queueMessage("Use /run advance to continue the bidding phase.");
+                discordGame.getModInfo().queueMessage("Use /run advance to continue the bidding phase. " + game.getModOrRoleMention());
                 CommandManager.awardTopBidder(discordGame, game);
                 return true;
             }
@@ -282,16 +282,16 @@ public class PlayerCommands {
             String modMessage;
             if (bidding.isRicheseCacheCard()) {
                 if (bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
-                    modMessage = "Use /run advance to end the bidding phase.";
+                    modMessage = "Use /run advance to end the bidding phase. ";
                 } else {
-                    modMessage = "Use /run bidding to put the next card up for bid.";
+                    modMessage = "Use /run bidding to put the next card up for bid. ";
                 }
             } else {
-                modMessage = "Use /run advance to continue the bidding phase.";
+                modMessage = "Use /run advance to continue the bidding phase. ";
             }
             CommandManager.awardTopBidder(discordGame, game);
             discordGame.getModInfo().queueMessage("The card has been awarded to " + winnerEmoji);
-            discordGame.getModInfo().queueMessage(modMessage);
+            discordGame.getModInfo().queueMessage(modMessage + game.getModOrRoleMention());
             return true;
         }
         return false;
