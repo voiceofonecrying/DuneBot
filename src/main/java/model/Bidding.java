@@ -382,22 +382,6 @@ public class Bidding {
         return currentBidder;
     }
 
-    public int getCurrentBid() {
-        return currentBid;
-    }
-
-    public void setCurrentBid(int currentBid) {
-        this.currentBid = currentBid;
-    }
-
-    public String getBidLeader() {
-        return bidLeader;
-    }
-
-    public void setBidLeader(String bidLeader) {
-        this.bidLeader = bidLeader;
-    }
-
     public TreacheryCard getPreviousCard() {
         return previousCard;
     }
@@ -605,5 +589,124 @@ public class Bidding {
             int spentValue = currentBid;
             assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
         }
+    }
+
+    public boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
+        DuneTopic modInfo = game.getModInfo();
+        if (allPlayersPassed) {
+            biddingPhase.publish("All players passed.\n");
+            if (richeseCacheCard) {
+                biddingPhase.publish(Emojis.RICHESE + " may take cache card for free or remove it from the game.");
+                modInfo.publish("Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game. " + game.getModOrRoleMention());
+            } else {
+                decrementBidCardNumber();
+                biddingPhase.publish("The black market card has been returned to " + Emojis.RICHESE);
+                modInfo.publish("The black market card has been returned to " + Emojis.RICHESE);
+                modInfo.publish("Use /run advance to continue the bidding phase. " + game.getModOrRoleMention());
+                awardTopBidder(game);
+                return true;
+            }
+        } else {
+            String winnerEmoji = game.getFaction(bidLeader).getEmoji();
+            biddingPhase.publish(winnerEmoji + " has the top bid.");
+            String modMessage;
+            if (richeseCacheCard) {
+                if (bidCardNumber == numCardsForBid) {
+                    modMessage = "Use /run advance to end the bidding phase. ";
+                } else {
+                    modMessage = "Use /run bidding to put the next card up for bid. ";
+                }
+            } else {
+                modMessage = "Use /run advance to continue the bidding phase. ";
+            }
+            awardTopBidder(game);
+            modInfo.publish("The card has been awarded to " + winnerEmoji);
+            modInfo.publish(modMessage + game.getModOrRoleMention());
+            return true;
+        }
+        return false;
+    }
+
+    public void tryBid(Game game, Faction faction) throws InvalidGameStateException {
+        if (bidCard == null)
+            throw new InvalidGameStateException("There is no card currently up for bid.");
+        List<String> eligibleBidOrder = getEligibleBidOrder(game);
+        if (eligibleBidOrder.isEmpty() && !silentAuction) {
+            throw new InvalidGameStateException("All hands are full.");
+        }
+        if (silentAuction) {
+            if (faction.getMaxBid() == -1) {
+                faction.setBid("pass");
+                faction.setMaxBid(0);
+            } else {
+                faction.setBid(String.valueOf(faction.getMaxBid()));
+            }
+            boolean allHaveBid = true;
+            for (String factionName : getEligibleBidOrder(game)) {
+                Faction f = game.getFaction(factionName);
+                if (f.getBid().isEmpty()) {
+                    allHaveBid = false;
+                    currentBid = 0;
+                    bidLeader = "";
+                    break;
+                }
+                if (f.getMaxBid() > currentBid) {
+                    currentBid = Integer.parseInt(f.getBid());
+                    bidLeader = factionName;
+                }
+            }
+            if (allHaveBid) {
+                createBidMessage(game, false);
+                richeseWinner(game, currentBid == 0);
+            }
+            return;
+        }
+        if (!currentBidder.equals(faction.getName())) return;
+        boolean topBidderDeclared = false;
+        boolean onceAroundFinished = false;
+        boolean allPlayersPassed = false;
+        do {
+            if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidLeader)) {
+                faction.setBid("pass (ally had top bid)");
+            } else if (faction.getMaxBid() == -1) {
+                faction.setBid("pass");
+                faction.setMaxBid(0);
+            } else if (faction.getMaxBid() <= currentBid) {
+                if (!faction.isAutoBid()) return;
+                faction.setBid("pass");
+            } else {
+                if (faction.isUseExactBid()) faction.setBid(String.valueOf(faction.getMaxBid()));
+                else faction.setBid(String.valueOf(currentBid + 1));
+                currentBid = Integer.parseInt(faction.getBid());
+                bidLeader = faction.getName();
+            }
+
+            boolean tag = true;
+            if (currentBidder.equals(eligibleBidOrder.getLast())) {
+                if (isRicheseBidding()) onceAroundFinished = true;
+                if (bidLeader.isEmpty()) allPlayersPassed = true;
+                if (onceAroundFinished || allPlayersPassed) tag = false;
+            }
+            if (!silentAuction)
+                topBidderDeclared = createBidMessage(game, tag);
+
+            if (onceAroundFinished) {
+                if (richeseWinner(game, allPlayersPassed)) {
+                    return;
+                }
+            } else if (allPlayersPassed) {
+                biddingPhase.publish("All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
+                String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";
+                if (richeseCacheCardOutstanding)
+                    modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
+                else
+                    modMessage += " and end the bidding phase.";
+                game.getModInfo().publish(modMessage);
+            } else if (topBidderDeclared) {
+                game.getModInfo().publish("Use /award-top-bidder to assign card to the winner and pay appropriate recipient.\nUse /award-bid if a Karama affected winner or payment. " + game.getModOrRoleMention());
+            }
+
+            faction = game.getFaction(advanceBidder(game));
+        } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
     }
 }

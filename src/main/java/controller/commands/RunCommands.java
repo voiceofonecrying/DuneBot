@@ -380,7 +380,7 @@ public class RunCommands {
                 discordGame.queueMessage("bidding-phase", newCardAnnouncement);
                 bidding.createBidMessage(game, true);
                 bidding.advanceBidder(game);
-                PlayerCommands.tryBid(discordGame, game, game.getFaction(bidding.getCurrentBidder()));
+                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
                 discordGame.pushGame();
             }
         }
