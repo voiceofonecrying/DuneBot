@@ -1,9 +1,12 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
+import model.factions.EmperorFaction;
 import model.factions.Faction;
+import model.factions.HarkonnenFaction;
 import model.factions.RicheseFaction;
 import model.topics.DuneTopic;
 
@@ -451,6 +454,138 @@ public class Bidding {
         else {
             richeseFaction.getOccupier().getChat().publish(message, choices);
             richeseFaction.getOccupier().getChat().publish("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
+        }
+    }
+
+    public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue) throws InvalidGameStateException {
+        if (bidCard == null) {
+            throw new InvalidGameStateException("There is no card up for bid.");
+        }
+        Faction winner = game.getFaction(winnerName);
+        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
+        if ((!winner.hasAlly() && winner.getSpice() < spentValue) || (winner.hasAlly() && winner.getSpice() + winner.getAllySpiceBidding() < spentValue)) {
+            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
+        } else if (winnerHand.size() >= winner.getHandLimit()) {
+            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
+        }
+
+        String currentCard = MessageFormat.format(
+                "R{0}:C{1}",
+                game.getTurn(),
+                bidCardNumber
+        );
+        int allySupport = Math.min(winner.getAllySpiceBidding(), spentValue);
+
+        String allyString = winner.hasAlly() && winner.getAllySpiceBidding() > 0 ? "(" + allySupport + " from " + game.getFaction(winner.getAlly()).getEmoji() + ")" : "";
+
+        DuneTopic turnSummary = game.getTurnSummary();
+        turnSummary.publish(
+                MessageFormat.format(
+                        "{0} wins {1} for {2} {3} {4}",
+                        winner.getEmoji(),
+                        currentCard,
+                        spentValue,
+                        Emojis.SPICE,
+                        allyString
+                )
+        );
+
+        // Winner pays for the card
+        winner.setAllySpiceBidding(Math.max(winner.getAllySpiceBidding() - spentValue, 0));
+        winner.subtractSpice(spentValue - allySupport, currentCard);
+        if (winner.hasAlly()) {
+            game.getFaction(winner.getAlly()).subtractSpice(allySupport, currentCard + " (ally support)");
+        }
+
+        if (game.hasFaction(paidToFactionName)) {
+            int spicePaid = spentValue;
+            Faction paidToFaction = game.getFaction(paidToFactionName);
+
+            if (paidToFaction instanceof EmperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)
+                    && !paidToFaction.isHighThreshold()) {
+                spicePaid = Math.ceilDiv(spentValue, 2);
+                if (paidToFaction.isHomeworldOccupied()) {
+                    Faction occupier = paidToFaction.getOccupier();
+                    occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
+                    turnSummary.publish(
+                            MessageFormat.format(
+                                    "{0} is paid {1} {2} for {3} (homeworld occupied)",
+                                    occupier.getEmoji(),
+                                    Math.floorDiv(spentValue, 2),
+                                    Emojis.SPICE,
+                                    currentCard
+                            )
+                    );
+                }
+            }
+
+            if (paidToFaction instanceof RicheseFaction && paidToFaction.isHomeworldOccupied()) {
+                spicePaid = Math.ceilDiv(spentValue, 2);
+                Faction occupier = paidToFaction.getOccupier();
+                occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
+                turnSummary.publish(
+                        MessageFormat.format(
+                                "{0} is paid {1} {2} for {3} (homeworld occupied)",
+                                occupier.getEmoji(),
+                                Math.floorDiv(spentValue, 2),
+                                Emojis.SPICE,
+                                currentCard
+                        )
+                );
+            }
+
+            paidToFaction.addSpice(spicePaid, currentCard);
+
+            turnSummary.publish(
+                    MessageFormat.format(
+                            "{0} is paid {1} {2} for {3}",
+                            paidToFaction.getEmoji(),
+                            spicePaid,
+                            Emojis.SPICE,
+                            currentCard
+                    )
+            );
+        }
+
+        winner.addTreacheryCard(bidCard);
+        winner.getLedger().publish(
+                "Received " + bidCard.name() +
+                        " from bidding. (R" + game.getTurn() + ":C" + bidCardNumber + ")");
+        clearBidCardInfo(winnerName);
+
+        // Harkonnen draw an additional card
+        if (winner instanceof HarkonnenFaction && winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
+            if (game.drawTreacheryCard("Harkonnen")) {
+                turnSummary.publish(MessageFormat.format(
+                        "The {0} deck was empty and has been replenished from the discard pile.",
+                        Emojis.TREACHERY
+                ));
+            }
+
+            turnSummary.publish(MessageFormat.format(
+                    "{0} draws another card from the {1} deck.",
+                    winner.getEmoji(), Emojis.TREACHERY
+            ));
+
+            TreacheryCard addedCard = winner.getLastTreacheryCard();
+            winner.getLedger().publish(
+                    "Received " + addedCard.name() + " as an extra card. (" + currentCard + ")"
+            );
+
+        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
+            game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
+            game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
+        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
+            game.drawCard("treachery deck", winner.getOccupier().getName());
+            turnSummary.publish(MessageFormat.format(
+                    "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
+                    winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
+            ));
+        }
+
+        if (market.isEmpty() && bidCardNumber == numCardsForBid - 1 && richeseCacheCardOutstanding) {
+            presentCacheCardChoices(game);
+            game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
     }
 }
