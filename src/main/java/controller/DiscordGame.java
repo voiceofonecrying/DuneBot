@@ -258,6 +258,10 @@ public class DiscordGame {
         return new ModInfo(this);
     }
 
+    public BiddingPhase getBiddingPhase() throws ChannelNotFoundException {
+        return new BiddingPhase(this);
+    }
+
     public FactionChat getFactionChat(Faction faction) throws ChannelNotFoundException {
         return getFactionChat(faction.getName());
     }
@@ -521,6 +525,7 @@ public class DiscordGame {
         game.setWhispers(getWhispers(game));
         game.setGameActions(getGameActions());
         game.setModInfo(getModInfo());
+        game.setBiddingPhase(getBiddingPhase());
         return game;
     }
 

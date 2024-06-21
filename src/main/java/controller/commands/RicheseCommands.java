@@ -157,7 +157,7 @@ public class RicheseCommands {
             }
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-            RunCommands.createBidMessage(discordGame, game);
+            bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
         } else {
             runRicheseBid(discordGame, game, bidType, true);
@@ -339,7 +339,7 @@ public class RicheseCommands {
             Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             discordGame.queueMessage("bidding-phase", message.toString());
-            RunCommands.createBidMessage(discordGame, game);
+            bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
         }
     }

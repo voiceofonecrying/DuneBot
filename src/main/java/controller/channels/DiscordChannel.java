@@ -15,7 +15,7 @@ public class DiscordChannel implements DuneTopic {
     final DiscordGame discordGame;
     MessageChannel messageChannel;
 
-    DiscordChannel(DiscordGame discordGame) {
+    public DiscordChannel(DiscordGame discordGame) {
         this.discordGame = discordGame;
     }
 

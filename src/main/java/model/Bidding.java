@@ -1,8 +1,11 @@
 package model;
 
 import exceptions.InvalidGameStateException;
+import helpers.Exclude;
 import model.factions.Faction;
+import model.topics.DuneTopic;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +36,8 @@ public class Bidding {
     private TreacheryCard previousCard;
     private String previousWinner;
     private boolean ixAllySwapped;
+    @Exclude
+    private DuneTopic biddingPhase;
 
     public Bidding() {
         super();
@@ -62,6 +67,10 @@ public class Bidding {
         this.previousCard = null;
         this.previousWinner = null;
         this.ixAllySwapped = false;
+    }
+
+    public void setBiddingPhase(DuneTopic biddingPhase) {
+        this.biddingPhase = biddingPhase;
     }
 
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
@@ -386,5 +395,40 @@ public class Bidding {
 
     public TreacheryCard getPreviousCard() {
         return previousCard;
+    }
+
+    public boolean createBidMessage(Game game, boolean tag) {
+        String nextBidderName = getNextBidder(game);
+        List<String> bidOrder = getEligibleBidOrder(game);
+        StringBuilder message = new StringBuilder();
+        message.append(
+                MessageFormat.format(
+                        "R{0}:C{1}",
+                        game.getTurn(), bidCardNumber
+                )
+        );
+        if (silentAuction) {
+            message.append(" (Silent Auction)");
+        } else if (isRicheseBidding()) {
+            message.append(" (Once Around)");
+        }
+        message.append("\n");
+
+        for (String factionName : bidOrder) {
+            Faction f = game.getFaction(factionName);
+            if (factionName.equals(nextBidderName) && tag) {
+                if (f.getName().equals(bidLeader)) {
+                    biddingPhase.publish(message.toString());
+                    biddingPhase.publish(f.getEmoji() + " has the top bid.");
+                    return true;
+                }
+                message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
+            } else {
+                message.append(f.getEmoji()).append(" - ").append(f.getBid()).append("\n");
+            }
+        }
+
+        biddingPhase.publish(message.toString());
+        return false;
     }
 }

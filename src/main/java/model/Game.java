@@ -772,6 +772,11 @@ public class Game {
         this.modInfo = modInfo;
     }
 
+    public void setBiddingPhase(DuneTopic biddingPhase) {
+        if (bidding != null)
+            bidding.setBiddingPhase(biddingPhase);
+    }
+
     public List<Faction> getFactionsWithTreacheryCard(String cardName) {
         return factions.stream().filter(f -> f.hasTreacheryCard(cardName))
                 .collect(Collectors.toList());

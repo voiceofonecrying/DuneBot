@@ -327,7 +327,7 @@ public class PlayerCommands {
                 }
             }
             if (allHaveBid) {
-                RunCommands.createBidMessage(discordGame, game, false);
+                bidding.createBidMessage(game, false);
                 richeseWinner(discordGame, game, bidding.getCurrentBid() == 0);
             }
             return;
@@ -359,7 +359,7 @@ public class PlayerCommands {
                 if (onceAroundFinished || allPlayersPassed) tag = false;
             }
             if (!bidding.isSilentAuction())
-                topBidderDeclared = RunCommands.createBidMessage(discordGame, game, tag);
+                topBidderDeclared = bidding.createBidMessage(game, tag);
 
             if (onceAroundFinished) {
                 if (richeseWinner(discordGame, game, allPlayersPassed))
