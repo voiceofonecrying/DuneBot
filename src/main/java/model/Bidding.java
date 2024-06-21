@@ -2,12 +2,10 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
-import model.factions.EmperorFaction;
-import model.factions.Faction;
-import model.factions.HarkonnenFaction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 import model.topics.DuneTopic;
 
 import java.text.MessageFormat;
@@ -625,6 +623,96 @@ public class Bidding {
             return true;
         }
         return false;
+    }
+
+    private boolean factionDoesNotHaveKarama(Faction faction) {
+        List<TreacheryCard> hand = faction.getTreacheryHand();
+        if (faction instanceof BGFaction && hand.stream().anyMatch(c -> c.type().equals("Worthless Card"))) {
+            return false;
+        }
+        return hand.stream().noneMatch(c -> c.name().equals("Karama"));
+    }
+
+    public String pass(Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+        faction.setMaxBid(-1);
+        game.getModInfo().publish(faction.getEmoji() + " passed their bid.");
+        tryBid(game, faction);
+        if (faction.isAutoBid() && !game.getBidding().isSilentAuction())
+            return "You will auto-pass until the next card or until you set auto-pass to false.";
+        return "You will pass one time.";
+    }
+
+    public String setAutoPass(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
+        faction.setAutoBid(enabled);
+        game.getModInfo().publish(faction.getEmoji() + " set auto-pass to " + enabled);
+        tryBid(game, faction);
+        String responseMessage = "You set auto-pass to " + enabled + ".";
+        if (enabled) {
+            responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher.";
+        }
+        return responseMessage;
+    }
+
+    public String setAutoPassEntireTurn(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
+        faction.setAutoBidTurn(enabled);
+        faction.setAutoBid(enabled);
+        game.getModInfo().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
+        tryBid(game, faction);
+        String responseMessage = "You set auto-pass-entire-turn to " + enabled + ".";
+        if (enabled) {
+            responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher on this card then auto-pass on remaining cards this turn.";
+        } else {
+            responseMessage += "\nYou are back to normal bidding, and auto-pass is diabled for this card.";
+        }
+        return responseMessage;
+    }
+
+    public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws ChannelNotFoundException, InvalidGameStateException {
+        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
+                && factionDoesNotHaveKarama(faction))
+            throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
+
+        faction.setUseExact(useExact);
+        faction.setMaxBid(bidAmount);
+        String modMessage = faction.getEmoji() + " set their bid to " + (useExact ? "exactly " : "increment up to ") + bidAmount + ".";
+        String responseMessage = "You will bid ";
+        boolean silentAuction = game.getBidding().isSilentAuction();
+        if (silentAuction) {
+            responseMessage += "exactly " + bidAmount + " in the silent auction.";
+        } else if (useExact) {
+            responseMessage += "exactly " + bidAmount + " if possible.";
+        } else {
+            responseMessage += "+1 up to " + bidAmount + ".";
+        }
+        int spiceAvaiable = faction.getSpice() + faction.getAllySpiceBidding();
+        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding())
+            responseMessage += "\nIf you win for more than " + spiceAvaiable + ", you will have to use your Karama.";
+        if (enableAutoPass != null) {
+            faction.setAutoBid(enableAutoPass);
+            modMessage += enableAutoPass ? " Auto-pass enabled." : " No auto-pass.";
+        }
+        game.getModInfo().publish(modMessage);
+        String responseMessage2 = "";
+        if (!silentAuction) {
+            if (faction.isAutoBid()) {
+                responseMessage += "\nYou will then auto-pass.";
+            } else {
+                responseMessage += "\nYou will not auto-pass.\nA new bid or pass will be needed if you are outbid.";
+            }
+            boolean outbidAllyValue = faction.isOutbidAlly();
+            if (newOutbidAllySetting != null) {
+                outbidAllyValue = newOutbidAllySetting;
+                faction.setOutbidAlly(outbidAllyValue);
+                responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
+                game.getModInfo().publish(responseMessage2);
+                faction.getChat().publish(responseMessage2);
+            }
+            if (faction.hasAlly()) {
+                responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";
+            }
+        }
+        game.getBidding().tryBid(game, faction);
+        return responseMessage + responseMessage2;
     }
 
     public void tryBid(Game game, Faction faction) throws InvalidGameStateException {
