@@ -588,4 +588,22 @@ public class Bidding {
             game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
     }
+
+    public void awardTopBidder(Game game) throws InvalidGameStateException {
+        String winnerName = bidLeader;
+        if (winnerName.isEmpty()) {
+            if (richeseCacheCard || blackMarketCard)
+                assignAndPayForCard(game, "Richese", "", 0);
+            else
+                throw new InvalidGameStateException("There is no top bidder for this card.");
+        } else {
+            String paidToFactionName = "Bank";
+            if ((richeseCacheCard || blackMarketCard) && !winnerName.equals("Richese"))
+                paidToFactionName = "Richese";
+            else if (!winnerName.equals("Emperor"))
+                paidToFactionName = "Emperor";
+            int spentValue = currentBid;
+            assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
+        }
+    }
 }

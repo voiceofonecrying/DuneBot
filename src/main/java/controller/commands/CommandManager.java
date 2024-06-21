@@ -202,23 +202,8 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        String winnerName = bidding.getBidLeader();
-        if (winnerName.isEmpty()) {
-            if (bidding.isRicheseCacheCard() || bidding.isBlackMarketCard())
-                bidding.assignAndPayForCard(game, "Richese", "", 0);
-            else
-                throw new InvalidGameStateException("There is no top bidder for this card.");
-        } else {
-            String paidToFactionName = "Bank";
-            if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
-                paidToFactionName = "Richese";
-            else if (!winnerName.equals("Emperor"))
-                paidToFactionName = "Emperor";
-            int spentValue = bidding.getCurrentBid();
-            bidding.assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
-        }
+    public static void awardTopBidder(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        game.getBidding().awardTopBidder(game);
         discordGame.pushGame();
     }
 

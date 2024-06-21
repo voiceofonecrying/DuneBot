@@ -273,7 +273,8 @@ public class PlayerCommands {
                 discordGame.queueMessage("bidding-phase", "The black market card has been returned to " + Emojis.RICHESE);
                 discordGame.getModInfo().queueMessage("The black market card has been returned to " + Emojis.RICHESE);
                 discordGame.getModInfo().queueMessage("Use /run advance to continue the bidding phase. " + game.getModOrRoleMention());
-                CommandManager.awardTopBidder(discordGame, game);
+                bidding.awardTopBidder(game);
+                discordGame.pushGame();
                 return true;
             }
         } else {
@@ -289,9 +290,10 @@ public class PlayerCommands {
             } else {
                 modMessage = "Use /run advance to continue the bidding phase. ";
             }
-            CommandManager.awardTopBidder(discordGame, game);
+            bidding.awardTopBidder(game);
             discordGame.getModInfo().queueMessage("The card has been awarded to " + winnerEmoji);
             discordGame.getModInfo().queueMessage(modMessage + game.getModOrRoleMention());
+            discordGame.pushGame();
             return true;
         }
         return false;
