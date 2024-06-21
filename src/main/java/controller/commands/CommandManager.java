@@ -181,7 +181,7 @@ public class CommandManager extends ListenerAdapter {
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
                 case "reassign-mod" -> reassignMod(event, discordGame, game);
-                case "team-mod" -> teamMod(event, discordGame, game);
+                case "team-mod" -> teamMod(discordGame, game);
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
@@ -219,6 +219,7 @@ public class CommandManager extends ListenerAdapter {
             int spentValue = bidding.getCurrentBid();
             assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
         }
+        discordGame.pushGame();
     }
 
     public static void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
@@ -352,7 +353,6 @@ public class CommandManager extends ListenerAdapter {
             bidding.presentCacheCardChoices(game);
             discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
-        discordGame.pushGame();
     }
 
     public static void reviveForces(Faction faction, boolean isPaid, int revivedValue, int starredAmountValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -1005,6 +1005,7 @@ public class CommandManager extends ListenerAdapter {
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         int spentValue = discordGame.required(spent).getAsInt();
         assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+        discordGame.pushGame();
     }
 
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -1304,7 +1305,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void teamMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void teamMod(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean enableTeamMod = discordGame.required(teamModSwitch).getAsBoolean();
         game.setTeamMod(enableTeamMod);
         discordGame.pushGame();
