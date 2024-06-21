@@ -670,6 +670,9 @@ public class SetupCommands {
     public static StepStatus startGameStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.advanceTurn();
         game.setSetupFinished(true);
+        game.getWhispers().publish(game.getGameRoleMention());
+        game.getWhispers().publish(game.getModOrRoleMention());
+        game.setWhispersTagged(true);
         discordGame.getModInfo().queueMessage("The game has begun!");
 
         return StepStatus.STOP;

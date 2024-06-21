@@ -27,8 +27,6 @@ import static model.Initializers.getCSVFile;
 import static model.Initializers.getJSONString;
 
 public class Game {
-    private boolean teamMod = false;
-    private String modRoleMention;
     private String gameRole;
     private int turn;
     private int phase;
@@ -67,6 +65,8 @@ public class Game {
     private String phaseForWhispers;
     private Set<GameOption> gameOptions;
     private String mod;
+    private boolean teamMod = false;
+    private String modRoleMention;
     private String gameRoleMention;
     private boolean shieldWallDestroyed;
     private boolean sandtroutInPlay;
@@ -84,6 +84,7 @@ public class Game {
     private DuneTopic turnSummary;
     @Exclude
     private DuneTopic whispers;
+    private boolean whispersTagged = false;
     @Exclude
     private DuneTopic gameActions;
     @Exclude
@@ -754,6 +755,15 @@ public class Game {
 
     public void setWhispers(DuneTopic whispers) {
         this.whispers = whispers;
+    }
+
+    public boolean isWhispersTagged() {
+        return whispersTagged;
+    }
+
+    // This can be eliminated after games 42, 63, 65, 66, and 67 have finished
+    public void setWhispersTagged(boolean whispersTagged) {
+        this.whispersTagged = whispersTagged;
     }
 
     public DuneTopic getGameActions() {

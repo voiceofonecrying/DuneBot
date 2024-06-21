@@ -381,6 +381,11 @@ public class PlayerCommands {
     }
 
     private static String whisper(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        if (!game.isWhispersTagged()) {
+            game.getWhispers().publish(game.getGameRoleMention());
+            game.getWhispers().publish(game.getModOrRoleMention());
+            game.setWhispersTagged(true);
+        }
         Faction sender = discordGame.getFactionByPlayer(event.getUser().toString());
         Faction recipient;
         if (discordGame.optional(whisperFaction) == null) {
