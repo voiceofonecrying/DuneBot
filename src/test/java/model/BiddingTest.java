@@ -114,6 +114,18 @@ class BiddingTest {
         @Test
         void testNonWinnerAutoPassAfterTopBidderIdentified() {
             assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, bg, true));
+            assertEquals(8, biddingPhase.getMessages().size());
+        }
+
+        @Test
+        void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+            assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
+            assertEquals(8, biddingPhase.getMessages().size());
+        }
+
+        @Test
+        void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+            assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
         }
     }
 

@@ -657,9 +657,11 @@ public class Bidding {
 
     public String setAutoPassEntireTurn(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
         faction.setAutoBidTurn(enabled);
-        faction.setAutoBid(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
-        tryBid(game, faction);
+        if (!topBidderDeclared) {
+            faction.setAutoBid(enabled);
+            tryBid(game, faction);
+        }
         String responseMessage = "You set auto-pass-entire-turn to " + enabled + ".";
         if (enabled) {
             responseMessage += "\nYou will auto-pass if the top bid is " + faction.getMaxBid() + " or higher on this card then auto-pass on remaining cards this turn.";
