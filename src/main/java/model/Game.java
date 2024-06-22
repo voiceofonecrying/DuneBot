@@ -88,6 +88,8 @@ public class Game {
     private DuneTopic gameActions;
     @Exclude
     private DuneTopic modInfo;
+    @Exclude
+    private DuneTopic biddingPhase;
 
     public Game() throws IOException {
         super();
@@ -187,6 +189,7 @@ public class Game {
 
     public void startBidding() {
         bidding = new Bidding();
+        bidding.setBiddingPhase(biddingPhase);
         setUpdated(UpdateType.MAP);
         try {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");
@@ -772,7 +775,12 @@ public class Game {
         this.modInfo = modInfo;
     }
 
+    public DuneTopic getBiddingPhase() {
+        return biddingPhase;
+    }
+
     public void setBiddingPhase(DuneTopic biddingPhase) {
+        this.biddingPhase = biddingPhase;
         if (bidding != null)
             bidding.setBiddingPhase(biddingPhase);
     }

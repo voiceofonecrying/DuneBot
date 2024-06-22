@@ -36,6 +36,7 @@ public class Bidding {
     private String currentBidder;
     private int currentBid;
     private String bidLeader;
+    private boolean topBidderDeclared;
     private TreacheryCard previousCard;
     private String previousWinner;
     private boolean ixAllySwapped;
@@ -67,6 +68,7 @@ public class Bidding {
         this.currentBidder = "";
         this.currentBid = 0;
         this.bidLeader = "";
+        this.topBidderDeclared = false;
         this.previousCard = null;
         this.previousWinner = null;
         this.ixAllySwapped = false;
@@ -327,6 +329,7 @@ public class Bidding {
         blackMarketCard = false;
         silentAuction = false;
         bidLeader = "";
+        topBidderDeclared = false;
         currentBid = 0;
         cardFromMarket = false;
         previousWinner = winner;
@@ -668,6 +671,8 @@ public class Bidding {
     }
 
     public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws ChannelNotFoundException, InvalidGameStateException {
+        if (topBidderDeclared)
+            throw new InvalidGameStateException("Bidding has ended on the current card.");
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
                 && factionDoesNotHaveKarama(faction))
             throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
@@ -750,7 +755,6 @@ public class Bidding {
             return;
         }
         if (!currentBidder.equals(faction.getName())) return;
-        boolean topBidderDeclared = false;
         boolean onceAroundFinished = false;
         boolean allPlayersPassed = false;
         do {
