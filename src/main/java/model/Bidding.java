@@ -658,7 +658,7 @@ public class Bidding {
     public String setAutoPassEntireTurn(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
         faction.setAutoBidTurn(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
-        if (!topBidderDeclared) {
+        if (!topBidderDeclared && bidCard != null) {
             faction.setAutoBid(enabled);
             tryBid(game, faction);
         }
