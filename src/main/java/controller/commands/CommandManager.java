@@ -181,7 +181,7 @@ public class CommandManager extends ListenerAdapter {
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
                 case "reassign-mod" -> reassignMod(event, discordGame, game);
-                case "team-mod" -> teamMod(event, discordGame, game);
+                case "team-mod" -> teamMod(discordGame, game);
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
                 case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
@@ -202,156 +202,8 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public static void awardTopBidder(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        String winnerName = bidding.getBidLeader();
-        if (winnerName.isEmpty()) {
-            if (bidding.isRicheseCacheCard() || bidding.isBlackMarketCard())
-                assignAndPayForCard(discordGame, game, "Richese", "", 0);
-            else
-                throw new InvalidGameStateException("There is no top bidder for this card.");
-        } else {
-            String paidToFactionName = "Bank";
-            if ((bidding.isRicheseCacheCard() || bidding.isBlackMarketCard()) && !winnerName.equals("Richese"))
-                paidToFactionName = "Richese";
-            else if (!winnerName.equals("Emperor"))
-                paidToFactionName = "Emperor";
-            int spentValue = bidding.getCurrentBid();
-            assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
-        }
-    }
-
-    public static void assignAndPayForCard(DiscordGame discordGame, Game game, String winnerName, String paidToFactionName, int spentValue) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null) {
-            throw new InvalidGameStateException("There is no card up for bid.");
-        }
-        Faction winner = game.getFaction(winnerName);
-        List<TreacheryCard> winnerHand = winner.getTreacheryHand();
-        if ((!winner.hasAlly() && winner.getSpice() < spentValue) || (winner.hasAlly() && winner.getSpice() + winner.getAllySpiceBidding() < spentValue)) {
-            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
-        } else if (winnerHand.size() >= winner.getHandLimit()) {
-            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
-        }
-
-        String currentCard = MessageFormat.format(
-                "R{0}:C{1}",
-                game.getTurn(),
-                bidding.getBidCardNumber()
-        );
-        int allySupport = Math.min(winner.getAllySpiceBidding(), spentValue);
-
-        String allyString = winner.hasAlly() && winner.getAllySpiceBidding() > 0 ? "(" + allySupport + " from " + game.getFaction(winner.getAlly()).getEmoji() + ")" : "";
-
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage(
-                MessageFormat.format(
-                        "{0} wins {1} for {2} {3} {4}",
-                        winner.getEmoji(),
-                        currentCard,
-                        spentValue,
-                        Emojis.SPICE,
-                        allyString
-                )
-        );
-
-        // Winner pays for the card
-        winner.setAllySpiceBidding(Math.max(winner.getAllySpiceBidding() - spentValue, 0));
-        winner.subtractSpice(spentValue - allySupport, currentCard);
-        if (winner.hasAlly()) {
-            game.getFaction(winner.getAlly()).subtractSpice(allySupport, currentCard + " (ally support)");
-        }
-
-        if (game.hasFaction(paidToFactionName)) {
-            int spicePaid = spentValue;
-            Faction paidToFaction = game.getFaction(paidToFactionName);
-
-            if (paidToFaction instanceof EmperorFaction && game.hasGameOption(GameOption.HOMEWORLDS)
-                    && !paidToFaction.isHighThreshold()) {
-                spicePaid = Math.ceilDiv(spentValue, 2);
-                if (paidToFaction.isHomeworldOccupied()) {
-                    Faction occupier = paidToFaction.getOccupier();
-                    occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
-                    turnSummary.queueMessage(
-                            MessageFormat.format(
-                                    "{0} is paid {1} {2} for {3} (homeworld occupied)",
-                                    occupier.getEmoji(),
-                                    Math.floorDiv(spentValue, 2),
-                                    Emojis.SPICE,
-                                    currentCard
-                            )
-                    );
-                }
-            }
-
-            if (paidToFaction instanceof RicheseFaction && paidToFaction.isHomeworldOccupied()) {
-                spicePaid = Math.ceilDiv(spentValue, 2);
-                Faction occupier = paidToFaction.getOccupier();
-                occupier.addSpice(Math.floorDiv(spentValue, 2), "Tribute from " + Emojis.EMPEROR + " for " + currentCard);
-                turnSummary.queueMessage(
-                        MessageFormat.format(
-                                "{0} is paid {1} {2} for {3} (homeworld occupied)",
-                                occupier.getEmoji(),
-                                Math.floorDiv(spentValue, 2),
-                                Emojis.SPICE,
-                                currentCard
-                        )
-                );
-            }
-
-            paidToFaction.addSpice(spicePaid, currentCard);
-
-            turnSummary.queueMessage(
-                    MessageFormat.format(
-                            "{0} is paid {1} {2} for {3}",
-                            paidToFaction.getEmoji(),
-                            spicePaid,
-                            Emojis.SPICE,
-                            currentCard
-                    )
-            );
-        }
-
-        winner.addTreacheryCard(bidding.getBidCard());
-        discordGame.getFactionLedger(winnerName).queueMessage(
-                "Received " + bidding.getBidCard().name() +
-                        " from bidding. (R" + game.getTurn() + ":C" + bidding.getBidCardNumber() + ")");
-        bidding.clearBidCardInfo(winnerName);
-
-        // Harkonnen draw an additional card
-        if (winner instanceof HarkonnenFaction && winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
-            if (game.drawTreacheryCard("Harkonnen")) {
-                turnSummary.queueMessage(MessageFormat.format(
-                        "The {0} deck was empty and has been replenished from the discard pile.",
-                        Emojis.TREACHERY
-                ));
-            }
-
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} draws another card from the {1} deck.",
-                    winner.getEmoji(), Emojis.TREACHERY
-            ));
-
-            TreacheryCard addedCard = winner.getLastTreacheryCard();
-            discordGame.getHarkonnenLedger().queueMessage(
-                    "Received " + addedCard.name() + " as an extra card. (" + currentCard + ")"
-            );
-
-        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
-            discordGame.getModInfo().queueMessage("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
-            discordGame.getTurnSummary().queueMessage("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
-        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
-            game.drawCard("treachery deck", winner.getOccupier().getName());
-            turnSummary.queueMessage(MessageFormat.format(
-                    "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
-                    winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
-            ));
-        }
-
-        if (bidding.getMarket().isEmpty() && bidding.getBidCardNumber() == bidding.getNumCardsForBid() - 1 && bidding.isRicheseCacheCardOutstanding()) {
-            RicheseCommands.cacheCard(discordGame, game);
-            discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been asked to select the last card of the turn.");
-        }
+    public static void awardTopBidder(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        game.getBidding().awardTopBidder(game);
         discordGame.pushGame();
     }
 
@@ -1004,7 +856,8 @@ public class CommandManager extends ListenerAdapter {
         String winnerName = discordGame.required(faction).getAsString();
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         int spentValue = discordGame.required(spent).getAsInt();
-        assignAndPayForCard(discordGame, game, winnerName, paidToFactionName, spentValue);
+        game.getBidding().assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
+        discordGame.pushGame();
     }
 
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -1304,7 +1157,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void teamMod(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void teamMod(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean enableTeamMod = discordGame.required(teamModSwitch).getAsBoolean();
         game.setTeamMod(enableTeamMod);
         discordGame.pushGame();

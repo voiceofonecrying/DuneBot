@@ -293,7 +293,7 @@ public class RunCommands {
         if (numCardsForBid == 0) {
             discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
         } else if (bidding.isRicheseCacheCardOutstanding()) {
-            RicheseCommands.cacheCard(discordGame, game);
+            bidding.presentCacheCardChoices(game);
             discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for selling their cache card.");
         } else {
             discordGame.getModInfo().queueMessage("Start running commands to bid and then advance when all the bidding is done.");
@@ -378,52 +378,12 @@ public class RunCommands {
                 if (bidding.isCardFromIxHand())
                     newCardAnnouncement += "\nThis card is from " + Emojis.IX + " hand after they used technology.";
                 discordGame.queueMessage("bidding-phase", newCardAnnouncement);
-                createBidMessage(discordGame, game);
+                bidding.createBidMessage(game, true);
                 bidding.advanceBidder(game);
-                PlayerCommands.tryBid(discordGame, game, game.getFaction(bidding.getCurrentBidder()));
+                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
                 discordGame.pushGame();
             }
         }
-    }
-
-    public static void createBidMessage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        createBidMessage(discordGame, game, true);
-    }
-
-    public static boolean createBidMessage(DiscordGame discordGame, Game game, boolean tag) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        String nextBidderName = bidding.getNextBidder(game);
-        List<String> bidOrder = bidding.getEligibleBidOrder(game);
-        StringBuilder message = new StringBuilder();
-        message.append(
-                MessageFormat.format(
-                        "R{0}:C{1}",
-                        game.getTurn(), bidding.getBidCardNumber()
-                )
-        );
-        if (bidding.isSilentAuction()) {
-            message.append(" (Silent Auction)");
-        } else if (bidding.isRicheseBidding()) {
-            message.append(" (Once Around)");
-        }
-        message.append("\n");
-
-        for (String factionName : bidOrder) {
-            Faction f = game.getFaction(factionName);
-            if (factionName.equals(nextBidderName) && tag) {
-                if (f.getName().equals(bidding.getBidLeader())) {
-                    discordGame.queueMessage("bidding-phase", message.toString());
-                    discordGame.queueMessage("bidding-phase", f.getEmoji() + " has the top bid.");
-                    return true;
-                }
-                message.append(f.getEmoji()).append(" - ").append(f.getPlayer()).append("\n");
-            } else {
-                message.append(f.getEmoji()).append(" - ").append(f.getBid()).append("\n");
-            }
-        }
-
-        discordGame.queueMessage("bidding-phase", message.toString());
-        return false;
     }
 
     public static void startRevivingForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

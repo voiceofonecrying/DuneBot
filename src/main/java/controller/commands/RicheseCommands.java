@@ -157,7 +157,7 @@ public class RicheseCommands {
             }
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-            RunCommands.createBidMessage(discordGame, game);
+            bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
         } else {
             runRicheseBid(discordGame, game, bidType, true);
@@ -339,7 +339,7 @@ public class RicheseCommands {
             Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             discordGame.queueMessage("bidding-phase", message.toString());
-            RunCommands.createBidMessage(discordGame, game);
+            bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
         }
     }
@@ -378,27 +378,6 @@ public class RicheseCommands {
         buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
         discordGame.getRicheseChat().queueMessage("", buttons);
-    }
-
-    public static void cacheCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
-        List<Button> buttons = new LinkedList<>();
-        String message;
-        for (TreacheryCard card : richeseFaction.getTreacheryCardCache()) {
-            buttons.add(Button.primary("richesecachecard-" + card.name(), card.name()));
-        }
-        if (bidding.getBidCardNumber() < bidding.getNumCardsForBid() - 1) {
-            message = "Please select your cache card to sell or choose to sell last. " + richeseFaction.getPlayer();
-            buttons.add(Button.danger("richesecachetime-last", "Sell cache card last"));
-        } else {
-            message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
-        }
-        if (!richeseFaction.isHomeworldOccupied()) discordGame.getRicheseChat().queueMessage(message, buttons);
-        else {
-            discordGame.getFactionChat(richeseFaction.getOccupier().getName()).queueMessage(message, buttons);
-            discordGame.getFactionChat(richeseFaction.getOccupier().getName()).queueMessage("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
-        }
     }
 
     public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException {

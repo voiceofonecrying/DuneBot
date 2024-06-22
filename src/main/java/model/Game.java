@@ -89,6 +89,8 @@ public class Game {
     private DuneTopic gameActions;
     @Exclude
     private DuneTopic modInfo;
+    @Exclude
+    private DuneTopic biddingPhase;
 
     public Game() throws IOException {
         super();
@@ -780,6 +782,14 @@ public class Game {
 
     public void setModInfo(DuneTopic modInfo) {
         this.modInfo = modInfo;
+    }
+
+    public DuneTopic getBiddingPhase() {
+        return biddingPhase;
+    }
+
+    public void setBiddingPhase(DuneTopic biddingPhase) {
+        this.biddingPhase = biddingPhase;
     }
 
     public List<Faction> getFactionsWithTreacheryCard(String cardName) {
