@@ -592,6 +592,7 @@ public class Bidding {
         if (allPlayersPassed) {
             biddingPhase.publish("All players passed.\n");
             if (richeseCacheCard) {
+                topBidderDeclared = true;
                 biddingPhase.publish(Emojis.RICHESE + " may take cache card for free or remove it from the game.");
                 modInfo.publish("Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game. " + game.getModOrRoleMention());
             } else {
