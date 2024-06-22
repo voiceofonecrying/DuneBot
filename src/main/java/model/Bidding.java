@@ -637,7 +637,7 @@ public class Bidding {
 
     public String pass(Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
-            throw new InvalidGameStateException("Bidding has ended on the current card.");
+            throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         faction.setMaxBid(-1);
         game.getModInfo().publish(faction.getEmoji() + " passed their bid.");
         tryBid(game, faction);
@@ -648,7 +648,7 @@ public class Bidding {
 
     public String setAutoPass(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
-            throw new InvalidGameStateException("Bidding has ended on the current card.");
+            throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         faction.setAutoBid(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass to " + enabled);
         tryBid(game, faction);
@@ -677,7 +677,7 @@ public class Bidding {
 
     public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws ChannelNotFoundException, InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
-            throw new InvalidGameStateException("Bidding has ended on the current card.");
+            throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
                 && factionDoesNotHaveKarama(faction))
             throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");

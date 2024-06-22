@@ -561,6 +561,157 @@ class BiddingTest {
         }
 
         @Nested
+        @DisplayName("#richeseBlackMarketNormal")
+        public class RicheseBlackMarketNormal {
+            @BeforeEach
+            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
+                // RicheseCommands::blackMarketBid
+                bidding.setBlackMarketCard(true);
+                bidding.setBidCard(new TreacheryCard("Family Atomics"));
+                bidding.incrementBidCardNumber();
+                bidding.updateBidOrder(game);
+                List<String> bidOrder = bidding.getEligibleBidOrder(game);
+                for (Faction f : game.getFactions()) {
+                    f.setMaxBid(0);
+                    f.setAutoBid(false);
+                    f.setBid("");
+                }
+                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+                bidding.createBidMessage(game, true);
+                bidding.advanceBidder(game);
+
+                bidding.bid(game, atreides, true, 1, null, null);
+                bidding.pass(game, bg);
+                bidding.pass(game, emperor);
+                bidding.pass(game, fremen);
+                bidding.pass(game, harkonnen);
+                assertEquals(6, biddingPhase.getMessages().size());
+                bidding.pass(game, richese);
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testWinnerBidAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 2, null, null));
+            }
+
+            @Test
+            void testNonWinnerBidAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, bg, true, 2, null, null));
+            }
+
+            @Test
+            void testWinnerPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+            }
+
+            @Test
+            void testNonWinnerPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, bg));
+            }
+
+            @Test
+            void testWinnerAutoPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+            }
+
+            @Test
+            void testNonWinnerAutoPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, bg, true));
+            }
+
+            @Test
+            void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("#richeseBlackMarketNormalAllPass")
+        public class RicheseBlackMarketNormalAllPass {
+            @BeforeEach
+            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
+                // RicheseCommands::blackMarketBid
+                bidding.setBlackMarketCard(true);
+                bidding.setBidCard(new TreacheryCard("Family Atomics"));
+                bidding.incrementBidCardNumber();
+                bidding.updateBidOrder(game);
+                List<String> bidOrder = bidding.getEligibleBidOrder(game);
+                for (Faction f : game.getFactions()) {
+                    f.setMaxBid(0);
+                    f.setAutoBid(false);
+                    f.setBid("");
+                }
+                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+                bidding.createBidMessage(game, true);
+                bidding.advanceBidder(game);
+
+                bidding.pass(game, atreides);
+                bidding.pass(game, bg);
+                bidding.pass(game, emperor);
+                bidding.pass(game, fremen);
+                bidding.pass(game, harkonnen);
+                assertEquals(6, biddingPhase.getMessages().size());
+                bidding.pass(game, richese);
+//                for (String m : biddingPhase.getMessages())
+//                    System.out.println("======Normal\n" + m);
+//                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testWinnerBidAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 2, null, null));
+            }
+
+            @Test
+            void testNonWinnerBidAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, bg, true, 2, null, null));
+            }
+
+            @Test
+            void testWinnerPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+            }
+
+            @Test
+            void testNonWinnerPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, bg));
+            }
+
+            @Test
+            void testWinnerAutoPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+            }
+
+            @Test
+            void testNonWinnerAutoPassAfterTopBidderIdentified() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, bg, true));
+            }
+
+            @Test
+            void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
+                assertEquals(8, biddingPhase.getMessages().size());
+            }
+        }
+
+        @Nested
         @DisplayName("#richeseBlackMarketOnceAround")
         public class RicheseBlackMarketOnceAround {
             @BeforeEach
