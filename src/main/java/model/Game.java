@@ -189,7 +189,6 @@ public class Game {
 
     public void startBidding() {
         bidding = new Bidding();
-        bidding.setBiddingPhase(biddingPhase);
         setUpdated(UpdateType.MAP);
         try {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");
@@ -781,8 +780,6 @@ public class Game {
 
     public void setBiddingPhase(DuneTopic biddingPhase) {
         this.biddingPhase = biddingPhase;
-        if (bidding != null)
-            bidding.setBiddingPhase(biddingPhase);
     }
 
     public List<Faction> getFactionsWithTreacheryCard(String cardName) {

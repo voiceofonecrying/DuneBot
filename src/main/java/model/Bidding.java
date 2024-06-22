@@ -4,7 +4,6 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import helpers.Exclude;
 import model.factions.*;
 import model.topics.DuneTopic;
 
@@ -40,8 +39,6 @@ public class Bidding {
     private TreacheryCard previousCard;
     private String previousWinner;
     private boolean ixAllySwapped;
-    @Exclude
-    private DuneTopic biddingPhase;
 
     public Bidding() {
         super();
@@ -72,10 +69,6 @@ public class Bidding {
         this.previousCard = null;
         this.previousWinner = null;
         this.ixAllySwapped = false;
-    }
-
-    public void setBiddingPhase(DuneTopic biddingPhase) {
-        this.biddingPhase = biddingPhase;
     }
 
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
@@ -388,6 +381,7 @@ public class Bidding {
     }
 
     public boolean createBidMessage(Game game, boolean tag) {
+        DuneTopic biddingPhase = game.getBiddingPhase();
         String nextBidderName = getNextBidder(game);
         List<String> bidOrder = getEligibleBidOrder(game);
         StringBuilder message = new StringBuilder();
@@ -594,6 +588,7 @@ public class Bidding {
 
     public boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
         DuneTopic modInfo = game.getModInfo();
+        DuneTopic biddingPhase = game.getBiddingPhase();
         if (allPlayersPassed) {
             biddingPhase.publish("All players passed.\n");
             if (richeseCacheCard) {
@@ -787,7 +782,7 @@ public class Bidding {
                     return;
                 }
             } else if (allPlayersPassed) {
-                biddingPhase.publish("All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
+                game.getBiddingPhase().publish("All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
                 String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";
                 if (richeseCacheCardOutstanding)
                     modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
