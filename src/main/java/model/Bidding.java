@@ -632,6 +632,8 @@ public class Bidding {
     }
 
     public String pass(Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+        if (topBidderDeclared)
+            throw new InvalidGameStateException("Bidding has ended on the current card.");
         faction.setMaxBid(-1);
         game.getModInfo().publish(faction.getEmoji() + " passed their bid.");
         tryBid(game, faction);
@@ -641,6 +643,8 @@ public class Bidding {
     }
 
     public String setAutoPass(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
+        if (topBidderDeclared)
+            throw new InvalidGameStateException("Bidding has ended on the current card.");
         faction.setAutoBid(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass to " + enabled);
         tryBid(game, faction);

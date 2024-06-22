@@ -95,6 +95,26 @@ class BiddingTest {
         void testNonWinnerBidAfterTopBidderIdentified() {
             assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, bg, true, 2, null, null));
         }
+
+        @Test
+        void testWinnerPassAfterTopBidderIdentified() {
+            assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+        }
+
+        @Test
+        void testNonWinnerPassAfterTopBidderIdentified() {
+            assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, bg));
+        }
+
+        @Test
+        void testWinnerAutoPassAfterTopBidderIdentified() {
+            assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+        }
+
+        @Test
+        void testNonWinnerAutoPassAfterTopBidderIdentified() {
+            assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, bg, true));
+        }
     }
 
     @Test
