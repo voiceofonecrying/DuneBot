@@ -36,6 +36,7 @@ public class Bidding {
     private int currentBid;
     private String bidLeader;
     private boolean topBidderDeclared;
+    private boolean allPlayersPassed;
     private TreacheryCard previousCard;
     private String previousWinner;
     private boolean ixAllySwapped;
@@ -66,6 +67,7 @@ public class Bidding {
         this.currentBid = 0;
         this.bidLeader = "";
         this.topBidderDeclared = false;
+        this.allPlayersPassed = false;
         this.previousCard = null;
         this.previousWinner = null;
         this.ixAllySwapped = false;
@@ -323,6 +325,7 @@ public class Bidding {
         silentAuction = false;
         bidLeader = "";
         topBidderDeclared = false;
+        allPlayersPassed = false;
         currentBid = 0;
         cardFromMarket = false;
         previousWinner = winner;
@@ -633,7 +636,7 @@ public class Bidding {
     }
 
     public String pass(Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
-        if (topBidderDeclared)
+        if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.");
         faction.setMaxBid(-1);
         game.getModInfo().publish(faction.getEmoji() + " passed their bid.");
@@ -644,7 +647,7 @@ public class Bidding {
     }
 
     public String setAutoPass(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
-        if (topBidderDeclared)
+        if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.");
         faction.setAutoBid(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass to " + enabled);
@@ -659,7 +662,7 @@ public class Bidding {
     public String setAutoPassEntireTurn(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
         faction.setAutoBidTurn(enabled);
         game.getModInfo().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
-        if (!topBidderDeclared && bidCard != null) {
+        if (!topBidderDeclared &&!allPlayersPassed && bidCard != null) {
             faction.setAutoBid(enabled);
             tryBid(game, faction);
         }
@@ -673,7 +676,7 @@ public class Bidding {
     }
 
     public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws ChannelNotFoundException, InvalidGameStateException {
-        if (topBidderDeclared)
+        if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.");
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
                 && factionDoesNotHaveKarama(faction))
@@ -758,7 +761,6 @@ public class Bidding {
         }
         if (!currentBidder.equals(faction.getName())) return;
         boolean onceAroundFinished = false;
-        boolean allPlayersPassed = false;
         do {
             if (!faction.isOutbidAlly() && faction.hasAlly() && faction.getAlly().equals(bidLeader)) {
                 faction.setBid("pass (ally had top bid)");
