@@ -73,6 +73,16 @@ public class Bidding {
         this.ixAllySwapped = false;
     }
 
+    private void clearFactionBidInfo(Game game) {
+        for (Faction faction : game.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setBid("");
+            if (bidCardNumber == 0)
+                faction.setAutoBidTurn(false);
+            faction.setAutoBid(faction.isAutoBidTurn());
+        }
+    }
+
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
         treacheryDeckReshuffled = false;
         numCardsFromOldDeck = 0;
@@ -83,14 +93,7 @@ public class Bidding {
             throw new InvalidGameStateException("All cards from the bidding market have already been bid on.");
         }
 
-        for (Faction faction : game.getFactions()) {
-            faction.setMaxBid(0);
-            faction.setBid("");
-            if (bidCardNumber == 0)
-                faction.setAutoBidTurn(false);
-            faction.setAutoBid(faction.isAutoBidTurn());
-        }
-
+        clearFactionBidInfo(game);
         bidCard = market.removeFirst();
         bidCardNumber++;
         cardFromMarket = true;
@@ -217,8 +220,9 @@ public class Bidding {
         return bidCard;
     }
 
-    public void setBidCard(TreacheryCard bidCard) {
+    public void setBidCard(Game game, TreacheryCard bidCard) {
         this.bidCard = bidCard;
+        clearFactionBidInfo(game);
     }
 
     public boolean isRicheseCacheCard() {

@@ -110,7 +110,7 @@ public class RicheseCommands {
 
         RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
         bidding.setRicheseCacheCard(true);
-        bidding.setBidCard(
+        bidding.setBidCard(game,
                 faction.removeTreacheryCardFromCache(
                         faction.getTreacheryCardFromCache(cardName)
                 )
@@ -144,7 +144,7 @@ public class RicheseCommands {
 
         cards.remove(card);
         bidding.setBlackMarketCard(true);
-        bidding.setBidCard(card);
+        bidding.setBidCard(game, card);
         bidding.incrementBidCardNumber();
 
         if (bidType.equalsIgnoreCase("Normal")) {
@@ -159,6 +159,7 @@ public class RicheseCommands {
             bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
             bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
+            bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
         } else {
             runRicheseBid(discordGame, game, bidType, true);
         }
@@ -341,6 +342,7 @@ public class RicheseCommands {
             discordGame.queueMessage("bidding-phase", message.toString());
             bidding.createBidMessage(game, true);
             bidding.advanceBidder(game);
+            bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
         }
     }
 
