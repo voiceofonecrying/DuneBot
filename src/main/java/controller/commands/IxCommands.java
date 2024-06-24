@@ -212,37 +212,6 @@ public class IxCommands {
         discordGame.getIxChat().queueMessage("", buttons);
     }
 
-    public static void cardToReject(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        message.append(
-                MessageFormat.format(
-                        "Turn {0} - Select one of the following {1} cards to send back to the deck. {2}",
-                        game.getTurn(), Emojis.TREACHERY, ixFaction.getPlayer()
-                )
-        );
-        for (TreacheryCard card : bidding.getMarket()) {
-            message.append(
-                    MessageFormat.format("\n\t**{0}** _{1}_",
-                            card.name(), card.type()
-                    ));
-        }
-        discordGame.getIxChat().queueMessage(message.toString());
-        cardToRejectButtons(discordGame, game);
-    }
-
-    public static void cardToRejectButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        List<Button> buttons = new LinkedList<>();
-        int i = 0;
-        for (TreacheryCard card : bidding.getMarket()) {
-            i++;
-            buttons.add(Button.primary("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
-        }
-        discordGame.getIxChat().queueMessage("", buttons);
-    }
-
     public static void sendBackLocationButtons(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));

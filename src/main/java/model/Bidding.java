@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
-import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
@@ -83,6 +82,271 @@ public class Bidding {
         }
     }
 
+    public void cardCountsInBiddingPhase(Game game) throws InvalidGameStateException {
+        if (bidCard != null) {
+            throw new InvalidGameStateException("The black market card must be awarded before advancing.");
+        }
+        StringBuilder message = new StringBuilder();
+        message.append(MessageFormat.format(
+                "{0}Number of Treachery Cards{0}\n",
+                Emojis.TREACHERY
+        ));
+        message.append(
+                game.getFactions().stream().map(
+                        f -> MessageFormat.format(
+                                "{0}: {1}\n", f.getEmoji(), f.getTreacheryHand().size()
+                        )
+                ).collect(Collectors.joining())
+        );
+        int numCardsForBid = populateMarket(game);
+        message.append(
+                MessageFormat.format(
+                        "{0} cards will be pulled from the {1} deck for bidding.",
+                        numCardsForBid, Emojis.TREACHERY
+                )
+        );
+        if (game.hasFaction("Ix")) {
+            message.append(
+                    MessageFormat.format(
+                            "\n{0} will send one of them back to the deck.",
+                            Emojis.IX
+                    )
+            );
+        }
+        game.getTurnSummary().publish(message.toString());
+        if (numCardsForBid == 0) {
+            game.getModInfo().publish("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+        } else if (richeseCacheCardOutstanding) {
+            presentCacheCardChoices(game);
+            game.getModInfo().publish(Emojis.RICHESE + " has been given buttons for selling their cache card.");
+        } else {
+            game.getModInfo().publish("Start running commands to bid and then advance when all the bidding is done.");
+        }
+    }
+
+    public void presentCardToRejectMessage(Game game) throws InvalidGameStateException {
+        StringBuilder message = new StringBuilder();
+        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
+        message.append(
+                MessageFormat.format(
+                        "Turn {0} - Select one of the following {1} cards to send back to the deck. {2}",
+                        game.getTurn(), Emojis.TREACHERY, ixFaction.getPlayer()
+                )
+        );
+        for (TreacheryCard card : market) {
+            message.append(
+                    MessageFormat.format("\n\t**{0}** _{1}_",
+                            card.name(), card.type()
+                    ));
+        }
+        ixFaction.getChat().publish(message.toString());
+        presentCardToRejectChoices(game);
+    }
+
+    public void presentCardToRejectChoices(Game game) throws InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        List<DuneChoice> choices = new ArrayList<>();
+        int i = 0;
+        for (TreacheryCard card : bidding.getMarket()) {
+            i++;
+            choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
+        }
+        game.getFaction("Ix").getChat().publish("", choices);
+    }
+
+    public void runRicheseBid(Game game, String bidType, boolean blackMarket) throws InvalidGameStateException {
+        for (Faction faction : game.getFactions()) {
+            faction.setMaxBid(0);
+            faction.setAutoBid(false);
+            faction.setBid("");
+        }
+        if (bidType.equalsIgnoreCase("Silent")) {
+            silentAuction = true;
+            if (blackMarket) {
+                game.getBiddingPhase().publish(
+                        MessageFormat.format(
+                                "{0} We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
+                                game.getGameRoleMention(), Emojis.RICHESE
+                        )
+                );
+            } else {
+                game.getBiddingPhase().publish(
+                        MessageFormat.format(
+                                "{0} We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
+                                game.getGameRoleMention(), Emojis.TREACHERY, bidCard.name()
+                        )
+                );
+            }
+            List<Faction> factions = game.getFactions();
+            for (Faction faction : factions) {
+                if (faction.getHandLimit() > faction.getTreacheryHand().size()) {
+                    faction.getChat().publish(
+                            MessageFormat.format(
+                                    "{0} Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.",
+                                    faction.getPlayer()
+                            )
+                    );
+                }
+            }
+            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
+            List<Faction> bidOrderFactions = new ArrayList<>();
+            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
+            bidOrderFactions.addAll(factions.subList(0, firstBid));
+            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
+            setRicheseBidOrder(game, bidOrder);
+            List<String> filteredBidOrder = getEligibleBidOrder(game);
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
+            currentBidder = factionBeforeFirstToBid.getName();
+        } else {
+            StringBuilder message = new StringBuilder();
+            if (blackMarket) {
+                message.append(
+                        MessageFormat.format("{0} You may now place your bids for a black market card from {1} hand!\n",
+                                game.getGameRoleMention(), Emojis.RICHESE
+                        )
+                );
+            } else {
+                message.append(
+                        MessageFormat.format("{0} You may now place your bids for a shiny, brand new {1} {2}!\n",
+                                game.getGameRoleMention(), Emojis.RICHESE, bidCard.name()
+                        )
+                );
+            }
+
+            List<Faction> factions = game.getFactions();
+            List<Faction> bidOrderFactions = new ArrayList<>();
+            List<Faction> factionsInBidDirection;
+            if (bidType.equalsIgnoreCase("OnceAroundCW")) {
+                factionsInBidDirection = new ArrayList<>(factions);
+                Collections.reverse(factionsInBidDirection);
+            } else {
+                factionsInBidDirection = factions;
+            }
+
+            int richeseIndex = factionsInBidDirection.indexOf(game.getFaction("Richese"));
+            bidOrderFactions.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
+            bidOrderFactions.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
+            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
+            setRicheseBidOrder(game, bidOrder);
+            List<String> filteredBidOrder = getEligibleBidOrder(game);
+            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
+            currentBidder = factionBeforeFirstToBid.getName();
+            game.getBiddingPhase().publish(message.toString());
+            createBidMessage(game, true);
+            advanceBidder(game);
+            tryBid(game, game.getFaction(currentBidder));
+        }
+    }
+
+    public void richeseCardAuction(Game game, String cardName, String bidType) throws InvalidGameStateException {
+        if (bidCard != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (!richeseCacheCardOutstanding) {
+            if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
+                throw new InvalidGameStateException("All cards for this round have already been bid on.");
+            } else {
+                throw new InvalidGameStateException(Emojis.RICHESE + " card is not eligible to be sold.");
+            }
+        }
+
+        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+        richeseCacheCard = true;
+        setBidCard(game,
+                faction.removeTreacheryCardFromCache(
+                        faction.getTreacheryCardFromCache(cardName)
+                )
+        );
+        incrementBidCardNumber();
+        runRicheseBid(game, bidType, false);
+    }
+
+    public void blackMarketAuction(Game game, String cardName, String bidType) throws InvalidGameStateException {
+        if (bidCard != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (bidCardNumber != 0) {
+            throw new InvalidGameStateException("Black market card must be first in the bidding round.");
+        }
+
+        Faction faction = game.getFaction("Richese");
+        List<TreacheryCard> cards = faction.getTreacheryHand();
+
+        TreacheryCard card = cards.stream()
+                .filter(c -> c.name().equalsIgnoreCase(cardName))
+                .findFirst()
+                .orElseThrow();
+
+        cards.remove(card);
+        blackMarketCard = true;
+        setBidCard(game, card);
+        incrementBidCardNumber();
+
+        if (bidType.equalsIgnoreCase("Normal")) {
+            updateBidOrder(game);
+            List<String> bidOrder = getEligibleBidOrder(game);
+            for (Faction f : game.getFactions()) {
+                f.setMaxBid(0);
+                f.setAutoBid(false);
+                f.setBid("");
+            }
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+            currentBidder = factionBeforeFirstToBid.getName();
+            createBidMessage(game, true);
+            advanceBidder(game);
+            tryBid(game, game.getFaction(currentBidder));
+        } else {
+            runRicheseBid(game, bidType, true);
+        }
+
+        sendAtreidesCardPrescience(game, card);
+    }
+
+    public void bidding(Game game) throws InvalidGameStateException {
+        if (bidCard != null) {
+            throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (numCardsForBid == 0) {
+            throw new InvalidGameStateException("Use /run advance.");
+        } else if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
+            throw new InvalidGameStateException("All cards for this round have already been bid on.");
+        } else if (ixRejectOutstanding) {
+            throw new InvalidGameStateException(Emojis.IX + " must send a " + Emojis.TREACHERY + " card back to the deck.");
+        }
+
+        DuneTopic turnSummary = game.getTurnSummary();
+        if (!marketShownToIx && game.hasFaction("Ix")) {
+            String message = MessageFormat.format(
+                    "{0} {1} cards have been shown to {2}",
+                    market.size(), Emojis.TREACHERY, Emojis.IX
+            );
+            presentCardToRejectMessage(game);
+            marketShownToIx = true;
+            turnSummary.publish(message);
+        } else {
+            updateBidOrder(game);
+            List<String> bidOrder = getEligibleBidOrder(game);
+            if (bidOrder.isEmpty())
+                throw new InvalidGameStateException("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
+
+            if (treacheryDeckReshuffled) {
+                turnSummary.publish(MessageFormat.format(
+                        "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
+                        numCardsFromOldDeck, Emojis.TREACHERY
+                ));
+            }
+            TreacheryCard bidCard = nextBidCard(game);
+            sendAtreidesCardPrescience(game, bidCard);
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+            currentBidder = factionBeforeFirstToBid.getName();
+            String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
+                    game.getGameRoleMention(), game.getTurn(), bidCardNumber);
+            if (isCardFromIxHand())
+                newCardAnnouncement += "\nThis card is from " + Emojis.IX + " hand after they used technology.";
+            game.getBiddingPhase().publish(newCardAnnouncement);
+            createBidMessage(game, true);
+            advanceBidder(game);
+            tryBid(game, game.getFaction(currentBidder));
+        }
+    }
+
     public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
         treacheryDeckReshuffled = false;
         numCardsFromOldDeck = 0;
@@ -127,11 +391,35 @@ public class Bidding {
         return numCardsInMarket;
     }
 
+    public void sendAtreidesCardPrescience(Game game, TreacheryCard card) {
+        if (game.hasFaction("Atreides")) {
+            Faction atreides = game.getFaction("Atreides");
+            atreides.getChat().publish(
+                    MessageFormat.format(
+                            "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
+                            Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidCardNumber
+                    )
+            );
+            if (atreides.isHomeworldOccupied()) {
+                atreides.getOccupier().getChat().publish(
+                        MessageFormat.format(
+                                "Your " + Emojis.ATREIDES + " subjects in Caladan predict {0} {1} {0} is up for bid (R{2}:C{3}).",
+                                Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidCardNumber
+                        )
+                );
+            }
+        }
+    }
+
     public int moveMarketToDeck(Game game) {
-        int numCardsReturned = market.size() + 1;
+        int numCardsReturned = market.size();
         Iterator<TreacheryCard> marketIterator = market.descendingIterator();
         while (marketIterator.hasNext()) game.getTreacheryDeck().add(marketIterator.next());
-        game.getTreacheryDeck().add(bidCard);
+        market.clear();
+        if (bidCard != null) {
+            game.getTreacheryDeck().add(bidCard);
+            numCardsReturned++;
+        }
         clearBidCardInfo(null);
         numCardsForBid -= numCardsReturned;
         return numCardsReturned;
@@ -208,37 +496,21 @@ public class Bidding {
         return treacheryDeckReshuffled;
     }
 
-    public int getNumCardsFromOldDeck() {
-        return numCardsFromOldDeck;
-    }
-
-    public boolean isCardFromMarket() {
-        return cardFromMarket;
-    }
-
     public TreacheryCard getBidCard() {
         return bidCard;
     }
 
-    public void setBidCard(Game game, TreacheryCard bidCard) {
-        this.bidCard = bidCard;
+    private void setBidCard(Game game, TreacheryCard bidCard) {
         clearFactionBidInfo(game);
+        this.bidCard = bidCard;
     }
 
     public boolean isRicheseCacheCard() {
         return richeseCacheCard;
     }
 
-    public void setRicheseCacheCard(boolean richeseCacheCard) {
-        this.richeseCacheCard = richeseCacheCard;
-    }
-
     public boolean isBlackMarketCard() {
         return blackMarketCard;
-    }
-
-    public void setBlackMarketCard(boolean blackMarketCard) {
-        this.blackMarketCard = blackMarketCard;
     }
 
     public boolean isSilentAuction() {
@@ -639,7 +911,7 @@ public class Bidding {
         return hand.stream().noneMatch(c -> c.name().equals("Karama"));
     }
 
-    public String pass(Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+    public String pass(Game game, Faction faction) throws InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         faction.setMaxBid(-1);
@@ -679,7 +951,7 @@ public class Bidding {
         return responseMessage;
     }
 
-    public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws ChannelNotFoundException, InvalidGameStateException {
+    public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
@@ -808,5 +1080,44 @@ public class Bidding {
 
             faction = game.getFaction(advanceBidder(game));
         } while (!topBidderDeclared && !allPlayersPassed && !onceAroundFinished);
+    }
+
+    public boolean finishBiddingPhase(Game game) throws InvalidGameStateException {
+        if (bidCard == null && !market.isEmpty() && !getEligibleBidOrder(game).isEmpty()) {
+            throw new InvalidGameStateException("Use /run bidding to auction the next card.");
+        } else if (bidCard == null && richeseCacheCardOutstanding && !getEligibleBidOrder(game).isEmpty()) {
+            throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
+        } else if (bidCard != null && !cardFromMarket) {
+            throw new InvalidGameStateException("Card up for bid is not from bidding market.");
+        }
+
+        if (bidCard != null) {
+            int numCardsReturned = moveMarketToDeck(game);
+            game.getTurnSummary().publish("All players passed. " + numCardsReturned + " cards were returned to top of the Treachery Deck.");
+        } else if (getEligibleBidOrder(game).isEmpty()) {
+            if (richeseCacheCardOutstanding) {
+                game.getTurnSummary().publish("All hands are full. " + Emojis.RICHESE + " may not auction a card from their cache.");
+            } else {
+                int numCardsReturned = moveMarketToDeck(game);
+                game.getTurnSummary().publish("All hands are full. " + numCardsReturned + " cards were returned to top of the Treachery Deck.");
+            }
+        }
+
+        if (richeseCacheCardOutstanding) {
+            game.getModInfo().publish("Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
+            return false;
+        }
+
+        if (game.hasFaction("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("Emperor").isHighThreshold()) {
+            Faction emperor = game.getFaction("Emperor");
+            List<DuneChoice> choices = new ArrayList<>();
+            for (TreacheryCard card : emperor.getTreacheryHand()) {
+                choices.add(new DuneChoice("emperor-discard-" + card.name(), card.name()));
+            }
+            choices.add(new DuneChoice("secondary", "emperor-finished-discarding", "Done"));
+            emperor.getChat().publish("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", choices);
+        }
+        game.endBidding();
+        return true;
     }
 }

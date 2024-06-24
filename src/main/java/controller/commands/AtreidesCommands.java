@@ -3,7 +3,6 @@ package controller.commands;
 import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
-import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.AtreidesFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -11,7 +10,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,25 +50,5 @@ public class AtreidesCommands {
             discordGame.getTurnSummary().queueMessage("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");
         }
         discordGame.pushGame();
-    }
-
-    public static void sendAtreidesCardPrescience(DiscordGame discordGame, Game game, TreacheryCard card) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (game.hasFaction("Atreides")) {
-            discordGame.getAtreidesChat().queueMessage(
-                    MessageFormat.format(
-                            "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
-                            Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()
-                    )
-            );
-            if (game.getFaction("Atreides").isHomeworldOccupied()) {
-                discordGame.getFactionChat(game.getFaction("Atreides").getOccupier().getName()).queueMessage(
-                        MessageFormat.format(
-                                "Your " + Emojis.ATREIDES + " subjects in Caladan predict {0} {1} {0} is up for bid (R{2}:C{3}).",
-                                Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidding.getBidCardNumber()
-                        )
-                );
-            }
-        }
     }
 }

@@ -1,6 +1,6 @@
 package model;
 
-import exceptions.ChannelNotFoundException;
+import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,10 +9,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,6 +50,12 @@ class BiddingTest {
             fremen = new FremenFaction("p", "u", game);
             harkonnen = new HarkonnenFaction("p", "u", game);
             richese = new RicheseFaction("p", "u", game);
+            atreides.setChat(new TestTopic());
+            bg.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            fremen.setChat(new TestTopic());
+            harkonnen.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -68,17 +72,18 @@ class BiddingTest {
                 faction.setMaxBid(0);
             });
             assertTrue(bidding.isRicheseCacheCardOutstanding());
-            // RunCommands::cardCountsInBiddingPhase
+
             assertNull(bidding.getBidCard());
-            int numCardsForBid = bidding.populateMarket(game);
-            assertEquals(5, numCardsForBid);
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(5, bidding.getMarket().size());
         }
 
         @Nested
         @DisplayName("#normalBidding")
         public class NormalBidding {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
+            public void setUp() throws IOException, InvalidGameStateException {
                 // RunCommands::bidding
                 bidding.updateBidOrder(game);
                 List<String> bidOrder = bidding.getEligibleBidOrder(game);
@@ -141,6 +146,68 @@ class BiddingTest {
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
                 assertEquals(8, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testAllHandsFilledWithCardsRemaining() throws InvalidGameStateException {
+                bidding.setRicheseCacheCardOutstanding(false);
+                atreides.setHandLimit(1);
+                bg.setHandLimit(0);
+                emperor.setHandLimit(0);
+                fremen.setHandLimit(0);
+                harkonnen.setHandLimit(0);
+                richese.setHandLimit(0);
+                atreides.setLedger(new TestTopic());
+                emperor.setLedger(new TestTopic());
+                bidding.awardTopBidder(game);
+                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                int treacheryDeckSize = game.getTreacheryDeck().size();
+                int marketSize = bidding.getMarket().size();
+                assertNull(bidding.getBidCard());
+                assertDoesNotThrow(() -> bidding.finishBiddingPhase(game));
+                assertEquals(4, turnSummary.getMessages().size());
+                assertEquals(28, treacheryDeckSize);
+                assertEquals(4, marketSize);
+                assertEquals(0, bidding.getMarket().size());
+                assertEquals("All hands are full. 4 cards were returned to top of the Treachery Deck.",
+                        turnSummary.getMessages().get(3));
+                assertEquals(marketSize + treacheryDeckSize, game.getTreacheryDeck().size());
+            }
+
+            @Test
+            void testAllHandsFilledWithCardsRemainingRicheseCardRemaining() throws InvalidGameStateException {
+                atreides.setLedger(new TestTopic());
+                emperor.setLedger(new TestTopic());
+                bidding.awardTopBidder(game);
+                atreides.setHandLimit(1);
+                bg.setLedger(new TestTopic());
+                bidding.bidding(game);
+                bidding.assignAndPayForCard(game, "BG", "Emperor", 0);
+                bg.setHandLimit(1);
+                bidding.bidding(game);
+                bidding.assignAndPayForCard(game, "Emperor", "Bank", 0);
+                emperor.setHandLimit(1);
+                fremen.setLedger(new TestTopic());
+                bidding.bidding(game);
+                bidding.assignAndPayForCard(game, "Fremen", "Emperor", 0);
+                fremen.setHandLimit(1);
+                harkonnen.setLedger(new TestTopic());
+                bidding.bidding(game);
+                bidding.assignAndPayForCard(game, "Harkonnen", "Emperor", 0);
+                harkonnen.setHandLimit(2);
+                richese.setHandLimit(0);
+                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                int treacheryDeckSize = game.getTreacheryDeck().size();
+                int marketSize = bidding.getMarket().size();
+                assertNull(bidding.getBidCard());
+                assertDoesNotThrow(() -> bidding.finishBiddingPhase(game));
+                assertEquals(12, turnSummary.getMessages().size());
+                assertEquals(27, treacheryDeckSize);
+                assertEquals(0, marketSize);
+                assertEquals(0, bidding.getMarket().size());
+                assertEquals("All hands are full. " + Emojis.RICHESE + " may not auction a card from their cache.",
+                        turnSummary.getMessages().get(11));
+                assertEquals(marketSize + treacheryDeckSize, game.getTreacheryDeck().size());
             }
         }
 
@@ -148,7 +215,7 @@ class BiddingTest {
         @DisplayName("#normalBiddingAllPass")
         public class NormalBiddingAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
+            public void setUp() throws IOException, InvalidGameStateException {
                 // RunCommands::bidding
                 bidding.updateBidOrder(game);
                 List<String> bidOrder = bidding.getEligibleBidOrder(game);
@@ -212,49 +279,56 @@ class BiddingTest {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
                 assertEquals(8, biddingPhase.getMessages().size());
             }
+
+            @Test
+            public void testMarketAndBidCardSentBackToDeck() {
+                bidding.setRicheseCacheCardOutstanding(false);
+                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                int treacheryDeckSize = game.getTreacheryDeck().size();
+                int marketSize = bidding.getMarket().size();
+                assertNotNull(bidding.getBidCard());
+                assertDoesNotThrow(() -> bidding.finishBiddingPhase(game));
+                assertEquals(2, turnSummary.getMessages().size());
+                assertEquals(28, treacheryDeckSize);
+                assertEquals(4, marketSize);
+                assertEquals(0, bidding.getMarket().size());
+                assertEquals("All players passed. 5 cards were returned to top of the Treachery Deck.",
+                        turnSummary.getMessages().get(1));
+                assertEquals(1 + marketSize + treacheryDeckSize, game.getTreacheryDeck().size());
+            }
+
+            @Test
+            public void testMarketAndBidCardSentBackToDeckRicheseCardRemaining() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                int treacheryDeckSize = game.getTreacheryDeck().size();
+                int marketSize = bidding.getMarket().size();
+                assertNotNull(bidding.getBidCard());
+                assertDoesNotThrow(() -> bidding.finishBiddingPhase(game));
+                assertEquals(2, turnSummary.getMessages().size());
+                assertEquals(28, treacheryDeckSize);
+                assertEquals(4, marketSize);
+                assertEquals(0, bidding.getMarket().size());
+                assertEquals("All players passed. 5 cards were returned to top of the Treachery Deck.",
+                        turnSummary.getMessages().get(1));
+                assertEquals(1 + marketSize + treacheryDeckSize, game.getTreacheryDeck().size());
+            }
         }
 
         @Nested
         @DisplayName("#richeseCacheCardOnceAround")
         public class RicheseCacheCardOnceAround {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                bidding.richeseCardAuction(game, "Ornithopter", "OnceAroundCCW");
 
                 bidding.bid(game, atreides, true, 1, null, null);
                 bidding.pass(game, bg);
                 bidding.pass(game, emperor);
                 bidding.pass(game, fremen);
                 bidding.pass(game, harkonnen);
-                assertEquals(6, biddingPhase.getMessages().size());
+                assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -290,13 +364,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
         }
 
@@ -304,43 +378,17 @@ class BiddingTest {
         @DisplayName("#richeseCacheCardOnceAroundAllPass")
         public class RicheseCacheCardOnceAroundAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                bidding.richeseCardAuction(game, "Ornithopter", "OnceAroundCCW");
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
                 bidding.pass(game, emperor);
                 bidding.pass(game, fremen);
                 bidding.pass(game, harkonnen);
-                assertEquals(6, biddingPhase.getMessages().size());
+                assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -376,13 +424,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
         }
 
@@ -390,35 +438,8 @@ class BiddingTest {
         @DisplayName("#richeseCacheCardSilent")
         public class RicheseCacheCardSilent {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                bidding.richeseCardAuction(game, "Ornithopter", "Silent");
 
                 bidding.bid(game, atreides, true, 1, null, null);
                 bidding.pass(game, bg);
@@ -477,35 +498,8 @@ class BiddingTest {
         @DisplayName("#richeseCacheCardSilentAllPass")
         public class RicheseCacheCardSilentAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                bidding.richeseCardAuction(game, "Ornithopter", "Silent");
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -564,22 +558,9 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketNormal")
         public class RicheseBlackMarketNormal {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                for (Faction f : game.getFactions()) {
-                    f.setMaxBid(0);
-                    f.setAutoBid(false);
-                    f.setBid("");
-                }
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "Normal");
 
                 bidding.bid(game, atreides, true, 1, null, null);
                 bidding.pass(game, bg);
@@ -638,22 +619,9 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketNormalAllPass")
         public class RicheseBlackMarketNormalAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                for (Faction f : game.getFactions()) {
-                    f.setMaxBid(0);
-                    f.setAutoBid(false);
-                    f.setBid("");
-                }
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "Normal");
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -715,39 +683,18 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketOnceAround")
         public class RicheseBlackMarketOnceAround {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "OnceAroundCCW");
 
                 bidding.bid(game, atreides, true, 1, null, null);
                 bidding.pass(game, bg);
                 bidding.pass(game, emperor);
                 bidding.pass(game, fremen);
                 bidding.pass(game, harkonnen);
-                assertEquals(6, biddingPhase.getMessages().size());
+                assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -783,13 +730,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(8, biddingPhase.getMessages().size());
+                assertEquals(9, biddingPhase.getMessages().size());
             }
         }
 
@@ -797,39 +744,18 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketOnceAroundAllPass")
         public class RicheseBlackMarketOnceAroundAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "OnceAroundCCW");
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
                 bidding.pass(game, emperor);
                 bidding.pass(game, fremen);
                 bidding.pass(game, harkonnen);
-                assertEquals(6, biddingPhase.getMessages().size());
+                assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -865,13 +791,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(9, biddingPhase.getMessages().size());
+                assertEquals(10, biddingPhase.getMessages().size());
             }
         }
 
@@ -879,31 +805,9 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketSilent")
         public class RicheseBlackMarketSilent {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "Silent");
 
                 bidding.bid(game, atreides, true, 1, null, null);
                 bidding.pass(game, bg);
@@ -962,31 +866,9 @@ class BiddingTest {
         @DisplayName("#richeseBlackMarketSilentAllPass")
         public class RicheseBlackMarketSilentAllPass {
             @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
+            public void setUp() throws IOException, InvalidGameStateException {
+                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                bidding.blackMarketAuction(game, "Family Atomics", "Silent");
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -1070,6 +952,12 @@ class BiddingTest {
             fremen = new FremenFaction("p", "u", game);
             harkonnen = new HarkonnenFaction("p", "u", game);
             richese = new RicheseFaction("p", "u", game);
+            atreides.setChat(new TestTopic());
+            bg.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            fremen.setChat(new TestTopic());
+            harkonnen.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1087,159 +975,58 @@ class BiddingTest {
                 faction.setMaxBid(0);
             });
             assertTrue(bidding.isRicheseCacheCardOutstanding());
-            // RunCommands::cardCountsInBiddingPhase
+
             assertNull(bidding.getBidCard());
-            int numCardsForBid = bidding.populateMarket(game);
-            assertEquals(5, numCardsForBid);
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(5, bidding.getMarket().size());
         }
 
-        @Nested
-        @DisplayName("#normalBidding")
-        public class NormalBidding {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RunCommands::bidding
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                assertEquals(6, bidOrder.size());
-                bidding.nextBidCard(game);
-                bidding.setAutoPassEntireTurn(game, atreides, true);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertTrue(atreides.isAutoBidTurn());
-                assertTrue(atreides.isAutoBid());
-                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-            }
+        @Test
+        public void testNormalBidding() throws InvalidGameStateException {
+            // RunCommands::bidding
+            bidding.updateBidOrder(game);
+            List<String> bidOrder = bidding.getEligibleBidOrder(game);
+            assertEquals(6, bidOrder.size());
+            bidding.nextBidCard(game);
+            bidding.setAutoPassEntireTurn(game, atreides, true);
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+            bidding.createBidMessage(game, true);
+            bidding.advanceBidder(game);
+            assertTrue(atreides.isAutoBidTurn());
+            assertTrue(atreides.isAutoBid());
+            bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
 
-            @Test
-            void testBGIsFirstToBid() {
-                assertEquals("BG", bidding.getCurrentBidder());
-            }
+            assertEquals("BG", bidding.getCurrentBidder());
         }
 
-        @Nested
-        @DisplayName("#richeseCacheCardOnceAround")
-        public class RicheseCacheCardOnceAround {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                bidding.setAutoPassEntireTurn(game, atreides, true);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertTrue(atreides.isAutoBidTurn());
-                assertTrue(atreides.isAutoBid());
-                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-            }
-
-            @Test
-            void testAtreidesIsFirstToBid() {
-                assertEquals("BG", bidding.getCurrentBidder());
-            }
+        @Test
+        public void testRicheseCacheCardOnceAround() throws InvalidGameStateException {
+            bidding.richeseCardAuction(game, "Ornithopter", "OnceAroundCCW");
+            bidding.setAutoPassEntireTurn(game, atreides, true);
+            assertEquals("BG", bidding.getCurrentBidder());
         }
 
-        @Nested
-        @DisplayName("#richeseCacheCardSilent")
-        public class RicheseCacheCardSilent {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                bidding.setAutoPassEntireTurn(game, atreides, true);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                assertTrue(atreides.isAutoBidTurn());
-                assertTrue(atreides.isAutoBid());
-            }
-
-            @Test
-            void testAtreidesAutoPasses() throws InvalidGameStateException, ChannelNotFoundException {
-                bidding.pass(game, bg);
-                bidding.pass(game, emperor);
-                bidding.pass(game, fremen);
-                bidding.pass(game, harkonnen);
-                assertEquals(0, biddingPhase.getMessages().size());
-                bidding.pass(game, richese);
-                assertNotEquals(0, biddingPhase.getMessages().size());
-            }
+        @Test
+        public void testRicheseCacheCardSilent() throws InvalidGameStateException {
+            bidding.richeseCardAuction(game, "Ornithopter", "Silent");
+            bidding.setAutoPassEntireTurn(game, atreides, true);
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, harkonnen);
+            assertEquals(1, biddingPhase.getMessages().size());
+            bidding.pass(game, richese);
+            assertNotEquals(1, biddingPhase.getMessages().size());
         }
 
-        @Nested
-        @DisplayName("#richeseBlackMarketNormal")
-        public class RicheseBlackMarketNormal {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                for (Faction f : game.getFactions()) {
-                    f.setMaxBid(0);
-                    f.setAutoBid(false);
-                    f.setBid("");
-                }
-                bidding.setAutoPassEntireTurn(game, atreides, true);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertTrue(atreides.isAutoBidTurn());
-                assertTrue(atreides.isAutoBid());
-                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-            }
-
-            @Test
-            void testAtreidesIsFirstToBid() {
-                assertEquals("BG", bidding.getCurrentBidder());
-            }
+        @Test
+        public void testRicheseBlackMarketNormal() throws InvalidGameStateException {
+            richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            bidding.blackMarketAuction(game, "Family Atomics", "Normal");
+            bidding.setAutoPassEntireTurn(game, atreides, true);
+            assertEquals("BG", bidding.getCurrentBidder());
         }
     }
 
@@ -1271,6 +1058,12 @@ class BiddingTest {
             fremen = new FremenFaction("p", "u", game);
             harkonnen = new HarkonnenFaction("p", "u", game);
             richese = new RicheseFaction("p", "u", game);
+            atreides.setChat(new TestTopic());
+            bg.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            fremen.setChat(new TestTopic());
+            harkonnen.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1289,145 +1082,53 @@ class BiddingTest {
                 faction.setMaxBid(0);
             });
             assertTrue(bidding.isRicheseCacheCardOutstanding());
-            // RunCommands::cardCountsInBiddingPhase
+
             assertNull(bidding.getBidCard());
-            int numCardsForBid = bidding.populateMarket(game);
-            assertEquals(5, numCardsForBid);
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(5, bidding.getMarket().size());
         }
 
-        @Nested
-        @DisplayName("#normalBidding")
-        public class NormalBidding {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RunCommands::bidding
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                assertEquals(6, bidOrder.size());
-                bidding.nextBidCard(game);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertFalse(atreides.isAutoBidTurn());
-            }
+        @Test
+        public void testNormalBidding() throws InvalidGameStateException {
+            // RunCommands::bidding
+            bidding.updateBidOrder(game);
+            List<String> bidOrder = bidding.getEligibleBidOrder(game);
+            assertEquals(6, bidOrder.size());
+            bidding.nextBidCard(game);
+            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
+            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
+            bidding.createBidMessage(game, true);
+            bidding.advanceBidder(game);
+            assertFalse(atreides.isAutoBidTurn());
 
-            @Test
-            void testAtreidesIsFirstToBid() {
-                assertEquals("Atreides", bidding.getCurrentBidder());
-            }
+            assertEquals("Atreides", bidding.getCurrentBidder());
         }
 
-        @Nested
-        @DisplayName("#richeseCacheCardOnceAround")
-        public class RicheseCacheCardOnceAround {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertFalse(atreides.isAutoBidTurn());
-            }
-
-            @Test
-            void testAtreidesIsFirstToBid() {
-                assertEquals("Atreides", bidding.getCurrentBidder());
-            }
+        @Test
+        public void testRicheseCacheCardOnceAround() throws InvalidGameStateException {
+            bidding.richeseCardAuction(game, "Ornithopter", "OnceAroundCCW");
+            assertEquals("Atreides", bidding.getCurrentBidder());
         }
 
-        @Nested
-        @DisplayName("#richeseCacheCardSilent")
-        public class RicheseCacheCardSilent {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                //RicheseCommands::cardBid
-                bidding.setRicheseCacheCard(true);
-                bidding.setBidCard(game,
-                        richese.removeTreacheryCardFromCache(
-                                richese.getTreacheryCardFromCache("Ornithopter")
-                        )
-                );
-                bidding.incrementBidCardNumber();
-                // From RicheseCommands::runRicheseBid
-                for (Faction faction : game.getFactions()) {
-                    faction.setMaxBid(0);
-                    faction.setAutoBid(false);
-                    faction.setBid("");
-                }
-                bidding.setSilentAuction(true);
-                List<Faction> factions = game.getFactions();
-                List<Faction> bidOrderFactions = new ArrayList<>();
-                int richeseIndex = factions.indexOf(game.getFaction("Richese"));
-                bidOrderFactions.addAll(factions.subList(richeseIndex + 1, factions.size()));
-                bidOrderFactions.addAll(factions.subList(0, richeseIndex + 1));
-                List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-                bidding.setRicheseBidOrder(game, bidOrder);
-                List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-                Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-//                discordGame.queueMessage("bidding-phase", message.toString());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertFalse(atreides.isAutoBidTurn());
-            }
-
-            @Test
-            void testSixFactionsCanBid() {
-                assertEquals(6, bidding.getEligibleBidOrder(game).size());
-            }
+        @Test
+        public void testRicheseCacheCardSilent() throws InvalidGameStateException {
+            bidding.richeseCardAuction(game, "Ornithopter", "Silent");
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, harkonnen);
+            bidding.pass(game, richese);
+            assertEquals(1, biddingPhase.getMessages().size());
+            bidding.pass(game, atreides);
+            assertNotEquals(1, biddingPhase.getMessages().size());
         }
 
-        @Nested
-        @DisplayName("#richeseBlackMarketNormal")
-        public class RicheseBlackMarketNormal {
-            @BeforeEach
-            public void setUp() throws IOException, InvalidGameStateException, ChannelNotFoundException {
-                // RicheseCommands::blackMarketBid
-                bidding.setBlackMarketCard(true);
-                bidding.setBidCard(game, new TreacheryCard("Family Atomics"));
-                bidding.incrementBidCardNumber();
-                bidding.updateBidOrder(game);
-                List<String> bidOrder = bidding.getEligibleBidOrder(game);
-                for (Faction f : game.getFactions()) {
-                    f.setMaxBid(0);
-                    f.setAutoBid(false);
-                    f.setBid("");
-                }
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                assertFalse(atreides.isAutoBidTurn());
-            }
-
-            @Test
-            void testAtreidesIsFirstToBid() {
-                assertEquals("Atreides", bidding.getCurrentBidder());
-            }
+        @Test
+        public void testRicheseBlackMarketNormal() throws InvalidGameStateException {
+            richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            bidding.blackMarketAuction(game, "Family Atomics", "Normal");
+            assertEquals("Atreides", bidding.getCurrentBidder());
         }
     }
 

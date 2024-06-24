@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class RunCommands {
     public static List<CommandData> getCommands() {
@@ -116,14 +115,14 @@ public class RunCommands {
         } else if (phase == 4 && subPhase == 1) {
             if (startBiddingPhase(discordGame, game)) {
                 game.advanceSubPhase();
-                cardCountsInBiddingPhase(discordGame, game);
+                game.getBidding().cardCountsInBiddingPhase(game);
             }
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 2) {
-            cardCountsInBiddingPhase(discordGame, game);
+            game.getBidding().cardCountsInBiddingPhase(game);
             game.advanceSubPhase();
         } else if (phase == 4 && subPhase == 3) {
-            if (finishBiddingPhase(discordGame, game)) {
+            if (game.getBidding().finishBiddingPhase(game)) {
                 game.advancePhase();
                 game.startRevival();
                 if (!game.getRevival().isRecruitsDecisionNeeded())
@@ -257,133 +256,9 @@ public class RunCommands {
         }
     }
 
-    public static void cardCountsInBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() != null) {
-            throw new InvalidGameStateException("The black market card must be awarded before advancing.");
-        }
-        StringBuilder message = new StringBuilder();
-        message.append(MessageFormat.format(
-                "{0}Number of Treachery Cards{0}\n",
-                Emojis.TREACHERY
-        ));
-        message.append(
-                game.getFactions().stream().map(
-                        f -> MessageFormat.format(
-                                "{0}: {1}\n", f.getEmoji(), f.getTreacheryHand().size()
-                        )
-                ).collect(Collectors.joining())
-        );
-        int numCardsForBid = bidding.populateMarket(game);
-        message.append(
-                MessageFormat.format(
-                        "{0} cards will be pulled from the {1} deck for bidding.",
-                        numCardsForBid, Emojis.TREACHERY
-                )
-        );
-        if (game.hasFaction("Ix")) {
-            message.append(
-                    MessageFormat.format(
-                            "\n{0} will send one of them back to the deck.",
-                            Emojis.IX
-                    )
-            );
-        }
-        discordGame.getTurnSummary().queueMessage(message.toString());
-        if (numCardsForBid == 0) {
-            discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
-        } else if (bidding.isRicheseCacheCardOutstanding()) {
-            bidding.presentCacheCardChoices(game);
-            discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for selling their cache card.");
-        } else {
-            discordGame.getModInfo().queueMessage("Start running commands to bid and then advance when all the bidding is done.");
-        }
-    }
-
-    public static boolean finishBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null && !bidding.getMarket().isEmpty()) {
-            throw new InvalidGameStateException("Use /run bidding to auction the next card.");
-        } else if (bidding.getBidCard() == null && bidding.isRicheseCacheCardOutstanding()) {
-            throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
-        } else if (bidding.getBidCard() != null && !bidding.isCardFromMarket()) {
-            throw new InvalidGameStateException("Card up for bid is not from bidding market.");
-        }
-
-        if (bidding.getBidCard() != null && bidding.isCardFromMarket()) {
-            int numCardsReturned = bidding.moveMarketToDeck(game);
-            discordGame.getTurnSummary().queueMessage(numCardsReturned + " cards were returned to top of the Treachery Deck");
-        }
-
-        if (bidding.isRicheseCacheCardOutstanding()) {
-            discordGame.getModInfo().queueMessage("Auction the " + Emojis.RICHESE + " cache card. Then /run advance again to end bidding.");
-            return false;
-        }
-
-        if (game.hasFaction("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("Emperor").isHighThreshold()) {
-            Faction emperor = game.getFaction("Emperor");
-            List<Button> buttons = new LinkedList<>();
-            for (TreacheryCard card : emperor.getTreacheryHand()) {
-                buttons.add(Button.primary("emperor-discard-" + card.name(), card.name()));
-            }
-            buttons.add(Button.secondary("emperor-finished-discarding", "Done"));
-            discordGame.getEmperorChat().queueMessage("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", buttons);
-        }
-        game.endBidding();
-        return true;
-    }
-
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() != null) {
-            throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (bidding.getNumCardsForBid() == 0) {
-            throw new InvalidGameStateException("Use /run advance.");
-        } else if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
-            throw new InvalidGameStateException("All cards for this round have already been bid on.");
-        } else if (bidding.isIxRejectOutstanding()) {
-            throw new InvalidGameStateException(Emojis.IX + " must send a " + Emojis.TREACHERY + " card back to the deck.");
-        }
-
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (!bidding.isMarketShownToIx() && game.hasFaction("Ix")) {
-            String message = MessageFormat.format(
-                    "{0} {1} cards have been shown to {2}",
-                    bidding.getMarket().size(), Emojis.TREACHERY, Emojis.IX
-            );
-            IxCommands.cardToReject(discordGame, game);
-            bidding.setMarketShownToIx(true);
-            turnSummary.queueMessage(message);
-            discordGame.pushGame();
-        } else {
-            bidding.updateBidOrder(game);
-            List<String> bidOrder = bidding.getEligibleBidOrder(game);
-
-            if (bidOrder.isEmpty()) {
-                discordGame.queueMessage("bidding-phase", "All hands are full.");
-                discordGame.getModInfo().queueMessage("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
-            } else {
-                if (bidding.isTreacheryDeckReshuffled()) {
-                    turnSummary.queueMessage(MessageFormat.format(
-                            "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
-                            bidding.getNumCardsFromOldDeck(), Emojis.TREACHERY
-                    ));
-                }
-                TreacheryCard bidCard = bidding.nextBidCard(game);
-                AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, bidCard);
-                Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-                bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-                String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
-                        game.getGameRoleMention(), game.getTurn(), bidding.getBidCardNumber());
-                if (bidding.isCardFromIxHand())
-                    newCardAnnouncement += "\nThis card is from " + Emojis.IX + " hand after they used technology.";
-                discordGame.queueMessage("bidding-phase", newCardAnnouncement);
-                bidding.createBidMessage(game, true);
-                bidding.advanceBidder(game);
-                bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-                discordGame.pushGame();
-            }
-        }
+        game.getBidding().bidding(game);
+        discordGame.pushGame();
     }
 
     public static void startRevivingForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

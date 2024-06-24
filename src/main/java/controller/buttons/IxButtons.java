@@ -8,6 +8,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import exceptions.InvalidOptionException;
+import model.Bidding;
 import model.Game;
 import model.Movement;
 import model.Territory;
@@ -253,13 +254,14 @@ public class IxButtons implements Pressable {
         IxCommands.confirmCardToSendBack(discordGame, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
     }
 
-    private static void chooseDifferentCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        if (!game.getBidding().isIxRejectOutstanding()) {
+    private static void chooseDifferentCard(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+        Bidding bidding = game.getBidding();
+        if (!bidding.isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
         discordGame.queueMessage("Starting over.");
         discordGame.queueDeleteMessage();
-        IxCommands.cardToRejectButtons(discordGame, game);
+        bidding.presentCardToRejectChoices(game);
     }
 
     private static void sendCardBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

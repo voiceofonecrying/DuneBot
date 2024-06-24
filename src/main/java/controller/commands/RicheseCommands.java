@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
 
@@ -97,26 +96,7 @@ public class RicheseCommands {
     }
 
     public static void cardBid(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() != null) {
-            throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (!bidding.isRicheseCacheCardOutstanding()) {
-            if (bidding.getBidCardNumber() != 0 && bidding.getBidCardNumber() == bidding.getNumCardsForBid()) {
-                throw new InvalidGameStateException("All cards for this round have already been bid on.");
-            } else {
-                throw new InvalidGameStateException(Emojis.RICHESE + " card is not eligible to be sold.");
-            }
-        }
-
-        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
-        bidding.setRicheseCacheCard(true);
-        bidding.setBidCard(game,
-                faction.removeTreacheryCardFromCache(
-                        faction.getTreacheryCardFromCache(cardName)
-                )
-        );
-        bidding.incrementBidCardNumber();
-        runRicheseBid(discordGame, game, bidType, false);
+        game.getBidding().richeseCardAuction(game, cardName, bidType);
         discordGame.pushGame();
     }
 
@@ -127,45 +107,7 @@ public class RicheseCommands {
     }
 
     public static void blackMarketBid(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() != null) {
-            throw new InvalidGameStateException("There is already a card up for bid.");
-        } else if (bidding.getBidCardNumber() != 0) {
-            throw new InvalidGameStateException("Black market card must be first in the bidding round.");
-        }
-
-        Faction faction = game.getFaction("Richese");
-        List<TreacheryCard> cards = faction.getTreacheryHand();
-
-        TreacheryCard card = cards.stream()
-                .filter(c -> c.name().equalsIgnoreCase(cardName))
-                .findFirst()
-                .orElseThrow();
-
-        cards.remove(card);
-        bidding.setBlackMarketCard(true);
-        bidding.setBidCard(game, card);
-        bidding.incrementBidCardNumber();
-
-        if (bidType.equalsIgnoreCase("Normal")) {
-            bidding.updateBidOrder(game);
-            List<String> bidOrder = bidding.getEligibleBidOrder(game);
-            for (Faction f : game.getFactions()) {
-                f.setMaxBid(0);
-                f.setAutoBid(false);
-                f.setBid("");
-            }
-            Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
-            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-            bidding.createBidMessage(game, true);
-            bidding.advanceBidder(game);
-            bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-        } else {
-            runRicheseBid(discordGame, game, bidType, true);
-        }
-
-        AtreidesCommands.sendAtreidesCardPrescience(discordGame, game, card);
-
+        game.getBidding().blackMarketAuction(game, cardName, bidType);
         discordGame.pushGame();
     }
 
@@ -259,91 +201,6 @@ public class RicheseCommands {
         game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
-    }
-
-    public static void runRicheseBid(DiscordGame discordGame, Game game, String bidType, boolean blackMarket) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        for (Faction faction : game.getFactions()) {
-            faction.setMaxBid(0);
-            faction.setAutoBid(false);
-            faction.setBid("");
-        }
-        if (bidType.equalsIgnoreCase("Silent")) {
-            bidding.setSilentAuction(true);
-            if (blackMarket) {
-                discordGame.queueMessage("bidding-phase",
-                        MessageFormat.format(
-                                "{0} We will now silently auction a card from {1} hand on the black market! Please use the bot to place your bid.",
-                                game.getGameRoleMention(), Emojis.RICHESE
-                        )
-                );
-            } else {
-                discordGame.queueMessage("bidding-phase",
-                        MessageFormat.format(
-                                "{0} We will now silently auction a brand new Richese {1} {2} {1}!  Please use the bot to place your bid.",
-                                game.getGameRoleMention(), Emojis.TREACHERY, bidding.getBidCard().name()
-                        )
-                );
-            }
-            List<Faction> factions = game.getFactions();
-            for (Faction faction : factions) {
-                if (faction.getHandLimit() > faction.getTreacheryHand().size()) {
-                    discordGame.getFactionChat(faction.getName()).queueMessage(
-                            MessageFormat.format(
-                                    "{0} Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.",
-                                    faction.getPlayer()
-                            )
-                    );
-                }
-            }
-            int firstBid = Math.ceilDiv(game.getStorm(), 3) % factions.size();
-            List<Faction> bidOrderFactions = new ArrayList<>();
-            bidOrderFactions.addAll(factions.subList(firstBid, factions.size()));
-            bidOrderFactions.addAll(factions.subList(0, firstBid));
-            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-            bidding.setRicheseBidOrder(game, bidOrder);
-            List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-        } else {
-            StringBuilder message = new StringBuilder();
-            if (blackMarket) {
-                message.append(
-                        MessageFormat.format("{0} You may now place your bids for a black market card from {1} hand!\n",
-                                game.getGameRoleMention(), Emojis.RICHESE
-                        )
-                );
-            } else {
-                message.append(
-                        MessageFormat.format("{0} You may now place your bids for a shiny, brand new {1} {2}!\n",
-                                game.getGameRoleMention(), Emojis.RICHESE, bidding.getBidCard().name()
-                        )
-                );
-            }
-
-            List<Faction> factions = game.getFactions();
-            List<Faction> bidOrderFactions = new ArrayList<>();
-            List<Faction> factionsInBidDirection;
-            if (bidType.equalsIgnoreCase("OnceAroundCW")) {
-                factionsInBidDirection = new ArrayList<>(factions);
-                Collections.reverse(factionsInBidDirection);
-            } else {
-                factionsInBidDirection = factions;
-            }
-
-            int richeseIndex = factionsInBidDirection.indexOf(game.getFaction("Richese"));
-            bidOrderFactions.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
-            bidOrderFactions.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
-            List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
-            bidding.setRicheseBidOrder(game, bidOrder);
-            List<String> filteredBidOrder = bidding.getEligibleBidOrder(game);
-            Faction factionBeforeFirstToBid = game.getFaction(filteredBidOrder.getLast());
-            bidding.setCurrentBidder(factionBeforeFirstToBid.getName());
-            discordGame.queueMessage("bidding-phase", message.toString());
-            bidding.createBidMessage(game, true);
-            bidding.advanceBidder(game);
-            bidding.tryBid(game, game.getFaction(bidding.getCurrentBidder()));
-        }
     }
 
     public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
