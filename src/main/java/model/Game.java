@@ -188,7 +188,7 @@ public class Game {
         this.sandtroutInPlay = false;
     }
 
-    public void startBidding() {
+    public Bidding startBidding() {
         bidding = new Bidding();
         setUpdated(UpdateType.MAP);
         try {
@@ -197,6 +197,7 @@ public class Game {
         } catch (IllegalArgumentException e) {
             // Richese not in the game
         }
+        return bidding;
     }
 
     public void endBidding() {

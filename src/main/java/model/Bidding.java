@@ -637,10 +637,6 @@ public class Bidding {
         return currentBidder;
     }
 
-    public void setCurrentBidder(String currentBidder) {
-        this.currentBidder = currentBidder;
-    }
-
     public String getNextBidder(Game game) {
         Faction currentFaction = game.getFaction(currentBidder);
         int currentIndex = getEligibleBidOrder(game).indexOf(currentFaction.getName());
@@ -674,7 +670,8 @@ public class Bidding {
             message.append(" (Silent Auction)");
         } else if (isRicheseBidding()) {
             message.append(" (Once Around)");
-        }
+        } else if (blackMarketCard)
+            message.append(" (Black Market, Normal bidding)");
         message.append("\n");
 
         for (String factionName : bidOrder) {

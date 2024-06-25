@@ -236,10 +236,6 @@ public class RunCommands {
         discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Bidding Phase:");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Bidding Phase\n");
         game.startBidding();
-        game.getFactions().forEach(faction -> {
-            faction.setBid("");
-            faction.setMaxBid(0);
-        });
         RicheseFaction richeseFaction;
         try {
             richeseFaction = (RicheseFaction) game.getFaction("Richese");
