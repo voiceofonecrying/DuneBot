@@ -7,7 +7,6 @@ import model.Territory;
 import model.TreacheryCard;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,16 +79,5 @@ public class RicheseFaction extends Faction {
 
     public List<TreacheryCard> getTreacheryCardCache() {
         return treacheryCardCache;
-    }
-
-    public void noFieldMessage(int noField, String territoryName) {
-        getLedger().publish(
-                MessageFormat.format(
-                        "{0} {1} placed on {2}",
-                        noField,
-                        Emojis.NO_FIELD,
-                        territoryName
-                )
-        );
     }
 }

@@ -51,7 +51,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("move-sector-")) filterBySector(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("move-")) queueSectorButtons(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-no-field-ship-"))
-            richeseNoFieldShip(event, game, discordGame);
+            richeseNoFieldShip(event, game, discordGame, false);
+        else if (event.getComponentId().startsWith("richese-ally-no-field-ship-"))
+            richeseNoFieldShip(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("support-")) supportAlly(event, game, discordGame);
         switch (event.getComponentId()) {
             case "shipment" -> queueShippingButtons(event, game, discordGame);
@@ -333,7 +335,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
-    
+
     private static boolean isGuildNeedsToShip(Game game) {
         return game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild");
     }
@@ -442,19 +444,20 @@ public class ShipmentAndMovementButtons implements Pressable {
         String crossShipFrom = shipment.getCrossShipFrom();
         Territory territory = game.getTerritory(territoryName);
         if (noField >= 0) {
-            String turnSummaryMessage = Emojis.RICHESE + " ship a no-field to " + territoryName;
-            RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame);
+            String turnSummaryMessage;
+            turnSummaryMessage = faction.getEmoji() + " ship a no-field to " + territoryName;
+            RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, "Richese");
             territory.setRicheseNoField(noField);
-            if (faction instanceof RicheseFaction richeseFaction) {
-                richeseFaction.noFieldMessage(noField, territoryName);
-            }
+            faction.noFieldMessage(noField, territoryName);
             int spice = game.shipmentCost(faction, 1, territory, karama);
             turnSummaryMessage += game.payForShipment(faction, spice, territory, karama, true);
             BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
+            if (!(faction instanceof RicheseFaction))
+                RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, faction.getName());
             if (game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
-            if (force + specialForce == 2 && !territory.getTerrorTokens().isEmpty()) {
+            if (force + specialForce == 2 + 1 && !territory.getTerrorTokens().isEmpty()) {
                 ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(territory, faction);
             }
         }
@@ -557,13 +560,18 @@ public class ShipmentAndMovementButtons implements Pressable {
 //        discordGame.pushGame();
     }
 
-    private static void richeseNoFieldShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void richeseNoFieldShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isAlly) throws ChannelNotFoundException {
         Faction faction = game.getFaction("Richese");
+        String componentId = "richese-no-field-ship-";
+        if (isAlly) {
+            faction = game.getFaction(faction.getAlly());
+            componentId = "richese-ally-no-field-ship-";
+        }
         int spice = game.getTerritory(faction.getShipment().getTerritoryName()).costToShipInto();
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                 .addContent(
                         "The No-Field ship is ready to depart for Arrakis!" +
-                                "\n**You are shipping your " + event.getComponentId().replace("richese-no-field-ship-", "") + " no-field token to \n" +
+                                "\n**You are shipping your " + event.getComponentId().replace(componentId, "") + " no-field token to \n" +
                                 faction.getShipment().getTerritoryName() + "\nFor " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.**"
                 ).addActionRow(
                         Button.success("execute-shipment", "Confirm Shipment"),
@@ -571,9 +579,9 @@ public class ShipmentAndMovementButtons implements Pressable {
                         Button.danger("reset-shipment", "Start Over")
                 );
 
-        if (!faction.isHighThreshold()) discordGame.queueMessage(messageCreateBuilder);
-        faction.getShipment().setNoField(Integer.parseInt(event.getComponentId().replace("richese-no-field-ship-", "")));
-        if (faction.isHighThreshold()) queueForcesButtons(event, game, discordGame, faction, true);
+        if (isAlly || !faction.isHighThreshold()) discordGame.queueMessage(messageCreateBuilder);
+        faction.getShipment().setNoField(Integer.parseInt(event.getComponentId().replace(componentId, "")));
+        if (!isAlly && faction.isHighThreshold()) queueForcesButtons(event, game, discordGame, faction, true);
         discordGame.pushGame();
     }
 
@@ -636,7 +644,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("You have no troops in reserves to ship.");
             }
 
-            if (faction instanceof RicheseFaction richese) {
+            if (faction instanceof RicheseFaction || faction.getAlly().equals("Richese")) {
+                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
                 MessageCreateBuilder noFieldButtonMessage = new MessageCreateBuilder()
                         .setContent("no-field options:");
                 TreeSet<Button> noFieldButtons = new TreeSet<>(getButtonComparator());
@@ -646,10 +655,13 @@ public class ShipmentAndMovementButtons implements Pressable {
                 noFields.add(5);
                 noFields.removeIf(integer -> Objects.equals(integer, richese.getFrontOfShieldNoField()) || integer.equals(richese.getShipment().getNoField()));
                 for (int noField : noFields) {
-                    noFieldButtons.add(Button.primary("richese-no-field-ship-" + noField, "Ship " + noField + " no-field token."));
+                    if (faction instanceof RicheseFaction)
+                        noFieldButtons.add(Button.primary("richese-no-field-ship-" + noField, "Ship " + noField + " no-field token."));
+                    else
+                        noFieldButtons.add(Button.primary("richese-ally-no-field-ship-" + noField, "Ship " + noField + " no-field token."));
                 }
                 noFieldButtonMessage.addActionRow(noFieldButtons);
-                discordGame.getRicheseChat().queueMessage(noFieldButtonMessage);
+                discordGame.getFactionChat(faction).queueMessage(noFieldButtonMessage);
             }
             List<Button> finalizeButtons = new LinkedList<>();
 

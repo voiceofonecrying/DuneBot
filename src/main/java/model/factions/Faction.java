@@ -590,6 +590,17 @@ public class Faction {
         this.movement = movement;
     }
 
+    public void noFieldMessage(int noField, String territoryName) {
+        getLedger().publish(
+                MessageFormat.format(
+                        "{0} {1} placed on {2}",
+                        noField,
+                        Emojis.NO_FIELD,
+                        territoryName
+                )
+        );
+    }
+
     public int getAllySpiceShipment() {
         return allySpiceShipment;
     }
