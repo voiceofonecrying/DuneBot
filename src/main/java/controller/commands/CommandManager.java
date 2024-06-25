@@ -212,7 +212,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    private static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
+    public static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("bg-flip-" + territoryName, "Flip"));
         buttons.add(Button.secondary("bg-dont-flip-" + territoryName, "Don't Flip"));
@@ -264,9 +264,8 @@ public class CommandManager extends ListenerAdapter {
                     && game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
-            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
+            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
                 bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
-            }
             if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
                 BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
         }

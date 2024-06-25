@@ -179,7 +179,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (movingNoField) {
             to.setRicheseNoField(from.getRicheseNoField());
             from.setRicheseNoField(null);
-            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " move their No-Field token to " + to.getTerritoryName());
+            discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
+            if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
+                CommandManager.bgFlipMessageAndButtons(discordGame, game, to.getTerritoryName());
         }
         if (force != 0 || specialForce != 0)
             CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
@@ -445,13 +447,16 @@ public class ShipmentAndMovementButtons implements Pressable {
         Territory territory = game.getTerritory(territoryName);
         if (noField >= 0) {
             String turnSummaryMessage;
-            turnSummaryMessage = faction.getEmoji() + " ship a no-field to " + territoryName;
+            turnSummaryMessage = faction.getEmoji() + " ship a " + Emojis.NO_FIELD + " to " + territoryName;
             RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, "Richese");
             territory.setRicheseNoField(noField);
             faction.noFieldMessage(noField, territoryName);
             int spice = game.shipmentCost(faction, 1, territory, karama);
             turnSummaryMessage += game.payForShipment(faction, spice, territory, karama, true);
-            BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
+            if (game.hasFaction("BG") && territory.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
+                CommandManager.bgFlipMessageAndButtons(discordGame, game, territory.getTerritoryName());
+            if (crossShipFrom.isEmpty())
+                BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (!(faction instanceof RicheseFaction))
                 RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, faction.getName());
