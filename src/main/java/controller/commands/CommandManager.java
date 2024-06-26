@@ -232,9 +232,9 @@ public class CommandManager extends ListenerAdapter {
         TurnSummary turnSummary = discordGame.getTurnSummary();
 
         if (amountValue > 0)
-            placeForceInTerritory(discordGame, game, targetTerritory, targetFaction, amountValue, false);
+            targetTerritory.placeForceFromReserves(game, targetFaction, amountValue, false);
         if (starredAmountValue > 0)
-            placeForceInTerritory(discordGame, game, targetTerritory, targetFaction, starredAmountValue, true);
+            targetTerritory.placeForceFromReserves(game, targetFaction, starredAmountValue, true);
 
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
@@ -288,42 +288,6 @@ public class CommandManager extends ListenerAdapter {
                 }
             }
         }
-    }
-
-    /**
-     * Places a force from the reserves into a territory.
-     * Reports removal from reserves to ledger.
-     * Switches homeworld to low threshold if applicable.
-     *
-     * @param discordGame The DiscordGame instance.
-     * @param game      The Game instance.
-     * @param territory The territory to place the force in.
-     * @param faction   The faction that owns the force.
-     * @param amount    The number of forces to place.
-     * @param special   Whether the force is a special reserve.
-     */
-    public static void placeForceInTerritory(DiscordGame discordGame, Game game, Territory territory, Faction faction, int amount, boolean special) throws ChannelNotFoundException {
-        String forceName;
-
-        if (special) {
-            // Are Sardaukar being reported to ledger?
-            faction.removeSpecialReserves(amount);
-            forceName = faction.getName() + "*";
-        } else {
-            faction.removeReserves(amount);
-            forceName = faction.getName();
-            if (faction instanceof BGFaction && territory.hasForce("Advisor")) {
-                // Also need to report Advisors to ledger
-                int advisors = territory.getForceStrength("Advisor");
-                territory.addForces("BG", advisors);
-                territory.removeForce("Advisor");
-            }
-        }
-        discordGame.getFactionLedger(faction).queueMessage(
-                MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
-        territory.addForces(forceName, amount);
-        faction.checkForLowThreshold();
-        game.setUpdated(UpdateType.MAP);
     }
 
     public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {

@@ -195,8 +195,10 @@ public class RunCommands {
                                 t.getSector() == game.getStorm() &&
                                         !t.isRock()
                         ).toList();
-                if (territoriesInStorm.stream().anyMatch(Territory::hasRicheseNoField))
-                    RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, "Richese");
+                if (territoriesInStorm.stream().anyMatch(Territory::hasRicheseNoField)) {
+                    RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                    richese.revealNoField(game);
+                }
 
                 List<Territory> territoriesWithTroops = territoriesInStorm.stream()
                         .filter(t -> t.countFactions() > 0).toList();

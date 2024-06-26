@@ -79,22 +79,6 @@ public class RicheseCommands {
         }
     }
 
-    public static void moveNoFieldFromBoardToFrontOfShield(Game game, DiscordGame discordGame, String factionName) throws ChannelNotFoundException {
-        int noField = -1;
-        for (Territory territory : game.getTerritories().values()) {
-            noField = territory.getRicheseNoField() == null ? noField : territory.getRicheseNoField();
-            if (territory.getRicheseNoField() != null) {
-                CommandManager.placeForceInTerritory(discordGame, game, territory, game.getFaction(factionName), noField, false);
-                discordGame.getTurnSummary().queueMessage("The no-field in " + territory.getTerritoryName() + " has opened with " + noField + " " + Emojis.getForceEmoji(factionName) + "!");
-            }
-            territory.setRicheseNoField(null);
-        }
-        if (noField != -1) {
-            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-            richese.setFrontOfShieldNoField(noField);
-        }
-    }
-
     public static void cardBid(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
         game.getBidding().richeseCardAuction(game, cardName, bidType);
         discordGame.pushGame();

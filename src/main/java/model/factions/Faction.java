@@ -320,6 +320,18 @@ public class Faction {
         return false;
     }
 
+    public String forcesString(int numForces, int numSpecialForces) {
+        String forcesString = "";
+        if (numForces > 0)
+            forcesString += numForces + " " + Emojis.getForceEmoji(name) + " ";
+        if (numSpecialForces > 0)
+            forcesString += numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+        forcesString = forcesString.trim();
+        if (forcesString.isEmpty())
+            forcesString = "no " + emoji + " forces";
+        return forcesString;
+    }
+
     public void addReserves(int amount) {
         Territory territory = game.getTerritory(homeworld);
         territory.addForces(name, amount);

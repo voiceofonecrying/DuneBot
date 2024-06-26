@@ -4,7 +4,6 @@ import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.BGCommands;
 import controller.commands.CommandManager;
-import controller.commands.RicheseCommands;
 import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
@@ -446,9 +445,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         String crossShipFrom = shipment.getCrossShipFrom();
         Territory territory = game.getTerritory(territoryName);
         if (noField >= 0) {
+            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
             String turnSummaryMessage;
             turnSummaryMessage = faction.getEmoji() + " ship a " + Emojis.NO_FIELD + " to " + territoryName;
-            RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, "Richese");
+            richese.revealNoField(game);
             territory.setRicheseNoField(noField);
             faction.noFieldMessage(noField, territoryName);
             int spice = game.shipmentCost(faction, 1, territory, karama);
@@ -459,7 +459,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
             discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
             if (!(faction instanceof RicheseFaction))
-                RicheseCommands.moveNoFieldFromBoardToFrontOfShield(game, discordGame, faction.getName());
+                richese.revealNoField(game, faction);
             if (game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
             if (force + specialForce == 2 + 1 && !territory.getTerrorTokens().isEmpty()) {

@@ -67,7 +67,7 @@ public class BGCommands {
             discordGame.getFactionChat(bg).queueMessage("You are at Low Threshold and cannot send 2 " + Emojis.BG_ADVISOR);
             amount = 1;
         }
-        CommandManager.placeForceInTerritory(discordGame, game, territory, bg, amount, false);
+        territory.placeForceFromReserves(game, bg, amount, false);
         int fighters = territory.getForceStrength("BG");
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.addForces("Advisor", fighters);

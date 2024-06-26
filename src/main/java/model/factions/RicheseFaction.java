@@ -64,6 +64,42 @@ public class RicheseFaction extends Faction {
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
+    public void revealNoField(Game game, Faction factionShippedWithNoField) {
+        Territory territory = game.getTerritories().values().stream()
+                .filter(Territory::hasRicheseNoField)
+                .findFirst().orElse(null);
+        if (territory != null) {
+            int noField = territory.getRicheseNoField();
+            int numReserves = factionShippedWithNoField.getReservesStrength();
+            int specialStrength = factionShippedWithNoField.getSpecialReservesStrength();
+
+            int numForces = Math.min(noField, numReserves);
+            if (numForces > 0)
+                territory.placeForceFromReserves(game, factionShippedWithNoField, numForces, false);
+
+            int numSpecialForces = 0;
+            int noFieldStrengthRemaining = noField - numForces;
+            if (noFieldStrengthRemaining > 0 && specialStrength > 0) {
+                numSpecialForces = Math.min(noFieldStrengthRemaining, specialStrength);
+                territory.placeForceFromReserves(game, factionShippedWithNoField, numSpecialForces, true);
+            }
+
+            String forcesString = factionShippedWithNoField.forcesString(numForces, numSpecialForces);
+            String message = "The " + noField + " " + Emojis.NO_FIELD + " in " + territory.getTerritoryName() + " reveals " + forcesString;
+            int starReplacements = Math.min(numForces, factionShippedWithNoField.getSpecialReservesStrength());
+            if (starReplacements > 0)
+                message += "\n" + factionShippedWithNoField.getEmoji() + " may replace up to " + starReplacements + " " + Emojis.getForceEmoji(factionShippedWithNoField.getName()) + " with " + Emojis.getForceEmoji(factionShippedWithNoField.getName() + "*");
+
+            game.getTurnSummary().publish(message);
+            territory.setRicheseNoField(null);
+            setFrontOfShieldNoField(noField);
+        }
+    }
+
+    public void revealNoField(Game game) {
+        revealNoField(game, this);
+    }
+
     public TreacheryCard getTreacheryCardFromCache(String name) {
         return treacheryCardCache.stream()
                 .filter(t -> t.name().equals(name))
