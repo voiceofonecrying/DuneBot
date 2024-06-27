@@ -23,6 +23,95 @@ class BiddingTest {
     }
 
     @Nested
+    @DisplayName("#declaration")
+    public class Declaration {
+        Game game;
+        Bidding bidding;
+        TestTopic biddingPhase;
+        TestTopic turnSummary;
+        TestTopic modInfo;
+        AtreidesFaction atreides;
+        BGFaction bg;
+        EmperorFaction emperor;
+        FremenFaction fremen;
+        GuildFaction guild;
+        HarkonnenFaction harkonnen;
+        RicheseFaction richese;
+        IxFaction ix;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            game = new Game();
+            modInfo = new TestTopic();
+            game.setModInfo(modInfo);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            biddingPhase = new TestTopic();
+            game.setBiddingPhase(biddingPhase);
+
+            atreides = new AtreidesFaction("p", "u", game);
+            bg = new BGFaction("p", "u", game);
+            emperor = new EmperorFaction("p", "u", game);
+            fremen = new FremenFaction("p", "u", game);
+            guild = new GuildFaction("p", "u", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+        }
+
+        @Test
+        public void testOriginalSixFactions() throws InvalidGameStateException, IOException {
+            harkonnen = new HarkonnenFaction("p", "u", game);
+            game.addFaction(harkonnen);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(6, bidding.getMarket().size());
+            assertEquals(1, modInfo.getMessages().size());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertFalse(bidding.isRicheseCacheCardOutstanding());
+        }
+
+        @Test
+        public void testIxInGame() throws InvalidGameStateException, IOException {
+            ix = new IxFaction("p", "u", game);
+            game.addFaction(ix);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(7, bidding.getMarket().size());
+            assertEquals("If anyone wants to Karama " + Emojis.IX + " bidding advantage, that must be done now.",
+                    modInfo.getMessages().getFirst());
+            assertFalse(bidding.isMarketShownToIx());
+            assertFalse(bidding.isRicheseCacheCardOutstanding());
+
+            int deckSize = game.getTreacheryDeck().size();
+            bidding.blockIxBiddingAdvantage(game);
+            assertEquals(6, bidding.getMarket().size());
+            assertTrue(bidding.isMarketShownToIx());
+            assertEquals(deckSize + 1, game.getTreacheryDeck().size());
+            assertEquals(Emojis.IX + " have been blocked from using their bidding advantage.\n6 cards will be pulled from the " + Emojis.TREACHERY + " deck for bidding.",
+                    turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testRicheseInGame() throws InvalidGameStateException, IOException {
+            richese = new RicheseFaction("p", "u", game);
+            richese.setChat(new TestTopic());
+            game.addFaction(richese);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            assertEquals(5, bidding.getMarket().size());
+            assertEquals(1, modInfo.getMessages().size());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertTrue(bidding.isRicheseCacheCardOutstanding());
+        }
+    }
+
+    @Nested
     @DisplayName("#topBidderIdentified")
     public class TopBidderIdentified {
         Game game;
@@ -1109,6 +1198,8 @@ class BiddingTest {
     @Test
     void testPutBackIxCard() throws IOException, InvalidGameStateException {
         Game game = new Game();
+        TestTopic turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
         game.addFaction(new AtreidesFaction("fakePlayer1", "userName1", game));
         game.addFaction(new BGFaction("fakePlayer2", "userName2", game));
         game.addFaction(new EmperorFaction("fp3", "un3", game));
@@ -1124,6 +1215,8 @@ class BiddingTest {
         bidding.putBackIxCard(game, card.name(), "Top");
         assertTrue(bidding.isMarketShownToIx());
         assertFalse(bidding.isIxRejectOutstanding());
+        assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
+                turnSummary.getMessages().getLast());
     }
 
     @Test
@@ -1135,6 +1228,7 @@ class BiddingTest {
         game.addFaction(new FremenFaction("fp4", "un4", game));
         game.addFaction(new GuildFaction("fp5", "un5", game));
         game.addFaction(new IxFaction("fp6", "un6", game));
+        game.setTurnSummary(new TestTopic());
         bidding = game.startBidding();
         bidding.populateMarket(game);
         assertFalse(bidding.isMarketShownToIx());

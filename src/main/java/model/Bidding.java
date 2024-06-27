@@ -112,6 +112,7 @@ public class Bidding {
                             Emojis.IX
                     )
             );
+            game.getModInfo().publish("If anyone wants to Karama " + Emojis.IX + " bidding advantage, that must be done now.");
         }
         game.getTurnSummary().publish(message.toString());
         if (numCardsForBid == 0) {
@@ -438,9 +439,10 @@ public class Bidding {
         }
         Collections.shuffle(market);
         ixRejectOutstanding = false;
+        game.getTurnSummary().publish(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
     }
 
-    public TreacheryCard ixTechnology(Game game, String cardName) throws InvalidGameStateException {
+    public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
         Faction faction = game.getFaction("Ix");
         if (ixTechnologyUsed) {
             throw new InvalidGameStateException("Ix has already used technology this turn.");
@@ -457,10 +459,19 @@ public class Bidding {
         market.addFirst(cardFromIx);
         ixTechnologyUsed = true;
         ixTechnologyCardNumber = bidCardNumber + 1;
-        return newCard;
+        faction.getLedger().publish(
+                MessageFormat.format("Received {0} and put {1} back as the next card for bid.",
+                        newCard.name(), cardName)
+        );
+        game.getTurnSummary().publish(MessageFormat.format(
+                "{0} used technology to swap a card from their hand for R{1}:C{2}.",
+                Emojis.IX, game.getTurn(), game.getBidding().getBidCardNumber() + 1
+        ));
+        faction.getChat().publish("You took " + newCard.name() + " instead of " + cardName);
     }
 
-    public TreacheryCard ixAllyCardSwap(Game game) throws InvalidGameStateException {
+    public void ixAllyCardSwap(Game game) throws InvalidGameStateException {
+        TreacheryCard cardToDiscard = previousCard;
         Faction faction = game.getFaction("Ix");
         String allyName = faction.getAlly();
         if (allyName == null) {
@@ -486,14 +497,26 @@ public class Bidding {
         }
         TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
         TreacheryCard newCard = treacheryDeck.pollLast();
+        if (newCard == null)
+            throw new InvalidGameStateException("There is no card in the treachery deck to swap for.");
         ally.addTreacheryCard(newCard);
         game.getTreacheryDiscard().add(cardToSwap);
         ixAllySwapped = true;
-        return newCard;
-    }
-
-    public boolean isTreacheryDeckReshuffled() {
-        return treacheryDeckReshuffled;
+        ally.getLedger().publish(
+                MessageFormat.format("Received {0} from the {1} deck and discarded {2} with {3} ally power.",
+                        newCard.name(), Emojis.TREACHERY, cardToDiscard.name(), Emojis.IX)
+        );
+        DuneTopic turnSummary = game.getTurnSummary();
+        turnSummary.publish(MessageFormat.format(
+                "{0} as {1} ally discarded {2}and took the {3} deck top card.",
+                ally.getEmoji(), Emojis.IX, cardToDiscard.name(), Emojis.TREACHERY
+        ));
+        if (treacheryDeckReshuffled) {
+            turnSummary.publish(MessageFormat.format(
+                    "There were no cards left in the {0} deck. The {0} deck has been replenished from the discard pile.",
+                    Emojis.TREACHERY
+            ));
+        }
     }
 
     public TreacheryCard getBidCard() {
@@ -627,6 +650,12 @@ public class Bidding {
         if (card == null)
             throw new InvalidGameStateException("There are no cards in the bidding market.");
         game.getTreacheryDeck().add(card);
+        game.getTurnSummary().publish(
+                MessageFormat.format(
+                        "{0} have been blocked from using their bidding advantage.\n{1} cards will be pulled from the {2} deck for bidding.",
+                        Emojis.IX, market.size(), Emojis.TREACHERY
+                )
+        );
     }
 
     public boolean isIxRejectOutstanding() {
@@ -649,10 +678,6 @@ public class Bidding {
     public String advanceBidder(Game game) {
         currentBidder = getNextBidder(game);
         return currentBidder;
-    }
-
-    public TreacheryCard getPreviousCard() {
-        return previousCard;
     }
 
     public boolean createBidMessage(Game game, boolean tag) {
