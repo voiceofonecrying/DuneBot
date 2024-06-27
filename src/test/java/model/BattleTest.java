@@ -96,6 +96,32 @@ class BattleTest {
     }
 
     @Test
+    void testJuiceOfSaphoAdded() throws InvalidGameStateException {
+        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
+        richese.addTreacheryCard(cheapHero);
+        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
+        richese.addTreacheryCard(chaumas);
+        Leader alia = new Leader("Alia", 5, null, false);
+        bg.addLeader(alia);
+        Force richeseForces = new Force("Richese", 3);
+        Force bgForces = new Force("BG", 1);
+        bg.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+        assertEquals(Emojis.RICHESE, battle.getWinnerEmojis(game));
+        assertEquals("0", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(0, turnSummary.getMessages().size());
+        battle.juiceOfSaphoAdd(game, bg);
+        assertEquals(Emojis.BG, battle.getWinnerEmojis(game));
+        assertEquals("0", richesePlan.getTotalStrengthString());
+        assertEquals("0", bgPlan.getTotalStrengthString());
+        assertEquals(1, turnSummary.getMessages().size());
+    }
+
+    @Test
     void testPortableSnooperAdded() throws InvalidGameStateException {
         TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
         richese.addTreacheryCard(cheapHero);
