@@ -54,6 +54,7 @@ class BattleTest {
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
         fremen.setChat(new TestTopic());
+        richese.setLedger(new TestTopic());
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
@@ -65,29 +66,33 @@ class BattleTest {
     }
 
     @Test
-    void testJuiceOfSaphoAdded() throws InvalidGameStateException {
+    void testNoFieldInBattlePlanFewerForcesInReserves() {
         TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
         richese.addTreacheryCard(cheapHero);
         TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
         richese.addTreacheryCard(chaumas);
         Leader alia = new Leader("Alia", 5, null, false);
         bg.addLeader(alia);
-        Force richeseForces = new Force("Richese", 3);
+        Force noFieldForces = new Force("NoField", 3);
+        Territory richeseHomeworld = game.getTerritory("Richese");
+        assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+            garaKulon.placeForceFromReserves(game, richese, 5, false);
+        Force richeseForces = new Force("Richese", 5);
+        assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
+        richeseHomeworld.removeForces("Richese", 13);
+        assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
         Force bgForces = new Force("BG", 1);
         bg.setChat(new TestTopic());
         richese.setChat(new TestTopic());
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
-        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
-        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
-        assertEquals(Emojis.RICHESE, battle.getWinnerEmojis(game));
-        assertEquals("0", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(0, turnSummary.getMessages().size());
-        battle.juiceOfSaphoAdd(game, bg);
-        assertEquals(Emojis.BG, battle.getWinnerEmojis(game));
-        assertEquals("0", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(1, turnSummary.getMessages().size());
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, noFieldForces, bgForces), null);
+        richese.setSpice(8);
+        try {
+            battle.setBattlePlan(game, richese, null, cheapHero, false, 8, false, 8, chaumas, null);
+            fail("Expected InvalidGameStateException was not thrown.");
+        } catch (Exception e) {
+            assertEquals(Emojis.RICHESE + " has only 2 " + Emojis.RICHESE_TROOP + " in reserves to replace the 3 " + Emojis.NO_FIELD, e.getMessage());
+        }
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, null, cheapHero, false, 7, false, 7, chaumas, null));
     }
 
     @Test
@@ -251,6 +256,28 @@ class BattleTest {
             assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 3, false, 3));
             assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(game, richese, 3, true, 3));
         }
+
+        @Test
+        void testNoFieldForcesFewerReserves() throws IOException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory richeseHomeworld = game.getTerritory("Richese");
+            assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+            richeseHomeworld.removeForces("Richese", 18);
+            assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            try {
+                battle.getForcesDialed(game, richese, 3, false, 3);
+                fail("Expected InvalidGameStateException was not thrown.");
+            } catch (Exception e) {
+                assertEquals(Emojis.RICHESE + " has only 2 " + Emojis.RICHESE_TROOP + " in reserves to replace the 3 " + Emojis.NO_FIELD, e.getMessage());
+            }
+            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 2, false, 2));
+        }
     }
 
     @Nested
@@ -279,6 +306,29 @@ class BattleTest {
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
             Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 3, false, 3);
             assertEquals(3, richeseForces.regularForcesDialed);
+        }
+
+        @Test
+        void testNoFieldForcesFewerReserves() throws IOException, InvalidGameStateException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory richeseHomeworld = game.getTerritory("Richese");
+            assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+            richeseHomeworld.removeForces("Richese", 18);
+            assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            try {
+                battle.getForcesDialed(game, richese, 3, false, 3);
+                fail("Expected InvalidGameStateException was not thrown.");
+            } catch (Exception e) {
+                assertEquals(Emojis.RICHESE + " has only 2 " + Emojis.RICHESE_TROOP + " in reserves to replace the 3 " + Emojis.NO_FIELD, e.getMessage());
+            }
+            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 2, false, 2);
+            assertEquals(2, richeseForces.regularForcesDialed);
         }
     }
 

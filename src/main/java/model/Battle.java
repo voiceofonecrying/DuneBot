@@ -236,8 +236,14 @@ public class Battle {
         boolean specialsNegated = isFremen && fedaykinNegated || isEmperor && sardaukarNegated || isIx && cyborgsNegated;
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        if (faction instanceof RicheseFaction)
-            regularStrength += forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
+        int noFieldNotUsed = 0;
+        int numReserves = faction.getReservesStrength();
+        int noFieldValue = forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
+        if (faction instanceof RicheseFaction) {
+            if (noFieldValue > numReserves)
+                noFieldNotUsed = noFieldValue - numReserves;
+            regularStrength += Math.min(noFieldValue, numReserves);
+        }
         int spiceUsed = 0;
         int dialUsed = 0;
         int specialStrengthUsed = 0;
@@ -283,8 +289,12 @@ public class Battle {
                 regularStrengthUsed += troopsNeeded;
             }
         }
-        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength)
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
+        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength) {
+            if (noFieldNotUsed > 0)
+                throw new InvalidGameStateException(faction.getEmoji() + " has only " + numReserves + " " + Emojis.RICHESE_TROOP + " in reserves to replace the " + noFieldValue + " " + Emojis.NO_FIELD);
+            else
+                throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
+        }
         while (faction instanceof EmperorFaction && spiceUsed < spice && specialStrengthUsed > 0 && regularStrength - regularStrengthUsed >= 2) {
             specialStrengthUsed--;
             regularStrengthUsed += 2;
