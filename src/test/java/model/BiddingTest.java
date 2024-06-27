@@ -15,45 +15,64 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BiddingTest {
+    private Game game;
     private Bidding bidding;
+    private TestTopic biddingPhase;
+    private TestTopic turnSummary;
+    private TestTopic modInfo;
+
+    private AtreidesFaction atreides;
+    private BGFaction bg;
+    private EmperorFaction emperor;
+    private FremenFaction fremen;
+    private GuildFaction guild;
+    private HarkonnenFaction harkonnen;
+    private IxFaction ix;
+    private RicheseFaction richese;
 
     @BeforeEach
-    void setUp() {
-        bidding = new Bidding();
+    void setUp() throws IOException {
+        game = new Game();
+        modInfo = new TestTopic();
+        game.setModInfo(modInfo);
+        turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
+        biddingPhase = new TestTopic();
+        game.setBiddingPhase(biddingPhase);
+
+        atreides = new AtreidesFaction("p", "u", game);
+        bg = new BGFaction("p", "u", game);
+        emperor = new EmperorFaction("p", "u", game);
+        fremen = new FremenFaction("p", "u", game);
+        guild = new GuildFaction("p", "u", game);
+        harkonnen = new HarkonnenFaction("p", "u", game);
+        ix = new IxFaction("p", "u", game);
+        richese = new RicheseFaction("p", "u", game);
+
+        atreides.setChat(new TestTopic());
+        bg.setChat(new TestTopic());
+        emperor.setChat(new TestTopic());
+        fremen.setChat(new TestTopic());
+        guild.setChat(new TestTopic());
+        harkonnen.setChat(new TestTopic());
+        ix.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
+
+        atreides.setLedger(new TestTopic());
+        bg.setLedger(new TestTopic());
+        emperor.setLedger(new TestTopic());
+        fremen.setLedger(new TestTopic());
+        guild.setLedger(new TestTopic());
+        harkonnen.setLedger(new TestTopic());
+        ix.setLedger(new TestTopic());
+        richese.setLedger(new TestTopic());
     }
 
     @Nested
     @DisplayName("#declaration")
     public class Declaration {
-        Game game;
-        Bidding bidding;
-        TestTopic biddingPhase;
-        TestTopic turnSummary;
-        TestTopic modInfo;
-        AtreidesFaction atreides;
-        BGFaction bg;
-        EmperorFaction emperor;
-        FremenFaction fremen;
-        GuildFaction guild;
-        HarkonnenFaction harkonnen;
-        RicheseFaction richese;
-        IxFaction ix;
-
         @BeforeEach
         public void setUp() throws IOException {
-            game = new Game();
-            modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            biddingPhase = new TestTopic();
-            game.setBiddingPhase(biddingPhase);
-
-            atreides = new AtreidesFaction("p", "u", game);
-            bg = new BGFaction("p", "u", game);
-            emperor = new EmperorFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
-            guild = new GuildFaction("p", "u", game);
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -62,8 +81,7 @@ class BiddingTest {
         }
 
         @Test
-        public void testOriginalSixFactions() throws InvalidGameStateException, IOException {
-            harkonnen = new HarkonnenFaction("p", "u", game);
+        public void testOriginalSixFactions() throws InvalidGameStateException {
             game.addFaction(harkonnen);
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
@@ -75,8 +93,7 @@ class BiddingTest {
         }
 
         @Test
-        public void testIxInGame() throws InvalidGameStateException, IOException {
-            ix = new IxFaction("p", "u", game);
+        public void testIxInGame() throws InvalidGameStateException {
             game.addFaction(ix);
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
@@ -97,9 +114,7 @@ class BiddingTest {
         }
 
         @Test
-        public void testRicheseInGame() throws InvalidGameStateException, IOException {
-            richese = new RicheseFaction("p", "u", game);
-            richese.setChat(new TestTopic());
+        public void testRicheseInGame() throws InvalidGameStateException {
             game.addFaction(richese);
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
@@ -114,46 +129,16 @@ class BiddingTest {
     @Nested
     @DisplayName("#topBidderIdentified")
     public class TopBidderIdentified {
-        Game game;
-        TestTopic biddingPhase;
-        TestTopic turnSummary;
-        AtreidesFaction atreides;
-        BGFaction bg;
-        EmperorFaction emperor;
-        FremenFaction fremen;
-        HarkonnenFaction harkonnen;
-        RicheseFaction richese;
         int numMessagesInBiddingPhaseChannel;
 
         @BeforeEach
         public void setUp() throws IOException, InvalidGameStateException {
-            game = new Game();
-            game.setModInfo(new TestTopic());
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            biddingPhase = new TestTopic();
-            game.setBiddingPhase(biddingPhase);
-
-            atreides = new AtreidesFaction("p", "u", game);
-            bg = new BGFaction("p", "u", game);
-            emperor = new EmperorFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
-            harkonnen = new HarkonnenFaction("p", "u", game);
-            richese = new RicheseFaction("p", "u", game);
-            atreides.setChat(new TestTopic());
-            bg.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            fremen.setChat(new TestTopic());
-            harkonnen.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(harkonnen);
             game.addFaction(richese);
-            atreides.setLedger(new TestTopic());
-            richese.setLedger(new TestTopic());
 
             bidding = game.startBidding();
             assertTrue(bidding.isRicheseCacheCardOutstanding());
@@ -232,8 +217,6 @@ class BiddingTest {
                 fremen.setHandLimit(0);
                 harkonnen.setHandLimit(0);
                 richese.setHandLimit(0);
-                atreides.setLedger(new TestTopic());
-                emperor.setLedger(new TestTopic());
                 bidding.awardTopBidder(game);
                 assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
@@ -250,22 +233,17 @@ class BiddingTest {
 
             @Test
             void testAllHandsFilledWithCardsRemainingRicheseCardRemaining() throws InvalidGameStateException {
-                atreides.setLedger(new TestTopic());
-                emperor.setLedger(new TestTopic());
                 bidding.awardTopBidder(game);
                 atreides.setHandLimit(1);
-                bg.setLedger(new TestTopic());
                 bidding.bidding(game);
                 bidding.assignAndPayForCard(game, "BG", "Emperor", 0);
                 bg.setHandLimit(1);
                 bidding.bidding(game);
                 bidding.assignAndPayForCard(game, "Emperor", "Bank", 0);
                 emperor.setHandLimit(1);
-                fremen.setLedger(new TestTopic());
                 bidding.bidding(game);
                 bidding.assignAndPayForCard(game, "Fremen", "Emperor", 0);
                 fremen.setHandLimit(1);
-                harkonnen.setLedger(new TestTopic());
                 bidding.bidding(game);
                 bidding.assignAndPayForCard(game, "Harkonnen", "Emperor", 0);
                 harkonnen.setHandLimit(2);
@@ -1009,45 +987,14 @@ class BiddingTest {
     @Nested
     @DisplayName("#autoPassEntireTurnPerformsPass")
     public class AutoPassEntireTurnPerformsPass {
-        Game game;
-        TestTopic biddingPhase;
-        TestTopic turnSummary;
-        AtreidesFaction atreides;
-        BGFaction bg;
-        EmperorFaction emperor;
-        FremenFaction fremen;
-        HarkonnenFaction harkonnen;
-        RicheseFaction richese;
-
         @BeforeEach
         public void setUp() throws IOException, InvalidGameStateException {
-            game = new Game();
-            game.setModInfo(new TestTopic());
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            biddingPhase = new TestTopic();
-            game.setBiddingPhase(biddingPhase);
-
-            atreides = new AtreidesFaction("p", "u", game);
-            bg = new BGFaction("p", "u", game);
-            emperor = new EmperorFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
-            harkonnen = new HarkonnenFaction("p", "u", game);
-            richese = new RicheseFaction("p", "u", game);
-            atreides.setChat(new TestTopic());
-            bg.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            fremen.setChat(new TestTopic());
-            harkonnen.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(harkonnen);
             game.addFaction(richese);
-            atreides.setLedger(new TestTopic());
-            richese.setLedger(new TestTopic());
 
             bidding = game.startBidding();
             assertTrue(bidding.isRicheseCacheCardOutstanding());
@@ -1099,48 +1046,17 @@ class BiddingTest {
     @Nested
     @DisplayName("#autoPassEntireTurnClearsOnNextTurn")
     public class AutoPassEntireTurnClearsOnNextTurn {
-        Game game;
-        TestTopic biddingPhase;
-        TestTopic turnSummary;
-        AtreidesFaction atreides;
-        BGFaction bg;
-        EmperorFaction emperor;
-        FremenFaction fremen;
-        HarkonnenFaction harkonnen;
-        RicheseFaction richese;
-
         @BeforeEach
         public void setUp() throws IOException, InvalidGameStateException {
-            game = new Game();
-            game.setModInfo(new TestTopic());
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            biddingPhase = new TestTopic();
-            game.setBiddingPhase(biddingPhase);
-
-            atreides = new AtreidesFaction("p", "u", game);
-            bg = new BGFaction("p", "u", game);
-            emperor = new EmperorFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
-            harkonnen = new HarkonnenFaction("p", "u", game);
-            richese = new RicheseFaction("p", "u", game);
-            atreides.setChat(new TestTopic());
-            bg.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            fremen.setChat(new TestTopic());
-            harkonnen.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(harkonnen);
             game.addFaction(richese);
-            atreides.setLedger(new TestTopic());
-            richese.setLedger(new TestTopic());
 
-            bidding.setAutoPassEntireTurn(game, atreides, true);
             bidding = game.startBidding();
+            bidding.setAutoPassEntireTurn(game, atreides, true);
             assertTrue(bidding.isRicheseCacheCardOutstanding());
 
             assertNull(bidding.getBidCard());
@@ -1188,6 +1104,7 @@ class BiddingTest {
 
     @Test
     void testSetMarketShownToIx() {
+        bidding = game.startBidding();
         assertFalse(bidding.isMarketShownToIx());
         assertFalse(bidding.isIxRejectOutstanding());
         bidding.setMarketShownToIx(true);
@@ -1196,16 +1113,13 @@ class BiddingTest {
     }
 
     @Test
-    void testPutBackIxCard() throws IOException, InvalidGameStateException {
-        Game game = new Game();
-        TestTopic turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        game.addFaction(new AtreidesFaction("fakePlayer1", "userName1", game));
-        game.addFaction(new BGFaction("fakePlayer2", "userName2", game));
-        game.addFaction(new EmperorFaction("fp3", "un3", game));
-        game.addFaction(new FremenFaction("fp4", "un4", game));
-        game.addFaction(new GuildFaction("fp5", "un5", game));
-        game.addFaction(new IxFaction("fp6", "un6", game));
+    void testPutBackIxCard() throws InvalidGameStateException {
+        game.addFaction(atreides);
+        game.addFaction(bg);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(guild);
+        game.addFaction(ix);
         bidding = game.startBidding();
         bidding.populateMarket(game);
         TreacheryCard card = bidding.getMarket().getFirst();
@@ -1220,15 +1134,13 @@ class BiddingTest {
     }
 
     @Test
-    void testKaramaIxBiddingAdvantage() throws IOException, InvalidGameStateException {
-        Game game = new Game();
-        game.addFaction(new AtreidesFaction("fakePlayer1", "userName1", game));
-        game.addFaction(new BGFaction("fakePlayer2", "userName2", game));
-        game.addFaction(new EmperorFaction("fp3", "un3", game));
-        game.addFaction(new FremenFaction("fp4", "un4", game));
-        game.addFaction(new GuildFaction("fp5", "un5", game));
-        game.addFaction(new IxFaction("fp6", "un6", game));
-        game.setTurnSummary(new TestTopic());
+    void testKaramaIxBiddingAdvantage() throws InvalidGameStateException {
+        game.addFaction(atreides);
+        game.addFaction(bg);
+        game.addFaction(emperor);
+        game.addFaction(fremen);
+        game.addFaction(guild);
+        game.addFaction(ix);
         bidding = game.startBidding();
         bidding.populateMarket(game);
         assertFalse(bidding.isMarketShownToIx());
@@ -1243,6 +1155,11 @@ class BiddingTest {
     @Nested
     @DisplayName("silentAuction")
     class SilentAuction {
+        @BeforeEach
+        void setUp() {
+            bidding = game.startBidding();
+        }
+
         @Test
         void notSilentToStart() {
             assertFalse(bidding.isSilentAuction());
@@ -1260,17 +1177,15 @@ class BiddingTest {
     @Nested
     @DisplayName("updateBidOrder")
     class UpdateBidOrder {
-        Game game;
-
         @BeforeEach
         void setUp() throws IOException {
-            game = new Game();
-            game.addFaction(new AtreidesFaction("fakePlayer1", "userName1", game));
-            game.addFaction(new BGFaction("fakePlayer2", "userName2", game));
-            game.addFaction(new EmperorFaction("fp3", "un3", game));
-            game.addFaction(new FremenFaction("fp4", "un4", game));
-            game.addFaction(new GuildFaction("fp5", "un5", game));
-            game.addFaction(new HarkonnenFaction("fp6", "un6", game));
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            bidding = game.startBidding();
         }
 
         @Test

@@ -102,16 +102,7 @@ public class RicheseCommands {
     }
 
     public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Bidding bidding = game.getBidding();
-        if (bidding.getBidCard() == null) {
-            throw new InvalidGameStateException("There is no card up for bid.");
-        } else if (!bidding.isRicheseCacheCard()) {
-            throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
-        }
-        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                "{0} {1} has been removed from the game.",
-                Emojis.RICHESE, bidding.getBidCard().name()));
-        bidding.clearBidCardInfo(null);
+        game.getBidding().removeRicheseCacheCardFromGame(game);
         discordGame.pushGame();
     }
 

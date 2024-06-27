@@ -125,7 +125,7 @@ public class Bidding {
         }
     }
 
-    public void presentCardToRejectMessage(Game game) throws InvalidGameStateException {
+    private void presentCardToRejectMessage(Game game) throws InvalidGameStateException {
         StringBuilder message = new StringBuilder();
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         message.append(
@@ -155,7 +155,7 @@ public class Bidding {
         game.getFaction("Ix").getChat().publish("", choices);
     }
 
-    public void runRicheseBid(Game game, String bidType, boolean blackMarket) throws InvalidGameStateException {
+    private void runRicheseBid(Game game, String bidType, boolean blackMarket) throws InvalidGameStateException {
         for (Faction faction : game.getFactions()) {
             faction.setMaxBid(0);
             faction.setAutoBid(false);
@@ -257,8 +257,20 @@ public class Bidding {
                         faction.getTreacheryCardFromCache(cardName)
                 )
         );
-        incrementBidCardNumber();
+        bidCardNumber++;
         runRicheseBid(game, bidType, false);
+    }
+
+    public void removeRicheseCacheCardFromGame(Game game) throws InvalidGameStateException {
+        if (bidCard == null)
+            throw new InvalidGameStateException("There is no card up for bid.");
+        else if (!richeseCacheCard)
+            throw new InvalidGameStateException("The card up for bid did not come from the Richese cache.");
+
+        game.getTurnSummary().publish(MessageFormat.format(
+                "{0} {1} has been removed from the game.",
+                Emojis.RICHESE, bidCard.name()));
+        clearBidCardInfo(null);
     }
 
     public void blackMarketAuction(Game game, String cardName, String bidType) throws InvalidGameStateException {
@@ -279,7 +291,7 @@ public class Bidding {
         cards.remove(card);
         blackMarketCard = true;
         setBidCard(game, card);
-        incrementBidCardNumber();
+        bidCardNumber++;
 
         if (bidType.equalsIgnoreCase("Normal")) {
             updateBidOrder(game);
@@ -348,7 +360,7 @@ public class Bidding {
         }
     }
 
-    public TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
+    private TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
         treacheryDeckReshuffled = false;
         numCardsFromOldDeck = 0;
         if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
@@ -365,7 +377,7 @@ public class Bidding {
         return bidCard;
     }
 
-    public int populateMarket(Game game) throws InvalidGameStateException {
+    protected int populateMarket(Game game) throws InvalidGameStateException {
         if (marketPopulated) {
             throw new InvalidGameStateException("Bidding market is already populated.");
         }
@@ -392,7 +404,7 @@ public class Bidding {
         return numCardsInMarket;
     }
 
-    public void sendAtreidesCardPrescience(Game game, TreacheryCard card) {
+    private void sendAtreidesCardPrescience(Game game, TreacheryCard card) {
         if (game.hasFaction("Atreides")) {
             Faction atreides = game.getFaction("Atreides");
             atreides.getChat().publish(
@@ -412,7 +424,7 @@ public class Bidding {
         }
     }
 
-    public int moveMarketToDeck(Game game) {
+    private int moveMarketToDeck(Game game) {
         int numCardsReturned = market.size();
         Iterator<TreacheryCard> marketIterator = market.descendingIterator();
         while (marketIterator.hasNext()) game.getTreacheryDeck().add(marketIterator.next());
@@ -519,7 +531,7 @@ public class Bidding {
         }
     }
 
-    public TreacheryCard getBidCard() {
+    protected TreacheryCard getBidCard() {
         return bidCard;
     }
 
@@ -528,23 +540,19 @@ public class Bidding {
         this.bidCard = bidCard;
     }
 
-    public boolean isRicheseCacheCard() {
-        return richeseCacheCard;
-    }
-
     public boolean isBlackMarketCard() {
         return blackMarketCard;
     }
 
-    public boolean isSilentAuction() {
+    protected boolean isSilentAuction() {
         return silentAuction;
     }
 
-    public void setSilentAuction(boolean silentAuction) {
+    protected void setSilentAuction(boolean silentAuction) {
         this.silentAuction = silentAuction;
     }
 
-    public boolean isRicheseCacheCardOutstanding() {
+    protected boolean isRicheseCacheCardOutstanding() {
         return richeseCacheCardOutstanding;
     }
 
@@ -552,11 +560,11 @@ public class Bidding {
         this.richeseCacheCardOutstanding = richeseCacheCardOutstanding;
     }
 
-    public boolean isRicheseBidding() {
+    private boolean isRicheseBidding() {
         return richeseBidOrder != null;
     }
 
-    public boolean isCardFromIxHand() {
+    private boolean isCardFromIxHand() {
         return bidCardNumber == ixTechnologyCardNumber;
     }
 
@@ -568,10 +576,6 @@ public class Bidding {
         return numCardsForBid;
     }
 
-    public void incrementBidCardNumber() {
-        bidCardNumber++;
-    }
-
     public void decrementBidCardNumber() {
         bidCardNumber--;
     }
@@ -581,19 +585,19 @@ public class Bidding {
         return richeseBidOrder;
     }
 
-    public void setRicheseBidOrder(Game game, List<String> bidOrder) {
+    private void setRicheseBidOrder(Game game, List<String> bidOrder) {
         this.richeseBidOrder = bidOrder;
         nextBidder = getEligibleBidOrder(game).getFirst();
     }
 
-    public List<String> getEligibleBidOrder(Game game) {
+    protected List<String> getEligibleBidOrder(Game game) {
         return getBidOrder()
                 .stream()
                 .filter(f -> game.getFaction(f).getHandLimit() > game.getFaction(f).getTreacheryHand().size())
                 .collect(Collectors.toList());
     }
 
-    public void updateBidOrder(Game game) {
+    protected void updateBidOrder(Game game) {
         if (bidOrder.isEmpty()) {
             List<Faction> bidOrderFactions = game.getFactionsInStormOrder();
             bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
@@ -612,7 +616,7 @@ public class Bidding {
         }
     }
 
-    public void clearBidCardInfo(String winner) {
+    protected void clearBidCardInfo(String winner) {
         previousCard = bidCard;
         bidCard = null;
         richeseBidOrder = null;
@@ -635,11 +639,11 @@ public class Bidding {
         return market;
     }
 
-    public boolean isMarketShownToIx() {
+    protected boolean isMarketShownToIx() {
         return marketShownToIx;
     }
 
-    public void setMarketShownToIx(boolean marketShownToIx) {
+    protected void setMarketShownToIx(boolean marketShownToIx) {
         this.marketShownToIx = marketShownToIx;
         if (marketShownToIx) ixRejectOutstanding = true;
     }
@@ -662,11 +666,11 @@ public class Bidding {
         return ixRejectOutstanding;
     }
 
-    public String getCurrentBidder() {
+    protected String getCurrentBidder() {
         return currentBidder;
     }
 
-    public String getNextBidder(Game game) {
+    private String getNextBidder(Game game) {
         Faction currentFaction = game.getFaction(currentBidder);
         int currentIndex = getEligibleBidOrder(game).indexOf(currentFaction.getName());
         int nextIndex = 0;
@@ -675,12 +679,12 @@ public class Bidding {
         return nextBidder;
     }
 
-    public String advanceBidder(Game game) {
+    private String advanceBidder(Game game) {
         currentBidder = getNextBidder(game);
         return currentBidder;
     }
 
-    public boolean createBidMessage(Game game, boolean tag) {
+    private boolean createBidMessage(Game game, boolean tag) {
         DuneTopic biddingPhase = game.getBiddingPhase();
         String nextBidderName = getNextBidder(game);
         List<String> bidOrder = getEligibleBidOrder(game);
@@ -887,7 +891,7 @@ public class Bidding {
         }
     }
 
-    public boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
+    private boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
         DuneTopic modInfo = game.getModInfo();
         DuneTopic biddingPhase = game.getBiddingPhase();
         if (allPlayersPassed) {
@@ -1023,7 +1027,7 @@ public class Bidding {
         return responseMessage + responseMessage2;
     }
 
-    public void tryBid(Game game, Faction faction) throws InvalidGameStateException {
+    private void tryBid(Game game, Faction faction) throws InvalidGameStateException {
         if (bidCard == null)
             throw new InvalidGameStateException("There is no card currently up for bid.");
         List<String> eligibleBidOrder = getEligibleBidOrder(game);
