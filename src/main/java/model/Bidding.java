@@ -332,6 +332,7 @@ public class Bidding {
             );
             presentCardToRejectMessage(game);
             marketShownToIx = true;
+            ixRejectOutstanding = true;
             turnSummary.publish(message);
         } else {
             updateBidOrder(game);
