@@ -53,6 +53,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             richeseNoFieldShip(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-ally-no-field-ship-"))
             richeseNoFieldShip(event, game, discordGame, true);
+        else if (event.getComponentId().startsWith("support-")) refreshInfo(event, game, discordGame);
+        else if (event.getComponentId().startsWith("bid-support-")) refreshInfo(event, game, discordGame);
         switch (event.getComponentId()) {
             case "shipment" -> queueShippingButtons(event, game, discordGame);
             case "pass-shipment" -> passShipment(event, game, discordGame);
@@ -83,6 +85,12 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "Ornithopter" -> hajr(event, game, discordGame, false);
         }
 
+    }
+
+    public static void refreshInfo(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        discordGame.pushGame();
     }
 
     public static void deleteShipMoveButtonsInChannel(MessageChannel channel) {
