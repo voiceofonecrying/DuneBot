@@ -5,6 +5,7 @@ import caches.GameCache;
 import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
 import controller.channels.*;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -515,6 +516,22 @@ public class DiscordGame {
         if (!game.hasTleilaxuTanks)
             game.getTanks().forEach(force -> game.getTleilaxuTanks().getForces().add(force));
         game.clearOldTanks();
+
+        // Migrate old split ally spice support to new single support value
+        for (Faction f : game.getFactions()) {
+            if (f.hasAlly() && !f.switchedToSpiceForAlly) {
+                Faction ally = game.getFaction(f.getAlly());
+                int totalSupport = Math.min(f.getSpice(), ally.getAllySpiceBidding() + ally.getAllySpiceShipment());
+                if (totalSupport > 0) {
+                    System.out.println(game.getGameRole() + " " + f.getName() + " " + totalSupport);
+                    f.setSpiceForAlly(totalSupport);
+                    ally.setAllySpiceBidding(0);
+                    ally.setAllySpiceShipment(0);
+                    f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+                }
+            }
+            f.switchedToSpiceForAlly = true;
+        }
 
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));

@@ -127,6 +127,87 @@ class BiddingTest {
     }
 
     @Nested
+    @DisplayName("#assignAndPayForCard")
+    public class AssignAndPayForCard {
+        @BeforeEach
+        public void setUp() throws IOException, InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            game.createAlliance(atreides, emperor);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            bidding.bidding(game);
+        }
+
+        @Test
+        public void testWinnerPaysAll() throws InvalidGameStateException {
+            bidding.bid(game, atreides, true, 3, false, false);
+            bidding.awardTopBidder(game);
+            assertEquals(7, atreides.getSpice());
+            assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().get(2));
+            assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testAllyPaysAll() throws InvalidGameStateException {
+            emperor.setSpiceForAlly(5);
+            bidding.bid(game, atreides, true, 3, false, false);
+            bidding.awardTopBidder(game);
+            assertEquals(10, atreides.getSpice());
+            assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (3 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().get(2));
+            assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testAllyPaysAll2() throws InvalidGameStateException {
+            assertEquals(10, atreides.getSpice());
+            emperor.setSpiceForAlly(5);
+            bidding.bid(game, atreides, true, 11, false, false);
+            bidding.awardTopBidder(game);
+            assertEquals(4, atreides.getSpice());
+            assertEquals(16, emperor.getSpice());
+            assertEquals(Emojis.ATREIDES + " wins R0:C1 for 11 " + Emojis.SPICE + " (5 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().get(2));
+            assertEquals(Emojis.EMPEROR + " is paid 11 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testAllyBuysCardCantAffordToSupport() throws InvalidGameStateException {
+            emperor.setSpiceForAlly(5);
+            bidding.bid(game, atreides, true, 1, false, false);
+            bidding.bid(game, bg, true, 2, false, false);
+            bidding.bid(game, emperor, true, 10, false, false);
+            bidding.awardTopBidder(game);
+            assertEquals(0, emperor.getSpice());
+            assertEquals(0, emperor.getSpiceForAlly());
+            bidding.bidding(game);
+            assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 11, false, false));
+        }
+
+        @Test
+        public void testAllyMakesBribeCantAffordToSupport() throws InvalidGameStateException {
+            emperor.setSpiceForAlly(5);
+            emperor.bribe(game, harkonnen, 10, "For test");
+            assertEquals(0, emperor.getSpice());
+            assertEquals(0, emperor.getSpiceForAlly());
+            assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 11, false, false));
+        }
+
+        @Test
+        public void testAllyPaysPart() throws InvalidGameStateException {
+            emperor.setSpiceForAlly(2);
+            bidding.bid(game, atreides, true, 3, false, false);
+            bidding.awardTopBidder(game);
+            assertEquals(9, atreides.getSpice());
+            assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (2 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().get(2));
+            assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#topBidderIdentified")
     public class TopBidderIdentified {
         int numMessagesInBiddingPhaseChannel;
@@ -1103,16 +1184,6 @@ class BiddingTest {
     }
 
     @Test
-    void testSetMarketShownToIx() {
-        bidding = game.startBidding();
-        assertFalse(bidding.isMarketShownToIx());
-        assertFalse(bidding.isIxRejectOutstanding());
-        bidding.setMarketShownToIx(true);
-        assertTrue(bidding.isMarketShownToIx());
-        assertTrue(bidding.isIxRejectOutstanding());
-    }
-
-    @Test
     void testPutBackIxCard() throws InvalidGameStateException {
         game.addFaction(atreides);
         game.addFaction(bg);
@@ -1121,9 +1192,16 @@ class BiddingTest {
         game.addFaction(guild);
         game.addFaction(ix);
         bidding = game.startBidding();
-        bidding.populateMarket(game);
+
+        assertFalse(bidding.isMarketShownToIx());
+        assertFalse(bidding.isIxRejectOutstanding());
+        bidding.cardCountsInBiddingPhase(game);
+        assertEquals(6, bidding.getNumCardsForBid());
+        bidding.bidding(game);
+        assertTrue(bidding.isMarketShownToIx());
+        assertTrue(bidding.isIxRejectOutstanding());
+
         TreacheryCard card = bidding.getMarket().getFirst();
-        bidding.setMarketShownToIx(true);
         assertTrue(bidding.isMarketShownToIx());
         assertTrue(bidding.isIxRejectOutstanding());
         bidding.putBackIxCard(game, card.name(), "Top");
@@ -1156,8 +1234,10 @@ class BiddingTest {
     @DisplayName("silentAuction")
     class SilentAuction {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(richese);
             bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
         }
 
         @Test
@@ -1166,8 +1246,8 @@ class BiddingTest {
         }
 
         @Test
-        void notSilentAfterNewCard() {
-            bidding.setSilentAuction(true);
+        void notSilentAfterNewCard() throws InvalidGameStateException {
+            bidding.richeseCardAuction(game, "Ornithopter", "Silent");
             assertTrue(bidding.isSilentAuction());
             bidding.clearBidCardInfo("Emperor");
             assertFalse(bidding.isSilentAuction());

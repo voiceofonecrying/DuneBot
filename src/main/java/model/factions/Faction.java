@@ -25,7 +25,7 @@ import java.util.List;
 public class Faction {
     protected final String name;
     private final List<TechToken> techTokens;
-    private final List<TreacheryCard> treacheryHand;
+    protected final List<TreacheryCard> treacheryHand;
     private final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
@@ -60,8 +60,12 @@ public class Faction {
     private NexusCard nexusCard;
     private Shipment shipment;
     private Movement movement;
+    @Exclude
     private int allySpiceShipment;
+    @Exclude
     private int allySpiceBidding;
+    public boolean switchedToSpiceForAlly;
+    private int spiceForAlly;
     protected boolean isHighThreshold;
     private Boolean ornithoperToken;
     private Map<String, String> lastWhisper;
@@ -102,6 +106,7 @@ public class Faction {
         this.movement = new Movement();
         this.allySpiceShipment = 0;
         this.allySpiceBidding = 0;
+        this.spiceForAlly = 0;
         this.nexusCard = null;
         this.maxRevival = 3;
         this.starRevived = false;
@@ -189,6 +194,7 @@ public class Faction {
         ally = null;
         allySpiceBidding = 0;
         allySpiceShipment = 0;
+        spiceForAlly = 0;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
@@ -312,7 +318,7 @@ public class Faction {
 
     public void setSpice(int spice) {
         this.spice = spice;
-        updateAllySupport();
+        spiceForAlly = Math.min(spiceForAlly, this.spice);
         setUpdated(UpdateType.SPICE_BACK);
     }
 
@@ -486,10 +492,6 @@ public class Faction {
         return useExact;
     }
 
-    public void setUseExact(boolean useExact) {
-        this.useExact = useExact;
-    }
-
     public boolean isAutoBid() {
         return autoBid;
     }
@@ -510,8 +512,133 @@ public class Faction {
         return outbidAlly;
     }
 
-    public void setOutbidAlly(boolean outbidAlly) {
-        this.outbidAlly = outbidAlly;
+    protected boolean doesNotHaveKarama() {
+        if (this instanceof BGFaction && treacheryHand.stream().anyMatch(c -> c.type().equals("Worthless Card"))) {
+            return false;
+        }
+        return treacheryHand.stream().noneMatch(c -> c.name().equals("Karama"));
+    }
+
+    public String bid(Game game, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws InvalidGameStateException {
+        int spiceFromAlly = hasAlly() ? game.getFaction(ally).getSpiceForAlly() : 0;
+        if (bidAmount > spice + spiceFromAlly
+                && doesNotHaveKarama())
+            throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
+
+        this.useExact = useExact;
+        maxBid = bidAmount;
+        String modMessage = emoji + " set their bid to " + (useExact ? "exactly " : "increment up to ") + bidAmount + ".";
+        String responseMessage = "You will bid ";
+        boolean silentAuction = game.getBidding().isSilentAuction();
+        if (silentAuction) {
+            responseMessage += "exactly " + bidAmount + " in the silent auction.";
+        } else if (useExact) {
+            responseMessage += "exactly " + bidAmount + " if possible.";
+        } else {
+            responseMessage += "+1 up to " + bidAmount + ".";
+        }
+        int spiceAvaiable = spice + spiceFromAlly;
+        if (bidAmount > spiceAvaiable)
+            responseMessage += "\nIf you win for more than " + spiceAvaiable + ", you will have to use your Karama.";
+        if (enableAutoPass != null) {
+            autoBid = enableAutoPass;
+            modMessage += enableAutoPass ? " Auto-pass enabled." : " No auto-pass.";
+        }
+        game.getModInfo().publish(modMessage);
+        String responseMessage2 = "";
+        if (!silentAuction) {
+            if (autoBid) {
+                responseMessage += "\nYou will then auto-pass.";
+            } else {
+                responseMessage += "\nYou will not auto-pass.\nA new bid or pass will be needed if you are outbid.";
+            }
+            boolean outbidAllyValue = outbidAlly;
+            if (newOutbidAllySetting != null) {
+                outbidAllyValue = newOutbidAllySetting;
+                outbidAlly = outbidAllyValue;
+                responseMessage2 = emoji + " set their outbid ally policy to " + outbidAllyValue;
+                game.getModInfo().publish(responseMessage2);
+                chat.publish(responseMessage2);
+            }
+            if (hasAlly()) {
+                responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";
+            }
+        }
+        return responseMessage + responseMessage2;
+    }
+
+    public void payForCard(String currentCard, int spentValue) throws InvalidGameStateException {
+        int spiceFromAlly = hasAlly() ? game.getFaction(ally).getSpiceForAlly() : 0;
+        if (spice + spiceFromAlly < spentValue)
+            throw new InvalidGameStateException(emoji + " does not have enough spice to buy the card.");
+        else if (treacheryHand.size() >= handLimit)
+            throw new InvalidGameStateException(emoji + " already has a full hand.");
+
+        int allySupport = Math.min(spiceFromAlly, spentValue);
+        String allyString = hasAlly() && spiceFromAlly > 0 ? " (" + allySupport + " from " + game.getFaction(ally).getEmoji() + ")" : "";
+        subtractSpice(spentValue - allySupport, currentCard);
+        if (allySupport > 0)
+            game.getFaction(ally).subtractSpiceForAlly(allySupport, currentCard + " (ally support)");
+        game.getTurnSummary().publish(emoji + " wins " + currentCard + " for " + spentValue + " " + Emojis.SPICE + allyString);
+    }
+
+    public String payForShipment(Game game, int spice, Territory territory, boolean karamaShipment, boolean noField) throws InvalidGameStateException {
+        String paymentMessage = " for " + spice + " " + Emojis.SPICE;
+        int spiceFromAlly = 0;
+        if (hasAlly())
+            spiceFromAlly = game.getFaction(ally).getShippingSupport();
+        if (this.spice + spiceFromAlly < spice)
+            throw new InvalidGameStateException(emoji + " does not have enough spice to buy the card.");
+        int support = 0;
+        int guildSupport = 0;
+        if (spiceFromAlly > 0) {
+            support = Math.min(spiceFromAlly, spice);
+            Faction allyFaction = game.getFaction(ally);
+            if (allyFaction instanceof GuildFaction)
+                guildSupport = support;
+            allyFaction.subtractSpiceForAlly(support, emoji + " shipment support");
+            paymentMessage += MessageFormat.format(" ({0} from {1})", support, game.getFaction(ally).getEmoji());
+        }
+        String noFieldString = noField ? Emojis.NO_FIELD + " " : "";
+        subtractSpice(spice - support, noFieldString + "shipment to " + territory.getTerritoryName());
+        if (!karamaShipment && !(this instanceof GuildFaction) && game.hasFaction("Guild")) {
+            if (guildSupport != 0)
+                paymentMessage += ", " + (spice - guildSupport) + " " + Emojis.SPICE;
+            paymentMessage += " paid to " + Emojis.GUILD;
+            Faction guildFaction = game.getFaction("Guild");
+            guildFaction.addSpice(spice - guildSupport, emoji + " shipment");
+        }
+        return paymentMessage;
+    }
+
+    public String bribe(Game game, Faction recipientFaction, int amountValue, String reasonString) throws InvalidGameStateException {
+        if (amountValue != 0) {
+            if (spice < amountValue)
+                throw new InvalidGameStateException("Faction does not have enough spice to pay the bribe!");
+
+            subtractSpice(amountValue, "bribe to " + recipientFaction.getEmoji());
+            game.getTurnSummary().publish(
+                    MessageFormat.format(
+                            "{0} places {1} {2} in front of {3} shield.",
+                            emoji, amountValue, Emojis.SPICE, recipientFaction.getEmoji()
+                    )
+            );
+
+            recipientFaction.addFrontOfShieldSpice(amountValue);
+        } else {
+            game.getTurnSummary().publish(
+                    MessageFormat.format(
+                            "{0} bribes {2}. {1} TBD or NA.",
+                            emoji, Emojis.SPICE, recipientFaction.getEmoji()
+                    )
+            );
+        }
+
+        String message = MessageFormat.format("{0} {1}",
+                emoji, recipientFaction.getEmoji());
+        if (!reasonString.isBlank())
+            message += "\n" + reasonString;
+        return message;
     }
 
     public boolean isSpecialKaramaPowerUsed() {
@@ -637,12 +764,19 @@ public class Faction {
         this.allySpiceBidding = allySpiceBidding;
     }
 
-    public void updateAllySupport() {
-        if (hasAlly()) {
-            Faction ally = getGame().getFaction(getAlly());
-            ally.setAllySpiceBidding(Math.min(getSpice(), ally.getAllySpiceBidding()));
-            ally.setAllySpiceShipment(Math.min(getSpice(), ally.getAllySpiceShipment()));
+    public int getSpiceForAlly() {
+        return spiceForAlly;
+    }
+
+    public void setSpiceForAlly(int spiceForAlly) {
+        if (this.spiceForAlly != spiceForAlly) {
+            this.spiceForAlly = spiceForAlly;
+            setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         }
+    }
+
+    public int getShippingSupport() {
+        return spiceForAlly;
     }
 
     public NexusCard getNexusCard() {
@@ -820,9 +954,15 @@ public class Faction {
         if (spice == 0) return;
         this.spice -= spice;
         if (this.spice < 0) throw new IllegalStateException("Faction cannot spend more spice than they have.");
-        updateAllySupport();
+        spiceForAlly = Math.min(spiceForAlly, this.spice);
         spiceMessage(spice, message, false);
         setUpdated(UpdateType.SPICE_BACK);
+    }
+
+    private void subtractSpiceForAlly(int spice, String message) {
+        // This method should remain private. If that changes, it should throw an exception if spice > spiceForAlly.
+        spiceForAlly -= spice;
+        subtractSpice(spice, message);
     }
 
     private void spiceMessage(int amount, String message, boolean plus) {

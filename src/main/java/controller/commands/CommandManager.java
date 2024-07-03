@@ -228,7 +228,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.getEcazChat().queueMessage("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + territoryName + "? " + game.getFaction("Ecaz").getPlayer(), buttons);
     }
 
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException {
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
 
         if (amountValue > 0)
@@ -256,7 +256,7 @@ public class CommandManager extends ListenerAdapter {
             );
 
             if (cost > 0)
-                message.append(game.payForShipment(targetFaction, cost, targetTerritory, karama, false));
+                message.append(targetFaction.payForShipment(game, cost, targetTerritory, karama, false));
             turnSummary.queueMessage(message.toString());
 
             if (!(targetFaction instanceof GuildFaction)
@@ -863,7 +863,7 @@ public class CommandManager extends ListenerAdapter {
      * @param discordGame the discord game
      * @param game        the game
      */
-    public void placeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void placeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Territory targetTerritory = game.getTerritories().get(discordGame.required(territory).getAsString());
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
@@ -972,39 +972,14 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void bribe(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void bribe(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction fromFaction = game.getFaction(discordGame.required(faction).getAsString());
         Faction recipientFaction = game.getFaction(discordGame.required(recipient).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
+        OptionMapping om = discordGame.optional(reason);
+        String reasonString = om == null ? "" : om.getAsString();
 
-        if (amountValue != 0) {
-            if (fromFaction.getSpice() < amountValue) {
-                discordGame.getModInfo().queueMessage("Faction does not have enough spice to pay the bribe!");
-                return;
-            }
-            fromFaction.subtractSpice(amountValue, "bribe to " + recipientFaction.getEmoji());
-            discordGame.getTurnSummary().queueMessage(
-                    MessageFormat.format(
-                            "{0} places {1} {2} in front of {3} shield.",
-                            fromFaction.getEmoji(), amountValue, Emojis.SPICE, recipientFaction.getEmoji()
-                    )
-            );
-
-            recipientFaction.addFrontOfShieldSpice(amountValue);
-        } else {
-            discordGame.getTurnSummary().queueMessage(
-                    MessageFormat.format(
-                            "{0} bribes {2}. {1} TBD or NA.",
-                            fromFaction.getEmoji(), Emojis.SPICE, recipientFaction.getEmoji()
-                    )
-            );
-        }
-
-        String message = MessageFormat.format("{0} {1}",
-                fromFaction.getEmoji(), recipientFaction.getEmoji());
-        if (discordGame.optional(reason) != null) {
-            message += "\n" + discordGame.optional(reason).getAsString();
-        }
+        String message = fromFaction.bribe(game, recipientFaction, amountValue, reasonString);
         discordGame.queueMessage("bribes", message);
         discordGame.pushGame();
     }

@@ -4,10 +4,10 @@ import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.BGCommands;
 import controller.commands.CommandManager;
-import controller.commands.ShowCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import exceptions.InvalidOptionException;
 import controller.DiscordGame;
 import model.*;
@@ -24,7 +24,7 @@ import java.util.*;
 public class ShipmentAndMovementButtons implements Pressable {
 
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidOptionException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidOptionException, InvalidGameStateException {
 
         if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("ship-to-reserves-"))
@@ -53,7 +53,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             richeseNoFieldShip(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-ally-no-field-ship-"))
             richeseNoFieldShip(event, game, discordGame, true);
-        else if (event.getComponentId().startsWith("support-")) supportAlly(event, game, discordGame);
         switch (event.getComponentId()) {
             case "shipment" -> queueShippingButtons(event, game, discordGame);
             case "pass-shipment" -> passShipment(event, game, discordGame);
@@ -117,7 +116,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
     }
 
-    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getTreacheryDiscard().add(faction.removeTreacheryCard("Karama"));
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
@@ -236,35 +235,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         game.getFaction("Guild").getShipment().setToReserves(true);
         discordGame.pushGame();
     }
-
-    private static void supportAlly(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (event.getComponentId().equals("support-max")) {
-            game.getFaction(faction.getAlly()).setAllySpiceShipment(faction.getSpice());
-            discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
-            discordGame.queueMessage("You have offered your ally all of your spice to ship with.");
-            discordGame.pushGame();
-        } else if (event.getComponentId().equals("support-number")) {
-            TreeSet<Button> buttonList = new TreeSet<>(getButtonComparator());
-            int limit = Math.min(faction.getSpice(), 40);
-            for (int i = 0; i < limit; i++) {
-                buttonList.add(Button.primary("support-" + (i + 1), Integer.toString(i + 1)));
-            }
-            arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
-            return;
-        }  else if (event.getComponentId().equals("support-reset")) {
-            game.getFaction(faction.getAlly()).setAllySpiceShipment(0);
-            discordGame.queueMessage("Resetting shipping support.");
-        } else {
-            game.getFaction(faction.getAlly()).setAllySpiceShipment(Integer.parseInt(event.getComponentId().replace("support-", "")));
-            discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support your shipment this turn up to " + game.getFaction(faction.getAlly()).getAllySpiceShipment() + " " + Emojis.SPICE + "!");
-            discordGame.queueMessage("You have offered your ally " + event.getComponentId().replace("support-", "") + " " + Emojis.SPICE + " to ship with.");
-            discordGame.pushGame();
-        }
-        ButtonManager.deleteAllButtonsInChannel(event.getMessageChannel());
-        ShowCommands.sendInfoButtons(game, discordGame, faction);
-    }
-
 
     private static void guildDefer(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         game.getTurnOrder().pollFirst();
@@ -436,7 +406,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
-    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException {
+    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         Shipment shipment = faction.getShipment();
         String territoryName = shipment.getTerritoryName();
         int noField = shipment.getNoField();
@@ -452,7 +422,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             territory.setRicheseNoField(noField);
             faction.noFieldMessage(noField, territoryName);
             int spice = game.shipmentCost(faction, 1, territory, karama);
-            turnSummaryMessage += game.payForShipment(faction, spice, territory, karama, true);
+            turnSummaryMessage += faction.payForShipment(game, spice, territory, karama, true);
             if (game.hasFaction("BG") && territory.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
                 CommandManager.bgFlipMessageAndButtons(discordGame, game, territory.getTerritoryName());
             if (crossShipFrom.isEmpty())
@@ -482,15 +452,17 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException {
+    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         int totalForces = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
         Territory territory = game.getTerritory(faction.getShipment().getTerritoryName());
         int spice = game.shipmentCost(faction, totalForces, territory, karama);
-        if (spice > faction.getSpice() + faction.getAllySpiceShipment()) {
-            discordGame.queueMessage("You cannot afford this shipment.");
-            return;
+        int spiceFromAlly = 0;
+        if (faction.hasAlly()) {
+            spiceFromAlly = faction.getShippingSupport();
         }
+        if (spice > faction.getSpice() + spiceFromAlly)
+            throw new InvalidGameStateException("You cannot afford this shipment.");
         executeFactionShipment(discordGame, game, faction, karama);
         discordGame.queueMessage("Shipment complete.");
         deleteShipMoveButtonsInChannel(event.getMessageChannel());

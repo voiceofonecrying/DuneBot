@@ -545,12 +545,8 @@ public class Bidding {
         return blackMarketCard;
     }
 
-    protected boolean isSilentAuction() {
+    public boolean isSilentAuction() {
         return silentAuction;
-    }
-
-    protected void setSilentAuction(boolean silentAuction) {
-        this.silentAuction = silentAuction;
     }
 
     protected boolean isRicheseCacheCardOutstanding() {
@@ -642,11 +638,6 @@ public class Bidding {
 
     protected boolean isMarketShownToIx() {
         return marketShownToIx;
-    }
-
-    protected void setMarketShownToIx(boolean marketShownToIx) {
-        this.marketShownToIx = marketShownToIx;
-        if (marketShownToIx) ixRejectOutstanding = true;
     }
 
     public void blockIxBiddingAdvantage(Game game) throws InvalidGameStateException {
@@ -748,40 +739,14 @@ public class Bidding {
         }
         Faction winner = game.getFaction(winnerName);
         List<TreacheryCard> winnerHand = winner.getTreacheryHand();
-        if ((!winner.hasAlly() && winner.getSpice() < spentValue) || (winner.hasAlly() && winner.getSpice() + winner.getAllySpiceBidding() < spentValue)) {
-            throw new InvalidGameStateException(winner.getEmoji() + " does not have enough spice to buy the card.");
-        } else if (winnerHand.size() >= winner.getHandLimit()) {
-            throw new InvalidGameStateException(winner.getEmoji() + " already has a full hand.");
-        }
-
         String currentCard = MessageFormat.format(
                 "R{0}:C{1}",
                 game.getTurn(),
                 bidCardNumber
         );
-        int allySupport = Math.min(winner.getAllySpiceBidding(), spentValue);
-
-        String allyString = winner.hasAlly() && winner.getAllySpiceBidding() > 0 ? "(" + allySupport + " from " + game.getFaction(winner.getAlly()).getEmoji() + ")" : "";
+        winner.payForCard(currentCard, spentValue);
 
         DuneTopic turnSummary = game.getTurnSummary();
-        turnSummary.publish(
-                MessageFormat.format(
-                        "{0} wins {1} for {2} {3} {4}",
-                        winner.getEmoji(),
-                        currentCard,
-                        spentValue,
-                        Emojis.SPICE,
-                        allyString
-                )
-        );
-
-        // Winner pays for the card
-        winner.setAllySpiceBidding(Math.max(winner.getAllySpiceBidding() - spentValue, 0));
-        winner.subtractSpice(spentValue - allySupport, currentCard);
-        if (winner.hasAlly()) {
-            game.getFaction(winner.getAlly()).subtractSpice(allySupport, currentCard + " (ally support)");
-        }
-
         if (game.hasFaction(paidToFactionName)) {
             int spicePaid = spentValue;
             Faction paidToFaction = game.getFaction(paidToFactionName);
@@ -930,14 +895,6 @@ public class Bidding {
         return false;
     }
 
-    private boolean factionDoesNotHaveKarama(Faction faction) {
-        List<TreacheryCard> hand = faction.getTreacheryHand();
-        if (faction instanceof BGFaction && hand.stream().anyMatch(c -> c.type().equals("Worthless Card"))) {
-            return false;
-        }
-        return hand.stream().noneMatch(c -> c.name().equals("Karama"));
-    }
-
     public String pass(Game game, Faction faction) throws InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
@@ -981,51 +938,9 @@ public class Bidding {
     public String bid(Game game, Faction faction, boolean useExact, int bidAmount, Boolean newOutbidAllySetting, Boolean enableAutoPass) throws InvalidGameStateException {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
-        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding()
-                && factionDoesNotHaveKarama(faction))
-            throw new InvalidGameStateException("You have insufficient " + Emojis.SPICE + " for this bid and no Karama to avoid paying.");
-
-        faction.setUseExact(useExact);
-        faction.setMaxBid(bidAmount);
-        String modMessage = faction.getEmoji() + " set their bid to " + (useExact ? "exactly " : "increment up to ") + bidAmount + ".";
-        String responseMessage = "You will bid ";
-        boolean silentAuction = game.getBidding().isSilentAuction();
-        if (silentAuction) {
-            responseMessage += "exactly " + bidAmount + " in the silent auction.";
-        } else if (useExact) {
-            responseMessage += "exactly " + bidAmount + " if possible.";
-        } else {
-            responseMessage += "+1 up to " + bidAmount + ".";
-        }
-        int spiceAvaiable = faction.getSpice() + faction.getAllySpiceBidding();
-        if (bidAmount > faction.getSpice() + faction.getAllySpiceBidding())
-            responseMessage += "\nIf you win for more than " + spiceAvaiable + ", you will have to use your Karama.";
-        if (enableAutoPass != null) {
-            faction.setAutoBid(enableAutoPass);
-            modMessage += enableAutoPass ? " Auto-pass enabled." : " No auto-pass.";
-        }
-        game.getModInfo().publish(modMessage);
-        String responseMessage2 = "";
-        if (!silentAuction) {
-            if (faction.isAutoBid()) {
-                responseMessage += "\nYou will then auto-pass.";
-            } else {
-                responseMessage += "\nYou will not auto-pass.\nA new bid or pass will be needed if you are outbid.";
-            }
-            boolean outbidAllyValue = faction.isOutbidAlly();
-            if (newOutbidAllySetting != null) {
-                outbidAllyValue = newOutbidAllySetting;
-                faction.setOutbidAlly(outbidAllyValue);
-                responseMessage2 = faction.getEmoji() + " set their outbid ally policy to " + outbidAllyValue;
-                game.getModInfo().publish(responseMessage2);
-                faction.getChat().publish(responseMessage2);
-            }
-            if (faction.hasAlly()) {
-                responseMessage2 = "\nYou will" + (outbidAllyValue ? "" : " not") + " outbid your ally";
-            }
-        }
+        String response = faction.bid(game, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
         game.getBidding().tryBid(game, faction);
-        return responseMessage + responseMessage2;
+        return response;
     }
 
     private void tryBid(Game game, Faction faction) throws InvalidGameStateException {

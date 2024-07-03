@@ -28,6 +28,15 @@ public class MentatPauseTest {
     }
 
     @Test
+    void testSpiceForAllyResetsToZero() {
+        choam.setSpiceForAlly(5);
+        assertEquals(5, choam.getSpiceForAlly());
+        game.setTurn(1);
+        game.startMentatPause();
+        assertEquals(0, choam.getSpiceForAlly());
+    }
+
+    @Test
     void testChoamGetsInflationButtons() {
         game.setTurn(1);
         game.startMentatPause();

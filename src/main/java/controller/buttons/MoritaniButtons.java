@@ -6,6 +6,7 @@ import controller.commands.CommandManager;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 import model.factions.Faction;
@@ -20,7 +21,7 @@ import java.util.List;
 
 public class MoritaniButtons implements Pressable {
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
 
         if (event.getComponentId().startsWith("moritani-offer-alliance-")) offerAlliance(event, discordGame);
         else if (event.getComponentId().startsWith("moritani-place-terror-"))
@@ -184,7 +185,7 @@ public class MoritaniButtons implements Pressable {
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " did not give a " + Emojis.TREACHERY + " card to " + emoji + " with Sabotage.");
     }
 
-    private static void sneakAttack(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void sneakAttack(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String[] components = event.getComponentId().split("-");
         int amount = Integer.parseInt(components[3]);

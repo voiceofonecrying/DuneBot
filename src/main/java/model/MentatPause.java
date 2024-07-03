@@ -20,6 +20,10 @@ public class MentatPause {
     public MentatPause(Game game) {
         List<DuneChoice> choices;
         for (Faction faction : game.getFactions()) {
+            if (faction.getSpiceForAlly() != 0) {
+                faction.getChat().publish(Emojis.SPICE + " support for ally is reset to 0 in Mentat Pause.");
+                faction.setSpiceForAlly(0);
+            }
             int spice = faction.getSpice();
             if (faction.isDecliningCharity() && spice < 2)
                 faction.getChat().publish("You have only " + spice + " " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. " + faction.getPlayer());

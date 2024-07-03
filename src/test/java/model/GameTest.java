@@ -29,7 +29,7 @@ class GameTest {
     private Faction bg;
     private EmperorFaction emperor;
     private Faction fremen;
-    private Faction guild;
+    private GuildFaction guild;
     private Faction harkonnen;
     private Faction bt;
     private Faction ix;
@@ -194,17 +194,19 @@ class GameTest {
             richese.setLedger(new TestTopic());
             fremen = new FremenFaction("fPlayer", "fUser", game);
             fremen.setLedger(new TestTopic());
+            atreides = new AtreidesFaction("p", "u", game);
+            atreides.setLedger(new TestTopic());
             game.addFaction(emperor);
             game.addFaction(guild);
             game.addFaction(richese);
             game.addFaction(fremen);
+            game.addFaction(atreides);
         }
 
         @Test
         void testFremenAlliedWithGuildShipFree() {
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
-            fremen.setAlly("Guild");
-            guild.setAlly("Fremen");
+            game.createAlliance(guild, fremen);
             assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false));
         }
 
@@ -217,51 +219,96 @@ class GameTest {
         }
 
         @Test
-        void testNormalPaymentToGuild() {
+        void testNormalPaymentToGuild() throws InvalidGameStateException {
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 10 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    game.payForShipment(emperor, 10, habbanyaSietch, false, false));
+                    emperor.payForShipment(game, 10, habbanyaSietch, false, false));
             assertEquals(0, emperor.getSpice());
             assertEquals(15, guild.getSpice());
         }
 
         @Test
-        void testNormalPaymentToGuildAsAlly() {
-            emperor.setAlly("Guild");
-            guild.setAlly("Emperor");
+        void testNormalPaymentToGuildAsAlly() throws InvalidGameStateException {
+            game.createAlliance(guild, emperor);
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    game.payForShipment(emperor, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(10, guild.getSpice());
         }
 
         @Test
-        void testPaymentToGuildAsAllyWithGuildSupport() {
-            emperor.setAlly("Guild");
-            guild.setAlly("Emperor");
-            emperor.setAllySpiceShipment(3);
+        void testPaymentToGuildAsAllyWithGuildSupport() throws InvalidGameStateException {
+            game.createAlliance(guild, emperor);
+            guild.setSpiceForAlly(3);
+            guild.setAllySpiceForShipping(true);
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.GUILD + "), 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    game.payForShipment(emperor, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(8, emperor.getSpice());
             assertEquals(4, guild.getSpice());
         }
 
         @Test
-        void testKaramaPayment() {
+        void testPaymentToGuildAsAllyGuildSupportNotForShipping() throws InvalidGameStateException {
+            game.createAlliance(guild, emperor);
+            guild.setSpiceForAlly(3);
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
+                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+            assertEquals(5, emperor.getSpice());
+            assertEquals(10, guild.getSpice());
+        }
+
+        @Test
+        void testPaymentToFremenAsAlly() throws InvalidGameStateException {
+            game.createAlliance(fremen, emperor);
+            fremen.setSpiceForAlly(3);
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.FREMEN + ") paid to " + Emojis.GUILD,
+                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+            assertEquals(8, emperor.getSpice());
+            assertEquals(0, fremen.getSpice());
+            assertEquals(10, guild.getSpice());
+        }
+
+        @Test
+        void testAllyShippedAndCanNoLongerSupport() throws InvalidGameStateException {
+            game.createAlliance(atreides, emperor);
+            atreides.setSpiceForAlly(3);
+            Territory carthag = game.getTerritory("Carthag");
+            atreides.payForShipment(game, 10, carthag, false, false);
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(0, atreides.getSpice());
+            assertEquals(0, atreides.getSpiceForAlly());
+            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
+        }
+
+        @Test
+        void testAllyBribedAndCanNoLongerSupport() throws InvalidGameStateException {
+            game.createAlliance(atreides, emperor);
+            atreides.setSpiceForAlly(3);
+            atreides.bribe(game, guild, 10, "For test");
+            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            assertEquals(0, atreides.getSpice());
+            assertEquals(0, atreides.getSpiceForAlly());
+            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
+        }
+
+        @Test
+        void testKaramaPayment() throws InvalidGameStateException {
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE,
-                    game.payForShipment(emperor, 5, habbanyaSietch, true, false));
+                    emperor.payForShipment(game, 5, habbanyaSietch, true, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(5, guild.getSpice());
         }
 
         @Test
-        void testGuildPaysSpiceBank() {
+        void testGuildPaysSpiceBank() throws InvalidGameStateException {
             Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE,
-                    game.payForShipment(guild, 5, habbanyaSietch, false, false));
+                    guild.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(0, guild.getSpice());
         }
     }
@@ -274,11 +321,12 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             emperor = new EmperorFaction("ePlayer", "eUser", game);
-            emperor.setAlly("Ecaz");
             ecaz = new EcazFaction("aPlayer", "aUser", game);
-            ecaz.setAlly("Emperor");
             game.addFaction(emperor);
             game.addFaction(ecaz);
+            emperor.setLedger(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            game.createAlliance(ecaz, emperor);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
             game.addFaction(harkonnen);
             garaKulon = game.getTerritory("Gara Kulon");
@@ -977,8 +1025,9 @@ class GameTest {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
-            emperor.setAlly("Fremen");
-            fremen.setAlly("Emperor");
+            fremen.setLedger(new TestTopic());
+            emperor.setLedger(new TestTopic());
+            game.createAlliance(fremen, emperor);
             sihayaRidge.addForces("Emperor", 3);
             sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));
@@ -1040,8 +1089,9 @@ class GameTest {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
-            emperor.setAlly("Fremen");
-            fremen.setAlly("Emperor");
+            fremen.setLedger(new TestTopic());
+            emperor.setLedger(new TestTopic());
+            game.createAlliance(fremen, emperor);
             sihayaRidge.addForces("Emperor", 3);
             sihayaRidge.addForces("Emperor*", 5);
             assertEquals(5, sihayaRidge.getForceStrength("Emperor*"));

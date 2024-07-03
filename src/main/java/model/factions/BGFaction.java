@@ -67,6 +67,13 @@ public class BGFaction extends Faction {
         throw new InvalidGameStateException("BG never decline charity.");
     }
 
+    @Override
+    protected boolean doesNotHaveKarama() {
+        if (treacheryHand.stream().anyMatch(c -> c.type().equals("Worthless Card")))
+            return false;
+        return super.doesNotHaveKarama();
+    }
+
     /**
      * Adds forces from a Territory to the reserves or tanks
      *
