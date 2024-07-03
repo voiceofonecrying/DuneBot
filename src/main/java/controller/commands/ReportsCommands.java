@@ -406,6 +406,35 @@ public class ReportsCommands {
 
     public static String writeModeratorStats(JsonArray gameResults, Guild guild, List<Member> members) {
         Set<String> mods = gameResults.asList().stream().map(gr -> gr.getAsJsonObject().get("moderator").getAsString()).collect(Collectors.toSet());
+        List<Pair<String, List<JsonElement>>> modAndNumGames = new ArrayList<>();
+        List<Pair<String, Float>> modAndAverageTurns = new ArrayList<>();
+        mods.forEach(m -> modAndNumGames.add(new ImmutablePair<>(m, gameResults.asList().stream().filter(gr -> gr.getAsJsonObject().get("moderator").getAsString().equals(m)).toList())));
+        modAndNumGames.sort((a, b) -> Integer.compare(b.getRight().size(), a.getRight().size()));
+        StringBuilder moderatorsString = new StringBuilder("__Moderators__");
+        for (Pair<String, List<JsonElement>> p : modAndNumGames) {
+            Member member = members.stream().filter(m -> m.getGuild() == guild)
+                    .filter(m -> p.getLeft().equals("@" + m.getUser().getName()))
+                    .findFirst().orElse(null);
+            String moderator = member != null ? member.getUser().getAsMention() : p.getLeft();
+            int totalTurns = 0;
+            for (JsonElement gr : p.getRight()) {
+                JsonElement turn = gr.getAsJsonObject().get("turn");
+                totalTurns += turn == null || turn.getAsString().isEmpty() ? 10 : turn.getAsInt();
+            }
+            float averageTurns = (float) totalTurns / p.getRight().size();
+            modAndAverageTurns.add(new ImmutablePair<>(moderator, averageTurns));
+            moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(moderator);
+        }
+        modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
+        moderatorsString.append("\n__Average number of turns__");
+        for (Pair<String, Float> p : modAndAverageTurns) {
+            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
+        }
+        return moderatorsString.toString();
+    }
+
+    public static String writeModeratorStatsOld(JsonArray gameResults, Guild guild, List<Member> members) {
+        Set<String> mods = gameResults.asList().stream().map(gr -> gr.getAsJsonObject().get("moderator").getAsString()).collect(Collectors.toSet());
         List<Pair<String, Integer>> modAndNumGames = new ArrayList<>();
         mods.forEach(m -> modAndNumGames.add(new ImmutablePair<>(m, gameResults.asList().stream().filter(gr -> gr.getAsJsonObject().get("moderator").getAsString().equals(m)).toList().size())));
         modAndNumGames.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
@@ -1096,6 +1125,9 @@ public class ReportsCommands {
             }
             if (!playerStatsString.isEmpty())
                 playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
+            String factionPlays = highFactionPlays(event, members);
+            if (!factionPlays.isEmpty())
+                playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
 
             List<JsonElement> jsonElements = jsonGameResults.asList();
             for (JsonElement element : jsonElements) {
@@ -1105,7 +1137,7 @@ public class ReportsCommands {
             FileUpload fileUpload = FileUpload.fromData(
                     chrisCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "results-for-chris.csv"
             );
-            parsedResults.sendFiles(fileUpload).complete();
+//            parsedResults.sendFiles(fileUpload).complete();
             fileUpload = FileUpload.fromData(
                     reportsCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
             );
@@ -1342,10 +1374,11 @@ public class ReportsCommands {
         ArrayList<StringBuilder> highFactionPlays = new ArrayList<>();
         IntStream.range(0, maxGames).forEach(i -> highFactionPlays.add(new StringBuilder()));
         for (MutableTriple<String, String, Integer> t : playerFactionCounts) {
-            String punct = t.right == maxGames ? "!\n" : ".\n";
+            String punct = t.right == maxGames ? "!" : "";
             if (t.right != 0) {
                 String playerTag = members.stream().filter(member -> t.left.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(t.left);
-                highFactionPlays.get(t.right - 1).append(playerTag).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct);
+//                highFactionPlays.get(t.right - 1).append(playerTag).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct);
+                highFactionPlays.get(t.right - 1).append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct).append(" - ").append(playerTag).append("\n");
             }
         }
         StringBuilder result = new StringBuilder();
