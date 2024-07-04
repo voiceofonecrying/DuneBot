@@ -11,6 +11,7 @@ import java.io.IOException;
 public class ChoamFaction extends Faction {
     private int firstInflationRound;
     private ChoamInflationType firstInflationType;
+    private boolean allySpiceForBattle;
 
     public ChoamFaction(String player, String userName, Game game) throws IOException {
         super("CHOAM", player, userName, game);
@@ -28,6 +29,7 @@ public class ChoamFaction extends Faction {
         this.occupiedIncome = 2;
         this.handLimit = 5;
         clearInflation();
+        allySpiceForBattle = false;
     }
 
     @Override
@@ -126,5 +128,23 @@ public class ChoamFaction extends Faction {
     @Override
     public int baseRevivalCost(int regular, int starred) {
         return regular + starred;
+    }
+
+    @Override
+    public void resetAllySpiceSupportAfterShipping(Game game) {
+        // Choam ally support remains active through Battle Phase
+    }
+
+    public boolean isAllySpiceForBattle() {
+        return allySpiceForBattle;
+    }
+
+    public void setAllySpiceForBattle(boolean allySpiceForBattle) {
+        this.allySpiceForBattle = allySpiceForBattle;
+    }
+
+    @Override
+    public int getBattleSupport() {
+        return allySpiceForBattle ? getSpiceForAlly() : 0;
     }
 }

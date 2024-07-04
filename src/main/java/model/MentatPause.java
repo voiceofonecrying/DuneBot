@@ -20,6 +20,8 @@ public class MentatPause {
     public MentatPause(Game game) {
         List<DuneChoice> choices;
         for (Faction faction : game.getFactions()) {
+            faction.setAllySpiceFinishedForTurn(false);
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
             if (faction.getSpiceForAlly() != 0) {
                 faction.getChat().publish(Emojis.SPICE + " support for ally is reset to 0 in Mentat Pause.");
                 faction.setSpiceForAlly(0);

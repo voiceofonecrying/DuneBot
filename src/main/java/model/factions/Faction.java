@@ -66,6 +66,7 @@ public class Faction {
     private int allySpiceBidding;
     public boolean switchedToSpiceForAlly;
     private int spiceForAlly;
+    private boolean allySpiceFinishedForTurn;
     protected boolean isHighThreshold;
     private Boolean ornithoperToken;
     private Map<String, String> lastWhisper;
@@ -107,6 +108,7 @@ public class Faction {
         this.allySpiceShipment = 0;
         this.allySpiceBidding = 0;
         this.spiceForAlly = 0;
+        this.allySpiceFinishedForTurn = false;
         this.nexusCard = null;
         this.maxRevival = 3;
         this.starRevived = false;
@@ -775,8 +777,33 @@ public class Faction {
         }
     }
 
+    public boolean isAllySpiceFinishedForTurn() {
+        return allySpiceFinishedForTurn;
+    }
+
+    public void setAllySpiceFinishedForTurn(boolean allySpiceFinishedForTurn) {
+        this.allySpiceFinishedForTurn = allySpiceFinishedForTurn;
+    }
+
     public int getShippingSupport() {
         return spiceForAlly;
+    }
+
+    public void resetAllySpiceSupportAfterShipping(Game game) {
+        if (hasAlly()) {
+            Faction allyFaction = game.getFaction(ally);
+            if (!(allyFaction instanceof EmperorFaction) && !(allyFaction instanceof ChoamFaction)) {
+                allyFaction.setAllySpiceFinishedForTurn(true);
+                if (allyFaction.getSpiceForAlly() != 0)
+                    allyFaction.getChat().publish(Emojis.SPICE + " support for ally reset to 0 after ally completed shipping.");
+                allyFaction.setSpiceForAlly(0);
+                allyFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            }
+        }
+    }
+
+    public int getBattleSupport() {
+        return 0;
     }
 
     public NexusCard getNexusCard() {

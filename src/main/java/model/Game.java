@@ -1108,6 +1108,7 @@ public class Game {
     }
 
     public void startBattlePhase() {
+        getFactions().forEach(f -> f.resetAllySpiceSupportAfterShipping(this));
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("Turn " + turn + " Battle Phase:");
         phaseForWhispers = "Turn " + turn + " Battle Phase\n";

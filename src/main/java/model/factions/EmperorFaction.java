@@ -231,4 +231,14 @@ public class EmperorFaction extends Faction {
         String sardaukarString = emperorCanPayForOneSardaukar ? " including 1 " + Emojis.EMPEROR_SARDAUKAR : "";
         return "Would you like to purchase additional revivals" + sardaukarString + "? " + player;
     }
+
+    @Override
+    public void resetAllySpiceSupportAfterShipping(Game game) {
+        // Emperor ally support remains active through Battle Phase
+    }
+
+    @Override
+    public int getBattleSupport() {
+        return getSpiceForAlly();
+    }
 }

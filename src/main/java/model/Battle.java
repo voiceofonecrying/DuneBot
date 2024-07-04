@@ -461,7 +461,10 @@ public class Battle {
                 throw new InvalidGameStateException("Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. 7 required for Kwisatz Haderach");
         }
 
-        if (spice > (faction.getSpice() + faction.getAllySpiceShipment()))
+        int spiceFromAlly = 0;
+        if (faction.hasAlly())
+            spiceFromAlly = game.getFaction(faction.getAlly()).getBattleSupport();
+        if (spice > (faction.getSpice() + spiceFromAlly))
             throw new InvalidGameStateException(faction.getEmoji() + " does not have " + spice + " " + Emojis.SPICE);
         boolean isNotPlanetologist = leader == null || leader.getSkillCard() == null || !leader.getSkillCard().name().equals("Planetologist");
         if (weapon != null) {
@@ -823,12 +826,21 @@ public class Battle {
         if (battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
             resolution += emojis + " discards Juice of Sapho\n";
         if (battlePlan.getSpice() > 0) {
-            resolution += emojis + " loses " + battlePlan.getSpice() + " " + Emojis.SPICE + " combat spice";
-            if (!(faction instanceof ChoamFaction) && game.hasFaction("Choam") && battlePlan.getSpice() > 1) {
-                resolution += MessageFormat.format(
-                        ", {0} {1} paid to {2}",
-                        Math.floorDiv(battlePlan.getSpice(), 2), Emojis.SPICE, Emojis.CHOAM
-                );
+            int spiceFromAlly = 0;
+            if (faction.hasAlly())
+                spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
+            resolution += emojis + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice";
+            if (spiceFromAlly > 0)
+                resolution += "\n" + Emojis.getFactionEmoji(faction.getAlly()) + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support";
+            if (!(faction instanceof ChoamFaction) && game.hasFaction("CHOAM")) {
+                int choamEligibleSpice = battlePlan.getSpice();
+                if (faction.getAlly().equals("CHOAM"))
+                    choamEligibleSpice -= spiceFromAlly;
+                if (choamEligibleSpice > 1)
+                    resolution += MessageFormat.format(
+                            "\n{0} gains {1} {2} combat spice",
+                            Emojis.CHOAM, Math.floorDiv(choamEligibleSpice, 2), Emojis.SPICE
+                    );
             }
             resolution += "\n";
         }

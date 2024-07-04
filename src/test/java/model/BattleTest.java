@@ -23,6 +23,7 @@ class BattleTest {
     EcazFaction ecaz;
     BGFaction bg;
     BTFaction bt;
+    ChoamFaction choam;
     EmperorFaction emperor;
     FremenFaction fremen;
     HarkonnenFaction harkonnen;
@@ -1297,6 +1298,118 @@ class BattleTest {
             Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, emperor, burseg, null, false, 2, false, 1, null, null));
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 1, false, 1, null, null));
+        }
+    }
+
+    @Nested
+    @DisplayName("#battlePlans2")
+    class BattlePlans2 {
+        TestTopic modInfo;
+        Leader duncanIdaho;
+        TreacheryCard cheapHero;
+        TreacheryCard crysknife;
+        TreacheryCard chaumas;
+        TreacheryCard shield;
+        Territory arrakeen;
+        Territory carthag;
+        Battle battle1;
+        Battle battle2;
+        Battle battle2a;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            bt = null;
+
+            game = new Game();
+            modInfo = new TestTopic();
+            game.setModInfo(modInfo);
+            game.setTurnSummary(new TestTopic());
+            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            bg = new BGFaction("fPlayer", "fUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            emperor = new EmperorFaction("empPlayer", "empUser", game);
+            choam = new ChoamFaction("p", "u", game);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(harkonnen);
+            game.addFaction(ecaz);
+            game.addFaction(emperor);
+            game.addFaction(choam);
+            atreides.setChat(new TestTopic());
+            ecaz.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            harkonnen.setChat(new TestTopic());
+            choam.setChat(new TestTopic());
+            atreides.setLedger(new TestTopic());
+            choam.setLedger(new TestTopic());
+            emperor.setLedger(new TestTopic());
+            harkonnen.setLedger(new TestTopic());
+            arrakeen = game.getTerritory("Arrakeen");
+            arrakeen.addForces("Atreides", 1);
+            arrakeen.addForces("Harkonnen", 1);
+            battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
+//            ecaz.setAlly("Atreides");
+//            atreides.setAlly("Ecaz");
+            carthag = game.getTerritory("Carthag");
+            carthag.addForces("Ecaz", 5);
+            carthag.addForces("Atreides", 1);
+            battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
+            battle2a = new Battle(game, "Carthag", List.of(carthag), List.of(harkonnen, atreides, ecaz), carthag.getForces(), "Atreides");
+
+            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
+            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
+            chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
+            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
+        }
+
+        @Test
+        void testBattlePlanChoamDoesNotSupportAlly() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            game.createAlliance(choam, atreides);
+            choam.setSpiceForAlly(1);
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+        }
+
+        @Test
+        void testBattlePlanChoamSupportsAlly() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            game.createAlliance(choam, atreides);
+            choam.setSpiceForAlly(1);
+            choam.setAllySpiceForBattle(true);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+        }
+
+        @Test
+        void testBattlePlanEmperorSupportsAlly() {
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            game.createAlliance(emperor, atreides);
+            emperor.setSpiceForAlly(1);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+        }
+
+        @Test
+        void testBattlePlanResolutionAlliedWithChoam() throws InvalidGameStateException {
+            harkonnen.addTreacheryCard(cheapHero);
+            game.createAlliance(choam, atreides);
+            choam.setSpiceForAlly(2);
+            choam.setAllySpiceForBattle(true);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            battle1.printBattleResolution(game, false);
+            assertNotEquals(-1, modInfo.getMessages().getLast().indexOf(Emojis.ATREIDES + " loses 9 " + Emojis.SPICE + " combat spice\n" + Emojis.CHOAM + " loses 2 " + Emojis.SPICE + " ally support\n" + Emojis.CHOAM + " gains 4 " + Emojis.SPICE + " combat spice"));
+        }
+
+        @Test
+        void testBattlePlanResolutionAlliedWithEmperor() throws InvalidGameStateException {
+            harkonnen.addTreacheryCard(cheapHero);
+            game.createAlliance(emperor, atreides);
+            emperor.setSpiceForAlly(2);
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            battle1.printBattleResolution(game, false);
+            assertNotEquals(-1, modInfo.getMessages().getLast().indexOf(Emojis.ATREIDES + " loses 9 " + Emojis.SPICE + " combat spice\n" + Emojis.EMPEROR + " loses 2 " + Emojis.SPICE + " ally support\n"));// + Emojis.CHOAM + " gains 5 " + Emojis.SPICE + " combat spice"));
         }
     }
 }

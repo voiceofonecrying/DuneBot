@@ -111,7 +111,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                         id.equals("hajr") ||
                         id.equals("Ornithopter") ||
                         id.startsWith("ornithopter") ||
-                        id.startsWith("richese-no-field"))) {
+                        id.startsWith("richese-no-field") ||
+                        id.startsWith("richese-ally-no-field"))) {
                     messagesToDelete.add(message);
                     break;
                 }
@@ -473,6 +474,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             throw new InvalidGameStateException("You cannot afford this shipment.");
         executeFactionShipment(discordGame, game, faction, karama);
         discordGame.queueMessage("Shipment complete.");
+        faction.resetAllySpiceSupportAfterShipping(game);
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
     }
@@ -910,6 +912,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void passShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " does not ship.");
+        faction.resetAllySpiceSupportAfterShipping(game);
         faction.getShipment().clear();
         discordGame.pushGame();
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
