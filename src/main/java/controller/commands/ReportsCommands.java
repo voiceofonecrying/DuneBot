@@ -540,55 +540,66 @@ public class ReportsCommands {
         int numGames;
         int numWins;
         float winPercentage;
+        int numTotalWins;
 
-        public TurnStats(String turn, int numGames, int numWins, float winPercentage) {
+        public TurnStats(String turn, int numGames, int numWins, float winPercentage, int numTotalWins) {
             this.turn = turn;
             this.numGames = numGames;
             this.numWins = numWins;
             this.winPercentage = winPercentage;
+            this.numTotalWins = numTotalWins;
         }
     }
 
     private static TurnStats turnStats(JsonArray gameResults, String turn) {
         int numGames;
         int numWins;
+        int numTotalWins = 0;
         String marker;
 
         switch (turn) {
             case "F" -> {
+                FactionPerformance fp = factionPerformance(gameResults, "Fremen", Emojis.FREMEN);
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Fremen")).filter(v -> v != null && !v.getAsString().isEmpty())
                         .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("F"))
                         .toList().size();
+                numTotalWins = fp.numWins;
                 marker = Emojis.FREMEN;
             }
             case "G" -> {
+                FactionPerformance gp = factionPerformance(gameResults, "Guild", Emojis.GUILD);
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Guild")).filter(v -> v != null && !v.getAsString().isEmpty())
                         .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("G"))
                         .toList().size();
+                numTotalWins = gp.numWins;
                 marker = Emojis.GUILD;
             }
             case "BG" -> {
+                FactionPerformance bgp = factionPerformance(gameResults, "BG", Emojis.BG);
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("BG")).filter(v -> v != null && !v.getAsString().isEmpty())
                         .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("BG"))
                         .toList().size();
+                numTotalWins = bgp.numWins;
                 marker = Emojis.BG;
             }
             case "E" -> {
+                FactionPerformance ep = factionPerformance(gameResults, "Ecaz", Emojis.ECAZ);
                 numGames = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("Ecaz")).filter(v -> v != null && !v.getAsString().isEmpty())
                         .toList().size();
                 numWins = gameResults.asList().stream()
                         .map(gr -> gr.getAsJsonObject().get("victoryType")).filter(v -> v != null && v.getAsString().equals("E"))
                         .toList().size();
+                numTotalWins = ep.numWins;
                 marker = Emojis.ECAZ;
             }
             default -> {
@@ -600,7 +611,7 @@ public class ReportsCommands {
             }
         }
         float winPercentage = numWins / (float) numGames;
-        return new TurnStats(marker, numGames, numWins, winPercentage);
+        return new TurnStats(marker, numGames, numWins, winPercentage, numTotalWins);
     }
 
     public static String updateTurnStats(SlashCommandInteractionEvent event, JsonArray gameResults) {
@@ -623,6 +634,10 @@ public class ReportsCommands {
         for (TurnStats ts : allTurnStats) {
             String winPercentage = new DecimalFormat("#0.0%").format(ts.winPercentage);
             turnStatsString.append("\n").append(ts.turn).append(" ").append(winPercentage).append(" - ").append(ts.numWins).append("/").append(ts.numGames);
+            if (ts.numTotalWins != 0)
+                turnStatsString.append(" games with ").append(ts.turn).append(", ")
+                        .append(new DecimalFormat("#0.0%").format(ts.numWins/(float)ts.numTotalWins))
+                        .append(" of ").append(ts.numTotalWins).append(" ").append(ts.turn).append(" wins");
         }
         return tagEmojis(event, turnStatsString.toString());
     }
