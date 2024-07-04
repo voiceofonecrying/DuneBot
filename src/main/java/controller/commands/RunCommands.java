@@ -357,7 +357,10 @@ public class RunCommands {
         if (game.hasFaction("Atreides") && game.getFaction("Atreides").isHighThreshold()) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null) {
-                discordGame.getAtreidesChat().queueMessage("You see visions of " + nextCard.name() + " in your future.");
+                if (nextCard.discoveryToken() == null)
+                    discordGame.getAtreidesChat().queueMessage("You see visions of " + nextCard.name() + " in your future.");
+                else
+                    discordGame.getAtreidesChat().queueMessage("6 " + Emojis.SPICE + " will appear in " + nextCard.name() + " and destroy any forces and " + Emojis.SPICE + " there. A " + nextCard.discoveryToken() + " will appear in " + nextCard.tokenLocation());
             }
         }
         if (game.hasFaction("BG")) {
