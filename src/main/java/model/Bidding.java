@@ -899,7 +899,7 @@ public class Bidding {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         faction.setMaxBid(-1);
-        game.getModInfo().publish(faction.getEmoji() + " passed their bid.");
+        game.getModLedger().publish(faction.getEmoji() + " passed their bid.");
         tryBid(game, faction);
         if (faction.isAutoBid() && !game.getBidding().isSilentAuction())
             return "You will auto-pass until the next card or until you set auto-pass to false.";
@@ -910,7 +910,7 @@ public class Bidding {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         faction.setAutoBid(enabled);
-        game.getModInfo().publish(faction.getEmoji() + " set auto-pass to " + enabled);
+        game.getModLedger().publish(faction.getEmoji() + " set auto-pass to " + enabled);
         tryBid(game, faction);
         String responseMessage = "You set auto-pass to " + enabled + ".";
         if (enabled) {
@@ -921,7 +921,7 @@ public class Bidding {
 
     public String setAutoPassEntireTurn(Game game, Faction faction, boolean enabled) throws InvalidGameStateException {
         faction.setAutoBidTurn(enabled);
-        game.getModInfo().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
+        game.getModLedger().publish(faction.getEmoji() + " set auto-pass-entire-turn to " + enabled);
         if (!topBidderDeclared &&!allPlayersPassed && bidCard != null) {
             faction.setAutoBid(enabled);
             tryBid(game, faction);

@@ -544,7 +544,7 @@ public class Faction {
             autoBid = enableAutoPass;
             modMessage += enableAutoPass ? " Auto-pass enabled." : " No auto-pass.";
         }
-        game.getModInfo().publish(modMessage);
+        game.getModLedger().publish(modMessage);
         String responseMessage2 = "";
         if (!silentAuction) {
             if (autoBid) {
@@ -557,7 +557,7 @@ public class Faction {
                 outbidAllyValue = newOutbidAllySetting;
                 outbidAlly = outbidAllyValue;
                 responseMessage2 = emoji + " set their outbid ally policy to " + outbidAllyValue;
-                game.getModInfo().publish(responseMessage2);
+                game.getModLedger().publish(responseMessage2);
                 chat.publish(responseMessage2);
             }
             if (hasAlly()) {

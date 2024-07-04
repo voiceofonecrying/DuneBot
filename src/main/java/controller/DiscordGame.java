@@ -259,6 +259,10 @@ public class DiscordGame {
         return new ModInfo(this);
     }
 
+    public ModLedger getModLedger() throws ChannelNotFoundException {
+        return new ModLedger(this);
+    }
+
     public BiddingPhase getBiddingPhase() throws ChannelNotFoundException {
         return new BiddingPhase(this);
     }
@@ -542,6 +546,7 @@ public class DiscordGame {
         game.setWhispers(getWhispers(game));
         game.setGameActions(getGameActions());
         game.setModInfo(getModInfo());
+        game.setModLedger(getModLedger());
         game.setBiddingPhase(getBiddingPhase());
         return game;
     }

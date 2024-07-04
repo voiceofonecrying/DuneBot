@@ -35,6 +35,8 @@ class BiddingTest {
         game = new Game();
         modInfo = new TestTopic();
         game.setModInfo(modInfo);
+        TestTopic modLedger = new TestTopic();
+        game.setModLedger(modLedger);
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
         biddingPhase = new TestTopic();

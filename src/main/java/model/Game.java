@@ -90,6 +90,8 @@ public class Game {
     @Exclude
     private DuneTopic modInfo;
     @Exclude
+    private DuneTopic modLedger;
+    @Exclude
     private DuneTopic biddingPhase;
 
     public Game() throws IOException {
@@ -783,6 +785,14 @@ public class Game {
 
     public void setModInfo(DuneTopic modInfo) {
         this.modInfo = modInfo;
+    }
+
+    public DuneTopic getModLedger() {
+        return modLedger;
+    }
+
+    public void setModLedger(DuneTopic modLedger) {
+        this.modLedger = modLedger;
     }
 
     public DuneTopic getBiddingPhase() {
