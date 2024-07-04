@@ -425,8 +425,9 @@ public class ReportsCommands {
             modAndAverageTurns.add(new ImmutablePair<>(moderator, averageTurns));
             moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(moderator);
         }
+
         modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
-        moderatorsString.append("\n__Average number of turns__");
+        moderatorsString.append("\n\n__Average number of turns__");
         for (Pair<String, Float> p : modAndAverageTurns) {
             moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
         }
@@ -447,6 +448,31 @@ public class ReportsCommands {
             moderatorsString.append("\n").append(p.getRight()).append(" - ").append(moderator);
         }
         return moderatorsString.toString();
+    }
+
+    private static int longerGame(JsonElement a, JsonElement b) {
+        JsonElement aElement = a.getAsJsonObject().get("gameDuration");
+        JsonElement bElement = b.getAsJsonObject().get("gameDuration");
+        int aDuration = aElement == null ? 0 : aElement.getAsInt();
+        int bDuration = bElement == null ? 0 : bElement.getAsInt();
+        return Integer.compare(bDuration, aDuration);
+    }
+
+    public static String longestGames(JsonArray gameResults, Guild guild, List<Member> members) {
+        List<JsonElement> longestGames = gameResults.asList().stream().sorted(ReportsCommands::longerGame).toList();
+        StringBuilder longestGamesString = new StringBuilder("__Longest games__ (The tortured mod stat! :grin:)");
+        for (int i = 0; i < 10; i++) {
+            JsonObject result = longestGames.get(i).getAsJsonObject();
+            longestGamesString.append("\n").append(result.get("gameDuration").getAsString()).append(" days, ");
+            longestGamesString.append(result.get("gameName").getAsString()).append(", ");
+            String el = result.get("moderator").getAsString();
+            Member member = members.stream().filter(m -> m.getGuild() == guild)
+                    .filter(m -> el.equals("@" + m.getUser().getName()))
+                    .findFirst().orElse(null);
+            String moderator = member != null ? member.getUser().getAsMention() : el;
+            longestGamesString.append(moderator);
+        }
+        return longestGamesString.toString();
     }
 
     public static String updateStats(SlashCommandInteractionEvent event, List<Member> members) {
@@ -1097,13 +1123,14 @@ public class ReportsCommands {
             messages.forEach(msg -> msg.delete().queue());
             factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
 
-            TextChannel moderatorThanks = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElse(null);
-            if (moderatorThanks == null)
+            TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElse(null);
+            if (moderatorStats == null)
                 throw new IllegalStateException("The moderator-stats channel was not found.");
-            messageHistory = MessageHistory.getHistoryFromBeginning(moderatorThanks).complete();
+            messageHistory = MessageHistory.getHistoryFromBeginning(moderatorStats).complete();
             messages = messageHistory.getRetrievedHistory();
             messages.forEach(msg -> msg.delete().queue());
-            moderatorThanks.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
+            moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
+            moderatorStats.sendMessage(longestGames(jsonGameResults, event.getGuild(), members)).queue();
 
             messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
             messages = messageHistory.getRetrievedHistory();
@@ -1141,7 +1168,7 @@ public class ReportsCommands {
             fileUpload = FileUpload.fromData(
                     reportsCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
             );
-            parsedResults.sendFiles(fileUpload).complete();
+//            parsedResults.sendFiles(fileUpload).complete();
             statsDiscussionChannel.sendFiles(fileUpload).queue();
             fileUpload = FileUpload.fromData(
                     jsonGameResults.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
