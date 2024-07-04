@@ -263,7 +263,7 @@ public class RunCommands {
         Revival revival = game.getRevival();
         if (revival.isRecruitsDecisionNeeded())
             throw new InvalidGameStateException(revival.getRecruitsHolder() + " must decide if they will play recruits before the game can be advanced.");
-        boolean btWasHighThreshold = true;
+        boolean btWasHighThreshold = false;
         try {
             BTFaction bt = (BTFaction) game.getFaction("BT");
             List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
