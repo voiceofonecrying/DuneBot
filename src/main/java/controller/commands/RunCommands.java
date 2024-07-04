@@ -271,8 +271,7 @@ public class RunCommands {
                 String names = String.join(", ", factionsNeedingLimits);
                 throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
             }
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && !bt.isHighThreshold())
-                btWasHighThreshold = false;
+            btWasHighThreshold = !game.hasGameOption(GameOption.HOMEWORLDS) || bt.isHighThreshold();
         } catch (IllegalArgumentException e) {
             // BT are not in the game
         }
