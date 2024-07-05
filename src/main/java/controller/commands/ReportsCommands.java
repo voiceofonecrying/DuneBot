@@ -602,6 +602,15 @@ public class ReportsCommands {
                 numTotalWins = ep.numWins;
                 marker = Emojis.ECAZ;
             }
+            case "10" -> {
+                numGames = gameResults.asList().size();
+                numWins = gameResults.asList().stream()
+                        .filter(gr -> {
+                            JsonElement e = gr.getAsJsonObject().get("victoryType");
+                            return e == null || !e.getAsString().equals("G") && !e.getAsString().equals("F");
+                        }).map(gr -> gr.getAsJsonObject().get("turn")).filter(v -> v != null && v.getAsString().equals(turn)).toList().size();
+                marker = numberBoxes.get(Integer.parseInt(turn));
+            }
             default -> {
                 numGames = gameResults.asList().size();
                 numWins = gameResults.asList().stream()
@@ -1100,11 +1109,9 @@ public class ReportsCommands {
                         victoryType = "E";
                 }
 
-                String turn = "";
-                if (!victoryType.equals("G") && !victoryType.equals("F") && turnMatcher.find())
-                    turn = turnMatcher.group(1);
                 jsonGameRecord.addProperty("victoryType", victoryType);
-                jsonGameRecord.addProperty("turn", turn);
+                if (turnMatcher.find())
+                    jsonGameRecord.addProperty("turn", turnMatcher.group(1));
                 if (!winnersString.toLowerCase().contains("predict"))
                     winnersString = winnersString.substring(winnersString.indexOf("\n"));
                 Matcher taggedMatcher = taggedEmojis.matcher(winnersString);
