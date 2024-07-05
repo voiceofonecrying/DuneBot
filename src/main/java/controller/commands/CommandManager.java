@@ -484,7 +484,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
-        commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results."));
+        commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
 

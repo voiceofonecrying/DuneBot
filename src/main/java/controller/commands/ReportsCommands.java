@@ -483,7 +483,7 @@ public class ReportsCommands {
     public static String writeFactionStats(SlashCommandInteractionEvent event, JsonArray gameResults) {
         return updateFactionPerformance(event, gameResults) + "\n\n"
                 + updateTurnStats(event, gameResults) + "\n\n"
-                + soloVictories(gameResults);
+                + soloVictories(event, gameResults);
     }
 
     private static class FactionPerformance {
@@ -642,13 +642,26 @@ public class ReportsCommands {
         return tagEmojis(event, turnStatsString.toString());
     }
 
-    private static String soloVictories(JsonArray gameResults) {
+    private static String soloVictories(SlashCommandInteractionEvent event, JsonArray gameResults) {
         int numGames = gameResults.asList().size();
-        int numWins = gameResults.asList().stream()
-                .map(gr -> gr.getAsJsonObject().get("winner2Faction")).filter(v -> v == null || v.getAsString().isEmpty())
-                .toList().size();
+        List<JsonElement> soloWinGames = gameResults.asList().stream()
+                .filter(gr -> {
+                    JsonElement v = gr.getAsJsonObject().get("winner2Faction");
+                    return v == null || v.getAsString().isEmpty();
+                }).toList();
+        int numWins = soloWinGames.size();
         String winPercentage = new DecimalFormat("#0.0%").format(numWins / (float) numGames);
-        return "__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames;
+        StringBuilder response = new StringBuilder("__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames);
+        List<Pair<String, Integer>> factionsSoloWins = new ArrayList<>();
+        for (String factionName : factionNames) {
+            int factionSoloWins = soloWinGames.stream().filter(gr -> gr.getAsJsonObject().get("winner1Faction").getAsString().equals(factionName)).toList().size();
+            if (factionSoloWins > 0)
+                factionsSoloWins.add(new ImmutablePair<>(factionName, factionSoloWins));
+        }
+        factionsSoloWins.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
+        for (Pair<String, Integer> fsw : factionsSoloWins)
+            response.append("\n").append(tagEmojis(event, Emojis.getFactionEmoji(fsw.getLeft()))).append(" ").append(fsw.getRight());
+        return response.toString();
     }
 
     public static String getHeader() {
@@ -854,27 +867,84 @@ public class ReportsCommands {
         return strippedEmoji.substring(0, 1).toUpperCase() + strippedEmoji.substring(1);
     }
 
+    private static void publishStats(SlashCommandInteractionEvent event, JsonArray jsonGameResults, List<Member> members, boolean hasNewGames) {
+        Category category = getStatsCategory(event);
+        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The player-stats channel was not found."));
+        ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElseThrow(() -> new IllegalStateException("The parsed-results thread was not found."));
+
+        StringBuilder chrisCSVFromJson = new StringBuilder(getChrisHeader());
+        StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
+        TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The faction-stats channel was not found."));
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
+        List<Message> messages = messageHistory.getRetrievedHistory();
+        messages.forEach(msg -> msg.delete().queue());
+        factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
+
+        TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The moderator-stats channel was not found."));
+        messageHistory = MessageHistory.getHistoryFromBeginning(moderatorStats).complete();
+        messages = messageHistory.getRetrievedHistory();
+        messages.forEach(msg -> msg.delete().queue());
+        moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
+        moderatorStats.sendMessage(longestGames(jsonGameResults, event.getGuild(), members)).queue();
+
+        messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
+        messages = messageHistory.getRetrievedHistory();
+        messages.forEach(msg -> msg.delete().queue());
+        StringBuilder playerStatsString = new StringBuilder();
+        String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
+        int mentions = 0;
+        for (String s : playerStatsLines) {
+            if (playerStatsString.length() + s.length() > 2000 || mentions == 20) {
+                playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
+                playerStatsString = new StringBuilder();
+                mentions = 0;
+            }
+            if (!playerStatsString.isEmpty())
+                playerStatsString.append("\n");
+            playerStatsString.append(s);
+            if (s.contains("<@"))
+                mentions++;
+        }
+        if (!playerStatsString.isEmpty())
+            playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
+        String factionPlays = highFactionPlays(event, jsonGameResults, members);
+        if (!factionPlays.isEmpty())
+            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
+
+        if (hasNewGames) {
+            List<JsonElement> jsonElements = jsonGameResults.asList();
+            for (JsonElement element : jsonElements) {
+                chrisCSVFromJson.append(getChrisGameRecord(element));
+                reportsCSVFromJson.append(getGameRecord(element));
+            }
+            FileUpload fileUpload;
+//            fileUpload = FileUpload.fromData(
+//                    chrisCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "results-for-chris.csv"
+//            );
+//            parsedResults.sendFiles(fileUpload).complete();
+            fileUpload = FileUpload.fromData(
+                    reportsCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
+            );
+//            parsedResults.sendFiles(fileUpload).complete();
+            TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElseThrow(() -> new IllegalStateException("The stats-discussion channel was not found."));
+            statsDiscussionChannel.sendFiles(fileUpload).queue();
+            fileUpload = FileUpload.fromData(
+                    jsonGameResults.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
+            );
+            parsedResults.sendFiles(fileUpload).complete();
+            statsDiscussionChannel.sendFiles(fileUpload).queue();
+        }
+    }
+
     private static GameResults gatherGameResults(SlashCommandInteractionEvent event) {
         return gatherGameResults(event, false, null);
     }
 
     private static GameResults gatherGameResults(SlashCommandInteractionEvent event, boolean loadNewGames, List<Member> members) {
-        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
-        Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
-        if (category == null)
-            throw new IllegalStateException("The DUNE STATISTICS category was not found.");
-        TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElse(null);
-        if (gameResults == null)
-            throw new IllegalStateException("The game-results channel was not found.");
-        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElse(null);
-        if (playerStatsChannel == null)
-            throw new IllegalStateException("The player-stats channel was not found.");
-        ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElse(null);
-        if (parsedResults == null)
-            parsedResults = playerStatsChannel.createThreadChannel("parsed-results").complete();
-        TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElse(null);
-        if (statsDiscussionChannel == null)
-            throw new IllegalStateException("The stats-discussion channel was not found.");
+        Category category = getStatsCategory(event);
+        TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElseThrow(() -> new IllegalStateException("The game-results channel was not found."));
+        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The player-stats channel was not found."));
+        ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElseThrow(() -> new IllegalStateException("The parsed-results thread was not found."));
 
         JsonArray jsonGameResults = new JsonArray();
         MessageHistory h = parsedResults.getHistory();
@@ -899,8 +969,6 @@ public class ReportsCommands {
         if (!loadNewGames)
             return new GameResults(jsonGameResults, 0);
 
-        StringBuilder chrisCSVFromJson = new StringBuilder(getChrisHeader());
-        StringBuilder reportsCSVFromJson = new StringBuilder(getHeader());
         MessageHistory messageHistory;
         if (lastMessageID.isEmpty())
             messageHistory = MessageHistory.getHistoryFromBeginning(gameResults).limit(10).complete();
@@ -1129,68 +1197,10 @@ public class ReportsCommands {
         JsonArray reversedNewGames = new JsonArray();
         newGames.forEach(reversedNewGames::add);
         jsonGameResults.addAll(reversedNewGames);
-        if (!jsonNewGameResults.isEmpty()) {
-            TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElse(null);
-            if (factionStatsChannel == null)
-                throw new IllegalStateException("The faction-stats channel was not found.");
-            messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
-            messages = messageHistory.getRetrievedHistory();
-            messages.forEach(msg -> msg.delete().queue());
-            factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
-
-            TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElse(null);
-            if (moderatorStats == null)
-                throw new IllegalStateException("The moderator-stats channel was not found.");
-            messageHistory = MessageHistory.getHistoryFromBeginning(moderatorStats).complete();
-            messages = messageHistory.getRetrievedHistory();
-            messages.forEach(msg -> msg.delete().queue());
-            moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
-            moderatorStats.sendMessage(longestGames(jsonGameResults, event.getGuild(), members)).queue();
-
-            messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
-            messages = messageHistory.getRetrievedHistory();
-            messages.forEach(msg -> msg.delete().queue());
-            StringBuilder playerStatsString = new StringBuilder();
-            String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
-            int mentions = 0;
-            for (String s : playerStatsLines) {
-                if (playerStatsString.length() + s.length() > 2000 || mentions == 20) {
-                    playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
-                    playerStatsString = new StringBuilder();
-                    mentions = 0;
-                }
-                if (!playerStatsString.isEmpty())
-                    playerStatsString.append("\n");
-                playerStatsString.append(s);
-                if (s.contains("<@"))
-                    mentions++;
-            }
-            if (!playerStatsString.isEmpty())
-                playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
-            String factionPlays = highFactionPlays(event, members);
-            if (!factionPlays.isEmpty())
-                playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
-
-            List<JsonElement> jsonElements = jsonGameResults.asList();
-            for (JsonElement element : jsonElements) {
-                chrisCSVFromJson.append(getChrisGameRecord(element));
-                reportsCSVFromJson.append(getGameRecord(element));
-            }
-            FileUpload fileUpload = FileUpload.fromData(
-                    chrisCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "results-for-chris.csv"
-            );
-//            parsedResults.sendFiles(fileUpload).complete();
-            fileUpload = FileUpload.fromData(
-                    reportsCSVFromJson.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
-            );
-//            parsedResults.sendFiles(fileUpload).complete();
-            statsDiscussionChannel.sendFiles(fileUpload).queue();
-            fileUpload = FileUpload.fromData(
-                    jsonGameResults.toString().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
-            );
-            parsedResults.sendFiles(fileUpload).complete();
-            statsDiscussionChannel.sendFiles(fileUpload).queue();
-        }
+        OptionMapping optionMapping = event.getOption(forcePublish.getName());
+        boolean publish = (optionMapping != null && optionMapping.getAsBoolean());
+        if (!jsonNewGameResults.isEmpty() || publish)
+            publishStats(event, jsonGameResults, members, !jsonNewGameResults.isEmpty());
         return new GameResults(jsonGameResults, jsonNewGameResults.size());
     }
 
@@ -1405,6 +1415,10 @@ public class ReportsCommands {
 
     private static String highFactionPlays(SlashCommandInteractionEvent event, List<Member> members) {
         JsonArray gameResults = gatherGameResults(event).gameResults;
+        return highFactionPlays(event, gameResults, members);
+    }
+
+    private static String highFactionPlays(SlashCommandInteractionEvent event, JsonArray gameResults, List<Member> members) {
         Set<String> players = getAllPlayers(gameResults);
         List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
         for (String playerName : players) {
@@ -1426,7 +1440,7 @@ public class ReportsCommands {
         StringBuilder result = new StringBuilder();
         int lines = 0;
         int numPlays = maxGames - 1;
-        while (numPlays >= 0 && lines < 5) {
+        while (numPlays >= 0 && lines < 6) {
             String hfpString = highFactionPlays.get(numPlays).toString();
             for (char c : hfpString.toCharArray())
                 if (c == '\n')
@@ -1602,5 +1616,13 @@ public class ReportsCommands {
         result += "Summary:\n";
         result += "> Edit this text to add a summary, or remove the Summary section if you do not wish to include one.";
         discordGame.getModInfo().queueMessage(result);
+    }
+
+    public static Category getStatsCategory(SlashCommandInteractionEvent event) {
+        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
+        if (category == null)
+            throw new IllegalStateException("The DUNE STATISTICS category was not found.");
+        return category;
     }
 }

@@ -244,6 +244,9 @@ public class CommandOptions {
     public static final OptionData showFactions =
             new OptionData(OptionType.BOOLEAN, "show-factions", "Show factions in each game", false);
 
+    public static final OptionData forcePublish =
+            new OptionData(OptionType.BOOLEAN, "force-publish", "Publish stats even if no new games were added", false);
+
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
         String searchValue = event.getFocusedOption().getValue();
