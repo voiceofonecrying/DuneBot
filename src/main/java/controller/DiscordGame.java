@@ -527,7 +527,6 @@ public class DiscordGame {
                 Faction ally = game.getFaction(f.getAlly());
                 int totalSupport = Math.min(f.getSpice(), ally.getAllySpiceBidding() + ally.getAllySpiceShipment());
                 if (totalSupport > 0) {
-                    System.out.println(game.getGameRole() + " " + f.getName() + " " + totalSupport);
                     f.setSpiceForAlly(totalSupport);
                     ally.setAllySpiceBidding(0);
                     ally.setAllySpiceShipment(0);

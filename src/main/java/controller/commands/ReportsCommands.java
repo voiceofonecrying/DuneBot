@@ -13,6 +13,7 @@ import model.Bidding;
 import model.Game;
 import model.factions.BGFaction;
 import model.factions.Faction;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -70,11 +71,11 @@ public class ReportsCommands {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
             case "player-record" -> responseMessage = playerRecord(event);
-            case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event, members);
-            case "played-all-expansion" -> responseMessage = playedAllExpansion(event, members);
-            case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event, members);
-            case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event, members);
-            case "high-faction-plays" -> responseMessage = highFactionPlays(event, members);
+            case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), event.getJDA(), members);
+            case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), event.getJDA(), members);
+            case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), event.getJDA(), members);
+            case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), event.getJDA(), members);
+            case "high-faction-plays" -> responseMessage = highFactionPlays(event.getGuild(), event.getJDA(), members);
         }
         return responseMessage;
     }
@@ -182,17 +183,21 @@ public class ReportsCommands {
     }
 
     public static String gamesPerPlayer(SlashCommandInteractionEvent event, List<Member> members) {
-        String message = "**Number of games players are in**\n";
-        HashMap<String, List<String>> playerGamesMap = new HashMap<>();
         OptionMapping optionMapping = event.getOption(months.getName());
         int monthsAgo = (optionMapping != null ? optionMapping.getAsInt() : 0);
-        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        return gamesPerPlayer(event.getGuild(), event.getJDA(), members, monthsAgo);
+    }
+
+    public static String gamesPerPlayer(Guild guild, JDA jda, List<Member> members, int monthsAgo) {
+        String message = "**Number of games players are in**\n";
+        HashMap<String, List<String>> playerGamesMap = new HashMap<>();
+        List<Category> categories = Objects.requireNonNull(guild).getCategories();
         for (Category category : categories) {
             String categoryName = category.getName();
             if (categoryName.equalsIgnoreCase("staging area")) {
                 addWaitingListPlayers(playerGamesMap, category);
             } else if (categoryName.equalsIgnoreCase("dune statistics")) {
-                addRecentlyFinishedPlayers(members, gatherGameResults(event), playerGamesMap, monthsAgo);
+                addRecentlyFinishedPlayers(members, gatherGameResults(guild, jda), playerGamesMap, monthsAgo);
             } else {
                 addGamePlayers(playerGamesMap, category, categoryName);
             }
@@ -476,14 +481,16 @@ public class ReportsCommands {
     }
 
     public static String updateStats(SlashCommandInteractionEvent event, List<Member> members) {
-        GameResults gameResults = gatherGameResults(event, true, members);
+        OptionMapping optionMapping = event.getOption(forcePublish.getName());
+        boolean publishIfNoNewGames = (optionMapping != null && optionMapping.getAsBoolean());
+        GameResults gameResults = gatherGameResults(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames);
         return gameResults.numNewEntries + " new games were added to parsed results.";
     }
 
-    public static String writeFactionStats(SlashCommandInteractionEvent event, JsonArray gameResults) {
-        return updateFactionPerformance(event, gameResults) + "\n\n"
-                + updateTurnStats(event, gameResults) + "\n\n"
-                + soloVictories(event, gameResults);
+    public static String writeFactionStats(Guild guild, JsonArray gameResults) {
+        return updateFactionPerformance(guild, gameResults) + "\n\n"
+                + updateTurnStats(guild, gameResults) + "\n\n"
+                + soloVictories(guild, gameResults);
     }
 
     private static class FactionPerformance {
@@ -512,7 +519,7 @@ public class ReportsCommands {
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage);
     }
 
-    public static String updateFactionPerformance(SlashCommandInteractionEvent event, JsonArray gameResults) {
+    public static String updateFactionPerformance(Guild guild, JsonArray gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
         allFactionPerformance.add(factionPerformance(gameResults, "Atreides", Emojis.ATREIDES));
         allFactionPerformance.add(factionPerformance(gameResults, "BG", Emojis.BG));
@@ -532,7 +539,7 @@ public class ReportsCommands {
             String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
             factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames);
         }
-        return tagEmojis(event, factionStatsString.toString());
+        return tagEmojis(guild, factionStatsString.toString());
     }
 
     private static class TurnStats {
@@ -623,7 +630,7 @@ public class ReportsCommands {
         return new TurnStats(marker, numGames, numWins, winPercentage, numTotalWins);
     }
 
-    public static String updateTurnStats(SlashCommandInteractionEvent event, JsonArray gameResults) {
+    public static String updateTurnStats(Guild guild, JsonArray gameResults) {
         List<TurnStats> allTurnStats = new ArrayList<>();
         allTurnStats.add(turnStats(gameResults, "1"));
         allTurnStats.add(turnStats(gameResults, "2"));
@@ -648,10 +655,10 @@ public class ReportsCommands {
                         .append(new DecimalFormat("#0.0%").format(ts.numWins/(float)ts.numTotalWins))
                         .append(" of ").append(ts.numTotalWins).append(" ").append(ts.turn).append(" wins");
         }
-        return tagEmojis(event, turnStatsString.toString());
+        return tagEmojis(guild, turnStatsString.toString());
     }
 
-    private static String soloVictories(SlashCommandInteractionEvent event, JsonArray gameResults) {
+    private static String soloVictories(Guild guild, JsonArray gameResults) {
         int numGames = gameResults.asList().size();
         List<JsonElement> soloWinGames = gameResults.asList().stream()
                 .filter(gr -> {
@@ -669,7 +676,7 @@ public class ReportsCommands {
         }
         factionsSoloWins.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
         for (Pair<String, Integer> fsw : factionsSoloWins)
-            response.append("\n").append(tagEmojis(event, Emojis.getFactionEmoji(fsw.getLeft()))).append(" ").append(fsw.getRight());
+            response.append("\n").append(tagEmojis(guild, Emojis.getFactionEmoji(fsw.getLeft()))).append(" ").append(fsw.getRight());
         return response.toString();
     }
 
@@ -876,8 +883,8 @@ public class ReportsCommands {
         return strippedEmoji.substring(0, 1).toUpperCase() + strippedEmoji.substring(1);
     }
 
-    private static void publishStats(SlashCommandInteractionEvent event, JsonArray jsonGameResults, List<Member> members, boolean hasNewGames) {
-        Category category = getStatsCategory(event);
+    private static void publishStats(Guild guild, JsonArray jsonGameResults, List<Member> members, boolean hasNewGames) {
+        Category category = getStatsCategory(guild);
         TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The player-stats channel was not found."));
         ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElseThrow(() -> new IllegalStateException("The parsed-results thread was not found."));
 
@@ -887,20 +894,20 @@ public class ReportsCommands {
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
-        factionStatsChannel.sendMessage(writeFactionStats(event, jsonGameResults)).queue();
+        factionStatsChannel.sendMessage(writeFactionStats(guild, jsonGameResults)).queue();
 
         TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The moderator-stats channel was not found."));
         messageHistory = MessageHistory.getHistoryFromBeginning(moderatorStats).complete();
         messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
-        moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, event.getGuild(), members)).queue();
-        moderatorStats.sendMessage(longestGames(jsonGameResults, event.getGuild(), members)).queue();
+        moderatorStats.sendMessage(writeModeratorStats(jsonGameResults, guild, members)).queue();
+        moderatorStats.sendMessage(longestGames(jsonGameResults, guild, members)).queue();
 
         messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
         messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
         StringBuilder playerStatsString = new StringBuilder();
-        String[] playerStatsLines = writePlayerStats(jsonGameResults, event.getGuild(), members).split("\n");
+        String[] playerStatsLines = writePlayerStats(jsonGameResults, guild, members).split("\n");
         int mentions = 0;
         for (String s : playerStatsLines) {
             if (playerStatsString.length() + s.length() > 2000 || mentions == 20) {
@@ -916,7 +923,7 @@ public class ReportsCommands {
         }
         if (!playerStatsString.isEmpty())
             playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
-        String factionPlays = highFactionPlays(event, jsonGameResults, members);
+        String factionPlays = highFactionPlays(guild, jsonGameResults, members);
         if (!factionPlays.isEmpty())
             playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
 
@@ -945,12 +952,12 @@ public class ReportsCommands {
         }
     }
 
-    private static GameResults gatherGameResults(SlashCommandInteractionEvent event) {
-        return gatherGameResults(event, false, null);
+    private static GameResults gatherGameResults(Guild guild, JDA jda) {
+        return gatherGameResults(guild, jda, false, null, false);
     }
 
-    private static GameResults gatherGameResults(SlashCommandInteractionEvent event, boolean loadNewGames, List<Member> members) {
-        Category category = getStatsCategory(event);
+    private static GameResults gatherGameResults(Guild guild, JDA jda, boolean loadNewGames, List<Member> members, boolean publishIfNoNewGames) {
+        Category category = getStatsCategory(guild);
         TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElseThrow(() -> new IllegalStateException("The game-results channel was not found."));
         TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The player-stats channel was not found."));
         ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElseThrow(() -> new IllegalStateException("The parsed-results thread was not found."));
@@ -1040,7 +1047,7 @@ public class ReportsCommands {
                     }
                     if (foundChannelId) {
                         try {
-                            TextChannel posts = Objects.requireNonNull(event.getGuild()).getTextChannelById(channelString);
+                            TextChannel posts = Objects.requireNonNull(guild).getTextChannelById(channelString);
                             if (posts != null) {
                                 LocalDate startDate = posts.getTimeCreated().toLocalDate();
                                 jsonGameRecord.addProperty("gameStartDate", startDate.toString());
@@ -1072,7 +1079,7 @@ public class ReportsCommands {
                     lines = modString.split("\n");
                     Matcher modMatcher = playerTags.matcher(modString);
                     if (modMatcher.find())
-                        moderator = "@" + event.getJDA().retrieveUserById(modMatcher.group(1)).complete().getName();
+                        moderator = "@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName();
                     else
                         moderator = lines[1].substring(2).split("\\s+", 2)[0];
                 } else if (gameName.equals("Discord 27"))
@@ -1096,7 +1103,7 @@ public class ReportsCommands {
                     victoryType = "G";
                 else if (winnersString.contains(":guild: victory condition"))
                     victoryType = "G";
-                else if (winnersString.contains(tagEmojis(event,":guild: Default")))
+                else if (winnersString.contains(tagEmojis(guild,":guild: Default")))
                     victoryType = "G";
                 else if (gameName.equals("Discord 26"))
                     victoryType = "F";
@@ -1177,7 +1184,7 @@ public class ReportsCommands {
                     }
                     Matcher matcher2 = playerTags.matcher(s.substring(matcherThatFoundEmoji.end()));
                     if (matcher2.find())
-                        playerName = "@" + event.getJDA().retrieveUserById(matcher2.group(1)).complete().getName();
+                        playerName = "@" + jda.retrieveUserById(matcher2.group(1)).complete().getName();
                     else {
                         playerName = s.substring(matcherThatFoundEmoji.end());
                         if (playerName.indexOf(" - ") == 0)
@@ -1204,27 +1211,25 @@ public class ReportsCommands {
         JsonArray reversedNewGames = new JsonArray();
         newGames.forEach(reversedNewGames::add);
         jsonGameResults.addAll(reversedNewGames);
-        OptionMapping optionMapping = event.getOption(forcePublish.getName());
-        boolean publish = (optionMapping != null && optionMapping.getAsBoolean());
-        if (!jsonNewGameResults.isEmpty() || publish)
-            publishStats(event, jsonGameResults, members, !jsonNewGameResults.isEmpty());
+        if (!jsonNewGameResults.isEmpty() || publishIfNoNewGames)
+            publishStats(guild, jsonGameResults, members, !jsonNewGameResults.isEmpty());
         return new GameResults(jsonGameResults, jsonNewGameResults.size());
     }
 
-    public static RichCustomEmoji getEmoji(SlashCommandInteractionEvent event, String emojiName) {
-        Map<String, RichCustomEmoji> emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
+    public static RichCustomEmoji getEmoji(Guild guild, String emojiName) {
+        Map<String, RichCustomEmoji> emojis = EmojiCache.getEmojis(Objects.requireNonNull(guild).getId());
         return emojis.get(emojiName.replace(":", ""));
     }
 
-    public static String getEmojiTag(SlashCommandInteractionEvent event, String emojiName) {
-        RichCustomEmoji emoji = getEmoji(event, emojiName);
+    public static String getEmojiTag(Guild guild, String emojiName) {
+        RichCustomEmoji emoji = getEmoji(guild, emojiName);
         return emoji == null ? ":" + emojiName.replace(":", "") + ":" : emoji.getFormatted();
     }
-    public static String tagEmojis(SlashCommandInteractionEvent event, String message) {
+    public static String tagEmojis(Guild guild, String message) {
         Matcher matcher = untaggedEmojis.matcher(message);
         StringBuilder stringBuilder = new StringBuilder();
         while (matcher.find()) {
-            matcher.appendReplacement(stringBuilder, getEmojiTag(event, matcher.group(1)));
+            matcher.appendReplacement(stringBuilder, getEmojiTag(guild, matcher.group(1)));
         }
         matcher.appendTail(stringBuilder);
         return stringBuilder.toString();
@@ -1235,11 +1240,11 @@ public class ReportsCommands {
         User thePlayer = (optionMapping != null ? optionMapping.getAsUser() : null);
         if (thePlayer == null)
             thePlayer = event.getUser();
-        return playerRecord(event, thePlayer.getName(), thePlayer.getAsMention());
+        return playerRecord(event.getGuild(), event.getJDA(), thePlayer.getName(), thePlayer.getAsMention());
     }
 
-    public static String playedAllOriginalSix(SlashCommandInteractionEvent event, List<Member> members) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+    public static String playedAllOriginalSix(Guild guild, JDA jda, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder playedSix = new StringBuilder();
         StringBuilder playedFive = new StringBuilder();
@@ -1280,11 +1285,11 @@ public class ReportsCommands {
         }
         if (playedSix.isEmpty() && playedFive.isEmpty())
             return "No players have played all original 6 factions.";
-        return tagEmojis(event, playedSix + playedFive.toString());
+        return tagEmojis(guild, playedSix + playedFive.toString());
     }
 
-    public static String playedAllExpansion(SlashCommandInteractionEvent event, List<Member> members) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+    public static String playedAllExpansion(Guild guild, JDA jda, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder playedSix = new StringBuilder();
         StringBuilder playedFive = new StringBuilder();
@@ -1325,11 +1330,11 @@ public class ReportsCommands {
         }
         if (playedSix.isEmpty() && playedFive.isEmpty())
             return "No players have played all 6 expansion factions.";
-        return tagEmojis(event, playedSix + playedFive.toString());
+        return tagEmojis(guild, playedSix + playedFive.toString());
     }
 
-    public static String wonAsAllOriginalSix(SlashCommandInteractionEvent event, List<Member> members) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+    public static String wonAsAllOriginalSix(Guild guild, JDA jda, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder wonAsSix = new StringBuilder();
         StringBuilder wonAsFive = new StringBuilder();
@@ -1370,11 +1375,11 @@ public class ReportsCommands {
         }
         if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
             return "No players have won with all original 6 factions.";
-        return tagEmojis(event, wonAsSix + wonAsFive.toString());
+        return tagEmojis(guild, wonAsSix + wonAsFive.toString());
     }
 
-    public static String wonAsAllExpansion(SlashCommandInteractionEvent event, List<Member> members) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+    public static String wonAsAllExpansion(Guild guild, JDA jda, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         StringBuilder wonAsSix = new StringBuilder();
         StringBuilder wonAsFive = new StringBuilder();
@@ -1415,17 +1420,17 @@ public class ReportsCommands {
         }
         if (wonAsSix.isEmpty() && wonAsFive.isEmpty())
             return "No players have won with all 6 expansion factions.";
-        return tagEmojis(event, wonAsSix + wonAsFive.toString());
+        return tagEmojis(guild, wonAsSix + wonAsFive.toString());
     }
 
     private static final List<String> factionNames = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
 
-    private static String highFactionPlays(SlashCommandInteractionEvent event, List<Member> members) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
-        return highFactionPlays(event, gameResults, members);
+    private static String highFactionPlays(Guild guild, JDA jda, List<Member> members) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
+        return highFactionPlays(guild, gameResults, members);
     }
 
-    private static String highFactionPlays(SlashCommandInteractionEvent event, JsonArray gameResults, List<Member> members) {
+    private static String highFactionPlays(Guild guild, JsonArray gameResults, List<Member> members) {
         Set<String> players = getAllPlayers(gameResults);
         List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
         for (String playerName : players) {
@@ -1457,12 +1462,12 @@ public class ReportsCommands {
         }
         if (maxGames == 0)
             return "No players have won.";
-        return tagEmojis(event, result.toString());
+        return tagEmojis(guild, result.toString());
     }
 
-    public static String averageDaysPerTurn(SlashCommandInteractionEvent event, List<Member> members) {
+    public static String averageDaysPerTurn(Guild guild, JDA jda, List<Member> members) {
         int minGames = 5;
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         Set<String> players = getAllPlayers(gameResults);
         List<Pair<String, Integer>> playerAverageDuration = new ArrayList<>();
         String overallAverage = "";
@@ -1505,8 +1510,8 @@ public class ReportsCommands {
         return response.toString();
     }
 
-    private static String playerRecord(SlashCommandInteractionEvent event, String playerName, String playerTag) {
-        JsonArray gameResults = gatherGameResults(event).gameResults;
+    private static String playerRecord(Guild guild, JDA jda, String playerName, String playerTag) {
+        JsonArray gameResults = gatherGameResults(guild, jda).gameResults;
         PlayerRecord pr = getPlayerRecord(gameResults, "@" + playerName);
         String returnString = playerTag + " has played in " + pr.games + " games and won " + pr.wins;
         if (pr.atreidesGames > 0) {
@@ -1557,7 +1562,7 @@ public class ReportsCommands {
             returnString += "\n" + Emojis.MORITANI + " " + pr.moritaniGames + " games";
             if (pr.moritaniWins > 0) returnString += ", " + pr.moritaniWins + " wins";
         }
-        return tagEmojis(event, returnString);
+        return tagEmojis(guild, returnString);
     }
 
     public static void gameResult(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -1622,11 +1627,12 @@ public class ReportsCommands {
             result += "> " + Emojis.getFactionEmoji(winner2Name) + " - " + game.getFaction(winner2Name).getPlayer() + "\n";
         result += "Summary:\n";
         result += "> Edit this text to add a summary, or remove the Summary section if you do not wish to include one.";
+        result += "\n\n(Use the Discord menu item Copy Text to retain formatting when pasting.)";
         discordGame.getModInfo().queueMessage(result);
     }
 
-    public static Category getStatsCategory(SlashCommandInteractionEvent event) {
-        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+    public static Category getStatsCategory(Guild guild) {
+        List<Category> categories = Objects.requireNonNull(guild).getCategories();
         Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
         if (category == null)
             throw new IllegalStateException("The DUNE STATISTICS category was not found.");

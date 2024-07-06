@@ -79,7 +79,7 @@ public class CommandManager extends ListenerAdapter {
                 String result = ReportsCommands.listMembers(event, members);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("average-days-per-turn") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
-                String result = ReportsCommands.averageDaysPerTurn(event, members);
+                String result = ReportsCommands.averageDaysPerTurn(event.getGuild(), event.getJDA(), members);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports")) {
                 String result = ReportsCommands.runCommand(event, members);
