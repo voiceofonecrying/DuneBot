@@ -29,6 +29,7 @@ public class ReportsCommandsTester {
 
         EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
         System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
+//        System.out.println(ReportsCommands.publishFactionStats(guild, testJDA));
 //        System.out.println(ReportsCommands.compareReportsMethod(guild, testJDA));
 //        System.out.println(ReportsCommands.playedAllOriginalSix(guild, testJDA, guild.getMembers()));
 

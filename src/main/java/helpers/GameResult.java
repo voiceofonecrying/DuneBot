@@ -1,6 +1,7 @@
 package helpers;
 
-import java.lang.reflect.Field;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
 public class GameResult {
@@ -13,7 +14,7 @@ public class GameResult {
     private String daysUntilArchive;
     private String moderator;
     private String victoryType;
-    private String turn;
+    private int turn;
     private String winner1Faction;
     private String winner2Faction;
     private String atreides;
@@ -93,11 +94,11 @@ public class GameResult {
         this.victoryType = victoryType;
     }
 
-    public String getTurn() {
+    public int getTurn() {
         return turn;
     }
 
-    public void setTurn(String turn) {
+    public void setTurn(int turn) {
         this.turn = turn;
     }
 
@@ -259,18 +260,37 @@ public class GameResult {
     }
 
     public String getFieldValue(String fieldName) {
-        try {
-            Field f = getClass().getDeclaredField(fieldName);
-            return (String) f.get(this);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        if (fieldName == null || fieldName.isBlank())
             return null;
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        MethodHandle methodHandle;
+        try {
+            methodHandle = lookup.findGetter(GameResult.class, fieldName, String.class);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return (String) methodHandle.invoke(this);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
         }
     }
 
-    public void setFieldValue(String fieldName, Object value) throws IllegalAccessException {
-        for (Field f : getClass().getDeclaredFields())
-            if (f.getName().equals(fieldName))
-                f.set(this, value);
+    public void setFieldValue(String fieldName, Object value) {
+        if (fieldName == null || fieldName.isBlank())
+            return;
+        MethodHandles.Lookup lookup = MethodHandles.lookup();
+        MethodHandle methodHandle;
+        try {
+            methodHandle = lookup.findSetter(GameResult.class, fieldName, String.class);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            methodHandle.invoke(this, value);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getHeader() {

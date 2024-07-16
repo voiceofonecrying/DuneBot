@@ -6,6 +6,7 @@ import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.Exclude;
 import helpers.GameResult;
 import model.Bidding;
 import model.Game;
@@ -420,7 +421,7 @@ public class ReportsCommands {
             String moderator = member != null ? member.getUser().getAsMention() : p.getLeft();
             int totalTurns = 0;
             for (GameResult gr : p.getRight())
-                totalTurns += Integer.parseInt(gr.getTurn());
+                totalTurns += gr.getTurn();
             float averageTurns = (float) totalTurns / p.getRight().size();
             modAndAverageTurns.add(new ImmutablePair<>(moderator, averageTurns));
             moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(moderator);
@@ -488,8 +489,14 @@ public class ReportsCommands {
     }
 
     public static String writeFactionStats(Guild guild, GRList gameResults) {
-        return updateFactionPerformance(guild, gameResults) + "\n\n"
-                + updateTurnStats(guild, gameResults) + "\n\n"
+//        System.out.println(updateFactionPerformance(guild, gameResults).length());
+//        System.out.println(updateTurnStats(guild, gameResults).length());
+//        System.out.println(soloVictories(guild, gameResults).length());
+        return updateFactionPerformance(guild, gameResults);
+    }
+
+    public static String writeTurnStats(Guild guild, GRList gameResults) {
+        return updateTurnStats(guild, gameResults) + "\n\n"
                 + soloVictories(guild, gameResults);
     }
 
@@ -498,25 +505,36 @@ public class ReportsCommands {
         int numGames;
         int numWins;
         float winPercentage;
+        float averageTurns;
+        float averageWinsTurns;
 
-        public FactionPerformance(String factionEmoji, int numGames, int numWins, float winPercentage) {
+        public FactionPerformance(String factionEmoji, int numGames, int numWins, float winPercentage, float averageTurns, float averageWinsTurns) {
             this.factionEmoji = factionEmoji;
             this.numGames = numGames;
             this.numWins = numWins;
             this.winPercentage = winPercentage;
+            this.averageTurns = averageTurns;
+            this.averageWinsTurns = averageWinsTurns;
         }
     }
 
     private static FactionPerformance factionPerformance(GRList gameResults, String factionName, String factionEmoji) {
-        int numGames = gameResults.gameResults.stream()
-                .map(gr -> gr.getFieldValue(factionName))
-                .filter(v -> v != null && !v.isEmpty())
-                .toList().size();
-        int numWins = gameResults.gameResults.stream()
+        List<GameResult> gamesWithFaction = gameResults.gameResults.stream()
+                .filter(gr -> {
+                    String n = gr.getFieldValue(factionName);
+                    return n != null && !n.isEmpty();
+                }).toList();
+        int numGames = gamesWithFaction.size();
+        int totalTurns = gamesWithFaction.stream().mapToInt(GameResult::getTurn).sum();
+        List<GameResult> gamesWithFactionWin = gameResults.gameResults.stream()
                 .filter(jo -> jo.getWinner1Faction().equals(factionName) || jo.getWinner2Faction() != null && jo.getWinner2Faction().equals(factionName))
-                .toList().size();
+                .toList();
+        int numWins = gamesWithFactionWin.size();
+        int totalWinsTurns = gamesWithFactionWin.stream().mapToInt(GameResult::getTurn).sum();
         float winPercentage = numWins/(float)numGames;
-        return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage);
+        float averageTurns = totalTurns/(float)numGames;
+        float averageWinsTurns = totalWinsTurns/(float)numWins;
+        return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
     }
 
     public static String updateFactionPerformance(Guild guild, GRList gameResults) {
@@ -537,7 +555,14 @@ public class ReportsCommands {
         StringBuilder factionStatsString = new StringBuilder("__Factions__");
         for (FactionPerformance fs : allFactionPerformance) {
             String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
-            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames);
+            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames)
+                    ;//.append(", Average number of turns with faction win = ").append(fs.averageWinsTurns);
+        }
+        factionStatsString.append("\n\n__Average Turns with Faction__ (includes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories as 10 turns)");
+        for (FactionPerformance fs : allFactionPerformance) {
+            String averageTurns = new DecimalFormat("#0.0").format(fs.averageTurns);
+            String averageTurnsWins = new DecimalFormat("#0.0").format(fs.averageWinsTurns);
+            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(averageTurns).append(" per game, ").append(averageTurnsWins).append(" per win");
         }
         return tagEmojis(guild, factionStatsString.toString());
     }
@@ -615,13 +640,13 @@ public class ReportsCommands {
                         .filter(gr -> {
                             String e = gr.getVictoryType();
                             return e == null || !e.equals("G") && !e.equals("F");
-                        }).map(GameResult::getTurn).filter(v -> v != null && v.equals(turn)).toList().size();
+                        }).map(GameResult::getTurn).filter(v -> v == Integer.parseInt(turn)).toList().size();
                 marker = numberBoxes.get(Integer.parseInt(turn));
             }
             default -> {
                 numGames = gameResults.gameResults.size();
                 numWins = gameResults.gameResults.stream()
-                        .map(GameResult::getTurn).filter(v -> v != null && v.equals(turn))
+                        .map(GameResult::getTurn).filter(v -> v == Integer.parseInt(turn))
                         .toList().size();
                 marker = numberBoxes.get(Integer.parseInt(turn));
             }
@@ -650,6 +675,8 @@ public class ReportsCommands {
         for (TurnStats ts : allTurnStats) {
             String winPercentage = new DecimalFormat("#0.0%").format(ts.winPercentage);
             turnStatsString.append("\n").append(ts.turn).append(" ").append(winPercentage).append(" - ").append(ts.numWins).append("/").append(ts.numGames);
+            if (ts.turn.equals(numberBoxes.get(10)))
+                turnStatsString.append(" (excludes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories)");
             if (ts.numTotalWins != 0)
                 turnStatsString.append(" games with ").append(ts.turn).append(", ")
                         .append(new DecimalFormat("#0.0%").format(ts.numWins/(float)ts.numTotalWins))
@@ -851,6 +878,7 @@ public class ReportsCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
+        factionStatsChannel.sendMessage(writeTurnStats(guild, grList)).queue();
 
         TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The moderator-stats channel was not found."));
         messageHistory = MessageHistory.getHistoryFromBeginning(moderatorStats).complete();
@@ -866,7 +894,7 @@ public class ReportsCommands {
         String[] playerStatsLines = writePlayerStats(grList, guild, members).split("\n");
         int mentions = 0;
         for (String s : playerStatsLines) {
-            if (playerStatsString.length() + s.length() > 2000 || mentions == 20) {
+            if (playerStatsString.length() + 1 + s.length() > 2000 || mentions == 20) {
                 playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
                 playerStatsString = new StringBuilder();
                 mentions = 0;
@@ -883,21 +911,34 @@ public class ReportsCommands {
         if (!factionPlays.isEmpty())
             playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
 
-        if (hasNewGames) {
-            FileUpload fileUpload;
-            fileUpload = FileUpload.fromData(
-                    grList.generateCSV().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
-            );
-//            parsedResults.sendFiles(fileUpload).complete();
-            TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElseThrow(() -> new IllegalStateException("The stats-discussion channel was not found."));
-            statsDiscussionChannel.sendFiles(fileUpload).queue();
-            Gson gson = DiscordGame.createGsonDeserializer();
-            fileUpload = FileUpload.fromData(
-                    gson.toJson(grList.gameResults).getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
-            );
-            parsedResults.sendFiles(fileUpload).complete();
-            statsDiscussionChannel.sendFiles(fileUpload).queue();
-        }
+        FileUpload fileUpload;
+        fileUpload = FileUpload.fromData(
+                grList.generateCSV().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
+        );
+//        parsedResults.sendFiles(fileUpload).complete();
+        TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElseThrow(() -> new IllegalStateException("The stats-discussion channel was not found."));
+        statsDiscussionChannel.sendFiles(fileUpload).queue();
+
+        ExclusionStrategy strategy = new ExclusionStrategy() {
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldSkipField(FieldAttributes field) {
+                return field.getAnnotation(Exclude.class) != null;
+            }
+        };
+
+        Gson gson = new GsonBuilder()
+                .addSerializationExclusionStrategy(strategy)
+                .create();
+        fileUpload = FileUpload.fromData(
+                gson.toJson(grList).getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
+        );
+        parsedResults.sendFiles(fileUpload).complete();
+        statsDiscussionChannel.sendFiles(fileUpload).queue();
     }
 
     public static String loadJsonString(Category category) {
@@ -922,6 +963,13 @@ public class ReportsCommands {
             }
         }
         return "[]";
+    }
+
+    public static String publishFactionStats(Guild guild, JDA jda) {
+        GameResults gameResults = gatherGameResults(guild);
+        int numNewGames = loadNewGames(guild, jda, gameResults.grList);
+        System.out.println("Num new games = " + numNewGames);
+        return writeFactionStats(guild, gameResults.grList);
     }
 
     public static String compareReportsMethod(Guild guild, JDA jda) {
@@ -988,7 +1036,11 @@ public class ReportsCommands {
             }
         }
         Gson gson = DiscordGame.createGsonDeserializer();
-        GRList grList = gson.fromJson("{\"gameResults\":" + jsonResults + "}", GRList.class);
+        GRList grList;
+        if (!jsonResults.contains("{\"gameResults\":"))
+            grList = gson.fromJson("{\"gameResults\":" + jsonResults + "}", GRList.class);
+        else
+            grList = gson.fromJson(jsonResults, GRList.class);
         return new GameResults(grList, 0);
     }
 
@@ -1120,7 +1172,7 @@ public class ReportsCommands {
 
             gr.setVictoryType(victoryType);
             if (turnMatcher.find()) {
-                gr.setTurn(turnMatcher.group(1));
+                gr.setTurn(Integer.parseInt(turnMatcher.group(1)));
             }
             if (!winnersString.toLowerCase().contains("predict"))
                 winnersString = winnersString.substring(winnersString.indexOf("\n"));
@@ -1504,7 +1556,7 @@ public class ReportsCommands {
                 if (gr.getGameDuration() == null || gr.getGameDuration().isBlank())
                     continue;
                 int duration = Integer.parseInt(gr.getGameDuration());
-                int numTurns = Integer.parseInt(gr.getTurn());
+                int numTurns = gr.getTurn();
                 overallTotalDuration += duration;
                 overallTotalTurns += numTurns;
                 if (!isPlayer(gr, playerName))
