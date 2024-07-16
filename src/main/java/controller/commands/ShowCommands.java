@@ -7,6 +7,7 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.*;
 import model.factions.*;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -960,11 +961,19 @@ public class ShowCommands {
         messages.forEach(discordGame::queueDeleteMessage);
 
         FileUpload newMap = drawGameBoard(game).setName("game-map.png");
-        discordGame.queueMessage("front-of-shield", "", newMap);
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        builder.addFiles(newMap);
+        String deckSizes = discordGame.tagEmojis(Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
+                        + " :wastebasket:" + " " + game.getTreacheryDiscard().size()
+                        + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
+        EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.BLACK)
+                .addField("Deck Sizes", deckSizes, true);
+        builder.addEmbeds(embedBuilder.build());
+        discordGame.queueMessage("front-of-shield", builder);
 
         for (Faction faction : game.getFactions()) {
             FactionView factionView = FactionView.factory(discordGame, faction);
-            MessageCreateBuilder builder = factionView.getPublicMessage();
+            builder = factionView.getPublicMessage();
             discordGame.queueMessage("front-of-shield", builder);
         }
     }
