@@ -293,6 +293,29 @@ public class GameResult {
         }
     }
 
+    public boolean isPlayer(String playerName) {
+        if (atreides != null && atreides.equals(playerName)) return true;
+        else if (bg != null && bg.equals(playerName)) return true;
+        else if (bt != null && bt.equals(playerName)) return true;
+        else if (choam != null && choam.equals(playerName)) return true;
+        else if (ecaz != null && ecaz.equals(playerName)) return true;
+        else if (emperor != null && emperor.equals(playerName)) return true;
+        else if (fremen != null && fremen.equals(playerName)) return true;
+        else if (guild != null && guild.equals(playerName)) return true;
+        else if (harkonnen != null && harkonnen.equals(playerName)) return true;
+        else if (ix != null && ix.equals(playerName)) return true;
+        else if (moritani != null && moritani.equals(playerName)) return true;
+        else return richese != null && richese.equals(playerName);
+    }
+
+    public boolean isWinner(String playerName) {
+        return winner1Player.equals(playerName) || winner2Player != null && winner2Player.equals(playerName);
+    }
+
+    public boolean isFactionWinner(String factionName) {
+        return winner1Faction.equals(factionName) || winner2Faction != null && winner2Faction.equals(factionName);
+    }
+
     public static String getHeader() {
         return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Rich,Turn,Win Type,Faction 1,Faction 2,Winner 1,Winner 2,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
     }
