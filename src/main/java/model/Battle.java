@@ -220,11 +220,15 @@ public class Battle {
         int regularForcesDialed;
         int specialForcesDialed;
         int spiceUsed;
+        int regularNotDialed;
+        int specialNotDialed;
 
-        ForcesDialed(int regularForcesDialed, int specialForcesDialed, int spiceUsed) {
+        ForcesDialed(int regularForcesDialed, int specialForcesDialed, int spiceUsed, int regularNotDialed, int specialNotDialed) {
             this.regularForcesDialed = regularForcesDialed;
             this.specialForcesDialed = specialForcesDialed;
             this.spiceUsed = spiceUsed;
+            this.regularNotDialed = regularNotDialed;
+            this.specialNotDialed = specialNotDialed;
         }
     }
 
@@ -300,7 +304,7 @@ public class Battle {
             regularStrengthUsed += 2;
             spiceUsed++;
         }
-        return new ForcesDialed(regularStrengthUsed, specialStrengthUsed, spiceUsed);
+        return new ForcesDialed(regularStrengthUsed, specialStrengthUsed, spiceUsed, regularStrength - regularStrengthUsed, specialStrength - specialStrengthUsed);
     }
 
     public int numForcesNotDialed(ForcesDialed forcesDialed, Faction faction, int spice) {
@@ -309,7 +313,7 @@ public class Battle {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        int forcesNotDialed = specialStrength - specialForcesDialed + regularStrength - regularForcesDialed;
+        int forcesNotDialed = forcesDialed.regularNotDialed + forcesDialed.specialNotDialed;
         if (specialForcesDialed > 0 && regularStrength - regularForcesDialed >= 2) {
             List<DuneChoice> choices = new ArrayList<>();
             int numStarsReplaced = 0;
@@ -413,12 +417,16 @@ public class Battle {
         fremen.getChat().publish(message + " " + fremen.getPlayer());
     }
 
-    public String getForcesRemainingString(String factionName, int regularDialed, int specialDialed) {
+    public String getForcesRemainingString(String factionName, ForcesDialed forcesDialed, int regularDialed, int specialDialed) {
         String dialFactionName = hasEcazAndAlly() && factionName.equals("Ecaz") ? ecazAllyName : factionName;
         int regularStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName)).findFirst().map(Force::getStrength).orElse(0);
         int specialStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularNotDialed = regularStrength - regularDialed;
         int specialNotDialed = specialStrength - specialDialed;
+        if (forcesDialed != null) {
+            regularNotDialed = forcesDialed.regularNotDialed;
+            specialNotDialed = forcesDialed.specialNotDialed;
+        }
         String forcesRemaining = "";
         if (regularNotDialed > 0) forcesRemaining += regularNotDialed + " " + Emojis.getForceEmoji(dialFactionName) + " ";
         if (specialNotDialed > 0) forcesRemaining += specialNotDialed + " " + Emojis.getForceEmoji(dialFactionName + "*") + " ";
@@ -428,6 +436,10 @@ public class Battle {
             forcesRemaining += Math.floorDiv(ecazStrength, 2) + " " + Emojis.ECAZ_TROOP + " ";
         }
         return "This will leave " + forcesRemaining + "in " + wholeTerritoryName + " if you win.";
+    }
+
+    public String getForcesRemainingString(String factionName, int regularDialed, int specialDialed) {
+        return getForcesRemainingString(factionName, null, regularDialed, specialDialed);
     }
 
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
@@ -531,7 +543,7 @@ public class Battle {
         game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + battlePlan.getPlanMessage(false));
         faction.getChat().publish("Your battle plan for " + wholeTerritoryName + " has been submitted:\n" + battlePlan.getPlanMessage(false));
         String factionName = faction.getName();
-        faction.getChat().publish(getForcesRemainingString(factionName, forcesDialed.regularForcesDialed, forcesDialed.specialForcesDialed));
+        faction.getChat().publish(getForcesRemainingString(factionName, forcesDialed, forcesDialed.regularForcesDialed, forcesDialed.specialForcesDialed));
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
         } else {

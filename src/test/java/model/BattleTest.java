@@ -55,6 +55,7 @@ class BattleTest {
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
         fremen.setChat(new TestTopic());
+        richese.setChat(new TestTopic());
         richese.setLedger(new TestTopic());
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
@@ -500,6 +501,23 @@ class BattleTest {
         assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
         battle.updateTroopsDialed("Ecaz", 5, 0, 2);
         assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 5, 0));
+    }
+
+    @Test
+    void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException {
+        garaKulon.setRicheseNoField(5);
+        garaKulon.addForces("Fremen", 3);
+        game.startBattlePhase();
+        battles = game.getBattles();
+        List<Force> battleForces = battles.aggregateForces(List.of(garaKulon), List.of(fremen, richese));
+        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), battleForces, "Emperor");
+        Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
+        assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 2, false, 0, null, null));
+        Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, richese, 2, false, 0);
+        assertEquals(4, forcesDialed.regularForcesDialed);
+        assertEquals(1, forcesDialed.regularNotDialed);
+        assertEquals(1, battle.numForcesNotDialed(forcesDialed, richese, 0));
+        assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Richese", forcesDialed, 4, 0));
     }
 
     @Test
