@@ -187,7 +187,7 @@ class BattleTest {
             garaKulon.addForces("Emperor", 1);
             garaKulon.addForces("Emperor*", 3);
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(emperor, fremen), garaKulon.getForces(), null);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1, false);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, emperor, 1));
@@ -200,7 +200,7 @@ class BattleTest {
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 7, false, 4);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 7, false, 4, false);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, ix, 7));
         }
 
@@ -210,7 +210,7 @@ class BattleTest {
             carthag.addForces("Emperor*", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), carthag.getForces(), null);
             battle.negateSpecialForces(game, emperor);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1, false);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, emperor, 1));
@@ -222,7 +222,7 @@ class BattleTest {
             carthag.addForces("Fremen*", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
             battle.negateSpecialForces(game, fremen);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0, false);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, fremen, 0));
@@ -237,7 +237,7 @@ class BattleTest {
             carthag.addForces("Ix*", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(ix, harkonnen), carthag.getForces(), null);
             battle.negateSpecialForces(game, ix);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 2, false, 1);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, ix, 2, false, 1, false);
             assertEquals(2, forcesDialed.regularForcesDialed);
             assertEquals(1, forcesDialed.specialForcesDialed);
             assertEquals(2, battle.numForcesNotDialed(forcesDialed, ix, 1));
@@ -254,7 +254,7 @@ class BattleTest {
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             battle.negateSpecialForces(game, emperor);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, emperor, 2, false, 1, false);
             assertEquals(1, forcesDialed.regularForcesDialed);
             assertEquals(2, forcesDialed.specialForcesDialed);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, emperor, 1));
@@ -266,7 +266,7 @@ class BattleTest {
             carthag.addForces("Fremen*", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
             battle.karamaFremenMustPay(game);
-            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0);
+            Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, fremen, 3, false, 0, false);
             assertEquals(0, forcesDialed.regularForcesDialed);
             assertEquals(3, forcesDialed.specialForcesDialed);
             assertEquals(1, battle.numForcesNotDialed(forcesDialed, fremen, 0));
@@ -281,8 +281,8 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 3, false, 3));
-            assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(game, richese, 3, true, 3));
+            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 3, false, 3, false));
+            assertThrows(InvalidGameStateException.class, () -> battle.getForcesDialed(game, richese, 3, true, 3, false));
         }
 
         @Test
@@ -299,12 +299,12 @@ class BattleTest {
             Force noField = new Force("NoField", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
             try {
-                battle.getForcesDialed(game, richese, 3, false, 3);
+                battle.getForcesDialed(game, richese, 3, false, 3, false);
                 fail("Expected InvalidGameStateException was not thrown.");
             } catch (Exception e) {
                 assertEquals(Emojis.RICHESE + " has only 2 " + Emojis.RICHESE_TROOP + " in reserves to replace the 3 " + Emojis.NO_FIELD, e.getMessage());
             }
-            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 2, false, 2));
+            assertDoesNotThrow(() -> battle.getForcesDialed(game, richese, 2, false, 2, false));
         }
     }
 
@@ -318,7 +318,7 @@ class BattleTest {
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
-            Battle.ForcesDialed ixForces = battle.getForcesDialed(game, ix, 7, false, 4);
+            Battle.ForcesDialed ixForces = battle.getForcesDialed(game, ix, 7, false, 4, false);
             assertEquals(3, ixForces.specialForcesDialed);
             assertEquals(2, ixForces.regularForcesDialed);
         }
@@ -332,7 +332,7 @@ class BattleTest {
             carthag.setRicheseNoField(3);
             Force noField = new Force("NoField", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
-            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 3, false, 3);
+            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 3, false, 3, false);
             assertEquals(3, richeseForces.regularForcesDialed);
         }
 
@@ -350,12 +350,12 @@ class BattleTest {
             Force noField = new Force("NoField", 3);
             Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
             try {
-                battle.getForcesDialed(game, richese, 3, false, 3);
+                battle.getForcesDialed(game, richese, 3, false, 3, false);
                 fail("Expected InvalidGameStateException was not thrown.");
             } catch (Exception e) {
                 assertEquals(Emojis.RICHESE + " has only 2 " + Emojis.RICHESE_TROOP + " in reserves to replace the 3 " + Emojis.NO_FIELD, e.getMessage());
             }
-            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 2, false, 2);
+            Battle.ForcesDialed richeseForces = battle.getForcesDialed(game, richese, 2, false, 2, false);
             assertEquals(2, richeseForces.regularForcesDialed);
         }
     }
@@ -513,7 +513,7 @@ class BattleTest {
         Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), battleForces, "Emperor");
         Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
         assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 2, false, 0, null, null));
-        Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, richese, 2, false, 0);
+        Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, richese, 2, false, 0, false);
         assertEquals(4, forcesDialed.regularForcesDialed);
         assertEquals(1, forcesDialed.regularNotDialed);
         assertEquals(1, battle.numForcesNotDialed(forcesDialed, richese, 0));
@@ -802,6 +802,7 @@ class BattleTest {
         Battle battle2;
         Battle battle2a;
         Battle battle3;
+        TestTopic atreidesChat;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -819,7 +820,8 @@ class BattleTest {
             game.addFaction(ecaz);
             game.addFaction(bt);
             game.addFaction(emperor);
-            atreides.setChat(new TestTopic());
+            atreidesChat = new TestTopic();
+            atreides.setChat(atreidesChat);
             bt.setChat(new TestTopic());
             ecaz.setChat(new TestTopic());
             emperor.setChat(new TestTopic());
@@ -1084,6 +1086,44 @@ class BattleTest {
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
         }
 
+        @Nested
+        @DisplayName("#arrakeenStrongholdCard")
+        class ArrakeenStrongholdCard {
+            @BeforeEach
+            void setUp() {
+                game.setTurnSummary(new TestTopic());
+                game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+                atreides.addStrongholdCard(new StrongholdCard("Arrakeen"));
+                atreides.addTreacheryCard(cheapHero);
+            }
+
+            @Test
+            void testBattlePlanResolution2SpiceForArrakeenStrongholdCard() throws InvalidGameStateException {
+                battle1.setBattlePlan(game, atreides, null, cheapHero, false, 2, false,0, null, null);
+                Battle.ForcesDialed forcesDialed = battle1.getForcesDialed(game, atreides, 2, false, 0, true);
+                assertEquals(2, forcesDialed.regularForcesDialed);
+                assertEquals(8, battle1.numForcesNotDialed(forcesDialed, atreides, 0));
+            }
+
+            @Test
+            void testBattlePlanResolutionArrakeenStrongholdCardWithSpiceReductionMessage() throws InvalidGameStateException {
+                battle1.setBattlePlan(game, atreides, null, cheapHero, false, 2, false, 1, null, null);
+                Battle.ForcesDialed forcesDialed = battle1.getForcesDialed(game, atreides, 2, false, 1, true);
+                assertEquals(2, forcesDialed.regularForcesDialed);
+                assertEquals(8, battle1.numForcesNotDialed(forcesDialed, atreides, 0));
+                assertTrue(atreidesChat.getMessages().getFirst().contains("This dial can be supported with"));
+            }
+
+            @Test
+            void testBattlePlanResolutionArrakeenStrongholdCardDial0NoSpiceReductionMessage() throws InvalidGameStateException {
+                battle1.setBattlePlan(game, atreides, null, cheapHero, false, 0, false, 0, null, null);
+                Battle.ForcesDialed forcesDialed = battle1.getForcesDialed(game, atreides, 0, false, 0, true);
+                assertEquals(0, forcesDialed.regularForcesDialed);
+                assertEquals(10, battle1.numForcesNotDialed(forcesDialed, atreides, 0));
+                assertFalse(atreidesChat.getMessages().getFirst().contains("This dial can be supported with"));
+            }
+        }
+
         @Test
         void testBattlePlanResolutionAggressorWinsTiesInHRSWithStrongholdCard() throws InvalidGameStateException {
             game.setTurnSummary(new TestTopic());
@@ -1092,8 +1132,8 @@ class BattleTest {
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
             emperor.setChat(new TestTopic());
-            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
-            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
+            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false, 0, null, null);
+            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false, 0, null, null);
             assertTrue(battle3.isAggressorWin(game));
             assertEquals(Emojis.BT, battle3.getWinnerEmojis(game));
             assertEquals("1", battle3.getAggressorBattlePlan().getTotalStrengthString());

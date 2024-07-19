@@ -232,7 +232,7 @@ public class Battle {
         }
     }
 
-    public ForcesDialed getForcesDialed(Game game, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+    public ForcesDialed getForcesDialed(Game game, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice, boolean arrakeenStrongholdCard) throws InvalidGameStateException {
         String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
         boolean isIx = faction instanceof IxFaction;
@@ -252,6 +252,8 @@ public class Battle {
         int dialUsed = 0;
         int specialStrengthUsed = 0;
         int regularStrengthUsed = 0;
+        if (arrakeenStrongholdCard)
+            spice += 2;
         if (specialsNegated) {
             while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
                 dialUsed++;
@@ -304,6 +306,8 @@ public class Battle {
             regularStrengthUsed += 2;
             spiceUsed++;
         }
+        if (arrakeenStrongholdCard)
+            spiceUsed = Math.max(0, spiceUsed - 2);
         return new ForcesDialed(regularStrengthUsed, specialStrengthUsed, spiceUsed, regularStrength - regularStrengthUsed, specialStrength - specialStrengthUsed);
     }
 
@@ -506,13 +510,11 @@ public class Battle {
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
 
-        int spiceForValidation = spice;
-        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-            && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen")))
-            spiceForValidation += 2;
-        ForcesDialed forcesDialed = getForcesDialed(game, faction, wholeNumberDial, plusHalfDial, spice);
-        int troopsNotDialed = numForcesNotDialed(forcesDialed, faction, spiceForValidation);
+        boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
+        ForcesDialed forcesDialed = getForcesDialed(game, faction, wholeNumberDial, plusHalfDial, spice, arrakeenStrongholdCard);
+        int troopsNotDialed = numForcesNotDialed(forcesDialed, faction, spice);
         if (spice > forcesDialed.spiceUsed)
             faction.getChat().publish("This dial can be supported with " + forcesDialed.spiceUsed + " " + Emojis.SPICE + ", reducing from " + spice + ".");
         spice = forcesDialed.spiceUsed;
