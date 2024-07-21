@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -61,6 +62,15 @@ public class BGFaction extends Faction {
         this.predictionRound = predictionRound;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
+
+    @Override
+    public int homeworldDialAdvantage(Game game, Territory territory) {
+        String territoryName = territory.getTerritoryName();
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && homeworld.equals(territoryName))
+            return isHighThreshold() ? 3 : 2;
+        return 0;
+    }
+
 
     @Override
     public void setDecliningCharity(boolean decliningCharity) throws InvalidGameStateException {

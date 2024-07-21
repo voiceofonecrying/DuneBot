@@ -850,6 +850,11 @@ public class Faction {
         this.homeworld = homeworld;
     }
 
+    public int homeworldDialAdvantage(Game game, Territory territory) {
+        String territoryName = territory.getTerritoryName();
+        return game.hasGameOption(GameOption.HOMEWORLDS) && homeworld.equals(territoryName) ? 2 : 0;
+    }
+
     public boolean isHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return true;
         return isHighThreshold;

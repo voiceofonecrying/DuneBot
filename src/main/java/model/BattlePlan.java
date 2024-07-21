@@ -1,6 +1,9 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
+import exceptions.InvalidGameStateException;
+import model.factions.*;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -24,7 +27,7 @@ public class BattlePlan {
     private boolean carthagStrongholdCard;
     private final int homeworldDialAdvantage;
     private final int numStrongholdsOccupied;
-    private final int numForcesInReserve;
+    private int numForcesInReserve;
     private int spiceBankerSupport;
     private boolean juiceOfSapho;
     private TreacheryCard opponentWeapon;
@@ -36,7 +39,88 @@ public class BattlePlan {
     public boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
 
-    public BattlePlan(boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice, int troopsNotDialed, int ecazTroopsForAlly, List<LeaderSkillCard> leaderSkillsInFront, boolean carthagStrongholdCard, int homeworldDialAdvantage, int numStrongholdsOccupied, int numForcesInReserve) {
+    public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
+        String wholeTerritoryName = battle.getWholeTerritoryName();
+        this.numForcesInReserve = faction.getTotalReservesStrength();
+        Territory territoryWithNoField = game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
+        if (faction instanceof RicheseFaction && territoryWithNoField != null && territoryWithNoField.getTerritoryName().contains(wholeTerritoryName))
+            this.numForcesInReserve = Math.max(0, this.numForcesInReserve - territoryWithNoField.getRicheseNoField());
+
+        if (leader != null && cheapHero != null)
+            throw new InvalidGameStateException(faction.getEmoji() + " cannot play both a leader and " + cheapHero.name());
+        if (leader != null && !faction.getLeaders().contains(leader))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + leader.getName());
+        if (cheapHero != null && !faction.hasTreacheryCard(cheapHero.name()))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + cheapHero.name());
+        if (leader == null && cheapHero == null && !faction.getLeaders().stream().filter(l -> !l.getName().equals("Kwisatz Haderach")).toList().isEmpty())
+            throw new InvalidGameStateException(faction.getEmoji() + " must play a leader or a Cheap Hero");
+        if (kwisatzHaderach) {
+            if (leader == null && cheapHero == null)
+                throw new InvalidGameStateException("A leader or Cheap Hero must be played to use the Kwisatz Haderach");
+            if (!(faction instanceof AtreidesFaction))
+                throw new InvalidGameStateException("Only " + Emojis.ATREIDES + " can have the Kwisatz Haderach");
+            if (!((AtreidesFaction) faction).isHasKH())
+                throw new InvalidGameStateException("Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. 7 required for Kwisatz Haderach");
+        }
+
+        int spiceFromAlly = 0;
+        if (faction.hasAlly())
+            spiceFromAlly = game.getFaction(faction.getAlly()).getBattleSupport();
+        if (spice > (faction.getSpice() + spiceFromAlly))
+            throw new InvalidGameStateException(faction.getEmoji() + " does not have " + spice + " " + Emojis.SPICE);
+        boolean isNotPlanetologist = leader == null || leader.getSkillCard() == null || !leader.getSkillCard().name().equals("Planetologist");
+        if (weapon != null) {
+            if (!faction.hasTreacheryCard(weapon.name()))
+                throw new InvalidGameStateException(faction.getEmoji() + " does not have " + weapon.name());
+            else if (weapon.name().equals("Chemistry") && (defense == null || !defense.type().startsWith("Defense")))
+                throw new InvalidGameStateException("Chemistry can only be played as a weapon when playing another Defense");
+            else if (weapon.name().equals("Harass and Withdraw")
+                    && isNotPlanetologist
+                    && (faction.getHomeworld().equals(wholeTerritoryName) || (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))))
+                throw new InvalidGameStateException("Harass and Withdraw cannot be used on your Homeworld");
+            else if (weapon.name().equals("Reinforcements")
+                    && isNotPlanetologist
+                    && this.numForcesInReserve < 3)
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
+            else if (isNotPlanetologist && weapon.isGreenSpecialCard() && !weapon.name().equals("Harass and Withdraw") && !weapon.name().equals("Reinforcements"))
+                throw new InvalidGameStateException(weapon.name() + " can only be played as a weapon if leader has Planetologist skill");
+        }
+        if (defense != null) {
+            if (!faction.hasTreacheryCard(defense.name()))
+                throw new InvalidGameStateException(faction.getEmoji() + " does not have " + defense.name());
+            else if (defense.name().equals("Weirding Way") && (weapon == null || !weapon.type().startsWith("Weapon")))
+                throw new InvalidGameStateException("Weirding Way can only be played as a defense when playing another Weapon");
+            else if (defense.name().equals("Harass and Withdraw") && (faction.getHomeworld().equals(wholeTerritoryName) || (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))))
+                throw new InvalidGameStateException("Harass and Withdraw cannot be used on your Homeworld");
+            else if (defense.name().equals("Reinforcements") && this.numForcesInReserve < 3)
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
+        }
+
+        int ecazTroops = 0;
+        if (battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
+            ecazTroops = battle.getForces().stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0);
+        this.ecazTroopsForAlly = ecazTroops;
+
+        this.leaderSkillsInFront = faction.getSkilledLeaders().stream()
+                .filter(l -> !(faction instanceof HarkonnenFaction)
+                        || l.getName().equals("Feyd Rautha")
+                        || l.getName().equals("Beast Rabban")
+                        || l.getName().equals("Piter de Vries")
+                        || l.getName().equals("Cpt. Iakin Nefud")
+                        || l.getName().equals("Umman Kudu"))
+                .filter(l -> !l.isPulledBehindShield())
+                .map(Leader::getSkillCard)
+                .toList();
+        // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
+        this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
+        this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors().getFirst());
+
+        List<Territory> strongholds = game.getTerritories().values().stream().filter(Territory::isStronghold).toList();
+        int numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getFactionName().equals(faction.getName()) && f.getStrength() > 0) || (faction instanceof RicheseFaction) && t.hasRicheseNoField()).toList().size();
+        if (faction instanceof BGFaction)
+            numStrongholdsOccupied = strongholds.stream().filter(t -> t.getForces().stream().anyMatch(f -> f.getName().equals("BG") && f.getStrength() > 0)).toList().size();
+        this.numStrongholdsOccupied = numStrongholdsOccupied;
+
         this.aggressor = aggressor;
         this.leader = leader;
         this.cheapHero = cheapHero;
@@ -46,17 +130,26 @@ public class BattlePlan {
         this.originalDefense = defense;
         this.wholeNumberDial = wholeNumberDial;
         this.plusHalfDial = plusHalfDial;
+
+        boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
+        Battle.ForcesDialed forcesDialed = battle.getForcesDialed(game, faction, wholeNumberDial, plusHalfDial, spice, arrakeenStrongholdCard);
+        this.regularDialed = forcesDialed.regularForcesDialed;
+        this.specialDialed = forcesDialed.specialForcesDialed;
+        int troopsNotDialed = battle.numForcesNotDialed(forcesDialed, faction, spice);
+        if (spice > forcesDialed.spiceUsed)
+            faction.getChat().publish("This dial can be supported with " + forcesDialed.spiceUsed + " " + Emojis.SPICE + ", reducing from " + spice + ".");
+        spice = forcesDialed.spiceUsed;
         this.spice = spice;
         this.troopsNotDialed = troopsNotDialed;
-        this.ecazTroopsForAlly = ecazTroopsForAlly;
-        this.leaderSkillsInFront = leaderSkillsInFront;
-        this.carthagStrongholdCard = carthagStrongholdCard;
-        this.homeworldDialAdvantage = homeworldDialAdvantage;
-        this.numStrongholdsOccupied = numStrongholdsOccupied;
-        this.numForcesInReserve = numForcesInReserve;
         this.spiceBankerSupport = 0;
         this.juiceOfSapho = false;
         this.stoneBurnerNoKill = false;
+
+        game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + getPlanMessage(false));
+        faction.getChat().publish("Your battle plan for " + wholeTerritoryName + " has been submitted:\n" + getPlanMessage(false));
+        faction.getChat().publish(battle.getForcesRemainingString(faction.getName(), forcesDialed, forcesDialed.regularForcesDialed, forcesDialed.specialForcesDialed));
     }
 
     public Leader getLeader() {

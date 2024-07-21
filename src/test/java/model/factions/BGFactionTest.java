@@ -6,6 +6,8 @@ import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -176,5 +178,17 @@ class BGFactionTest extends FactionTestTemplate {
         faction.flipForces(carthag);
         assertEquals(1, carthag.getForceStrength("BG"));
         assertEquals(0, carthag.getForceStrength("Advisor"));
+    }
+
+    @Nested
+    @DisplayName("#homeworld")
+    class Homeworld extends FactionTestTemplate.Homeworld {
+        @Test
+        @Override
+        public void testHomweworldDialAdvantageHighThreshold() {
+            assertEquals(0, faction.homeworldDialAdvantage(game, territory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertEquals(3, faction.homeworldDialAdvantage(game, territory));
+        }
     }
 }

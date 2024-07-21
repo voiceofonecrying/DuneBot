@@ -68,6 +68,18 @@ public class EmperorFaction extends Faction {
         return secondHomeworld;
     }
 
+    @Override
+    public int homeworldDialAdvantage(Game game, Territory territory) {
+        String territoryName = territory.getTerritoryName();
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            if (homeworld.equals(territoryName))
+                return isHighThreshold() ? 2 : 3;
+            else if (territoryName.equals("Salusa Secundus"))
+                return isSecundusHighThreshold() ? 3 : 2;
+        }
+        return 0;
+    }
+
     public boolean isSecundusHighThreshold() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return true;
         return isSecundusHighThreshold;

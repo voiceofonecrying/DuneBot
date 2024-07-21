@@ -152,6 +152,9 @@ class EmperorFactionTest extends FactionTestTemplate {
     public void testInitialReserves() {
         assertEquals(15, faction.getReservesStrength());
         assertEquals(5, faction.getSpecialReservesStrength());
+        assertEquals(20, faction.getTotalReservesStrength());
+        assertEquals(0, game.getTerritory(faction.getHomeworld()).getForceStrength("Emperor*"));
+        assertEquals(0, game.getTerritory(faction.getSecondHomeworld()).getForceStrength("Emperor"));
     }
 
     @Test
@@ -250,6 +253,42 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertFalse(territory.isDiscoveryToken());
         assertFalse(territory.isNearShieldWall());
         assertFalse(territory.isRock());
+    }
+
+    @Nested
+    @DisplayName("#homeworld")
+    class Homeworld extends FactionTestTemplate.Homeworld {
+        @Test
+        public void testSecondHomweworldDialAdvantageHighThreshold() {
+            HomeworldTerritory secondTerritory = (HomeworldTerritory) game.getTerritories().get(faction.getSecondHomeworld());
+            assertEquals(0, faction.homeworldDialAdvantage(game, secondTerritory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertEquals(3, faction.homeworldDialAdvantage(game, secondTerritory));
+        }
+
+        @Test
+        @Override
+        public void testHomweworldDialAdvantageLowThreshold() {
+            int numForces = territory.getForceStrength(faction.getName());
+            int numSpecials = territory.getForceStrength(faction.getName() + "*");
+            game.removeForces(territory.getTerritoryName(), faction, numForces, numSpecials, true);
+            assertEquals(0, getFaction().homeworldDialAdvantage(game, territory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.checkForLowThreshold();
+            assertFalse(faction.isHighThreshold());
+            assertEquals(3, faction.homeworldDialAdvantage(game, territory));
+        }
+
+        @Test
+        public void testSecondHomweworldDialAdvantageLowThreshold() {
+            HomeworldTerritory secondTerritory = (HomeworldTerritory) game.getTerritories().get(faction.getSecondHomeworld());
+            int numSpecials = secondTerritory.getForceStrength(faction.getName() + "*");
+            game.removeForces(secondTerritory.getTerritoryName(), faction, 0, numSpecials, true);
+            assertEquals(0, faction.homeworldDialAdvantage(game, secondTerritory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.checkForLowThreshold();
+            assertEquals(2, faction.homeworldDialAdvantage(game, secondTerritory));
+        }
     }
 
     @Nested

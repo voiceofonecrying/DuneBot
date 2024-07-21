@@ -126,6 +126,26 @@ abstract class FactionTestTemplate {
         }
 
         @Test
+        public void testHomweworldDialAdvantageHighThreshold() {
+            assertTrue(getFaction().isHighThreshold());
+            assertEquals(0, getFaction().homeworldDialAdvantage(game, territory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertEquals(2, getFaction().homeworldDialAdvantage(game, territory));
+        }
+
+        @Test
+        public void testHomweworldDialAdvantageLowThreshold() {
+            int numForces = territory.getForceStrength(getFaction().getName());
+            int numSpecials = territory.getForceStrength(getFaction().getName() + "*");
+            game.removeForces(territory.getTerritoryName(), getFaction(), numForces, numSpecials, true);
+            assertEquals(0, getFaction().homeworldDialAdvantage(game, territory));
+            game.addGameOption(GameOption.HOMEWORLDS);
+            getFaction().checkForLowThreshold();
+            assertFalse(getFaction().isHighThreshold());
+            assertEquals(2, getFaction().homeworldDialAdvantage(game, territory));
+        }
+
+        @Test
         public void testNativeStartsAtHighThreshold() {
             assertTrue(getFaction().isHighThreshold());
         }
