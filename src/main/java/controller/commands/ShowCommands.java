@@ -595,6 +595,14 @@ public class ShowCommands {
                         discoveryToken = overlay(discoveryToken, forceImage, forcePlacementOffset, 1);
                         offset += 100;
                     }
+
+                    if (game.getTerritory(territory.getDiscoveryToken()).hasRicheseNoField()) {
+                        BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 240, 240);
+                        Point forcePlacement = new Point(250, 150);
+                        Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                        discoveryToken = overlay(discoveryToken, noFieldImage, forcePlacementOffset, 1);
+                        offset += 100;
+                    }
                 }
                 else {
                     if (territory.isRock()) discoveryToken = getResourceImage("Smuggler Token");
@@ -644,7 +652,7 @@ public class ShowCommands {
                 }
             }
 
-            if (game.hasFaction("Richese") && territory.hasRicheseNoField()) {
+            if (game.hasFaction("Richese") && territory.hasRicheseNoField() && !territory.isDiscoveryToken()) {
                 BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
                 Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
                         .get(i);
