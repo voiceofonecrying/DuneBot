@@ -22,10 +22,17 @@ public class MoritaniCommands {
                 Commands.slash("moritani", "Commands related to the Moritani Faction.").addSubcommands(
                         new SubcommandData(
                                 "remove-terror-token-from-map",
-                                "Remove an Moritani Terror token from the map"
+                                "Remove a Moritani Terror Token from the map"
                         ).addOptions(
                                 CommandOptions.moritaniTerrorTokenOnMap,
                                 CommandOptions.toHand
+                        ),
+                        new SubcommandData(
+                                "trigger-terror-token",
+                                "Trigger a Moritani Terror Token"
+                        ).addOptions(
+                                CommandOptions.faction,
+                                CommandOptions.moritaniTerrorTokenOnMap
                         )
                 )
         );
@@ -39,6 +46,8 @@ public class MoritaniCommands {
 
         if (game.hasFaction("Moritani") && name.equals("remove-terror-token-from-map")) {
             removeTerrorTokenFromMap(discordGame, game);
+        } else if (game.hasFaction("Moritani") && name.equals("trigger-terror-token")) {
+            triggerTerrorToken(discordGame, game);
         } else {
             throw new IllegalArgumentException("Invalid command");
         }
@@ -59,6 +68,19 @@ public class MoritaniCommands {
 
         if (toHand) moritaniFaction.addTerrorToken(terrorTokenName);
 
+        discordGame.pushGame();
+    }
+
+    public static void triggerTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String terrorTokenName = discordGame.required(CommandOptions.moritaniTerrorTokenOnMap).getAsString();
+        String triggeringFaction = discordGame.required(CommandOptions.faction).getAsString();
+        MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
+
+        Territory territory = game.getTerritories().values().stream()
+                .filter(t -> t.hasTerrorToken(terrorTokenName))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Terror Token not found on map"));
+        moritaniFaction.triggerTerrorToken(game.getFaction(triggeringFaction), territory, terrorTokenName);
+        moritaniFaction.getChat().publish("You have triggered your " + terrorTokenName + " token in " + territory.getTerritoryName());
         discordGame.pushGame();
     }
 }
