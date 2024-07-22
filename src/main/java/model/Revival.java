@@ -2,10 +2,7 @@ package model;
 
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
-import model.factions.BTFaction;
-import model.factions.EmperorFaction;
-import model.factions.Faction;
-import model.factions.FremenFaction;
+import model.factions.*;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -85,7 +82,9 @@ public class Revival {
                 int starredForRevival = 0;
                 if (faction instanceof EmperorFaction || faction instanceof FremenFaction)
                     starredForRevival = starredInTanks == 0 ? 0 : 1;
-                if (regularInTanks + starredForRevival > 3) {
+                if (faction instanceof ChoamFaction) {
+                    limitsNotNeededMessages.add(faction.getEmoji() + " defies " + Emojis.BT + " attempts to constrain their revivals!");
+                } else if (regularInTanks + starredForRevival > 3) {
                     List<DuneChoice> choices = new LinkedList<>();
                     choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-3", "3" + (faction.getMaxRevival() == 3 ? " (no change)" : "")));
                     choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-4", "4" + (faction.getMaxRevival() == 4 ? " (no change)" : "")));
