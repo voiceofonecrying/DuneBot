@@ -1036,6 +1036,10 @@ public class Bidding {
         if (bidCard != null) {
             int numCardsReturned = moveMarketToDeck(game);
             game.getTurnSummary().publish("All players passed. " + numCardsReturned + " cards were returned to top of the Treachery Deck.");
+            if (richeseCacheCardOutstanding) {
+                presentCacheCardChoices(game);
+                game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
+            }
         } else if (getEligibleBidOrder(game).isEmpty()) {
             if (richeseCacheCardOutstanding) {
                 game.getTurnSummary().publish("All hands are full. " + Emojis.RICHESE + " may not auction a card from their cache.");
