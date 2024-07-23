@@ -210,137 +210,6 @@ public class Battle {
         return message.toString().trim();
     }
 
-    private boolean isSpiceNeeded(Game game, Faction faction, boolean starred) {
-        if (starred && game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
-            return false;
-        else return !(faction instanceof FremenFaction) || fremenMustPay;
-    }
-
-    public static class ForcesDialed {
-        int regularForcesDialed;
-        int specialForcesDialed;
-        int spiceUsed;
-        int regularNotDialed;
-        int specialNotDialed;
-
-        ForcesDialed(int regularForcesDialed, int specialForcesDialed, int spiceUsed, int regularNotDialed, int specialNotDialed) {
-            this.regularForcesDialed = regularForcesDialed;
-            this.specialForcesDialed = specialForcesDialed;
-            this.spiceUsed = spiceUsed;
-            this.regularNotDialed = regularNotDialed;
-            this.specialNotDialed = specialNotDialed;
-        }
-    }
-
-    public ForcesDialed getForcesDialed(Game game, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice, boolean arrakeenStrongholdCard) throws InvalidGameStateException {
-        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
-        boolean isFremen = faction instanceof FremenFaction;
-        boolean isIx = faction instanceof IxFaction;
-        boolean isEmperor = faction instanceof EmperorFaction;
-        boolean specialsNegated = isFremen && fedaykinNegated || isEmperor && sardaukarNegated || isIx && cyborgsNegated;
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        int noFieldNotUsed = 0;
-        int numReserves = faction.getReservesStrength();
-        int noFieldValue = forces.stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
-        if (faction instanceof RicheseFaction) {
-            if (noFieldValue > numReserves)
-                noFieldNotUsed = noFieldValue - numReserves;
-            regularStrength += Math.min(noFieldValue, numReserves);
-        }
-        int spiceUsed = 0;
-        int dialUsed = 0;
-        int specialStrengthUsed = 0;
-        int regularStrengthUsed = 0;
-        if (arrakeenStrongholdCard)
-            spice += 2;
-        if (specialsNegated) {
-            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, faction, false)) spiceUsed++;
-                regularStrengthUsed++;
-            }
-            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, faction, true)) spiceUsed++;
-                specialStrengthUsed++;
-            }
-            if ((wholeNumberDial > dialUsed) || plusHalfDial) {
-                int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-                if (isIx)
-                    regularStrengthUsed += troopsNeeded;
-                else {
-                    troopsNeeded -= Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
-                    regularStrengthUsed = regularStrength;
-                    specialStrengthUsed += troopsNeeded;
-                }
-            }
-        } else {
-            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed += 2;
-                if (isSpiceNeeded(game, faction, true)) spiceUsed++;
-                specialStrengthUsed++;
-            }
-            while ((spice - spiceUsed == 0 && isSpiceNeeded(game, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed++;
-                specialStrengthUsed++;
-            }
-            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, faction, false)) spiceUsed++;
-                regularStrengthUsed++;
-            }
-            if ((wholeNumberDial > dialUsed) || plusHalfDial) {
-                int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-                regularStrengthUsed += troopsNeeded;
-            }
-        }
-        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength) {
-            if (noFieldNotUsed > 0)
-                throw new InvalidGameStateException(faction.getEmoji() + " has only " + numReserves + " " + Emojis.RICHESE_TROOP + " in reserves to replace the " + noFieldValue + " " + Emojis.NO_FIELD);
-            else
-                throw new InvalidGameStateException(faction.getEmoji() + " does not have enough troops in the territory.");
-        }
-        while (faction instanceof EmperorFaction && spiceUsed < spice && specialStrengthUsed > 0 && regularStrength - regularStrengthUsed >= 2) {
-            specialStrengthUsed--;
-            regularStrengthUsed += 2;
-            spiceUsed++;
-        }
-        if (arrakeenStrongholdCard)
-            spiceUsed = Math.max(0, spiceUsed - 2);
-        return new ForcesDialed(regularStrengthUsed, specialStrengthUsed, spiceUsed, regularStrength - regularStrengthUsed, specialStrength - specialStrengthUsed);
-    }
-
-    public int numForcesNotDialed(ForcesDialed forcesDialed, Faction faction, int spice) {
-        int regularForcesDialed = forcesDialed.regularForcesDialed;
-        int specialForcesDialed = forcesDialed.specialForcesDialed;
-        String factionName = (hasEcazAndAlly() && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        int forcesNotDialed = forcesDialed.regularNotDialed + forcesDialed.specialNotDialed;
-        int swappableSpecials = specialForcesDialed;
-        if (faction instanceof IxFaction) swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
-        if (swappableSpecials > 0 && regularStrength - regularForcesDialed >= 2) {
-            List<DuneChoice> choices = new ArrayList<>();
-            int numStarsReplaced = 0;
-            int swapRatio = 2;
-            if (faction instanceof EmperorFaction) swapRatio = 3;
-            while (regularStrength - regularForcesDialed >= swapRatio * numStarsReplaced) {
-                int altRegularDialed = regularForcesDialed + numStarsReplaced * swapRatio;
-                int altSpecialDialed = specialForcesDialed - numStarsReplaced;
-                int altNotDialed = forcesNotDialed + numStarsReplaced;
-                String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed + "-" + altNotDialed;
-                String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
-                choices.add(new DuneChoice(id, label));
-                numStarsReplaced++;
-                if (altSpecialDialed == 0 || faction instanceof IxFaction && altSpecialDialed == specialStrength - spice)
-                    break;
-            }
-            faction.getChat().publish("How would you like to take troop losses?", choices);
-        }
-        return forcesNotDialed;
-    }
-
     public void negateSpecialForces(Game game, Faction targetFaction) throws InvalidGameStateException {
         String targetFactionName = targetFaction.getName();
         Faction ecaz = null;
@@ -375,11 +244,27 @@ public class Battle {
         targetFaction.getChat().publish(message + " " + targetFaction.getPlayer());
     }
 
+    public boolean isFremenMustPay() {
+        return fremenMustPay;
+    }
+
+    public boolean isFedaykinNegated() {
+        return fedaykinNegated;
+    }
+
+    public boolean isSardaukarNegated() {
+        return sardaukarNegated;
+    }
+
+    public boolean isCyborgsNegated() {
+        return cyborgsNegated;
+    }
+
     public void karamaFremenMustPay(Game game) throws InvalidGameStateException {
         boolean aggressorKaramad = getAggressor(game) instanceof FremenFaction;
         boolean defenderKaramad = getDefender(game) instanceof FremenFaction;
         if (!aggressorKaramad && !defenderKaramad)
-            throw new InvalidGameStateException(Emojis.FREMEN + " is not in the current battle.");
+            throw new InvalidGameStateException("Fremen are not in the current battle.");
 
         fremenMustPay = true;
 
@@ -398,35 +283,9 @@ public class Battle {
         fremen.getChat().publish(message + " " + fremen.getPlayer());
     }
 
-    public String getForcesRemainingString(String factionName, ForcesDialed forcesDialed, int regularDialed, int specialDialed) {
-        String dialFactionName = hasEcazAndAlly() && factionName.equals("Ecaz") ? ecazAllyName : factionName;
-        int regularStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName)).findFirst().map(Force::getStrength).orElse(0);
-        int specialStrength = forces.stream().filter(f -> f.getName().equals(dialFactionName + "*")).findFirst().map(Force::getStrength).orElse(0);
-        int regularNotDialed = regularStrength - regularDialed;
-        int specialNotDialed = specialStrength - specialDialed;
-        if (forcesDialed != null) {
-            regularNotDialed = forcesDialed.regularNotDialed;
-            specialNotDialed = forcesDialed.specialNotDialed;
-        }
-        String forcesRemaining = "";
-        if (regularNotDialed > 0) forcesRemaining += regularNotDialed + " " + Emojis.getForceEmoji(dialFactionName) + " ";
-        if (specialNotDialed > 0) forcesRemaining += specialNotDialed + " " + Emojis.getForceEmoji(dialFactionName + "*") + " ";
-        if (forcesRemaining.isEmpty()) forcesRemaining = "no " + Emojis.getFactionEmoji(dialFactionName) + " forces ";
-        if (hasEcazAndAlly()) {
-            int ecazStrength = forces.stream().filter(f -> f.getName().equals("Ecaz")).findFirst().map(Force::getStrength).orElse(0);
-            forcesRemaining += Math.floorDiv(ecazStrength, 2) + " " + Emojis.ECAZ_TROOP + " ";
-        }
-        return "This will leave " + forcesRemaining + "in " + wholeTerritoryName + " if you win.";
-    }
-
-    public String getForcesRemainingString(String factionName, int regularDialed, int specialDialed) {
-        return getForcesRemainingString(factionName, null, regularDialed, specialDialed);
-    }
-
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
-        int actualSize = factionNames.size();
         int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
-        if (actualSize != numFactionsExpected)
+        if (factionNames.size() != numFactionsExpected)
             throw new InvalidGameStateException("Combatants not determined yet.");
 //        if (ecazAllyToBeChosen && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz")))
 //            throw new InvalidGameStateException("Ecaz must choose their alliance combatant.");
@@ -435,7 +294,7 @@ public class Battle {
         if (getAggressorName().equals(faction.getName()))
             planIsForAggressor = true;
         else if (!getDefenderName().equals(faction.getName()))
-            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
 
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
         if (planIsForAggressor) {
@@ -505,18 +364,20 @@ public class Battle {
         spiceBankerTBD = DecisionStatus.CLOSED;
     }
 
-    public String updateTroopsDialed(String factionName, int regularDialed, int specialDialed, int notDialed) throws InvalidGameStateException {
+    public String updateTroopsDialed(String factionName, int regularDialed, int specialDialed) throws InvalidGameStateException {
+        BattlePlan battlePlan;
         if (getAggressorName().equals(factionName))
-            aggressorBattlePlan.setForcesDialed(regularDialed, specialDialed, notDialed);
+            battlePlan = aggressorBattlePlan;
         else if (getDefenderName().equals(factionName))
-            defenderBattlePlan.setForcesDialed(regularDialed, specialDialed, notDialed);
+            battlePlan = defenderBattlePlan;
         else
             throw new InvalidGameStateException(factionName + " is not in the current battle.");
+        battlePlan.setForcesDialed(regularDialed, specialDialed);
         String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
         String regularEmoji = Emojis.getForceEmoji(emojiFactionName);
         String starredEmoji = Emojis.getForceEmoji(emojiFactionName + "*");
         String planUpdatedString = "Battle plan updated to dial " + regularDialed + " " + regularEmoji + " " + specialDialed + " " + starredEmoji +".";
-        String forcesRemainingString = getForcesRemainingString(factionName, regularDialed, specialDialed);
+        String forcesRemainingString = battlePlan.getForcesRemainingString();
         return planUpdatedString + "\n" + forcesRemainingString;
     }
 
@@ -527,7 +388,7 @@ public class Battle {
         else if (getDefenderName().equals(faction.getName()))
             battlePlan = defenderBattlePlan;
         else
-            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
 
         battlePlan.addCarthagStrongholdPower();
     }
@@ -975,7 +836,7 @@ public class Battle {
             defenderBattlePlan.setJuiceOfSapho(true);
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         } else {
-            throw new InvalidGameStateException(faction.getEmoji() + " is not the defender in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not the defender in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " played Juice of Sapho to become the aggressor.\n";
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
@@ -994,14 +855,14 @@ public class Battle {
         int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
         if (getAggressorName().equals(faction.getName())) {
             if (!aggressorBattlePlan.addPortableSnooper())
-                throw new InvalidGameStateException(faction.getEmoji() + " cannot add Portable Snooper");
+                throw new InvalidGameStateException(faction.getName() + " cannot add Portable Snooper");
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         } else if (getDefenderName().equals(faction.getName())) {
             if (!defenderBattlePlan.addPortableSnooper())
-                throw new InvalidGameStateException(faction.getEmoji() + " cannot add Portable Snooper");
+                throw new InvalidGameStateException(faction.getName() + " cannot add Portable Snooper");
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         } else {
-            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " added Portable Snooper to their Battle Plan.\n";
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
@@ -1035,7 +896,7 @@ public class Battle {
                 else
                     defenderBattlePlan.dontKillWithStoneBurner();
             } else {
-                throw new InvalidGameStateException(faction.getEmoji() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
+                throw new InvalidGameStateException(faction.getName() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
             }
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
@@ -1048,12 +909,12 @@ public class Battle {
                 mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
                 aggressorBattlePlan.dontKillWithStoneBurner();
             } else {
-                throw new InvalidGameStateException(faction.getEmoji() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
+                throw new InvalidGameStateException(faction.getName() + " did not use Stone Burner or Mirror Weapon against Stone Burner");
             }
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         } else {
-            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " does not kill both leaders.\n";
         if (nextDecision.isEmpty())
@@ -1076,14 +937,14 @@ public class Battle {
         int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
         if (getAggressorName().equals(faction.getName())) {
             if (!aggressorBattlePlan.revokePoisonTooth())
-                throw new InvalidGameStateException(faction.getEmoji() + " did not use Poison Tooth");
+                throw new InvalidGameStateException(faction.getName() + " did not use Poison Tooth");
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         } else if (getDefenderName().equals(faction.getName())) {
             if (!defenderBattlePlan.revokePoisonTooth())
-                throw new InvalidGameStateException(faction.getEmoji() + " did not use Poison Tooth");
+                throw new InvalidGameStateException(faction.getName() + " did not use Poison Tooth");
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         } else {
-            throw new InvalidGameStateException(faction.getEmoji() + " is not in this battle.");
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " removed Poison Tooth from their Battle Plan.\n";
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, true, oldResolutionString, combatWaterBefore);

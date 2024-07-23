@@ -1,13 +1,12 @@
 package model;
 
+import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -78,7 +77,7 @@ public class BattlePlanTest {
         atreidesChat = new TestTopic();
         atreides.setChat(atreidesChat);
         Force atreidesForce = new Force("Atreides", 11);
-        battle = new Battle(game, "Gara Kulon", List.of(game.getTerritory("Gara Kulon")), List.of(atreides, harkonnen), List.of(atreidesForce), null);
+        battle = new Battle(game, "Funeral Plain", List.of(game.getTerritory("Funeral Plain")), List.of(atreides, harkonnen), List.of(atreidesForce), null);
         Force harkonnenForce = new Force("Harkonnen", 10);
         carthagBattle = new Battle(game, "Carthag", List.of(game.getTerritory("Carthag")), List.of(atreides, harkonnen), List.of(atreidesForce, harkonnenForce), null);
 //        arrakeenBattle = new Battle(game, "Arrakeen", List.of(game.getTerritory("Arrakeen")), List.of(atreides, harkonnen), List.of(atreidesForce, harkonnenForce), null);
@@ -129,6 +128,10 @@ public class BattlePlanTest {
         poisonBladePlan = new BattlePlan(game, battle, harkonnen, false, ummanKudu, null, false, poisonBlade, null, 0, false, 0);
         mirrorWeaponPlan = new BattlePlan(game, battle, harkonnen, false, ummanKudu, null, false, mirrorWeapon, null, 0, false, 0);
         shieldPlan = new BattlePlan(game, battle, harkonnen, false, ummanKudu, null, false, null, shield, 0, false, 0);
+
+        // The battle plans created for tests just above will populate atreidesChat and would interfere with testing messages in tests below
+        atreidesChat = new TestTopic();
+        atreides.setChat(atreidesChat);
     }
 
     @Test
@@ -1131,6 +1134,336 @@ public class BattlePlanTest {
         duncanIdaho.setSkillCard(warmaster);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 0, false, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Nested
+    @DisplayName("#ecazAllyForcesRemaining")
+    class EcazAllyForcesRemaining {
+        EcazFaction ecaz;
+        Territory redChasm;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            ecaz = new EcazFaction("p", "u", game);
+            ecaz.setChat(new TestTopic());
+            game.addFaction(ecaz);
+            game.addFaction(emperor);
+            redChasm = game.getTerritory("Red Chasm");
+        }
+
+        @Test
+        void testForcesRemainingEcazNotAllied() throws InvalidGameStateException {
+            redChasm.addForces("Harkonnen", 10);
+            redChasm.addForces("Ecaz", 3);
+            battle = new Battle(game, "Red Chasm", List.of(redChasm), List.of(harkonnen, ecaz), redChasm.getForces(), null);
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 0, false, 0);
+            assertEquals("This will leave 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+        }
+
+        @Test
+        void testEcazAllyNoForcesLeft() throws InvalidGameStateException {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            redChasm.addForces("Harkonnen", 10);
+            redChasm.addForces("Emperor", 3);
+            redChasm.addForces("Emperor*", 1);
+            redChasm.addForces("Ecaz", 1);
+            battle = new Battle(game, "Gara Kulon", List.of(redChasm), List.of(harkonnen, emperor, ecaz), redChasm.getForces(), "Emperor");
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
+            assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+        }
+
+        @Test
+        void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
+            TestTopic ecazChat = new TestTopic();
+            ecaz.setChat(ecazChat);
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            redChasm.addForces("Harkonnen", 10);
+            redChasm.addForces("Emperor", 6);
+            redChasm.addForces("Emperor*", 1);
+            redChasm.addForces("Ecaz", 7);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(redChasm), List.of(harkonnen, emperor, ecaz), redChasm.getForces(), "Emperor");
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
+            assertTrue(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals(3, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            bp.setForcesDialed(5, 0);
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(1, bp.getSpecialNotDialed());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+        }
+    }
+
+    @Nested
+    @DisplayName("#numForcesNotDialed")
+    class NumForcesNotDialed {
+        EcazFaction ecaz;
+        FremenFaction fremen;
+        Territory carthag;
+        Territory garaKulon;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            ecaz = new EcazFaction("p", "u", game);
+            fremen = new FremenFaction("p", "u", game);
+            carthag = game.getTerritory("Carthag");
+            garaKulon = game.getTerritory("Gara Kulon");
+            game.addFaction(fremen);
+            game.addFaction(ecaz);
+            fremen.setChat(new TestTopic());
+        }
+
+        @Test
+        void testFremenNegateSardaukar() throws InvalidGameStateException {
+            garaKulon.addForces("Emperor", 1);
+            garaKulon.addForces("Emperor*", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(emperor, fremen), garaKulon.getForces(), null);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(3, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testKaramadSardaukar() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 1);
+            carthag.addForces("Emperor*", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), carthag.getForces(), null);
+            battle.negateSpecialForces(game, emperor);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testKaramadFedaykin() throws InvalidGameStateException {
+            carthag.addForces("Fremen", 1);
+            carthag.addForces("Fremen*", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
+            battle.negateSpecialForces(game, fremen);
+            BattlePlan bp = new BattlePlan(game, battle, fremen, true, fremen.getLeader("Chani").orElseThrow(), null, false, null, null, 3, false, 0);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testKaramadCyborgs() throws InvalidGameStateException, IOException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            carthag.addForces("Ix", 2);
+            carthag.addForces("Ix*", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(ix, harkonnen), carthag.getForces(), null);
+            battle.negateSpecialForces(game, ix);
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 2, false, 1);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testKaramadSardaukarAlliedWithEcaz() throws InvalidGameStateException {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            carthag.addForces("Emperor", 1);
+            carthag.addForces("Emperor*", 3);
+            carthag.addForces("Ecaz", 2);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen, ecaz), carthag.getForces(), null);
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            battle.negateSpecialForces(game, emperor);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, false, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testKaramaFremenMustPaySpice() throws InvalidGameStateException {
+            game.addFaction(harkonnen);
+            carthag.addForces("Fremen", 1);
+            carthag.addForces("Fremen*", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
+            battle.karamaFremenMustPay(game);
+            BattlePlan bp = new BattlePlan(game, battle, fremen, true, fremen.getLeader("Chani").orElseThrow(), null, false, null, null, 3, false, 0);
+            assertEquals(0, bp.getRegularDialed());
+            assertEquals(3, bp.getSpecialDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testNoFieldForces() throws IOException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            game.addFaction(richese);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            assertDoesNotThrow(() -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3));
+            assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, true, 3));
+        }
+
+        @Test
+        void testNoFieldForcesFewerReserves() throws IOException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            game.addFaction(richese);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory richeseHomeworld = game.getTerritory("Richese");
+            assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+            richeseHomeworld.removeForces("Richese", 18);
+            assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            try {
+                new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
+                fail("Expected InvalidGameStateException was not thrown.");
+            } catch (Exception e) {
+                assertEquals("Richese has only 2 forces in reserves to replace the 3 No-Field", e.getMessage());
+            }
+            assertDoesNotThrow(() -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 2, false, 2));
+        }
+
+        @Test
+        void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException, IOException {
+            RicheseFaction richese = new RicheseFaction("p", "u", game);
+            richese.setChat(new TestTopic());
+            garaKulon.setRicheseNoField(5);
+            garaKulon.addForces("NoField", 5);
+            garaKulon.addForces("Fremen", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), garaKulon.getForces(), "Emperor");
+            Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
+            assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, richese, true, ladyHelena, null, false, null, null, 3, false, 0));
+            BattlePlan bp = new BattlePlan(game, battle, richese, true, ladyHelena, null, false, null, null, 2, false, 0);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(1, bp.getRegularNotDialed());
+            assertEquals(1, bp.getNumForcesNotDialed());
+            assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+        }
+    }
+
+    @Nested
+    @DisplayName("#getForcesDialed")
+    class GetForcesDialed {
+        @Test
+        void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
+            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(3, bp.getSpecialDialed());
+        }
+
+        @Test
+        void testNoFieldForces() throws IOException, InvalidGameStateException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            BattlePlan bp = new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
+            assertEquals(3, bp.getRegularDialed());
+        }
+
+        @Test
+        void testNoFieldForcesFewerReserves() throws IOException, InvalidGameStateException {
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            game.addFaction(richese);
+            TestTopic richeseChat = new TestTopic();
+            richese.setChat(richeseChat);
+            Territory richeseHomeworld = game.getTerritory("Richese");
+            assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+            richeseHomeworld.removeForces("Richese", 18);
+            assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.setRicheseNoField(3);
+            Force noField = new Force("NoField", 3);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            try {
+                new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
+                fail("Expected InvalidGameStateException was not thrown.");
+            } catch (Exception e) {
+                assertEquals("Richese has only 2 forces in reserves to replace the 3 No-Field", e.getMessage());
+            }
+            BattlePlan bp = new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 2, false, 2);
+            assertEquals(2, bp.getRegularDialed());
+        }
+    }
+
+    @Nested
+    @DisplayName("#arrakeenStrongholdCard")
+    class ArrakeenStrongholdCard {
+        Territory arrakeen;
+        Battle battle1;
+
+        @BeforeEach
+        void setUp() {
+            game.setTurnSummary(new TestTopic());
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            atreides.addStrongholdCard(new StrongholdCard("Arrakeen"));
+            atreides.addTreacheryCard(cheapHero);
+            arrakeen = game.getTerritory("Arrakeen");
+            arrakeen.addForces("Harkonnen", 1);
+            battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), null);
+        }
+
+        @Test
+        void testBattlePlanResolution2SpiceForArrakeenStrongholdCard() throws InvalidGameStateException {
+            BattlePlan bp = new BattlePlan(game, battle1, atreides, true, null, cheapHero, false, null, null, 2, false, 0);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(8, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testBattlePlanResolutionArrakeenStrongholdCardWithSpiceReductionMessage() throws InvalidGameStateException {
+            BattlePlan bp = new BattlePlan(game, battle1, atreides, true, null, cheapHero, false, null, null, 2, false, 1);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(8, bp.getNumForcesNotDialed());
+            assertTrue(atreidesChat.getMessages().getFirst().contains("This dial can be supported with"));
+        }
+
+        @Test
+        void testBattlePlanResolutionArrakeenStrongholdCardDial0NoSpiceReductionMessage() throws InvalidGameStateException {
+            BattlePlan bp = new BattlePlan(game, battle1, atreides, true, null, cheapHero, false, null, null, 0, false, 0);
+            assertEquals(0, bp.getRegularDialed());
+            assertEquals(10, bp.getNumForcesNotDialed());
+            assertFalse(atreidesChat.getMessages().getFirst().contains("This dial can be supported with"));
+        }
     }
 
     @AfterEach
