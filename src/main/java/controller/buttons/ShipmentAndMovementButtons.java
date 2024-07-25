@@ -2,7 +2,6 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
-import controller.commands.BGCommands;
 import controller.commands.CommandManager;
 import enums.GameOption;
 import enums.UpdateType;
@@ -189,16 +188,26 @@ public class ShipmentAndMovementButtons implements Pressable {
             from.setRicheseNoField(null);
             discordGame.getTurnSummary().queueMessage(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
             if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
-                CommandManager.bgFlipMessageAndButtons(discordGame, game, to.getTerritoryName());
-        }
-        if (force != 0 || specialForce != 0)
-            CommandManager.moveForces(faction, from, to, force, specialForce, discordGame, game);
-        if (secondForce != 0 || secondSpecialForce != 0) {
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
-            CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, discordGame, game);
+                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, to.getTerritoryName());
+            moveForces(discordGame, game, faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
+            if (game.hasFaction("Ecaz"))
+                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(to, faction);
+            if (game.hasFaction("Moritani"))
+                ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(to, faction, 1 + force + specialForce + secondForce + secondSpecialForce);
+        } else {
+            moveForces(discordGame, game, faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
         }
         movement.clear();
         game.setUpdated(UpdateType.MAP);
+    }
+
+    private static void moveForces(DiscordGame discordGame, Game game, Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean canTrigger) throws ChannelNotFoundException, InvalidOptionException {
+        if (force != 0 || specialForce != 0)
+            CommandManager.moveForces(faction, from, to, force, specialForce, canTrigger, discordGame, game);
+        if (secondForce != 0 || secondSpecialForce != 0) {
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
+            CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, canTrigger, discordGame, game);
+        }
     }
 
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException {
@@ -426,27 +435,14 @@ public class ShipmentAndMovementButtons implements Pressable {
         Territory territory = game.getTerritory(territoryName);
         if (noField >= 0) {
             RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-            String turnSummaryMessage;
-            turnSummaryMessage = faction.getEmoji() + " ship a " + Emojis.NO_FIELD + " to " + territoryName;
-            richese.revealNoField(game);
-            territory.setRicheseNoField(noField);
-            faction.noFieldMessage(noField, territoryName);
-            int spice = game.shipmentCost(faction, 1, territory, karama);
-            turnSummaryMessage += faction.payForShipment(game, spice, territory, karama, true);
-            if (game.hasFaction("BG") && territory.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
-                CommandManager.bgFlipMessageAndButtons(discordGame, game, territory.getTerritoryName());
-            if (crossShipFrom.isEmpty())
-                BGCommands.presentAdvisorButtons(discordGame, game, faction, territory);
-            discordGame.getTurnSummary().queueMessage(turnSummaryMessage);
-            if (!(faction instanceof RicheseFaction))
-                richese.revealNoField(game, faction);
-            if (game.hasGameOption(GameOption.TECH_TOKENS))
-                TechToken.addSpice(game, TechToken.HEIGHLINERS);
-            if (force + specialForce == 2 + 1 && !territory.getTerrorTokens().isEmpty()) {
-                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(territory, faction);
-            }
-        }
-        if (shipment.isToReserves()) {
+            richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty());
+            if (force > 0 || specialForce > 0)
+                CommandManager.placeForces(territory, faction, force, specialForce, true, false, discordGame, game, karama);
+            if (game.hasFaction("Ecaz"))
+                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
+            if (game.hasFaction("Moritani"))
+                ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
+        } else if (shipment.isToReserves()) {
             game.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice, "shipment from " + territory.getTerritoryName() + " back to reserves");

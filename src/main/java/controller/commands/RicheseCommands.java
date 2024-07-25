@@ -6,7 +6,9 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.factions.EcazFaction;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -156,13 +158,17 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void placeNoFieldToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Integer noField = discordGame.required(richeseNoFields).getAsInt();
+    public static void placeNoFieldToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        int noField = discordGame.required(richeseNoFields).getAsInt();
         String territoryName = discordGame.required(territory).getAsString();
 
         Territory territory = game.getTerritories().get(territoryName);
-        territory.setRicheseNoField(noField);
-        game.setUpdated(UpdateType.MAP);
+        RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+        richese.shipNoField(richese, territory, noField, false, false);
+        if (game.hasFaction("Ecaz"))
+            ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, richese);
+        if (game.hasFaction("Moritani"))
+            ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(territory, richese, 1);
 
         discordGame.pushGame();
     }

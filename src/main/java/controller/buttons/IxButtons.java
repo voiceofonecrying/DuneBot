@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.CommandManager;
 import controller.commands.IxCommands;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -115,7 +114,7 @@ public class IxButtons implements Pressable {
         hmsQueueMovableTerritories(game, discordGame, startingIndex);
     }
 
-    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
+    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String hmsMoveString = "hms-move-";
         String territoryName = event.getComponentId().replace(hmsMoveString, "").replace("-", " ");
         discordGame.queueMessage("You selected " + territoryName);
@@ -151,7 +150,7 @@ public class IxButtons implements Pressable {
         );
     }
 
-    private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidOptionException {
+    private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String hmsMoveString = "hms-move-";
         String sector = event.getComponentId().replace(hmsMoveString + "sector-", "").replace("-", " ");
         discordGame.queueMessage("You selected sector " + sector);
@@ -167,12 +166,9 @@ public class IxButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    public static void hmsExecuteFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidOptionException {
+    public static void hmsExecuteFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException {
         Movement movement = faction.getMovement();
         String movingTo = movement.getMovingTo();
-        int secondForce = movement.getSecondForce();
-        int secondSpecialForce = movement.getSecondSpecialForce();
-        String secondMovingFrom = movement.getSecondMovingFrom();
         Territory targetTerritory = game.getTerritory(movingTo);
 //            IxCommands.moveHMS();
         for (Territory territory : game.getTerritories().values()) {
@@ -185,10 +181,6 @@ public class IxButtons implements Pressable {
         game.setIxHMSActionRequired(false);
         discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
         discordGame.pushGame();
-        if (secondForce != 0 || secondSpecialForce != 0) {
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
-            CommandManager.moveForces(faction, game.getTerritory(secondMovingFrom), targetTerritory, secondForce, secondSpecialForce, discordGame, game);
-        }
         movement.clear();
 //        deleteAllButtonsInChannel(event.getMessageChannel());
         game.setUpdated(UpdateType.MAP);

@@ -186,6 +186,61 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.MORITANI + " collect 3 " + Emojis.SPICE + " by assassinating Zoal!", turnSummary.getMessages().getFirst());
             assertEquals("+3 " + Emojis.SPICE + " assassination of Zoal = 15 " + Emojis.SPICE, moritaniLedger.getMessages().getFirst());
         }
+    }
 
+    @Nested
+    @DisplayName("#checkForTerrorTrigger")
+    class CheckForTerrorTrigger {
+        AtreidesFaction atreides;
+        Territory carthag;
+        TestTopic turnSummary;
+        TestTopic moritaniChat;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            moritaniChat = new TestTopic();
+            faction.setChat(moritaniChat);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            atreides = new AtreidesFaction("p", "u", game);
+            carthag = game.getTerritory("Carthag");
+            carthag.addTerrorToken("Sabotage");
+        }
+
+        @Test
+        void testMoritaniDoesNotTrigger() {
+            faction.checkForTerrorTrigger(carthag, faction, 3);
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertTrue(moritaniChat.getMessages().isEmpty());
+        }
+
+        @Test
+        void testOtherFactionTriggers() {
+            faction.checkForTerrorTrigger(carthag, atreides, 3);
+            assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
+            assertTrue(moritaniChat.getMessages().getFirst().contains("Will you trigger your terror token in Carthag?"));
+            assertEquals(3, moritaniChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testAllyDoesNotTrigger() {
+            faction.setAlly("Atreides");
+            atreides.setAlly("Moritani");
+            faction.checkForTerrorTrigger(carthag, atreides, 3);
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertTrue(moritaniChat.getMessages().isEmpty());
+        }
+
+        @Test
+        void testCannotTriggerAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertTrue(faction.isHighThreshold);
+            faction.removeReserves(13);
+            assertEquals("Grumman has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertFalse(faction.isHighThreshold);
+            faction.checkForTerrorTrigger(carthag, atreides, 2);
+            assertEquals(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time", turnSummary.getMessages().get(1));
+            assertTrue(moritaniChat.getMessages().isEmpty());
+        }
     }
 }

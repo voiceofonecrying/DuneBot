@@ -181,15 +181,22 @@ public class MoritaniFaction extends Faction {
         chat.publish("Use these buttons to place a Terror Token from your supply. " + getPlayer(), choices);
     }
 
-    public void sendTerrorTokenTriggerMessage(Territory targetTerritory, Faction targetFaction) {
-        List<DuneChoice> choices = new LinkedList<>();
-        for (String terror : targetTerritory.getTerrorTokens()) {
-            choices.add(new DuneChoice("moritani-trigger-terror-" + terror + "-" + targetFaction.getName(), "Trigger " + terror));
-            choices.add(new DuneChoice("danger", "moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
+    public void checkForTerrorTrigger(Territory targetTerritory, Faction targetFaction, int numForces) {
+        if (!targetTerritory.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
+                && !getAlly().equals(targetFaction.getName())) {
+            if (!isHighThreshold && numForces < 3) {
+                game.getTurnSummary().publish(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
+            } else {
+                List<DuneChoice> choices = new ArrayList<>();
+                for (String terror : targetTerritory.getTerrorTokens()) {
+                    choices.add(new DuneChoice("moritani-trigger-terror-" + terror + "-" + targetFaction.getName(), "Trigger " + terror));
+                    choices.add(new DuneChoice("danger", "moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
+                }
+                choices.add(new DuneChoice("danger", "moritani-don't-trigger-terror", "Don't Trigger"));
+                game.getTurnSummary().publish(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
+                chat.publish("Will you trigger your terror token in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("Moritani").getPlayer(), choices);
+            }
         }
-        choices.add(new DuneChoice("danger", "moritani-don't-trigger-terror", "Don't Trigger"));
-        game.getTurnSummary().publish(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
-        chat.publish("Will you trigger your terror token in " + targetTerritory.getTerritoryName() + "? " + game.getFaction("Moritani").getPlayer(), choices);
     }
 
     public List<String> getAssassinationTargets() {

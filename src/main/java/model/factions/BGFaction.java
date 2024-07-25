@@ -4,10 +4,14 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.Game;
+import model.HomeworldTerritory;
 import model.Territory;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 public class BGFaction extends Faction {
     private String predictionFactionName;
@@ -129,4 +133,30 @@ public class BGFaction extends Faction {
         territory.removeForce(from);
         territory.addForces(to, count);
     }
+
+    public void presentAdvisorButtons(Game game, Faction targetFaction, Territory targetTerritory) {
+        if (!(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
+                && !(game.hasGameOption(GameOption.HOMEWORLDS)
+                        && !isHighThreshold()
+                        && !(targetTerritory instanceof HomeworldTerritory)
+        )) {
+            List<DuneChoice> choices = new LinkedList<>();
+            String territoryName = targetTerritory.getTerritoryName();
+            choices.add(new DuneChoice("bg-advise-" + territoryName, "Advise"));
+            choices.add(new DuneChoice("secondary", "bg-advise-Polar Sink", "Advise to Polar Sink"));
+            if (game.hasGameOption(GameOption.HOMEWORLDS))
+                choices.add(new DuneChoice("secondary", "bg-ht", "Advise 2 to Polar Sink"));
+            choices.add(new DuneChoice("danger", "bg-dont-advise-" + territoryName, "No"));
+            chat.publish(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
+        }
+    }
+
+    public void bgFlipMessageAndButtons(Game game, String territoryName) {
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("bg-flip-" + territoryName, "Flip"));
+        choices.add(new DuneChoice("secondary", "bg-dont-flip-" + territoryName, "Don't Flip"));
+        game.getTurnSummary().publish(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName);
+        chat.publish("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
+    }
+
 }

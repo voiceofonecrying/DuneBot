@@ -28,7 +28,6 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -212,22 +211,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void bgFlipMessageAndButtons(DiscordGame discordGame, Game game, String territoryName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("bg-flip-" + territoryName, "Flip"));
-        buttons.add(Button.secondary("bg-dont-flip-" + territoryName, "Don't Flip"));
-        discordGame.getTurnSummary().queueMessage(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName);
-        discordGame.getBGChat().queueMessage("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), buttons);
-    }
-
-    private static void ecazTriggerMessageAndButtons(DiscordGame discordGame, Game game, String ambassador, Faction targetFaction, String territoryName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
-        buttons.add(Button.danger("ecaz-don't-trigger-ambassador", "Don't Trigger"));
-        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " ambassador.");
-        discordGame.getEcazChat().queueMessage("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + territoryName + "? " + game.getFaction("Ecaz").getPlayer(), buttons);
-    }
-
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
 
@@ -264,33 +247,23 @@ public class CommandManager extends ListenerAdapter {
                     && game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
-            if (game.hasFaction("BG") && targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
-                bgFlipMessageAndButtons(discordGame, game, targetTerritory.getTerritoryName());
-            if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
-                BGCommands.presentAdvisorButtons(discordGame, game, targetFaction, targetTerritory);
+            if (game.hasFaction("BG")) {
+                if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
+                    ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
+                if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
+                    ((BGFaction) game.getFaction("BG")).presentAdvisorButtons(game, targetFaction, targetTerritory);
+            }
         }
 
         if (canTrigger) {
-            if (targetTerritory.getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
-                    && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
-                    && !(game.getFaction("Ecaz").hasAlly()
-                    && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-                ecazTriggerMessageAndButtons(discordGame, game, targetTerritory.getEcazAmbassador(), targetFaction, targetTerritory.getTerritoryName());
-            }
-
-            if (!targetTerritory.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
-                    && (!(game.getFaction("Moritani").hasAlly()
-                    && game.getFaction("Moritani").getAlly().equals(targetFaction.getName())))) {
-                if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
-                    turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
-                } else {
-                    ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(targetTerritory, targetFaction);
-                }
-            }
+            if (game.hasFaction("Ecaz"))
+                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(targetTerritory, targetFaction);
+            if (game.hasFaction("Moritani"))
+                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(targetTerritory, targetFaction, amountValue + starredAmountValue);
         }
     }
 
-    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
         if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
                 (!(targetFaction instanceof EcazFaction && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
                         && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction)))) {
@@ -340,23 +313,13 @@ public class CommandManager extends ListenerAdapter {
         turnSummary.queueMessage(message.toString());
 
         if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
-            bgFlipMessageAndButtons(discordGame, game, to.getTerritoryName());
+            ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, to.getTerritoryName());
         }
-        if (game.getTerritory(to.getTerritoryName()).getEcazAmbassador() != null && !(targetFaction instanceof EcazFaction)
-                && !targetFaction.getName().equals(game.getTerritory(to.getTerritoryName()).getEcazAmbassador())
-                && !(game.getFaction("Ecaz").hasAlly()
-                && game.getFaction("Ecaz").getAlly().equals(targetFaction.getName()))) {
-            ecazTriggerMessageAndButtons(discordGame, game, to.getEcazAmbassador(), targetFaction, to.getTerritoryName());
-        }
-
-        if (!to.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
-                && !(game.getFaction("Moritani").hasAlly()
-                && game.getFaction("Moritani").getAlly().equals(targetFaction.getName()))) {
-            if (!game.getFaction("Moritani").isHighThreshold() && amountValue + starredAmountValue < 3) {
-                turnSummary.queueMessage(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
-            } else {
-                ((MoritaniFaction)game.getFaction("Moritani")).sendTerrorTokenTriggerMessage(to, targetFaction);
-            }
+        if (canTrigger) {
+            if (game.hasFaction("Ecaz"))
+                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(to, targetFaction);
+            if (game.hasFaction("Moritani"))
+                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(to, targetFaction, amountValue + starredAmountValue);
         }
         game.setUpdated(UpdateType.MAP);
     }
@@ -881,7 +844,7 @@ public class CommandManager extends ListenerAdapter {
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
-        moveForces(targetFaction, from, to, amountValue, starredAmountValue, discordGame, game);
+        moveForces(targetFaction, from, to, amountValue, starredAmountValue, true, discordGame, game);
         discordGame.pushGame();
     }
 

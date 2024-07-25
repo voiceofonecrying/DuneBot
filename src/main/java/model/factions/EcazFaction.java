@@ -5,10 +5,7 @@ import enums.UpdateType;
 import model.*;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class EcazFaction extends Faction {
@@ -153,6 +150,19 @@ public class EcazFaction extends Faction {
         territory.setEcazAmbassador(ambassador);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void checkForAmbassadorTrigger(Territory targetTerritory, Faction targetFaction) {
+        String ambassador = targetTerritory.getEcazAmbassador();
+        if (ambassador != null && !(targetFaction instanceof EcazFaction)
+                && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
+                && !getAlly().equals(targetFaction.getName())) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
+            choices.add(new DuneChoice("danger", "ecaz-don't-trigger-ambassador", "Don't Trigger"));
+            game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " ambassador.");
+            chat.publish("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
+        }
     }
 
     public Leader getLoyalLeader() {

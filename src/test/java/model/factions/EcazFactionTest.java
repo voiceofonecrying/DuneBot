@@ -5,13 +5,16 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EcazFactionTest extends FactionTestTemplate {
     private EcazFaction faction;
@@ -139,5 +142,58 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
+    }
+
+    @Nested
+    @DisplayName("#checkForTerrorTrigger")
+    class CheckForTerrorTrigger {
+        AtreidesFaction atreides;
+        BGFaction bg;
+        Territory carthag;
+        TestTopic turnSummary;
+        TestTopic ecazChat;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            ecazChat = new TestTopic();
+            faction.setChat(ecazChat);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            atreides = new AtreidesFaction("p", "u", game);
+            bg = new BGFaction("p", "u", game);
+            carthag = game.getTerritory("Carthag");
+            carthag.setEcazAmbassador("BG");
+        }
+
+        @Test
+        void testEcazDoesNotTrigger() {
+            faction.checkForAmbassadorTrigger(carthag, faction);
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertTrue(ecazChat.getMessages().isEmpty());
+        }
+
+        @Test
+        void testOtherFactionTriggers() {
+            faction.checkForAmbassadorTrigger(carthag, atreides);
+            assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG ambassador.", turnSummary.getMessages().getFirst());
+            assertTrue(ecazChat.getMessages().getFirst().contains("Will you trigger your BG ambassador against Atreides in Carthag?"));
+            assertEquals(2, ecazChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testAllyDoesNotTrigger() {
+            faction.setAlly("Atreides");
+            atreides.setAlly("Ecaz");
+            faction.checkForAmbassadorTrigger(carthag, atreides);
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertTrue(ecazChat.getMessages().isEmpty());
+        }
+
+        @Test
+        void testAmbassadorFactionDoesNotTrigger() {
+            faction.checkForAmbassadorTrigger(carthag, bg);
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertTrue(ecazChat.getMessages().isEmpty());
+        }
     }
 }
