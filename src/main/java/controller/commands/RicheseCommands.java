@@ -116,7 +116,7 @@ public class RicheseCommands {
         String cardName = discordGame.required(richeseCard).getAsString();
         TreacheryCard karama;
         try {
-            karama = faction.removeTreacheryCard("Karama ");
+            karama = faction.removeTreacheryCard("Karama");
             game.getTreacheryDiscard().add(karama);
         } catch (Exception e) {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have a Karama.");
