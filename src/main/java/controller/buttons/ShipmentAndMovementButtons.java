@@ -203,7 +203,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidOptionException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr "));
+        if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr"));
         else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
         String hajrOrOrnithopter = hajr ? "Hajr" : "Ornithopter";
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");

@@ -139,7 +139,7 @@ public class RicheseCommands {
         }
         TreacheryCard karama;
         try {
-            karama = karamaFaction.removeTreacheryCard("Karama ");
+            karama = karamaFaction.removeTreacheryCard("Karama");
         } catch (Exception e) {
             throw new InvalidGameStateException(karamaFaction.getEmoji() + " does not have a Karama.");
         }
