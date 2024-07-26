@@ -99,8 +99,9 @@ public class CommandOptions {
     public static final OptionData sectors = new OptionData(OptionType.INTEGER, "sectors", "Number of sectors to move storm", true);
     public static final OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
             .addChoice("Territories", "territories")
-            .addChoice("Decks and Discards", "dnd")
-            .addChoice("Phase, Turn, and everything else", "etc")
+            .addChoice("Treachery Deck and Discard", "treachery")
+            .addChoice("Other Decks and Discards", "dnd")
+//            .addChoice("Phase, Turn, and everything else", "etc")
             .addChoice("Faction Info", "factions");
     public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "is-shipment", "Is this placement a shipment?", true);
     public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);

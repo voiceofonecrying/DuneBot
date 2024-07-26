@@ -965,20 +965,25 @@ public class CommandManager extends ListenerAdapter {
                             "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
                 }
             }
+            case "treachery" -> {
+                String state = Emojis.TREACHERY + " Deck:\n";
+                state += game.getTreacheryDeck().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
+                state += "\n\n" + Emojis.TREACHERY + " Discard:\n";
+                state += game.getTreacheryDiscard().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
+                try {
+                    Bidding bidding = game.getBidding();
+                    state += "\n\nBidding market:\n";
+                    state += bidding.getMarket().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
+                } catch (InvalidGameStateException ignored) {
+                }
+                discordGame.getModInfo().queueMessage(state);
+            }
             case "dnd" -> {
-                discordGame.getModInfo().queueMessage(game.getTreacheryDeck().toString());
-                discordGame.getModInfo().queueMessage(game.getTreacheryDiscard().toString());
                 discordGame.getModInfo().queueMessage(game.getSpiceDeck().toString());
                 discordGame.getModInfo().queueMessage(game.getSpiceDiscardA().toString());
                 discordGame.getModInfo().queueMessage(game.getSpiceDiscardB().toString());
                 discordGame.getModInfo().queueMessage(game.getLeaderSkillDeck().toString());
                 discordGame.getModInfo().queueMessage(game.getTraitorDeck().toString());
-                try {
-                    Bidding bidding = game.getBidding();
-                    discordGame.getModInfo().queueMessage(bidding.getMarket().toString());
-                } catch (InvalidGameStateException e) {
-                    discordGame.getModInfo().queueMessage("No bidding state. Game is not in bidding phase.");
-                }
             }
             case "factions" -> {
                 for (Faction faction : game.getFactions()) {
