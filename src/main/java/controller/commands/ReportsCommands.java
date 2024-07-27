@@ -248,6 +248,37 @@ public class ReportsCommands {
         };
     }
 
+    public static String activeGame(Guild guild, Game game, String categoryName, boolean showFactionsinGames) throws InvalidGameStateException {
+        StringBuilder response = new StringBuilder();
+        response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
+        if (game.getTurn() != 0) {
+            int phase = game.getPhaseForTracker();
+            response.append(phaseName(phase));
+            if (phase == 4) {
+                Bidding bidding = game.getBidding();
+                response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
+            } else if (phase == 6) {
+                int factionsLeftToGo = game.getTurnOrder().size();
+                if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
+                    factionsLeftToGo++;
+                response.append(", ").append(factionsLeftToGo).append(" factions remaining");
+            }
+        }
+        response.append("\nMod: ").append(game.getMod());
+        if (showFactionsinGames) {
+            response.append("\nFactions: ");
+            for (Faction f: game.getFactions()) {
+                String factionEmojiName = f.getEmoji().substring(1, f.getEmoji().length() - 1);
+                RichCustomEmoji emoji = guild.getEmojis().stream().filter(e -> e.getName().equals(factionEmojiName)).findFirst().orElse(null);
+                if (emoji == null)
+                    response.append(f.getEmoji());
+                else
+                    response.append("<").append(f.getEmoji()).append(emoji.getId()).append(">");
+            }
+        }
+        return response.toString();
+    }
+
     public static String activeGames(SlashCommandInteractionEvent event) {
         OptionMapping optionMapping = event.getOption(showFactions.getName());
         boolean showFactionsinGames = (optionMapping != null && optionMapping.getAsBoolean());
@@ -258,32 +289,7 @@ public class ReportsCommands {
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
-                response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
-                if (game.getTurn() != 0) {
-                    int phase = game.getPhaseForTracker();
-                    response.append(phaseName(phase));
-                    if (phase == 4) {
-                        Bidding bidding = game.getBidding();
-                        response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
-                    } else if (phase == 6) {
-                        int factionsLeftToGo = game.getTurnOrder().size();
-                        if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
-                            factionsLeftToGo++;
-                        response.append(", ").append(factionsLeftToGo).append(" factions remaining");
-                    }
-                }
-                response.append("\nMod: ").append(game.getMod());
-                if (showFactionsinGames) {
-                    response.append("\nFactions: ");
-                    for (Faction f: game.getFactions()) {
-                        String factionEmojiName = f.getEmoji().substring(1, f.getEmoji().length() - 1);
-                        RichCustomEmoji emoji = event.getGuild().getEmojis().stream().filter(e -> e.getName().equals(factionEmojiName)).findFirst().orElse(null);
-                        if (emoji == null)
-                            response.append(f.getEmoji());
-                        else
-                            response.append("<").append(f.getEmoji()).append(emoji.getId()).append(">");
-                    }
-                }
+                response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames));
                 response.append("\n\n");
             } catch (Exception e) {
                 // category is not a Dune game

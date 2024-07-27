@@ -17,8 +17,11 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
@@ -160,7 +163,7 @@ public class CommandManager extends ListenerAdapter {
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
                 case "remove-forces" -> removeForcesEventHandler(discordGame, game);
                 case "homeworld-occupy" -> homeworldOccupy(discordGame, game);
-                case "display" -> displayGameState(discordGame, game);
+                case "display-state" -> displayGameState(event, discordGame, game);
                 case "revive-forces" -> reviveForcesEventHandler(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
@@ -419,7 +422,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
-        commandData.add(Commands.slash("display", "Displays some element of the game to the mod.").addOptions(data));
+        commandData.add(Commands.slash("display-state", "Displays some element of the game in mod-info.").addOptions(data));
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
@@ -953,6 +956,10 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    private String leaderFactionNameAndStrength(Leader t) {
+        return t.getName() + " (" + t.getValue() + ")";
+    }
+
     private String traitorFactionNameAndStrength(TraitorCard t) {
         return Emojis.getFactionEmoji(t.factionName()) + " " + t.name() + " (" + t.strength() + ")";
     }
@@ -981,7 +988,7 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public void displayGameState(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public void displayGameState(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         switch (discordGame.required(data).getAsString()) {
             case "territories" -> {
                 Collection<Territory> territories = game.getTerritories().values();
@@ -1029,8 +1036,25 @@ public class CommandManager extends ListenerAdapter {
                 String state = String.join("\n\n", game.getFactions().stream().map(this::getFactionDisplayString).toList());
                 discordGame.getModInfo().queueMessage(state);
             }
+            case "etc" -> {
+                String categoryName = "";
+                Category category = null;
+                MessageChannelUnion mcu = event.getChannel();
+                if (mcu instanceof TextChannel)
+                    category = mcu.asTextChannel().getParentCategory();
+                else if (mcu instanceof ThreadChannel) {
+                    GuildMessageChannelUnion gmcu = mcu.asThreadChannel().getParentMessageChannel();
+                    if (gmcu instanceof TextChannel)
+                        category = gmcu.asTextChannel().getParentCategory();
+                    else if (gmcu instanceof NewsChannel)
+                        category = gmcu.asNewsChannel().getParentCategory();
+                }
+                if (category != null)
+                    categoryName = category.getName();
+                String state = ReportsCommands.activeGame(event.getGuild(), game, categoryName, true);
+                discordGame.getModInfo().queueMessage(state);
+            }
         }
-        game.setUpdated(UpdateType.MAP);
     }
 
     public void createAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

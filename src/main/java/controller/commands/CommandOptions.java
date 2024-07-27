@@ -102,7 +102,7 @@ public class CommandOptions {
             .addChoice("Treachery Deck and Discard", "treachery")
             .addChoice("Spice Deck and Discards", "spice")
             .addChoice("Other Decks and Discards", "dnd")
-//            .addChoice("Phase, Turn, and everything else", "etc")
+            .addChoice("Phase, Turn, and everything else", "etc")
             .addChoice("Faction Info", "factions");
     public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "is-shipment", "Is this placement a shipment?", true);
     public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);
