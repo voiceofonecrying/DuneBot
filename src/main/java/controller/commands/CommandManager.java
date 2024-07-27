@@ -953,45 +953,77 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void displayGameState(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        TextChannel channel = discordGame.getTextChannel("mod-info");
+    private String getFactionDisplayString(Faction faction) {
+        String message = faction.getEmoji() + " ** " + faction.getName() + " ** " + faction.getEmoji() + " - " + faction.getUserName() + "\n" +
+                faction.getSpice() + " " + Emojis.SPICE + "    " + Emojis.TREACHERY + " ";
+        message += String.join(", " + Emojis.TREACHERY + " ", faction.getTreacheryHand().stream().map(TreacheryCard::name).toList());
+        message += "\nTraitors: ";
+        message += String.join(", ", faction.getTraitorHand().stream().map(TraitorCard::name).toList());
+        message += "\nLeaders: ";
+        message += String.join(", ", faction.getLeaders().stream().map(Leader::getName).toList());
+        return message;
+    }
+
+    private void publishTerritoriesDisplayString(DiscordGame discordGame, List<Territory> territories) throws ChannelNotFoundException {
+        for (Territory territory : territories) {
+            if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty())
+                continue;
+            String spiceString = territory.getSpice() == 0 ? "" : " " + territory.getSpice() + " " + Emojis.SPICE;
+            String forcesString = " " + String.join(" ", territory.getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList());
+            if (territory.hasRicheseNoField())
+                forcesString += " " + territory.getRicheseNoField() + " " + Emojis.NO_FIELD;
+            discordGame.getModInfo().queueMessage(territory.getTerritoryName() + ": " +
+                    spiceString + forcesString);
+        }
+    }
+
+    public void displayGameState(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         switch (discordGame.required(data).getAsString()) {
             case "territories" -> {
-                Map<String, Territory> territories = game.getTerritories();
-                for (Territory territory : territories.values()) {
-                    if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty())
-                        continue;
-                    discordGame.queueMessage(channel.getName(), "**" + territory.getTerritoryName() + "** \n" +
-                            "Spice: " + territory.getSpice() + "\nForces: " + territory.getForces().toString());
-                }
+                Collection<Territory> territories = game.getTerritories().values();
+                discordGame.getModInfo().queueMessage("**Strongholds**");
+                publishTerritoriesDisplayString(discordGame, territories.stream().filter(Territory::isStronghold).toList());
+                if (game.hasGameOption(GameOption.HOMEWORLDS))
+                    discordGame.getModInfo().queueMessage("**Homeworlds**");
+                else
+                    discordGame.getModInfo().queueMessage("**Reserves**");
+                publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> t instanceof HomeworldTerritory).toList());
+                discordGame.getModInfo().queueMessage("**Other territories**");
+                publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> !t.isStronghold() && !(t instanceof HomeworldTerritory)).toList());
             }
             case "treachery" -> {
                 String state = Emojis.TREACHERY + " Deck:\n";
-                state += game.getTreacheryDeck().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
+                state += String.join(", ", game.getTreacheryDeck().stream().map(TreacheryCard::name).toList().reversed());
                 state += "\n\n" + Emojis.TREACHERY + " Discard:\n";
-                state += game.getTreacheryDiscard().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
+                state += String.join(", ", game.getTreacheryDiscard().stream().map(TreacheryCard::name).toList().reversed());
                 try {
                     Bidding bidding = game.getBidding();
                     state += "\n\nBidding market:\n";
-                    state += bidding.getMarket().stream().map(TreacheryCard::name).collect(Collectors.joining(", "));
-                } catch (InvalidGameStateException ignored) {
-                }
+                    state += String.join(", ", bidding.getMarket().stream().map(TreacheryCard::name).toList());
+                } catch (InvalidGameStateException ignored) {}
+                discordGame.getModInfo().queueMessage(state);
+            }
+            case "spice" -> {
+                String state = Emojis.SPICE + " Deck:\n";
+                state += String.join(", ", game.getSpiceDeck().stream().map(SpiceCard::name).toList());
+                state += "\n\n" + Emojis.SPICE + " Discard A:\n";
+                state += String.join(", ", game.getSpiceDiscardA().stream().map(SpiceCard::name).toList().reversed());
+                state += "\n\n" + Emojis.SPICE + " Discard B:\n";
+                state += String.join(", ", game.getSpiceDiscardB().stream().map(SpiceCard::name).toList().reversed());
                 discordGame.getModInfo().queueMessage(state);
             }
             case "dnd" -> {
-                discordGame.getModInfo().queueMessage(game.getSpiceDeck().toString());
-                discordGame.getModInfo().queueMessage(game.getSpiceDiscardA().toString());
-                discordGame.getModInfo().queueMessage(game.getSpiceDiscardB().toString());
-                discordGame.getModInfo().queueMessage(game.getLeaderSkillDeck().toString());
-                discordGame.getModInfo().queueMessage(game.getTraitorDeck().toString());
+                String state = "Traitor Deck: ";
+                state += String.join(", ", game.getTraitorDeck().stream().map(TraitorCard::name).toList());
+                if (game.hasGameOption(GameOption.LEADER_SKILLS))
+                    state += "\n\nLeader Skills Deck:\n" + String.join(", ", game.getLeaderSkillDeck().stream().map(LeaderSkillCard::name).toList().reversed());
+                state += "\n\nNexus Deck:\n" + String.join(", ", game.getNexusDeck().stream().map(NexusCard::name).toList());
+                state += "\n\nNexus Discard:\n" + String.join(", ", game.getNexusDiscard().stream().map(NexusCard::name).toList());
+                discordGame.getModInfo().queueMessage(state);
             }
             case "factions" -> {
-                for (Faction faction : game.getFactions()) {
-                    String message = "**" + faction.getName() + ":**\nPlayer: " + faction.getUserName() + "\n" +
-                            "spice: " + faction.getSpice() + "\nTreachery Cards: " + faction.getTreacheryHand() +
-                            "\nTraitors:" + faction.getTraitorHand() + "\nLeaders: " + faction.getLeaders() + "\n";
-                    discordGame.queueMessage(channel.getName(), message);
-                }
+                String state = String.join("\n\n", game.getFactions().stream().map(this::getFactionDisplayString).toList());
+                discordGame.getModInfo().queueMessage(state);
             }
         }
         game.setUpdated(UpdateType.MAP);

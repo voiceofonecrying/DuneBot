@@ -100,6 +100,7 @@ public class CommandOptions {
     public static final OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
             .addChoice("Territories", "territories")
             .addChoice("Treachery Deck and Discard", "treachery")
+            .addChoice("Spice Deck and Discards", "spice")
             .addChoice("Other Decks and Discards", "dnd")
 //            .addChoice("Phase, Turn, and everything else", "etc")
             .addChoice("Faction Info", "factions");
