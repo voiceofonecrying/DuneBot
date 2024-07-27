@@ -953,12 +953,16 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    private String traitorFactionNameAndStrength(TraitorCard t) {
+        return Emojis.getFactionEmoji(t.factionName()) + " " + t.name() + " (" + t.strength() + ")";
+    }
+
     private String getFactionDisplayString(Faction faction) {
         String message = faction.getEmoji() + " ** " + faction.getName() + " ** " + faction.getEmoji() + " - " + faction.getUserName() + "\n" +
                 faction.getSpice() + " " + Emojis.SPICE + "    " + Emojis.TREACHERY + " ";
         message += String.join(", " + Emojis.TREACHERY + " ", faction.getTreacheryHand().stream().map(TreacheryCard::name).toList());
         message += "\nTraitors: ";
-        message += String.join(", ", faction.getTraitorHand().stream().map(TraitorCard::name).toList());
+        message += String.join(", ", faction.getTraitorHand().stream().map(this::traitorFactionNameAndStrength).toList());
         message += "\nLeaders: ";
         message += String.join(", ", faction.getLeaders().stream().map(Leader::getName).toList());
         return message;
@@ -1014,7 +1018,7 @@ public class CommandManager extends ListenerAdapter {
             }
             case "dnd" -> {
                 String state = "Traitor Deck: ";
-                state += String.join(", ", game.getTraitorDeck().stream().map(TraitorCard::name).toList());
+                state += String.join(", ", game.getTraitorDeck().stream().map(this::traitorFactionNameAndStrength).toList());
                 if (game.hasGameOption(GameOption.LEADER_SKILLS))
                     state += "\n\nLeader Skills Deck:\n" + String.join(", ", game.getLeaderSkillDeck().stream().map(LeaderSkillCard::name).toList().reversed());
                 state += "\n\nNexus Deck:\n" + String.join(", ", game.getNexusDeck().stream().map(NexusCard::name).toList());
