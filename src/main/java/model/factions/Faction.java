@@ -558,7 +558,7 @@ public class Faction {
             if (newOutbidAllySetting != null) {
                 outbidAllyValue = newOutbidAllySetting;
                 outbidAlly = outbidAllyValue;
-                responseMessage2 = "\nYou set their outbid ally policy to " + outbidAllyValue;
+                responseMessage2 = "\nYou set your outbid ally policy to " + outbidAllyValue;
                 game.getModLedger().publish(responseMessage2);
                 chat.publish(responseMessage2);
             }

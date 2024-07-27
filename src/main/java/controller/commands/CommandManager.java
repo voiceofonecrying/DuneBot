@@ -972,6 +972,16 @@ public class CommandManager extends ListenerAdapter {
         message += String.join(", ", faction.getTraitorHand().stream().map(this::traitorFactionNameAndStrength).toList());
         message += "\nLeaders: ";
         message += String.join(", ", faction.getLeaders().stream().map(this::leaderFactionNameAndStrength).toList());
+        if (faction instanceof AtreidesFaction atreides) {
+            int khCount = atreides.getForcesLost();
+            message += "\nKH count " + khCount + (khCount < 7 ? "" : "   The Sleeper has awoken!");
+        } else if (faction instanceof BTFaction bt) {
+            message += "\nRevealed Face Dancers: " + String.join(" ", bt.getRevealedFaceDancers().stream().map(this::traitorFactionNameAndStrength).toList());
+        } else if (faction instanceof EcazFaction ecaz) {
+            message += "\nAmbassador Supply: " + String.join(" ", ecaz.getAmbassadorSupply().stream().map(Emojis::getFactionEmoji).toList());
+        } else if (faction instanceof MoritaniFaction moritani) {
+            message += "\nTerror Token Supply: " + String.join(", ", moritani.getTerrorTokens());
+        }
         return message;
     }
 
@@ -1015,6 +1025,11 @@ public class CommandManager extends ListenerAdapter {
                     state += "\n\nBidding market:\n";
                     state += String.join(", ", bidding.getMarket().stream().map(TreacheryCard::name).toList());
                 } catch (InvalidGameStateException ignored) {}
+                if (game.hasFaction("Richese")) {
+                    RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                    state += "\n\n" + Emojis.RICHESE + " Cache:\n";
+                    state += String.join(", ", richese.getTreacheryCardCache().stream().map(TreacheryCard::name).toList());
+                }
                 discordGame.getModInfo().queueMessage(state);
             }
             case "spice" -> {
