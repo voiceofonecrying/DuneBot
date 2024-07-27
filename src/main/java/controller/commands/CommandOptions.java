@@ -98,7 +98,7 @@ public class CommandOptions {
     public static final OptionData revived = new OptionData(OptionType.INTEGER, "revived", "How many are being revived.", true);
     public static final OptionData sectors = new OptionData(OptionType.INTEGER, "sectors", "Number of sectors to move storm", true);
     public static final OptionData data = new OptionData(OptionType.STRING, "data", "What data to display", true)
-            .addChoice("Territories", "territories")
+            .addChoice("Territories and Tanks", "territories")
             .addChoice("Treachery Deck and Discard", "treachery")
             .addChoice("Spice Deck and Discards", "spice")
             .addChoice("Other Decks and Discards", "dnd")

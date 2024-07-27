@@ -1001,6 +1001,9 @@ public class CommandManager extends ListenerAdapter {
                 publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> t instanceof HomeworldTerritory).toList());
                 discordGame.getModInfo().queueMessage("**Other territories**");
                 publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> !t.isStronghold() && !(t instanceof HomeworldTerritory)).toList());
+                discordGame.getModInfo().queueMessage("**Bene Tleilaxu Tanks**");
+                discordGame.getModInfo().queueMessage(String.join(" ", game.getTleilaxuTanks().getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList()));
+                discordGame.getModInfo().queueMessage(String.join(", ", game.getLeaderTanks().stream().map(this::leaderFactionNameAndStrength).toList()));
             }
             case "treachery" -> {
                 String state = Emojis.TREACHERY + " Deck:\n";
