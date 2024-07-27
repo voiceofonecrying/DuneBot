@@ -971,7 +971,7 @@ public class CommandManager extends ListenerAdapter {
         message += "\nTraitors: ";
         message += String.join(", ", faction.getTraitorHand().stream().map(this::traitorFactionNameAndStrength).toList());
         message += "\nLeaders: ";
-        message += String.join(", ", faction.getLeaders().stream().map(Leader::getName).toList());
+        message += String.join(", ", faction.getLeaders().stream().map(this::leaderFactionNameAndStrength).toList());
         return message;
     }
 
@@ -1033,8 +1033,10 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getModInfo().queueMessage(state);
             }
             case "factions" -> {
-                String state = String.join("\n\n", game.getFactions().stream().map(this::getFactionDisplayString).toList());
-                discordGame.getModInfo().queueMessage(state);
+                for (Faction f : game.getFactions())
+                    discordGame.getModInfo().queueMessage(getFactionDisplayString(f));
+//                String state = String.join("\n\n", game.getFactions().stream().map(this::getFactionDisplayString).toList());
+//                discordGame.getModInfo().queueMessage(state);
             }
             case "etc" -> {
                 String categoryName = "";
