@@ -167,6 +167,48 @@ class RicheseFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#shipNoField")
+    class ShipNoField {
+        ChoamFaction choam;
+        Territory sietchTabr;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            faction.setLedger(new TestTopic());
+            choam = new ChoamFaction("p", "u", game);
+            choam.setLedger(new TestTopic());
+            game.addFaction(choam);
+//            emperor = new EmperorFaction("p", "u", game);
+//            emperor.setLedger(new TestTopic());
+//            game.addFaction(emperor);
+//            turnSummary = new TestTopic();
+//            game.setTurnSummary(turnSummary);
+        }
+
+        @Test
+        public void testForcesWithNoFieldMustBeHomeworldGame() {
+            assertThrows(InvalidGameStateException.class, () -> faction.shipNoField(faction, sietchTabr, 3, false, false, 1));
+        }
+
+        @Test
+        public void testRicheseMustBeHigHThresholdToShipForcesWithNoField() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.removeReserves(11);
+            assertFalse(faction.isHighThreshold());
+            assertThrows(InvalidGameStateException.class, () -> faction.shipNoField(faction, sietchTabr, 3, false, false, 1));
+        }
+
+        @Test
+        public void testRicheseAllyCannotShipForcesWithNoField() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.setAlly(choam.getName());
+            choam.setAlly(faction.getName());
+            assertThrows(InvalidGameStateException.class, () -> faction.shipNoField(choam, sietchTabr, 3, false, false, 1));
+        }
+    }
+
+    @Nested
     @DisplayName("#revealNoField")
     class RevealNoField {
         Territory sietchTabr;

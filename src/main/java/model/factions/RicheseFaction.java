@@ -67,7 +67,15 @@ public class RicheseFaction extends Faction {
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
-    public void shipNoField(Faction faction, Territory territory, int noField, boolean karama, boolean crossShip) throws InvalidGameStateException {
+    public void shipNoField(Faction faction, Territory territory, int noField, boolean karama, boolean crossShip, int accompanyingForce) throws InvalidGameStateException {
+        if (accompanyingForce > 0) {
+            if (faction != this)
+                throw new InvalidGameStateException("Only Richese can ship forces with a No-Field.");
+            else if (!game.hasGameOption(GameOption.HOMEWORLDS))
+                throw new InvalidGameStateException("Richese can only ship forces with No-Field in Homeworld games.");
+            else if (!isHighThreshold)
+                throw new InvalidGameStateException("Richese must be at High Threshold to ship forces with a No-Field.");
+        }
         String territoryName = territory.getTerritoryName();
         String turnSummaryMessage;
         turnSummaryMessage = faction.getEmoji() + " ship a " + Emojis.NO_FIELD + " to " + territoryName;

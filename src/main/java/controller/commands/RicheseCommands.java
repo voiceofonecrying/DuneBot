@@ -164,7 +164,7 @@ public class RicheseCommands {
 
         Territory territory = game.getTerritories().get(territoryName);
         RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-        richese.shipNoField(richese, territory, noField, false, false);
+        richese.shipNoField(richese, territory, noField, false, false, 0);
         if (game.hasFaction("Ecaz"))
             ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, richese);
         if (game.hasFaction("Moritani"))
