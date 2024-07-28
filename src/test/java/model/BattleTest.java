@@ -829,18 +829,20 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolution() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
+            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
             battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
             assertEquals("2.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
+            battle1.printBattleResolution(game, true);
+            assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures"));
         }
 
         @Test
         void testBattlePlanResolutionLeaderKilled() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
+            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
@@ -848,11 +850,13 @@ class BattleTest {
             assertEquals(Emojis.HARKONNEN, battle1.getWinnerEmojis(game));
             assertEquals("0.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
+            battle1.printBattleResolution(game, true);
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader"));
         }
 
         @Test
         void testBattlePlanResolutionAggressorWinsTies() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
+            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false,0, null, null);
@@ -861,6 +865,8 @@ class BattleTest {
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
             assertEquals("1", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
+            battle1.printBattleResolution(game, true);
+            assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures"));
         }
 
         @Test

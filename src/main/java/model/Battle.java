@@ -662,6 +662,9 @@ public class Battle {
             }
         }
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
+        Faction loserFaction = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
+        if (winner instanceof HarkonnenFaction)
+            resolution += Emojis.HARKONNEN + " captures a " + loserFaction.getEmoji() + " leader";
         boolean atreidesWin = winner instanceof AtreidesFaction || winner instanceof EcazFaction && hasEcazAndAlly() && winner.getAlly().equals("Atreides");
         if (!loser && atreidesWin) {
             Faction atreides = game.getFaction("Atreides");
