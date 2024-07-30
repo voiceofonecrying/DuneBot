@@ -308,6 +308,10 @@ public class GameResult {
         else return richese != null && richese.equals(playerName);
     }
 
+    public boolean isFactionPlayer(String factionName, String playerName) {
+        return playerName.equals(getFieldValue(factionName));
+    }
+
     public boolean isWinner(String playerName) {
         return winner1Player.equals(playerName) || winner2Player != null && winner2Player.equals(playerName);
     }

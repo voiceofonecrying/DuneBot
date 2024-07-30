@@ -88,7 +88,7 @@ public class Bidding {
         }
         StringBuilder message = new StringBuilder();
         message.append(MessageFormat.format(
-                "{0}Number of Treachery Cards{0}\n",
+                "{0} Number of Treachery Cards {0}\n",
                 Emojis.TREACHERY
         ));
         message.append(

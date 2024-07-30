@@ -28,7 +28,13 @@ public class ReportsCommandsTester {
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
 
         EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
-        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
+        String a = ReportsCommands.playedAllExpansion(guild, List.of());
+        String b = ReportsCommands.playedAllOriginalSix(guild, List.of());
+        System.out.println(a + " " + a.length() + "\n============");
+        System.out.println(b + " " + b.length() + "\n============");
+        System.out.println(a.equals(b));
+//        System.out.println(ReportsCommands.playedAllTwelve(guild, List.of()));
+//        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
 //        System.out.println(ReportsCommands.publishFactionStats(guild, testJDA));
 //        System.out.println(ReportsCommands.compareReportsMethod(guild, testJDA));
 //        System.out.println(ReportsCommands.playedAllOriginalSix(guild, testJDA, guild.getMembers()));
