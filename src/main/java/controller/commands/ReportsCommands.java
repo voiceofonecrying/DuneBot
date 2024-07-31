@@ -738,7 +738,7 @@ public class ReportsCommands {
             if (turnWins > maxTurnWins)
                 maxTurnWins = turnWins;
         }
-        StringBuilder response = new StringBuilder("__Turns Histogram__`\n");
+        StringBuilder response = new StringBuilder("__Turns Histogram__`\n\n");
         for (int j = maxTurnWins; j >= 1; j--) {
             StringBuilder responseRow = new StringBuilder(" ");
             for (int i = 1; i <= 10; i++) {
@@ -925,8 +925,8 @@ public class ReportsCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
-        factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(turnsHistogram(grList)).queue();
+        factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(soloVictories(guild, grList)).queue();
         factionStatsChannel.sendMessage(writeFactionAllyPerformance(guild, grList)).queue();
 
