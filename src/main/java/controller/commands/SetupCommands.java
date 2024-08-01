@@ -233,7 +233,7 @@ public class SetupCommands {
             case ECAZ_LOYALTY -> stepStatus = ecazLoyaltyStep(discordGame, game);
             case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(discordGame, game);
             case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
-            case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(discordGame, game);
+            case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(game);
             case STORM_SELECTION -> stepStatus = stormSelectionStep(discordGame, game);
             case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(discordGame);
             case START_GAME -> stepStatus = startGameStep(discordGame, game);
@@ -641,12 +641,8 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus btDrawFaceDancersStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.drawCard("traitor deck", "BT");
-        game.drawCard("traitor deck", "BT");
-        game.drawCard("traitor deck", "BT");
-        discordGame.getTurnSummary().queueMessage("Bene Tleilax have drawn their Face Dancers.");
-
+    public static StepStatus btDrawFaceDancersStep(Game game) throws InvalidGameStateException {
+        ((BTFaction) game.getFaction("BT")).drawFaceDancers();
         return StepStatus.CONTINUE;
     }
 

@@ -26,7 +26,7 @@ public class Faction {
     protected final String name;
     private final List<TechToken> techTokens;
     protected final List<TreacheryCard> treacheryHand;
-    private final List<TraitorCard> traitorHand;
+    protected final List<TraitorCard> traitorHand;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
     private StrongholdCard hmsStrongholdProxy;

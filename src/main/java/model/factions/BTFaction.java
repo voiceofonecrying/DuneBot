@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 import model.TraitorCard;
@@ -41,6 +42,22 @@ public class BTFaction extends Faction {
         this.maxRevival = 20;
     }
 
+    public void drawFaceDancers() throws InvalidGameStateException {
+        if (!getTraitorHand().isEmpty())
+            throw new InvalidGameStateException("New Face Dancers cannot be drawn until all have been revealed.");
+
+        if (revealedFaceDancers != null) {
+            revealedFaceDancers.forEach(fd -> game.getTraitorDeck().add(fd));
+            game.getTurnSummary().publish(Emojis.BT + " revealed all of their Face Dancers and drew a new set of 3.");
+        } else
+            game.getTurnSummary().publish(Emojis.BT + " have drawn their Face Dancers.");
+        revealedFaceDancers = null;
+        Collections.shuffle(game.getTraitorDeck());
+        game.drawCard("traitor deck", "BT");
+        game.drawCard("traitor deck", "BT");
+        game.drawCard("traitor deck", "BT");
+    }
+
     /**
      * @return the revealed Face Dancers
      */
@@ -49,25 +66,23 @@ public class BTFaction extends Faction {
     }
 
     /**
-     * @param revealedFaceDancer the revealed Face Dancer to add
+     * @param faceDancer name of the revealed Face Dancer
      */
-    public void revealFaceDancer(TraitorCard revealedFaceDancer, Game game) {
-        if (!getTraitorHand().remove(revealedFaceDancer)) {
+    public void revealFaceDancer(String faceDancer, Game game) throws InvalidGameStateException {
+        TraitorCard revealedFaceDancer = traitorHand.stream()
+                .filter(t -> t.name().equalsIgnoreCase(faceDancer))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
+        if (!getTraitorHand().contains(revealedFaceDancer))
             throw new IllegalArgumentException("Revealed face dancer must be in traitor hand");
-        }
-
-        if (revealedFaceDancers == null) {
+        if (revealedFaceDancers == null)
             revealedFaceDancers = new HashSet<>();
-        }
+
+        getTraitorHand().remove(revealedFaceDancer);
         revealedFaceDancers.add(revealedFaceDancer);
-        if (getTraitorHand().isEmpty()) {
-            revealedFaceDancers.forEach(fd -> game.getTraitorDeck().add(fd));
-            revealedFaceDancers = null;
-            Collections.shuffle(game.getTraitorDeck());
-            game.drawCard("traitor deck", "BT");
-            game.drawCard("traitor deck", "BT");
-            game.drawCard("traitor deck", "BT");
-        }
+        game.getTurnSummary().publish(emoji + " revealed " + revealedFaceDancer.name() + " as a Face Dancer!");
+        if (getTraitorHand().isEmpty())
+            drawFaceDancers();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }

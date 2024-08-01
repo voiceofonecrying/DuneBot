@@ -1,6 +1,5 @@
 package controller.commands;
 
-import constants.Emojis;
 import controller.buttons.BTButtons;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
@@ -80,20 +79,9 @@ public class BTCommands {
         }
     }
 
-    public static void revealBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        BTFaction btFaction = (BTFaction)game.getFaction("BT");
+    public static void revealBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String faceDancer = discordGame.required(btFaceDancer).getAsString();
-        List<TraitorCard> btFaceDancerHand = btFaction.getTraitorHand();
-        TraitorCard traitorCard = btFaceDancerHand.stream()
-                .filter(t -> t.name().equalsIgnoreCase(faceDancer))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
-        int fdsRemaining = btFaction.getTraitorHand().size();
-        btFaction.revealFaceDancer(traitorCard, game);
-        discordGame.getTurnSummary().queueMessage(btFaction.getEmoji() + " revealed " + faceDancer + " as a Face Dancer!");
-        if (fdsRemaining == 1 && btFaction.getTraitorHand().size() == 3) {
-            discordGame.getTurnSummary().queueMessage(Emojis.BT + " revealed all of their Face Dancers and have drawn a new set of 3.");
-        }
+        ((BTFaction)game.getFaction("BT")).revealFaceDancer(faceDancer, game);
         discordGame.pushGame();
     }
 
