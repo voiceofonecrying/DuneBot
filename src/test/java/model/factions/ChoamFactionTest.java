@@ -6,7 +6,6 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
-import model.TestTopic;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ class ChoamFactionTest extends FactionTestTemplate {
     void setUp() throws IOException {
         faction = new ChoamFaction("player", "player", game);
         game.addFaction(faction);
-        game.setTurnSummary(new TestTopic());
     }
 
     @Test
@@ -80,6 +78,18 @@ class ChoamFactionTest extends FactionTestTemplate {
             assertEquals(1, chat.getMessages().size());
             assertEquals(1, chat.getChoices().size());
             assertEquals(5 - freeRevivals + 1, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalMessageAfter3Free() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, 3, 0);
+            int numRevived = 3;
+            faction.presentPaidRevivalChoices(numRevived);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(5 - numRevived + 1, chat.getChoices().getFirst().size());
         }
     }
 

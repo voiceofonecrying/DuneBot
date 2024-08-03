@@ -149,8 +149,10 @@ class IxFactionTest extends FactionTestTemplate {
             game.reviveForces(faction, false, freeRevivals, 0);
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
-            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
-            assertEquals(0, chat.getChoices().size());
+//            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
+//            assertEquals(0, chat.getChoices().size());
+            assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
+            assertTrue(chat.getChoices().getFirst().get(1).isDisabled());
         }
 
         @Test

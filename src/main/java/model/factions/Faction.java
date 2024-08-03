@@ -1096,20 +1096,19 @@ public class Faction {
         if (getMaxRevival() > numRevived) {
             int revivableForces = getRevivableForces();
             if (revivableForces > 0) {
-                if (spice < revivalCost(1, 0)) {
-                    chat.publish("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.");
-                } else {
-                    List<DuneChoice> choices = new ArrayList<>();
-                    int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
-                    for (int i = 0; i <= maxButton; i++) {
-                        DuneChoice choice = new DuneChoice("revive-" + i, Integer.toString(i));
-                        if (spice < revivalCost(i, 0))
-                            choice.setDisabled(true);
-                        choices.add(choice);
-                    }
-                    chat.publish(paidRevivalMessage(), choices);
+                List<DuneChoice> choices = new ArrayList<>();
+                int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
+                for (int i = 0; i <= maxButton; i++) {
+                    DuneChoice choice = new DuneChoice("revive-" + i, Integer.toString(i));
+                    choice.setDisabled(spice < revivalCost(i, 0));
+                    choices.add(choice);
                 }
+                chat.publish(paidRevivalMessage(), choices);
+            } else {
+                game.getTurnSummary().publish(emoji + " has no forces in the tanks");
             }
+        } else {
+            game.getTurnSummary().publish(emoji + " has revived their maximum");
         }
     }
 }

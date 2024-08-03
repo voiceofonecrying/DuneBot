@@ -1,6 +1,5 @@
 package model.factions;
 
-import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -15,22 +14,24 @@ import static org.junit.jupiter.api.Assertions.*;
 
 abstract class FactionTestTemplate {
     Game game;
+    TestTopic turnSummary;
 
     abstract Faction getFaction();
 
     @BeforeEach
     void baseSetUp() throws IOException {
         game = new Game();
-        game.setTurnSummary(new TestTopic());
+        turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
     }
 
     @Nested
     @DisplayName("#revival")
     class Revival {
         Faction faction;
+        int freeRevivals;
         TestTopic chat;
         TestTopic ledger;
-        int freeRevivals;
 
         @BeforeEach
         public void setUp() throws InvalidGameStateException {
@@ -87,6 +88,14 @@ abstract class FactionTestTemplate {
         }
 
         @Test
+        public void testPaidRevivalChoicesNoForcesInTanks() throws InvalidGameStateException {
+            faction.presentPaidRevivalChoices(0);
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(0, chat.getChoices().size());
+            assertEquals(faction.getEmoji() + " has no forces in the tanks", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
         public void testPaidRevivalChoicesInsufficientSpice() throws InvalidGameStateException {
             faction.setSpice(0);
             faction.setMaxRevival(5);
@@ -94,8 +103,34 @@ abstract class FactionTestTemplate {
             game.reviveForces(faction, false, freeRevivals, 0);
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
-            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
+//            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
+//            assertEquals(0, chat.getChoices().size());
+            assertEquals(1, chat.getChoices().size());
+            assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
+            assertTrue(chat.getChoices().getFirst().get(1).isDisabled());
+        }
+
+        @Test
+        public void testPaidRevivalMessageAfter3Free() throws InvalidGameStateException {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, 3, 0);
+            faction.presentPaidRevivalChoices(3);
+            assertEquals(0, chat.getMessages().size());
             assertEquals(0, chat.getChoices().size());
+            assertEquals(faction.getEmoji() + " has revived their maximum", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        public void testPaidRevivalAfter3FreeButBTRaisedLimit() throws InvalidGameStateException {
+            faction.setMaxRevival(5);
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, 3, 0);
+            int numRevived = 3;
+            faction.presentPaidRevivalChoices(numRevived);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(5 - numRevived + 1, chat.getChoices().getFirst().size());
         }
     }
 
