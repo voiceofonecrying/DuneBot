@@ -384,7 +384,11 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
+        Faction faction;
+        if (event.getSubcommandName() != null && event.getSubcommandName().equals("robbery-discard"))
+            faction = game.getFaction("Moritani");
+        else
+            faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))

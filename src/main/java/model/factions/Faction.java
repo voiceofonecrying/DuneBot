@@ -77,7 +77,7 @@ public class Faction {
     @Exclude
     protected Game game;
     @Exclude
-    private DuneTopic ledger;
+    protected DuneTopic ledger;
     @Exclude
     protected DuneTopic chat;
 
@@ -235,6 +235,18 @@ public class Faction {
 
         treacheryHand.add(card);
         setUpdated(UpdateType.TREACHERY_CARDS);
+    }
+
+    public void discard(String cardName) {
+        TreacheryCard treacheryCard = removeTreacheryCard(cardName);
+        game.getTreacheryDiscard().add(treacheryCard);
+        game.getTurnSummary().publish(emoji + " discards " + cardName);
+        ledger.publish(cardName + " discarded from hand.");
+
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
+            game.getFaction("Ecaz").addSpice(3, "Poison weapon was discarded");
+            game.getTurnSummary().publish(Emojis.ECAZ + " gain 3 " + Emojis.SPICE + " for the discarded poison weapon");
+        }
     }
 
     /**

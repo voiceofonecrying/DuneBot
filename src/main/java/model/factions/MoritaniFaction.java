@@ -69,8 +69,8 @@ public class MoritaniFaction extends Faction {
                 this.handLimit = 3;
                 location.setAftermathToken(true);
                 for (Force force : location.getForces()) {
-                    if (force.getName().contains("*")) game
-                            .removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true);
+                    if (force.getName().contains("*"))
+                        game.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true);
                     else
                         game.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true);
                 }
@@ -82,9 +82,9 @@ public class MoritaniFaction extends Faction {
             }
             case "Robbery" -> {
                 List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("moritani-robbery-rob", "Steal spice"));
-                choices.add(new DuneChoice("moritani-robbery-draw", "Draw card"));
-                chat.publish("Your terrorist in " + triggeringFaction + " has robbed the " + triggeringFaction.getEmoji() +
+                choices.add(new DuneChoice("moritani-robbery-rob-" + triggeringFaction.getName(), "Steal half of their spice"));
+                choices.add(new DuneChoice("moritani-robbery-draw", "Draw a card from the deck"));
+                chat.publish("Your terrorist in " + location.getTerritoryName() + " can rob the " + triggeringFaction.getEmoji() +
                         "! What would you like to do?", choices);
             }
             case "Sabotage" -> {
@@ -115,6 +115,55 @@ public class MoritaniFaction extends Faction {
             territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void robberyRob(String factionName) {
+        Faction faction = game.getFaction(factionName);
+        int spiceToSteal = Math.ceilDiv(faction.getSpice(), 2);
+        if (spiceToSteal == 0) {
+            ledger.publish(faction.getEmoji() + " had no " + Emojis.SPICE + " to steal");
+        } else {
+            faction.subtractSpice(spiceToSteal, "Stolen by " + Emojis.MORITANI + " Robbery");
+            addSpice(spiceToSteal, "stolen from " + faction.getEmoji() + " with Robbery");
+        }
+        game.getTurnSummary().publish(emoji + " stole " + spiceToSteal + " " + Emojis.SPICE + " from " + faction.getEmoji() + " with Robbery");
+    }
+
+    public void robberyDraw() {
+        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        if (treacheryDeck.isEmpty()) {
+            game.getTurnSummary().publish("The " + Emojis.TREACHERY + " deck was empty and has been replenished from the discard pile.");
+            List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            treacheryDeck.addAll(treacheryDiscard);
+            Collections.shuffle(treacheryDeck);
+            treacheryDiscard.clear();
+        }
+        TreacheryCard card = game.getTreacheryDeck().pollLast();
+        String cardName = Objects.requireNonNull(card).name();
+        if (treacheryHand.size() < handLimit) {
+            addTreacheryCard(card);
+            ledger.publish(cardName + " drawn from deck.");
+        } else {
+            handLimit++;
+            game.setRobberyDiscardOutstanding(true);
+            addTreacheryCard(card);
+            ledger.publish(cardName + " drawn from deck.");
+            List<DuneChoice> choices = new ArrayList<>();
+            int i = 1;
+            for (TreacheryCard c : treacheryHand) {
+                DuneChoice duneChoice = new DuneChoice("moritani-robbery-discard-" + c.name() + "-" + i, c.name());
+                choices.add(duneChoice);
+                i++;
+            }
+            chat.publish("You have drawn " + cardName + ", but your hand was full. What would you like to discard?", choices);
+        }
+        game.getTurnSummary().publish(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.");
+    }
+
+    public void robberyDiscard(String cardName) {
+        discard(cardName);
+        handLimit--;
+        game.setRobberyDiscardOutstanding(false);
     }
 
     public void sendTerrorTokenMessage(String territory) {

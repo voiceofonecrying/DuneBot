@@ -57,6 +57,7 @@ public class Game {
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
     private boolean extortionTokenRevealed;
+    private boolean robberyDiscardOutstanding;
     private int hmsRotation = 0;
     private boolean ixHMSActionRequired;
     private HashMap<Integer, List<String>> quotes;
@@ -128,6 +129,7 @@ public class Game {
         this.treacheryDeck = new LinkedList<>();
         this.treacheryDiscard = new LinkedList<>();
         this.extortionTokenRevealed = false;
+        this.robberyDiscardOutstanding = false;
         this.ixHMSActionRequired = false;
         this.shieldWallDestroyed = false;
         this.phaseForWhispers = "";
@@ -281,6 +283,14 @@ public class Game {
 
     public void setExtortionTokenRevealed(boolean extortionTokenRevealed) {
         this.extortionTokenRevealed = extortionTokenRevealed;
+    }
+
+    public boolean isRobberyDiscardOutstanding() {
+        return robberyDiscardOutstanding;
+    }
+
+    public void setRobberyDiscardOutstanding(boolean robberyDiscardOutstanding) {
+        this.robberyDiscardOutstanding = robberyDiscardOutstanding;
     }
 
     public void rotateHMS90degrees() {
@@ -1243,6 +1253,4 @@ public class Game {
             setUpdated(UpdateType.MAP);
         }
     }
-
-
 }

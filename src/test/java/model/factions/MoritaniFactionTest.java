@@ -3,16 +3,15 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
-import model.HomeworldTerritory;
-import model.Leader;
-import model.Territory;
-import model.TestTopic;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -241,6 +240,153 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.checkForTerrorTrigger(carthag, atreides, 2);
             assertEquals(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time", turnSummary.getMessages().get(1));
             assertTrue(moritaniChat.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#robberyTerrorToken")
+    class RobberyTerrorToken {
+        TestTopic moritaniChat;
+        TestTopic moritaniLedger;
+        TestTopic turnSummary;
+        AtreidesFaction atreides;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            moritaniChat = new TestTopic();
+            faction.setChat(moritaniChat);
+            moritaniLedger = new TestTopic();
+            faction.setLedger(moritaniLedger);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            atreides = new AtreidesFaction("p", "u", game);
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+        }
+
+        @Test
+        void testRobberyRobTakesHalfSpiceRoundedUp() {
+            int moritaniStartingSpice = 12;
+            assertEquals(moritaniStartingSpice, faction.getSpice());
+            atreides.addSpice(1, "Test setup");
+            int atreidesStartingSpice = 11;
+            assertEquals(atreidesStartingSpice, atreides.getSpice());
+
+            faction.robberyRob("Atreides");
+            assertEquals(atreidesStartingSpice - 6, atreides.getSpice());
+            assertEquals(moritaniStartingSpice + 6, faction.getSpice());
+            assertEquals(Emojis.MORITANI + " stole 6 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
+            assertEquals(moritaniLedger.getMessages().getFirst(), "+6 " + Emojis.SPICE + " stolen from " + Emojis.ATREIDES + " with Robbery = 18 " + Emojis.SPICE);
+        }
+
+        @Test
+        void testRobberyRobFactionHasNoSpice() {
+            int moritaniStartingSpice = 12;
+            assertEquals(moritaniStartingSpice, faction.getSpice());
+            atreides.subtractSpice(10, "Test setup");
+            int atreidesStartingSpice = 0;
+            assertEquals(atreidesStartingSpice, atreides.getSpice());
+
+            faction.robberyRob("Atreides");
+            assertEquals(atreidesStartingSpice, atreides.getSpice());
+            assertEquals(moritaniStartingSpice, faction.getSpice());
+            assertEquals(Emojis.MORITANI + " stole 0 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
+            assertEquals(moritaniLedger.getMessages().getFirst(),  Emojis.ATREIDES + " had no " + Emojis.SPICE + " to steal");
+        }
+
+        @Test
+        void testRobberyDrawEmptyHand() {
+            assertTrue(faction.getTreacheryHand().isEmpty());
+
+            faction.robberyDraw();
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertEquals(0, moritaniChat.getMessages().size());
+            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testRobberyDrawFullHand() {
+            assertEquals(4, faction.getHandLimit());
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            assertEquals(faction.getHandLimit(), faction.getTreacheryHand().size());
+
+            assertDoesNotThrow(() -> faction.robberyDraw());
+            assertEquals(5, faction.getHandLimit());
+            assertEquals(5, faction.getTreacheryHand().size());
+            assertEquals(1, moritaniChat.getMessages().size());
+            assertEquals(5, moritaniChat.getChoices().getFirst().size());
+            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().getFirst());
+            assertTrue(game.isRobberyDiscardOutstanding());
+        }
+
+        @Test
+        void testRobberyDrawEmptyHandEmptyTreacheryDeck() {
+            LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+            List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            treacheryDiscard.addAll(treacheryDeck);
+            treacheryDeck.clear();
+
+            assertDoesNotThrow(() -> faction.robberyDraw());
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertEquals(0, moritaniChat.getMessages().size());
+            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals("The " + Emojis.TREACHERY + " deck was empty and has been replenished from the discard pile.", turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        void testRobberyDrawFullHandEmptyTreacheryDeck() {
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+            List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            treacheryDiscard.addAll(treacheryDeck);
+            treacheryDeck.clear();
+            assertEquals(faction.getHandLimit(), faction.getTreacheryHand().size());
+
+            assertDoesNotThrow(() -> faction.robberyDraw());
+            assertEquals(5, faction.getHandLimit());
+            assertEquals(5, faction.getTreacheryHand().size());
+            assertEquals(1, moritaniChat.getMessages().size());
+            assertEquals(5, moritaniChat.getChoices().getFirst().size());
+            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().get(1));
+            assertTrue(game.isRobberyDiscardOutstanding());
+        }
+
+        @Test
+        void testDiscardFromOverFullHand() {
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani");
+            int turnSummarySize = turnSummary.getMessages().size();
+            faction.robberyDraw();
+            assertEquals(5, faction.getTreacheryHand().size());
+            assertEquals(5, faction.getHandLimit());
+            assertEquals(1, moritaniLedger.getMessages().size());
+            int discardSize = game.getTreacheryDiscard().size();
+            assertTrue(game.isRobberyDiscardOutstanding());
+
+            faction.robberyDiscard(faction.getTreacheryHand().getFirst().name());
+            assertEquals(4, faction.getTreacheryHand().size());
+            assertEquals(4, faction.getHandLimit());
+            assertEquals(2, moritaniLedger.getMessages().size());
+            assertEquals(turnSummarySize + 2, turnSummary.getMessages().size());
+            assertEquals(discardSize + 1, game.getTreacheryDiscard().size());
+            assertFalse(game.isRobberyDiscardOutstanding());
+        }
+
+        @Test
+        void testRobberyDraw() {
+            faction.robberyDraw();
         }
     }
 }

@@ -51,6 +51,9 @@ public class RunCommands {
     }
 
     public static void advance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        if (game.isRobberyDiscardOutstanding())
+            throw new InvalidGameStateException("Moritani must discard after Robbery before the game can advance.");
+
         if (game.getTurn() == 0) {
             discordGame.getModInfo().queueMessage("Please complete setup first.");
             return;

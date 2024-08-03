@@ -36,6 +36,10 @@ public class MoritaniButtons implements Pressable {
             acceptAlliance(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-deny-offer-"))
             denyAlliance(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-robbery-rob-"))
+            robberyRob(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-robbery-discard-"))
+            robberyDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-sabotage-give-card-"))
             giveCard(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-sabotage-no-card-"))
@@ -46,9 +50,9 @@ public class MoritaniButtons implements Pressable {
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
             case "moritani-pay-extortion" -> payExtortion(event, game, discordGame);
             case "moritani-pass-extortion" -> passExtortion(event, game, discordGame);
+            case "moritani-robbery-draw" -> robberyDraw(event, game, discordGame);
             case "moritani-don't-place-terror" -> dontPlaceTerrorToken(discordGame);
         }
-
     }
 
     private static void removeTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -91,6 +95,38 @@ public class MoritaniButtons implements Pressable {
         discordGame.queueMessage(faction.getEmoji() + " has paid 3 " + Emojis.SPICE + " to remove Extortion from the game.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
+    }
+
+    private static void robberyRob(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (faction instanceof MoritaniFaction moritani) {
+            discordGame.queueMessage("You chose to steal half their spice rounded up.");
+            String triggeringFactionName = event.getComponentId().split("-")[3];
+            moritani.robberyRob(triggeringFactionName);
+            discordGame.queueDeleteMessage();
+            discordGame.pushGame();
+        }
+    }
+
+    private static void robberyDraw(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (faction instanceof MoritaniFaction moritani) {
+            discordGame.queueMessage("You chose to draw a card.");
+            moritani.robberyDraw();
+            discordGame.queueDeleteMessage();
+            discordGame.pushGame();
+        }
+    }
+
+    private static void robberyDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        if (faction instanceof MoritaniFaction moritani) {
+            String cardToDiscard = event.getComponentId().split("-")[3];
+            discordGame.queueMessage("You chose to discard " + cardToDiscard);
+            moritani.robberyDiscard(cardToDiscard);
+            discordGame.queueDeleteMessage();
+            discordGame.pushGame();
+        }
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {

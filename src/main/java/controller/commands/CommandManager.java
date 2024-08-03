@@ -735,19 +735,9 @@ public class CommandManager extends ListenerAdapter {
 
     public void discard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
-        Faction faction = game.getFaction(factionName);
-
         String cardName = discordGame.required(card).getAsString();
-        TreacheryCard treacheryCard = faction.removeTreacheryCard(cardName);
 
-        game.getTreacheryDiscard().add(treacheryCard);
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + cardName);
-        discordGame.getFactionLedger(factionName).queueMessage(cardName + " discarded from hand.");
-
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
-            game.getFaction("Ecaz").addSpice(3, "Poison weapon was discarded");
-            discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " gain 3 " + Emojis.SPICE + " for the discarded poison weapon");
-        }
+        game.getFaction(factionName).discard(cardName);
         discordGame.pushGame();
     }
 
@@ -972,15 +962,15 @@ public class CommandManager extends ListenerAdapter {
         message += String.join(", ", faction.getTraitorHand().stream().map(this::traitorFactionNameAndStrength).toList());
         message += "\nLeaders: ";
         message += String.join(", ", faction.getLeaders().stream().map(this::leaderFactionNameAndStrength).toList());
-        if (faction instanceof AtreidesFaction atreides) {
-            int khCount = atreides.getForcesLost();
-            message += "\nKH count " + khCount + (khCount < 7 ? "" : "   The Sleeper has awoken!");
-        } else if (faction instanceof BTFaction bt) {
-            message += "\nRevealed Face Dancers: " + String.join(" ", bt.getRevealedFaceDancers().stream().map(this::traitorFactionNameAndStrength).toList());
-        } else if (faction instanceof EcazFaction ecaz) {
-            message += "\nAmbassador Supply: " + String.join(" ", ecaz.getAmbassadorSupply().stream().map(Emojis::getFactionEmoji).toList());
-        } else if (faction instanceof MoritaniFaction moritani) {
-            message += "\nTerror Token Supply: " + String.join(", ", moritani.getTerrorTokens());
+        switch (faction) {
+            case AtreidesFaction atreides -> {
+                int khCount = atreides.getForcesLost();
+                message += "\nKH count " + khCount + (khCount < 7 ? "" : "   The Sleeper has awoken!");
+            }
+            case BTFaction bt -> message += "\nRevealed Face Dancers: " + String.join(" ", bt.getRevealedFaceDancers().stream().map(this::traitorFactionNameAndStrength).toList());
+            case EcazFaction ecaz -> message += "\nAmbassador Supply: " + String.join(" ", ecaz.getAmbassadorSupply().stream().map(Emojis::getFactionEmoji).toList());
+            case MoritaniFaction moritani -> message += "\nTerror Token Supply: " + String.join(", ", moritani.getTerrorTokens());
+            default -> {}
         }
         return message;
     }
