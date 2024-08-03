@@ -2,12 +2,15 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Battle {
     private final String wholeTerritoryName;
@@ -283,6 +286,68 @@ public class Battle {
         fremen.getChat().publish(message + " " + fremen.getPlayer());
     }
 
+    private void removePreviouslySubmittedLeaderFromTerritory(Faction faction) {
+        faction.getLeaders().stream().filter(l -> l.getBattleTerritoryName() != null && l.getBattleTerritoryName().equals(getWholeTerritoryName())).forEach(l -> l.setBattleTerritoryName(null));
+    }
+
+    public String setBattlePlan(Game game, Faction faction, String leaderName, boolean kwisatzHaderach, String dial, int spice, String weaponName, String defenseName) throws InvalidGameStateException {
+        if (!getAggressorName().equals(faction.getName()) && !getDefenderName().equals(faction.getName()))
+            throw new InvalidGameStateException("You are not in the current battle.");
+
+        removePreviouslySubmittedLeaderFromTerritory(faction);
+        Leader leader = null;
+        TreacheryCard cheapHero = null;
+        if (leaderName.startsWith("Cheap"))
+            cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
+        else if (!leaderName.equals("None")) {
+            leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
+            Territory battleTerritory = getTerritorySectors().stream()
+                    .filter(t -> t.getTotalForceCount(faction) > 0)
+                    .findAny().orElseThrow();
+            leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
+
+        String returnString = "";
+        if (faction instanceof AtreidesFaction atreidesFaction) {
+            if (kwisatzHaderach && atreidesFaction.getForcesLost() < 7) {
+                kwisatzHaderach = false;
+                returnString += "Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
+            } else if (kwisatzHaderach && leader == null && cheapHero == null) {
+                kwisatzHaderach = false;
+                returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
+            }
+        } else if (kwisatzHaderach) {
+            kwisatzHaderach = false;
+            returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
+        }
+
+        int decimalPoint = dial.indexOf(".");
+        int wholeNumberDial;
+        boolean plusHalfDial = false;
+        if (decimalPoint == -1)
+            wholeNumberDial = Integer.parseInt(dial);
+        else {
+            wholeNumberDial = decimalPoint == 0 ? 0 : Integer.parseInt(dial.substring(0, decimalPoint));
+            if (dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
+                plusHalfDial = true;
+            else
+                throw new InvalidGameStateException(dial + " is not a valid dial");
+        }
+
+        TreacheryCard weapon = null;
+        if (!weaponName.equals("None")) {
+            weapon = faction.getTreacheryHand().stream().filter(c -> c.name().equals(weaponName)).findFirst().orElseThrow();
+        }
+        TreacheryCard defense = null;
+        if (!defenseName.equals("None")) {
+            defense = faction.getTreacheryHand().stream().filter(c -> c.name().equals(defenseName)).findFirst().orElseThrow();
+        }
+
+        setBattlePlan(game, faction, leader, cheapHero, kwisatzHaderach, wholeNumberDial, plusHalfDial, spice, weapon, defense);
+        return returnString;
+    }
+
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
         int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
         if (factionNames.size() != numFactionsExpected)
@@ -308,12 +373,27 @@ public class Battle {
             if (aggressorBattlePlan.isOpponentHasBureaucrat())
                 aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         }
+
+        applyHMSStrongholdCard(game, faction, battlePlan);
+        presentSpiceBankerChoices(game, faction, battlePlan, spice);
         return battlePlan;
     }
 
-    public void hmsCardDecisionNeeded(Faction faction) {
-        hmsStrongholdCardFactionEmoji = faction.getEmoji();
-        hmsStrongholdCardTBD = DecisionStatus.OPEN;
+    private void applyHMSStrongholdCard(Game game, Faction faction, BattlePlan battlePlan) {
+        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
+            List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
+            if (strongholdNames.size() == 1) {
+                faction.getChat().publish(strongholdNames.getFirst() + " Stronghold card will be applied in the HMS battle.");
+                if (strongholdNames.getFirst().equals("Carthag"))
+                    battlePlan.addCarthagStrongholdPower();
+            } else if (strongholdNames.size() >= 2) {
+                game.getModInfo().publish(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
+                List<DuneChoice> choices = strongholdNames.stream().map(strongholdName -> new DuneChoice("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
+                faction.getChat().publish("Which Stronghold Card would you like to use in the HMS battle?", choices);
+                hmsStrongholdCardFactionEmoji = faction.getEmoji();
+                hmsStrongholdCardTBD = DecisionStatus.OPEN;
+            }
+        }
     }
 
     public void hmsCardDecisionMade() {
@@ -339,9 +419,20 @@ public class Battle {
         hmsStrongholdCardTBD = DecisionStatus.CLOSED;
     }
 
-    public void spiceBankerDecisionNeeded(Faction faction) {
-        spiceBankerFactionEmoji = faction.getEmoji();
-        spiceBankerTBD = DecisionStatus.OPEN;
+    private void presentSpiceBankerChoices(Game game, Faction faction, BattlePlan battlePlan, int spice) {
+        int availableSpice = faction.getSpice() - spice;
+        if (availableSpice > 0 && battlePlan.isSkillBehindAndLeaderAlive("Spice Banker")) {
+            game.getModInfo().publish(faction.getEmoji() + " may spend spice to increase leader value with Spice Banker. Please wait to resolve the battle.");
+            List<DuneChoice> choices = new ArrayList<>();
+            IntStream.range(0, 4).forEachOrdered(i -> {
+                DuneChoice choice = new DuneChoice("spicebanker-" + i, Integer.toString(i));
+                choice.setDisabled(availableSpice < i);
+                choices.add(choice);
+            });
+            faction.getChat().publish("How much would you like to spend with Spice Banker?", choices);
+            spiceBankerFactionEmoji = faction.getEmoji();
+            spiceBankerTBD = DecisionStatus.OPEN;
+        }
     }
 
     public void spiceBankerDecisionMade() {

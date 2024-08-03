@@ -1,25 +1,18 @@
 package controller.commands;
 
-import constants.Emojis;
 import controller.channels.FactionWhispers;
-import enums.GameOption;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import controller.DiscordGame;
-import model.factions.AtreidesFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static controller.commands.CommandOptions.*;
 
@@ -72,91 +65,17 @@ public class PlayerCommands {
         return battlePlan(event, discordGame, game, true);
     }
 
-    private static String battlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, boolean withKH) throws ChannelNotFoundException, InvalidGameStateException {
-        String returnString = "";
+    private static String battlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game, boolean kwisatzHaderach) throws ChannelNotFoundException, InvalidGameStateException {
         Battle currentBattle = game.getBattles().getCurrentBattle();
         if (currentBattle == null)
             throw new InvalidGameStateException("There is no current battle.");
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        if (!currentBattle.getAggressorName().equals(faction.getName()) && !currentBattle.getDefenderName().equals(faction.getName()))
-            throw new InvalidGameStateException("You are not in the current battle.");
-        faction.getLeaders().stream().filter(l -> l.getBattleTerritoryName() != null && l.getBattleTerritoryName().equals(currentBattle.getWholeTerritoryName())).forEach(l -> l.setBattleTerritoryName(null));
         String leaderName = discordGame.required(combatLeader).getAsString();
-        Leader leader = null;
-        TreacheryCard cheapHero = null;
-        if (leaderName.startsWith("Cheap"))
-            cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
-        else if (!leaderName.equals("None")) {
-            leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
-            Territory battleTerritory = currentBattle.getTerritorySectors().stream()
-                    .filter(t -> t.getTotalForceCount(faction) > 0)
-                    .findAny().orElseThrow();
-            leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
-            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        }
         String dial = discordGame.required(combatDial).getAsString();
-        int decimalPoint = dial.indexOf(".");
-        int wholeNumberDial;
-        boolean plusHalfDial = false;
-        if (decimalPoint == -1)
-            wholeNumberDial = Integer.parseInt(dial);
-        else {
-            wholeNumberDial = decimalPoint == 0 ? 0 : Integer.parseInt(dial.substring(0, decimalPoint));
-            if (dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
-                plusHalfDial = true;
-            else
-                throw new InvalidGameStateException(dial + " is not a valid dial");
-        }
         int spice = Integer.parseInt(discordGame.required(combatSpice).getAsString());
         String weaponName = discordGame.required(weapon).getAsString();
-        TreacheryCard weapon = null;
-        if (!weaponName.equals("None")) {
-            weapon = faction.getTreacheryHand().stream().filter(c -> c.name().equals(weaponName)).findFirst().orElseThrow();
-        }
         String defenseName = discordGame.required(defense).getAsString();
-        TreacheryCard defense = null;
-        if (!defenseName.equals("None")) {
-            defense = faction.getTreacheryHand().stream().filter(c -> c.name().equals(defenseName)).findFirst().orElseThrow();
-        }
-        if (faction instanceof AtreidesFaction atreidesFaction) {
-            if (withKH && atreidesFaction.getForcesLost() < 7) {
-                withKH = false;
-                returnString += "Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
-            } else if (withKH && leader == null && cheapHero == null) {
-                withKH = false;
-                returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
-            }
-        } else if (withKH) {
-            withKH = false;
-            returnString += "You are not " + Emojis.ATREIDES + ". KH has been omitted from the battle plan.\n";
-        }
-        BattlePlan battlePlan = currentBattle.setBattlePlan(game, faction, leader, cheapHero, withKH, wholeNumberDial, plusHalfDial, spice, weapon, defense);
-        if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && currentBattle.getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasStrongholdCard("Hidden Mobile Stronghold")) {
-            List<String> strongholdNames = faction.getStrongholdCards().stream().map(StrongholdCard::name).filter(n -> !n.equals("Hidden Mobile Stronghold")).toList();
-            if (strongholdNames.size() == 1) {
-                discordGame.getFactionChat(faction).queueMessage(strongholdNames.getFirst() + " Stronghold card will be applied in the HMS battle.");
-                if (strongholdNames.getFirst().equals("Carthag"))
-                    battlePlan.addCarthagStrongholdPower();
-            } else if (strongholdNames.size() >= 2) {
-                discordGame.getModInfo().queueMessage(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
-                List<Button> buttons = strongholdNames.stream().map(strongholdName -> Button.primary("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
-                discordGame.getFactionChat(faction).queueMessage("Which Stronghold Card would you like to use in the HMS battle?", buttons);
-                currentBattle.hmsCardDecisionNeeded(faction);
-            }
-        }
-        int availableSpice = faction.getSpice() - spice;
-        if (availableSpice > 0 && battlePlan.isSkillBehindAndLeaderAlive("Spice Banker")) {
-            discordGame.getModInfo().queueMessage(faction.getEmoji() + " may spend spice to increase leader value with Spice Banker. Please wait to resolve the battle.");
-            List<Button> buttons = new ArrayList<>();
-            IntStream.range(0, 4).forEachOrdered(i -> {
-                Button button = Button.primary("spicebanker-" + i, Integer.toString(i));
-                buttons.add(availableSpice >= i ? button : button.asDisabled());
-            });
-            discordGame.getFactionChat(faction).queueMessage("How much would you like to spend with Spice Banker?", buttons);
-            currentBattle.spiceBankerDecisionNeeded(faction);
-        }
-//        currentBattle.checkJuiceOfSapho(game, faction);
-        return returnString;
+        return currentBattle.setBattlePlan(game, faction, leaderName, kwisatzHaderach, dial, spice, weaponName, defenseName);
     }
 
     private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

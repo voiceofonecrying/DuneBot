@@ -123,7 +123,7 @@ public class MoritaniFaction extends Faction {
         if (spiceToSteal == 0) {
             ledger.publish(faction.getEmoji() + " had no " + Emojis.SPICE + " to steal");
         } else {
-            faction.subtractSpice(spiceToSteal, "Stolen by " + Emojis.MORITANI + " Robbery");
+            faction.subtractSpice(spiceToSteal, "stolen by " + Emojis.MORITANI + " Robbery");
             addSpice(spiceToSteal, "stolen from " + faction.getEmoji() + " with Robbery");
         }
         game.getTurnSummary().publish(emoji + " stole " + spiceToSteal + " " + Emojis.SPICE + " from " + faction.getEmoji() + " with Robbery");
