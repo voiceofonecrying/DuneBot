@@ -156,6 +156,18 @@ public class BattlePlanTest {
     }
 
     @Test
+    void testNoLeaderValidWithActiveLeadersInPreviousBattles() {
+        game.killLeader(atreides, "Lady Jessica");
+        game.killLeader(atreides, "Thufir Hawat");
+        game.killLeader(atreides, "Gurney Halleck");
+        game.killLeader(atreides, "Dr. Yueh");
+        assertEquals(1, atreides.getLeaders().size());
+        duncanIdaho.setBattleTerritoryName("Tuek's Sietch");
+
+        assertDoesNotThrow(() -> new BattlePlan(game, battle, atreides, true, null, null, false, null, null, 0, false, 0));
+    }
+
+    @Test
     void testBattlePlanChoamDoesNotSupportAlly() {
         game.addFaction(choam);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));

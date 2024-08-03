@@ -47,7 +47,7 @@ public class BattlePlan {
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
         this.numForcesInReserve = getNumForcesInReserve(game, faction);
-        validatePlanInputs(game, faction, leader, cheapHero, kwisatzHaderach, weapon, defense, spice);
+        validatePlanInputs(game, battle, faction, leader, cheapHero, kwisatzHaderach, weapon, defense, spice);
 
         this.aggressor = aggressor;
         this.leader = leader;
@@ -693,14 +693,17 @@ public class BattlePlan {
                 .toList();
     }
 
-    private void validatePlanInputs(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int spice) throws InvalidGameStateException {
+    private void validatePlanInputs(Game game, Battle battle, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int spice) throws InvalidGameStateException {
         if (leader != null && cheapHero != null)
             throw new InvalidGameStateException(faction.getName() + " cannot play both a leader and " + cheapHero.name());
         if (leader != null && !faction.getLeaders().contains(leader))
             throw new InvalidGameStateException(faction.getName() + " does not have " + leader.getName());
         if (cheapHero != null && !faction.hasTreacheryCard(cheapHero.name()))
             throw new InvalidGameStateException(faction.getName() + " does not have " + cheapHero.name());
-        if (leader == null && cheapHero == null && !faction.getLeaders().stream().filter(l -> !l.getName().equals("Kwisatz Haderach")).toList().isEmpty())
+        List<String> battleTerritoryNames = battle.getTerritorySectors().stream().map(Territory::getTerritoryName).toList();
+        if (leader == null && cheapHero == null && !faction.getLeaders().stream()
+                .filter(l -> !l.getName().equals("Kwisatz Haderach") && (l.getBattleTerritoryName() == null || battleTerritoryNames.stream().anyMatch(n -> n.equals(l.getBattleTerritoryName()))))
+                .toList().isEmpty())
             throw new InvalidGameStateException(faction.getName() + " must play a leader or a Cheap Hero");
         if (kwisatzHaderach) {
             if (leader == null && cheapHero == null)
