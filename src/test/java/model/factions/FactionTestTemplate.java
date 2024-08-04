@@ -80,7 +80,7 @@ abstract class FactionTestTemplate {
         @Test
         public void testPaidRevivalChoices() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals(1, chat.getChoices().size());
@@ -100,7 +100,7 @@ abstract class FactionTestTemplate {
             faction.setSpice(0);
             faction.setMaxRevival(5);
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
 //            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
@@ -113,6 +113,8 @@ abstract class FactionTestTemplate {
         @Test
         public void testPaidRevivalMessageAfter3Free() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
+//            faction.performFreeRevivals();
+            // The following should be replaced with performFreeRevivals after setting Fremen as ally, override for Fremen
             game.reviveForces(faction, false, 3, 0);
             faction.presentPaidRevivalChoices(3);
             assertEquals(0, chat.getMessages().size());
@@ -121,9 +123,22 @@ abstract class FactionTestTemplate {
         }
 
         @Test
+        public void testPaidRevivalMessageAfter1StarFree() throws InvalidGameStateException {
+            assertThrows(IllegalArgumentException.class, () -> faction.removeForces(faction.getHomeworld(), 2, true, true));
+//            faction.removeForces(faction.getHomeworld(), 2, true, true);
+//            faction.performFreeRevivals();
+//            faction.presentPaidRevivalChoices(1);
+//            assertEquals(0, chat.getMessages().size());
+//            assertEquals(0, chat.getChoices().size());
+//            assertEquals(faction.getEmoji() + " has revived their maximum", turnSummary.getMessages().get(1));
+        }
+
+        @Test
         public void testPaidRevivalAfter3FreeButBTRaisedLimit() throws InvalidGameStateException {
             faction.setMaxRevival(5);
             faction.removeForces(faction.getHomeworld(), 5, false, true);
+//            faction.performFreeRevivals();
+            // The following should be replaced with performFreeRevivals after setting Fremen as ally, override for Fremen
             game.reviveForces(faction, false, 3, 0);
             int numRevived = 3;
             faction.presentPaidRevivalChoices(numRevived);

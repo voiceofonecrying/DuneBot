@@ -73,7 +73,7 @@ class IxFactionTest extends FactionTestTemplate {
         @Override
         public void testPaidRevivalChoices() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
 //            assertNotEquals(-1, chat.getMessages().getFirst().indexOf("There are no " + Emojis.IX_CYBORG + " in the tanks."));
@@ -89,7 +89,7 @@ class IxFactionTest extends FactionTestTemplate {
         public void testPaidRevivalOneCyborgInTanksWithSuboids() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.removeForces(faction.getHomeworld(), 1, true, true);
-            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? " + faction.player, chat.getMessages().getFirst());
@@ -104,16 +104,27 @@ class IxFactionTest extends FactionTestTemplate {
         public void testPaidRevivalOneCyborgInTanksNoSuboids() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 0, false, true);
             faction.removeForces(faction.getHomeworld(), 1, true, true);
-            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(0, chat.getMessages().size());
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalMessageAfter1StarFree() throws InvalidGameStateException {
+            assertDoesNotThrow(() -> faction.removeForces(faction.getHomeworld(), 2, true, true));
+            faction.performFreeRevivals();
+            faction.presentPaidRevivalChoices(1);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+            assertEquals(1, turnSummary.getMessages().size());
         }
 
         @Test
         public void testPaidRevivalMultipleCyborgsInTanksWithSuboids() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.removeForces(faction.getHomeworld(), 3, true, true);
-            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? " + faction.player + "\n" + Emojis.IX_SUBOID + " revivals if possible would be the next step.", chat.getMessages().getFirst());
@@ -129,7 +140,7 @@ class IxFactionTest extends FactionTestTemplate {
         public void testPaidRevivalMultipleCyborgsInTanksNoSuboids() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 0, false, true);
             faction.removeForces(faction.getHomeworld(), 3, true, true);
-            game.reviveForces(faction, false, 0, freeRevivals);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals("Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? " + faction.player + "\nThere are no " + Emojis.IX_SUBOID + " in the tanks.", chat.getMessages().getFirst());
@@ -146,7 +157,7 @@ class IxFactionTest extends FactionTestTemplate {
         public void testPaidRevivalChoicesInsufficientSpice() throws InvalidGameStateException {
             faction.setSpice(0);
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
 //            assertEquals("You do not have enough " + Emojis.SPICE + " to purchase additional revivals.", chat.getMessages().getFirst());
@@ -159,7 +170,7 @@ class IxFactionTest extends FactionTestTemplate {
         public void testPaidRevivalChoicesTwoSpice() throws InvalidGameStateException {
             faction.setSpice(2);
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? " + faction.player, chat.getMessages().getFirst());

@@ -1105,10 +1105,14 @@ public class Faction {
                 }
                 chat.publish(paidRevivalMessage(), choices);
             } else {
-                game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+                publishNoRevivableForcesMessage();
             }
         } else {
             game.getTurnSummary().publish(emoji + " has revived their maximum");
         }
+    }
+
+    public void publishNoRevivableForcesMessage() {
+        game.getTurnSummary().publish(emoji + " has no forces in the tanks");
     }
 }

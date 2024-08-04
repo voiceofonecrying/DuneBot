@@ -41,9 +41,21 @@ class EmperorFactionTest extends FactionTestTemplate {
         @Test
         @Override
         public void testFreeReviveStars() {
-            EmperorFaction emp = (EmperorFaction) faction;
-            faction.removeForces(emp.getSecondHomeworld(), 3, true, true);
+            EmperorFaction emperor = (EmperorFaction) faction;
+            faction.removeForces(emperor.getSecondHomeworld(), 3, true, true);
             assertEquals(1, faction.countFreeStarredRevival());
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalMessageAfter1StarFree() throws InvalidGameStateException {
+            EmperorFaction emperor = (EmperorFaction) faction;
+            assertDoesNotThrow(() -> faction.removeForces(emperor.getSecondHomeworld(), 2, true, true));
+            faction.performFreeRevivals();
+            faction.presentPaidRevivalChoices(1);
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(0, chat.getChoices().size());
+            assertEquals(faction.getEmoji() + " has no revivable forces in the tanks", turnSummary.getMessages().get(1));
         }
     }
 

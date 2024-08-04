@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class FremenFactionTest extends FactionTestTemplate {
 
@@ -54,10 +53,21 @@ class FremenFactionTest extends FactionTestTemplate {
         @Override
         public void testPaidRevivalChoices() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(0, chat.getMessages().size());
             assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        @Override
+        public void testPaidRevivalMessageAfter1StarFree() throws InvalidGameStateException {
+            assertDoesNotThrow(() -> faction.removeForces(faction.getHomeworld(), 2, true, true));
+            faction.performFreeRevivals();
+            faction.presentPaidRevivalChoices(1);
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(0, chat.getChoices().size());
+            assertEquals(faction.getEmoji() + " has no revivable forces in the tanks", turnSummary.getMessages().get(1));
         }
     }
 

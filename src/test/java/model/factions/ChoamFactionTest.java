@@ -73,7 +73,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         @Override
         public void testPaidRevivalChoices() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            game.reviveForces(faction, false, freeRevivals, 0);
+            faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
             assertEquals(1, chat.getMessages().size());
             assertEquals(1, chat.getChoices().size());
@@ -84,6 +84,8 @@ class ChoamFactionTest extends FactionTestTemplate {
         @Override
         public void testPaidRevivalMessageAfter3Free() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
+//            faction.performFreeRevivals();
+            // The following should be replaced with performFreeRevivals after setting Fremen as ally, override for Fremen
             game.reviveForces(faction, false, 3, 0);
             int numRevived = 3;
             faction.presentPaidRevivalChoices(numRevived);

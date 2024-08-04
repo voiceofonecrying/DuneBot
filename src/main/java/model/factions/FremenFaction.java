@@ -62,4 +62,13 @@ public class FremenFaction extends Faction {
         }
         return 0;
     }
+
+    @Override
+    public void publishNoRevivableForcesMessage() {
+        boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
+        if (starsInTanks)
+            game.getTurnSummary().publish(emoji + " has no revivable forces in the tanks");
+        else
+            game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+    }
 }
