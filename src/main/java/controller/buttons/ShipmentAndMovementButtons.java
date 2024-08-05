@@ -1006,7 +1006,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     public static void sendShipmentMessage(String factionName, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction = game.getFaction(factionName);
-        if (faction.getReservesStrength() == 0 && faction.getSpecialReservesStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese")) {
+        if (faction.getReservesStrength() == 0 && faction.getSpecialReservesStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese") && !(faction instanceof GuildFaction) && !faction.getAlly().equals("Guild")) {
             List<Button> passButton = List.of(Button.danger("pass-shipment", "Pass shipment"));
             discordGame.getFactionChat(factionName).queueMessage("You have no troops in reserves to ship.", passButton);
             return;
