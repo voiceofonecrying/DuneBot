@@ -960,8 +960,8 @@ public class ReportsCommands {
 //        String factionPlays = highFactionPlays(guild, grList, members);
 //        if (!factionPlays.isEmpty())
 //            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
+        playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, members)).queue();
         playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, members)).queue();
-//        playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, members)).queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(
