@@ -383,6 +383,7 @@ public class SetupCommands {
         }
 
         if (game.hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER)) {
+            game.getSpiceDeck().removeFirstOccurrence(new SpiceCard("Shai-Hulud", 0, 0, null, null));
             game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0, null, null));
         }
 
@@ -391,6 +392,7 @@ public class SetupCommands {
             for (CSVRecord csvRecord : csvParser) {
                 game.getSpiceDeck().add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), csvRecord.get(3), csvRecord.get(4)));
             }
+            game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0, null, null));
         }
 
         if (game.hasGameOption(GameOption.CHEAP_HERO_TRAITOR)) {

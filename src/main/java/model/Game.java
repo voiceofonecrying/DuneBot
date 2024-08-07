@@ -236,6 +236,11 @@ public class Game {
             this.gameOptions = new HashSet<>();
         }
         this.gameOptions.add(gameOption);
+
+        if (gameOption == GameOption.DISCOVERY_TOKENS && hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER))
+            modInfo.publish("The game already has REPLACE_SHAI_HULUD_WITH_MAKER. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.");
+        else if (gameOption == GameOption.REPLACE_SHAI_HULUD_WITH_MAKER && hasGameOption(GameOption.DISCOVERY_TOKENS))
+            modInfo.publish("The game already has DISCOVERY_TOKENS. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.");
     }
 
     public void removeGameOption(GameOption gameOption) {

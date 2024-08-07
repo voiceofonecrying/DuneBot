@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import controller.commands.SetupCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -59,6 +60,51 @@ class GameTest {
                 .filter(t -> t.name().equals("Weather Control"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
+    }
+
+    @Test
+    public void testSpiceDeckWithDiscoveryTokens() throws IOException {
+        game.addGameOption(GameOption.DISCOVERY_TOKENS);
+        SetupCommands.createDecks(game);
+        assertEquals(28, game.getSpiceDeck().size());
+    }
+
+    @Test
+    public void testReplaceShaiHuludWithGreatMaker() throws IOException {
+        game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
+        SetupCommands.createDecks(game);
+        List<SpiceCard> spiceDeck = game.getSpiceDeck();
+        assertEquals(21, spiceDeck.size());
+        assertEquals(5, spiceDeck.stream().filter(c -> c.name().equals("Shai-Hulud")).count());
+        assertEquals(1, spiceDeck.stream().filter(c -> c.name().equals("Great Maker")).count());
+    }
+
+    @Test
+    public void testDiscoveryTokensAndReplaceShaiHulud() throws IOException {
+        TestTopic modInfo = new TestTopic();
+        game.setModInfo(modInfo);
+        game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
+        game.addGameOption(GameOption.DISCOVERY_TOKENS);
+        SetupCommands.createDecks(game);
+        List<SpiceCard> spiceDeck = game.getSpiceDeck();
+        assertEquals(28, spiceDeck.size());
+        assertEquals(5, spiceDeck.stream().filter(c -> c.name().equals("Shai-Hulud")).count());
+        assertEquals(2, spiceDeck.stream().filter(c -> c.name().equals("Great Maker")).count());
+        assertEquals("The game already has REPLACE_SHAI_HULUD_WITH_MAKER. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.", modInfo.getMessages().getFirst());
+    }
+
+    @Test
+    public void testReplaceShaiHuludAndDiscoveryTokens() throws IOException {
+        TestTopic modInfo = new TestTopic();
+        game.setModInfo(modInfo);
+        game.addGameOption(GameOption.DISCOVERY_TOKENS);
+        game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
+        SetupCommands.createDecks(game);
+        List<SpiceCard> spiceDeck = game.getSpiceDeck();
+        assertEquals(28, spiceDeck.size());
+        assertEquals(5, spiceDeck.stream().filter(c -> c.name().equals("Shai-Hulud")).count());
+        assertEquals(2, spiceDeck.stream().filter(c -> c.name().equals("Great Maker")).count());
+        assertEquals("The game already has DISCOVERY_TOKENS. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.", modInfo.getMessages().getFirst());
     }
 
     @Nested
