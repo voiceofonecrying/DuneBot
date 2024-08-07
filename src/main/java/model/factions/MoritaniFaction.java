@@ -169,13 +169,21 @@ public class MoritaniFaction extends Faction {
     public void sendTerrorTokenMessage(String territory) {
         List<DuneChoice> choices = new LinkedList<>();
         for (String terror : terrorTokens)
-            choices.add(new DuneChoice("moritani-terror-selected-" + terror + "-" + territory + "-", terror));
+            choices.add(new DuneChoice("moritani-terror-selected-" + terror + "-" + territory, terror));
         chat.publish("Which terror token would you like to place?", choices);
     }
 
     public void placeTerrorToken(Territory territory, String terror) {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
+        game.getTurnSummary().publish("A " + Emojis.MORITANI + " Terror Token has been placed in " + territory.getTerritoryName());
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void moveTerrorToken(Territory toTerritory, String terror, Territory fromTerritory) {
+        fromTerritory.removeTerrorToken(terror);
+        toTerritory.addTerrorToken(terror);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
@@ -200,20 +208,25 @@ public class MoritaniFaction extends Faction {
             return;
         List<DuneChoice> choices = new LinkedList<>();
         List<DuneChoice> removeChoices = new LinkedList<>();
+        boolean canPlace = false;
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
             if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
             if (territory.getTerritoryName().equals("Orgiz Processing Station")) continue;
             DuneChoice stronghold = new DuneChoice("moritani-place-terror-" + territory.getTerritoryName(), "Place in " + territory.getTerritoryName());
             stronghold.setDisabled(!territory.hasTerrorToken());
+            if (territory.hasTerrorToken())
+                canPlace = true;
             choices.add(stronghold);
             for (String terror : territory.getTerrorTokens()) {
                 removeChoices.add(new DuneChoice("secondary", "moritani-remove-terror-" + territory.getTerritoryName() + "-" + terror, "Remove " + terror + " from " + territory.getTerritoryName()));
             }
         }
-        choices.addAll(removeChoices);
-        choices.add(new DuneChoice("danger", "moritani-don't-place-terror", "Don't place or remove"));
-        chat.publish("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. " + getPlayer(), choices);
+        if (canPlace || !removeChoices.isEmpty()) {
+            choices.addAll(removeChoices);
+            choices.add(new DuneChoice("danger", "moritani-don't-place-terror", "Don't place or remove"));
+            chat.publish("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. " + getPlayer(), choices);
+        }
     }
 
     public void sendTerrorTokenLocationMessage() {
@@ -226,8 +239,39 @@ public class MoritaniFaction extends Faction {
             stronghold.setDisabled(territory.hasTerrorToken());
             choices.add(stronghold);
         }
-//        choices.add(new DuneChoice("secondary", "moritani-move-terror", "Move a Terror Token to a different stronghold."));
-        chat.publish("Use these buttons to place a Terror Token from your supply. " + getPlayer(), choices);
+        List<Territory> territoriesWithTerrorTokens = game.getTerritories().values().stream().filter(t -> !t.getTerrorTokens().isEmpty()).toList();
+        if (!terrorTokens.isEmpty()) {
+            DuneChoice moveOption = new DuneChoice("secondary", "moritani-move-option", "Move a Terror Token");
+            moveOption.setDisabled(territoriesWithTerrorTokens.isEmpty());
+            choices.add(moveOption);
+            choices.add(new DuneChoice("danger", "moritani-don't-place-terror", "Don't place or move"));
+            chat.publish("Use these buttons to place a Terror Token from your supply. " + getPlayer(), choices);
+        } else if (!territoriesWithTerrorTokens.isEmpty()) {
+            presentTerrorTokenMoveChoices();
+        } else {
+            game.getTurnSummary().publish(Emojis.MORITANI + " does not have Terror Tokens to place or move.");
+        }
+    }
+
+    public void presentTerrorTokenMoveChoices() {
+        List<DuneChoice> choices = new LinkedList<>();
+        game.getTerritories().values().forEach(territory -> territory.getTerrorTokens().stream().map(terrorToken -> new DuneChoice("moritani-move-terror-" + terrorToken + "-" + territory.getTerritoryName(), terrorToken + " from " + territory.getTerritoryName())).forEach(choices::add));
+        choices.add(new DuneChoice("secondary", "moritani-no-move", "No move"));
+        chat.publish("Which Terror Token would you like to move to a new stronghold? " + player, choices);
+    }
+
+    public void presentTerrorTokenMoveDestinations(String token, Territory fromTerritory) {
+        List<DuneChoice> choices = new LinkedList<>();
+        for (Territory territory : game.getTerritories().values()) {
+            if (!territory.isStronghold()) continue;
+            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold")) continue;
+            if (territory.getTerritoryName().equals("Orgiz Processing Station")) continue;
+            DuneChoice stronghold = new DuneChoice("moritani-move-to-" + territory.getTerritoryName() + "-" + token + "-" + fromTerritory.getTerritoryName(), "Move to " + territory.getTerritoryName());
+            stronghold.setDisabled(territory.hasTerrorToken());
+            choices.add(stronghold);
+        }
+        choices.add(new DuneChoice("secondary", "moritani-no-move", "No move"));
+        chat.publish("Where would you like to move " + token + " to? " + player, choices);
     }
 
     public void checkForTerrorTrigger(Territory targetTerritory, Faction targetFaction, int numForces) {

@@ -4,7 +4,6 @@ import constants.Emojis;
 import controller.DiscordGame;
 import controller.buttons.IxButtons;
 import controller.buttons.ShipmentAndMovementButtons;
-import controller.channels.DiscordChannel;
 import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
@@ -20,7 +19,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.*;
 
 public class RunCommands {
@@ -150,13 +148,13 @@ public class RunCommands {
             startShipmentPhase(discordGame, game);
             game.advancePhase();
         } else if (phase == 7) {
-            startBattlePhase(game);
+            game.startBattlePhase();
             game.advancePhase();
         } else if (phase == 8) {
-            startSpiceHarvest(discordGame, game);
+            game.startSpiceHarvest();
             game.advancePhase();
         } else if (phase == 9) {
-            startMentatPause(discordGame, game);
+            game.startMentatPause();
             game.advancePhase();
         }
 
@@ -391,168 +389,6 @@ public class RunCommands {
             }
         }
         game.setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
-    }
-
-    public static void startBattlePhase(Game game) {
-        game.startBattlePhase();
-        game.setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
-    }
-
-    public static void startSpiceHarvest(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        game.endBattlePhase();
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (game.hasFaction("Moritani")) {
-            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-            if (moritani.getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal")))
-                turnSummary.queueMessage("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && moritani.isHighThreshold())
-                moritani.sendTerrorTokenHighThresholdMessage();
-        }
-        turnSummary.queueMessage("Turn " + game.getTurn() + " Spice Harvest Phase:");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Harvest Phase\n");
-        Map<String, Territory> territories = game.getTerritories();
-        for (Territory territory : territories.values()) {
-            if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
-                BGFaction bg = (BGFaction) game.getFaction("BG");
-                bg.flipForces(territory);
-                turnSummary.queueMessage("Advisors are alone in " + territory.getTerritoryName() + " and have flipped to fighters.");
-            }
-        }
-
-        for (Faction faction : game.getFactions()) {
-            faction.setHasMiningEquipment(false);
-            if (territories.get("Arrakeen").hasActiveFaction(faction)) {
-                faction.addSpice(2, "for Arrakeen");
-                turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Arrakeen");
-                faction.setHasMiningEquipment(true);
-            }
-            if (territories.get("Carthag").hasActiveFaction(faction)) {
-                faction.addSpice(2, "for Carthag");
-                turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Carthag");
-                faction.setHasMiningEquipment(true);
-            }
-            if (territories.get("Tuek's Sietch").hasActiveFaction(faction)) {
-                turnSummary.queueMessage(faction.getEmoji() + " collects 1 " + Emojis.SPICE + " from Tuek's Sietch");
-                faction.addSpice(1, "for Tuek's Sietch");
-            }
-            if (territories.get("Cistern") != null && territories.get("Cistern").hasActiveFaction(faction)) {
-                faction.addSpice(2, "for Cistern");
-                turnSummary.queueMessage(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cistern");
-                faction.setHasMiningEquipment(true);
-            }
-        }
-
-        for (Faction faction : game.getFactions()) {
-            Territory homeworld = game.getTerritory(faction.getHomeworld());
-            if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
-                Faction occupyingFaction = homeworld.getActiveFactions(game).getFirst();
-                if (game.hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                    faction.addSpice(2, "for High Threshold advantage");
-                    harkonnenFaction.setTriggeredHT(true);
-                }
-                turnSummary.queueMessage(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " " + Emojis.SPICE + " for occupying " + faction.getHomeworld());
-                occupyingFaction.addSpice(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld());
-            }
-        }
-
-        boolean altSpiceProductionTriggered = false;
-        Territory orgiz = territories.get("Orgiz Processing Station");
-        boolean orgizActive = orgiz != null && orgiz.getActiveFactions(game).size() == 1;
-        for (Territory territory : territories.values()) {
-            if (territory.getSpice() == 0 || territory.countActiveFactions() == 0) continue;
-            if (orgizActive) {
-                Faction orgizFaction = orgiz.getActiveFactions(game).getFirst();
-                orgizFaction.addSpice(1, "for Orgiz Processing Station");
-                territory.setSpice(territory.getSpice() - 1);
-                turnSummary.queueMessage(orgizFaction.getEmoji() + " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " with Orgiz Processing Station");
-            }
-
-            Faction faction = territory.getActiveFactions(game).getFirst();
-            int spice = faction.getSpiceCollectedFromTerritory(territory);
-            if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
-                faction.getOccupier().addSpice(Math.floorDiv(spice, 2),
-                        "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
-                turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
-                        " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
-                spice = Math.ceilDiv(spice, 2);
-            }
-            faction.addSpice(spice, "for Spice Blow");
-            territory.setSpice(territory.getSpice() - spice);
-
-            if (game.hasGameOption(GameOption.TECH_TOKENS) && game.hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
-                    && (!(faction instanceof FremenFaction) || game.hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
-                altSpiceProductionTriggered = true;
-            turnSummary.queueMessage(game.getFaction(faction.getName()).getEmoji() +
-                    " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                faction.addSpice(2, "for High Threshold advantage");
-                harkonnenFaction.setTriggeredHT(true);
-            }
-        }
-        if (game.hasFaction("Harkonnen")) ((HarkonnenFaction)game.getFaction("Harkonnen")).setTriggeredHT(false);
-
-        for (Territory territory : territories.values()) {
-            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
-            Faction faction = territory.getActiveFactions(game).getFirst();
-            List<Button> buttons = new LinkedList<>();
-            buttons.add(Button.primary("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
-            buttons.add(Button.danger("don't-reveal-discovery-token", "No"));
-            discordGame.getFactionChat(faction.getName()).queueMessage(faction.getPlayer() + "Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", buttons);
-        }
-
-        if (altSpiceProductionTriggered) {
-            TechToken.addSpice(game, TechToken.SPICE_PRODUCTION);
-            TechToken.collectSpice(game, TechToken.SPICE_PRODUCTION);
-        }
-
-        game.setUpdated(UpdateType.MAP);
-    }
-
-    public static void startMentatPause(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.publish("Turn " + game.getTurn() + " Mentat Pause Phase:");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Mentat Pause Phase\n");
-        game.startMentatPause();
-        for (Faction faction : game.getFactions()) {
-            if (faction.getFrontOfShieldSpice() > 0) {
-                turnSummary.queueMessage(faction.getEmoji() + " collects " +
-                        faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
-                faction.addSpice(faction.getFrontOfShieldSpice(), "front of shield");
-                faction.setFrontOfShieldSpice(0);
-            }
-            for (TreacheryCard card : faction.getTreacheryHand()) {
-                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    discordGame.getModInfo().queueMessage(faction.getEmoji() + " has Weather Control.");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    discordGame.getModInfo().queueMessage(faction.getEmoji() + " has Family Atomics.");
-                }
-            }
-            if (game.isExtortionTokenRevealed()) {
-                if (!(faction instanceof MoritaniFaction)) {
-                    DiscordChannel factionChat = discordGame.getFactionChat(faction);
-                    if (faction.getSpice() >= 3) {
-                        List<Button> buttons = new ArrayList<>();
-                        buttons.add(Button.primary("extortion-pay", "Yes"));
-                        buttons.add(Button.primary("extortion-dont-pay", "No"));
-                        factionChat.queueMessage(MessageFormat.format(
-                                "Will you pay {0} 3 {1} to remove the Extortion token from the game? " + faction.getPlayer(),
-                                Emojis.MORITANI, Emojis.SPICE), buttons
-                        );
-                    } else {
-                        factionChat.queueMessage("You do not have enough spice to pay Extortion.");
-                    }
-                }
-            }
-        }
-        if (game.isExtortionTokenRevealed())
-            turnSummary.queueMessage(MessageFormat.format(
-                    "The Extortion token will be returned to {0} unless someone pays 3 {1} to remove it from the game.",
-                    Emojis.MORITANI, Emojis.SPICE
-            ));
-        if (game.hasFaction("Moritani")) {
-            MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-            moritani.sendTerrorTokenLocationMessage();
-        }
     }
 
     public static void updateStrongholdSkillsCommand(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

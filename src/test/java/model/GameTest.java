@@ -36,7 +36,7 @@ class GameTest {
     private ChoamFaction choam;
     private Faction richese;
     private Faction ecaz;
-    private Faction moritani;
+    private MoritaniFaction moritani;
     private TestTopic turnSummary;
     private TestTopic bgChat;
     private TestTopic emperorChat;
@@ -1611,32 +1611,39 @@ class GameTest {
     }
 
     @Nested
-    @DisplayName("#extortion")
-    class Extortion {
+    @DisplayName("#extortionAndTerrorTokenPlacementChoices")
+    class ExtortionAndTerrorTokenPlacementChoices {
         final TestTopic moritaniLedger = new TestTopic();
+        TestTopic moritaniChat = new TestTopic();
         final TestTopic richeseLedger = new TestTopic();
         final TestTopic guildLedger = new TestTopic();
 
         @BeforeEach
         void setUp() throws IOException {
             fremen = new FremenFaction("fp4", "un4", game);
+            fremen.setChat(new TestTopic());
             game.addFaction(fremen);
 
             ix = new IxFaction("fp2", "un2", game);
+            ix.setChat(new TestTopic());
             game.addFaction(ix);
 
             moritani = new MoritaniFaction("fp3", "un3", game);
+            moritani.setChat(moritaniChat);
             game.addFaction(moritani);
             moritani.setLedger(moritaniLedger);
 
             richese = new RicheseFaction("fp6", "un6", game);
+            richese.setChat(new TestTopic());
             game.addFaction(richese);
             richese.setLedger(richeseLedger);
 
             atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            atreides.setChat(new TestTopic());
             game.addFaction(atreides);
 
             guild = new GuildFaction("fp1", "un5", game);
+            guild.setChat(new TestTopic());
             game.addFaction(guild);
             guild.setLedger(guildLedger);
 
@@ -1644,12 +1651,60 @@ class GameTest {
             game.advanceTurn();
             game.setStorm(14);
             game.setExtortionTokenRevealed(true);
+        }
+
+        @Test
+        void moritaniAskedAboutPlacingTerrorToken() {
             game.startMentatPause();
+            assertEquals(1, moritaniChat.getMessages().size());
+            assertEquals("Use these buttons to place a Terror Token from your supply. fp3", moritaniChat.getMessages().getFirst());
+            assertEquals(7, moritaniChat.getChoices().getFirst().size());
+            assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
+            assertTrue(moritaniChat.getChoices().getFirst().get(5).isDisabled());
+        }
+
+        @Test
+        void moritaniAskedAboutPlacingAndMovingTerrorToken() {
+            Territory carthag = game.getTerritory("Carthag");
+            moritani.placeTerrorToken(carthag, "Atomics");
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            moritani.placeTerrorToken(arrakeen, "Sabotage");
+            game.startMentatPause();
+            assertEquals(1, moritaniChat.getMessages().size());
+            assertEquals("Use these buttons to place a Terror Token from your supply. fp3", moritaniChat.getMessages().getFirst());
+            assertEquals(7, moritaniChat.getChoices().getFirst().size());
+            assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
+            assertFalse(moritaniChat.getChoices().getFirst().get(5).isDisabled());
+        }
+
+        @Test
+        void moritaniNotAskedWhenOutOfTerrorTokensAndNoneOnMap() {
+            moritani.getTerrorTokens().removeAll(moritani.getTerrorTokens());
+            game.startMentatPause();
+            assertTrue(moritani.getTerrorTokens().isEmpty());
+            assertEquals(0, moritaniChat.getMessages().size());
+            assertEquals(Emojis.MORITANI + " does not have Terror Tokens to place or move.", turnSummary.getMessages().get(2));
+        }
+
+        @Test
+        void moritaniAskedAboutMovingTerrorTokenEvenIfNoneInSupply() {
+            Territory carthag = game.getTerritory("Carthag");
+            moritani.placeTerrorToken(carthag, "Atomics");
+            moritani.getTerrorTokens().removeAll(moritani.getTerrorTokens());
+            game.startMentatPause();
+            assertTrue(moritani.getTerrorTokens().isEmpty());
+            assertEquals(1, moritaniChat.getMessages().size());
+            assertEquals("Which Terror Token would you like to move to a new stronghold? fp3", moritaniChat.getMessages().getFirst());
+            assertEquals(1, moritaniChat.getChoices().size());
+            assertEquals("Atomics from Carthag", moritaniChat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("No move", moritaniChat.getChoices().getFirst().get(1).getLabel());
         }
 
         @Test
         void firstPlayerPays() {
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionWouldPayExtortion(game, guild);
             assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.getFirst());
             assertEquals(2, guild.getSpice());
@@ -1663,6 +1718,8 @@ class GameTest {
         void fourthOffersToPayThenfirstPlayerPays() {
             fremen.setSpice(0);
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionWouldPayExtortion(game, guild);
@@ -1677,6 +1734,8 @@ class GameTest {
         void fourthPlayerPays() {
             fremen.setSpice(0);
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
@@ -1690,6 +1749,8 @@ class GameTest {
         @Test
         void allDecline() {
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
@@ -1704,6 +1765,8 @@ class GameTest {
         void allButOneDeclineMoritaniPoor() {
             moritani.setSpice(2);
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
@@ -1715,6 +1778,8 @@ class GameTest {
         void allDeclineFremenHas0Spice() {
             fremen.setSpice(0);
             game.startMentatPause();
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
             game.getMentatPause().factionDeclinesExtortion(game, ix);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, atreides);
