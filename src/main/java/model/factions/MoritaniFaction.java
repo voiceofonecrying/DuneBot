@@ -76,7 +76,7 @@ public class MoritaniFaction extends Faction {
                 }
             }
             case "Extortion" -> {
-                game.setExtortionTokenRevealed(true);
+                game.triggerExtortionToken();
                 addFrontOfShieldSpice(5);
                 turnSummary.publish("During Mentat Pause, any faction in storm order may pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
             }
@@ -312,5 +312,22 @@ public class MoritaniFaction extends Faction {
             supply.append(token).append("\n");
         }
         return supply.toString();
+    }
+
+    @Override
+    protected void presentExtortionChoices() {
+        // Moritani does not get buttons for removing Extortion from the game
+    }
+
+    @Override
+    public void performMentatPauseActions(boolean extortionTokenTriggered) {
+        super.performMentatPauseActions(extortionTokenTriggered);
+        sendTerrorTokenLocationMessage();
+        if (newAssassinationTargetNeeded) {
+            traitorHand.add(game.getTraitorDeck().pollFirst());
+            game.getTurnSummary().publish(Emojis.MORITANI + " has drawn a new traitor.");
+            setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
+        newAssassinationTargetNeeded = false;
     }
 }

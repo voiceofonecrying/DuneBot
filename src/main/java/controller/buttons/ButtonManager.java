@@ -70,7 +70,7 @@ public class ButtonManager extends ListenerAdapter {
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         event.deferReply().queue();
-        String categoryName = DiscordGame.categoryFromEvent(event).getName();
+        String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
         CompletableFuture<Void> future = Queue.getFuture(categoryName);
         Queue.putFuture(categoryName, future
                 .thenRunAsync(() -> runButtonCommand(event))
@@ -123,7 +123,7 @@ public class ButtonManager extends ListenerAdapter {
                 }
                 case "extortion-pay" -> {
                     MentatPause mentatPause = game.getMentatPause();
-                    if (mentatPause == null || !mentatPause.isExtortionActive())
+                    if (mentatPause == null || mentatPause.isExtortionInactive())
                         discordGame.queueMessage("Extortion has already been resolved. You were willing to pay.");
                     else if (getButtonPresser(event, game).getSpice() >= 3) {
                         game.getMentatPause().factionWouldPayExtortion(game, getButtonPresser(event, game));
@@ -137,7 +137,7 @@ public class ButtonManager extends ListenerAdapter {
                 }
                 case "extortion-dont-pay" -> {
                     MentatPause mentatPause = game.getMentatPause();
-                    if (mentatPause == null || !mentatPause.isExtortionActive())
+                    if (mentatPause == null || mentatPause.isExtortionInactive())
                         discordGame.queueMessage("Extortion has already been resolved. You were not willing to pay.");
                     else {
                         game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));

@@ -389,4 +389,50 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.robberyDraw();
         }
     }
+
+    @Nested
+    @DisplayName("#performMentatPauseActions")
+    class PerformMentatPauseActions extends FactionTestTemplate.PerformMentatPauseActions {
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            chat = new TestTopic();
+            faction.setChat(chat);
+        }
+
+        @Test
+        @Override
+        void testCanPayToRemoveExtortion() {
+            faction.setSpice(3);
+            faction.performMentatPauseActions(true);
+            assertEquals(1, chat.getMessages().size());
+            assertFalse(chat.getMessages().getFirst().contains("Extortion token"));
+        }
+
+        @Test
+        @Override
+        void testCannotPayToRemoveExtortion() {
+            faction.setSpice(0);
+            faction.performMentatPauseActions(true);
+            assertEquals(1, chat.getMessages().size());
+            assertFalse(chat.getMessages().getFirst().contains("to pay Extortion"));
+        }
+
+        @Test
+        void testTerrorTokenMessage() {
+            faction.performMentatPauseActions(false);
+            assertEquals("Use these buttons to place a Terror Token from your supply. " + faction.getPlayer(), chat.getMessages().getFirst());
+            assertEquals(7, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testAssassinationNewLeaderNeeded() {
+            MoritaniFaction moritani = ((MoritaniFaction) faction);
+            moritani.setNewAssassinationTargetNeeded(true);
+            faction.performMentatPauseActions(false);
+            assertFalse(moritani.isNewAssassinationTargetNeeded());
+            assertEquals(1, turnSummary.getMessages().size());
+            assertEquals(Emojis.MORITANI + " has drawn a new traitor.", turnSummary.getMessages().getFirst());
+        }
+    }
 }

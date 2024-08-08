@@ -56,7 +56,6 @@ public class Game {
     private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
     private final LinkedList<TreacheryCard> treacheryDiscard;
-    private boolean extortionTokenRevealed;
     private boolean robberyDiscardOutstanding;
     private int hmsRotation = 0;
     private boolean ixHMSActionRequired;
@@ -128,7 +127,6 @@ public class Game {
         this.smugglerTokens = new LinkedList<>();
         this.treacheryDeck = new LinkedList<>();
         this.treacheryDiscard = new LinkedList<>();
-        this.extortionTokenRevealed = false;
         this.robberyDiscardOutstanding = false;
         this.ixHMSActionRequired = false;
         this.shieldWallDestroyed = false;
@@ -282,12 +280,10 @@ public class Game {
         return this.updateTypes;
     }
 
-    public boolean isExtortionTokenRevealed() {
-        return extortionTokenRevealed;
-    }
-
-    public void setExtortionTokenRevealed(boolean extortionTokenRevealed) {
-        this.extortionTokenRevealed = extortionTokenRevealed;
+    public void triggerExtortionToken() {
+        if (mentatPause == null)
+            mentatPause = new MentatPause();
+        mentatPause.triggerExtortionToken();
     }
 
     public boolean isRobberyDiscardOutstanding() {
@@ -1286,55 +1282,14 @@ public class Game {
     }
 
     public void startMentatPause() {
-        mentatPause = new MentatPause(this);
-        turnSummary.publish("Turn " + turn + " Mentat Pause Phase:");
-        setPhaseForWhispers("Turn " + turn + " Mentat Pause Phase\n");
-
-        for (Faction faction : factions) {
-            if (faction.getFrontOfShieldSpice() > 0) {
-                turnSummary.publish(faction.getEmoji() + " collects " +
-                        faction.getFrontOfShieldSpice() + " " + Emojis.SPICE + " from front of shield.");
-                faction.addSpice(faction.getFrontOfShieldSpice(), "front of shield");
-                faction.setFrontOfShieldSpice(0);
-            }
-            for (TreacheryCard card : faction.getTreacheryHand()) {
-                if (card.name().trim().equalsIgnoreCase("Weather Control")) {
-                    modInfo.publish(faction.getEmoji() + " has Weather Control.");
-                } else if (card.name().trim().equalsIgnoreCase("Family Atomics")) {
-                    modInfo.publish(faction.getEmoji() + " has Family Atomics.");
-                }
-            }
-            if (extortionTokenRevealed) {
-                if (!(faction instanceof MoritaniFaction)) {
-                    if (faction.getSpice() >= 3) {
-                        List<DuneChoice> choices = new ArrayList<>();
-                        choices.add(new DuneChoice("extortion-pay", "Yes"));
-                        choices.add(new DuneChoice("extortion-dont-pay", "No"));
-                        faction.getChat().publish(MessageFormat.format(
-                                "Will you pay {0} 3 {1} to remove the Extortion token from the game? " + faction.getPlayer(),
-                                Emojis.MORITANI, Emojis.SPICE), choices
-                        );
-                    } else {
-                        faction.getChat().publish("You do not have enough spice to pay Extortion.");
-                    }
-                }
-            }
-        }
-        if (extortionTokenRevealed)
-            turnSummary.publish(MessageFormat.format(
-                    "The Extortion token will be returned to {0} unless someone pays 3 {1} to remove it from the game.",
-                    Emojis.MORITANI, Emojis.SPICE
-            ));
-        if (hasFaction("Moritani")) {
-            MoritaniFaction moritani = (MoritaniFaction) getFaction("Moritani");
-            moritani.sendTerrorTokenLocationMessage();
-        }
+        if (mentatPause == null)
+            mentatPause = new MentatPause();
+        mentatPause.startPhase(this);
     }
 
     public void endMentatPause() throws InvalidGameStateException {
         mentatPause.endPhase();
         mentatPause = null;
-        extortionTokenRevealed = false;
     }
 
     public void updateStrongholdSkills() {

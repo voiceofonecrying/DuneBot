@@ -1,5 +1,6 @@
 package model.factions;
 
+import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 abstract class FactionTestTemplate {
     Game game;
     TestTopic turnSummary;
+    TestTopic chat;
 
     abstract Faction getFaction();
 
@@ -30,7 +32,6 @@ abstract class FactionTestTemplate {
     class Revival {
         Faction faction;
         int freeRevivals;
-        TestTopic chat;
         TestTopic ledger;
 
         @BeforeEach
@@ -291,7 +292,7 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUpAddSpice() {
             faction = getFaction();
-            faction.setFrontOfShieldSpice(10);
+            faction.addFrontOfShieldSpice(10);
         }
 
         @Test
@@ -320,7 +321,7 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUpRemoveSpice() {
             faction = getFaction();
-            faction.setFrontOfShieldSpice(10);
+            faction.addFrontOfShieldSpice(10);
         }
 
         @Test
@@ -510,6 +511,35 @@ abstract class FactionTestTemplate {
             faction.addStrongholdCard(arrakeenCard);
             faction.addStrongholdCard(hmsCard);
             assertDoesNotThrow(() -> faction.setHmsStrongholdProxy(arrakeenCard));
+        }
+    }
+
+    @Nested
+    @DisplayName("#performMentatPauseActions")
+    class PerformMentatPauseActions {
+        Faction faction;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            chat = new TestTopic();
+            faction.setChat(chat);
+        }
+
+        @Test
+        void testCanPayToRemoveExtortion() {
+            faction.setSpice(3);
+            faction.performMentatPauseActions(true);
+            assertEquals("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + faction.getPlayer(), chat.getMessages().getFirst());
+            assertEquals(1, chat.getChoices().size());
+        }
+
+        @Test
+        void testCannotPayToRemoveExtortion() {
+            faction.setSpice(0);
+            faction.performMentatPauseActions(true);
+            assertEquals("You do not have enough spice to pay Extortion.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
         }
     }
 }

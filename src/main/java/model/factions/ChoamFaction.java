@@ -3,10 +3,13 @@ package model.factions;
 import constants.Emojis;
 import enums.ChoamInflationType;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.Game;
 import model.Territory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChoamFaction extends Faction {
     private int firstInflationRound;
@@ -75,7 +78,7 @@ public class ChoamFaction extends Faction {
         if (game.getPhase() > 3) firstInflationRound++;
         if (firstInflationRound <= 1) firstInflationRound = 2;
         this.firstInflationType = firstInflationType;
-        game.getTurnSummary().publish(Emojis.CHOAM + " set inflation to " + firstInflationType + " for turn " + firstInflationRound);
+        game.getTurnSummary().publish(Emojis.CHOAM + " set Inflation to " + firstInflationType + " for turn " + firstInflationRound);
     }
 
     /**
@@ -146,5 +149,25 @@ public class ChoamFaction extends Faction {
     @Override
     public int getBattleSupport() {
         return allySpiceForBattle ? getSpiceForAlly() : 0;
+    }
+
+    @Override
+    public void performMentatPauseActions(boolean extortionTokenTriggered) {
+        super.performMentatPauseActions(extortionTokenTriggered);
+        if (firstInflationRound == 0) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("inflation-double", "Yes, Double side up"));
+            choices.add(new DuneChoice("inflation-cancel", "Yes, Cancel side up"));
+            choices.add(new DuneChoice("inflation-not-yet", "No"));
+            chat.publish("Would you like to set Inflation? " + player, choices);
+        } else {
+            int doubleRound = firstInflationRound;
+            if (firstInflationType == ChoamInflationType.CANCEL) doubleRound++;
+
+            if (doubleRound == game.getTurn() + 1)
+                game.getTurnSummary().publish("No bribes may be made while the " + Emojis.CHOAM + " Inflation token is Double side up.");
+            else if (doubleRound == game.getTurn())
+                game.getTurnSummary().publish("Bribes may be made again. The Inflation Token is no longer Double side up.");
+        }
     }
 }

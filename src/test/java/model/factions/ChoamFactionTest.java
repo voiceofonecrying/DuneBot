@@ -6,6 +6,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -323,5 +324,65 @@ class ChoamFactionTest extends FactionTestTemplate {
 
         assertEquals(faction.getInflationType(round + 1), ChoamInflationType.DOUBLE);
         assertEquals(2, faction.getChoamMultiplier(round + 1));
+    }
+
+    @Nested
+    @DisplayName("#performMentatPauseActions")
+    class PerformMentatPauseActions extends FactionTestTemplate.PerformMentatPauseActions {
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            chat = new TestTopic();
+            faction.setChat(chat);
+        }
+
+        @Test
+        @Override
+        void testCanPayToRemoveExtortion() {
+            faction.setSpice(3);
+            faction.performMentatPauseActions(true);
+            assertEquals("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + faction.getPlayer(), chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().size());
+        }
+
+        @Test
+        @Override
+        void testCannotPayToRemoveExtortion() {
+            faction.setSpice(0);
+            faction.performMentatPauseActions(true);
+            assertEquals("You do not have enough spice to pay Extortion.", chat.getMessages().getFirst());
+            assertEquals(1, chat.getChoices().size());
+        }
+
+        @Test
+        public void testChoamAskedAboutInflation() {
+            faction.performMentatPauseActions(false);
+            assertEquals(1, chat.getMessages().size());
+            assertEquals("Would you like to set Inflation? " + faction.getPlayer(), chat.getMessages().getFirst());
+            assertEquals(3, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        public void testNoBribesMayBeMadeMessage() throws InvalidGameStateException {
+            ChoamFaction choam = (ChoamFaction) faction;
+            game.advanceTurn();
+            assertEquals(1, game.getTurn());
+            choam.setFirstInflation(ChoamInflationType.DOUBLE);
+            assertEquals(Emojis.CHOAM + " set Inflation to DOUBLE for turn 2", turnSummary.getMessages().getFirst());
+            faction.performMentatPauseActions(false);
+            assertEquals("No bribes may be made while the " + Emojis.CHOAM + " Inflation token is Double side up.", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        public void testBribesMayBeMadeAgainMessage() throws InvalidGameStateException {
+            ChoamFaction choam = (ChoamFaction) faction;
+            game.advanceTurn();
+            assertEquals(1, game.getTurn());
+            choam.setFirstInflation(ChoamInflationType.DOUBLE);
+            assertEquals(Emojis.CHOAM + " set Inflation to DOUBLE for turn 2", turnSummary.getMessages().getFirst());
+            game.advanceTurn();
+            faction.performMentatPauseActions(false);
+            assertEquals("Bribes may be made again. The Inflation Token is no longer Double side up.", turnSummary.getMessages().get(1));
+        }
     }
 }

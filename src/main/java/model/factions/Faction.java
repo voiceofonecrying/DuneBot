@@ -391,9 +391,13 @@ public class Faction {
         return frontOfShieldSpice;
     }
 
-    public void setFrontOfShieldSpice(int frontOfShieldSpice) {
-        this.frontOfShieldSpice = frontOfShieldSpice;
-        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+    public void collectFrontOfShieldSpice() {
+        if (frontOfShieldSpice > 0) {
+            game.getTurnSummary().publish(emoji + " collects " + frontOfShieldSpice + " " + Emojis.SPICE + " from front of shield.");
+            addSpice(frontOfShieldSpice, "front of shield");
+            frontOfShieldSpice = 0;
+            setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+        }
     }
 
     public int getFreeRevival() {
@@ -814,6 +818,15 @@ public class Faction {
         }
     }
 
+    public void resetAllySpiceSupportInMentatPause() {
+        setAllySpiceFinishedForTurn(false);
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        if (spiceForAlly != 0) {
+            chat.publish(Emojis.SPICE + " support for ally is reset to 0 in Mentat Pause.");
+            spiceForAlly = 0;
+        }
+    }
+
     public int getBattleSupport() {
         return 0;
     }
@@ -1114,5 +1127,35 @@ public class Faction {
 
     public void publishNoRevivableForcesMessage() {
         game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+    }
+
+    protected void presentExtortionChoices() {
+        if (spice >= 3) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("extortion-pay", "Yes"));
+            choices.add(new DuneChoice("extortion-dont-pay", "No"));
+            chat.publish("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + player, choices);
+        } else {
+            chat.publish("You do not have enough spice to pay Extortion.");
+        }
+    }
+
+    public void performMentatPauseActions(boolean extortionTokenTriggered) {
+        collectFrontOfShieldSpice();
+        resetAllySpiceSupportInMentatPause();
+        if (decliningCharity && spice < 2)
+            chat.publish("You have only " + spice + " " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. " + player);
+
+        DuneTopic modInfo = game.getModInfo();
+        for (TreacheryCard card : treacheryHand) {
+            if (card.name().equalsIgnoreCase("Weather Control")) {
+                modInfo.publish(emoji + " has Weather Control.");
+            } else if (card.name().equalsIgnoreCase("Family Atomics")) {
+                modInfo.publish(emoji + " has Family Atomics.");
+            }
+        }
+
+        if (extortionTokenTriggered)
+            presentExtortionChoices();
     }
 }

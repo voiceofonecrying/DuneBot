@@ -257,4 +257,13 @@ class BTFactionTest extends FactionTestTemplate {
             assertEquals( Emojis.BT + " revealed all of their Face Dancers and drew a new set of 3.", turnSummary.getMessages().get(4));
         }
     }
+
+    @Test
+    public void testAskedAboutFDSwapInMentatPause() {
+        chat = new TestTopic();
+        faction.setChat(chat);
+        faction.performMentatPauseActions(false);
+        assertEquals(1, chat.getMessages().size());
+        assertEquals("Would you like to swap a Face Dancer? " + faction.getPlayer(), chat.getMessages().getFirst());
+    }
 }

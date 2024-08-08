@@ -123,4 +123,10 @@ public class BTFaction extends Faction {
     public int baseRevivalCost(int regular, int starred) {
         return regular + starred;
     }
+
+    @Override
+    public void performMentatPauseActions(boolean extortionTokenTriggered) {
+        super.performMentatPauseActions(extortionTokenTriggered);
+        chat.publish("Would you like to swap a Face Dancer? " + player);
+    }
 }
