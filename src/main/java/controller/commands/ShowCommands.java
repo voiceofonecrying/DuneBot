@@ -612,6 +612,7 @@ public class ShowCommands {
                 board = overlay(board, discoveryToken, Initializers.getPoints(territory.getTerritoryName()).get(i), 1);
                 i++;
             }
+            offset = 0;
             for (Force force : territory.getForces()) {
                 if (territory.getTerritoryName().equals("Jacurutu Sietch")) continue;
                 if (force.getName().equals("Hidden Mobile Stronghold")) {
