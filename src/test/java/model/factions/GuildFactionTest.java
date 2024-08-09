@@ -141,4 +141,12 @@ class GuildFactionTest extends FactionTestTemplate {
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
     }
+
+    @Test
+    @Override
+    void testGetSpiceSupportPhasesString() {
+        assertEquals(" for bidding only!", getFaction().getSpiceSupportPhasesString());
+        faction.setAllySpiceForShipping(true);
+        assertEquals(" for bidding and shipping!", getFaction().getSpiceSupportPhasesString());
+    }
 }

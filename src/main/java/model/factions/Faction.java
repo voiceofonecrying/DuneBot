@@ -787,10 +787,12 @@ public class Faction {
     }
 
     public void setSpiceForAlly(int spiceForAlly) {
-        if (this.spiceForAlly != spiceForAlly) {
-            this.spiceForAlly = spiceForAlly;
-            setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        }
+        this.spiceForAlly = spiceForAlly;
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
+    public String getSpiceSupportPhasesString() {
+        return " for bidding and shipping!";
     }
 
     public boolean isAllySpiceFinishedForTurn() {

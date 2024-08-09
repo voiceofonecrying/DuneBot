@@ -262,4 +262,9 @@ public class EmperorFaction extends Faction {
     public int getBattleSupport() {
         return getSpiceForAlly();
     }
+
+    @Override
+    public String getSpiceSupportPhasesString() {
+        return " for bidding, shipping, and battles!";
+    }
 }

@@ -171,6 +171,7 @@ public class BattlePlanTest {
     void testBattlePlanChoamDoesNotSupportAlly() {
         game.addFaction(choam);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));
+        game.addFaction(atreides);
         game.createAlliance(choam, atreides);
         choam.setSpiceForAlly(1);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));
@@ -180,6 +181,7 @@ public class BattlePlanTest {
     void testBattlePlanChoamSupportsAlly() {
         game.addFaction(choam);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));
+        game.addFaction(atreides);
         game.createAlliance(choam, atreides);
         choam.setSpiceForAlly(1);
         choam.setAllySpiceForBattle(true);
@@ -190,6 +192,7 @@ public class BattlePlanTest {
     void testBattlePlanEmperorSupportsAlly() {
         game.addFaction(emperor);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));
+        game.addFaction(atreides);
         game.createAlliance(emperor, atreides);
         emperor.setSpiceForAlly(1);
         assertDoesNotThrow(() -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));

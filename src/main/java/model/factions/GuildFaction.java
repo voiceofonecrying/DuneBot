@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Game;
 import model.Territory;
 
@@ -32,10 +33,16 @@ public class GuildFaction extends Faction {
 
     public void setAllySpiceForShipping(boolean allySpiceForShipping) {
         this.allySpiceForShipping = allySpiceForShipping;
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     @Override
     public int getShippingSupport() {
         return allySpiceForShipping ? getSpiceForAlly() : 0;
+    }
+
+    @Override
+    public String getSpiceSupportPhasesString() {
+        return allySpiceForShipping ? " for bidding and shipping!" : " for bidding only!";
     }
 }

@@ -357,4 +357,9 @@ class EmperorFactionTest extends FactionTestTemplate {
             assertFalse(faction.isSecundusOccupied());
         }
     }
+
+    @Test
+    void testGetSpiceSupportPhasesString() {
+        assertEquals(" for bidding, shipping, and battles!", getFaction().getSpiceSupportPhasesString());
+    }
 }

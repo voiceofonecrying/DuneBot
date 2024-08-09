@@ -359,35 +359,41 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
         }
 
-        if (faction.hasAlly() && !faction.isAllySpiceFinishedForTurn()) {
-//            String emoji = game.getFaction(faction.getAlly()).getEmoji();
-//            String message = "Set " + Emojis.SPICE + " support for " + emoji + " shipping and bidding. Currently " + faction.getSpiceForAlly() + " " + Emojis.SPICE;
-            String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping.\nSet ally " + Emojis.SPICE + " support:";
+        if (faction.hasAlly() && faction.getSpice() > 0 && !faction.isAllySpiceFinishedForTurn()) {
+            String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
+            String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.\nSet ally " + Emojis.SPICE + " support:";
             List<Button> buttons = new ArrayList<>();
-            buttons.add(Button.primary("ally-support-max", "Max support").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
-            buttons.add(Button.secondary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
-            buttons.add(Button.danger("ally-support-reset", "Reset support").withDisabled(faction.getSpiceForAlly() == 0));
-            if (faction instanceof GuildFaction guild) {
-                if (guild.isAllySpiceForShipping()) {
-                    message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding AND shipping.\nSet ally " + Emojis.SPICE + " support:";
-                    buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
-                } else {
-                    message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding ONLY.\nSet ally " + Emojis.SPICE + " support:";
-                    buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
+            buttons.add(Button.primary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
+//            if (faction.getSpice() >= 4)
+//                buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 4) + "-quarter", "1/4 (" + Math.floorDiv(faction.getSpice(), 4) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 4)));
+            if (faction.getSpice() >= 2)
+                buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 2) + "-half", "Half (" + Math.floorDiv(faction.getSpice(), 2) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 2)));
+            buttons.add(Button.secondary("ally-support-" + faction.getSpice() + "-max", "Max (" + faction.getSpice() + ")").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
+            buttons.add(Button.secondary("ally-support-reset", "Reset support (0)").withDisabled(faction.getSpiceForAlly() == 0));
+            switch (faction) {
+                case GuildFaction guild -> {
+                    if (guild.isAllySpiceForShipping()) {
+                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding AND shipping.\nSet ally " + Emojis.SPICE + " support:";
+                        buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
+                    } else {
+                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                        buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
+                    }
                 }
-            } else if (faction instanceof ChoamFaction choam) {
-                if (choam.isAllySpiceForBattle()) {
-                    message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, AND battles.\nSet ally " + Emojis.SPICE + " support:";
-                    buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
-                } else {
-                    message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping ONLY.\nSet ally " + Emojis.SPICE + " support:";
-                    buttons.add(Button.danger("ally-support-battles", "Support battles"));
+                case ChoamFaction choam -> {
+                    if (choam.isAllySpiceForBattle()) {
+                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, AND battles.\nSet ally " + Emojis.SPICE + " support:";
+                        buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
+                    } else {
+                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                        buttons.add(Button.danger("ally-support-battles", "Support battles"));
+                    }
                 }
-            } else if (faction instanceof EmperorFaction) {
-                message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, and battles.\nSet ally " + Emojis.SPICE + " support:";
+                case EmperorFaction ignored ->
+                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, and battles.\nSet ally " + Emojis.SPICE + " support:";
+                default -> {}
             }
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message)
-                    .addActionRow(buttons).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(buttons).build());
         }
     }
 

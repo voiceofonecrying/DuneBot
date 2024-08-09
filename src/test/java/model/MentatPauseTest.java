@@ -37,10 +37,15 @@ public class MentatPauseTest {
         game.addFaction(choam);
         choamChat = new TestTopic();
         choam.setChat(choamChat);
+        choam.setLedger(new TestTopic());
     }
 
     @Test
-    void testSpiceForAllyResetsToZero() {
+    void testSpiceForAllyResetsToZero() throws IOException {
+        richese = new RicheseFaction("p", "u", game);
+        richese.setLedger(new TestTopic());
+        game.addFaction(richese);
+        game.createAlliance(choam, richese);
         choam.setSpiceForAlly(5);
         assertEquals(5, choam.getSpiceForAlly());
         game.setTurn(1);

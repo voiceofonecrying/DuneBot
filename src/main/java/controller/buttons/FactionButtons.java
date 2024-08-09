@@ -37,75 +37,62 @@ public class FactionButtons {
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String forPhases = " for bidding AND shipping";
-        if (faction instanceof GuildFaction guild) {
-            if (!guild.isAllySpiceForShipping())
-                forPhases = " for bidding ONLY";
-        } else if (faction instanceof ChoamFaction choam) {
-            if (!choam.isAllySpiceForBattle())
-                forPhases = " for bidding and shipping ONLY";
-            else
-                forPhases = " for bidding, shipping, AND battles";
-        } else if (faction instanceof EmperorFaction) {
-            forPhases = " for bidding, shipping, and battles";
-        }
         String support = event.getComponentId().split("-")[2];
+        String ally = faction.getAlly();
         switch (support) {
             case "max" -> {
+                // This block can be removed when games D66, D67, D69, and D70 have completed
                 faction.setSpiceForAlly(faction.getSpice());
-                discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                 discordGame.queueMessage("You have offered your ally all of your spice.");
-                discordGame.pushGame();
             }
             case "number" -> {
                 TreeSet<Button> buttonList = new TreeSet<>(getButtonComparator());
                 int limit = Math.min(faction.getSpice(), 40);
-                for (int i = 0; i < limit; i++) {
-                    buttonList.add(Button.primary("ally-support-" + (i + 1), Integer.toString(i + 1)));
-                }
+                for (int i = 0; i <= limit; i++)
+                    buttonList.add(Button.primary("ally-support-" + i + "-number", i + (i == faction.getSpiceForAlly() ? " (Current)" : "")));
                 arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
                 return;
             }
             case "reset" -> {
                 faction.setSpiceForAlly(0);
+                game.getFaction(ally).getChat().publish("Your ally has removed " + Emojis.SPICE + " support.");
                 discordGame.queueMessage("You are not offering " + Emojis.SPICE + " support to your ally.");
             }
             case "noshipping" -> {
                 if (faction instanceof GuildFaction guild) {
                     guild.setAllySpiceForShipping(false);
-                    discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                    game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                     discordGame.queueMessage("You will not support ally shipping cost.");
                 }
             }
             case "shipping" -> {
                 if (faction instanceof GuildFaction guild) {
                     guild.setAllySpiceForShipping(true);
-                    discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                    game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                     discordGame.queueMessage("You will support ally shipping cost. That " + Emojis.SPICE + " will go to the bank, not to you.");
                 }
             }
             case "nobattles" -> {
                 if (faction instanceof ChoamFaction choam) {
                     choam.setAllySpiceForBattle(false);
-                    discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                    game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                     discordGame.queueMessage("You will not support ally in battles.");
                 }
             }
             case "battles" -> {
                 if (faction instanceof ChoamFaction choam) {
                     choam.setAllySpiceForBattle(true);
-                    discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                    game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                     discordGame.queueMessage("You will support ally in battles. That " + Emojis.SPICE + " will go to the bank, not to you.");
                 }
             }
             default -> {
                 faction.setSpiceForAlly(Integer.parseInt(support.replace("ally-support-", "")));
-                discordGame.getFactionChat(faction.getAlly()).queueMessage("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + forPhases + "!");
+                game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
                 discordGame.queueMessage("You have offered your ally " + support.replace("ally-support-", "") + " " + Emojis.SPICE + ".");
-                discordGame.pushGame();
             }
         }
-        ButtonManager.deleteAllButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
     }
 }

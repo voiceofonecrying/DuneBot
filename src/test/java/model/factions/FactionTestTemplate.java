@@ -347,6 +347,11 @@ abstract class FactionTestTemplate {
         }
     }
 
+    @Test
+    void testGetSpiceSupportPhasesString() {
+        assertEquals(" for bidding and shipping!", getFaction().getSpiceSupportPhasesString());
+    }
+
     @Nested
     @DisplayName("#removeForces")
     class RemoveForces {

@@ -385,4 +385,12 @@ class ChoamFactionTest extends FactionTestTemplate {
             assertEquals("Bribes may be made again. The Inflation Token is no longer Double side up.", turnSummary.getMessages().get(1));
         }
     }
+
+    @Test
+    @Override
+    void testGetSpiceSupportPhasesString() {
+        assertEquals(" for bidding and shipping only!", getFaction().getSpiceSupportPhasesString());
+        faction.setAllySpiceForBattle(true);
+        assertEquals(" for bidding, shipping and battles!", getFaction().getSpiceSupportPhasesString());
+    }
 }
