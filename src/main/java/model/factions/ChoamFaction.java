@@ -7,6 +7,7 @@ import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
 import model.Territory;
+import model.TreacheryCard;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -127,6 +128,17 @@ public class ChoamFaction extends Faction {
         } else {
             return 1;
         }
+    }
+
+    public void swapCardWithAlly(String choamCardName, String allyCardName) {
+        Faction allyFaction = game.getFaction(getAlly());
+        TreacheryCard choamCard = getTreacheryCard(choamCardName);
+        TreacheryCard allyCard = allyFaction.getTreacheryCard(allyCardName);
+        handLimit++;
+        game.transferCard(allyFaction, this, allyCard);
+        game.transferCard(this, allyFaction, choamCard);
+        handLimit--;
+        game.getTurnSummary().publish(Emojis.CHOAM + " swaps a " + Emojis.TREACHERY + " card with " + allyFaction.getEmoji() + ".");
     }
 
     @Override

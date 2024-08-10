@@ -78,6 +78,7 @@ public class CommandOptions {
             .addChoice("Treachery Deck", "treachery deck")
             .addChoice("Traitor Deck", "traitor deck");
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
+    public static final OptionData allyCard = new OptionData(OptionType.STRING, "ally-card", "The ally's card to swap for.", true).setAutoComplete(true);
     public static final OptionData discardCard = new OptionData(OptionType.STRING, "card-discard", "The card.", true).setAutoComplete(true);
 
     public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
@@ -264,6 +265,7 @@ public class CommandOptions {
             case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
+            case "ally-card" -> choices = allyCardsInHand(game, searchValue);
             case "card-discard" -> choices = cardsInDiscard(game, searchValue);
             case "ixcard" -> choices = ixCardsInHand(game, searchValue);
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
@@ -387,8 +389,18 @@ public class CommandOptions {
         Faction faction;
         if (event.getSubcommandName() != null && event.getSubcommandName().equals("robbery-discard"))
             faction = game.getFaction("Moritani");
+        else if (event.getSubcommandName() != null && event.getSubcommandName().equals("swap-card-with-ally"))
+            faction = game.getFaction("CHOAM");
         else
             faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
+        return faction.getTreacheryHand().stream().map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> allyCardsInHand(Game game, String searchValue) {
+        Faction faction = game.getFaction(game.getFaction("CHOAM").getAlly());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))

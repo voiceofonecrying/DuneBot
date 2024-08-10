@@ -7,6 +7,7 @@ import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
 import model.TestTopic;
+import model.TreacheryCard;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -383,6 +384,68 @@ class ChoamFactionTest extends FactionTestTemplate {
             game.advanceTurn();
             faction.performMentatPauseActions(false);
             assertEquals("Bribes may be made again. The Inflation Token is no longer Double side up.", turnSummary.getMessages().get(1));
+        }
+    }
+
+    @Nested
+    @DisplayName("#swapCardWithAlly")
+    class SwapCardWithAlly {
+        Faction richese;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            faction.setChat(chat);
+            faction.setLedger(ledger);
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            richese = new RicheseFaction("p", "u", game);
+            game.addFaction(richese);
+            richese.setChat(new TestTopic());
+            richese.setLedger(new TestTopic());
+            richese.addTreacheryCard(new TreacheryCard("Trip to Gamont"));
+            game.createAlliance(faction, richese);
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+        }
+
+        @Test
+        void testCardsGetSwapped() {
+            faction.swapCardWithAlly("Shield", "Trip to Gamont");
+            assertTrue(faction.hasTreacheryCard("Trip to Gamont"));
+            assertTrue(richese.hasTreacheryCard("Shield"));
+            assertEquals(Emojis.CHOAM + " swaps a " + Emojis.TREACHERY + " card with " + Emojis.RICHESE + ".", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testCardsGetSwappedBothHandsFull() {
+            faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            faction.addTreacheryCard(new TreacheryCard("Weather Control"));
+            faction.addTreacheryCard(new TreacheryCard("Hajr"));
+            faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
+            assertEquals(faction.getTreacheryHand().size(), faction.getHandLimit());
+            richese.addTreacheryCard(new TreacheryCard("Cheap Heroine"));
+            richese.addTreacheryCard(new TreacheryCard("Cheap Hero"));
+            richese.addTreacheryCard(new TreacheryCard("Karama"));
+            assertEquals(richese.getTreacheryHand().size(), richese.getHandLimit());
+            faction.swapCardWithAlly("Shield", "Trip to Gamont");
+            assertTrue(faction.hasTreacheryCard("Trip to Gamont"));
+            assertTrue(richese.hasTreacheryCard("Shield"));
+            assertEquals(Emojis.CHOAM + " swaps a " + Emojis.TREACHERY + " card with " + Emojis.RICHESE + ".", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testInvalidChoamCardThrowsExecption() {
+            assertThrows(IllegalArgumentException.class, () -> faction.swapCardWithAlly("Snooper", "Trip to Gamont"));
+        }
+
+        @Test
+        void testInvalidAllyCardThrowsException() {
+            assertThrows(IllegalArgumentException.class, () -> faction.swapCardWithAlly("Shield", "La La La"));
+        }
+
+        @Test
+        void testChoamNotAlliedThrowsException() {
+            game.removeAlliance(faction);
+            assertThrows(IllegalArgumentException.class, () -> faction.swapCardWithAlly("Shield", "Trip to Gamont"));
         }
     }
 

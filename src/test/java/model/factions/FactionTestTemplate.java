@@ -17,6 +17,7 @@ abstract class FactionTestTemplate {
     Game game;
     TestTopic turnSummary;
     TestTopic chat;
+    TestTopic ledger;
 
     abstract Faction getFaction();
 
@@ -25,6 +26,8 @@ abstract class FactionTestTemplate {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        chat = new TestTopic();
+        ledger = new TestTopic();
     }
 
     @Nested
@@ -32,15 +35,12 @@ abstract class FactionTestTemplate {
     class Revival {
         Faction faction;
         int freeRevivals;
-        TestTopic ledger;
 
         @BeforeEach
         public void setUp() throws InvalidGameStateException {
             faction = getFaction();
             freeRevivals =  faction.getFreeRevival();
-            chat = new TestTopic();
             faction.setChat(chat);
-            ledger = new TestTopic();
             faction.setLedger(ledger);
             game.startRevival();
         }
@@ -226,7 +226,6 @@ abstract class FactionTestTemplate {
         void setUpAddSpice() {
             faction = getFaction();
             faction.setSpice(10);
-            TestTopic ledger = new TestTopic();
             faction.setLedger(ledger);
         }
 
@@ -257,7 +256,6 @@ abstract class FactionTestTemplate {
         void setUpRemoveSpice() {
             faction = getFaction();
             faction.setSpice(10);
-            TestTopic ledger = new TestTopic();
             faction.setLedger(ledger);
         }
 
@@ -527,7 +525,6 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUp() {
             faction = getFaction();
-            chat = new TestTopic();
             faction.setChat(chat);
         }
 

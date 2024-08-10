@@ -749,14 +749,16 @@ public class Game {
         return quotes;
     }
 
+    public void transferCard(Faction giver, Faction receiver, TreacheryCard card) {
+        receiver.addTreacheryCard(giver.removeTreacheryCard(card));
+        receiver.getLedger().publish("Received " + card.name() + " from " + giver.getEmoji());
+        giver.getLedger().publish("Sent " + card.name() + " to " + receiver.getEmoji());
+    }
+
     public void transferCard(String giverName, String receiverName, String cardName) {
         Faction giver = getFaction(giverName);
         Faction receiver = getFaction(receiverName);
-        receiver.addTreacheryCard(
-                giver.removeTreacheryCard(cardName)
-        );
-        receiver.getLedger().publish("Received " + cardName + " from " + giver.getEmoji());
-        giver.getLedger().publish("Sent " + cardName + " to " + receiver.getEmoji());
+        transferCard(giver, receiver, giver.getTreacheryCard(cardName));
     }
 
     public DuneTopic getTurnSummary() {

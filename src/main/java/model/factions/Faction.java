@@ -49,7 +49,7 @@ public class Faction {
     private String userName;
     private boolean graphicDisplay;
     private int frontOfShieldSpice;
-    private String ally;
+    protected String ally;
     private String bid;
     private int maxBid;
     private boolean useExact;
