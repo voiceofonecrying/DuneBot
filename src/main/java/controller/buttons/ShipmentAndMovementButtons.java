@@ -465,7 +465,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         int spice = game.shipmentCost(faction, totalForces, territory, karama);
         int spiceFromAlly = 0;
         if (faction.hasAlly()) {
-            spiceFromAlly = faction.getShippingSupport();
+            spiceFromAlly = game.getFaction(faction.getAlly()).getShippingSupport();
         }
         if (spice > faction.getSpice() + spiceFromAlly)
             throw new InvalidGameStateException("You cannot afford this shipment.");
