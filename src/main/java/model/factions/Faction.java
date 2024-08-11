@@ -37,6 +37,7 @@ public class Faction {
     protected int freeRevival;
     protected int maxRevival;
     protected boolean starRevived;
+    protected String paidRevivalMessage;
     protected boolean hasMiningEquipment;
     protected boolean decliningCharity;
     protected int highThreshold;
@@ -1142,6 +1143,7 @@ public class Faction {
     }
 
     public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
+        paidRevivalMessage = null;
         if (getMaxRevival() > numRevived) {
             int revivableForces = getRevivableForces();
             if (revivableForces > 0) {
@@ -1154,15 +1156,20 @@ public class Faction {
                 }
                 chat.publish(paidRevivalMessage(), choices);
             } else {
-                publishNoRevivableForcesMessage();
+                paidRevivalMessage = getNoRevivableForcesMessage();
             }
         } else {
-            game.getTurnSummary().publish(emoji + " has revived their maximum");
+            paidRevivalMessage = emoji + " has revived their maximum";
+//            game.getTurnSummary().publish(emoji + " has revived their maximum");
         }
     }
 
-    public void publishNoRevivableForcesMessage() {
-        game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+    public String getNoRevivableForcesMessage() {
+        return emoji + " has no forces in the tanks";
+    }
+
+    public String getPaidRevivalMessage() {
+        return paidRevivalMessage;
     }
 
     protected void presentExtortionChoices() {

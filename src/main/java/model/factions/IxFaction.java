@@ -112,10 +112,10 @@ public class IxFaction extends Faction {
                 }
                 chat.publish(chatMessage, choices);
             } else {
-                game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+                paidRevivalMessage = getNoRevivableForcesMessage();
             }
         } else {
-            game.getTurnSummary().publish(emoji + " has revived their maximum");
+            paidRevivalMessage = emoji + " has revived their maximum";
         }
     }
 }

@@ -55,7 +55,7 @@ class EmperorFactionTest extends FactionTestTemplate {
             faction.presentPaidRevivalChoices(1);
             assertEquals(0, chat.getMessages().size());
             assertEquals(0, chat.getChoices().size());
-            assertEquals(faction.getEmoji() + " has no revivable forces in the tanks", turnSummary.getMessages().get(1));
+            assertEquals(faction.getEmoji() + " has no revivable forces in the tanks", faction.getPaidRevivalMessage());
         }
     }
 

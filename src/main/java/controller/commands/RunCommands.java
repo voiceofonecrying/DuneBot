@@ -308,6 +308,10 @@ public class RunCommands {
         }
         if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS))
             TechToken.addSpice(game, TechToken.AXLOTL_TANKS);
+        for (Faction faction : factions) {
+            if (faction.getPaidRevivalMessage() != null)
+                turnSummary.queueMessage(faction.getPaidRevivalMessage());
+        }
 
         if (game.hasFaction("Ecaz")) {
             EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");

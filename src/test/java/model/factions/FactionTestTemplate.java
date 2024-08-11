@@ -93,7 +93,7 @@ abstract class FactionTestTemplate {
             faction.presentPaidRevivalChoices(0);
             assertEquals(0, chat.getMessages().size());
             assertEquals(0, chat.getChoices().size());
-            assertEquals(faction.getEmoji() + " has no forces in the tanks", turnSummary.getMessages().getFirst());
+            assertEquals(faction.getEmoji() + " has no forces in the tanks", faction.getPaidRevivalMessage());
         }
 
         @Test
@@ -120,7 +120,7 @@ abstract class FactionTestTemplate {
             faction.presentPaidRevivalChoices(3);
             assertEquals(0, chat.getMessages().size());
             assertEquals(0, chat.getChoices().size());
-            assertEquals(faction.getEmoji() + " has revived their maximum", turnSummary.getMessages().get(1));
+            assertEquals(faction.getEmoji() + " has revived their maximum", faction.getPaidRevivalMessage());
         }
 
         @Test

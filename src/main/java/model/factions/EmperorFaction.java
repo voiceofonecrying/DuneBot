@@ -245,12 +245,12 @@ public class EmperorFaction extends Faction {
     }
 
     @Override
-    public void publishNoRevivableForcesMessage() {
+    public String getNoRevivableForcesMessage() {
         boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
         if (starsInTanks)
-            game.getTurnSummary().publish(emoji + " has no revivable forces in the tanks");
+            return emoji + " has no revivable forces in the tanks";
         else
-            game.getTurnSummary().publish(emoji + " has no forces in the tanks");
+            return emoji + " has no forces in the tanks";
     }
 
     @Override
