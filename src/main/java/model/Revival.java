@@ -1,8 +1,11 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
+import model.topics.DuneTopic;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -113,10 +116,6 @@ public class Revival {
         return false;
     }
 
-    public String getRecruitsHolder() {
-        return recruitsHolder;
-    }
-
     public void declineRecruits() {
         recruitsDeclined = true;
     }
@@ -135,6 +134,66 @@ public class Revival {
 
     public void setRecruitsInPlay(boolean recruitsInPlay) {
         this.recruitsInPlay = recruitsInPlay;
+    }
+
+    public void startRevivingForces(Game game) throws InvalidGameStateException {
+        if (isRecruitsDecisionNeeded())
+            throw new InvalidGameStateException(recruitsHolder + " must decide if they will play recruits before the game can be advanced.");
+        boolean btWasHighThreshold = false;
+        try {
+            BTFaction bt = (BTFaction) game.getFaction("BT");
+            List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
+            if (!factionsNeedingLimits.isEmpty()) {
+                String names = String.join(", ", factionsNeedingLimits);
+                throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
+            }
+            btWasHighThreshold = !game.hasGameOption(GameOption.HOMEWORLDS) || bt.isHighThreshold();
+        } catch (IllegalArgumentException e) {
+            // BT are not in the game
+        }
+        DuneTopic turnSummary = game.getTurnSummary();
+        turnSummary.publish("Turn " + game.getTurn() + " Revival Phase:");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");
+        List<Faction> factions = game.getFactions();
+        StringBuilder message = new StringBuilder();
+        boolean nonBTRevival = false;
+        int factionsWithRevivals = 0;
+        for (Faction faction : factions) {
+            int numFreeRevived = faction.performFreeRevivals();
+            if (numFreeRevived > 0) {
+                factionsWithRevivals++;
+                if (!(faction instanceof BTFaction))
+                    nonBTRevival = true;
+            }
+            faction.presentPaidRevivalChoices(numFreeRevived);
+        }
+
+        if (btWasHighThreshold && factionsWithRevivals > 0) {
+            Faction btFaction = game.getFaction("BT");
+            message.append(btFaction.getEmoji())
+                    .append(" receives ")
+                    .append(factionsWithRevivals)
+                    .append(Emojis.SPICE)
+                    .append(" from free revivals\n");
+            btFaction.addSpice(factionsWithRevivals, "for free revivals");
+        }
+
+        if (!message.isEmpty()) {
+            turnSummary.publish(message.toString());
+        }
+        if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS))
+            TechToken.addSpice(game, TechToken.AXLOTL_TANKS);
+        for (Faction faction : factions) {
+            if (faction.getPaidRevivalMessage() != null)
+                turnSummary.publish(faction.getPaidRevivalMessage());
+        }
+
+        if (game.hasFaction("Ecaz")) {
+            EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
+            ecaz.sendAmbassadorLocationMessage(1);
+        }
+
+        game.setUpdated(UpdateType.MAP);
     }
 
     public boolean isCyborgRevivalComplete() {

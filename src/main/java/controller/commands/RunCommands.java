@@ -131,13 +131,13 @@ public class RunCommands {
             }
         } else if (phase == 5 && subPhase == 1) {
             if (game.getRevival().performPreSteps(game)) {
-                startRevivingForces(discordGame, game);
+                game.getRevival().startRevivingForces(game);
                 game.advanceSubPhase();
             }
             game.advanceSubPhase();
         } else if (phase == 5 && subPhase == 2) {
             if (game.getRevival().performPreSteps(game)) {
-                startRevivingForces(discordGame, game);
+                game.getRevival().startRevivingForces(game);
                 game.advanceSubPhase();
             }
         } else if (phase == 5 && subPhase == 3) {
@@ -258,67 +258,6 @@ public class RunCommands {
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.getBidding().bidding(game);
         discordGame.pushGame();
-    }
-
-    public static void startRevivingForces(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Revival revival = game.getRevival();
-        if (revival.isRecruitsDecisionNeeded())
-            throw new InvalidGameStateException(revival.getRecruitsHolder() + " must decide if they will play recruits before the game can be advanced.");
-        boolean btWasHighThreshold = false;
-        try {
-            BTFaction bt = (BTFaction) game.getFaction("BT");
-            List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
-            if (!factionsNeedingLimits.isEmpty()) {
-                String names = String.join(", ", factionsNeedingLimits);
-                throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
-            }
-            btWasHighThreshold = !game.hasGameOption(GameOption.HOMEWORLDS) || bt.isHighThreshold();
-        } catch (IllegalArgumentException e) {
-            // BT are not in the game
-        }
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage("Turn " + game.getTurn() + " Revival Phase:");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");
-        List<Faction> factions = game.getFactions();
-        StringBuilder message = new StringBuilder();
-        boolean nonBTRevival = false;
-        int factionsWithRevivals = 0;
-        for (Faction faction : factions) {
-            int numFreeRevived = faction.performFreeRevivals();
-            if (numFreeRevived > 0) {
-                factionsWithRevivals++;
-                if (!(faction instanceof BTFaction))
-                    nonBTRevival = true;
-            }
-            faction.presentPaidRevivalChoices(numFreeRevived);
-        }
-
-        if (btWasHighThreshold && factionsWithRevivals > 0) {
-            Faction btFaction = game.getFaction("BT");
-            message.append(btFaction.getEmoji())
-                    .append(" receives ")
-                    .append(factionsWithRevivals)
-                    .append(Emojis.SPICE)
-                    .append(" from free revivals\n");
-            btFaction.addSpice(factionsWithRevivals, "for free revivals");
-        }
-
-        if (!message.isEmpty()) {
-            turnSummary.queueMessage(message.toString());
-        }
-        if (nonBTRevival && game.hasGameOption(GameOption.TECH_TOKENS))
-            TechToken.addSpice(game, TechToken.AXLOTL_TANKS);
-        for (Faction faction : factions) {
-            if (faction.getPaidRevivalMessage() != null)
-                turnSummary.queueMessage(faction.getPaidRevivalMessage());
-        }
-
-        if (game.hasFaction("Ecaz")) {
-            EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
-            ecaz.sendAmbassadorLocationMessage(1);
-        }
-
-        game.setUpdated(UpdateType.MAP);
     }
 
     public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
