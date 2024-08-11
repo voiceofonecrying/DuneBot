@@ -389,20 +389,37 @@ public class Bidding {
         int numCardsInMarket = numCardsForBid - bidCardNumber;
         if (richeseCacheCardOutstanding) numCardsInMarket--;
         if (game.hasFaction("Ix")) numCardsInMarket++;
-        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
-        for (int i = 0; i < numCardsInMarket; i++) {
-            if (treacheryDeck.isEmpty()) {
-                treacheryDeckReshuffled = true;
-                numCardsFromOldDeck = i;
-                List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
-                treacheryDeck.addAll(treacheryDiscard);
-                Collections.shuffle(treacheryDeck);
-                treacheryDiscard.clear();
-            }
-            market.add(treacheryDeck.pollLast());
-        }
+        for (int i = 0; i < numCardsInMarket; i++)
+            addCardToMarket(game, i);
         marketPopulated = true;
         return numCardsInMarket;
+    }
+
+    public void addCardToMarket(Game game, int i) {
+        LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
+        if (treacheryDeck.isEmpty()) {
+            treacheryDeckReshuffled = true;
+            numCardsFromOldDeck = i;
+            List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
+            treacheryDeck.addAll(treacheryDiscard);
+            Collections.shuffle(treacheryDeck);
+            treacheryDiscard.clear();
+        }
+        market.add(treacheryDeck.pollLast());
+    }
+
+    public void addMissedCardToMarket(Game game) {
+        game.getTurnSummary().publish("A " + Emojis.TREACHERY + " card is being added to the bidding market.");
+        addCardToMarket(game, 0);
+        if (treacheryDeckReshuffled) {
+            numCardsFromOldDeck = numCardsForBid;
+            game.getTurnSummary().publish(MessageFormat.format(
+                    "There were only {0} left in the {1} deck when bidding started. The {1} deck has been replenished from the discard pile.",
+                    numCardsFromOldDeck, Emojis.TREACHERY
+            ));
+        }
+        numCardsForBid++;
+        game.getTurnSummary().publish("The bidding market now has " + market.size() + " " + Emojis.TREACHERY + " cards remaining for auction. There are " + numCardsForBid + " total cards this turn.");
     }
 
     private void sendAtreidesCardPrescience(Game game, TreacheryCard card) {

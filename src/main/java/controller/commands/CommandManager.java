@@ -166,6 +166,7 @@ public class CommandManager extends ListenerAdapter {
                 case "homeworld-occupy" -> homeworldOccupy(discordGame, game);
                 case "display-state" -> displayGameState(event, discordGame, game);
                 case "revive-forces" -> reviveForcesEventHandler(discordGame, game);
+                case "add-card-to-bidding-market" -> addCardToBiddingMarket(discordGame, game);
                 case "award-bid" -> awardBid(event, discordGame, game);
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
                 case "kill-leader" -> killLeader(discordGame, game);
@@ -420,6 +421,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("homeworld-occupy", "Set the occupying faction in a homeworld.").addOptions(homeworld, faction));
+        commandData.add(Commands.slash("add-card-to-bidding-market", "Add one more card from the deck to the bidding market."));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
@@ -769,6 +771,11 @@ public class CommandManager extends ListenerAdapter {
 
     public void setHandLimit(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         game.getFaction(discordGame.required(faction).getAsString()).setHandLimit(discordGame.required(amount).getAsInt());
+        discordGame.pushGame();
+    }
+
+    public void addCardToBiddingMarket(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        game.getBidding().addMissedCardToMarket(game);
         discordGame.pushGame();
     }
 
