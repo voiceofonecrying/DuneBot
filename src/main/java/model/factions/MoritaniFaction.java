@@ -42,7 +42,7 @@ public class MoritaniFaction extends Faction {
     }
 
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {
-        int spiceGained = leader.getName().equals("Zoal") ? 3 : leader.getValue();
+        int spiceGained = leader.getStandardRevivalCost();
         game.getTurnSummary().publish(Emojis.MORITANI + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
         game.killLeader(triggeringFaction, leader.getName());
         addSpice(spiceGained, "assassination of " + leader.getName());

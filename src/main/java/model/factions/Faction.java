@@ -454,6 +454,40 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    /**
+     * Revive a leader from the tanks and make payment to BT if applicable or to the spice bank
+     *
+     * @param leaderToRevive the name of the leader
+     * @param revivalCost    optional alternate cost charged by BT
+     */
+    public void reviveLeader(String leaderToRevive, Integer revivalCost) throws InvalidGameStateException {
+        if (revivalCost != null && revivalCost != 0) {
+            if (this instanceof BTFaction)
+                throw new IllegalArgumentException("BT cannot set an alternative cost for themselves;");
+            else if (!game.hasFaction("BT"))
+                throw new IllegalArgumentException("Alternative cost cannot be set without BT in the game.");
+        }
+        Leader leader = game.removeLeaderFromTanks(leaderToRevive);
+        int cost = revivalCost != null ? revivalCost : leader.getRevivalCost(this);
+        if (spice < cost) {
+            game.getLeaderTanks().add(leader);
+            throw new InvalidGameStateException(name + " does not have enough spice to revive " + leaderToRevive);
+        }
+
+        addLeader(leader);
+        leader.setBattleTerritoryName(null);
+        subtractSpice(cost, "revive " + leaderToRevive);
+        String message = leaderToRevive + " was revived from the tanks for " + cost + " " + Emojis.SPICE;
+        if (!(this instanceof BTFaction) && game.hasFaction("BT")) {
+            Faction bt = game.getFaction("BT");
+            message += " paid to " + Emojis.BT;
+            bt.addSpice(cost, emoji + " revived " + leaderToRevive);
+        }
+        game.getTurnSummary().publish(emoji + " " + message);
+        game.setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
     public void addFrontOfShieldSpice(int spice) {
         if (spice < 0) throw new IllegalArgumentException("You cannot add a negative number.");
         if (spice == 0) return;

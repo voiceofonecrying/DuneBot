@@ -43,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
+import static controller.commands.CommandOptions.leader;
 import static controller.commands.ShowCommands.refreshChangedInfo;
 import static controller.commands.ShowCommands.showFactionInfo;
 
@@ -426,7 +427,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
-        commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader));
+        commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader, revivalCost));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("remove-hold", "Remove the hold and allow gameplay to proceed."));
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
@@ -786,16 +787,18 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    /**
+     * Revive a leader from the tanks and make payment to BT if applicable or to the spice bank
+     *
+     * @param discordGame the discord game
+     * @param game        the game
+     */
+    public void reviveLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         String leaderToRevive = discordGame.required(reviveLeader).getAsString();
+        Integer cost = discordGame.optional(revivalCost) != null ? discordGame.required(revivalCost).getAsInt() : null;
 
-        Leader leader = game.removeLeaderFromTanks(leaderToRevive);
-        targetFaction.addLeader(leader);
-        leader.setBattleTerritoryName(null);
-        String message = leaderToRevive + " was revived from the tanks.";
-        discordGame.getFactionLedger(targetFaction).queueMessage(message);
-        discordGame.getTurnSummary().queueMessage(targetFaction.getEmoji() + " " + message);
+        targetFaction.reviveLeader(leaderToRevive, cost);
         discordGame.pushGame();
     }
 

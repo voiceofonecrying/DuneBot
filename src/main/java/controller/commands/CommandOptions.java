@@ -110,6 +110,7 @@ public class CommandOptions {
     public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
+    public static final OptionData revivalCost = new OptionData(OptionType.INTEGER, "revival-cost", "How much spent to revive if different than leader value", false);
     public static final OptionData combatLeader = new OptionData(OptionType.STRING, "combat-leader", "The leader or None.", true).setAutoComplete(true);
     public static final OptionData removeLeader = new OptionData(OptionType.STRING, "leader-to-remove", "The leader incorrectly in a territory.", true).setAutoComplete(true);
     public static final OptionData combatDial = new OptionData(OptionType.STRING, "combat-dial", "The dial on the battle wheel.", true);
@@ -455,9 +456,9 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> reviveLeaders(Game game, String searchValue) {
-        return game.getLeaderTanks().stream().map(Leader::getName)
-                .filter(leader -> leader.matches(searchRegex(searchValue)))
-                .map(leader -> new Command.Choice(leader, leader))
+        return game.getLeaderTanks().stream()
+                .filter(l -> l.getName().matches(searchRegex(searchValue)))
+                .map(l -> new Command.Choice(l.getName() + " (" + l.getStandardRevivalCost() + ")", l.getName()))
                 .collect(Collectors.toList());
     }
 

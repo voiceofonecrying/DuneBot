@@ -1,6 +1,8 @@
 package model;
 
 import exceptions.InvalidGameStateException;
+import model.factions.BTFaction;
+import model.factions.Faction;
 
 public class Leader {
     private final String name;
@@ -25,6 +27,17 @@ public class Leader {
 
     public int getValue() {
         return value;
+    }
+
+    public int getStandardRevivalCost() {
+        return name.equals("Zoal") ? 3 : value;
+    }
+
+    public int getRevivalCost(Faction revivingFaction) {
+        int cost = getStandardRevivalCost();
+        if (revivingFaction instanceof BTFaction || revivingFaction.getAlly().equals("BT"))
+            cost = Math.ceilDiv(cost, 2);
+        return cost;
     }
 
     public LeaderSkillCard getSkillCard() {

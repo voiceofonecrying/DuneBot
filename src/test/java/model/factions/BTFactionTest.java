@@ -173,6 +173,145 @@ class BTFactionTest extends FactionTestTemplate {
         assertEquals(7, faction.getFreeRevival());
     }
 
+    @Nested
+    @DisplayName("#reviveLeader")
+    class ReviveLeader extends FactionTestTemplate.ReviveLeader {
+        @Nested
+        @DisplayName("#payStandardCost")
+        class PayStandardCost extends FactionTestTemplate.ReviveLeader.PayStandardCost {
+            @Test
+            @Override
+            public void testSpiceReducedByCost() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            @Override
+            public void testLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            @Override
+            public void testTurnSummaryMessage() {
+                assertEquals(faction.getEmoji() + " " + leader.getName() + " was revived from the tanks for " + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            }
+        }
+
+        @Nested
+        @DisplayName("#payStandardCostToBT")
+        class PayStandardCostToBT extends FactionTestTemplate.ReviveLeader.PayStandardCostToBT {
+            @BeforeEach
+            @Override
+            public void setUp() throws InvalidGameStateException {
+                faction.setSpice(10);
+                faction.reviveLeader(leader.getName(), null);
+                assertTrue(faction.getLeaders().contains(leader));
+                assertFalse(game.getLeaderTanks().contains(leader));
+            }
+
+            @Test
+            public void testSpiceReducedByCost() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            @Override
+            public void testBTGetPaid() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            public void testBTLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            public void testLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            @Override
+            public void testTurnSummaryMessage() {
+                assertEquals(faction.getEmoji() + " " + leader.getName() + " was revived from the tanks for " + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            }
+        }
+
+        @Nested
+        @DisplayName("#payStandardCostToBT")
+        class AlliedWithBT extends FactionTestTemplate.ReviveLeader.AlliedWithBT {
+            @BeforeEach
+            @Override
+            public void setUp() throws InvalidGameStateException {
+                faction.setSpice(10);
+                faction.reviveLeader(leader.getName(), null);
+                assertTrue(faction.getLeaders().contains(leader));
+                assertFalse(game.getLeaderTanks().contains(leader));
+            }
+
+            @Test
+            @Override
+            public void testBTGetPaid() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            public void testBTLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            @Override
+            public void testTurnSummaryMessage() {
+                assertEquals(faction.getEmoji() + " " + leader.getName() + " was revived from the tanks for " + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            }
+        }
+
+        @Nested
+        @DisplayName("#payBTAlternativeCost")
+        class PayBTAlternativeCost extends FactionTestTemplate.ReviveLeader.PayBTAlternativeCost {
+            @BeforeEach
+            @Override
+            public void setUp() throws InvalidGameStateException {
+                faction.setSpice(10);
+                assertThrows(IllegalArgumentException.class, () -> faction.reviveLeader(leader.getName(), 7));
+                assertDoesNotThrow(() -> faction.reviveLeader(leader.getName(), null));
+                assertTrue(faction.getLeaders().contains(leader));
+                assertFalse(game.getLeaderTanks().contains(leader));
+            }
+
+            @Test
+            @Override
+            public void testSpiceReducedByCost() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            @Override
+            public void testBTGetPaid() {
+                assertEquals(10 - Math.ceilDiv(leaderValue, 2), faction.getSpice());
+            }
+
+            @Test
+            public void testBTLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            @Override
+            public void testLedgerMessage() {
+                assertEquals("-" + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE + " revive " + leader.getName() + " = " + faction.getSpice() + " " + Emojis.SPICE, ledger.getMessages().getFirst());
+            }
+
+            @Test
+            @Override
+            public void testTurnSummaryMessage() {
+                assertEquals(faction.getEmoji() + " " + leader.getName() + " was revived from the tanks for " + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            }
+        }
+    }
+
     @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
