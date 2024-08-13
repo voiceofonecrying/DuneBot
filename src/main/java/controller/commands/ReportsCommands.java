@@ -57,6 +57,7 @@ public class ReportsCommands {
                 new SubcommandData("won-as-all-original-six", "Who has won with all original six factions?"),
                 new SubcommandData("won-as-all-expansion", "Who has won with all six expansion factions?"),
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?"),
+                new SubcommandData("high-faction-wins", "Which player-faction combos have won the most?"),
                 new SubcommandData("longest-games", "The 10 longest games and the tortured mod.")
         ));
 
@@ -77,7 +78,8 @@ public class ReportsCommands {
             case "played-all-twelve" -> responseMessage = playedAllTwelve(event.getGuild(), members);
             case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), members);
             case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), members);
-            case "high-faction-plays" -> responseMessage = highFactionPlays(event.getGuild(), members);
+            case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), members, false);
+            case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), members, true);
             case "longest-games" -> responseMessage = longestGames(event.getGuild(), members);
         }
         return responseMessage;
@@ -379,12 +381,13 @@ public class ReportsCommands {
         }
     }
 
-    private static int playerFactionGames(GRList gameResults, String playerName, String factionName) {
+    private static int playerFactionGames(GRList gameResults, String playerName, String factionName, boolean winsOnly) {
         return gameResults.gameResults.stream()
                 .filter(gr -> {
                     String p = gr.getFieldValue(factionName);
                     return p != null && p.equals(playerName);
                 })
+                .filter(gr -> !winsOnly || gr.isWinner(playerName))
                 .toList().size();
     }
 
@@ -498,7 +501,6 @@ public class ReportsCommands {
             if (numNewGames > 0 || publishIfNoNewGames)
                 publishStats(guild, gameResults.grList, members, numNewGames > 0);
         }
-//        getPlayerRecord(gameResults.grList, "@tomhomebrew");
         return numNewGames + " new games were added to parsed results.";
     }
 
@@ -506,13 +508,6 @@ public class ReportsCommands {
         OptionMapping optionMapping = event.getOption(forcePublish.getName());
         boolean publishIfNoNewGames = (optionMapping != null && optionMapping.getAsBoolean());
         return updateStats(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames);
-    }
-
-    public static String writeFactionStats(Guild guild, GRList gameResults) {
-//        System.out.println(updateFactionPerformance(guild, gameResults).length());
-//        System.out.println(updateTurnStats(guild, gameResults).length());
-//        System.out.println(soloVictories(guild, gameResults).length());
-        return updateFactionPerformance(guild, gameResults);
     }
 
     private static class FactionPerformance {
@@ -552,7 +547,7 @@ public class ReportsCommands {
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
     }
 
-    public static String updateFactionPerformance(Guild guild, GRList gameResults) {
+    public static String writeFactionStats(Guild guild, GRList gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
         allFactionPerformance.add(factionPerformance(gameResults, "atreides", Emojis.ATREIDES));
         allFactionPerformance.add(factionPerformance(gameResults, "bg", Emojis.BG));
@@ -961,7 +956,9 @@ public class ReportsCommands {
 //        if (!factionPlays.isEmpty())
 //            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
         playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, members)).queue();
-        playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, members)).queue();
+//        playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, members)).queue();
+        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, members, true)).queue();
+        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, members)).queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(
@@ -1015,62 +1012,6 @@ public class ReportsCommands {
             }
         }
         return "[]";
-    }
-
-    public static String publishFactionStats(Guild guild, JDA jda) {
-        GameResults gameResults = gatherGameResults(guild);
-        int numNewGames = loadNewGames(guild, jda, gameResults.grList);
-        System.out.println("Num new games = " + numNewGames);
-        return writeFactionStats(guild, gameResults.grList);
-    }
-
-    public static String compareReportsMethod(Guild guild, JDA jda) {
-        GameResults gameResultsOld = gatherGameResults(guild);
-        int numNewGames = loadNewGames(guild, jda, gameResultsOld.grList);
-        System.out.println("New games = " + numNewGames);
-        String oldResultF = writeFactionStats(guild, gameResultsOld.grList);
-        String oldResultM = writeModeratorStats(guild, gameResultsOld.grList, List.of());
-        String oldResultP = writePlayerStats(gameResultsOld.grList, List.of());
-        String oldResultH = highFactionPlays(guild, gameResultsOld.grList, List.of());
-        GameResults gameResults = gatherGameResults(guild);
-        numNewGames = loadNewGames(guild, jda, gameResults.grList);
-        System.out.println("New games = " + numNewGames);
-        String newResultF = writeFactionStats(guild, gameResults.grList);
-        String newResultM = writeModeratorStats(guild, gameResults.grList, List.of());
-        String newResultP = writePlayerStats(gameResults.grList, List.of());
-        String newResultH = highFactionPlays(guild, gameResults.grList, List.of());
-        String result = "";
-        if (gameResultsOld.grList.gameResults.size() == gameResults.grList.gameResults.size()) {
-            result = "Gameresults are same size " + gameResults.grList.gameResults.size() + "\n";
-            boolean allMatch = true;
-            for (int i = 0; i < gameResults.grList.gameResults.size(); i++)
-                if (!gameResults.grList.gameResults.get(i).equals(gameResultsOld.grList.gameResults.get(i))) {
-                    allMatch = false;
-                    break;
-                }
-            result += "Do all GRs match? " + allMatch + "\n";
-        }
-        return result + "Does Faction match? " + oldResultF.equals(newResultF)
-                + "\nDoes Moderator match? " + oldResultM.equals(newResultM)
-                + "\nDoes Player match? " + oldResultP.equals(newResultP)
-                + "\nDoes High Faction match? " + oldResultH.equals(newResultH);
-//        return oldResult + "\n\n" + newResult + "\n\n" + "Do they match? " + newResult.equals(oldResult);
-//        StringBuilder response = new StringBuilder();
-//        boolean allMatch = true;
-//        for (String player : getAllPlayers(gameResults.grList)) {
-//            if (player.indexOf("@") == 0)
-//                player = player.substring(1);
-//            String oldResult = playerRecord(guild, jda, player, player);
-//            String newResult = playerRecord(guild, jda, player, player);
-//            response.append(player).append(" ").append(oldResult).append(" ").append(newResult).append("\n");
-//            if (!oldResult.equals(newResult))
-//                allMatch = false;
-//        }
-//        response.append("All match: ").append(allMatch);
-//        return response.toString();
-//        String oldResult = averageDaysPerTurn(guild, jda);
-//        String adptNew = averageDaysPerTurn(guild, jda);
-//        return oldResult + "\n\n" + adptNew + "\n\nAre the Strings the same? " + oldResult.equals(adptNew);
     }
 
     private static GameResults gatherGameResults(Guild guild) {
@@ -1371,19 +1312,19 @@ public class ReportsCommands {
 
     public static String playedAllOriginalSix(Guild guild, List<Member> members) {
         List<String> factions = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen");
-        return playedFactions(guild, factions, members);
+        return playedFactions(guild, factions, members, false);
     }
 
     public static String playedAllExpansion(Guild guild, List<Member> members) {
         List<String> factions = List.of("bt", "choam", "ecaz", "ix", "moritani", "richese");
-        return playedFactions(guild, factions, members);
+        return playedFactions(guild, factions, members, false);
     }
 
     public static String playedAllTwelve(Guild guild, List<Member> members) {
-        return playedFactions(guild, factionNames, members);
+        return playedFactions(guild, factionNames, members, false);
     }
 
-    public static String playedFactions(Guild guild, List<String> factions, List<Member> members) {
+    public static String playedFactions(Guild guild, List<String> factions, List<Member> members, boolean showMissingTwo) {
         GRList gameResults = gatherGameResults(guild).grList;
         int listSize = factions.size();
         StringBuilder playedAll = new StringBuilder();
@@ -1408,20 +1349,20 @@ public class ReportsCommands {
         }
         if (playedAll.isEmpty() && missingOne.isEmpty())
             return "No players have played all " + listSize + " factions.";
-        return tagEmojis(guild, playedAll + missingOne.toString());
+        return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
     }
 
     public static String wonAsAllOriginalSix(Guild guild, List<Member> members) {
         List<String> factions = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen");
-        return wonAsFactions(guild, factions, members);
+        return wonAsFactions(guild, factions, members, false);
     }
 
     public static String wonAsAllExpansion(Guild guild, List<Member> members) {
         List<String> factions = List.of("bt", "choam", "ecaz", "ix", "moritani", "richese");
-        return wonAsFactions(guild, factions, members);
+        return wonAsFactions(guild, factions, members, false);
     }
 
-    public static String wonAsFactions(Guild guild, List<String> factions, List<Member> members) {
+    public static String wonAsFactions(Guild guild, List<String> factions, List<Member> members, boolean showMissingTwo) {
         GRList gameResults = gatherGameResults(guild).grList;
         int listSize = factions.size();
         StringBuilder playedAll = new StringBuilder();
@@ -1446,16 +1387,36 @@ public class ReportsCommands {
         }
         if (playedAll.isEmpty() && missingOne.isEmpty())
             return "No players have won with all " + listSize + " factions.";
-        return tagEmojis(guild, playedAll + missingOne.toString());
+        return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
+    }
+
+    public static String wonAsMostFactions(Guild guild, List<Member> members) {
+        GRList gameResults = gatherGameResults(guild).grList;
+        int maxFactionsPlayed = 0;
+        StringBuilder playedMax = new StringBuilder();
+        for (String playerName : getAllPlayers(gameResults)) {
+            int factionsPlayed = 0;
+            StringBuilder missedFactionEmojis = new StringBuilder();
+            factionsPlayed += (int) factionNames.stream().map(factionName -> gameResults.gameResults.stream().filter(gr -> gr.isFactionPlayer(factionName, playerName) && gr.isWinner(playerName)).toList()).filter(grs -> !grs.isEmpty()).count();
+            factionNames.forEach(factionName -> {
+                if (gameResults.gameResults.stream().filter(gr -> gr.isFactionPlayer(factionName, playerName) && gr.isWinner(playerName)).toList().isEmpty())
+                    missedFactionEmojis.append(Emojis.getFactionEmoji(factionName)).append(" ");
+            });
+            if (factionsPlayed > maxFactionsPlayed) {
+                maxFactionsPlayed = factionsPlayed;
+                playedMax = new StringBuilder();
+            }
+            String playerTag = getPlayerMention(playerName, members);
+            if (factionsPlayed == maxFactionsPlayed)
+                playedMax.append(maxFactionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
+        }
+        if (playedMax.isEmpty())
+            return "No players have played.";
+        return tagEmojis(guild, playedMax.toString());
     }
 
     private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
     private static final List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
-
-    private static String highFactionPlays(Guild guild, List<Member> members) {
-        GRList gameResults = gatherGameResults(guild).grList;
-        return highFactionPlays(guild, gameResults, members);
-    }
 
     public static String writePlayerAllyPerformance(GRList gameResults, List<Member> members) {
         List<MutableTriple<String, String, Integer>> playerAllyWinsTriple = new ArrayList<>();
@@ -1484,29 +1445,25 @@ public class ReportsCommands {
         return result.toString();
     }
 
-    private static String highFactionPlays(Guild guild, GRList gameResults, List<Member> members) {
+    public static String highFactionGames(Guild guild, List<Member> members, boolean winsOnly) {
+        GRList gameResults = gatherGameResults(guild).grList;
         Set<String> players = getAllPlayers(gameResults);
         List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
-        for (String playerName : players) {
-            for (String factionName : factionNames) {
-                playerFactionCounts.add(MutableTriple.of(playerName, factionName, playerFactionGames(gameResults, playerName, factionName)));
-            }
-        }
-        int maxGames = playerFactionCounts.stream().map(t -> t.right).mapToInt(t -> t).filter(t -> t >= 0).max().orElse(0);
-        ArrayList<StringBuilder> highFactionPlays = new ArrayList<>();
+        players.forEach(playerName -> factionNames.stream().map(factionName -> MutableTriple.of(playerName, factionName, playerFactionGames(gameResults, playerName, factionName, winsOnly))).forEach(playerFactionCounts::add));
+        int maxGames = playerFactionCounts.stream().map(t -> t.right).mapToInt(t -> t).max().orElse(0);
+        List<StringBuilder> highFactionPlays = new ArrayList<>();
         IntStream.range(0, maxGames).forEach(i -> highFactionPlays.add(new StringBuilder()));
-        for (MutableTriple<String, String, Integer> t : playerFactionCounts) {
+        playerFactionCounts.forEach(t -> {
             String punct = t.right == maxGames ? "!" : "";
             if (t.right != 0) {
                 String playerTag = getPlayerMention(t.left, members);
-//                highFactionPlays.get(t.right - 1).append(playerTag).append(" has played ").append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct);
                 highFactionPlays.get(t.right - 1).append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct).append(" - ").append(playerTag).append("\n");
             }
-        }
+        });
         StringBuilder result = new StringBuilder();
         int lines = 0;
         int numPlays = maxGames - 1;
-        while (numPlays >= 0 && lines < 6) {
+        while (numPlays >= 2 && lines < 6) {
             String hfpString = highFactionPlays.get(numPlays).toString();
             for (char c : hfpString.toCharArray())
                 if (c == '\n')
@@ -1515,7 +1472,7 @@ public class ReportsCommands {
             numPlays--;
         }
         if (maxGames == 0)
-            return "No players have won.";
+            return "No players have played.";
         return tagEmojis(guild, result.toString());
     }
 

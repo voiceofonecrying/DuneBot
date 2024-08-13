@@ -29,15 +29,9 @@ public class ReportsCommandsTester {
 
         EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
         String a = ReportsCommands.playedAllExpansion(guild, List.of());
-        String b = ReportsCommands.playedAllOriginalSix(guild, List.of());
         System.out.println(a + " " + a.length() + "\n============");
-        System.out.println(b + " " + b.length() + "\n============");
-        System.out.println(a.equals(b));
-//        System.out.println(ReportsCommands.playedAllTwelve(guild, List.of()));
 //        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
-//        System.out.println(ReportsCommands.publishFactionStats(guild, testJDA));
-//        System.out.println(ReportsCommands.compareReportsMethod(guild, testJDA));
-//        System.out.println(ReportsCommands.playedAllOriginalSix(guild, testJDA, guild.getMembers()));
+        System.out.println(ReportsCommands.wonAsMostFactions(guild, List.of()));
 
 // To fix JSON:
 //        1. Edit JSON and CSV to have lower case. Keep CSV header as upper case.
