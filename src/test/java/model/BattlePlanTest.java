@@ -304,6 +304,7 @@ public class BattlePlanTest {
         assertEquals(2, battlePlan.getLeaderContribution());
         assertTrue(battlePlan.isLeaderAlive());
         assertEquals(0, battlePlan.combatWater());
+        assertEquals("Leader: Cheap Hero (0) + KH (2)", battlePlan.getLeaderString(false));
     }
 
     @Test

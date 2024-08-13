@@ -215,10 +215,8 @@ public class BattlePlan {
         if (swappableSpecials > 0 && regularStrength - regularDialed >= 2) {
             List<DuneChoice> choices = new ArrayList<>();
             int numStarsReplaced = 0;
-            int swapRatio = 2;
-            if (faction instanceof EmperorFaction) swapRatio = 3;
-            while (regularStrength - regularDialed >= swapRatio * numStarsReplaced) {
-                int altRegularDialed = regularDialed + numStarsReplaced * swapRatio;
+            while (regularStrength - regularDialed >= numStarsReplaced * 2) {
+                int altRegularDialed = regularDialed + numStarsReplaced * 2;
                 int altSpecialDialed = specialDialed - numStarsReplaced;
                 String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
                 String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
@@ -242,6 +240,8 @@ public class BattlePlan {
         if (forcesRemaining.isEmpty()) forcesRemaining = "no " + Emojis.getFactionEmoji(dialFactionName) + " forces ";
         if (hasEcazAndAlly)
             forcesRemaining += Math.floorDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " ";
+        if (weapon != null && weapon.name().equals("Lasgun") && defense != null && defense.name().equals("Shield"))
+            return "KABOOM! All forces will be sent to the tanks.";
         return "This will leave " + forcesRemaining + "in " + wholeTerritoryName + " if you win.";
     }
 
@@ -354,7 +354,7 @@ public class BattlePlan {
         String leaderString = "-";
         if (leader != null) leaderString = MessageFormat.format("{0} ({1}){2}",
                 leader.getName(), leader.getName().equals("Zoal") ? "X" : leader.getValue(), khString);
-        else if (cheapHero != null) leaderString = cheapHero.name() + "(0)" + khString;
+        else if (cheapHero != null) leaderString = cheapHero.name() + " (0)" + khString;
 
         if (revealLeaderSkills) {
             if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())

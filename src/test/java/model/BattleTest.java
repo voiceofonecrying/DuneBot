@@ -1113,4 +1113,110 @@ class BattleTest {
             assertNotEquals(-1, modInfo.getMessages().getLast().indexOf(Emojis.ATREIDES + " loses 9 " + Emojis.SPICE + " combat spice\n" + Emojis.EMPEROR + " loses 2 " + Emojis.SPICE + " ally support\n"));// + Emojis.CHOAM + " gains 5 " + Emojis.SPICE + " combat spice"));
         }
     }
+
+//    @Nested
+//    @DisplayName("#lasgunShieldDestroysEverything")
+//    class LasgunShieldDestroysEverything {
+//        TestTopic modInfo;
+//        Leader duncanIdaho;
+//        TreacheryCard cheapHero;
+//        TreacheryCard lasgun;
+//        TreacheryCard shield;
+//        Battle battle;
+//
+//        @BeforeEach
+//        void setUp() throws IOException, InvalidGameStateException {
+//            modInfo = new TestTopic();
+//            game.setModInfo(modInfo);
+//            atreides = new AtreidesFaction("p", "u", game);
+//            bg = new BGFaction("p", "u", game);
+//            harkonnen = new HarkonnenFaction("p", "u", game);
+//            ecaz = new EcazFaction("p", "u", game);
+//            emperor = new EmperorFaction("p", "u", game);
+//            richese = new RicheseFaction("p", "u", game);
+//            game.addFaction(atreides);
+//            game.addFaction(bg);
+//            game.addFaction(harkonnen);
+//            game.addFaction(ecaz);
+//            game.addFaction(emperor);
+//            game.addFaction(richese);
+//            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+//            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
+//            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
+//            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
+//            atreides.setForcesLost(7);
+//            atreides.addTreacheryCard(lasgun);
+//            atreides.setChat(new TestTopic());
+//            harkonnen.addTreacheryCard(cheapHero);
+//            harkonnen.addTreacheryCard(shield);
+//            harkonnen.setChat(new TestTopic());
+//            cielagoNorth_eastSector.addForces("Atreides", 5);
+//            cielagoNorth_eastSector.addForces("Harkonnen", 3);
+//            cielagoNorth_eastSector.setRicheseNoField(5);
+//            cielagoNorth_eastSector.addForces("Advisor", 1);
+//            // Ambassador test really should be moved to a new test setup in a Stronghold
+//            ecaz.placeAmbassador(cielagoNorth_eastSector, "Ecaz");
+//            cielagoNorth_westSector.addForces("Atreides", 2);
+//            cielagoNorth_westSector.addForces("Emperor*", 3);
+//            cielagoNorth_eastSector.setSpice(8);
+//            battle = new Battle(game, "Arrakeen", List.of(cielagoNorth_eastSector), List.of(atreides, harkonnen), cielagoNorth_eastSector.getForces(), null);
+//            battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 0, false, 0, lasgun, null);
+//            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, shield);
+//            modInfo = new TestTopic();
+//            game.setModInfo(modInfo);
+//            battle.printBattleResolution(game, false);
+//        }
+//
+//        @Test
+//        void testResolutionsReportsAdvisorsGetKilled() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.BG + " loses 1 " + Emojis.BG_ADVISOR + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionsReportsNoncombatantNoFieldRevealed() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be 5 " + Emojis.RICHESE_TROOP));
+//        }
+//
+//        @Test
+//        void testResolutionsReportsRicheseForcesGetKilled() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " loses 5 " + Emojis.RICHESE_TROOP + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionsReportsEmperorForcesInOtherSectorGetKilled() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionsReportsAtreidesForcesInBothSectorGetKilled() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 7 " + Emojis.ATREIDES_TROOP + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionsDoesNoReportAtreidesForcesSeparatelyInBattleSector() {
+//            assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 5 " + Emojis.ATREIDES_TROOP + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionsReportsHarkonnenForcesInBothSectorGetKilled() {
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.HARKONNEN + " loses 3 " + Emojis.HARKONNEN_TROOP + " to the tanks"));
+//        }
+//
+//        @Test
+//        void testResolutionReportAmbassadorReturnedToEcazSupply() {
+//            // Ambassador test really should be moved to a new test setup in a Stronghold
+//            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " Ecaz ambassador returned to supply."));
+//        }
+//
+//        @Test
+//        void testResolutionReportsSpiceDestroyed() {
+//            assertTrue(modInfo.getMessages().getFirst().contains("8 " + Emojis.SPICE + " destroyed in Cielago North (East Sector)."));
+//        }
+//
+//        @Test
+//        void testSeeMessage() {
+//            assertTrue(modInfo.getMessages().getFirst().contains("KABOOM!"));
+//            assertNull(modInfo.getMessages().getFirst());
+//        }
+//    }
 }
