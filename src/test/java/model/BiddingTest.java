@@ -213,6 +213,7 @@ class BiddingTest {
     @DisplayName("#topBidderIdentified")
     public class TopBidderIdentified {
         int numMessagesInBiddingPhaseChannel;
+        int expectedMessagesInBiddingPhase;
 
         @BeforeEach
         public void setUp() throws IOException, InvalidGameStateException {
@@ -510,7 +511,8 @@ class BiddingTest {
                 bidding.pass(game, harkonnen);
                 assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(10, biddingPhase.getMessages().size());
+                expectedMessagesInBiddingPhase = 9;
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -546,13 +548,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(10, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(10, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
         }
 
@@ -630,7 +632,8 @@ class BiddingTest {
                 bidding.pass(game, harkonnen);
                 assertEquals(1, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(4, biddingPhase.getMessages().size());
+                expectedMessagesInBiddingPhase = 3;
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
@@ -666,13 +669,13 @@ class BiddingTest {
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(4, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(4, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
         }
 
@@ -744,15 +747,13 @@ class BiddingTest {
         @Nested
         @DisplayName("#richeseBlackMarketNormalAllPass")
         public class RicheseBlackMarketNormalAllPass {
-            int richeseHandSize;
-
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
-                richeseHandSize = richese.getTreacheryHand().size();
-                assertEquals(1, richeseHandSize);
-                bidding.blackMarketAuction(game, "Family Atomics", "Normal");
+                richese.addTreacheryCard(new TreacheryCard("Weather Control"));
+                assertEquals(1, richese.getTreacheryHand().size());
+                bidding.blackMarketAuction(game, "Weather Control", "Normal");
                 assertEquals(0, richese.getTreacheryHand().size());
+                assertEquals(5, bidding.getMarket().size());
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -768,8 +769,23 @@ class BiddingTest {
             }
 
             @Test
+            void testCardReturnedToRicheseMessage() {
+                assertEquals("All players passed. The black market card has been returned to " + Emojis.RICHESE, biddingPhase.getMessages().getLast());
+            }
+
+            @Test
+            void testCardIsInRicheseHand() {
+                assertEquals(1, richese.getTreacheryHand().size());
+            }
+
+            @Test
+            void testOneMoreCardAddedToBiddingMarket() {
+                assertEquals(5, bidding.getMarket().size());
+            }
+
+            @Test
             void testWinnerBidAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 2, null, null));
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, richese, true, 2, null, null));
             }
 
             @Test
@@ -779,7 +795,7 @@ class BiddingTest {
 
             @Test
             void testWinnerPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, richese));
             }
 
             @Test
@@ -789,7 +805,7 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, richese, true));
             }
 
             @Test
@@ -799,7 +815,7 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
-                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, richese, true));
                 assertEquals(8, biddingPhase.getMessages().size());
             }
 
@@ -810,15 +826,11 @@ class BiddingTest {
             }
 
             @Test
-            public void testBlackMarketCardSentBackToRichese() {
-                bidding.setRicheseCacheCardOutstanding(false);
-                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
-                int treacheryDeckSize = game.getTreacheryDeck().size();
-                assertNotNull(bidding.getBidCard());
-                assertEquals(28, treacheryDeckSize);
-                assertEquals(5, bidding.getMarket().size());
-                assertNotEquals(0, turnSummary.getMessages().getLast().indexOf("Number of Treachery Cards"));
-                assertEquals(1, richeseHandSize);
+            public void testNextCardIsC1() {
+                biddingPhase = new TestTopic();
+                game.setBiddingPhase(biddingPhase);
+                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
 
@@ -889,7 +901,9 @@ class BiddingTest {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
                 richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                assertEquals(1, richese.getTreacheryHand().size());
                 bidding.blackMarketAuction(game, "Family Atomics", "OnceAroundCCW");
+                assertEquals(0, richese.getTreacheryHand().size());
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -898,12 +912,28 @@ class BiddingTest {
                 bidding.pass(game, harkonnen);
                 assertEquals(7, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(10, biddingPhase.getMessages().size());
+                expectedMessagesInBiddingPhase = 9;
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testCardReturnedToRicheseMessage() {
+                assertEquals("All players passed. The black market card has been returned to " + Emojis.RICHESE, biddingPhase.getMessages().getLast());
+            }
+
+            @Test
+            void testCardIsInRicheseHand() {
+                assertEquals(1, richese.getTreacheryHand().size());
+            }
+
+            @Test
+            void testOneMoreCardAddedToBiddingMarket() {
+                assertEquals(5, bidding.getMarket().size());
             }
 
             @Test
             void testWinnerBidAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 2, null, null));
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, richese, true, 2, null, null));
             }
 
             @Test
@@ -913,7 +943,7 @@ class BiddingTest {
 
             @Test
             void testWinnerPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, richese));
             }
 
             @Test
@@ -923,7 +953,7 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, richese, true));
             }
 
             @Test
@@ -933,14 +963,27 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
-                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(10, biddingPhase.getMessages().size());
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, richese, true));
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(10, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            public void testBlackMarketCardSentBackToRichese() {
+                assertEquals(1, richese.getTreacheryHand().size());
+            }
+
+            @Test
+            public void testNextCardIsC1() {
+                biddingPhase = new TestTopic();
+                game.setBiddingPhase(biddingPhase);
+                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
 
@@ -1011,7 +1054,9 @@ class BiddingTest {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
                 richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                assertEquals(1, richese.getTreacheryHand().size());
                 bidding.blackMarketAuction(game, "Family Atomics", "Silent");
+                assertEquals(0, richese.getTreacheryHand().size());
 
                 bidding.pass(game, atreides);
                 bidding.pass(game, bg);
@@ -1020,12 +1065,28 @@ class BiddingTest {
                 bidding.pass(game, harkonnen);
                 assertEquals(1, biddingPhase.getMessages().size());
                 bidding.pass(game, richese);
-                assertEquals(4, biddingPhase.getMessages().size());
+                expectedMessagesInBiddingPhase = 3;
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            void testCardReturnedToRicheseMessage() {
+                assertEquals("All players passed. The black market card has been returned to " + Emojis.RICHESE, biddingPhase.getMessages().getLast());
+            }
+
+            @Test
+            void testCardIsInRicheseHand() {
+                assertEquals(1, richese.getTreacheryHand().size());
+            }
+
+            @Test
+            void testOneMoreCardAddedToBiddingMarket() {
+                assertEquals(5, bidding.getMarket().size());
             }
 
             @Test
             void testWinnerBidAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 2, null, null));
+                assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, richese, true, 2, null, null));
             }
 
             @Test
@@ -1035,7 +1096,7 @@ class BiddingTest {
 
             @Test
             void testWinnerPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, atreides));
+                assertThrows(InvalidGameStateException.class, () -> bidding.pass(game, richese));
             }
 
             @Test
@@ -1045,7 +1106,7 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassAfterTopBidderIdentified() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, atreides, true));
+                assertThrows(InvalidGameStateException.class, () -> bidding.setAutoPass(game, richese, true));
             }
 
             @Test
@@ -1055,14 +1116,27 @@ class BiddingTest {
 
             @Test
             void testWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
-                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, atreides, true));
-                assertEquals(4, biddingPhase.getMessages().size());
+                assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, richese, true));
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
             }
 
             @Test
             void testNonWinnerAutoPassEntireTurnAfterTopBidderIdentified() {
                 assertDoesNotThrow(() -> bidding.setAutoPassEntireTurn(game, bg, true));
-                assertEquals(4, biddingPhase.getMessages().size());
+                assertEquals(expectedMessagesInBiddingPhase, biddingPhase.getMessages().size());
+            }
+
+            @Test
+            public void testBlackMarketCardSentBackToRichese() {
+                assertEquals(1, richese.getTreacheryHand().size());
+            }
+
+            @Test
+            public void testNextCardIsC1() {
+                biddingPhase = new TestTopic();
+                game.setBiddingPhase(biddingPhase);
+                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
     }

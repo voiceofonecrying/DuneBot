@@ -878,14 +878,13 @@ public class Bidding {
         DuneTopic modInfo = game.getModInfo();
         DuneTopic biddingPhase = game.getBiddingPhase();
         if (allPlayersPassed) {
-            biddingPhase.publish("All players passed.\n");
             if (richeseCacheCard) {
                 topBidderDeclared = true;
-                biddingPhase.publish(Emojis.RICHESE + " may take cache card for free or remove it from the game.");
+                biddingPhase.publish("All players passed." + Emojis.RICHESE + " may take cache card for free or remove it from the game.");
                 modInfo.publish("Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game. " + game.getModOrRoleMention());
             } else {
                 decrementBidCardNumber();
-                biddingPhase.publish("The black market card has been returned to " + Emojis.RICHESE);
+                biddingPhase.publish("All players passed. The black market card has been returned to " + Emojis.RICHESE);
                 modInfo.publish("The black market card has been returned to " + Emojis.RICHESE);
                 modInfo.publish("Use /run advance to continue the bidding phase. " + game.getModOrRoleMention());
                 awardTopBidder(game);
@@ -1026,6 +1025,10 @@ public class Bidding {
                     return;
                 }
             } else if (allPlayersPassed) {
+                if (blackMarketCard) {
+                    richeseWinner(game, allPlayersPassed);
+                    return;
+                }
                 game.getBiddingPhase().publish("All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");
                 String modMessage = "Use /run advance to return the " + Emojis.TREACHERY + " cards to the deck";
                 if (richeseCacheCardOutstanding)
