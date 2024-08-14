@@ -32,6 +32,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.faction;
 
@@ -978,11 +979,19 @@ public class ShowCommands {
         FileUpload newMap = drawGameBoard(game).setName("game-map.png");
         MessageCreateBuilder builder = new MessageCreateBuilder();
         builder.addFiles(newMap);
+
+        EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.BLACK);
+        List<String> discoveryTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && t.isDiscovered()).map(t ->t.getDiscoveryToken() + " is in " + t.getTerritoryName()).toList();
+        List<String> undiscoveredTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && !t.isDiscovered()).map(t -> "A " + (t.isRock() ? "Smuggler" : "Hiereg") + " token is in " + t.getTerritoryName()).collect(Collectors.toList());
+        String discoveryString = String.join("\n", discoveryTokensLocations);
+        String undiscoveredString = String.join("\n", undiscoveredTokensLocations);
+        if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
+            embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
+
         String deckSizes = discordGame.tagEmojis(Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
                         + " :wastebasket:" + " " + game.getTreacheryDiscard().size()
                         + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
-        EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.BLACK)
-                .addField("Deck Sizes", deckSizes, true);
+        embedBuilder.addField("Deck Sizes", deckSizes, false);
         builder.addEmbeds(embedBuilder.build());
         discordGame.queueMessage("front-of-shield", builder);
 
@@ -1015,8 +1024,7 @@ public class ShowCommands {
                 frontOfShieldModified = true;
             }
 
-            if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC) &&
-                    updateTypes.contains(UpdateType.TREACHERY_CARDS)) {
+            if (updateTypes.contains(UpdateType.TREACHERY_CARDS)) {
                 frontOfShieldModified = true;
             }
 
