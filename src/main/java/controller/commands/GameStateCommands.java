@@ -4,7 +4,6 @@ import caches.GameCache;
 import controller.channels.DiscordChannel;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
-import model.Game;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -45,7 +44,7 @@ public class GameStateCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, ExecutionException, InterruptedException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, ExecutionException, InterruptedException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 

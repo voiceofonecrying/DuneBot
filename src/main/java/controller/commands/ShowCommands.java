@@ -608,7 +608,7 @@ public class ShowCommands {
                         Point forcePlacement = new Point(250, 150);
                         Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
                         discoveryToken = overlay(discoveryToken, noFieldImage, forcePlacementOffset, 1);
-                        offset += 100;
+//                        offset += 100;
                     }
                 }
                 else {
@@ -883,18 +883,15 @@ public class ShowCommands {
         StringBuilder factionSpecificString = new StringBuilder();
         String nexusCard = faction.getNexusCard() == null ? "" : "\n__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
-        if (faction instanceof BGFaction bg) {
-            factionSpecificString.append("\n__Prediction:__ ")
+        switch (faction) {
+            case BGFaction bg -> factionSpecificString.append("\n__Prediction:__ ")
                     .append(bg.getPredictionFactionName())
                     .append(" Turn ")
                     .append(bg.getPredictionRound());
-        } else if (faction instanceof EcazFaction ecaz) {
-            factionSpecificString.append(ecaz.getAmbassadorSupplyInfoMessage());
-        } else if (faction instanceof MoritaniFaction moritani) {
-            factionSpecificString.append(moritani.getTerrorTokenMessage());
-        } else if (faction instanceof AtreidesFaction atreides) {
-            factionSpecificString.append("\n__KH Counter:__ ");
-            factionSpecificString.append(Math.min(7, atreides.getForcesLost()));
+            case EcazFaction ecaz -> factionSpecificString.append(ecaz.getAmbassadorSupplyInfoMessage());
+            case MoritaniFaction moritani -> factionSpecificString.append(moritani.getTerrorTokenMessage());
+            case AtreidesFaction atreides -> factionSpecificString.append("\n__KH Counter:__ ").append(Math.min(7, atreides.getForcesLost()));
+            default -> {}
         }
         StringBuilder traitorString = new StringBuilder();
         if (faction instanceof BTFaction) traitorString.append("\n__Face Dancers:__\n");

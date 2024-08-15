@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import enums.UpdateType;
-import helpers.Exclude;
 import model.factions.BGFaction;
 import model.factions.Faction;
 import model.factions.RicheseFaction;
@@ -18,14 +17,11 @@ public class Territory {
     private boolean isDiscoveryToken;
     private final boolean isNearShieldWall;
     protected final List<Force> forces;
-    private final List<String> adjacencyList;
     private boolean isRock;
     private int spice;
     private Integer richeseNoField;
     private String ecazAmbassador;
-    private List<String> terrorTokens;
-    @Exclude
-    private String terrorToken;
+    private final List<String> terrorTokens;
     private boolean aftermathToken;
     private String discoveryToken;
     private boolean discovered;
@@ -41,7 +37,6 @@ public class Territory {
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
         this.ecazAmbassador = null;
-        this.adjacencyList = new LinkedList<>();
         this.aftermathToken = false;
         this.terrorTokens = new LinkedList<>();
     }
@@ -252,10 +247,6 @@ public class Territory {
         return getRicheseNoField() != null;
     }
 
-    public List<String> getAdjacencyList() {
-        return adjacencyList;
-    }
-
     public String getEcazAmbassador() {
         return ecazAmbassador;
     }
@@ -269,20 +260,10 @@ public class Territory {
     }
 
     public List<String> getTerrorTokens() {
-        if (terrorTokens == null) {
-            LinkedList<String> tokens = new LinkedList<>();
-            if (terrorToken != null) tokens.add(terrorToken);
-            this.terrorTokens = tokens;
-        }
         return terrorTokens;
     }
 
     public void addTerrorToken(String terrorToken) {
-        if (terrorTokens == null) {
-            LinkedList<String> tokens = new LinkedList<>();
-            tokens.add(this.terrorToken);
-            this.terrorTokens = tokens;
-        }
         this.terrorTokens.add(terrorToken);
     }
 

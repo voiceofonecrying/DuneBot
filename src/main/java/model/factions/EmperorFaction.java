@@ -231,7 +231,7 @@ public class EmperorFaction extends Faction {
     @Override
     protected int getRevivableForces() {
         boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
-        boolean emperorCanPayForOneSardaukar = !isStarRevived() && starsInTanks;
+        boolean emperorCanPayForOneSardaukar = isStarNotRevived() && starsInTanks;
         return game.getTleilaxuTanks().getForceStrength(name) +
                 (emperorCanPayForOneSardaukar ? 1 : 0);
     }
@@ -239,7 +239,7 @@ public class EmperorFaction extends Faction {
     @Override
     protected String paidRevivalMessage() {
         boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
-        boolean emperorCanPayForOneSardaukar = !isStarRevived() && starsInTanks;
+        boolean emperorCanPayForOneSardaukar = isStarNotRevived() && starsInTanks;
         String sardaukarString = emperorCanPayForOneSardaukar ? " including 1 " + Emojis.EMPEROR_SARDAUKAR : "";
         return "Would you like to purchase additional revivals" + sardaukarString + "? " + player;
     }

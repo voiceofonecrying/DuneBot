@@ -623,7 +623,7 @@ public class Faction {
     public void payForCard(String currentCard, int spentValue) throws InvalidGameStateException {
         int spiceFromAlly = hasAlly() ? game.getFaction(ally).getSpiceForAlly() : 0;
         if (spice + spiceFromAlly < spentValue)
-            throw new InvalidGameStateException(emoji + " does not have enough spice to buy the card.");
+            throw new InvalidGameStateException(name + " does not have enough spice to buy the card.");
         else if (treacheryHand.size() >= handLimit)
             throw new InvalidGameStateException(emoji + " already has a full hand.");
 
@@ -641,7 +641,7 @@ public class Faction {
         if (hasAlly())
             spiceFromAlly = game.getFaction(ally).getShippingSupport();
         if (this.spice + spiceFromAlly < spice)
-            throw new InvalidGameStateException(emoji + " does not have enough spice to buy the card.");
+            throw new InvalidGameStateException(name + " does not have enough spice to make this shipment.");
         int support = 0;
         int guildSupport = 0;
         if (spiceFromAlly > 0) {
@@ -892,8 +892,8 @@ public class Faction {
         this.maxRevival = maxRevival;
     }
 
-    public boolean isStarRevived() {
-        return starRevived;
+    public boolean isStarNotRevived() {
+        return !starRevived;
     }
 
     public void setStarRevived(boolean starRevived) {

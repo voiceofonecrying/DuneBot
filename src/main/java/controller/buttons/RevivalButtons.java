@@ -29,7 +29,7 @@ public class RevivalButtons implements Pressable {
             game.getTurnSummary().publish(faction.getEmoji() + " does not purchase additional revivals");
             return;
         }
-        if (faction instanceof EmperorFaction && !faction.isStarRevived() && game.getTleilaxuTanks().getForceStrength("Emperor*") > 0)
+        if (faction instanceof EmperorFaction && faction.isStarNotRevived() && game.getTleilaxuTanks().getForceStrength("Emperor*") > 0)
             CommandManager.reviveForces(faction, true, revival - 1, 1, game, discordGame);
         else
             CommandManager.reviveForces(faction, true, revival, 0, game, discordGame);
