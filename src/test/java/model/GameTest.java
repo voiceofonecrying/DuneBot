@@ -1025,6 +1025,18 @@ class GameTest {
         }
 
         @Test
+        void testShaiHuludDestroysSpice() {
+            game.getSpiceDeck().addFirst(shaiHulud);
+            assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
+            sihayaRidge.setSpice(6);
+            game.drawSpiceBlow("A");
+            assertEquals(0, sihayaRidge.getSpice());
+//            assertNull(turnSummary.getMessages().getFirst());
+            assertTrue(turnSummary.getMessages().getFirst().contains("Shai-Hulud has been spotted in Sihaya Ridge!"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("6 " + Emojis.SPICE + " is eaten by the worm!"));
+        }
+
+        @Test
         void shaiHuludDevoursTroops() {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());

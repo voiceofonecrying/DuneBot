@@ -947,32 +947,7 @@ public class Game {
                                 .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
                         SpiceCard lastCard = discard.getLast();
-                        message.append(drawn.name())
-                                .append(" has been spotted in ").append(lastCard.name()).append("!\n");
-                        int spice = territories.get(lastCard.name()).getSpice();
-                        if (spice > 0) {
-                            message.append(spice);
-                            message.append(Emojis.SPICE);
-                            message.append(" is eaten by the worm!\n");
-                            territories.get(lastCard.name()).setSpice(0);
-                        }
-                        if (getTerritory(lastCard.name()).countFactions() > 0) {
-                            List<Force> forcesToRemove = new ArrayList<>();
-                            for (Force force : getTerritory(lastCard.name()).getForces()) {
-                                if (force.getName().contains("Fremen")) continue;
-                                if (hasFaction("Fremen")) {
-                                    Faction fremen = getFaction("Fremen");
-                                    if (fremen.hasAlly() && force.getName().contains(fremen.getAlly())) continue;
-                                }
-                                message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
-                                        force.getStrength(), Emojis.getForceEmoji(force.getName()), drawn.name()
-                                ));
-                                forcesToRemove.add(force);
-                            }
-                            for (Force force : forcesToRemove) {
-                                removeForces(lastCard.name(), getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
-                            }
-                        }
+                        message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name()));
                     }
                 } else {
                     shaiHuludSpotted = true;

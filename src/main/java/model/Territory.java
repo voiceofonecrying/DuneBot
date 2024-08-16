@@ -366,6 +366,35 @@ public class Territory {
         return message;
     }
 
+    public String shaiHuludAppears(Game game, String wormName) {
+        String response = wormName + " has been spotted in " + territoryName + "!\n";
+        if (spice > 0) {
+            response += spice + " " + Emojis.SPICE + " is eaten by the worm!\n";
+            spice = 0;
+        }
+        if (countFactions() > 0) {
+            List<Force> forcesToRemove = new ArrayList<>();
+            StringBuilder message = new StringBuilder();
+            for (Force force : forces) {
+                if (force.getName().contains("Fremen")) continue;
+                if (game.hasFaction("Fremen")) {
+                    Faction fremen = game.getFaction("Fremen");
+                    if (fremen.hasAlly() && force.getName().contains(fremen.getAlly()))
+                        continue;
+                }
+                message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
+                        force.getStrength(), Emojis.getForceEmoji(force.getName()), wormName
+                ));
+                forcesToRemove.add(force);
+            }
+            response += message.toString();
+            for (Force force : forcesToRemove)
+                // Move this to Territory::removeForces - but Game::removeForces is checking for high/low threshold, so that must move over too
+                game.removeForces(territoryName, game.getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
+        }
+        return response;
+    }
+
     public String getAggregateTerritoryName() {
         int endLocation = territoryName.indexOf(" (");
         if (endLocation == -1) return territoryName;
