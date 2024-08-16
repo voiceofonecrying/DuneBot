@@ -5,6 +5,7 @@ import controller.DiscordGame;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -985,8 +986,13 @@ public class ShowCommands {
         if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
             embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
 
-        String deckSizes = discordGame.tagEmojis(Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
-                        + " :wastebasket:" + " " + game.getTreacheryDiscard().size()
+        String biddingMarketSize = "";
+        try {
+            Bidding bidding = game.getBidding();
+            biddingMarketSize = ":convenience_store: " + (bidding.getMarket().size() + (bidding.getBidCard() != null ? 1 : 0)) + " ";
+        } catch (InvalidGameStateException ignored) {}
+        String deckSizes = discordGame.tagEmojis(biddingMarketSize + Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
+                        + " :wastebasket: " + game.getTreacheryDiscard().size()
                         + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
         embedBuilder.addField("Deck Sizes", deckSizes, false);
         builder.addEmbeds(embedBuilder.build());

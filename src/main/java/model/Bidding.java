@@ -549,7 +549,7 @@ public class Bidding {
         }
     }
 
-    protected TreacheryCard getBidCard() {
+    public TreacheryCard getBidCard() {
         return bidCard;
     }
 
