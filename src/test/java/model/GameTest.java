@@ -860,7 +860,7 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(1, turnSummary.messages.size());
-            assertEquals("Turn 1 Storm Phase:", turnSummary.messages.getFirst());
+            assertEquals("**Turn 1 Storm Phase**", turnSummary.messages.getFirst());
             assertEquals(0, fremenChat.messages.size());
         }
 
@@ -873,7 +873,7 @@ class GameTest {
             game.setStormMovement(1);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
             assertEquals(0, fremenChat.messages.size());
         }
@@ -890,7 +890,7 @@ class GameTest {
             game.setStormMovement(1);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, fremenChat.messages.size());
             assertEquals("fp4 will you play Weather Control?", fremenChat.messages.getFirst());
@@ -909,7 +909,7 @@ class GameTest {
             game.setStormMovement(5);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
         }
 
@@ -928,7 +928,7 @@ class GameTest {
             game.setStormMovement(5);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
             assertEquals(0, guildChat.messages.size());
         }
@@ -948,7 +948,7 @@ class GameTest {
             game.setStormMovement(5);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, guildChat.messages.size());
             assertEquals("fp5 will you play Family Atomics?", guildChat.messages.getFirst());
@@ -967,7 +967,7 @@ class GameTest {
             game.setStormMovement(5);
             game.startStormPhase();
             assertEquals(3, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
             assertEquals("(Check if storm position prevents use of Family Atomics.)", turnSummary.messages.get(2));
         }
@@ -986,7 +986,7 @@ class GameTest {
             game.setStormMovement(2);
             game.startStormPhase();
             assertEquals(2, turnSummary.messages.size());
-            assertEquals("Turn 2 Storm Phase:", turnSummary.messages.get(0));
+            assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 2 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
         }
     }

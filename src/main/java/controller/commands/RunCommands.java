@@ -231,12 +231,12 @@ public class RunCommands {
     }
 
     public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Spice Blow Phase:");
+        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Spice Blow Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
     }
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Bidding Phase:");
+        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Bidding Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Bidding Phase\n");
         game.startBidding();
         RicheseFaction richeseFaction;
@@ -263,7 +263,7 @@ public class RunCommands {
     public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.AXLOTL_TANKS);
 
-        discordGame.getTurnSummary().queueMessage("Turn " + game.getTurn() + " Shipment and Movement Phase:");
+        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Shipment and Movement Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Shipment and Movement Phase\n");
         game.getTurnOrder().clear();
         for (Faction faction : game.getFactions()) {

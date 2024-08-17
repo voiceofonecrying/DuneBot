@@ -21,7 +21,7 @@ public class MentatPause {
 
     public void startPhase(Game game) {
         DuneTopic turnSummary = game.getTurnSummary();
-        turnSummary.publish("Turn " + game.getTurn() + " Mentat Pause Phase:");
+        turnSummary.publish("**Turn " + game.getTurn() + " Mentat Pause Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Mentat Pause Phase\n");
         game.getFactions().forEach(faction -> faction.performMentatPauseActions(extortionTokenTriggered));
         if (extortionTokenTriggered)

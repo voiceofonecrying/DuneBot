@@ -152,7 +152,7 @@ public class Revival {
             // BT are not in the game
         }
         DuneTopic turnSummary = game.getTurnSummary();
-        turnSummary.publish("Turn " + game.getTurn() + " Revival Phase:");
+        turnSummary.publish("**Turn " + game.getTurn() + " Revival Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");
         List<Faction> factions = game.getFactions();
         StringBuilder message = new StringBuilder();
@@ -171,10 +171,11 @@ public class Revival {
         if (btWasHighThreshold && factionsWithRevivals > 0) {
             Faction btFaction = game.getFaction("BT");
             message.append(btFaction.getEmoji())
-                    .append(" receives ")
+                    .append(" gain ")
                     .append(factionsWithRevivals)
+                    .append(" ")
                     .append(Emojis.SPICE)
-                    .append(" from free revivals\n");
+                    .append(" from free revivals.\n");
             btFaction.addSpice(factionsWithRevivals, "for free revivals");
         }
 

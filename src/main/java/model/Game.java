@@ -319,7 +319,7 @@ public class Game {
     }
 
     public void choamCharity() {
-        turnSummary.publish("Turn " + turn + " CHOAM Charity Phase:");
+        turnSummary.publish("**Turn " + turn + " CHOAM Charity Phase**");
         setPhaseForWhispers("Turn " + turn + " CHOAM Charity Phase\n");
         int multiplier = 1;
 
@@ -869,7 +869,7 @@ public class Game {
     }
 
     public void startStormPhase() {
-        turnSummary.publish("Turn " + turn + " Storm Phase:");
+        turnSummary.publish("**Turn " + turn + " Storm Phase**");
         phaseForWhispers = "Turn " + turn + " Storm Phase\n";
 
         Faction factionWithAtomics = null;
@@ -1043,7 +1043,7 @@ public class Game {
         faction.addSpecialReserves(starredAmount);
         faction.checkForHighThreshold();
 
-        String costString = " for free";
+        String costString = "for free.";
         if (isPaid) {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
             faction.subtractSpice(revivalCost, "Revivals");
@@ -1100,7 +1100,7 @@ public class Game {
     public void startBattlePhase() {
         getFactions().forEach(f -> f.resetAllySpiceSupportAfterShipping(this));
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
-        turnSummary.publish("Turn " + turn + " Battle Phase:");
+        turnSummary.publish("**Turn " + turn + " Battle Phase**");
         phaseForWhispers = "Turn " + turn + " Battle Phase\n";
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
@@ -1157,7 +1157,7 @@ public class Game {
             if (hasGameOption(GameOption.HOMEWORLDS) && moritani.isHighThreshold())
                 moritani.sendTerrorTokenHighThresholdMessage();
         }
-        turnSummary.publish("Turn " + turn + " Spice Harvest Phase:");
+        turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
         for (Territory territory : territories.values()) {
             if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
