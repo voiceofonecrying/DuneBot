@@ -167,7 +167,7 @@ public class TerritoryTest {
 
         @Test
         void testTroopLossMessage()  {
-            assertEquals(MessageFormat.format("{0} lose 3 {1} to the storm in Sihaya Ridge\n", Emojis.FREMEN, Emojis.FREMEN_TROOP), response);
+            assertEquals(MessageFormat.format("{0} lose 3 {1} to the storm in Sihaya Ridge.\n", Emojis.FREMEN, Emojis.FREMEN_TROOP), response);
         }
     }
 
@@ -195,7 +195,7 @@ public class TerritoryTest {
 
         @Test
         void testTroopLossMessage()  {
-            assertEquals(MessageFormat.format("{0} lose {1} {2} to the storm in Sihaya Ridge\n", Emojis.ATREIDES, numForces, Emojis.ATREIDES_TROOP), response);
+            assertEquals(MessageFormat.format("{0} lose {1} {2} to the storm in Sihaya Ridge.\n", Emojis.ATREIDES, numForces, Emojis.ATREIDES_TROOP), response);
         }
     }
 
@@ -208,7 +208,7 @@ public class TerritoryTest {
             String response = sihayaRidge.stormRemoveSpice();
 
             assertEquals(0, sihayaRidge.getSpice());
-            assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm\n", Emojis.SPICE), response);
+            assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm.\n", Emojis.SPICE), response);
         }
     }
 

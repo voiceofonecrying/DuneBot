@@ -463,7 +463,7 @@ public class ShowCommands {
         //Place turn, phase, and storm markers
         BufferedImage turnMarker = getResourceImage("Turn Marker");
         turnMarker = resize(turnMarker, 55, 55);
-        int turn = game.getTurn() == 0 ? 1 : game.getTurn();
+        int turn = game.getTurn() == 0 ? 1 : game.getTurn() % 10;
         float angle = (turn * 36) + 74f;
         turnMarker = rotateImageByDegrees(turnMarker, angle);
         Point coordinates = Initializers.getDrawCoordinates("turn " + game.getTurn());

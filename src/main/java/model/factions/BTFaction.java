@@ -116,7 +116,7 @@ public class BTFaction extends Faction {
         faction.setMaxRevival(revivalLimit);
         if (factionsNeedingRevivalLimit == null) factionsNeedingRevivalLimit = new ArrayList<>();
         factionsNeedingRevivalLimit.removeIf(name -> name.equals(factionName));
-        game.getTurnSummary().publish(faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival());
+        game.getTurnSummary().publish(faction.getEmoji() + " revival limit has been set to " + faction.getMaxRevival() + ".");
     }
 
     @Override

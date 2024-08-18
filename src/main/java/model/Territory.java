@@ -336,7 +336,7 @@ public class Territory {
         game.getTleilaxuTanks().addForces(forceName, strength);
 
         return MessageFormat.format(
-                "{0} lose {1} {2} to the storm in {3}\n",
+                "{0} lose {1} {2} to the storm in {3}.\n",
                 Emojis.getFactionEmoji(factionName),
                 strength, Emojis.getForceEmoji(forceName),
                 territoryName
@@ -359,7 +359,7 @@ public class Territory {
 
     public String stormRemoveSpice() {
         String message = MessageFormat.format(
-                "{0} {1} in {2} was blown away by the storm\n",
+                "{0} {1} in {2} was blown away by the storm.\n",
                 spice, Emojis.SPICE, territoryName
         );
         spice = 0;

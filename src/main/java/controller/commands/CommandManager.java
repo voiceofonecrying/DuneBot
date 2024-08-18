@@ -308,7 +308,7 @@ public class CommandManager extends ListenerAdapter {
         }
 
         message.append(
-                MessageFormat.format("moved from {0} to {1}",
+                MessageFormat.format("moved from {0} to {1}.",
                         from.getTerritoryName(), to.getTerritoryName()
                 )
         );
