@@ -235,6 +235,9 @@ public class Game {
         }
         this.gameOptions.add(gameOption);
 
+        if (gameOption == GameOption.DISCOVERY_CARDS_IN_TOP_HALF)
+            this.gameOptions.add(GameOption.DISCOVERY_TOKENS);
+
         if (gameOption == GameOption.DISCOVERY_TOKENS && hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER))
             modInfo.publish("The game already has REPLACE_SHAI_HULUD_WITH_MAKER. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.");
         else if (gameOption == GameOption.REPLACE_SHAI_HULUD_WITH_MAKER && hasGameOption(GameOption.DISCOVERY_TOKENS))

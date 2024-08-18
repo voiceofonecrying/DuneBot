@@ -381,23 +381,27 @@ public class SetupCommands {
         if (game.hasGameOption(GameOption.SANDTROUT)) {
             game.getSpiceDeck().add(new SpiceCard("Sandtrout", -1, 0, null, null));
         }
-
         if (game.hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER)) {
             game.getSpiceDeck().removeFirstOccurrence(new SpiceCard("Shai-Hulud", 0, 0, null, null));
             game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0, null, null));
         }
-
+        Collections.shuffle(game.getSpiceDeck());
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS)) {
             CSVParser csvParser = getCSVFile("DiscoverySpiceCards.csv");
+            Random random = new Random();
+            int max = game.getSpiceDeck().size();
+            if (game.hasGameOption(GameOption.DISCOVERY_CARDS_IN_TOP_HALF))
+                max = max / 2;
             for (CSVRecord csvRecord : csvParser) {
-                game.getSpiceDeck().add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), csvRecord.get(3), csvRecord.get(4)));
+                game.getSpiceDeck().add(random.nextInt(max++), new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), csvRecord.get(3), csvRecord.get(4)));
             }
-            game.getSpiceDeck().add(new SpiceCard("Great Maker", 0, 0, null, null));
+            game.getSpiceDeck().add(random.nextInt(max), new SpiceCard("Great Maker", 0, 0, null, null));
         }
 
         if (game.hasGameOption(GameOption.CHEAP_HERO_TRAITOR)) {
             game.getTraitorDeck().add(new TraitorCard("Cheap Hero", "Any", 0));
         }
+        Collections.shuffle(game.getTraitorDeck());
 
         if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
             CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
@@ -405,17 +409,13 @@ public class SetupCommands {
                 game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
             }
         }
-
         if (game.hasGameOption(GameOption.EM_EXPANSION_TREACHERY_CARDS)) {
             CSVParser csvParser = getCSVFile("EmExpansionTreacheryCards.csv");
             for (CSVRecord csvRecord : csvParser) {
                 game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
             }
         }
-
         Collections.shuffle(game.getTreacheryDeck());
-        Collections.shuffle(game.getSpiceDeck());
-        Collections.shuffle(game.getTraitorDeck());
 
         return StepStatus.CONTINUE;
     }
