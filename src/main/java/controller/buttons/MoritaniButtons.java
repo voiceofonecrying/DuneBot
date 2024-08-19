@@ -137,7 +137,8 @@ public class MoritaniButtons implements Pressable {
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         if (!(ButtonManager.getButtonPresser(event, game) instanceof MoritaniFaction)) return;
-        discordGame.queueMessage(Emojis.MORITANI + " Do not trigger their terror token.");
+        game.getTurnSummary().publish(Emojis.MORITANI + " do not trigger their terror token.");
+        discordGame.queueMessage("You will not trigger your terror token.");
         discordGame.queueDeleteMessage();
     }
 
