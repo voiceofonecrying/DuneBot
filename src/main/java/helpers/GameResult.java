@@ -2,7 +2,7 @@ package helpers;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.util.Objects;
+import java.util.*;
 
 public class GameResult {
     private String gameName;
@@ -15,7 +15,10 @@ public class GameResult {
     private String moderator;
     private String victoryType;
     private int turn;
+    private List<Set<String>> winnerFactions;
+    @Exclude
     private String winner1Faction;
+    @Exclude
     private String winner2Faction;
     private String atreides;
     private String bg;
@@ -29,7 +32,10 @@ public class GameResult {
     private String ix;
     private String moritani;
     private String richese;
+    private List<Set<String>> winnerPlayers;
+    @Exclude
     private String winner1Player;
+    @Exclude
     private String winner2Player;
     private String predictedFaction;
     private String predictedPlayer;
@@ -106,16 +112,16 @@ public class GameResult {
         return winner1Faction;
     }
 
-    public void setWinner1Faction(String winner1Faction) {
-        this.winner1Faction = winner1Faction;
-    }
-
     public String getWinner2Faction() {
         return winner2Faction;
     }
 
-    public void setWinner2Faction(String winner2Faction) {
-        this.winner2Faction = winner2Faction;
+    public List<Set<String>> getWinnerFactions() {
+        return winnerFactions;
+    }
+
+    public void setWinnerFactions(List<Set<String>> winnerFactions) {
+        this.winnerFactions = winnerFactions;
     }
 
     public String getAtreides() {
@@ -218,16 +224,16 @@ public class GameResult {
         return winner1Player;
     }
 
-    public void setWinner1Player(String winner1Player) {
-        this.winner1Player = winner1Player;
-    }
-
     public String getWinner2Player() {
         return winner2Player;
     }
 
-    public void setWinner2Player(String winner2Player) {
-        this.winner2Player = winner2Player;
+    public List<Set<String>> getWinnerPlayers() {
+        return winnerPlayers;
+    }
+
+    public void setWinnerPlayers(List<Set<String>> winnerPlayers) {
+        this.winnerPlayers = winnerPlayers;
     }
 
     public String getPredictedFaction() {
@@ -313,11 +319,13 @@ public class GameResult {
     }
 
     public boolean isWinner(String playerName) {
-        return winner1Player.equals(playerName) || winner2Player != null && winner2Player.equals(playerName);
+        return winnerPlayers.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(playerName));
+//        return winner1Player.equals(playerName) || winner2Player != null && winner2Player.equals(playerName);
     }
 
     public boolean isFactionWinner(String factionName) {
-        return winner1Faction.equals(factionName) || winner2Faction != null && winner2Faction.equals(factionName);
+        return winnerFactions.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(factionName));
+//        return winner1Faction.equals(factionName) || winner2Faction != null && winner2Faction.equals(factionName);
     }
 
     public static String getHeader() {
@@ -340,16 +348,18 @@ public class GameResult {
         gameRecord += (richese == null ? "" : richese) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
-        String winner = winner1Faction == null ? "" : winner1Faction;
+        List<String> firstWinners = winnerFactions.getFirst().stream().toList();
+        String winner = firstWinners.getFirst();
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
-        winner = winner2Faction == null ? "" : winner2Faction;
+        winner = firstWinners.size() == 1 ? "" : firstWinners.get(1);
         if (winner.equals("Richese"))
             winner = "Rich";
         gameRecord += winner + ",";
-        gameRecord += (winner1Player == null ? "" : winner1Player) + ",";
-        gameRecord += (winner2Player == null ? "" : winner2Player) + ",";
+        List<String> firstWinnerPlayers = winnerPlayers.getFirst().stream().toList();
+        gameRecord += firstWinnerPlayers.getFirst() + ",";
+        gameRecord += firstWinnerPlayers.size() == 1 ? "," : firstWinnerPlayers.get(1) + ",";
         gameRecord += (predictedFaction == null ? "" : predictedFaction) + ",";
         gameRecord += (predictedPlayer == null ? "" : predictedPlayer) + ",";
         gameRecord += (moderator == null ? "" : moderator) + ",";

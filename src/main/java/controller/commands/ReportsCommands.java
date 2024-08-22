@@ -404,8 +404,7 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getIx() != null && gr.getIx().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getMoritani() != null && gr.getMoritani().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size();
-        int numWins = gameResults.gameResults.stream().filter(gr -> gr.getWinner1Player() != null && gr.getWinner1Player().equals(playerName)).toList().size()
-                + gameResults.gameResults.stream().filter(gr -> gr.getWinner2Player() != null && gr.getWinner2Player().equals(playerName)).toList().size();
+        int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinner(playerName)).toList().size();
         float winPercentage = numWins/(float)numGames;
         return new PlayerPerformance(playerName, numGames, numWins, winPercentage);
     }
@@ -537,7 +536,7 @@ public class ReportsCommands {
         int numGames = gamesWithFaction.size();
         int totalTurns = gamesWithFaction.stream().mapToInt(GameResult::getTurn).sum();
         List<GameResult> gamesWithFactionWin = gameResults.gameResults.stream()
-                .filter(jo -> jo.getWinner1Faction().equals(factionName) || jo.getWinner2Faction() != null && jo.getWinner2Faction().equals(factionName))
+                .filter(gr -> gr.isFactionWinner(factionName))
                 .toList();
         int numWins = gamesWithFactionWin.size();
         int totalWinsTurns = gamesWithFactionWin.stream().mapToInt(GameResult::getTurn).sum();
@@ -584,9 +583,9 @@ public class ReportsCommands {
             for (String name2 : factionNames) {
                 if (name1.equals(name2)) foundNewName = true;
                 else if (foundNewName) {
+                    Set<String> factions =  Set.of(name1, name2);
                     int factionAllyWins = gameResults.gameResults.stream()
-                            .filter(gr -> gr.isFactionWinner(name1))
-                            .filter(gr -> gr.isFactionWinner(name2))
+                            .filter(gr -> gr.getWinnerFactions().stream().anyMatch(s -> s.equals(factions)))
                             .toList().size();
                     if (factionAllyWins > 0)
                         factionAllyWinsTriple.add(MutableTriple.of(name1, name2, factionAllyWins));
@@ -749,13 +748,13 @@ public class ReportsCommands {
     private static String soloVictories(Guild guild, GRList gameResults) {
         int numGames = gameResults.gameResults.size();
         List<GameResult> soloWinGames = gameResults.gameResults.stream()
-                .filter(gr -> gr.getWinner2Faction() == null).toList();
+                .filter(gr -> gr.getWinnerFactions().size() == 1 && gr.getWinnerFactions().getFirst().size() == 1).toList();
         int numWins = soloWinGames.size();
         String winPercentage = new DecimalFormat("#0.0%").format(numWins / (float) numGames);
         StringBuilder response = new StringBuilder("__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames);
         List<Pair<String, Integer>> factionsSoloWins = new ArrayList<>();
         for (String factionName : factionNames) {
-            int factionSoloWins = soloWinGames.stream().filter(gr -> gr.getWinner1Faction().equals(factionName)).toList().size();
+            int factionSoloWins = soloWinGames.stream().filter(gr -> gr.isFactionWinner(factionName)).toList().size();
             if (factionSoloWins > 0)
                 factionsSoloWins.add(new ImmutablePair<>(factionName, factionSoloWins));
         }
@@ -918,7 +917,7 @@ public class ReportsCommands {
         TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The faction-stats channel was not found."));
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
-        messages.forEach(msg -> msg.delete().queue());
+//        messages.forEach(msg -> msg.delete().queue());
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(turnsHistogram(grList)).queue();
         factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
@@ -933,7 +932,7 @@ public class ReportsCommands {
 
         messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
         messages = messageHistory.getRetrievedHistory();
-        messages.forEach(msg -> msg.delete().queue());
+//        messages.forEach(msg -> msg.delete().queue());
         StringBuilder playerStatsString = new StringBuilder();
         String[] playerStatsLines = writePlayerStats(grList, members).split("\n");
         int mentions = 0;
@@ -986,7 +985,7 @@ public class ReportsCommands {
         fileUpload = FileUpload.fromData(
                 gson.toJson(grList).getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
         );
-        parsedResults.sendFiles(fileUpload).complete();
+        parsedResults.sendFiles(fileUpload).queue();
         statsDiscussionChannel.sendFiles(fileUpload).queue();
     }
 
@@ -1034,6 +1033,22 @@ public class ReportsCommands {
             grList = gson.fromJson("{\"gameResults\":" + jsonResults + "}", GRList.class);
         else
             grList = gson.fromJson(jsonResults, GRList.class);
+        for (GameResult gr : grList.gameResults) {
+            String winner1 = gr.getWinner1Faction();
+            if (winner1 != null) {
+                String winner2 = gr.getWinner2Faction();
+                if (winner2 != null)
+                    gr.setWinnerFactions(List.of(Set.of(winner1, winner2)));
+                else
+                    gr.setWinnerFactions(List.of(Set.of(winner1)));
+                winner1 = gr.getWinner1Player();
+                winner2 = gr.getWinner2Player();
+                if (winner2 != null)
+                    gr.setWinnerPlayers(List.of(Set.of(winner1, winner2)));
+                else
+                    gr.setWinnerPlayers(List.of(Set.of(winner1)));
+            }
+        }
         return new GameResults(grList, 0);
     }
 
@@ -1205,13 +1220,16 @@ public class ReportsCommands {
                 winner1Faction = "BT";
                 winner2Faction = "Harkonnen";
             }
-            gr.setWinner1Faction(winner1Faction);
-            if (!winner2Faction.isEmpty()) {
-                gr.setWinner2Faction(winner2Faction);
-            }
-            if (!predictedFaction.isEmpty()) {
+//            gr.setWinner1Faction(winner1Faction);
+            if (!winner2Faction.isEmpty())
+                gr.setWinnerFactions(List.of(Set.of(winner1Faction, winner2Faction)));
+//                gr.setWinner2Faction(winner2Faction);
+            else
+                gr.setWinnerFactions(List.of(Set.of(winner1Faction)));
+            if (gameName.contains("PBD67"))
+                gr.setWinnerFactions(List.of(Set.of("bt"), Set.of("atreides"), Set.of("choam"), Set.of("richese"), Set.of("bg"), Set.of("moritani")));
+            if (!predictedFaction.isEmpty())
                 gr.setPredictedFaction(predictedFaction);
-            }
 
             String factionsString = raw.substring(factionsStart, winnersStart);
             lines = factionsString.split("\n");
@@ -1246,9 +1264,16 @@ public class ReportsCommands {
                 gr.setFremen("@jefwiodrade");
             else if (gameName.equals("Discord 47"))
                 gr.setRichese("@jadedaf");
-            gr.setWinner1Player(gr.getFieldValue(winner1Faction));
-            gr.setWinner2Player(gr.getFieldValue(winner2Faction));
-            gr.setPredictedPlayer(gr.getFieldValue(predictedFaction));
+            if (winner2Faction.isEmpty())
+                gr.setWinnerPlayers(List.of(Set.of(gr.getFieldValue(winner1Faction))));
+            else
+                gr.setWinnerPlayers(List.of(Set.of(gr.getFieldValue(winner1Faction), gr.getFieldValue(winner2Faction))));
+            if (gameName.contains("PBD67"))
+                gr.setWinnerPlayers(List.of(Set.of(gr.getBT()), Set.of(gr.getAtreides()), Set.of(gr.getCHOAM()), Set.of(gr.getRichese()), Set.of(gr.getBG()), Set.of(gr.getMoritani())));
+//            gr.setWinner1Player(gr.getFieldValue(winner1Faction));
+//            gr.setWinner2Player(gr.getFieldValue(winner2Faction));
+            if (!predictedFaction.isEmpty())
+                gr.setPredictedPlayer(gr.getFieldValue(predictedFaction));
         } catch (Exception e) {
             // Not a game result message, so skip it.
             gr = null;
@@ -1425,9 +1450,9 @@ public class ReportsCommands {
         for (String name1 : playerNames) {
             playerNames2.remove(name1);
             for (String name2 : playerNames2) {
+                Set<String> players =  Set.of(name1, name2);
                 int playerAllyWins = gameResults.gameResults.stream()
-                        .filter(gr -> gr.isWinner(name1))
-                        .filter(gr -> gr.isWinner(name2))
+                        .filter(gr -> gr.getWinnerPlayers().stream().anyMatch(s -> s.equals(players)))
                         .toList().size();
                 if (playerAllyWins > 0)
                     playerAllyWinsTriple.add(MutableTriple.of(name1, name2, playerAllyWins));

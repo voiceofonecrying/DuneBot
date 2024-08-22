@@ -28,10 +28,10 @@ public class ReportsCommandsTester {
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
 
         EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
-        String a = ReportsCommands.playedAllExpansion(guild, List.of());
-        System.out.println(a + " " + a.length() + "\n============");
-//        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
-        System.out.println(ReportsCommands.wonAsMostFactions(guild, List.of()));
+//        String a = ReportsCommands.playedAllExpansion(guild, List.of());
+//        System.out.println(a + " " + a.length() + "\n============");
+        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
+//        System.out.println(ReportsCommands.wonAsMostFactions(guild, List.of()));
 
 // To fix JSON:
 //        1. Edit JSON and CSV to have lower case. Keep CSV header as upper case.
