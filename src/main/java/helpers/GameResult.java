@@ -15,7 +15,7 @@ public class GameResult {
     private String moderator;
     private String victoryType;
     private int turn;
-    private List<Set<String>> winnerFactions;
+    private List<Set<String>> winningFactions;
     @Exclude
     private String winner1Faction;
     @Exclude
@@ -32,7 +32,7 @@ public class GameResult {
     private String ix;
     private String moritani;
     private String richese;
-    private List<Set<String>> winnerPlayers;
+    private List<Set<String>> winningPlayers;
     @Exclude
     private String winner1Player;
     @Exclude
@@ -116,12 +116,12 @@ public class GameResult {
         return winner2Faction;
     }
 
-    public List<Set<String>> getWinnerFactions() {
-        return winnerFactions;
+    public List<Set<String>> getWinningFactions() {
+        return winningFactions;
     }
 
-    public void setWinnerFactions(List<Set<String>> winnerFactions) {
-        this.winnerFactions = winnerFactions;
+    public void setWinningFactions(List<Set<String>> winningFactions) {
+        this.winningFactions = winningFactions;
     }
 
     public String getAtreides() {
@@ -228,12 +228,12 @@ public class GameResult {
         return winner2Player;
     }
 
-    public List<Set<String>> getWinnerPlayers() {
-        return winnerPlayers;
+    public List<Set<String>> getWinningPlayers() {
+        return winningPlayers;
     }
 
-    public void setWinnerPlayers(List<Set<String>> winnerPlayers) {
-        this.winnerPlayers = winnerPlayers;
+    public void setWinningPlayers(List<Set<String>> winningPlayers) {
+        this.winningPlayers = winningPlayers;
     }
 
     public String getPredictedFaction() {
@@ -257,12 +257,12 @@ public class GameResult {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         GameResult that = (GameResult) o;
-        return Objects.equals(gameName, that.gameName) && Objects.equals(messageID, that.messageID) && Objects.equals(archiveDate, that.archiveDate) && Objects.equals(gameStartDate, that.gameStartDate) && Objects.equals(gameEndDate, that.gameEndDate) && Objects.equals(gameDuration, that.gameDuration) && Objects.equals(daysUntilArchive, that.daysUntilArchive) && Objects.equals(moderator, that.moderator) && Objects.equals(victoryType, that.victoryType) && Objects.equals(turn, that.turn) && Objects.equals(winner1Faction, that.winner1Faction) && Objects.equals(winner2Faction, that.winner2Faction) && Objects.equals(atreides, that.atreides) && Objects.equals(bg, that.bg) && Objects.equals(bt, that.bt) && Objects.equals(choam, that.choam) && Objects.equals(ecaz, that.ecaz) && Objects.equals(emperor, that.emperor) && Objects.equals(fremen, that.fremen) && Objects.equals(guild, that.guild) && Objects.equals(harkonnen, that.harkonnen) && Objects.equals(ix, that.ix) && Objects.equals(moritani, that.moritani) && Objects.equals(richese, that.richese) && Objects.equals(winner1Player, that.winner1Player) && Objects.equals(winner2Player, that.winner2Player) && Objects.equals(predictedFaction, that.predictedFaction) && Objects.equals(predictedPlayer, that.predictedPlayer);
+        return Objects.equals(gameName, that.gameName) && Objects.equals(messageID, that.messageID) && Objects.equals(archiveDate, that.archiveDate) && Objects.equals(gameStartDate, that.gameStartDate) && Objects.equals(gameEndDate, that.gameEndDate) && Objects.equals(gameDuration, that.gameDuration) && Objects.equals(daysUntilArchive, that.daysUntilArchive) && Objects.equals(moderator, that.moderator) && Objects.equals(victoryType, that.victoryType) && Objects.equals(turn, that.turn) && Objects.equals(winningFactions, that.winningFactions) && Objects.equals(atreides, that.atreides) && Objects.equals(bg, that.bg) && Objects.equals(bt, that.bt) && Objects.equals(choam, that.choam) && Objects.equals(ecaz, that.ecaz) && Objects.equals(emperor, that.emperor) && Objects.equals(fremen, that.fremen) && Objects.equals(guild, that.guild) && Objects.equals(harkonnen, that.harkonnen) && Objects.equals(ix, that.ix) && Objects.equals(moritani, that.moritani) && Objects.equals(richese, that.richese) && Objects.equals(winningPlayers, that.winningPlayers) && Objects.equals(predictedFaction, that.predictedFaction) && Objects.equals(predictedPlayer, that.predictedPlayer);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gameName, messageID, archiveDate, gameStartDate, gameEndDate, gameDuration, daysUntilArchive, moderator, victoryType, turn, winner1Faction, winner2Faction, atreides, bg, bt, choam, ecaz, emperor, fremen, guild, harkonnen, ix, moritani, richese, winner1Player, winner2Player, predictedFaction, predictedPlayer);
+        return Objects.hash(gameName, messageID, archiveDate, gameStartDate, gameEndDate, gameDuration, daysUntilArchive, moderator, victoryType, turn, winningFactions, atreides, bg, bt, choam, ecaz, emperor, fremen, guild, harkonnen, ix, moritani, richese, winningPlayers, predictedFaction, predictedPlayer);
     }
 
     public String getFieldValue(String fieldName) {
@@ -318,14 +318,12 @@ public class GameResult {
         return playerName.equals(getFieldValue(factionName));
     }
 
-    public boolean isWinner(String playerName) {
-        return winnerPlayers.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(playerName));
-//        return winner1Player.equals(playerName) || winner2Player != null && winner2Player.equals(playerName);
+    public boolean isWinningPlayer(String playerName) {
+        return winningPlayers.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(playerName));
     }
 
-    public boolean isFactionWinner(String factionName) {
-        return winnerFactions.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(factionName));
-//        return winner1Faction.equals(factionName) || winner2Faction != null && winner2Faction.equals(factionName);
+    public boolean isWinningFaction(String factionName) {
+        return winningFactions.stream().flatMap(Collection::stream).anyMatch(n -> n.equals(factionName));
     }
 
     public static String getHeader() {
@@ -348,9 +346,9 @@ public class GameResult {
         gameRecord += (richese == null ? "" : richese) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
-        List<String> allFactionWinners = winnerFactions.stream().flatMap(Collection::stream).toList();
+        List<String> allFactionWinners = winningFactions.stream().flatMap(Collection::stream).toList();
         gameRecord += String.join(",", allFactionWinners) + ",".repeat(Math.max(0, 1+ 6 - allFactionWinners.size()));
-        List<String> allPlayerWinners = winnerPlayers.stream().flatMap(Collection::stream).toList();
+        List<String> allPlayerWinners = winningPlayers.stream().flatMap(Collection::stream).toList();
         gameRecord += String.join(",", allPlayerWinners) + ",".repeat(Math.max(0, 1 + 6 - allPlayerWinners.size()));
         gameRecord += (predictedFaction == null ? "" : predictedFaction) + ",";
         gameRecord += (predictedPlayer == null ? "" : predictedPlayer) + ",";
