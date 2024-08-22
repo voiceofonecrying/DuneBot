@@ -1169,6 +1169,8 @@ public class ReportsCommands {
                 victoryType = "G";
             else if (gameName.equals("Discord 26"))
                 victoryType = "F";
+            else if (gameName.contains("PBD67"))
+                victoryType = "Most strongholds";
             else if (winnersString.toLowerCase().contains("victory condition")) {
                 if (winnersString.toLowerCase().contains("guild"))
                     victoryType = "G";

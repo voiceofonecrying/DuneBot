@@ -329,7 +329,7 @@ public class GameResult {
     }
 
     public static String getHeader() {
-        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Rich,Turn,Win Type,Faction 1,Faction 2,Winner 1,Winner 2,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
+        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Richese,Turn,Win Type,Faction 1,Faction 2,Faction 3,Faction 4,Faction 5,Faction 6,Winner 1,Winner 2,Winner 3,Winner 4,Winner 5,Winner 6,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
     }
 
     public String csvString() {
@@ -348,18 +348,10 @@ public class GameResult {
         gameRecord += (richese == null ? "" : richese) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
-        List<String> firstWinners = winnerFactions.getFirst().stream().toList();
-        String winner = firstWinners.getFirst();
-        if (winner.equals("Richese"))
-            winner = "Rich";
-        gameRecord += winner + ",";
-        winner = firstWinners.size() == 1 ? "" : firstWinners.get(1);
-        if (winner.equals("Richese"))
-            winner = "Rich";
-        gameRecord += winner + ",";
-        List<String> firstWinnerPlayers = winnerPlayers.getFirst().stream().toList();
-        gameRecord += firstWinnerPlayers.getFirst() + ",";
-        gameRecord += firstWinnerPlayers.size() == 1 ? "," : firstWinnerPlayers.get(1) + ",";
+        List<String> allFactionWinners = winnerFactions.stream().flatMap(Collection::stream).toList();
+        gameRecord += String.join(",", allFactionWinners) + ",".repeat(Math.max(0, 1+ 6 - allFactionWinners.size()));
+        List<String> allPlayerWinners = winnerPlayers.stream().flatMap(Collection::stream).toList();
+        gameRecord += String.join(",", allPlayerWinners) + ",".repeat(Math.max(0, 1 + 6 - allPlayerWinners.size()));
         gameRecord += (predictedFaction == null ? "" : predictedFaction) + ",";
         gameRecord += (predictedPlayer == null ? "" : predictedPlayer) + ",";
         gameRecord += (moderator == null ? "" : moderator) + ",";
