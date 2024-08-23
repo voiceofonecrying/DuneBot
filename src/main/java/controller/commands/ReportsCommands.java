@@ -70,19 +70,20 @@ public class ReportsCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         String responseMessage = "";
+        GRList grList = gatherGameResults(event.getGuild()).grList;
         switch (name) {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
             case "player-record" -> responseMessage = playerRecord(event);
-            case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), members);
-            case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), members);
-            case "played-all-twelve" -> responseMessage = playedAllTwelve(event.getGuild(), members);
-            case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), members);
-            case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), members);
-            case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), members, false);
-            case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), members, true);
-            case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(event.getGuild(), members);
-            case "longest-games" -> responseMessage = longestGames(event.getGuild(), members);
+            case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), grList, members);
+            case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), grList, members);
+            case "played-all-twelve" -> responseMessage = playedAllTwelve(event.getGuild(), grList, members);
+            case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), grList, members);
+            case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), grList, members);
+            case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), grList, members, false);
+            case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), grList, members, true);
+            case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(grList, members);
+            case "longest-games" -> responseMessage = longestGames(grList, members);
         }
         return responseMessage;
     }
@@ -475,11 +476,6 @@ public class ReportsCommands {
             longestGamesString.append(moderator);
         }
         return longestGamesString.toString();
-    }
-
-    public static String longestGames(Guild guild, List<Member> members) {
-        GameResults gameResults = gatherGameResults(guild);
-        return longestGames(gameResults.grList, members);
     }
 
     public static class GRList {
@@ -956,10 +952,10 @@ public class ReportsCommands {
 //        String factionPlays = highFactionPlays(guild, grList, members);
 //        if (!factionPlays.isEmpty())
 //            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
-        playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, members)).queue();
-        playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, members)).queue();
-//        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, members, true)).queue();
-        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, members)).queue();
+        playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, grList, members, true)).queue();
+//        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(
@@ -1339,22 +1335,21 @@ public class ReportsCommands {
         return playerRecord(event.getGuild(), thePlayer.getName(), thePlayer.getAsMention());
     }
 
-    public static String playedAllOriginalSix(Guild guild, List<Member> members) {
+    public static String playedAllOriginalSix(Guild guild, GRList grList, List<Member> members) {
         List<String> factions = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen");
-        return playedFactions(guild, factions, members, false);
+        return playedFactions(guild, grList, factions, members, false);
     }
 
-    public static String playedAllExpansion(Guild guild, List<Member> members) {
+    public static String playedAllExpansion(Guild guild, GRList grList, List<Member> members) {
         List<String> factions = List.of("bt", "choam", "ecaz", "ix", "moritani", "richese");
-        return playedFactions(guild, factions, members, false);
+        return playedFactions(guild, grList, factions, members, false);
     }
 
-    public static String playedAllTwelve(Guild guild, List<Member> members) {
-        return playedFactions(guild, factionNames, members, false);
+    public static String playedAllTwelve(Guild guild, GRList grList, List<Member> members) {
+        return playedFactions(guild, grList, factionNames, members, false);
     }
 
-    public static String playedFactions(Guild guild, List<String> factions, List<Member> members, boolean showMissingTwo) {
-        GRList gameResults = gatherGameResults(guild).grList;
+    public static String playedFactions(Guild guild, GRList gameResults, List<String> factions, List<Member> members, boolean showMissingTwo) {
         int listSize = factions.size();
         StringBuilder playedAll = new StringBuilder();
         StringBuilder missingOne = new StringBuilder();
@@ -1381,18 +1376,17 @@ public class ReportsCommands {
         return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
     }
 
-    public static String wonAsAllOriginalSix(Guild guild, List<Member> members) {
+    public static String wonAsAllOriginalSix(Guild guild, GRList grList, List<Member> members) {
         List<String> factions = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen");
-        return wonAsFactions(guild, factions, members, false);
+        return wonAsFactions(guild, grList, factions, members, false);
     }
 
-    public static String wonAsAllExpansion(Guild guild, List<Member> members) {
+    public static String wonAsAllExpansion(Guild guild, GRList grList, List<Member> members) {
         List<String> factions = List.of("bt", "choam", "ecaz", "ix", "moritani", "richese");
-        return wonAsFactions(guild, factions, members, false);
+        return wonAsFactions(guild, grList, factions, members, false);
     }
 
-    public static String wonAsFactions(Guild guild, List<String> factions, List<Member> members, boolean showMissingTwo) {
-        GRList gameResults = gatherGameResults(guild).grList;
+    public static String wonAsFactions(Guild guild, GRList gameResults, List<String> factions, List<Member> members, boolean showMissingTwo) {
         int listSize = factions.size();
         StringBuilder playedAll = new StringBuilder();
         StringBuilder missingOne = new StringBuilder();
@@ -1419,8 +1413,7 @@ public class ReportsCommands {
         return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
     }
 
-    public static String wonAsMostFactions(Guild guild, List<Member> members) {
-        GRList gameResults = gatherGameResults(guild).grList;
+    public static String wonAsMostFactions(Guild guild, GRList gameResults, List<Member> members) {
         int maxFactionsPlayed = 0;
         StringBuilder playedMax = new StringBuilder();
         for (String playerName : getAllPlayers(gameResults)) {
@@ -1446,11 +1439,6 @@ public class ReportsCommands {
 
     private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
     private static final List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
-
-    public static String writePlayerAllyPerformance(Guild guild, List<Member> members) {
-        return writePlayerAllyPerformance(gatherGameResults(guild).grList, members);
-    }
-
 
     public static String writePlayerAllyPerformance(GRList gameResults, List<Member> members) {
         List<MutableTriple<String, String, Integer>> playerAllyWinsTriple = new ArrayList<>();
@@ -1479,8 +1467,7 @@ public class ReportsCommands {
         return result.toString();
     }
 
-    public static String highFactionGames(Guild guild, List<Member> members, boolean winsOnly) {
-        GRList gameResults = gatherGameResults(guild).grList;
+    public static String highFactionGames(Guild guild, GRList gameResults, List<Member> members, boolean winsOnly) {
         Set<String> players = getAllPlayers(gameResults);
         List<MutableTriple<String, String, Integer>> playerFactionCounts = new ArrayList<>();
         players.forEach(playerName -> factionNames.stream().map(factionName -> MutableTriple.of(playerName, factionName, playerFactionGames(gameResults, playerName, factionName, winsOnly))).forEach(playerFactionCounts::add));
