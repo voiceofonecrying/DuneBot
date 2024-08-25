@@ -60,7 +60,7 @@ public class ReportsCommands {
                 new SubcommandData("high-faction-wins", "Which player-faction combos have won the most?"),
                 new SubcommandData("most-player-alliance-wins", "Which players have won as allies the most?"),
                 new SubcommandData("longest-games", "The 10 longest games and the tortured mod."),
-                new SubcommandData("fastest-games", "The 10 fastest games by days per turn.")
+                new SubcommandData("fastest-games", "The 20 fastest games by days per turn.")
         ));
 
         return commandData;
@@ -491,7 +491,8 @@ public class ReportsCommands {
         StringBuilder longestGamesString = new StringBuilder("__Fastest games__");
         for (int i = 0; i < 30; i++) {
             GameResult a = longestGames.get(i);
-            longestGamesString.append("\n").append(Integer.parseInt(a.getGameDuration()) / (float) a.getTurn()).append(" days per turn, ");
+            String daysPerTurn = new DecimalFormat("#0.0").format(Integer.parseInt(a.getGameDuration()) / (float) a.getTurn());
+            longestGamesString.append("\n").append(daysPerTurn).append(" days per turn, ");
             longestGamesString.append(a.getTurn()).append(" turns, ");
             longestGamesString.append(a.getGameName()).append(", ");
             String moderator = getPlayerMention(a.getModerator(), members);
@@ -937,7 +938,7 @@ public class ReportsCommands {
         TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The faction-stats channel was not found."));
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
         List<Message> messages = messageHistory.getRetrievedHistory();
-//        messages.forEach(msg -> msg.delete().queue());
+        messages.forEach(msg -> msg.delete().queue());
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(turnsHistogram(grList)).queue();
         factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
@@ -952,7 +953,7 @@ public class ReportsCommands {
 
         messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
         messages = messageHistory.getRetrievedHistory();
-//        messages.forEach(msg -> msg.delete().queue());
+        messages.forEach(msg -> msg.delete().queue());
         StringBuilder playerStatsString = new StringBuilder();
         String[] playerStatsLines = writePlayerStats(grList, members).split("\n");
         int mentions = 0;
@@ -1062,20 +1063,6 @@ public class ReportsCommands {
                 } else {
                     gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
                 }
-            }
-            String winner1 = gr.getWinner1Faction();
-            if (winner1 != null) {
-                String winner2 = gr.getWinner2Faction();
-                if (winner2 != null)
-                    gr.setWinningFactions(List.of(Set.of(winner1, winner2)));
-                else
-                    gr.setWinningFactions(List.of(Set.of(winner1)));
-                winner1 = gr.getWinner1Player();
-                winner2 = gr.getWinner2Player();
-                if (winner2 != null)
-                    gr.setWinningPlayers(List.of(Set.of(winner1, winner2)));
-                else
-                    gr.setWinningPlayers(List.of(Set.of(winner1)));
             }
         }
         return new GameResults(grList, 0);

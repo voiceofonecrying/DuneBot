@@ -16,10 +16,6 @@ public class GameResult {
     private String victoryType;
     private int turn;
     private List<Set<String>> winningFactions;
-    @Exclude
-    private String winner1Faction;
-    @Exclude
-    private String winner2Faction;
     private String atreides;
     private String bg;
     private String bt;
@@ -33,10 +29,6 @@ public class GameResult {
     private String moritani;
     private String richese;
     private List<Set<String>> winningPlayers;
-    @Exclude
-    private String winner1Player;
-    @Exclude
-    private String winner2Player;
     private String predictedFaction;
     private String predictedPlayer;
 
@@ -114,14 +106,6 @@ public class GameResult {
 
     public void setTurn(int turn) {
         this.turn = turn;
-    }
-
-    public String getWinner1Faction() {
-        return winner1Faction;
-    }
-
-    public String getWinner2Faction() {
-        return winner2Faction;
     }
 
     public List<Set<String>> getWinningFactions() {
@@ -226,14 +210,6 @@ public class GameResult {
 
     public void setRichese(String richese) {
         this.richese = richese;
-    }
-
-    public String getWinner1Player() {
-        return winner1Player;
-    }
-
-    public String getWinner2Player() {
-        return winner2Player;
     }
 
     public List<Set<String>> getWinningPlayers() {
