@@ -56,6 +56,10 @@ public class GameResult {
         this.messageID = messageID;
     }
 
+    public String getArchiveDate() {
+        return archiveDate;
+    }
+
     public void setArchiveDate(String archiveDate) {
         this.archiveDate = archiveDate;
     }
@@ -78,6 +82,10 @@ public class GameResult {
 
     public void setGameDuration(String gameDuration) {
         this.gameDuration = gameDuration;
+    }
+
+    public String getDaysUntilArchive() {
+        return daysUntilArchive;
     }
 
     public void setDaysUntilArchive(String daysUntilArchive) {

@@ -59,7 +59,8 @@ public class ReportsCommands {
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?"),
                 new SubcommandData("high-faction-wins", "Which player-faction combos have won the most?"),
                 new SubcommandData("most-player-alliance-wins", "Which players have won as allies the most?"),
-                new SubcommandData("longest-games", "The 10 longest games and the tortured mod.")
+                new SubcommandData("longest-games", "The 10 longest games and the tortured mod."),
+                new SubcommandData("fastest-games", "The 10 fastest games by days per turn.")
         ));
 
         return commandData;
@@ -84,6 +85,7 @@ public class ReportsCommands {
             case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), grList, members, true);
             case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(grList, members);
             case "longest-games" -> responseMessage = longestGames(grList, members);
+            case "fastest-games" -> responseMessage = fastestGames(grList, members);
         }
         return responseMessage;
     }
@@ -473,6 +475,26 @@ public class ReportsCommands {
             longestGamesString.append("\n").append(result.getGameDuration()).append(" days, ");
             longestGamesString.append(result.getGameName()).append(", ");
             String moderator = getPlayerMention(result.getModerator(), members);
+            longestGamesString.append(moderator);
+        }
+        return longestGamesString.toString();
+    }
+
+    private static int fasterGame(GameResult a, GameResult b) {
+        float aDaysPerTurn = a.getGameDuration() == null ? Integer.MAX_VALUE : Integer.parseInt(a.getGameDuration()) / (float) a.getTurn();
+        float bDaysPerTurn = b.getGameDuration() == null ? Integer.MAX_VALUE : Integer.parseInt(b.getGameDuration()) / (float) b.getTurn();
+        return Float.compare(aDaysPerTurn, bDaysPerTurn);
+    }
+
+    public static String fastestGames(GRList gameResults, List<Member> members) {
+        List<GameResult> longestGames = gameResults.gameResults.stream().sorted(ReportsCommands::fasterGame).toList();
+        StringBuilder longestGamesString = new StringBuilder("__Fastest games__");
+        for (int i = 0; i < 30; i++) {
+            GameResult a = longestGames.get(i);
+            longestGamesString.append("\n").append(Integer.parseInt(a.getGameDuration()) / (float) a.getTurn()).append(" days per turn, ");
+            longestGamesString.append(a.getTurn()).append(" turns, ");
+            longestGamesString.append(a.getGameName()).append(", ");
+            String moderator = getPlayerMention(a.getModerator(), members);
             longestGamesString.append(moderator);
         }
         return longestGamesString.toString();
@@ -1032,6 +1054,15 @@ public class ReportsCommands {
         else
             grList = gson.fromJson(jsonResults, GRList.class);
         for (GameResult gr : grList.gameResults) {
+            if (gr.getDaysUntilArchive() == null && gr.getGameEndDate() != null) {
+                LocalDate endDate = LocalDate.parse(gr.getGameEndDate());
+                LocalDate archiveDate = LocalDate.parse(gr.getArchiveDate());
+                if (endDate.isAfter(archiveDate)) {
+                    gr.setDaysUntilArchive("-" + archiveDate.datesUntil(endDate).count());
+                } else {
+                    gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
+                }
+            }
             String winner1 = gr.getWinner1Faction();
             if (winner1 != null) {
                 String winner2 = gr.getWinner2Faction();
@@ -1120,7 +1151,7 @@ public class ReportsCommands {
                                 if (endDate.isAfter(archiveDate)) {
                                     gr.setDaysUntilArchive("-" + archiveDate.datesUntil(endDate).count());
                                 } else {
-                                    gr.setDaysUntilArchive("" + archiveDate.datesUntil(endDate).count());
+                                    gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
                                 }
                             }
                         }
