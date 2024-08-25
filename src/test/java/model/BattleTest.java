@@ -851,7 +851,9 @@ class BattleTest {
             assertEquals("0.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
             battle1.printBattleResolution(game, true);
-            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader"));
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader\n"));
+            int index = turnSummary.getMessages().getFirst().indexOf(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader");
+            assertEquals(-1, turnSummary.getMessages().getFirst().substring(index + 1).indexOf(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader"));
         }
 
         @Test

@@ -548,8 +548,8 @@ public class Battle {
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
         BattlePlan opponentBattlePlan = isAggressor ? defenderPlan : aggressorPlan;
         boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion();
-        String emojis = isAggressor ? getAggressor(game).getEmoji() : getDefender(game).getEmoji();
-        boolean loser = isAggressor != isAggressorWin(game) || isLasgunShieldExplosion;
+        String emojis = faction.getEmoji();
+        boolean isLoser = isAggressor != isAggressorWin(game) || isLasgunShieldExplosion;
         String wholeTerritoryName = getWholeTerritoryName();
 
         if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
@@ -572,7 +572,7 @@ public class Battle {
         int savedRegularForces;
         TreacheryCard weapon = battlePlan.getWeapon();
         TreacheryCard defense = battlePlan.getDefense();
-        if (loser) {
+        if (isLoser) {
             if (!(faction instanceof EcazFaction)) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
                     int leaderValue = battlePlan.getLeaderValue();
@@ -653,9 +653,9 @@ public class Battle {
                 resolution += " to the tanks\n";
             }
         }
-        if (hasEcazAndAlly() && (loser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+        if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
             int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
-            if (!loser && (faction instanceof EcazFaction)) {
+            if (!isLoser && (faction instanceof EcazFaction)) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
                     savedRegularForces = Math.min(ecazForces, 3);
                     ecazForces -= savedRegularForces;
@@ -669,7 +669,7 @@ public class Battle {
                 }
             }
             resolution += Emojis.ECAZ + " loses ";
-            resolution += loser ? battlePlan.getEcazTroopsForAlly() : ecazForces;
+            resolution += isLoser ? battlePlan.getEcazTroopsForAlly() : ecazForces;
             resolution += " " + Emojis.ECAZ_TROOP;
             resolution += " to the tanks\n";
         }
@@ -677,9 +677,9 @@ public class Battle {
             resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
         if (battlePlan.getCheapHero() != null)
             resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
-        if (battlePlan.weaponMustBeDiscarded(loser))
+        if (battlePlan.weaponMustBeDiscarded(isLoser))
             resolution += emojis + " discards " + battlePlan.getWeapon().name() + "\n";
-        if (battlePlan.defenseMustBeDiscarded(loser))
+        if (battlePlan.defenseMustBeDiscarded(isLoser))
             resolution += emojis + " discards " + battlePlan.getDefense().name() + "\n";
         if (battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
             resolution += emojis + " discards Juice of Sapho\n";
@@ -706,7 +706,7 @@ public class Battle {
             resolution += emojis + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker";
 
         Territory spiceTerritory = getTerritorySectors().stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
-        if (!loser) {
+        if (!isLoser) {
             if (battlePlan.isSkillInFront("Rihani Decipherer"))
                 resolution += troopFactionEmoji + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer\n";
             else if (battlePlan.isSkillBehindAndLeaderAlive("Rihani Decipherer"))
@@ -718,7 +718,7 @@ public class Battle {
         if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler"))
             resolution += troopFactionEmoji + " gains " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
         if (!isLasgunShieldExplosion) {
-            if (loser) {
+            if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
                 if (techTokens.size() == 1)
                     resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + "\n";
@@ -753,12 +753,10 @@ public class Battle {
             }
         }
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
-        Faction loserFaction = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
-        if (winner instanceof HarkonnenFaction)
-            resolution += Emojis.HARKONNEN + " captures a " + loserFaction.getEmoji() + " leader";
-        boolean atreidesWin = winner instanceof AtreidesFaction || winner instanceof EcazFaction && hasEcazAndAlly() && winner.getAlly().equals("Atreides");
-        if (!loser && atreidesWin) {
-            Faction atreides = game.getFaction("Atreides");
+        Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
+        if (!isLoser && winner instanceof HarkonnenFaction)
+            resolution += Emojis.HARKONNEN + " captures a " + loser.getEmoji() + " leader\n";
+        if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReservesStrength() > 0 || regularForcesDialed > 0)) {
                 resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
