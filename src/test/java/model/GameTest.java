@@ -1005,8 +1005,10 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
+            emperor = new EmperorFaction("p", "u", game);
+            fremen = new FremenFaction("p", "u", game);
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
             game.addFaction(emperor);
             game.addFaction(fremen);
 
@@ -1203,6 +1205,62 @@ class GameTest {
             assertEquals(3, tanks.getForceStrength("Fremen*"));
             assertEquals(5, tanks.getForceStrength("Fremen"));
             assertNotEquals(-1, turnSummary.messages.getFirst().indexOf("all forces in the territory were killed in the spice blow!\n"));
+        }
+
+        @Test
+        void testFremenMayMoveSecondShaiHulud() {
+            game.getSpiceDeck().addFirst(nextBlow);
+            game.getSpiceDeck().addFirst(shaiHulud);
+            game.getSpiceDeck().addFirst(shaiHulud);
+            sihayaRidge.addForces("Fremen", 5);
+
+            game.drawSpiceBlow("A");
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " may ride Shai-Hulud!\n"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("Shai-Hulud has been spotted! " + Emojis.FREMEN + " may place it in any sand territory.\n"));
+            assertEquals("Where would you like to place Shai-Hulud? p", fremenChat.getMessages().get(1));
+            assertEquals(3, fremenChat.getChoices().get(1).size());
+        }
+
+        @Test
+        void testFremenMayMoveShaiHuludAfterGreatMaker() {
+            game.getSpiceDeck().addFirst(nextBlow);
+            game.getSpiceDeck().addFirst(shaiHulud);
+            game.getSpiceDeck().addFirst(greatMaker);
+
+            game.drawSpiceBlow("A");
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("Shai-Hulud has been spotted! " + Emojis.FREMEN + " may place it in any sand territory.\n"));
+            assertEquals("Where would you like to place Shai-Hulud? p", fremenChat.getMessages().get(1));
+            assertEquals(3, fremenChat.getChoices().get(1).size());
+        }
+
+        @Test
+        void testFremenMayMoveGreatMakerAfterShaiHulud() {
+            game.getSpiceDeck().addFirst(nextBlow);
+            game.getSpiceDeck().addFirst(greatMaker);
+            game.getSpiceDeck().addFirst(shaiHulud);
+            sihayaRidge.addForces("Fremen", 5);
+
+            game.drawSpiceBlow("A");
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " may ride Shai-Hulud!\n"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("Great Maker has been spotted! " + Emojis.FREMEN + " may place it in any sand territory."));
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n"));
+            assertFalse(turnSummary.getMessages().getFirst().contains("Great Maker has been spotted in Sihaya Ridge!"));
+            assertEquals("Where would you like to place Great Maker? p", fremenChat.getMessages().get(1));
+            assertEquals(3, fremenChat.getChoices().get(1).size());
+        }
+
+        @Test
+        void testFremenReservesMayRideGreatMakerAfterShaiHulud() {
+            game.getSpiceDeck().addFirst(nextBlow);
+            game.getSpiceDeck().addFirst(greatMaker);
+            game.getSpiceDeck().addFirst(shaiHulud);
+            sihayaRidge.addForces("Fremen", 5);
+
+            game.drawSpiceBlow("A");
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " may ride Shai-Hulud!\n"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("Great Maker has been spotted! " + Emojis.FREMEN + " may place it in any sand territory.\n"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n"));
         }
     }
 

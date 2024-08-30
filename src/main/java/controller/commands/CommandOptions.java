@@ -89,11 +89,13 @@ public class CommandOptions {
     public static final OptionData recipient = new OptionData(OptionType.STRING, "recipient", "The recipient", true).setAutoComplete(true);
     public static final OptionData traitor = new OptionData(OptionType.STRING, "traitor", "The name of the traitor", true).setAutoComplete(true);
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData sandTerritory = new OptionData(OptionType.STRING, "sand-territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData hmsTerritory = new OptionData(OptionType.STRING, "hms-territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
     public static final OptionData dialTwo = new OptionData(OptionType.INTEGER, "dial-two", "The dial of the second player", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
     public static final OptionData paid = new OptionData(OptionType.BOOLEAN, "paid", "Is the action paid for?", true);
+    public static final OptionData firstWorm = new OptionData(OptionType.BOOLEAN, "first-worm", "Is this the first worm on the spice deck?", false);
 
     public static final OptionData spent = new OptionData(OptionType.INTEGER, "spent", "How much was spent on the card.", true);
     public static final OptionData revived = new OptionData(OptionType.INTEGER, "revived", "How many are being revived.", true);
@@ -262,6 +264,7 @@ public class CommandOptions {
                     choices = factions(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
+            case "sand-territory" -> choices = sandTerritories(game, searchValue);
             case "homeworld" -> choices = homeworldNames(game, searchValue);
             case "hms-territory" -> choices = hmsTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
@@ -313,6 +316,18 @@ public class CommandOptions {
 
     private static List<Command.Choice> territories(@NotNull Game game, String searchValue) {
         return game.getTerritories().values().stream()
+                .map(Territory::getTerritoryName)
+                .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(territoryName -> new Command.Choice(territoryName, territoryName))
+                .limit(25)
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> sandTerritories(@NotNull Game game, String searchValue) {
+        return game.getTerritories().values().stream()
+                .filter(t -> !t.isRock())
+                .filter(t -> !(t instanceof HomeworldTerritory))
+                .filter(t -> !t.isDiscoveryToken())
                 .map(Territory::getTerritoryName)
                 .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(territoryName -> new Command.Choice(territoryName, territoryName))

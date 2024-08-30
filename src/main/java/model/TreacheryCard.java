@@ -1,6 +1,7 @@
 package model;
 
 import caches.TreacheryCardsCache;
+import constants.Emojis;
 
 public record TreacheryCard(String name) {
     public String type() {
@@ -13,6 +14,10 @@ public record TreacheryCard(String name) {
 
     public String description() {
         return TreacheryCardsCache.getDescription(name());
+    }
+
+    public String prettyNameAndDescription() {
+        return Emojis.TREACHERY + " **" + name + "** _" + type() + "_";
     }
 
     public boolean servesAsShield() {

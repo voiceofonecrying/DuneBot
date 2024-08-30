@@ -6,7 +6,6 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
-import exceptions.InvalidOptionException;
 import model.Bidding;
 import model.Game;
 import model.Movement;
@@ -25,7 +24,7 @@ import static controller.buttons.ButtonManager.deleteAllButtonsInChannel;
 
 public class IxButtons implements Pressable {
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, InvalidOptionException, IOException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("ix-starting-card-")) startingCardSelected(event, discordGame, game);
         else if (event.getComponentId().equals("ix-confirm-start-reset")) resetStartingCardSelection(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-start-")) confirmStartingCard(event, discordGame, game);

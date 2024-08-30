@@ -24,6 +24,8 @@ public class EcazButtons implements Pressable {
 
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-choam-discard-")) choamDiscard(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-fremen-move-from-")) fremenMoveFrom(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-place-ambassador-"))
             queueAmbassadorButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-ambassador-selected-"))
@@ -101,9 +103,36 @@ public class EcazButtons implements Pressable {
 
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
-        discordGame.queueMessage("Your Bene Gesserit token will be used for the " + event.getComponentId().split("-")[3] + " effect.");
+        discordGame.queueMessage("Your Bene Gesserit ambassador will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         discordGame.queueDeleteMessage();
         faction.triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
+        discordGame.pushGame();
+    }
+
+    private static void choamDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String cardName = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        if (cardName.equals("finished")) {
+            discordGame.queueMessage("You are finished discarding.");
+        } else {
+            discordGame.queueMessage("You are discarding " + cardName + " for 3 " + Emojis.SPICE);
+            faction.discard(cardName);
+            faction.addSpice(3, "discard " + cardName + " with CHOAM ambassador.");
+            faction.presentCHOAMAmbassadorDiscardChoices();
+            discordGame.pushGame();
+        }
+    }
+
+
+    private static void fremenMoveFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String territoryName = event.getComponentId().split("-")[4];
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You will move from " + territoryName + ".");
+        faction.getMovement().setMovingFrom(territoryName);
+        ShipmentAndMovementButtons.queueShippingButtons(event, game, discordGame, true);
+//        faction.presentFremenAmbassadorMoveToChoices(territoryName);
         discordGame.pushGame();
     }
 

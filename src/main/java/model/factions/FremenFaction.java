@@ -9,6 +9,7 @@ import model.TleilaxuTanks;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class FremenFaction extends Faction {
@@ -44,6 +45,31 @@ public class FremenFaction extends Faction {
     public void removeForces(String territoryName, int amount, boolean isSpecial, boolean toTanks) {
         String forceName = getName() + (isSpecial ? "*" : "");
         removeForces(territoryName, forceName, amount, toTanks, isSpecial);
+    }
+
+    public void presentWormRideChoices(String territoryName) {
+        getMovement().setMovingFrom(territoryName);
+        String buttonSuffix = "-fremen-ride";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap) choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "No ride"));
+        chat.publish("Where would you like to ride to from " + territoryName + "? " + player, choices);
+    }
+
+    public void presentWormPlacementChoices(String territoryName, String wormName) {
+        boolean greatMaker = wormName.equals("Great Maker");
+        getMovement().setMovingFrom(territoryName);
+        String buttonSuffix = greatMaker ? "-place-great-maker" : "-place-shai-hulud";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Other Sand Territories"));
+        choices.add(new DuneChoice("secondary", "pass-shipment" + buttonSuffix, "Keep it in " + territoryName));
+        chat.publish("Where would you like to place " + wormName + "? " + player, choices);
     }
 
     public int countFreeStarredRevival() {

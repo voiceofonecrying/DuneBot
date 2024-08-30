@@ -10,10 +10,11 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TerritoryTest {
     private Game game;
+    TestTopic turnSummary;
     Territory arrakeen;
     Territory sihayaRidge;
     Territory cielagoNorth_westSector;
@@ -24,6 +25,8 @@ public class TerritoryTest {
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
+        turnSummary = new TestTopic();
+        game.setTurnSummary(turnSummary);
         arrakeen = game.getTerritory("Arrakeen");
         sihayaRidge = game.getTerritory("Sihaya Ridge");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
@@ -209,6 +212,81 @@ public class TerritoryTest {
 
             assertEquals(0, sihayaRidge.getSpice());
             assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm.\n", Emojis.SPICE), response);
+        }
+    }
+
+    @Nested
+    @DisplayName("#shaiHuludAppears")
+    class ShaiHuludAppears {
+        FremenFaction fremen;
+        TestTopic fremenChat;
+        AtreidesFaction atreides;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            fremen = new FremenFaction("p", "u", game);
+            fremen.setLedger(new TestTopic());
+            fremenChat = new TestTopic();
+            fremen.setChat(fremenChat);
+            atreides = new AtreidesFaction("p", "u", game);
+            atreides.setLedger(new TestTopic());
+            game.addFaction(fremen);
+            game.addFaction(atreides);
+        }
+
+        @Test
+        void testFremenForcesNotKilled() {
+            sihayaRidge.addForces("Fremen", 1);
+            sihayaRidge.addForces("Fremen*", 1);
+            assertFalse(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("devoured"));
+            assertEquals(1, sihayaRidge.getForceStrength("Fremen"));
+            assertEquals(1, sihayaRidge.getForceStrength("Fremen*"));
+        }
+
+        @Test
+        void testNonFremenForcesKilled() {
+            sihayaRidge.addForces("Atreides", 1);
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("devoured"));
+            assertEquals(0, sihayaRidge.getForceStrength("Atreides"));
+        }
+
+        @Test
+        void testFremanAllyForcesNotKilled() {
+            game.createAlliance(fremen, atreides);
+            sihayaRidge.addForces("Atreides", 1);
+            assertFalse(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("devoured"));
+            assertEquals(1, sihayaRidge.getForceStrength("Atreides"));
+        }
+
+        @Test
+        void testFremenCanRideShaiHulud() {
+            sihayaRidge.addForces("Fremen", 1);
+            sihayaRidge.addForces("Fremen*", 2);
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("After the Nexus, 1 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
+            assertEquals("Where would you like to ride to from Sihaya Ridge? p", fremenChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testFremenReservesCanRideGreatMaker() {
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Great Maker", true).contains("After the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!"));
+            assertEquals("Where would you like to ride to from Southern Hemisphere? p", fremenChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testFremenHasNoReservesForGreatMaker() {
+            game.removeForces("Southern Hemisphere", fremen, 17, false, true);
+            game.removeForces("Southern Hemisphere", fremen, 3, true, true);
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Great Maker", true).contains(Emojis.FREMEN + " have no forces in reserves to ride Great Maker.\n"));
+        }
+
+        @Test
+        void testGreatMakerFirst() {
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Great Maker", true).contains("Great Maker has been spotted in Sihaya Ridge!\n"));
+        }
+
+        @Test
+        void testGreatMakerNotFirst() {
+            assertFalse(sihayaRidge.shaiHuludAppears(game, "Great Maker", false).contains("Great Maker has been spotted"));
         }
     }
 

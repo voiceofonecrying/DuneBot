@@ -3,9 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
-import model.HomeworldTerritory;
-import model.Territory;
-import model.TestTopic;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -145,8 +143,8 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
-    @DisplayName("#checkForTerrorTrigger")
-    class CheckForTerrorTrigger {
+    @DisplayName("#checkForAmbassadorTrigger")
+    class CheckForAmbassadorTrigger {
         AtreidesFaction atreides;
         BGFaction bg;
         Territory carthag;
@@ -176,7 +174,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         void testOtherFactionTriggers() {
             faction.checkForAmbassadorTrigger(carthag, atreides);
             assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG ambassador.", turnSummary.getMessages().getFirst());
-            assertTrue(ecazChat.getMessages().getFirst().contains("Will you trigger your BG ambassador against Atreides in Carthag?"));
+            assertTrue(ecazChat.getMessages().getFirst().contains("Will you trigger your BG ambassador against " + Emojis.ATREIDES + " in Carthag?"));
             assertEquals(2, ecazChat.getChoices().getFirst().size());
         }
 
@@ -194,6 +192,67 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.checkForAmbassadorTrigger(carthag, bg);
             assertTrue(turnSummary.getMessages().isEmpty());
             assertTrue(ecazChat.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#triggerAmbassador")
+    class TriggerAmbassador {
+        HarkonnenFaction harkonnen;
+        TestTopic modInfo;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            faction.setChat(chat);
+            faction.setLedger(ledger);
+            harkonnen = new HarkonnenFaction("p", "u", game);
+            game.addFaction(harkonnen);
+            modInfo = new TestTopic();
+            game.setModInfo(modInfo);
+        }
+
+        @Test
+        public void testTriggerAtreidesRevealsTreacheryHand() {
+            harkonnen.addTreacheryCard(new TreacheryCard("Karama"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.triggerAmbassador(harkonnen, "Atreides");
+            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", chat.getMessages().getFirst());
+        }
+
+        @Test
+        public void testTriggerBGGivesChoicesOfNonSupplyAmbassadors() {
+            faction.triggerAmbassador(harkonnen, "BG");
+            assertEquals("Which Ambassador effect would you like to trigger?", chat.getMessages().getFirst());
+            assertEquals(5, chat.getChoices().getFirst().size());
+//            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
+        }
+
+        @Test
+        public void testTriggerCHOAMGivesDiscardButtons() {
+            faction.addTreacheryCard(new TreacheryCard("Karama"));
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
+            faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            faction.triggerAmbassador(harkonnen, "CHOAM");
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getFirst());
+            assertEquals(5, chat.getChoices().getFirst().size());
+            assertEquals("Done discarding", chat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
+        public void testTriggerEmperorAdds5Spice() {
+            faction.triggerAmbassador(harkonnen, "Emperor");
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
+            assertEquals(17, faction.getSpice());
+        }
+
+        @Test
+        public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
+            faction.triggerAmbassador(harkonnen, "Fremen");
+            assertEquals("Where would you like to ride from with your Fremen ambassador?", chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().getFirst().size());
+            assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("No move", chat.getChoices().getFirst().getLast().getLabel());
         }
     }
 }

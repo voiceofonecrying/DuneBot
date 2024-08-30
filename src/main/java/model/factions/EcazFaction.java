@@ -60,7 +60,6 @@ public class EcazFaction extends Faction {
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador) {
         game.getTurnSummary().publish("The " + ambassador + " ambassador has been triggered!");
-
         switch (ambassador) {
             case "Ecaz" -> {
                 DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
@@ -78,20 +77,13 @@ public class EcazFaction extends Faction {
                 ambassadorSupply.add("Ecaz");
             }
             case "Atreides" ->
-                    game.getModInfo().publish("Atreides ambassador token was triggered, please show Ecaz player the " + triggeringFaction.getEmoji() + " hand.");
-            case "BG" -> {
-                List<DuneChoice> choices = new LinkedList<>();
-                for (String option : ambassadorPool) {
-                    choices.add(new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option));
-                }
-                chat.publish("Your Bene Gesserit Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which ambassador token not from your supply would you like to trigger?", choices);
-            }
-            case "CHOAM" ->
-                    game.getModInfo().publish("CHOAM ambassador token was triggered, please discard Ecaz treachery cards for 3 spice each");
-            case "Emperor" ->
-                    addSpice(5, Emojis.EMPEROR + " ambassador token");
-            case "Fremen" ->
-                    game.getModInfo().publish("Fremen ambassador token was triggered, Ecaz player may move a group of forces on the board to any territory.");
+                    chat.publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
+            case "BG" ->
+                    chat.publish("Which Ambassador effect would you like to trigger?",
+                            ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
+            case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
+            case "Emperor" -> addSpice(5, Emojis.EMPEROR + " ambassador");
+            case "Fremen" -> presentFremenAmbassadorRideFromChoices();
             case "Harkonnen" ->
                     game.getModInfo().publish("Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
             case "Ix" ->
@@ -122,6 +114,21 @@ public class EcazFaction extends Faction {
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void presentCHOAMAmbassadorDiscardChoices() {
+        List<DuneChoice> choices = new ArrayList<>();
+        int i = 0;
+        for (TreacheryCard c : treacheryHand)
+            choices.add(new DuneChoice("ecaz-choam-discard-" + c.name() + "-" + i++, c.name()));
+        choices.add(new DuneChoice("secondary", "ecaz-choam-discard-finished", "Done discarding"));
+        chat.publish("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", choices);
+    }
+
+    public void presentFremenAmbassadorRideFromChoices() {
+        List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
+        choices.add(new DuneChoice("danger", "pass-shipment-fremen-ride", "No move"));
+        chat.publish("Where would you like to ride from with your Fremen ambassador?", choices);
     }
 
     public void sendAmbassadorLocationMessage(int cost) {
@@ -161,7 +168,7 @@ public class EcazFaction extends Faction {
             choices.add(new DuneChoice("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
             choices.add(new DuneChoice("danger", "ecaz-don't-trigger-ambassador", "Don't Trigger"));
             game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " ambassador.");
-            chat.publish("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getName() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
+            chat.publish("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getEmoji() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
         }
     }
 

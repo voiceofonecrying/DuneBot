@@ -912,6 +912,7 @@ public class Game {
     public void drawSpiceBlow(String spiceBlowDeckName) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
+        SpiceCard lastCard = discard.getLast();
         LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
 
         StringBuilder message = new StringBuilder();
@@ -940,23 +941,32 @@ public class Game {
                     saveWormForReshuffle = true;
                     message.append(drawn.name())
                             .append(" will be reshuffled back into deck.\n");
-                } else if (!discard.isEmpty() && !shaiHuludSpotted) {
+                } else if (!shaiHuludSpotted) {
                     shaiHuludSpotted = true;
 
                     if (sandtroutInPlay) {
                         spiceMultiplier = 2;
                         sandtroutInPlay = false;
-                        message.append(drawn.name())
-                                .append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                        message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
-                        SpiceCard lastCard = discard.getLast();
-                        message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name()));
+                        message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name(), true));
                     }
                 } else {
-                    shaiHuludSpotted = true;
                     spiceMultiplier = 1;
-                    message.append(drawn.name())
-                            .append(" has been spotted!\n");
+                    FremenFaction fremen = null;
+                    if (hasFaction("Fremen"))
+                        fremen = (FremenFaction) getFaction("Fremen");
+                    message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted!");
+                    if (fremen != null) {
+                        message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
+                        fremen.presentWormPlacementChoices(lastCard.name(), drawn.name());
+                    }
+                    message.append("\n");
+                    if (fremen != null) {
+//                        fremen.getChat().publish("Where woul");
+                        if (drawn.name().equals("Great Maker"))
+                            message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name(), false));
+                    }
                 }
             } else if (drawn.name().equalsIgnoreCase("Sandtrout")) {
                 shaiHuludSpotted = true;
@@ -964,9 +974,8 @@ public class Game {
                 factions.forEach(Faction::removeAlly);
                 sandtroutInPlay = true;
             } else {
-                message.append("Spice has been spotted in ");
-                message.append(drawn.name());
-                message.append("!\n");
+                message.append(Emojis.SPICE + " has been spotted in ").append(drawn.name());
+                message.append(drawn.sector() == storm ? " - blown away by the storm" : "").append("!\n");
             }
             if (saveWormForReshuffle) {
                 wormsToReshuffle.add(drawn);
@@ -984,7 +993,6 @@ public class Game {
             }
         }
 
-        if (storm == drawn.sector()) message.append(" (blown away by the storm!)\n");
         if (drawn.discoveryToken() == null) territories.get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
         else {
             getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
@@ -1008,6 +1016,107 @@ public class Game {
         if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
 
         turnSummary.publish(message.toString());
+        setUpdated(UpdateType.MAP);
+    }
+
+    public void placeShaiHulud(String territoryName, String wormName, boolean firstWorm) {
+        String message = wormName + " has been placed in " + territoryName + "\n";
+        message += getTerritory(territoryName).shaiHuludAppears(this, wormName, firstWorm);
+        turnSummary.publish(message);
+    }
+
+    public void executeFactionMovement(Faction faction) {
+        Movement movement = faction.getMovement();
+        String movingFrom = movement.getMovingFrom();
+        String movingTo = movement.getMovingTo();
+        boolean movingNoField = movement.isMovingNoField();
+        int force = movement.getForce();
+        int specialForce = movement.getSpecialForce();
+        int secondForce = movement.getSecondForce();
+        int secondSpecialForce = movement.getSecondSpecialForce();
+        String secondMovingFrom = movement.getSecondMovingFrom();
+        Territory from = getTerritory(movingFrom);
+        Territory to = getTerritory(movingTo);
+        if (movingNoField) {
+            to.setRicheseNoField(from.getRicheseNoField());
+            from.setRicheseNoField(null);
+            turnSummary.publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
+            if (to.hasActiveFaction("BG") && !(faction instanceof BGFaction))
+                ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
+            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
+            if (hasFaction("Ecaz"))
+                ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, faction);
+            if (hasFaction("Moritani"))
+                ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, faction, 1 + force + specialForce + secondForce + secondSpecialForce);
+        } else {
+            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
+        }
+        movement.clear();
+        setUpdated(UpdateType.MAP);
+    }
+
+    public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean canTrigger) {
+        if (force != 0 || specialForce != 0)
+            moveForces(faction, from, to, force, specialForce, canTrigger);
+        if (secondForce != 0 || secondSpecialForce != 0) {
+            turnSummary.publish(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
+            moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, canTrigger);
+        }
+    }
+
+    public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {
+        if (!to.factionMayMoveIn(this, targetFaction))
+            throw new IllegalArgumentException("You cannot move into a territory with your ally.");
+
+        StringBuilder message = new StringBuilder();
+        message.append(targetFaction.getEmoji()).append(": ");
+
+        if (amountValue > 0) {
+            String forceName = targetFaction.getName();
+            String targetForceName = targetFaction.getName();
+            if (targetFaction instanceof BGFaction && from.hasForce("Advisor")) {
+                forceName = "Advisor";
+                if (to.hasForce("Advisor")) targetForceName = "Advisor";
+            }
+            from.removeForces(forceName, amountValue);
+            to.addForces(targetForceName, amountValue);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            amountValue, Emojis.getForceEmoji(forceName)
+                    )
+            );
+        }
+
+        if (starredAmountValue > 0) {
+            from.removeForces(targetFaction.getName() + "*", starredAmountValue);
+            to.addForces(targetFaction.getName() + "*", starredAmountValue);
+
+            message.append(
+                    MessageFormat.format("{0} {1} ",
+                            starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")
+                    )
+            );
+        }
+
+        message.append(
+                MessageFormat.format("moved from {0} to {1}.",
+                        from.getTerritoryName(), to.getTerritoryName()
+                )
+        );
+        targetFaction.checkForHighThreshold();
+        targetFaction.checkForLowThreshold();
+        turnSummary.publish(message.toString());
+
+        if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction)) {
+            ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
+        }
+        if (canTrigger) {
+            if (hasFaction("Ecaz"))
+                ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, targetFaction);
+            if (hasFaction("Moritani"))
+                ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, targetFaction, amountValue + starredAmountValue);
+        }
         setUpdated(UpdateType.MAP);
     }
 

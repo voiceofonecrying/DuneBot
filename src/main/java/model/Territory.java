@@ -2,9 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.UpdateType;
-import model.factions.BGFaction;
-import model.factions.Faction;
-import model.factions.RicheseFaction;
+import model.factions.*;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -170,7 +168,11 @@ public class Territory {
     }
 
     public boolean hasActiveFaction(Faction faction) {
-        return getActiveFactionNames().contains(faction.getName());
+        return hasActiveFaction(faction.getName());
+    }
+
+    public boolean hasActiveFaction(String factionName) {
+        return getActiveFactionNames().contains(factionName);
     }
 
     public int countActiveFactions() {
@@ -366,22 +368,23 @@ public class Territory {
         return message;
     }
 
-    public String shaiHuludAppears(Game game, String wormName) {
-        String response = wormName + " has been spotted in " + territoryName + "!\n";
-        if (spice > 0) {
+    public String shaiHuludAppears(Game game, String wormName, boolean firstWorm) {
+        String response = "";
+        if (firstWorm)
+            response = Emojis.WORM + " " + wormName + " has been spotted in " + territoryName + "!\n";
+        if (spice > 0)
             response += spice + " " + Emojis.SPICE + " is eaten by the worm!\n";
-            spice = 0;
-        }
+        spice = 0;
+
+        FremenFaction fremen = null;
+        if (game.hasFaction("Fremen"))
+            fremen = (FremenFaction) game.getFaction("Fremen");
         if (countFactions() > 0) {
             List<Force> forcesToRemove = new ArrayList<>();
             StringBuilder message = new StringBuilder();
             for (Force force : forces) {
-                if (force.getName().contains("Fremen")) continue;
-                if (game.hasFaction("Fremen")) {
-                    Faction fremen = game.getFaction("Fremen");
-                    if (fremen.hasAlly() && force.getName().contains(fremen.getAlly()))
-                        continue;
-                }
+                if (force.getName().contains("Fremen") || fremen != null && fremen.hasAlly() && force.getName().contains(fremen.getAlly()))
+                    continue;
                 message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
                         force.getStrength(), Emojis.getForceEmoji(force.getName()), wormName
                 ));
@@ -391,8 +394,42 @@ public class Territory {
             for (Force force : forcesToRemove)
                 // Move this to Territory::removeForces - but Game::removeForces is checking for high/low threshold, so that must move over too
                 game.removeForces(territoryName, game.getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
+            if (wormName.equals("Shai-Hulud")) {
+                String fremenForces = "";
+                int strength = getForceStrength("Fremen");
+                if (strength > 0)
+                    fremenForces += strength + " " + Emojis.FREMEN_TROOP + " ";
+                strength = getForceStrength("Fremen*");
+                if (strength > 0)
+                    fremenForces += strength + " " + Emojis.FREMEN_FEDAYKIN + " ";
+                if (!fremenForces.isEmpty()) {
+                    response += "After the Nexus, " + fremenForces + "may ride " + wormName + "!\n";
+                    Objects.requireNonNull(fremen).presentWormRideChoices(territoryName);
+                }
+            }
+        }
+        if (fremen != null && wormName.equals("Great Maker")) {
+            String fremenForces = "";
+            int strength = fremen.getReservesStrength();
+            if (strength > 0)
+                fremenForces += strength + " " + Emojis.FREMEN_TROOP + " ";
+            strength = fremen.getSpecialReservesStrength();
+            if (strength > 0)
+                fremenForces += strength + " " + Emojis.FREMEN_FEDAYKIN + " ";
+            if (!fremenForces.isEmpty()) {
+                response += "After the Nexus, " + fremenForces + "in reserves may ride " + wormName + "!\n";
+                fremen.presentWormRideChoices(fremen.getHomeworld());
+            } else {
+                response += Emojis.FREMEN + " have no forces in reserves to ride Great Maker.\n";
+            }
         }
         return response;
+    }
+
+    public boolean factionMayMoveIn(Game game, Faction faction) {
+        return !faction.hasAlly() || !hasActiveFaction(game.getFaction(faction.getAlly())) ||
+                (faction instanceof EcazFaction && getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getAlly()))
+                        || faction.getAlly().equals("Ecaz") && getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction));
     }
 
     public String getAggregateTerritoryName() {

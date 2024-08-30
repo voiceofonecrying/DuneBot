@@ -10,7 +10,6 @@ import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import exceptions.InvalidOptionException;
 import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.Permission;
@@ -177,6 +176,7 @@ public class CommandManager extends ListenerAdapter {
                 case "mute" -> mute(discordGame, game);
                 case "assign-tech-token" -> assignTechToken(discordGame, game);
                 case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
+                case "place-shai-hulud" -> placeShaiHulud(discordGame, game);
                 case "create-alliance" -> createAlliance(discordGame, game);
                 case "remove-alliance" -> removeAlliance(discordGame, game);
                 case "set-spice-in-territory" -> setSpiceInTerritory(discordGame, game);
@@ -266,67 +266,6 @@ public class CommandManager extends ListenerAdapter {
             if (game.hasFaction("Moritani"))
                 ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(targetTerritory, targetFaction, amountValue + starredAmountValue);
         }
-    }
-
-    public static void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
-        if (targetFaction.hasAlly() && to.hasActiveFaction(game.getFaction(targetFaction.getAlly())) &&
-                (!(targetFaction instanceof EcazFaction && to.getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(targetFaction.getAlly())))
-                        && !(targetFaction.getAlly().equals("Ecaz") && to.getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction)))) {
-            throw new InvalidOptionException("You cannot move into a territory with your ally.");
-        }
-
-        StringBuilder message = new StringBuilder();
-        message.append(targetFaction.getEmoji())
-                .append(": ");
-
-        if (amountValue > 0) {
-            String forceName = targetFaction.getName();
-            String targetForceName = targetFaction.getName();
-            if (targetFaction instanceof BGFaction && from.hasForce("Advisor")) {
-                forceName = "Advisor";
-                if (to.hasForce("Advisor")) targetForceName = "Advisor";
-            }
-            from.removeForces(forceName, amountValue);
-            to.addForces(targetForceName, amountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            amountValue, Emojis.getForceEmoji(forceName)
-                    )
-            );
-        }
-
-        if (starredAmountValue > 0) {
-            from.removeForces(targetFaction.getName() + "*", starredAmountValue);
-            to.addForces(targetFaction.getName() + "*", starredAmountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")
-                    )
-            );
-        }
-
-        message.append(
-                MessageFormat.format("moved from {0} to {1}.",
-                        from.getTerritoryName(), to.getTerritoryName()
-                )
-        );
-        targetFaction.checkForHighThreshold();
-        targetFaction.checkForLowThreshold();
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        turnSummary.queueMessage(message.toString());
-
-        if (game.hasFaction("BG") && to.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction)) {
-            ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, to.getTerritoryName());
-        }
-        if (canTrigger) {
-            if (game.hasFaction("Ecaz"))
-                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(to, targetFaction);
-            if (game.hasFaction("Moritani"))
-                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(to, targetFaction, amountValue + starredAmountValue);
-        }
-        game.setUpdated(UpdateType.MAP);
     }
 
     private List<String> getQuotesFromBook(String bookName) throws IOException {
@@ -435,6 +374,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("bribe", "Record a bribe transaction").addOptions(faction, recipient, amount, reason));
         commandData.add(Commands.slash("assign-tech-token", "Assign a Tech Token to a Faction (taking it away from previous owner)").addOptions(faction, token));
         commandData.add(Commands.slash("draw-spice-blow", "Draw the spice blow").addOptions(spiceBlowDeck));
+        commandData.add(Commands.slash("place-shai-hulud", "Make Shai-Hulud appear in a sand territory.").addOptions(sandTerritory, firstWorm));
         commandData.add(Commands.slash("create-alliance", "Create an alliance between two factions")
                 .addOptions(faction, otherFaction));
         commandData.add(Commands.slash("remove-alliance", "Remove alliance (only on faction of the alliance needs to be selected)")
@@ -693,6 +633,15 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
+    public void placeShaiHulud(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String territoryName = discordGame.required(sandTerritory).getAsString();
+        boolean finalDestination = true;
+        if (discordGame.optional(firstWorm) != null)
+            finalDestination = discordGame.required(firstWorm).getAsBoolean();
+        game.placeShaiHulud(territoryName, "Shai-Hulud", finalDestination);
+        discordGame.pushGame();
+    }
+
     private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         boolean discarded = false;
@@ -840,14 +789,14 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidOptionException {
+    public void moveForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
         Territory from = game.getTerritories().get(discordGame.required(fromTerritory).getAsString());
         Territory to = game.getTerritories().get(discordGame.required(toTerritory).getAsString());
         int amountValue = discordGame.required(amount).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
 
-        moveForces(targetFaction, from, to, amountValue, starredAmountValue, true, discordGame, game);
+        game.moveForces(targetFaction, from, to, amountValue, starredAmountValue, true);
         discordGame.pushGame();
     }
 
