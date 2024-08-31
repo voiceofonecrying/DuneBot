@@ -912,7 +912,9 @@ public class Game {
     public void drawSpiceBlow(String spiceBlowDeckName) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
-        SpiceCard lastCard = discard.getLast();
+        SpiceCard lastCard = null;
+        if (!discard.isEmpty())
+            lastCard = discard.getLast();
         LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
 
         StringBuilder message = new StringBuilder();
@@ -949,7 +951,7 @@ public class Game {
                         sandtroutInPlay = false;
                         message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
-                        message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name(), true));
+                        message.append(getTerritory(Objects.requireNonNull(lastCard).name()).shaiHuludAppears(this, drawn.name(), true));
                     }
                 } else {
                     spiceMultiplier = 1;
@@ -959,7 +961,7 @@ public class Game {
                     message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted!");
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
-                        fremen.presentWormPlacementChoices(lastCard.name(), drawn.name());
+                        fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
                     }
                     message.append("\n");
                     if (fremen != null) {
