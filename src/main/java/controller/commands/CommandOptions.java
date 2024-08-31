@@ -230,6 +230,8 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "button-name", "Name for the button", false);
 
     public static final OptionData months = new OptionData(OptionType.INTEGER, "months", "List players from games that finished within this many months");
+    public static final OptionData numFastGamesForAverageDuration = new OptionData(OptionType.INTEGER, "fastest-games", "Number of fastest games (default = 3)");
+    public static final OptionData minTurnsForAverageDuration = new OptionData(OptionType.INTEGER, "min-turns", "Minimum number of turns (default = 3)");
 
     public static final OptionData clockDirection =
             new OptionData(OptionType.STRING, "clock-direction", "Clockwise is default", false)

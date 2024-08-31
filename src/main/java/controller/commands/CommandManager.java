@@ -84,7 +84,11 @@ public class CommandManager extends ListenerAdapter {
                 String result = ReportsCommands.averageDaysPerTurn(event.getGuild());
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("players-fastest-speed") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
-                String result = ReportsCommands.playerFastestGame(event.getGuild());
+                OptionMapping optionMapping = event.getOption(numFastGamesForAverageDuration.getName());
+                int minGames = (optionMapping != null ? optionMapping.getAsInt() : 3);
+                optionMapping = event.getOption(minTurnsForAverageDuration.getName());
+                int minTurns = (optionMapping != null ? optionMapping.getAsInt() : 3);
+                String result = ReportsCommands.playerFastestGame(event.getGuild(), minGames, minTurns, minGames);
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports")) {
                 String result = ReportsCommands.runCommand(event, members);

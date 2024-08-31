@@ -31,6 +31,8 @@ public class GameResult {
     private List<Set<String>> winningPlayers;
     private String predictedFaction;
     private String predictedPlayer;
+    private String startingForum;
+    private String endingForum;
 
     public String getGameName() {
         return gameName;
@@ -234,6 +236,22 @@ public class GameResult {
 
     public void setPredictedPlayer(String predictedPlayer) {
         this.predictedPlayer = predictedPlayer;
+    }
+
+    public String getStartingForum() {
+        return startingForum;
+    }
+
+    public void setStartingForum(String startingForum) {
+        this.startingForum = startingForum;
+    }
+
+    public String getEndingForum() {
+        return endingForum;
+    }
+
+    public void setEndingForum(String endingForum) {
+        this.endingForum = endingForum;
     }
 
     @Override

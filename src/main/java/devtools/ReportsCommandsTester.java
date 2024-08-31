@@ -31,7 +31,7 @@ public class ReportsCommandsTester {
 //        String a = ReportsCommands.playedAllExpansion(guild, List.of());
 //        System.out.println(a + " " + a.length() + "\n============");
 //        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
-        System.out.println(ReportsCommands.playerFastestGame(guild));
+        System.out.println(ReportsCommands.playerFastestGame(guild, 3, 3, 3));
 //        System.out.println(ReportsCommands.wonAsMostFactions(guild, List.of()));
 
 // To fix JSON:
