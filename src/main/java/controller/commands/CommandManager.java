@@ -403,7 +403,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
-        commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game."));
+        commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game.").addOptions(numFastGamesForAverageDuration, minTurnsForAverageDuration));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
