@@ -83,6 +83,9 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("average-days-per-turn") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.averageDaysPerTurn(event.getGuild());
                 event.getHook().editOriginal(result).queue();
+            } else if (name.equals("players-fastest-speed") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                String result = ReportsCommands.playerFastestGame(event.getGuild());
+                event.getHook().editOriginal(result).queue();
             } else if (name.equals("reports")) {
                 String result = ReportsCommands.runCommand(event, members);
                 event.getHook().editOriginal(result).queue();
@@ -396,6 +399,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
+        commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game."));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());

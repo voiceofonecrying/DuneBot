@@ -1528,14 +1528,12 @@ public class ReportsCommands {
             int totalTurns = 0;
             int totalGames = 0;
             for (GameResult gr : grList.gameResults) {
-                if (gr.getGameDuration() == null || gr.getGameDuration().isBlank())
+                if (!gr.isPlayer(playerName) || gr.getGameDuration() == null || gr.getGameDuration().isBlank())
                     continue;
                 int duration = Integer.parseInt(gr.getGameDuration());
                 int numTurns = gr.getTurn();
                 overallTotalDuration += duration;
                 overallTotalTurns += numTurns;
-                if (!gr.isPlayer(playerName))
-                    continue;
                 totalDuration += duration;
                 totalTurns += numTurns;
                 totalGames++;
@@ -1551,6 +1549,36 @@ public class ReportsCommands {
         response.append(overallAverage);
         for (Pair<String, Integer> pair : playerAverageDuration)
             response.append(new DecimalFormat("#0.0").format((float)pair.getRight()/10)).append(" ").append(pair.getLeft()).append("\n");
+        return response.toString();
+    }
+
+    public static String playerFastestGame(Guild guild) {
+        int minTurns = 3;
+        GRList grList = gatherGameResults(guild).grList;
+        Set<String> players = getAllPlayers(grList);
+        List<Pair<String, Float>> playerAverageDuration = new ArrayList<>();
+        for (String playerName : players) {
+            float fastest = Float.MAX_VALUE;
+            for (GameResult gr : grList.gameResults) {
+                if (!gr.isPlayer(playerName) || gr.getGameDuration() == null || gr.getGameDuration().isBlank())
+                    continue;
+                int duration = Integer.parseInt(gr.getGameDuration());
+                int numTurns = gr.getTurn();
+                if (numTurns < minTurns)
+                    continue;
+                if ((float) duration / numTurns < fastest)
+                    fastest = (float) duration / numTurns;
+            }
+            if (fastest == Float.MAX_VALUE)
+                continue;
+            playerAverageDuration.add(new ImmutablePair<>(playerName, fastest));
+        }
+        Comparator<Pair<String, Float>> numGamesComparator = Comparator.comparing(Pair::getRight);
+        playerAverageDuration.sort(numGamesComparator);
+        StringBuilder response = new StringBuilder();
+        response.append("Player's fastest game in days per turn (minimum ").append(minTurns).append(" turns in the game)\n");
+        for (Pair<String, Float> pair : playerAverageDuration)
+            response.append(new DecimalFormat("#0.0").format((float)pair.getRight())).append(" ").append(pair.getLeft()).append("\n");
         return response.toString();
     }
 
