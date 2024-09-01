@@ -92,6 +92,7 @@ public class SpiceCollectionButtons  implements Pressable{
                 }
             }
             discordGame.pushGame();
+            discordGame.queueMessage("You revealed " + token + " in " + territory.getTerritoryName() + ".");
             discordGame.queueDeleteMessage();
 
             game.setUpdated(UpdateType.MAP);

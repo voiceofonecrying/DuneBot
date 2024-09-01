@@ -1353,14 +1353,36 @@ public class Game {
         }
         if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
 
-        for (Territory territory : territories.values()) {
-            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
-            Faction faction = territory.getActiveFactions(this).getFirst();
-            List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
-            choices.add(new DuneChoice("danger", "don't-reveal-discovery-token", "No"));
-            faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", choices);
+        for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
+            List<List<Territory>> territorySectorsForBattle = territories.getTerritorySectorsForBattle(aggregateTerritoryName, storm);
+            for (List<Territory> territorySectors : territorySectorsForBattle) {
+                String discoveryTerritoryName = "";
+                String discoveryTokenName = "";
+                for (Territory territory : territorySectors) {
+                    if (territory.getDiscoveryToken() == null || territory.isDiscovered()) continue;
+                    discoveryTerritoryName = territory.getTerritoryName();
+                    discoveryTokenName = territory.getDiscoveryToken();
+                }
+                if (!discoveryTerritoryName.isEmpty()) {
+                    for (Territory territory: territorySectors) {
+                        if (territory.countActiveFactions() == 0) continue;
+                        Faction faction = territory.getActiveFactions(this).getFirst();
+                        List<DuneChoice> choices = new ArrayList<>();
+                        choices.add(new DuneChoice("reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
+                        choices.add(new DuneChoice("danger", "don't-reveal-discovery-token", "No"));
+                        faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + discoveryTerritoryName + "? (" + discoveryTokenName + ")", choices);
+                    }
+                }
+            }
         }
+//        for (Territory territory : territories.values()) {
+//            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
+//            Faction faction = territory.getActiveFactions(this).getFirst();
+//            List<DuneChoice> choices = new ArrayList<>();
+//            choices.add(new DuneChoice("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
+//            choices.add(new DuneChoice("danger", "don't-reveal-discovery-token", "No"));
+//            faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", choices);
+//        }
 
         if (altSpiceProductionTriggered) {
             TechToken.addSpice(this, TechToken.SPICE_PRODUCTION);
