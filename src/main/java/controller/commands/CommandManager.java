@@ -224,6 +224,10 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
+        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama);
+    }
+
+    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         TurnSummary turnSummary = discordGame.getTurnSummary();
 
         if (amountValue > 0)
@@ -231,41 +235,41 @@ public class CommandManager extends ListenerAdapter {
         if (starredAmountValue > 0)
             targetTerritory.placeForceFromReserves(game, targetFaction, starredAmountValue, true);
 
+        StringBuilder message = new StringBuilder();
+        message.append(targetFaction.getEmoji())
+                .append(": ");
+        if (amountValue > 0)
+            message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
+        if (starredAmountValue > 0)
+            message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
+
+        message.append(
+                MessageFormat.format("placed on {0}",
+                        targetTerritory.getTerritoryName()
+                )
+        );
+
         if (isShipment) {
             targetFaction.getShipment().setShipped(true);
             int cost = game.shipmentCost(targetFaction, amountValue + starredAmountValue, targetTerritory, karama);
 
-            StringBuilder message = new StringBuilder();
-            message.append(targetFaction.getEmoji())
-                    .append(": ");
-
-            if (amountValue > 0)
-                message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
-            if (starredAmountValue > 0)
-                message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
-
-            message.append(
-                    MessageFormat.format("placed on {0}",
-                            targetTerritory.getTerritoryName()
-                    )
-            );
-
             if (cost > 0)
                 message.append(targetFaction.payForShipment(game, cost, targetTerritory, karama, false));
-            turnSummary.queueMessage(message.toString());
 
             if (!(targetFaction instanceof GuildFaction)
                     && !(targetFaction instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
                     && game.hasGameOption(GameOption.TECH_TOKENS))
                 TechToken.addSpice(game, TechToken.HEIGHLINERS);
-
-            if (game.hasFaction("BG")) {
-                if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
-                    ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
-                if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
-                    ((BGFaction) game.getFaction("BG")).presentAdvisorButtons(game, targetFaction, targetTerritory);
-            }
         }
+
+        if (isIntrusion && game.hasFaction("BG")) {
+            if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
+                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
+            if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
+                ((BGFaction) game.getFaction("BG")).presentAdvisorButtons(game, targetFaction, targetTerritory);
+        }
+
+        turnSummary.queueMessage(message.toString());
 
         if (canTrigger) {
             if (game.hasFaction("Ecaz"))

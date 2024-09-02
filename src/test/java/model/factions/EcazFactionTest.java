@@ -254,5 +254,24 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("No move", chat.getChoices().getFirst().getLast().getLabel());
         }
+
+        @Test
+        public void testTriggerGuildPresentsDestinationChoices() {
+            faction.triggerAmbassador(harkonnen, "Guild");
+            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
+            assertEquals(5, chat.getChoices().getFirst().size());
+            assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("stronghold-guild-ambassador", chat.getChoices().getFirst().getFirst().getId());
+            assertEquals("Pass shipment", chat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
+        public void testTriggerGuildNoForcesInReserves() {
+            game.removeForces(faction.getHomeworld(), faction, 14, 0, true);
+            faction.triggerAmbassador(harkonnen, "Guild");
+            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild ambassador.", chat.getMessages().getFirst());
+        }
     }
 }
