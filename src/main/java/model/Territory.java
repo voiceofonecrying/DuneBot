@@ -13,6 +13,7 @@ public class Territory {
     private final int sector;
     private boolean isStronghold;
     private boolean isDiscoveryToken;
+    private boolean justDiscovered;
     private final boolean isNearShieldWall;
     protected final List<Force> forces;
     private boolean isRock;
@@ -30,6 +31,7 @@ public class Territory {
         this.isRock = isRock;
         this.isStronghold = isStronghold;
         this.isDiscoveryToken = isDiscoveryToken;
+        this.justDiscovered = false;
         this.isNearShieldWall = isNearShieldWall;
         this.spice = 0;
         this.forces = new ArrayList<>();
@@ -73,6 +75,14 @@ public class Territory {
 
     public void setDiscoveryToken(boolean isDiscoveryToken) {
         this.isDiscoveryToken = isDiscoveryToken;
+    }
+
+    public boolean isJustDiscovered() {
+        return justDiscovered;
+    }
+
+    public void setJustDiscovered(boolean justDiscovered) {
+        this.justDiscovered = justDiscovered;
     }
 
     public int costToShipInto() {

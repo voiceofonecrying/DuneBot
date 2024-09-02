@@ -15,6 +15,7 @@ public class Territories extends HashMap<String, Territory> {
 
     public Territory addDiscoveryToken(String name, boolean isStronghold) {
         Territory discoveryToken = new Territory(name, -1, false, isStronghold, true, false);
+        discoveryToken.setJustDiscovered(true);
         put(name, discoveryToken);
         return discoveryToken;
     }
@@ -42,11 +43,11 @@ public class Territories extends HashMap<String, Territory> {
         else return values().stream().filter(t -> t.getTerritoryName().indexOf(aggregateTerritoryName) == 0).toList();
     }
 
-    public List<List<Territory>> getTerritorySectorsForBattle(String aggregateTerritoryName, int storm) {
+    public List<List<Territory>> getAggregateTerritoryList(String aggregateTerritoryName, int storm) {
         List<Territory> territorySectors = getTerritorySectors(aggregateTerritoryName);
         List<Territory> sectorsBeforeStorm;
         List<Territory> sectorsAfterStorm;
-        if (storm != 1 && (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression"))) {
+        if (storm != 1 && (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian"))) {
             sectorsBeforeStorm = territorySectors.stream().filter(t -> t.getSector() != storm).toList();
             sectorsAfterStorm = new ArrayList<>();
         } else if (storm == 1 && (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression"))) {

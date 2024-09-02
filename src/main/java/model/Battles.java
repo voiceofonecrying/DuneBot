@@ -46,7 +46,7 @@ public class Battles {
         int dukeVidalCount = 0;
         Territories territories = game.getTerritories();
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> territorySectorsForBattle = territories.getTerritorySectorsForBattle(aggregateTerritoryName, game.getStorm());
+            List<List<Territory>> territorySectorsForBattle = territories.getAggregateTerritoryList(aggregateTerritoryName, game.getStorm());
             Set<String> factionNames;
             for (List<Territory> territorySectors : territorySectorsForBattle) {
                 factionNames = territories.getFighterNamesInAggTerritory(territorySectors);

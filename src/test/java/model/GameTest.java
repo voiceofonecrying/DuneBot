@@ -989,6 +989,35 @@ class GameTest {
             assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 2 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
         }
+
+        @Test
+        void testFactionMayMoveIntoDiscoveryToken() {
+            game.setStorm(9);
+            Territory meridianWest = game.getTerritory("Meridian (West Sector)");
+            meridianWest.setDiscoveryToken("Jacurutu Sietch");
+            Territory jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            game.putTerritoryInAnotherTerritory(jacurutuSietch, meridianWest);
+            meridianWest.setDiscovered(true);
+            meridianWest.addForces("BG", 4);
+
+            game.startStormPhase();
+            assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (West Sector).", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        void testFactionMayMoveIntoDiscoveryTokenFromNeighboringSector() {
+            game.setStorm(9);
+            Territory meridianWest = game.getTerritory("Meridian (West Sector)");
+            meridianWest.setDiscoveryToken("Jacurutu Sietch");
+            Territory jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            game.putTerritoryInAnotherTerritory(jacurutuSietch, meridianWest);
+            meridianWest.setDiscovered(true);
+            Territory meridianEast = game.getTerritory("Meridian (East Sector)");
+            meridianEast.addForces("BG", 4);
+
+            game.startStormPhase();
+            assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (East Sector).", turnSummary.getMessages().get(1));
+        }
     }
 
 

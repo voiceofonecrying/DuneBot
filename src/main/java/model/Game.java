@@ -875,6 +875,27 @@ public class Game {
         turnSummary.publish("**Turn " + turn + " Storm Phase**");
         phaseForWhispers = "Turn " + turn + " Storm Phase\n";
 
+        for (Territory newDiscovery : territories.values().stream().filter(Territory::isJustDiscovered).toList()) {
+            for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
+                List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm);
+                List<Territory> aggTerritoryWithDiscovery = null;
+                for (List<Territory> aggTerritory : aggregateTerritoryList) {
+                    for (Territory t : aggTerritory) {
+                        String d = t.getDiscoveryToken();
+                        if (d != null && d.equals(newDiscovery.getTerritoryName())) {
+                            aggTerritoryWithDiscovery = aggTerritory;
+                            break;
+                        }
+                    }
+                }
+                if (aggTerritoryWithDiscovery != null)
+                    for (Territory t : aggTerritoryWithDiscovery)
+                        for (Faction f : t.getActiveFactions(this))
+                            turnSummary.publish(f.getEmoji() + " may move into " + newDiscovery.getTerritoryName() + " from " + t.getTerritoryName() + ".");
+            }
+            newDiscovery.setJustDiscovered(false);
+        }
+
         Faction factionWithAtomics = null;
         try {
             factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics").getFirst();
@@ -1354,8 +1375,8 @@ public class Game {
         if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
 
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> territorySectorsForBattle = territories.getTerritorySectorsForBattle(aggregateTerritoryName, storm);
-            for (List<Territory> territorySectors : territorySectorsForBattle) {
+            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm);
+            for (List<Territory> territorySectors : aggregateTerritoryList) {
                 String discoveryTerritoryName = "";
                 String discoveryTokenName = "";
                 for (Territory territory : territorySectors) {
@@ -1375,14 +1396,6 @@ public class Game {
                 }
             }
         }
-//        for (Territory territory : territories.values()) {
-//            if (territory.getDiscoveryToken() == null || territory.countActiveFactions() == 0 || territory.isDiscovered()) continue;
-//            Faction faction = territory.getActiveFactions(this).getFirst();
-//            List<DuneChoice> choices = new ArrayList<>();
-//            choices.add(new DuneChoice("reveal-discovery-token-" + territory.getTerritoryName(), "Yes"));
-//            choices.add(new DuneChoice("danger", "don't-reveal-discovery-token", "No"));
-//            faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + territory.getTerritoryName() + "? (" + territory.getDiscoveryToken() + ")", choices);
-//        }
 
         if (altSpiceProductionTriggered) {
             TechToken.addSpice(this, TechToken.SPICE_PRODUCTION);
