@@ -833,7 +833,7 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
+            bg = new BGFaction("p", "u", game);
             emperor = new EmperorFaction("fp3", "un3", game);
             fremen = new FremenFaction("fp4", "un4", game);
             guild = new GuildFaction("fp5", "un5", game);
@@ -844,6 +844,8 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             guildChat = new TestTopic();
@@ -1002,6 +1004,8 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (West Sector).", turnSummary.getMessages().get(1));
+            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (West Sector)? p", bgChat.getMessages().getFirst());
+            assertEquals(2, bgChat.getChoices().getFirst().size());
         }
 
         @Test
@@ -1017,6 +1021,8 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (East Sector).", turnSummary.getMessages().get(1));
+            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (East Sector)? p", bgChat.getMessages().getFirst());
+            assertEquals(2, bgChat.getChoices().getFirst().size());
         }
     }
 

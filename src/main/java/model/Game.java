@@ -890,8 +890,14 @@ public class Game {
                 }
                 if (aggTerritoryWithDiscovery != null)
                     for (Territory t : aggTerritoryWithDiscovery)
-                        for (Faction f : t.getActiveFactions(this))
+                        for (Faction f : t.getActiveFactions(this)) {
                             turnSummary.publish(f.getEmoji() + " may move into " + newDiscovery.getTerritoryName() + " from " + t.getTerritoryName() + ".");
+                            f.getMovement().setMovingFrom(t.getTerritoryName());
+                            List<DuneChoice> choices = new ArrayList<>();
+                            choices.add(new DuneChoice("move-sector-enter-discovery-token-" + newDiscovery.getTerritoryName(), "Yes"));
+                            choices.add(new DuneChoice("danger", "pass-movement-enter-discovery-token", "No"));
+                            f.getChat().publish("Would you like to move into " + newDiscovery.getTerritoryName() + " from " + t.getTerritoryName() + "? " + f.getPlayer(), choices);
+                        }
             }
             newDiscovery.setJustDiscovered(false);
         }
