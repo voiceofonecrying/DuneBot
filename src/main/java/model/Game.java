@@ -32,6 +32,7 @@ public class Game {
     private int phase;
     private int subPhase;
     private int phaseForTracker;
+    private SpiceBlowAndNexus spiceBlowAndNexus;
     private Bidding bidding;
     private Revival revival;
     private Battles battles;
@@ -936,6 +937,38 @@ public class Game {
         }
     }
 
+    public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException {
+        if (spiceBlowAndNexus != null)
+            throw new InvalidGameStateException("Spice Blow and Nexus Phase is already in progress.");
+        spiceBlowAndNexus = new SpiceBlowAndNexus(this);
+        return spiceBlowAndNexus;
+    }
+
+    /**
+     * Draws spice blows, announces Nexus, gives Fremen buttons for riding worms
+     *
+     * @return true if the Spice Blow and NexusPhase has ended
+     */
+    public boolean spiceBlowPhaseNextStep() throws InvalidGameStateException {
+        if (spiceBlowAndNexus == null)
+            throw new InvalidGameStateException("Spice Blow and Nexus Phase has not started.");
+        int wormsToPlace = 0;
+        boolean wormToRide = false;
+        if (hasFaction("Fremen")) {
+            FremenFaction fremen = (FremenFaction) getFaction("Fremen");
+            wormsToPlace = fremen.getWormsToPlace();
+            wormToRide = fremen.isWormRideActive();
+        }
+        if (wormsToPlace > 0)
+            throw new InvalidGameStateException("Fremen must place " + wormsToPlace + " worms before the game can advance.");
+        if (wormToRide)
+            throw new InvalidGameStateException("Fremen must decide whether to ride the worm before the game can advance.");
+
+        if (spiceBlowAndNexus.nextStep(this))
+            spiceBlowAndNexus = null;
+        return spiceBlowAndNexus == null;
+    }
+
     public void drawSpiceBlow(String spiceBlowDeckName) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
@@ -951,6 +984,7 @@ public class Game {
         message.append("**Spice Deck ").append(spiceBlowDeckName).append("**\n");
 
         boolean shaiHuludSpotted = false;
+        boolean nexus = false;
         int spiceMultiplier = 1;
 
         do {
@@ -979,6 +1013,7 @@ public class Game {
                         message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
                         message.append(getTerritory(Objects.requireNonNull(lastCard).name()).shaiHuludAppears(this, drawn.name(), true));
+                        nexus = true;
                     }
                 } else {
                     spiceMultiplier = 1;
@@ -986,16 +1021,13 @@ public class Game {
                     if (hasFaction("Fremen"))
                         fremen = (FremenFaction) getFaction("Fremen");
                     message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted!");
+                    nexus = true;
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
                         fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
+                        fremen.addWormToPlace();
                     }
                     message.append("\n");
-                    if (fremen != null) {
-//                        fremen.getChat().publish("Where woul");
-                        if (drawn.name().equals("Great Maker"))
-                            message.append(getTerritory(lastCard.name()).shaiHuludAppears(this, drawn.name(), false));
-                    }
                 }
             } else if (drawn.name().equalsIgnoreCase("Sandtrout")) {
                 shaiHuludSpotted = true;
@@ -1005,6 +1037,8 @@ public class Game {
             } else {
                 message.append(Emojis.SPICE + " has been spotted in ").append(drawn.name());
                 message.append(drawn.sector() == storm ? " - blown away by the storm" : "").append("!\n");
+                if (nexus)
+                    gameActions.publish(gameRoleMention + " We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.");
             }
             if (saveWormForReshuffle) {
                 wormsToReshuffle.add(drawn);

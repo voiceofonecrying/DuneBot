@@ -97,6 +97,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         List<Message> messagesToDelete = new ArrayList<>();
         for (Message message : messages) {
+            if (message.getContentRaw().contains("Where would you like to place "))
+                continue;
             List<Button> buttons = message.getButtons();
             for (Button button : buttons) {
                 String id = button.getId();
@@ -327,8 +329,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (event.getComponentId().contains("-fremen-ride")) {
             if (faction instanceof EcazFaction)
                 discordGame.queueMessage("Movement with Fremen ambasssador complete.");
-            else
+            else if (faction instanceof FremenFaction fremen){
                 discordGame.queueMessage("Fremen ride complete.");
+                fremen.setWormRideActive(false);
+            }
         } else if (event.getComponentId().contains("-enter-discovery-token")) {
             discordGame.queueMessage("Movement into Discovery Token complete.");
         } else {
@@ -568,6 +572,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             String wormName = shaiHuludPlacement ? "Shai-Hulud" : "Great Maker";
             String territoryName = territory.getTerritoryName();
             game.placeShaiHulud(territoryName, wormName, false);
+            ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
             discordGame.queueMessage("You placed " + wormName + " in " + territoryName);
             discordGame.pushGame();
             return;
@@ -830,6 +835,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 String wormName = shaiHuludPlacement ? "Shai-Hulud" : "Great Maker";
                 String territoryName = territory.getFirst().getTerritoryName();
                 game.placeShaiHulud(territoryName, wormName, false);
+                ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
                 discordGame.queueMessage("You placed " + wormName + " in " + territoryName);
                 discordGame.pushGame();
                 return;
@@ -974,8 +980,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void queueDiscoveryShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String buttonSuffix = event.getComponentId().replace("stronghold", "");
+    private static void queueDiscoveryShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
+        String buttonSuffix = event.getComponentId().replace("discovery-tokens", "");
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         List<Button> buttons = new ArrayList<>();
         for (Territory territory : game.getTerritories().values()) {
@@ -986,7 +992,15 @@ public class ShipmentAndMovementButtons implements Pressable {
         buttons.add(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
         buttons.add(Button.danger("pass-shipment" + buttonSuffix, fremenRide ? "No ride" : "Pass Shipment"));
 
-        discordGame.getFactionChat(ButtonManager.getButtonPresser(event, game).getName()).queueMessage("Which Discovery Token?", buttons);
+        MessageCreateBuilder message = new MessageCreateBuilder()
+                .setContent("Which Discovery Token?");
+        if (buttons.size() > 5) {
+            message.addActionRow(buttons.subList(0, 5));
+            message.addActionRow(buttons.subList(5, buttons.size()));
+        } else {
+            message.addActionRow(buttons);
+        }
+        discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
     }
 
@@ -1036,6 +1050,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 String wormName = buttonSuffix.equals("-place-shai-hulud") ? "Shai-Hulud" : "Great Maker";
                 discordGame.queueMessage("You will keep " + wormName + " in " + faction.getMovement().getMovingFrom() + ".");
                 game.placeShaiHulud(faction.getMovement().getMovingFrom(), wormName, false);
+                ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
             case "-guild-ambassador" -> {

@@ -13,6 +13,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FremenFaction extends Faction {
+    List<String> wormRides;
+    boolean wormRideActive;
+    int wormsToPlace;
+
     public FremenFaction(String player, String userName, Game game) throws IOException {
         super("Fremen", player, userName, game);
 
@@ -27,6 +31,7 @@ public class FremenFaction extends Faction {
         southernHemisphere.addForces(name, 17);
         southernHemisphere.addForces(name + "*", 3);
         game.getHomeworlds().put(name, homeworld);
+        this.wormRides = null;
     }
 
     @Override
@@ -47,7 +52,40 @@ public class FremenFaction extends Faction {
         removeForces(territoryName, forceName, amount, toTanks, isSpecial);
     }
 
+    public boolean hasRidesRemaining() {
+        return wormRides != null;
+    }
+
+    public void addWormRide(String rideFrom) {
+        if (wormRides == null)
+            wormRides = new ArrayList<>();
+        wormRides.add(rideFrom);
+    }
+
+    public void presentNextWormRideChoices() {
+        if (wormRides == null || wormRides.isEmpty())
+            return;
+        String ridingFrom = wormRides.removeFirst();
+        presentWormRideChoices(ridingFrom);
+        if (wormRides.isEmpty())
+            wormRides = null;
+    }
+
     public void presentWormRideChoices(String territoryName) {
+        String wormName = territoryName.equals(homeworld) ? "Great Maker" : "Shai-Hulud";
+        Territory territory = getGame().getTerritory(territoryName);
+        String fremenForces = "";
+        int strength = territory.getForceStrength("Fremen");
+        if (strength > 0)
+            fremenForces += strength + " " + Emojis.FREMEN_TROOP + " ";
+        strength = territory.getForceStrength("Fremen*");
+        if (strength > 0)
+            fremenForces += strength + " " + Emojis.FREMEN_FEDAYKIN + " ";
+        if (fremenForces.isEmpty()) {
+            game.getTurnSummary().publish(Emojis.FREMEN_TROOP + " have no forces in " + territoryName + " to ride " + wormName + ".");
+            return;
+        }
+        game.getTurnSummary().publish(fremenForces + "may ride " + wormName + " from " + territoryName + "!");
         getMovement().setMovingFrom(territoryName);
         String buttonSuffix = "-fremen-ride";
         List<DuneChoice> choices = new LinkedList<>();
@@ -59,6 +97,15 @@ public class FremenFaction extends Faction {
         choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
         choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "No ride"));
         chat.publish("Where would you like to ride to from " + territoryName + "? " + player, choices);
+        wormRideActive = true;
+    }
+
+    public boolean isWormRideActive() {
+        return wormRideActive;
+    }
+
+    public void setWormRideActive(boolean wormRideActive) {
+        this.wormRideActive = wormRideActive;
     }
 
     public void presentWormPlacementChoices(String territoryName, String wormName) {
@@ -70,6 +117,18 @@ public class FremenFaction extends Faction {
         choices.add(new DuneChoice("other" + buttonSuffix, "Other Sand Territories"));
         choices.add(new DuneChoice("secondary", "pass-shipment" + buttonSuffix, "Keep it in " + territoryName));
         chat.publish("Where would you like to place " + wormName + "? " + player, choices);
+    }
+
+    public void addWormToPlace() {
+        wormsToPlace++;
+    }
+
+    public void wormWasPlaced() {
+        wormsToPlace--;
+    }
+
+    public int getWormsToPlace() {
+        return wormsToPlace;
     }
 
     public int countFreeStarredRevival() {

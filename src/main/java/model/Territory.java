@@ -414,7 +414,7 @@ public class Territory {
                     fremenForces += strength + " " + Emojis.FREMEN_FEDAYKIN + " ";
                 if (!fremenForces.isEmpty()) {
                     response += "After the Nexus, " + fremenForces + "may ride " + wormName + "!\n";
-                    Objects.requireNonNull(fremen).presentWormRideChoices(territoryName);
+                    Objects.requireNonNull(fremen).addWormRide(territoryName);
                 }
             }
         }
@@ -428,7 +428,7 @@ public class Territory {
                 fremenForces += strength + " " + Emojis.FREMEN_FEDAYKIN + " ";
             if (!fremenForces.isEmpty()) {
                 response += "After the Nexus, " + fremenForces + "in reserves may ride " + wormName + "!\n";
-                fremen.presentWormRideChoices(fremen.getHomeworld());
+                fremen.addWormRide(fremen.getHomeworld());
             } else {
                 response += Emojis.FREMEN + " have no forces in reserves to ride Great Maker.\n";
             }

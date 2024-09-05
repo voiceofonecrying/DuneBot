@@ -107,9 +107,15 @@ public class RunCommands {
         } else if (phase == 1 && subPhase == 3) {
             endStormPhase(discordGame, game);
             game.advancePhase();
-        } else if (phase == 2) {
-            spiceBlow(discordGame, game);
-            game.advancePhase();
+        } else if (phase == 2 && subPhase == 1) {
+            game.startSpiceBlowPhase();
+            game.advanceSubPhase();
+        } else if (phase == 2 && subPhase == 2) {
+            if (game.spiceBlowPhaseNextStep()) {
+                game.advancePhase();
+                game.choamCharity();
+                game.advancePhase();
+            }
         } else if (phase == 3) {
             game.choamCharity();
             game.advancePhase();
@@ -228,11 +234,6 @@ public class RunCommands {
         if (game.hasFaction("Fremen")) {
             discordGame.getFremenChat().queueMessage("The storm will move " + game.getStormMovement() + " sectors next turn.");
         }
-    }
-
-    public static void spiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Spice Blow Phase**");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
     }
 
     public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

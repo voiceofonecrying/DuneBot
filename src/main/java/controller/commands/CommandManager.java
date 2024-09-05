@@ -182,7 +182,7 @@ public class CommandManager extends ListenerAdapter {
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
                 case "assign-tech-token" -> assignTechToken(discordGame, game);
-                case "draw-spice-blow" -> drawSpiceBlow(discordGame, game);
+                case "draw-spice-blow" -> drawSpiceBlow();
                 case "place-shai-hulud" -> placeShaiHulud(discordGame, game);
                 case "create-alliance" -> createAlliance(discordGame, game);
                 case "remove-alliance" -> removeAlliance(discordGame, game);
@@ -639,10 +639,8 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void drawSpiceBlow(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String spiceBlowDeckName = discordGame.required(spiceBlowDeck).getAsString();
-        game.drawSpiceBlow(spiceBlowDeckName);
-        discordGame.pushGame();
+    public void drawSpiceBlow() throws InvalidGameStateException {
+        throw new InvalidGameStateException("Use /run advance to progress through Spice Blow and Nexus.");
     }
 
     public void placeShaiHulud(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

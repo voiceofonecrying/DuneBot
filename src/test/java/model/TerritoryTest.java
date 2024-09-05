@@ -263,13 +263,13 @@ public class TerritoryTest {
             sihayaRidge.addForces("Fremen", 1);
             sihayaRidge.addForces("Fremen*", 2);
             assertTrue(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("After the Nexus, 1 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
-            assertEquals("Where would you like to ride to from Sihaya Ridge? p", fremenChat.getMessages().getFirst());
+//            assertEquals("Where would you like to ride to from Sihaya Ridge? p", fremenChat.getMessages().getFirst());
         }
 
         @Test
         void testFremenReservesCanRideGreatMaker() {
             assertTrue(sihayaRidge.shaiHuludAppears(game, "Great Maker", true).contains("After the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!"));
-            assertEquals("Where would you like to ride to from Southern Hemisphere? p", fremenChat.getMessages().getFirst());
+//            assertEquals("Where would you like to ride to from Southern Hemisphere? p", fremenChat.getMessages().getFirst());
         }
 
         @Test
