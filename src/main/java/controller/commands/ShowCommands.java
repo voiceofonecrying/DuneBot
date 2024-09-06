@@ -333,7 +333,6 @@ public class ShowCommands {
             }
         }
 
-
         ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
         ImageIO.write(table, "png", boardOutputStream);
 
@@ -343,6 +342,8 @@ public class ShowCommands {
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
         if (!leadersInTerritories.isEmpty())
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
+        if (faction instanceof MoritaniFaction moritani)
+            discordGame.queueMessage(infoChannelName, moritani.getTerrorTokenMessage(true));
 
         sendInfoButtons(game, discordGame, faction);
     }
@@ -487,8 +488,6 @@ public class ShowCommands {
                 offset += 50;
             }
         }
-
-
 
         //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
@@ -890,7 +889,7 @@ public class ShowCommands {
                     .append(" Turn ")
                     .append(bg.getPredictionRound());
             case EcazFaction ecaz -> factionSpecificString.append(ecaz.getAmbassadorSupplyInfoMessage());
-            case MoritaniFaction moritani -> factionSpecificString.append(moritani.getTerrorTokenMessage());
+            case MoritaniFaction moritani -> factionSpecificString.append(moritani.getTerrorTokenMessage(false));
             case AtreidesFaction atreides -> factionSpecificString.append("\n__KH Counter:__ ").append(Math.min(7, atreides.getForcesLost()));
             default -> {}
         }

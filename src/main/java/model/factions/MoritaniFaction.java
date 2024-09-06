@@ -304,14 +304,17 @@ public class MoritaniFaction extends Faction {
         this.newAssassinationTargetNeeded = newAssassinationTargetNeeded;
     }
 
-    public String getTerrorTokenMessage() {
-        StringBuilder supply = new StringBuilder();
-        supply.append("\nTerror Tokens:\n");
-
-        for (String token : terrorTokens) {
-            supply.append(token).append("\n");
-        }
-        return supply.toString();
+    public String getTerrorTokenMessage(boolean placedTokensOnly) {
+        String response = "\n__" + (placedTokensOnly ? "Placed " : "") + "Terror Tokens:__\n" +
+                (placedTokensOnly ? "" : "_Available_: " + String.join(", ", terrorTokens) + "\n");
+        String placedTokens = String.join("\n", game.getTerritories().values().stream()
+                .filter(Territory::isStronghold)
+                .filter(t -> !t.getTerrorTokens().isEmpty())
+                .map(t -> "_In " + t.getTerritoryName() + ":_ " + String.join(", ", t.getTerrorTokens())).toList());
+        if (placedTokensOnly && placedTokens.isEmpty())
+            return "";
+        else
+            return response + placedTokens;
     }
 
     @Override
