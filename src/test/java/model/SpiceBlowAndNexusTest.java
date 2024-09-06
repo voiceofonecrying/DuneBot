@@ -181,4 +181,31 @@ public class SpiceBlowAndNexusTest {
             assertTrue(spiceBlowAndNexus.isPhaseComplete());
         }
     }
+
+    @Nested
+    @DisplayName("#harvester")
+    class Harvester {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
+            assertNotEquals("Shai-Hulud", game.getSpiceDeck().getFirst().name());
+            assertNotEquals("Shai-Hulud", game.getSpiceDeck().get(1).name());
+            fremen.addTreacheryCard(new TreacheryCard("Harvester"));
+            spiceBlowAndNexus = game.startSpiceBlowPhase();
+        }
+
+        @Test
+        void testHarvesterAciveAfterFirstBlow() {
+            assertTrue(spiceBlowAndNexus.isHarvesterActive());
+        }
+
+        @Test
+        void testSecondBlowDoesNotEndPhase() {
+            spiceBlowAndNexus.resolveHarvester();
+            assertFalse(spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.resolveHarvester();
+            assertTrue(spiceBlowAndNexus.nextStep(game));
+        }
+    }
 }
