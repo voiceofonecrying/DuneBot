@@ -257,7 +257,7 @@ public class RunCommands {
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().bidding(game);
+        game.getBidding().auctionNextCard(game);
         discordGame.pushGame();
     }
 

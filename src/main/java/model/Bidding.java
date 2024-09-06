@@ -313,7 +313,7 @@ public class Bidding {
         sendAtreidesCardPrescience(game, card);
     }
 
-    public void bidding(Game game) throws InvalidGameStateException {
+    public void auctionNextCard(Game game) throws InvalidGameStateException {
         if (bidCard != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
         } else if (numCardsForBid == 0) {
@@ -456,7 +456,7 @@ public class Bidding {
         return numCardsReturned;
     }
 
-    public void putBackIxCard(Game game, String cardName, String location) {
+    public void putBackIxCard(Game game, String cardName, String location) throws InvalidGameStateException {
         TreacheryCard card = market.stream()
                 .filter(t -> t.name().equals(cardName))
                 .findFirst()
@@ -470,6 +470,7 @@ public class Bidding {
         Collections.shuffle(market);
         ixRejectOutstanding = false;
         game.getTurnSummary().publish(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+        auctionNextCard(game);
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
@@ -821,33 +822,22 @@ public class Bidding {
         clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
-        if (winner instanceof HarkonnenFaction && winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
-            if (game.drawTreacheryCard("Harkonnen")) {
+        if (winner instanceof HarkonnenFaction) {
+            if (winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
+                if (game.drawTreacheryCard("Harkonnen"))
+                    turnSummary.publish(MessageFormat.format("The {0} deck was empty and has been replenished from the discard pile.", Emojis.TREACHERY));
+                turnSummary.publish(MessageFormat.format("{0} draws another card from the {1} deck.", winner.getEmoji(), Emojis.TREACHERY));
+                winner.getLedger().publish("Received " + winner.getLastTreacheryCard().name() + " as an extra card. (" + currentCard + ")");
+            } else if (winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
+                game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
+                game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
+            } else if (winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
+                game.drawCard("treachery deck", winner.getOccupier().getName());
                 turnSummary.publish(MessageFormat.format(
-                        "The {0} deck was empty and has been replenished from the discard pile.",
-                        Emojis.TREACHERY
+                        "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
+                        winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
                 ));
             }
-
-            turnSummary.publish(MessageFormat.format(
-                    "{0} draws another card from the {1} deck.",
-                    winner.getEmoji(), Emojis.TREACHERY
-            ));
-
-            TreacheryCard addedCard = winner.getLastTreacheryCard();
-            winner.getLedger().publish(
-                    "Received " + addedCard.name() + " as an extra card. (" + currentCard + ")"
-            );
-
-        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
-            game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
-            game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
-        } else if (winner instanceof HarkonnenFaction && winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
-            game.drawCard("treachery deck", winner.getOccupier().getName());
-            turnSummary.publish(MessageFormat.format(
-                    "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
-                    winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
-            ));
         }
 
         if (market.isEmpty() && bidCardNumber == numCardsForBid - 1 && richeseCacheCardOutstanding) {
@@ -1026,7 +1016,7 @@ public class Bidding {
                 }
             } else if (allPlayersPassed) {
                 if (blackMarketCard) {
-                    richeseWinner(game, allPlayersPassed);
+                    richeseWinner(game, true);
                     return;
                 }
                 game.getBiddingPhase().publish("All players passed. " + Emojis.TREACHERY + " cards will be returned to the deck.");

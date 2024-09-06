@@ -142,7 +142,7 @@ class BiddingTest {
             game.createAlliance(atreides, emperor);
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
-            bidding.bidding(game);
+            bidding.auctionNextCard(game);
         }
 
         @Test
@@ -185,7 +185,7 @@ class BiddingTest {
             bidding.awardTopBidder(game);
             assertEquals(0, emperor.getSpice());
             assertEquals(0, emperor.getSpiceForAlly());
-            bidding.bidding(game);
+            bidding.auctionNextCard(game);
             assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 11, false, false));
         }
 
@@ -238,7 +238,7 @@ class BiddingTest {
         public class NormalBidding {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
                 bidding.bid(game, atreides, true, 1, null, null);
@@ -302,7 +302,7 @@ class BiddingTest {
                 harkonnen.setHandLimit(0);
                 richese.setHandLimit(0);
                 bidding.awardTopBidder(game);
-                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNull(bidding.getBidCard());
@@ -319,20 +319,20 @@ class BiddingTest {
             void testAllHandsFilledWithCardsRemainingRicheseCardRemaining() throws InvalidGameStateException {
                 bidding.awardTopBidder(game);
                 atreides.setHandLimit(1);
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 bidding.assignAndPayForCard(game, "BG", "Emperor", 0);
                 bg.setHandLimit(1);
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 bidding.assignAndPayForCard(game, "Emperor", "Bank", 0);
                 emperor.setHandLimit(1);
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 bidding.assignAndPayForCard(game, "Fremen", "Emperor", 0);
                 fremen.setHandLimit(1);
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 bidding.assignAndPayForCard(game, "Harkonnen", "Emperor", 0);
                 harkonnen.setHandLimit(2);
                 richese.setHandLimit(0);
-                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNull(bidding.getBidCard());
@@ -351,7 +351,7 @@ class BiddingTest {
         public class NormalBiddingAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                bidding.bidding(game);
+                bidding.auctionNextCard(game);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
                 bidding.pass(game, atreides);
@@ -408,7 +408,7 @@ class BiddingTest {
             @Test
             public void testMarketAndBidCardSentBackToDeck() {
                 bidding.setRicheseCacheCardOutstanding(false);
-                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNotNull(bidding.getBidCard());
@@ -423,7 +423,7 @@ class BiddingTest {
 
             @Test
             public void testMarketAndBidCardSentBackToDeckRicheseCardRemaining() {
-                assertThrows(InvalidGameStateException.class, () -> bidding.bidding(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNotNull(bidding.getBidCard());
@@ -829,7 +829,7 @@ class BiddingTest {
             public void testNextCardIsC1() {
                 biddingPhase = new TestTopic();
                 game.setBiddingPhase(biddingPhase);
-                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -982,7 +982,7 @@ class BiddingTest {
             public void testNextCardIsC1() {
                 biddingPhase = new TestTopic();
                 game.setBiddingPhase(biddingPhase);
-                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -1135,7 +1135,7 @@ class BiddingTest {
             public void testNextCardIsC1() {
                 biddingPhase = new TestTopic();
                 game.setBiddingPhase(biddingPhase);
-                assertDoesNotThrow(() -> bidding.bidding(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -1164,7 +1164,7 @@ class BiddingTest {
 
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
-            bidding.bidding(game);
+            bidding.auctionNextCard(game);
             bidding.setAutoPassEntireTurn(game, atreides, true);
             assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -1225,7 +1225,7 @@ class BiddingTest {
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
             assertTrue(atreides.isAutoBidTurn());
-            bidding.bidding(game);
+            bidding.auctionNextCard(game);
             assertFalse(atreides.isAutoBidTurn());
             assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -1273,18 +1273,20 @@ class BiddingTest {
         assertFalse(bidding.isIxRejectOutstanding());
         bidding.cardCountsInBiddingPhase(game);
         assertEquals(6, bidding.getNumCardsForBid());
-        bidding.bidding(game);
+        bidding.auctionNextCard(game);
         assertTrue(bidding.isMarketShownToIx());
         assertTrue(bidding.isIxRejectOutstanding());
 
         TreacheryCard card = bidding.getMarket().getFirst();
         assertTrue(bidding.isMarketShownToIx());
         assertTrue(bidding.isIxRejectOutstanding());
+        assertTrue(biddingPhase.getMessages().isEmpty());
         bidding.putBackIxCard(game, card.name(), "Top");
         assertTrue(bidding.isMarketShownToIx());
         assertFalse(bidding.isIxRejectOutstanding());
         assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
                 turnSummary.getMessages().getLast());
+        assertTrue(biddingPhase.getMessages().getFirst().contains(" You may now place your bids"));
     }
 
     @Test
