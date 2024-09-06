@@ -38,7 +38,7 @@ public class SpiceBlowAndNexus {
             bothDecksDrawn = true;
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
         }
-        return bothDecksDrawn && fremenRidesComplete;
+        return bothDecksDrawn && fremenRidesComplete && harvesterResolved;
     }
 
     public void checkOnHarvester(Game game, Pair<SpiceCard, Integer> spiceBlow) {

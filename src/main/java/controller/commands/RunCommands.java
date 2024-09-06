@@ -111,11 +111,8 @@ public class RunCommands {
             game.startSpiceBlowPhase();
             game.advanceSubPhase();
         } else if (phase == 2 && subPhase == 2) {
-            if (game.spiceBlowPhaseNextStep()) {
+            if (game.spiceBlowPhaseNextStep())
                 game.advancePhase();
-                game.choamCharity();
-                game.advancePhase();
-            }
         } else if (phase == 3) {
             game.choamCharity();
             game.advancePhase();
