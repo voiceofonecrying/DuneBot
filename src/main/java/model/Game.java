@@ -648,12 +648,20 @@ public class Game {
             try {
                 faction.getTreacheryCard("Family Atomics");
                 return faction;
-            } catch (IllegalArgumentException e) {
-                // faction does not hold Family Atomics
-            }
+            } catch (IllegalArgumentException ignored) {}
         }
 
         throw new NoSuchElementException("No faction holds Atomics");
+    }
+
+    public Faction getFactionWithHarvester() {
+        for (Faction faction : getFactions()) {
+            try {
+                faction.getTreacheryCard("Harvester");
+                return faction;
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return null;
     }
 
     public String breakShieldWall(Faction factionWithAtomics) {
@@ -944,6 +952,10 @@ public class Game {
         return spiceBlowAndNexus;
     }
 
+    public SpiceBlowAndNexus getSpiceBlowAndNexus() {
+        return spiceBlowAndNexus;
+    }
+
     /**
      * Draws spice blows, announces Nexus, gives Fremen buttons for riding worms
      *
@@ -963,13 +975,15 @@ public class Game {
             throw new InvalidGameStateException("Fremen must place " + wormsToPlace + " worms before the game can advance.");
         if (wormToRide)
             throw new InvalidGameStateException("Fremen must decide whether to ride the worm before the game can advance.");
+        if (spiceBlowAndNexus.isHarvesterActive())
+            throw new InvalidGameStateException(getFactionWithHarvester().getName() + " must decide if they will play Harvester before the game can advance.");
 
         if (spiceBlowAndNexus.nextStep(this))
             spiceBlowAndNexus = null;
         return spiceBlowAndNexus == null;
     }
 
-    public void drawSpiceBlow(String spiceBlowDeckName) {
+    public Pair<SpiceCard, Integer> drawSpiceBlow(String spiceBlowDeckName) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
         SpiceCard lastCard = null;
@@ -1056,7 +1070,7 @@ public class Game {
             }
         }
 
-        if (drawn.discoveryToken() == null) territories.get(drawn.name()).addSpice(drawn.spice() * spiceMultiplier);
+        if (drawn.discoveryToken() == null) territories.get(drawn.name()).addSpice(this, drawn.spice() * spiceMultiplier);
         else {
             getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
             if (getTerritory(drawn.name()).countFactions() > 0) {
@@ -1080,6 +1094,7 @@ public class Game {
 
         turnSummary.publish(message.toString());
         setUpdated(UpdateType.MAP);
+        return ImmutablePair.of(drawn, spiceMultiplier);
     }
 
     public void placeShaiHulud(String territoryName, String wormName, boolean firstWorm) {

@@ -243,8 +243,9 @@ public class Territory {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void addSpice(Integer spice) {
+    public void addSpice(Game game, Integer spice) {
         this.spice += spice;
+        game.setUpdated(UpdateType.MAP);
     }
 
     public Integer getRicheseNoField() {

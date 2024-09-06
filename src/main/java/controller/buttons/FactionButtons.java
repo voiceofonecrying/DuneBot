@@ -20,6 +20,7 @@ public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("traitorselection-")) selectTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
+        else if (event.getComponentId().startsWith("play-harvester-")) harvester(event, game, discordGame);
     }
 
     public static void selectTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
@@ -93,6 +94,24 @@ public class FactionButtons {
                 discordGame.queueMessage("You have offered your ally " + support.replace("ally-support-", "") + " " + Emojis.SPICE + ".");
             }
         }
+        discordGame.pushGame();
+    }
+
+    private static void harvester(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getSpiceBlowAndNexus().resolveHarvester();
+        discordGame.queueDeleteMessage();
+        String playIt = event.getComponentId().split("-")[2];
+        if (playIt.equals("yes")) {
+            int spice = Integer.parseInt(event.getComponentId().split("-")[3]);
+            int spiceMultiplier = Integer.parseInt(event.getComponentId().split("-")[4]);
+            String spiceBlowTerritory = event.getComponentId().replace("play-harvester-yes-" + spice + "-" + spiceMultiplier + "-", "");
+            discordGame.queueMessage("You will play Harvester in " + spiceBlowTerritory);
+            game.getTurnSummary().publish(faction.getEmoji() + " plays Harvester in " + spiceBlowTerritory + " to double the " + Emojis.SPICE + " Blow!");
+            game.getTerritories().get(spiceBlowTerritory).addSpice(game, spice * spiceMultiplier);
+            faction.discard("Harvester");
+        } else
+            discordGame.queueMessage("You will not play Harvester");
         discordGame.pushGame();
     }
 }
