@@ -1018,7 +1018,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
         List<Button> strongholds = new ArrayList<>();
         game.getTerritories().values().stream().filter(t -> validStronghold(game, t, faction, fremenRide))
-                .forEach(t -> strongholds.add(Button.primary("ship" + buttonSuffix + "-" + t.getTerritoryName(), t.getTerritoryName()).withDisabled(t.isAftermathToken() && !fremenRide || t.getSector() == game.getStorm())));
+                .forEach(t -> strongholds.add(Button.primary("ship" + buttonSuffix + "-" + t.getTerritoryName(), t.getTerritoryName()).withDisabled(t.isAftermathToken() && !fremenRide)));
         strongholds.sort(Comparator.comparing(Button::getLabel));
         if (strongholds.size() > 5) {
             message.addActionRow(strongholds.subList(0, 5));
