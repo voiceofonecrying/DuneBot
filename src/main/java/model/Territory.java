@@ -438,7 +438,7 @@ public class Territory {
     }
 
     public boolean factionMayMoveIn(Game game, Faction faction) {
-        return !faction.hasAlly() || !hasActiveFaction(game.getFaction(faction.getAlly())) ||
+        return territoryName.equals("Polar Sink") || !faction.hasAlly() || !hasActiveFaction(game.getFaction(faction.getAlly())) ||
                 (faction instanceof EcazFaction && getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getAlly()))
                         || faction.getAlly().equals("Ecaz") && getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction));
     }
