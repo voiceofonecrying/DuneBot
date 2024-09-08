@@ -1121,25 +1121,25 @@ public class Game {
             turnSummary.publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
             if (to.hasActiveFaction("BG") && !(faction instanceof BGFaction))
                 ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
-            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
-            if (hasFaction("Ecaz"))
-                ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, faction);
-            if (hasFaction("Moritani"))
-                ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, faction, 1 + force + specialForce + secondForce + secondSpecialForce);
-        } else {
             moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
+        } else {
+            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
         }
         movement.clear();
         setUpdated(UpdateType.MAP);
     }
 
-    public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean canTrigger) {
+    public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
         if (force != 0 || specialForce != 0)
-            moveForces(faction, from, to, force, specialForce, canTrigger);
+            moveForces(faction, from, to, force, specialForce, false);
         if (secondForce != 0 || secondSpecialForce != 0) {
             turnSummary.publish(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
-            moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, canTrigger);
+            moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, false);
         }
+        if (hasFaction("Ecaz"))
+            ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, faction);
+        if (hasFaction("Moritani"))
+            ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, faction, force + specialForce + secondForce + secondSpecialForce + (noFieldWasMoved ? 1 : 0));
     }
 
     public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {

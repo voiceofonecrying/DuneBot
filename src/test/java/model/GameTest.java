@@ -42,6 +42,7 @@ class GameTest {
     private TestTopic emperorChat;
     private TestTopic fremenChat;
     private TestTopic guildChat;
+    private TestTopic moritaniChat;
 
 
     @BeforeEach
@@ -357,6 +358,56 @@ class GameTest {
             assertEquals(" for 5 " + Emojis.SPICE,
                     guild.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(0, guild.getSpice());
+        }
+    }
+
+    @Nested
+    @DisplayName("#planetologistIsSingleMovement")
+    class PlanetologistIsSingleMovement {
+        @BeforeEach
+        void setUp() throws IOException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Faction moritani = new MoritaniFaction("p", "u", game);
+            moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            game.addFaction(moritani);
+            game.removeForces("Grumman", moritani, 13, false, true);
+            assertFalse(moritani.isHighThreshold());
+            game.getTerritory("Carthag").addTerrorToken("Robbery");
+
+            ecaz = new EcazFaction("p", "u", game);
+            game.addFaction(ecaz);
+            game.getTerritory("Arrakeen").addForces("Ecaz", 2);
+            game.getTerritory("Polar Sink").addForces("Ecaz", 2);
+            Movement ecazMovement = ecaz.getMovement();
+            ecazMovement.setMovingTo("Carthag");
+            ecazMovement.setMovingFrom("Arrakeen");
+            ecazMovement.setForce(1);
+            ecazMovement.setSecondMovingFrom("Polar Sink");
+            ecazMovement.setSecondForce(2);
+
+            richese = new RicheseFaction("p", "u", game);
+            game.addFaction(richese);
+            game.getTerritory("Arrakeen").setRicheseNoField(5);
+            game.getTerritory("Polar Sink").addForces("Richese", 2);
+            Movement richeseMovement = richese.getMovement();
+            richeseMovement.setMovingTo("Carthag");
+            richeseMovement.setMovingFrom("Arrakeen");
+            richeseMovement.setMovingNoField(true);
+            richeseMovement.setSecondMovingFrom("Polar Sink");
+            richeseMovement.setSecondForce(2);
+        }
+
+        @Test
+        void testPlanetologistIsSingleMoveForTerrorTokens() {
+            game.executeFactionMovement(ecaz);
+            assertEquals("Will you trigger your Terror Token in Carthag? p", moritaniChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testPlanetologistWithNoFieldIsSingleMoveForTerrorTokens() {
+            game.executeFactionMovement(richese);
+            assertEquals("Will you trigger your Terror Token in Carthag? p", moritaniChat.getMessages().getFirst());
         }
     }
 
