@@ -308,10 +308,10 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testRobberyDrawFullHand() {
             assertEquals(4, faction.getHandLimit());
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
             assertEquals(faction.getHandLimit(), faction.getTreacheryHand().size());
 
             assertDoesNotThrow(() -> faction.robberyDraw());
@@ -341,10 +341,10 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         @Test
         void testRobberyDrawFullHandEmptyTreacheryDeck() {
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
             LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
             List<TreacheryCard> treacheryDiscard = game.getTreacheryDiscard();
             treacheryDiscard.addAll(treacheryDeck);
@@ -363,10 +363,10 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         @Test
         void testDiscardFromOverFullHand() {
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
-            game.drawTreacheryCard("Moritani");
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
+            game.drawTreacheryCard("Moritani", false, false);
             int turnSummarySize = turnSummary.getMessages().size();
             faction.robberyDraw();
             assertEquals(5, faction.getTreacheryHand().size());

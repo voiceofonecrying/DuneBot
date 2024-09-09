@@ -21,11 +21,14 @@ public class EcazButtons implements Pressable {
 
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-choam-discard-")) choamDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-fremen-move-from-")) fremenMoveFrom(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-ix-discard-")) ixDiscard(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-richese-buy-")) richeseBuyCard(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-bt-leader-")) btLeader(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-bt-which-revival-")) btWhichRevival(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-place-ambassador-"))
             queueAmbassadorButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-ambassador-selected-"))
@@ -61,7 +64,10 @@ public class EcazButtons implements Pressable {
     }
 
     private static void triggerAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        if (!(ButtonManager.getButtonPresser(event, game) instanceof EcazFaction)) return;
+        if (!(ButtonManager.getButtonPresser(event, game) instanceof EcazFaction)) {
+            discordGame.queueMessage("You are not " + Emojis.ECAZ);
+            return;
+        }
         String ambassador = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
@@ -124,7 +130,6 @@ public class EcazButtons implements Pressable {
         }
     }
 
-
     private static void fremenMoveFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String territoryName = event.getComponentId().split("-")[4];
@@ -132,7 +137,55 @@ public class EcazButtons implements Pressable {
         discordGame.queueMessage("You will move from " + territoryName + ".");
         faction.getMovement().setMovingFrom(territoryName);
         ShipmentAndMovementButtons.queueShippingButtons(event, game, discordGame, true);
-//        faction.presentFremenAmbassadorMoveToChoices(territoryName);
+        discordGame.pushGame();
+    }
+
+    private static void ixDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String cardName = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        if (cardName.equals("finished")) {
+            discordGame.queueMessage("You will not discard and draw a new card.");
+        } else {
+            faction.discard(cardName);
+            game.drawTreacheryCard("Ecaz", true, true);
+            discordGame.queueMessage("You discarded " + cardName + " and drew " + faction.getTreacheryHand().getLast().name());
+            discordGame.pushGame();
+        }
+    }
+
+    private static void richeseBuyCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String response = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        if (response.equals("no")) {
+            discordGame.queueMessage("You will not buy a card.");
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
+        } else {
+            faction.buyCardWithRicheseAmbassador();
+            discordGame.queueMessage("You bought " + faction.getTreacheryHand().getLast().name() + ".");
+            discordGame.pushGame();
+        }
+    }
+
+    private static void btLeader(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String leaderName = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        discordGame.queueMessage("You chose " + leaderName);
+        faction.reviveLeaderWithBTAmbassador(leaderName);
+        discordGame.pushGame();
+    }
+
+    private static void btWhichRevival(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        String revivalType = event.getComponentId().split("-")[4];
+        discordGame.queueDeleteMessage();
+        if (revivalType.equals("leader"))
+            faction.presentLeaderChoicesWithBTAmbassador();
+        else
+            faction.reviveForcesWithBTAmbassador();
+        discordGame.queueMessage("You chose to revive " + (revivalType.equals("leader") ? "a Leader" : Emojis.ECAZ_TROOP));
         discordGame.pushGame();
     }
 

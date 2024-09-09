@@ -209,6 +209,10 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addFaction(harkonnen);
             modInfo = new TestTopic();
             game.setModInfo(modInfo);
+            faction.addTreacheryCard(new TreacheryCard("Karama"));
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
+            faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
         }
 
         @Test
@@ -229,10 +233,6 @@ public class EcazFactionTest extends FactionTestTemplate {
 
         @Test
         public void testTriggerCHOAMGivesDiscardButtons() {
-            faction.addTreacheryCard(new TreacheryCard("Karama"));
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
-            faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
             faction.triggerAmbassador(harkonnen, "CHOAM");
             assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
@@ -272,6 +272,117 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "Guild");
             assertTrue(modInfo.getMessages().isEmpty());
             assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild ambassador.", chat.getMessages().getFirst());
+        }
+
+        @Test
+        public void testTriggerHarkonnenShowTraitor() throws IOException {
+            AtreidesFaction atreides;
+            atreides = new AtreidesFaction("p", "u", game);
+            game.addFaction(atreides);
+            atreides.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+
+            faction.triggerAmbassador(atreides, "Harkonnen");
+            assertTrue(chat.getMessages().getFirst().contains(Emojis.ATREIDES + " has "));
+            assertTrue(chat.getMessages().getFirst().contains(" as a Traitor!"));
+        }
+
+        @Test
+        public void testTriggerHarkonnenShowFaceDancer() throws IOException {
+            BTFaction bt;
+            bt = new BTFaction("p", "u", game);
+            game.addFaction(bt);
+            bt.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+            bt.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            bt.addTraitorCard(new TraitorCard("Burseg", "Emperor", 3));
+
+            faction.triggerAmbassador(bt, "Harkonnen");
+            assertTrue(chat.getMessages().getFirst().contains(Emojis.BT + " has "));
+            assertTrue(chat.getMessages().getFirst().contains(" as a Face Dancer!"));
+        }
+
+        @Test
+        public void testTriggerIxGivesDiscardButtons() {
+            faction.triggerAmbassador(harkonnen, "Ix");
+            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", chat.getMessages().getFirst());
+            assertEquals(5, chat.getChoices().getFirst().size());
+            assertEquals("Don't discard", chat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
+        public void testTriggerRicheseGivesButtonsToBuyACard() {
+            faction.discard("Cheap Hero");
+            faction.triggerAmbassador(harkonnen, "Richese");
+            assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().getFirst().size());
+            assertEquals("Yes", chat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("No", chat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
+        public void testTriggerRicheseNotEnoughSpiceToBuyACard() {
+            faction.setSpice(2);
+            faction.discard("Cheap Hero");
+            faction.triggerAmbassador(harkonnen, "Richese");
+            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testRicheseAmbassadorWhenHandIsFull() {
+            faction.triggerAmbassador(harkonnen, "Richese");
+            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorNoLeadersOrForcesInTanks() {
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+            assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        public void testBTAmbassadorOnly2ForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 2, false, true);
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly5ForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly1LeaderInTanks() {
+            game.killLeader(faction, "Whitmore Bludd");
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("Whitmore Bludd was revived with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly2LeadersInTanks() {
+            game.killLeader(faction, "Whitmore Bludd");
+            game.killLeader(faction, "Sanya Ecaz");
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("Which leader would you like to revive?", chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        public void testBTAmbassador5ForcesAnd2LeadersInTanks() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.killLeader(faction, "Whitmore Bludd");
+            game.killLeader(faction, "Sanya Ecaz");
+            faction.triggerAmbassador(harkonnen, "BT");
+            assertEquals("Would you like to revive a leader or 4 " + Emojis.ECAZ_TROOP + "?", chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().getFirst().size());
         }
     }
 }

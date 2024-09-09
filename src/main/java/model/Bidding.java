@@ -824,7 +824,7 @@ public class Bidding {
         // Harkonnen draw an additional card
         if (winner instanceof HarkonnenFaction) {
             if (winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
-                if (game.drawTreacheryCard("Harkonnen"))
+                if (game.drawTreacheryCard("Harkonnen", false, false))
                     turnSummary.publish(MessageFormat.format("The {0} deck was empty and has been replenished from the discard pile.", Emojis.TREACHERY));
                 turnSummary.publish(MessageFormat.format("{0} draws another card from the {1} deck.", winner.getEmoji(), Emojis.TREACHERY));
                 winner.getLedger().publish("Received " + winner.getLastTreacheryCard().name() + " as an extra card. (" + currentCard + ")");
@@ -832,7 +832,7 @@ public class Bidding {
                 game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
                 game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
             } else if (winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
-                game.drawCard("treachery deck", winner.getOccupier().getName());
+                game.drawTreacheryCard(winner.getOccupier().getName(), true, false);
                 turnSummary.publish(MessageFormat.format(
                         "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
                         winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN

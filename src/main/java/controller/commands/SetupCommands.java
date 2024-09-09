@@ -485,9 +485,9 @@ public class SetupCommands {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
             ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
             for (Faction ignored : game.getFactions())
-                game.drawCard("treachery deck", ixFaction.getName());
+                game.drawTreacheryCard(ixFaction.getName(), false, false);
             if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
-                game.drawCard("treachery deck", ixFaction.getName());
+                game.drawTreacheryCard(ixFaction.getName(), false, false);
             }
             discordGame.getModInfo().queueMessage(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
             IxCommands.initialCard(discordGame, game);
@@ -501,11 +501,11 @@ public class SetupCommands {
     public static StepStatus treacheryCardsStep(Game game) {
         for (Faction faction : game.getFactions()) {
             if (faction.getTreacheryHand().isEmpty()) {
-                game.drawCard("treachery deck", faction.getName());
+                game.drawTreacheryCard(faction.getName(), true, false);
             }
         }
         try {
-            game.drawCard("treachery deck", "Harkonnen");
+            game.drawTreacheryCard("Harkonnen", true, false);
         } catch (IllegalArgumentException e) {
             // Harkonnen is not in the game
         }

@@ -456,6 +456,17 @@ public class Faction {
     }
 
     /**
+     * Just revive the leader. Calling function handles payment and messaging.
+     *
+     * @param leaderToRevive the name of the leader
+     */
+    protected void reviveLeader(String leaderToRevive) {
+        Leader leader = game.removeLeaderFromTanks(leaderToRevive);
+        addLeader(leader);
+        leader.setBattleTerritoryName(null);
+    }
+
+    /**
      * Revive a leader from the tanks and make payment to BT if applicable or to the spice bank
      *
      * @param leaderToRevive the name of the leader
@@ -468,21 +479,20 @@ public class Faction {
             else if (!game.hasFaction("BT"))
                 throw new IllegalArgumentException("Alternative cost cannot be set without BT in the game.");
         }
-        Leader leader = game.removeLeaderFromTanks(leaderToRevive);
-        int cost = revivalCost != null ? revivalCost : leader.getRevivalCost(this);
-        if (spice < cost) {
-            game.getLeaderTanks().add(leader);
-            throw new InvalidGameStateException(name + " does not have enough spice to revive " + leaderToRevive);
+        if (revivalCost == null) {
+            Leader leader = game.findLeaderInTanks(leaderToRevive);
+            revivalCost = leader.getRevivalCost(this);
         }
+        if (spice < revivalCost)
+            throw new InvalidGameStateException(name + " does not have enough spice to revive " + leaderToRevive);
 
-        addLeader(leader);
-        leader.setBattleTerritoryName(null);
-        subtractSpice(cost, "revive " + leaderToRevive);
-        String message = leaderToRevive + " was revived from the tanks for " + cost + " " + Emojis.SPICE;
+        reviveLeader(leaderToRevive);
+        subtractSpice(revivalCost, "revive " + leaderToRevive);
+        String message = leaderToRevive + " was revived from the tanks for " + revivalCost + " " + Emojis.SPICE;
         if (!(this instanceof BTFaction) && game.hasFaction("BT")) {
             Faction bt = game.getFaction("BT");
             message += " paid to " + Emojis.BT;
-            bt.addSpice(cost, emoji + " revived " + leaderToRevive);
+            bt.addSpice(revivalCost, emoji + " revived " + leaderToRevive);
         }
         game.getTurnSummary().publish(emoji + " " + message);
         game.setUpdated(UpdateType.MAP);

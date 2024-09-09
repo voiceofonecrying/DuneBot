@@ -74,9 +74,6 @@ public class CommandOptions {
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
-    public static final OptionData deck = new OptionData(OptionType.STRING, "deck", "The deck", true)
-            .addChoice("Treachery Deck", "treachery deck")
-            .addChoice("Traitor Deck", "traitor deck");
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
     public static final OptionData allyCard = new OptionData(OptionType.STRING, "ally-card", "The ally's card to swap for.", true).setAutoComplete(true);
     public static final OptionData discardCard = new OptionData(OptionType.STRING, "card-discard", "The card.", true).setAutoComplete(true);

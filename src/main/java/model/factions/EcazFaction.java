@@ -87,13 +87,10 @@ public class EcazFaction extends Faction {
             case "Fremen" -> presentFremenAmbassadorRideFromChoices();
             case "Guild" -> presentGuildAmbassadorDestinationChoices();
             case "Harkonnen" ->
-                    game.getModInfo().publish("Harkonnen ambassador token was triggered by " + triggeringFaction.getEmoji() + ", please show Ecaz player a random traitor card that " + triggeringFaction.getEmoji() + " holds.");
-            case "Ix" ->
-                    game.getModInfo().publish("Ixian ambassador token was triggered, Ecaz may discard a treachery card and draw a new one.");
-            case "Richese" ->
-                    game.getModInfo().publish("Richese ambassador token was triggered, Ecaz may draw a treachery card for 3 spice.");
-            case "BT" ->
-                    game.getModInfo().publish("BT ambassador token was triggered, Ecaz may revive a leader or up to 4 forces for free.");
+                    chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().name() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
+            case "Ix" -> presentIxAmbassadorDiscardChoices();
+            case "Richese" -> presentRicheseAmbassadorChoices();
+            case "BT" -> presentBTAmbassadorChoices();
         }
 
         for (Territory territory : game.getTerritories().values()) {
@@ -147,6 +144,81 @@ public class EcazFaction extends Faction {
             choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "Pass shipment"));
             chat.publish("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
         }
+    }
+
+    public void presentIxAmbassadorDiscardChoices() {
+        List<DuneChoice> choices = new ArrayList<>();
+        int i = 0;
+        for (TreacheryCard c : treacheryHand)
+            choices.add(new DuneChoice("ecaz-ix-discard-" + c.name() + "-" + i++, c.name()));
+        choices.add(new DuneChoice("secondary", "ecaz-ix-discard-finished", "Don't discard"));
+        chat.publish("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", choices);
+    }
+
+    public void presentRicheseAmbassadorChoices() {
+        if (treacheryHand.size() == handLimit) {
+            chat.publish("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese ambassador.");
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
+        } else if (spice < 3) {
+            chat.publish("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese ambassador.");
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("ecaz-richese-buy-yes", "Yes"));
+            choices.add(new DuneChoice("secondary", "ecaz-richese-buy-no", "No"));
+            chat.publish("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", choices);
+        }
+    }
+
+    public void presentBTAmbassadorChoices() {
+        List<Leader> ecazLeadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getName().equals("Sanya Ecaz") || l.getName().equals("Whitmore Bludd") || l.getName().equals("Ilesa Ecaz") || l.getName().equals("Rivvy Dinari") || l.getName().equals("Bindikk Narvi") || l.getName().equals("Duke Vidal")).toList();
+        if (getRevivableForces() == 0) {
+            if (ecazLeadersInTanks.isEmpty()) {
+                chat.publish("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT ambassador.");
+                game.getTurnSummary().publish(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.");
+            } else {
+                presentLeaderChoicesWithBTAmbassador();
+            }
+        } else {
+            int numForces = Math.min(getRevivableForces(), 4);
+            if (ecazLeadersInTanks.isEmpty()) {
+                reviveForcesWithBTAmbassador();
+            } else {
+                List<DuneChoice> choices = new ArrayList<>();
+                choices.add(new DuneChoice("ecaz-bt-which-revival-leader", "Leader"));
+                choices.add(new DuneChoice("ecaz-bt-which-revival-forces-" + numForces, numForces + " Forces"));
+                chat.publish("Would you like to revive a leader or " + numForces + " " + Emojis.ECAZ_TROOP + "?", choices);
+            }
+        }
+    }
+
+    public void reviveForcesWithBTAmbassador() {
+        int numForces = Math.min(getRevivableForces(), 4);
+        game.reviveForces(this, false, numForces, 0);
+        chat.publish("You revived " + numForces + " " + Emojis.ECAZ_TROOP + " with your BT ambassador.");
+    }
+
+    public void presentLeaderChoicesWithBTAmbassador() {
+        List<Leader> ecazLeadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getName().equals("Sanya Ecaz") || l.getName().equals("Whitmore Bludd") || l.getName().equals("Ilesa Ecaz") || l.getName().equals("Rivvy Dinari") || l.getName().equals("Bindikk Narvi") || l.getName().equals("Duke Vidal")).toList();
+        if (ecazLeadersInTanks.size() == 1) {
+            reviveLeaderWithBTAmbassador(ecazLeadersInTanks.getFirst().getName());
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            ecazLeadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
+            chat.publish("Which leader would you like to revive?", choices);
+        }
+    }
+
+    public void reviveLeaderWithBTAmbassador(String leaderName) {
+        reviveLeader(leaderName);
+        chat.publish(leaderName + " was revived with your BT ambassador.");
+        game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT ambassador.");
+    }
+
+    public void buyCardWithRicheseAmbassador() {
+        subtractSpice(3, "buy " + Emojis.TREACHERY + " with Richese ambassador.");
+        game.drawTreacheryCard("Ecaz", true, false);
+        game.getTurnSummary().publish(Emojis.ECAZ + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with their Richese ambassador.");
     }
 
     public void sendAmbassadorLocationMessage(int cost) {

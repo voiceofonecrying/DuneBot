@@ -603,14 +603,17 @@ public class Game {
         return leaderTanks;
     }
 
-    public Leader removeLeaderFromTanks(String name) {
-        Leader remove = leaderTanks.stream()
+    public Leader findLeaderInTanks(String name) {
+        return leaderTanks.stream()
                 .filter(l -> l.getName().equals(name))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
+                .orElseThrow(() -> new IllegalArgumentException(name + " is not in the tanks."));
+    }
 
-        leaderTanks.remove(remove);
-        return remove;
+    public Leader removeLeaderFromTanks(String name) {
+        Leader leader = findLeaderInTanks(name);
+        leaderTanks.remove(leader);
+        return leader;
     }
 
     public void advanceTurn() {
@@ -699,21 +702,25 @@ public class Game {
         return hasGameOption(GameOption.STRONGHOLD_SKILLS);
     }
 
-    public boolean drawTreacheryCard(String faction) {
+    public boolean drawTreacheryCard(String factionName, boolean publishToLedger, boolean publishToTurnSummary) {
         boolean deckReplenished = false;
         if (treacheryDeck.isEmpty()) {
             deckReplenished = true;
             treacheryDeck.addAll(treacheryDiscard);
             treacheryDiscard.clear();
         }
-        getFaction(faction).addTreacheryCard(getTreacheryDeck().pollLast());
+        Faction faction = getFaction(factionName);
+        faction.addTreacheryCard(treacheryDeck.pollLast());
+        if (publishToLedger)
+            faction.getLedger().publish(faction.getTreacheryHand().getLast().name() + " drawn from deck.");
+        if (publishToTurnSummary)
+            turnSummary.publish(faction.getEmoji() + " draws a card from the " + Emojis.TREACHERY + " deck.");
         return deckReplenished;
     }
 
     public void drawCard(String deckName, String faction) {
         switch (deckName) {
             case "traitor deck" -> getFaction(faction).addTraitorCard(getTraitorDeck().pollLast());
-            case "treachery deck" -> drawTreacheryCard(faction);
             case "leader skills deck" -> getFaction(faction).getLeaderSkillsHand().add(getLeaderSkillDeck().pollLast());
         }
     }
