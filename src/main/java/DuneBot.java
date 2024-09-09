@@ -24,7 +24,7 @@ public class DuneBot {
         } else {
             try {
                 Dotenv dotenv = Dotenv.configure().load();
-                return dotenv.get("TOKEN");
+                return dotenv.get(variable);
             } catch (DotenvException e) {
                 if (isRequired) {
                     throw new RuntimeException(e);
@@ -36,7 +36,7 @@ public class DuneBot {
     }
 
     public static void main(String[] args) {
-        System.out.println("There are " + CommandManager.getAllCommands().size() + " commands in Dunebot.");
+        System.out.println("There are " + CommandManager.getAllCommands().size() + " commands in DuneBot.");
         Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         try {
             String token = getConfigValue("TOKEN", true);
