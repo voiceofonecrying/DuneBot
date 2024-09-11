@@ -14,6 +14,11 @@ public class TestTopic implements DuneTopic {
         choices = new ArrayList<>();
     }
 
+    public void clear() {
+        messages.clear();
+        choices.clear();
+    }
+
     public List<String> getMessages() {
         return messages;
     }

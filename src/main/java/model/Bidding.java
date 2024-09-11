@@ -456,7 +456,7 @@ public class Bidding {
         return numCardsReturned;
     }
 
-    public void putBackIxCard(Game game, String cardName, String location) throws InvalidGameStateException {
+    public void putBackIxCard(Game game, String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
         TreacheryCard card = market.stream()
                 .filter(t -> t.name().equals(cardName))
                 .findFirst()
@@ -470,7 +470,10 @@ public class Bidding {
         Collections.shuffle(market);
         ixRejectOutstanding = false;
         game.getTurnSummary().publish(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
-        auctionNextCard(game);
+        if (requestTechnology)
+            game.getFaction("Ix").getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
+        else
+            auctionNextCard(game);
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {

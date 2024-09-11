@@ -33,6 +33,7 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().startsWith("ix-reject-")) locationSelected(event, discordGame, game);
         else if (event.getComponentId().equals("ix-reset-card-selection")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-reset")) chooseDifferentCard(discordGame, game);
+        else if (event.getComponentId().startsWith("ix-confirm-reject-technology-")) sendCardBackAndRequestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
         else if (event.getComponentId().startsWith("hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
         else if (event.getComponentId().startsWith("hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
@@ -255,11 +256,19 @@ public class IxButtons implements Pressable {
         bidding.presentCardToRejectChoices(game);
     }
 
+    private static void sendCardBackAndRequestTechnology(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        if (!game.getBidding().isIxRejectOutstanding()) {
+            throw new InvalidGameStateException("You have already sent a card back.");
+        }
+        discordGame.queueDeleteMessage();
+        IxCommands.sendCardBackToDeck(event, discordGame, game, event.getComponentId().split("-")[4], event.getComponentId().split("-")[5], true);
+    }
+
     private static void sendCardBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
         discordGame.queueDeleteMessage();
-        IxCommands.sendCardBackToDeck(event, discordGame, game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
+        IxCommands.sendCardBackToDeck(event, discordGame, game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4], false);
     }
 }

@@ -74,8 +74,8 @@ public class IxCommands {
         }
     }
 
-    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, boolean fromButton, String cardName, String location) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().putBackIxCard(game, cardName, location);
+    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, boolean fromButton, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
+        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
         String message = "You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.";
         if (fromButton)
             event.getHook().sendMessage(message).queue();
@@ -88,11 +88,11 @@ public class IxCommands {
     public static void sendCardBackToDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(putBackCard).getAsString();
         String location = discordGame.required(topOrBottom).getAsString();
-        sendCardBackToDeck(null, discordGame, game, false, cardName, location);
+        sendCardBackToDeck(null, discordGame, game, false, cardName, location, false);
     }
 
-    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String cardName, String location) throws ChannelNotFoundException, InvalidGameStateException {
-        sendCardBackToDeck(event, discordGame, game, true, cardName, location);
+    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
+        sendCardBackToDeck(event, discordGame, game, true, cardName, location, requestTechnology);
     }
 
     public static void blockBiddingAdvantage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -185,7 +185,8 @@ public class IxCommands {
 
     public static void confirmCardToSendBack(DiscordGame discordGame, String cardName, String location) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("ix-confirm-reject" + "-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
+        buttons.add(Button.success("ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
+        buttons.add(Button.primary("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
         buttons.add(Button.secondary("ix-confirm-reject-reset", "Start over"));
         discordGame.getIxChat().queueMessage("Confirm your selection of " + cardName.trim() + " to " + location + ".", buttons);
     }

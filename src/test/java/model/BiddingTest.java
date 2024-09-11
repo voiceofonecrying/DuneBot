@@ -30,6 +30,8 @@ class BiddingTest {
     private IxFaction ix;
     private RicheseFaction richese;
 
+    private TestTopic ixChat;
+
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
@@ -57,7 +59,8 @@ class BiddingTest {
         fremen.setChat(new TestTopic());
         guild.setChat(new TestTopic());
         harkonnen.setChat(new TestTopic());
-        ix.setChat(new TestTopic());
+        ixChat = new TestTopic();
+        ix.setChat(ixChat);
         richese.setChat(new TestTopic());
 
         atreides.setLedger(new TestTopic());
@@ -1259,34 +1262,55 @@ class BiddingTest {
         }
     }
 
-    @Test
-    void testPutBackIxCard() throws InvalidGameStateException {
-        game.addFaction(atreides);
-        game.addFaction(bg);
-        game.addFaction(emperor);
-        game.addFaction(fremen);
-        game.addFaction(guild);
-        game.addFaction(ix);
-        bidding = game.startBidding();
+    @Nested
+    @DisplayName("#putBackIxCard")
+    class PutBackIxCard {
+        TreacheryCard card;
 
-        assertFalse(bidding.isMarketShownToIx());
-        assertFalse(bidding.isIxRejectOutstanding());
-        bidding.cardCountsInBiddingPhase(game);
-        assertEquals(6, bidding.getNumCardsForBid());
-        bidding.auctionNextCard(game);
-        assertTrue(bidding.isMarketShownToIx());
-        assertTrue(bidding.isIxRejectOutstanding());
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(ix);
+            bidding = game.startBidding();
 
-        TreacheryCard card = bidding.getMarket().getFirst();
-        assertTrue(bidding.isMarketShownToIx());
-        assertTrue(bidding.isIxRejectOutstanding());
-        assertTrue(biddingPhase.getMessages().isEmpty());
-        bidding.putBackIxCard(game, card.name(), "Top");
-        assertTrue(bidding.isMarketShownToIx());
-        assertFalse(bidding.isIxRejectOutstanding());
-        assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
-                turnSummary.getMessages().getLast());
-        assertTrue(biddingPhase.getMessages().getFirst().contains(" You may now place your bids"));
+            assertFalse(bidding.isMarketShownToIx());
+            assertFalse(bidding.isIxRejectOutstanding());
+            bidding.cardCountsInBiddingPhase(game);
+            assertEquals(6, bidding.getNumCardsForBid());
+            bidding.auctionNextCard(game);
+            assertTrue(bidding.isMarketShownToIx());
+            assertTrue(bidding.isIxRejectOutstanding());
+
+            card = bidding.getMarket().getFirst();
+            assertTrue(bidding.isMarketShownToIx());
+            assertTrue(bidding.isIxRejectOutstanding());
+            assertTrue(biddingPhase.getMessages().isEmpty());
+            ixChat.clear();
+        }
+
+        @Test
+        void testAllowAutomaticAuction() throws InvalidGameStateException {
+            bidding.putBackIxCard(game, card.name(), "Top", false);
+            assertTrue(bidding.isMarketShownToIx());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
+                    turnSummary.getMessages().getLast());
+            assertTrue(biddingPhase.getMessages().getFirst().contains(" You may now place your bids"));
+        }
+
+        @Test
+        void testRequestTechnology() throws InvalidGameStateException {
+            bidding.putBackIxCard(game, card.name(), "Top", true);
+            assertTrue(bidding.isMarketShownToIx());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
+                    turnSummary.getMessages().getLast());
+            assertEquals(Emojis.IX + " would like to use Technology on the first card. ", ixChat.getMessages().getFirst());
+        }
     }
 
     @Test
