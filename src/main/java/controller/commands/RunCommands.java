@@ -117,7 +117,7 @@ public class RunCommands {
             game.choamCharity();
             game.advancePhase();
         } else if (phase == 4 && subPhase == 1) {
-            if (startBiddingPhase(discordGame, game)) {
+            if (startBiddingPhase(game)) {
                 game.advanceSubPhase();
                 game.getBidding().cardCountsInBiddingPhase(game);
             }
@@ -233,24 +233,9 @@ public class RunCommands {
         }
     }
 
-    public static boolean startBiddingPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Bidding Phase**");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Bidding Phase\n");
-        game.startBidding();
-        RicheseFaction richeseFaction;
-        try {
-            richeseFaction = (RicheseFaction) game.getFaction("Richese");
-            if (richeseFaction.getTreacheryHand().isEmpty()) {
-                discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
-                return true;
-            } else {
-                RicheseCommands.askBlackMarket(discordGame, game);
-                discordGame.getModInfo().queueMessage(Emojis.RICHESE + " has been given buttons for black market.");
-                return false;
-            }
-        } catch (IllegalArgumentException e) {
-            return true;
-        }
+    public static boolean startBiddingPhase(Game game) {
+        Bidding bidding = game.startBidding();
+        return !bidding.isBlackMarketDecisionInProgress();
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

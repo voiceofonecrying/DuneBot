@@ -184,25 +184,6 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void askBlackMarket(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        StringBuilder message = new StringBuilder();
-        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
-        message.append(
-                MessageFormat.format(
-                        "Turn {0} - Select a {1} card to sell on the black market. {2}",
-                        game.getTurn(), Emojis.TREACHERY, richeseFaction.getPlayer()
-                )
-        );
-        List<Button> buttons = new LinkedList<>();
-        int i = 0;
-        for (TreacheryCard card : richeseFaction.getTreacheryHand()) {
-            i++;
-            buttons.add(Button.primary("richeserunblackmarket-" + card.name() + "-" + i, card.name()));
-        }
-        buttons.add(Button.danger("richeserunblackmarket-skip", "No black market"));
-        discordGame.getRicheseChat().queueMessage(message.toString(), buttons);
-    }
-
     public static void blackMarketMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));

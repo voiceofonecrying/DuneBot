@@ -17,7 +17,9 @@ public class Bidding {
     private List<String> bidOrder;
     private TreacheryCard bidCard;
     private List<String> richeseBidOrder;
+    private boolean cacheCardDecisionInProgress;
     private boolean richeseCacheCard;
+    private boolean blackMarketDecisionInProgress;
     private boolean blackMarketCard;
     private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
@@ -25,6 +27,7 @@ public class Bidding {
     private int ixTechnologyCardNumber;
     private boolean marketPopulated;
     private boolean marketShownToIx;
+    private boolean ixRejectDecisionInProgress;
     private boolean ixRejectOutstanding;
     private boolean treacheryDeckReshuffled;
     private int numCardsFromOldDeck;
@@ -40,15 +43,19 @@ public class Bidding {
     private String previousWinner;
     private boolean ixAllySwapped;
 
-    public Bidding() {
+    public Bidding(Game game) {
         super();
 
+        game.getTurnSummary().publish("**Turn " + game.getTurn() + " Bidding Phase**");
+        game.setPhaseForWhispers("Turn " + game.getTurn() + " Bidding Phase\n");
         this.bidCardNumber = 0;
         this.numCardsForBid = 0;
         this.bidOrder = new ArrayList<>();
         this.bidCard = null;
         this.richeseBidOrder = null;
+        this.cacheCardDecisionInProgress = false;
         this.richeseCacheCard = false;
+        this.blackMarketDecisionInProgress = false;
         this.blackMarketCard = false;
         this.silentAuction = false;
         this.richeseCacheCardOutstanding = false;
@@ -57,6 +64,7 @@ public class Bidding {
         this.market = new LinkedList<>();
         this.marketPopulated = false;
         this.marketShownToIx = false;
+        this.ixRejectDecisionInProgress = false;
         this.ixRejectOutstanding = false;
         this.treacheryDeckReshuffled = false;
         this.numCardsFromOldDeck = 0;
@@ -70,6 +78,17 @@ public class Bidding {
         this.previousCard = null;
         this.previousWinner = null;
         this.ixAllySwapped = false;
+
+        RicheseFaction richeseFaction;
+        try {
+            richeseFaction = (RicheseFaction) game.getFaction("Richese");
+            if (richeseFaction.getTreacheryHand().isEmpty()) {
+                game.getModInfo().publish(Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
+            } else {
+                askBlackMarket(game);
+                game.getModInfo().publish(Emojis.RICHESE + " has been given buttons for black market.");
+            }
+        } catch (IllegalArgumentException ignored) {}
     }
 
     private void clearFactionBidInfo(Game game) {
@@ -83,9 +102,11 @@ public class Bidding {
     }
 
     public void cardCountsInBiddingPhase(Game game) throws InvalidGameStateException {
-        if (bidCard != null) {
+        if (blackMarketDecisionInProgress)
+            throw new InvalidGameStateException("Richese must decide on black market before advancing.");
+        if (bidCard != null)
             throw new InvalidGameStateException("The black market card must be awarded before advancing.");
-        }
+
         StringBuilder message = new StringBuilder();
         message.append(MessageFormat.format(
                 "{0} Number of Treachery Cards {0}\n",
@@ -153,6 +174,21 @@ public class Bidding {
             choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
         }
         game.getFaction("Ix").getChat().publish("", choices);
+        ixRejectDecisionInProgress = true;
+    }
+
+    public void askBlackMarket(Game game) {
+        blackMarketDecisionInProgress = true;
+        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
+        String message2 = "Turn " + game.getTurn() + " - Select a " + Emojis.TREACHERY + " card to sell on the black market. " + richeseFaction.getPlayer();
+        List<DuneChoice> choices = new ArrayList<>();
+        int i = 0;
+        for (TreacheryCard card : richeseFaction.getTreacheryHand()) {
+            i++;
+            choices.add(new DuneChoice("richeserunblackmarket-" + card.name() + "-" + i, card.name()));
+        }
+        choices.add(new DuneChoice("danger", "richeserunblackmarket-skip", "No black market"));
+        richeseFaction.getChat().publish(message2, choices);
     }
 
     private void runRicheseBid(Game game, String bidType, boolean blackMarket) throws InvalidGameStateException {
@@ -251,6 +287,7 @@ public class Bidding {
         }
 
         RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+        cacheCardDecisionInProgress = false;
         richeseCacheCard = true;
         setBidCard(game,
                 faction.removeTreacheryCardFromCache(
@@ -280,6 +317,7 @@ public class Bidding {
             throw new InvalidGameStateException("Black market card must be first in the bidding round.");
         }
 
+        blackMarketDecisionInProgress = false;
         Faction faction = game.getFaction("Richese");
         List<TreacheryCard> cards = faction.getTreacheryHand();
 
@@ -457,6 +495,7 @@ public class Bidding {
     }
 
     public void putBackIxCard(Game game, String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
+        ixRejectDecisionInProgress = false;
         TreacheryCard card = market.stream()
                 .filter(t -> t.name().equals(cardName))
                 .findFirst()
@@ -560,6 +599,22 @@ public class Bidding {
     private void setBidCard(Game game, TreacheryCard bidCard) {
         clearFactionBidInfo(game);
         this.bidCard = bidCard;
+    }
+
+    public boolean isCacheCardDecisionInProgress() {
+        return cacheCardDecisionInProgress;
+    }
+
+    public void setCacheCardDecisionInProgress(boolean cacheCardDecisionInProgress) {
+        this.cacheCardDecisionInProgress = cacheCardDecisionInProgress;
+    }
+
+    public boolean isBlackMarketDecisionInProgress() {
+        return blackMarketDecisionInProgress;
+    }
+
+    public void setBlackMarketDecisionInProgress(boolean blackMarketDecisionInProgress) {
+        this.blackMarketDecisionInProgress = blackMarketDecisionInProgress;
     }
 
     public boolean isBlackMarketCard() {
@@ -734,7 +789,14 @@ public class Bidding {
         return false;
     }
 
-    public void presentCacheCardChoices(Game game) {
+    public boolean presentCacheCardChoices(Game game) {
+        if (game.getFactions().stream().noneMatch(f -> f.getTreacheryHand().size() < f.getHandLimit())) {
+            cacheCardDecisionInProgress = false;
+            richeseCacheCardOutstanding = false;
+            game.getModInfo().publish("If anyone discards now, use /richese card-bid to auction the " + Emojis.RICHESE + " cache card. Otherwise, use /run advance to end the bidding phase.");
+            return false;
+        }
+        cacheCardDecisionInProgress = true;
         RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
         List<DuneChoice> choices = new ArrayList<>();
         String message;
@@ -752,6 +814,7 @@ public class Bidding {
             richeseFaction.getOccupier().getChat().publish(message, choices);
             richeseFaction.getOccupier().getChat().publish("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
         }
+        return true;
     }
 
     public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue) throws InvalidGameStateException {
@@ -844,8 +907,8 @@ public class Bidding {
         }
 
         if (market.isEmpty() && bidCardNumber == numCardsForBid - 1 && richeseCacheCardOutstanding) {
-            presentCacheCardChoices(game);
-            game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
+            if (presentCacheCardChoices(game))
+                game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
         }
     }
 
@@ -1040,6 +1103,10 @@ public class Bidding {
     public boolean finishBiddingPhase(Game game) throws InvalidGameStateException {
         if (bidCard == null && !market.isEmpty() && !getEligibleBidOrder(game).isEmpty()) {
             throw new InvalidGameStateException("Use /run bidding to auction the next card.");
+        } else if (cacheCardDecisionInProgress) {
+            throw new InvalidGameStateException("Richese must decide on their cache card.");
+        } else if (ixRejectDecisionInProgress) {
+            throw new InvalidGameStateException("Ix must send a card back to the deck.");
         } else if (bidCard == null && richeseCacheCardOutstanding && !getEligibleBidOrder(game).isEmpty()) {
             throw new InvalidGameStateException(Emojis.RICHESE + " cache card must be completed before ending bidding.");
         } else if (bidCard != null && !cardFromMarket) {

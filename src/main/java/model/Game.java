@@ -192,7 +192,7 @@ public class Game {
     }
 
     public Bidding startBidding() {
-        bidding = new Bidding();
+        bidding = new Bidding(this);
         setUpdated(UpdateType.MAP);
         try {
             RicheseFaction faction = (RicheseFaction) getFaction("Richese");

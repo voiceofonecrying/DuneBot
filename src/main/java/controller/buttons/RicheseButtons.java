@@ -31,6 +31,7 @@ public class RicheseButtons implements Pressable {
         String cardName = event.getComponentId().split("-")[1];
         if (cardName.equals("skip")) {
             discordGame.queueMessage("No black market this turn");
+            game.getBidding().setBlackMarketDecisionInProgress(false);
             RunCommands.advance(discordGame, game);
         } else {
             discordGame.queueMessage("You selected " + cardName.trim() + ".");
@@ -39,11 +40,11 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = event.getComponentId().split("-")[1];
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
-            RicheseCommands.askBlackMarket(discordGame, game);
+            game.getBidding().askBlackMarket(game);
         } else {
             String method = event.getComponentId().split("-")[2];
             discordGame.queueMessage("You selected " + method + " auction.");
@@ -57,7 +58,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
-            RicheseCommands.askBlackMarket(discordGame, game);
+            game.getBidding().askBlackMarket(game);
         } else {
             String method = event.getComponentId().split("-")[2];
             discordGame.queueMessage("You are selling " + cardName.trim() + " by " + method + " auction.");
@@ -81,6 +82,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will sell last.");
         discordGame.getModInfo().queueMessage(Emojis.RICHESE + "will be given buttons when it is time for the last card.");
+        game.getBidding().setCacheCardDecisionInProgress(false);
         RunCommands.bidding(discordGame, game);
     }
 
