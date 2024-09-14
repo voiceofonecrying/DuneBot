@@ -543,6 +543,7 @@ public class Battle {
         Faction faction = isAggressor ? getAggressor(game) : getDefender(game);
         String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
         String troopFactionEmoji = Emojis.getFactionEmoji(troopFactionName);
+        Faction opponentFaction = isAggressor ? getDefender(game) : getAggressor(game);
         BattlePlan aggressorPlan = getAggressorBattlePlan();
         BattlePlan defenderPlan = getDefenderBattlePlan();
         BattlePlan battlePlan = isAggressor ? aggressorPlan : defenderPlan;
@@ -731,6 +732,20 @@ public class Battle {
                 int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
                 if (combatWater > 0)
                     resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+                if (getWholeTerritoryName().equals("Jacurutu Sietch")) {
+                    int opponentRegularNotDialed = opponentBattlePlan.getRegularNotDialed();
+                    int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
+                    String forcesString = "";
+                    if (opponentRegularNotDialed > 0)
+                        forcesString += " " + opponentRegularNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName());
+                    if (opponentSpecialNotDialed > 0)
+                        forcesString += " " + opponentSpecialNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName() + "*");
+                    int ecazForcesNotDialed = Math.floorDiv(opponentBattlePlan.getEcazTroopsForAlly(), 2);
+                    if (ecazForcesNotDialed > 0)
+                        forcesString += " " + ecazForcesNotDialed + " " + Emojis.ECAZ_TROOP;
+                    if (!forcesString.isEmpty())
+                        resolution += emojis + " gains " + (opponentRegularNotDialed + opponentSpecialNotDialed + ecazForcesNotDialed) + " " + Emojis.SPICE + " for" + forcesString + " not dialed.\n";
+                }
                 if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS)) {
                     String territoryNamne = getWholeTerritoryName();
                     String sietchTabr = "Sietch Tabr";

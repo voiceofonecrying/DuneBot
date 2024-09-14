@@ -19,6 +19,7 @@ class BattleTest {
     Game game;
     Battles battles;
     TestTopic turnSummary;
+    TestTopic modInfo;
     AtreidesFaction atreides;
     EcazFaction ecaz;
     BGFaction bg;
@@ -28,17 +29,23 @@ class BattleTest {
     FremenFaction fremen;
     HarkonnenFaction harkonnen;
     RicheseFaction richese;
+    TestTopic atreidesChat;
     Territory carthag;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_eastSector;
     Territory garaKulon;
+    TreacheryCard cheapHero;
+    TreacheryCard crysknife;
+    TreacheryCard chaumas;
+    TreacheryCard shield;
 
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
-        game.setModInfo(new TestTopic());
+        modInfo = new TestTopic();
+        game.setModInfo(modInfo);
         game.setWhispers(new TestTopic());
         ecaz = new EcazFaction("aPlayer", "aUser", game);
         bg = new BGFaction("bgPlayer", "bgUser", game);
@@ -46,12 +53,7 @@ class BattleTest {
         fremen = new FremenFaction("fPlayer", "fUser", game);
         harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
         richese = new RicheseFaction("rPlayer", "rUser", game);
-        game.addFaction(ecaz);
-        game.addFaction(bg);
-        game.addFaction(emperor);
-        game.addFaction(fremen);
-        game.addFaction(harkonnen);
-        game.addFaction(richese);
+        atreidesChat = new TestTopic();
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
         fremen.setChat(new TestTopic());
@@ -61,556 +63,570 @@ class BattleTest {
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
         garaKulon = game.getTerritory("Gara Kulon");
+        cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")).findFirst().orElseThrow();
+        crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")).findFirst().orElseThrow();
+        chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")).findFirst().orElseThrow();
+        shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")).findFirst().orElseThrow();
     }
 
     @AfterEach
     void tearDown() {
     }
 
-    @Test
-    void testNoFieldInBattlePlanFewerForcesInReserves() {
-        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
-        richese.addTreacheryCard(cheapHero);
-        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
-        richese.addTreacheryCard(chaumas);
-        Leader alia = new Leader("Alia", 5, null, false);
-        bg.addLeader(alia);
-        Force noFieldForces = new Force("NoField", 3);
-        Territory richeseHomeworld = game.getTerritory("Richese");
-        assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
+    @Nested
+    @DisplayName("#oldTestsRelyingOnGlobalAddingFactions")
+    class OldTestsRelyingOnGlobalAddingFactions {
+        @BeforeEach
+        void setUp() throws IOException {
+            ecaz = new EcazFaction("aPlayer", "aUser", game);
+            bg = new BGFaction("bgPlayer", "bgUser", game);
+            emperor = new EmperorFaction("ePlayer", "eUser", game);
+            fremen = new FremenFaction("fPlayer", "fUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            richese = new RicheseFaction("rPlayer", "rUser", game);
+            game.addFaction(ecaz);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(harkonnen);
+            game.addFaction(richese);
+            ecaz.setChat(new TestTopic());
+            emperor.setChat(new TestTopic());
+            fremen.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
+            richese.setLedger(new TestTopic());
+        }
+
+        @Test
+        void testNoFieldInBattlePlanFewerForcesInReserves() {
+            richese.addTreacheryCard(cheapHero);
+            richese.addTreacheryCard(chaumas);
+            Leader alia = new Leader("Alia", 5, null, false);
+            bg.addLeader(alia);
+            Force noFieldForces = new Force("NoField", 3);
+            Territory richeseHomeworld = game.getTerritory("Richese");
+            assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
             garaKulon.placeForceFromReserves(game, richese, 5, false);
-        Force richeseForces = new Force("Richese", 5);
-        assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
-        richeseHomeworld.removeForces("Richese", 13);
-        assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
-        Force bgForces = new Force("BG", 1);
-        bg.setChat(new TestTopic());
-        richese.setChat(new TestTopic());
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, noFieldForces, bgForces), null);
-        richese.setSpice(8);
-        try {
-            battle.setBattlePlan(game, richese, null, cheapHero, false, 8, false, 8, chaumas, null);
-            fail("Expected InvalidGameStateException was not thrown.");
-        } catch (Exception e) {
-            assertEquals("Richese has only 2 forces in reserves to replace the 3 No-Field", e.getMessage());
+            Force richeseForces = new Force("Richese", 5);
+            assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
+            richeseHomeworld.removeForces("Richese", 13);
+            assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
+            Force bgForces = new Force("BG", 1);
+            bg.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, noFieldForces, bgForces), null);
+            richese.setSpice(8);
+            try {
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 8, false, 8, chaumas, null);
+                fail("Expected InvalidGameStateException was not thrown.");
+            } catch (Exception e) {
+                assertEquals("Richese has only 2 forces in reserves to replace the 3 No-Field", e.getMessage());
+            }
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, null, cheapHero, false, 7, false, 7, chaumas, null));
         }
-        assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, null, cheapHero, false, 7, false, 7, chaumas, null));
-    }
 
-    @Test
-    void testJuiceOfSaphoAdded() throws InvalidGameStateException {
-        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
-        richese.addTreacheryCard(cheapHero);
-        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
-        richese.addTreacheryCard(chaumas);
-        Leader alia = new Leader("Alia", 5, null, false);
-        bg.addLeader(alia);
-        Force richeseForces = new Force("Richese", 3);
-        Force bgForces = new Force("BG", 1);
-        bg.setChat(new TestTopic());
-        richese.setChat(new TestTopic());
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
-        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
-        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
-        assertEquals(Emojis.RICHESE, battle.getWinnerEmojis(game));
-        assertEquals("0", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(0, turnSummary.getMessages().size());
-        battle.juiceOfSaphoAdd(game, bg);
-        assertEquals(Emojis.BG, battle.getWinnerEmojis(game));
-        assertEquals("0", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(1, turnSummary.getMessages().size());
-    }
+        @Test
+        void testJuiceOfSaphoAdded() throws InvalidGameStateException {
+            richese.addTreacheryCard(cheapHero);
+            richese.addTreacheryCard(chaumas);
+            Leader alia = new Leader("Alia", 5, null, false);
+            bg.addLeader(alia);
+            Force richeseForces = new Force("Richese", 3);
+            Force bgForces = new Force("BG", 1);
+            bg.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+            BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+            BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+            assertEquals(Emojis.RICHESE, battle.getWinnerEmojis(game));
+            assertEquals("0", richesePlan.getTotalStrengthString());
+            assertEquals("0", bgPlan.getTotalStrengthString());
+            assertEquals(0, turnSummary.getMessages().size());
+            battle.juiceOfSaphoAdd(game, bg);
+            assertEquals(Emojis.BG, battle.getWinnerEmojis(game));
+            assertEquals("0", richesePlan.getTotalStrengthString());
+            assertEquals("0", bgPlan.getTotalStrengthString());
+            assertEquals(1, turnSummary.getMessages().size());
+        }
 
-    @Test
-    void testPortableSnooperAdded() throws InvalidGameStateException {
-        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
-        richese.addTreacheryCard(cheapHero);
-        TreacheryCard chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
-        richese.addTreacheryCard(chaumas);
-        TreacheryCard portableSnooper = new TreacheryCard("Portable Snooper");
-        bg.addTreacheryCard(portableSnooper);
-        Leader alia = new Leader("Alia", 5, null, false);
-        bg.addLeader(alia);
-        Force richeseForces = new Force("Richese", 3);
-        Force bgForces = new Force("BG", 1);
-        bg.setChat(new TestTopic());
-        richese.setChat(new TestTopic());
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
-        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
-        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
-        assertFalse(bgPlan.isLeaderAlive());
-        assertEquals("2", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(0, turnSummary.getMessages().size());
-        battle.portableSnooperAdd(game, bg);
-        assertTrue(bgPlan.isLeaderAlive());
-        assertEquals("2", richesePlan.getTotalStrengthString());
-        assertEquals("5", bgPlan.getTotalStrengthString());
-        assertEquals(1, turnSummary.getMessages().size());
-    }
+        @Test
+        void testPortableSnooperAdded() throws InvalidGameStateException {
+            richese.addTreacheryCard(cheapHero);
+            richese.addTreacheryCard(chaumas);
+            TreacheryCard portableSnooper = new TreacheryCard("Portable Snooper");
+            bg.addTreacheryCard(portableSnooper);
+            Leader alia = new Leader("Alia", 5, null, false);
+            bg.addLeader(alia);
+            Force richeseForces = new Force("Richese", 3);
+            Force bgForces = new Force("BG", 1);
+            bg.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+            BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
+            BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+            assertFalse(bgPlan.isLeaderAlive());
+            assertEquals("2", richesePlan.getTotalStrengthString());
+            assertEquals("0", bgPlan.getTotalStrengthString());
+            assertEquals(0, turnSummary.getMessages().size());
+            battle.portableSnooperAdd(game, bg);
+            assertTrue(bgPlan.isLeaderAlive());
+            assertEquals("2", richesePlan.getTotalStrengthString());
+            assertEquals("5", bgPlan.getTotalStrengthString());
+            assertEquals(1, turnSummary.getMessages().size());
+        }
 
-    @Test
-    void testPoisonToothRemoved() throws InvalidGameStateException {
-        TreacheryCard cheapHero = new TreacheryCard("Cheap Hero");
-        richese.addTreacheryCard(cheapHero);
-        TreacheryCard poisonTooth = new TreacheryCard("Poison Tooth");
-        bg.addTreacheryCard(poisonTooth);
-        Leader alia = new Leader("Alia", 5, null, false);
-        bg.addLeader(alia);
-        Force richeseForces = new Force("Richese", 3);
-        Force bgForces = new Force("BG", 1);
-        bg.setChat(new TestTopic());
-        richese.setChat(new TestTopic());
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
-        BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
-        BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, poisonTooth, null);
-        assertFalse(richesePlan.isLeaderAlive());
-        assertFalse(bgPlan.isLeaderAlive());
-        assertEquals("2", richesePlan.getTotalStrengthString());
-        assertEquals("0", bgPlan.getTotalStrengthString());
-        assertEquals(0, turnSummary.getMessages().size());
-        battle.removePoisonTooth(game, bg);
-        assertTrue(richesePlan.isLeaderAlive());
-        assertTrue(bgPlan.isLeaderAlive());
-        assertEquals("2", richesePlan.getTotalStrengthString());
-        assertEquals("5", bgPlan.getTotalStrengthString());
-        assertEquals(1, turnSummary.getMessages().size());
-    }
+        @Test
+        void testPoisonToothRemoved() throws InvalidGameStateException {
+            richese.addTreacheryCard(cheapHero);
+            TreacheryCard poisonTooth = new TreacheryCard("Poison Tooth");
+            bg.addTreacheryCard(poisonTooth);
+            Leader alia = new Leader("Alia", 5, null, false);
+            bg.addLeader(alia);
+            Force richeseForces = new Force("Richese", 3);
+            Force bgForces = new Force("BG", 1);
+            bg.setChat(new TestTopic());
+            richese.setChat(new TestTopic());
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
+            BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
+            BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, poisonTooth, null);
+            assertFalse(richesePlan.isLeaderAlive());
+            assertFalse(bgPlan.isLeaderAlive());
+            assertEquals("2", richesePlan.getTotalStrengthString());
+            assertEquals("0", bgPlan.getTotalStrengthString());
+            assertEquals(0, turnSummary.getMessages().size());
+            battle.removePoisonTooth(game, bg);
+            assertTrue(richesePlan.isLeaderAlive());
+            assertTrue(bgPlan.isLeaderAlive());
+            assertEquals("2", richesePlan.getTotalStrengthString());
+            assertEquals("5", bgPlan.getTotalStrengthString());
+            assertEquals(1, turnSummary.getMessages().size());
+        }
 
-    @Test
-    void testAggressorMustChooseOpponentFalse() {
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor), null, null);
-        assertFalse(battle.aggressorMustChooseOpponent());
-    }
+        @Test
+        void testAggressorMustChooseOpponentFalse() {
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor), null, null);
+            assertFalse(battle.aggressorMustChooseOpponent());
+        }
 
-    @Test
-    void testAggressorMustChooseOpponentTrue() {
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, null);
-        assertTrue(battle.aggressorMustChooseOpponent());
-    }
+        @Test
+        void testAggressorMustChooseOpponentTrue() {
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, null);
+            assertTrue(battle.aggressorMustChooseOpponent());
+        }
 
-    @Test
-    void testAggressorMustChooseOpponentEcazAllyFalse() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
-        assertFalse(battle.aggressorMustChooseOpponent());
-    }
+        @Test
+        void testAggressorMustChooseOpponentEcazAllyFalse() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
+            assertFalse(battle.aggressorMustChooseOpponent());
+        }
 
-    @Test
-    void testAggressorMustChooseOpponentEcazAllyTrue() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Fremen", 1);
-        garaKulon.addForces("Fremen*", 1);
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, harkonnen, emperor, ecaz), null, "Emperor");
-        assertTrue(battle.hasEcazAndAlly());
-        assertTrue(battle.aggressorMustChooseOpponent());
-    }
+        @Test
+        void testAggressorMustChooseOpponentEcazAllyTrue() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Fremen", 1);
+            garaKulon.addForces("Fremen*", 1);
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, harkonnen, emperor, ecaz), null, "Emperor");
+            assertTrue(battle.hasEcazAndAlly());
+            assertTrue(battle.aggressorMustChooseOpponent());
+        }
 
-    @Test
-    void testEcazMustChooseBattleFactionFalseNoEcaz() {
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor), null, null);
-        assertFalse(battle.hasEcazAndAlly());
-    }
+        @Test
+        void testEcazMustChooseBattleFactionFalseNoEcaz() {
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor), null, null);
+            assertFalse(battle.hasEcazAndAlly());
+        }
 
-    @Test
-    void testEcazMustChooseBattleFactionFalseWithEcaz() {
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, null);
-        assertFalse(battle.hasEcazAndAlly());
-    }
+        @Test
+        void testEcazMustChooseBattleFactionFalseWithEcaz() {
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, null);
+            assertFalse(battle.hasEcazAndAlly());
+        }
 
-    @Test
-    void testEcazMustChooseBattleFactionTrue() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
-        assertTrue(battle.hasEcazAndAlly());
-    }
+        @Test
+        void testEcazMustChooseBattleFactionTrue() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
+            assertTrue(battle.hasEcazAndAlly());
+        }
 
-    @Test
-    void testEcazAllyFighting() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor), garaKulon.getForces(), "Emperor");
-        battle.setEcazCombatant(game, emperor.getName());
-        assertEquals(emperor, battle.getDefender(game));
-        Leader burseg = emperor.getLeader("Burseg").orElseThrow();
-        assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
-    }
+        @Test
+        void testEcazAllyFighting() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor), garaKulon.getForces(), "Emperor");
+            battle.setEcazCombatant(game, emperor.getName());
+            assertEquals(emperor, battle.getDefender(game));
+            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
+        }
 
-    @Test
-    void testEcazFighting() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
-        battle.setEcazCombatant(game, "Ecaz");
-        assertEquals(ecaz, battle.getDefender(game));
-        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
-    }
+        @Test
+        void testEcazFighting() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+        }
 
-    @Test
-    void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 6);
-        garaKulon.addForces("Emperor*", 1);
-        garaKulon.addForces("Ecaz", 7);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
-        battle.setEcazCombatant(game, "Ecaz");
-        assertEquals(ecaz, battle.getDefender(game));
-        Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+        @Test
+        void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 6);
+            garaKulon.addForces("Emperor*", 1);
+            garaKulon.addForces("Ecaz", 7);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), garaKulon.getForces(), "Emperor");
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
 //        BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
-        assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
-        BattlePlan bp = battle.getDefenderBattlePlan();
-        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+            BattlePlan bp = battle.getDefenderBattlePlan();
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
 //        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
-        assertEquals(3, bp.getRegularDialed());
-        assertEquals(1, bp.getSpecialDialed());
-        battle.updateTroopsDialed("Ecaz", 5, 0);
-        assertEquals(5, bp.getRegularDialed());
-        assertEquals(0, bp.getSpecialDialed());
-        assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals(3, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            battle.updateTroopsDialed("Ecaz", 5, 0);
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
 //        assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 5, 0));
-    }
+        }
 
-    @Test
-    void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException {
-        garaKulon.setRicheseNoField(5);
-        garaKulon.addForces("Fremen", 3);
-        game.startBattlePhase();
-        battles = game.getBattles();
-        List<Force> battleForces = battles.aggregateForces(List.of(garaKulon), List.of(fremen, richese));
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), battleForces, "Emperor");
-        Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
-        assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 3, false, 0, null, null));
-        assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 2, false, 0, null, null));
-    }
-
-    @Test
-    void testBattleResolved() {
-        carthag.addForces("Emperor", 5);
-        carthag.addForces("Emperor*", 2);
-        Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), null, null);
-        assertFalse(battle.isResolved(game));
-        carthag.removeForce("Harkonnen");
-        assertTrue(battle.isResolved(game));
-    }
-
-    @Test
-    void testBattleResolvedEcazAlly() {
-        emperor.setAlly("Ecaz");
-        ecaz.setAlly("Emperor");
-        garaKulon.addForces("Harkonnen", 10);
-        garaKulon.addForces("Emperor", 5);
-        garaKulon.addForces("Ecaz", 3);
-        Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
-        assertFalse(battle.isResolved(game));
-        garaKulon.removeForce("Harkonnen");
-        assertTrue(battle.isResolved(game));
-    }
-
-    @Nested
-    @DisplayName("#twoFactionsNoSpecials")
-    class TwoFactionsNoSpecials {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(10);
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-
+        @Test
+        void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException {
+            garaKulon.setRicheseNoField(5);
+            garaKulon.addForces("Fremen", 3);
             game.startBattlePhase();
             battles = game.getBattles();
+            List<Force> battleForces = battles.aggregateForces(List.of(garaKulon), List.of(fremen, richese));
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), battleForces, "Emperor");
+            Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
+            assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 3, false, 0, null, null));
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 2, false, 0, null, null));
         }
 
         @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
+        void testBattleResolved() {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 2);
+            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), null, null);
+            assertFalse(battle.isResolved(game));
+            carthag.removeForce("Harkonnen");
+            assertTrue(battle.isResolved(game));
         }
 
         @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                    "6 {0} vs 7 {1}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
+        void testBattleResolvedEcazAlly() {
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(harkonnen, emperor, ecaz), null, "Emperor");
+            assertFalse(battle.isResolved(game));
+            garaKulon.removeForce("Harkonnen");
+            assertTrue(battle.isResolved(game));
         }
-    }
 
-    @Nested
-    @DisplayName("#twoFactionsWithSpecials")
-    class TwoFactionsWithSpecials {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(10);
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
+        @Nested
+        @DisplayName("#twoFactionsNoSpecials")
+        class TwoFactionsNoSpecials {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(10);
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
 
-            game.startBattlePhase();
-            battles = game.getBattles();
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "6 {0} vs 7 {1}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#twoFactionsWithSpecials")
+        class TwoFactionsWithSpecials {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(10);
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "6 {0} vs 7 {1} 2 {2}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#threeFactionsWithSpecials")
+        class ThreeFactionsWithSpecials {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(10);
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                westCielagoNorth.addForces("Emperor*", 1);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.FREMEN),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "6 {0} vs 1 {1} vs 7 {2} 2 {3}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#threeFactionsWithNoField")
+        class ThreeFactionsWithNoField {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(10);
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                westCielagoNorth.setRicheseNoField(5);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1} vs {2}", Emojis.RICHESE, Emojis.BG, Emojis.FREMEN),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "1 {0} vs 6 {1} vs 7 {2} 2 {3}", Emojis.NO_FIELD, Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#fourFactionsEcazAlly")
+        class FourFactionsEcazAlly {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(10);
+                ecaz.setAlly("Fremen");
+                fremen.setAlly("Ecaz");
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                westCielagoNorth.addForces("Emperor*", 1);
+                westCielagoNorth.addForces("Ecaz", 1);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0}{1} vs {2} vs {3}", Emojis.ECAZ, Emojis.FREMEN, Emojis.BG, Emojis.EMPEROR),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "1 {0} 7 {1} 2 {2} vs 6 {3} vs 1 {4}", Emojis.ECAZ_TROOP, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#fourFactionsEcazStormSeparatesAlly")
+        class FourFactionsEcazStormSeparatesAlly {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(1);
+                ecaz.setAlly("Fremen");
+                fremen.setAlly("Ecaz");
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                westCielagoNorth.addForces("Emperor*", 1);
+                westCielagoNorth.addForces("Ecaz", 1);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.ECAZ),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "6 {0} vs 1 {1} vs 1 {2}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.ECAZ_TROOP),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
+        }
+
+        @Nested
+        @DisplayName("#fourFactionsAllyEcaz")
+        class FourFactionsAllyEcaz {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setStorm(4);
+                ecaz.setAlly("Fremen");
+                fremen.setAlly("Ecaz");
+                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
+                westCielagoNorth.addForces("BG", 6);
+                westCielagoNorth.addForces("Emperor*", 1);
+                westCielagoNorth.addForces("Ecaz", 1);
+                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
+                eastCielagoNorth.addForces("Fremen", 7);
+                eastCielagoNorth.addForces("Fremen*", 2);
+
+                game.startBattlePhase();
+                battles = game.getBattles();
+            }
+
+            @Test
+            void getFactionsMessage() {
+                assertEquals(MessageFormat.format(
+                                "{0} vs {1}{2} vs {3}", Emojis.EMPEROR, Emojis.FREMEN, Emojis.ECAZ, Emojis.BG),
+                        battles.getBattles(game).getFirst().getFactionsMessage(game)
+                );
+            }
+
+            @Test
+            void getForcesMessage() {
+                assertEquals(MessageFormat.format(
+                                "1 {0} vs 7 {1} 2 {2} 1 {3} vs 6 {4}", Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.ECAZ_TROOP, Emojis.BG_FIGHTER),
+                        battles.getBattles(game).getFirst().getForcesMessage(game)
+                );
+            }
         }
 
         @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1}", Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
+        void testNonNativeNoAdvantageOnOtherHomeworlds() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.getHomeworlds().forEach((fn, h) -> game.getFactions().stream().filter(f -> !f.getHomeworld().equals(h) && !(f instanceof EmperorFaction e && e.getSecondHomeworld().equals(h)))
+                    .forEach(f -> assertEquals(0, f.homeworldDialAdvantage(game, game.getTerritory(h)))));
         }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "6 {0} vs 7 {1} 2 {2}", Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("#threeFactionsWithSpecials")
-    class ThreeFactionsWithSpecials {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(10);
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            westCielagoNorth.addForces("Emperor*", 1);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
-
-            game.startBattlePhase();
-            battles = game.getBattles();
-        }
-
-        @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.FREMEN),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
-        }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "6 {0} vs 1 {1} vs 7 {2} 2 {3}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("#threeFactionsWithNoField")
-    class ThreeFactionsWithNoField {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(10);
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            westCielagoNorth.setRicheseNoField(5);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
-
-            game.startBattlePhase();
-            battles = game.getBattles();
-        }
-
-        @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1} vs {2}", Emojis.RICHESE, Emojis.BG, Emojis.FREMEN),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
-        }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "1 {0} vs 6 {1} vs 7 {2} 2 {3}", Emojis.NO_FIELD, Emojis.BG_FIGHTER, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("#fourFactionsEcazAlly")
-    class FourFactionsEcazAlly {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(10);
-            ecaz.setAlly("Fremen");
-            fremen.setAlly("Ecaz");
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            westCielagoNorth.addForces("Emperor*", 1);
-            westCielagoNorth.addForces("Ecaz", 1);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
-
-            game.startBattlePhase();
-            battles = game.getBattles();
-        }
-
-        @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0}{1} vs {2} vs {3}", Emojis.ECAZ, Emojis.FREMEN, Emojis.BG, Emojis.EMPEROR),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
-        }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "1 {0} 7 {1} 2 {2} vs 6 {3} vs 1 {4}", Emojis.ECAZ_TROOP, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("#fourFactionsEcazStormSeparatesAlly")
-    class FourFactionsEcazStormSeparatesAlly {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(1);
-            ecaz.setAlly("Fremen");
-            fremen.setAlly("Ecaz");
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            westCielagoNorth.addForces("Emperor*", 1);
-            westCielagoNorth.addForces("Ecaz", 1);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
-
-            game.startBattlePhase();
-            battles = game.getBattles();
-        }
-
-        @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1} vs {2}", Emojis.BG, Emojis.EMPEROR, Emojis.ECAZ),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
-        }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "6 {0} vs 1 {1} vs 1 {2}", Emojis.BG_FIGHTER, Emojis.EMPEROR_SARDAUKAR, Emojis.ECAZ_TROOP),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Nested
-    @DisplayName("#fourFactionsAllyEcaz")
-    class FourFactionsAllyEcaz {
-        @BeforeEach
-        void setUp() throws InvalidGameStateException {
-            game.setStorm(4);
-            ecaz.setAlly("Fremen");
-            fremen.setAlly("Ecaz");
-            Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-            westCielagoNorth.addForces("BG", 6);
-            westCielagoNorth.addForces("Emperor*", 1);
-            westCielagoNorth.addForces("Ecaz", 1);
-            Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-            eastCielagoNorth.addForces("Fremen", 7);
-            eastCielagoNorth.addForces("Fremen*", 2);
-
-            game.startBattlePhase();
-            battles = game.getBattles();
-        }
-
-        @Test
-        void getFactionsMessage() {
-            assertEquals(MessageFormat.format(
-                            "{0} vs {1}{2} vs {3}", Emojis.EMPEROR, Emojis.FREMEN, Emojis.ECAZ, Emojis.BG),
-                    battles.getBattles(game).getFirst().getFactionsMessage(game)
-            );
-        }
-
-        @Test
-        void getForcesMessage() {
-            assertEquals(MessageFormat.format(
-                            "1 {0} vs 7 {1} 2 {2} 1 {3} vs 6 {4}", Emojis.EMPEROR_SARDAUKAR, Emojis.FREMEN_TROOP, Emojis.FREMEN_FEDAYKIN, Emojis.ECAZ_TROOP, Emojis.BG_FIGHTER),
-                    battles.getBattles(game).getFirst().getForcesMessage(game)
-            );
-        }
-    }
-
-    @Test
-    void testNonNativeNoAdvantageOnOtherHomeworlds() {
-        game.addGameOption(GameOption.HOMEWORLDS);
-        game.getHomeworlds().forEach((fn, h) -> game.getFactions().stream().filter(f -> !f.getHomeworld().equals(h) && !(f instanceof EmperorFaction e && e.getSecondHomeworld().equals(h)))
-                .forEach(f -> assertEquals(0, f.homeworldDialAdvantage(game, game.getTerritory(h)))));
     }
 
     @Nested
     @DisplayName("#battlePlans")
     class BattlePlans {
         Leader duncanIdaho;
-        TreacheryCard cheapHero;
-        TreacheryCard crysknife;
-        TreacheryCard chaumas;
-        TreacheryCard shield;
         Territory arrakeen;
-        Territory carthag;
         Territory habbanyaSietch;
         Battle battle1;
         Battle battle2;
         Battle battle2a;
         Battle battle3;
-        TestTopic atreidesChat;
 
         @BeforeEach
         void setUp() throws IOException {
-            game = new Game();
-            game.setModInfo(new TestTopic());
             atreides = new AtreidesFaction("aPlayer", "aUser", game);
             bg = new BGFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
@@ -623,7 +639,6 @@ class BattleTest {
             game.addFaction(ecaz);
             game.addFaction(bt);
             game.addFaction(emperor);
-            atreidesChat = new TestTopic();
             atreides.setChat(atreidesChat);
             bt.setChat(new TestTopic());
             ecaz.setChat(new TestTopic());
@@ -634,7 +649,6 @@ class BattleTest {
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
             ecaz.setAlly("Atreides");
             atreides.setAlly("Ecaz");
-            carthag = game.getTerritory("Carthag");
             carthag.addForces("Ecaz", 5);
             carthag.addForces("Atreides", 1);
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
@@ -646,10 +660,6 @@ class BattleTest {
             battle3 = new Battle(game, "Habbanya Sietch", List.of(habbanyaSietch), List.of(bt, emperor), habbanyaSietch.getForces(), "Atreides");
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
-            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
-            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
-            chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
-            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
         }
 
         @Test
@@ -686,13 +696,13 @@ class BattleTest {
                     game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
-            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
+            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")).findFirst().orElseThrow();
             atreides.addTreacheryCard(chaumas);
             atreides.addTreacheryCard(weirdingWay);
             assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chaumas, weirdingWay));
         }
 
-//        @Test
+        //        @Test
 //        void testWeirdingWayInvalidDefense() throws IOException {
 //            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
 //            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
@@ -715,7 +725,7 @@ class BattleTest {
                     game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
                 }
             }
-            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
+            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")).findFirst().orElseThrow();
             atreides.addTreacheryCard(chemistry);
             atreides.addTreacheryCard(shield);
             assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, shield));
@@ -744,7 +754,7 @@ class BattleTest {
         @Test
         void testBattlePlanNoLeaderWithCheapHero() {
             atreides.addTreacheryCard(cheapHero);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, false, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, false, 4, false, 3, null, null));
         }
 
         @Test
@@ -754,40 +764,40 @@ class BattleTest {
             atreides.removeLeader("Gurney Halleck");
             atreides.removeLeader("Thufir Hawat");
             atreides.removeLeader("Dr. Yueh");
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, null, false, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, null, false, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanOtherFactionLeaderInvalid() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanHarkonnenCapturedLeader() {
             harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 1, false,1, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 1, false, 1, null, null));
         }
 
         @Test
         void testBattlePlanFactionNotInvolved() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, bg, null, cheapHero, false, 4, false,3, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, bg, null, cheapHero, false, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanNotEnoughSpice() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,11, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false, 11, null, null));
         }
 
         @Test
         void testBattlePlanHasWeapon() {
             atreides.addTreacheryCard(crysknife);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, crysknife, null));
         }
 
         @Test
         void testBattlePlanHasDefense() {
             atreides.addTreacheryCard(shield);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, shield));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, shield));
         }
 
 //        @Test
@@ -803,9 +813,8 @@ class BattleTest {
 
         @Test
         void testBattlePlanSpendingTooMuch() {
-            TestTopic atreidesChat = new TestTopic();
             atreides.setChat(atreidesChat);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true,5, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true, 5, null, null));
             assertEquals(3, atreidesChat.messages.size());
         }
 
@@ -819,20 +828,19 @@ class BattleTest {
         void testBattlePlanNoLeaderWithCheapHeroAndKH() {
             atreides.addTreacheryCard(cheapHero);
             atreides.setForcesLost(10);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, true, 4, false,3, null, null));
+            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, true, 4, false, 3, null, null));
         }
 
         @Test
         void testBattlePlanNotEnoughTroops() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false,10, null, null));
+            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false, 10, null, null));
         }
 
         @Test
         void testBattlePlanResolution() throws InvalidGameStateException {
-            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
-            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
-            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, null, null);
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
             assertEquals("2.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
@@ -842,11 +850,10 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionLeaderKilled() throws InvalidGameStateException {
-            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
-            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
-            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, crysknife, null);
             assertEquals(Emojis.HARKONNEN, battle1.getWinnerEmojis(game));
             assertEquals("0.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
@@ -858,11 +865,10 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionAggressorWinsTies() throws InvalidGameStateException {
-            game.setTurnSummary(turnSummary);
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
-            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false,0, null, null);
-            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, null, null);
+            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, crysknife, null);
             assertTrue(battle1.isAggressorWin(game));
             assertEquals(Emojis.ATREIDES, battle1.getWinnerEmojis(game));
             assertEquals("1", battle1.getAggressorBattlePlan().getTotalStrengthString());
@@ -873,7 +879,6 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionAggressorWinsTiesInHRSWithStrongholdCard() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             bt.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
@@ -889,14 +894,13 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionDefenderWinsTiesInHRSWithStrongholdCard() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             emperor.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
             emperor.setChat(new TestTopic());
-            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false,0, null, null);
-            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false,0, null, null);
+            battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false, 0, null, null);
+            battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false, 0, null, null);
             assertFalse(battle3.isAggressorWin(game));
             assertEquals(Emojis.EMPEROR, battle3.getWinnerEmojis(game));
             assertEquals("1", battle3.getAggressorBattlePlan().getTotalStrengthString());
@@ -905,12 +909,11 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionAllyEcaz() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
             battle2.setEcazCombatant(game, "Atreides");
-            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
-            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, crysknife, null);
             assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
             assertTrue(battle2.isAggressorWin(game));
             assertEquals("3.5", battle2.getAggressorBattlePlan().getTotalStrengthString());
@@ -919,11 +922,10 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionAllyEcaz2() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
             battle2.setEcazCombatant(game, "Atreides");
-            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true,0, null, null);
-            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, null, null);
             assertEquals(Emojis.ATREIDES + Emojis.ECAZ, battle2.getWinnerEmojis(game));
             assertEquals("5.5", battle2.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("1", battle2.getDefenderBattlePlan().getTotalStrengthString());
@@ -931,13 +933,12 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionEcazAlly() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
             battle2.setEcazCombatant(game, "Ecaz");
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
-            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, crysknife, null);
+            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true, 0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, crysknife, null);
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
             assertFalse(battle2.isAggressorWin(game));
             assertEquals("1", battle2.getAggressorBattlePlan().getTotalStrengthString());
@@ -946,12 +947,11 @@ class BattleTest {
 
         @Test
         void testBattlePlanResolutionEcazAlly2() throws InvalidGameStateException {
-            game.setTurnSummary(new TestTopic());
             harkonnen.addTreacheryCard(cheapHero);
             battle2.setEcazCombatant(game, "Ecaz");
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true,0, null, null);
-            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false,1, null, null);
+            battle2.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 0, true, 0, null, null);
+            battle2.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, null, null);
             assertEquals(Emojis.ECAZ + Emojis.ATREIDES, battle2.getWinnerEmojis(game));
             assertEquals("1", battle2.getAggressorBattlePlan().getTotalStrengthString());
             assertEquals("7.5", battle2.getDefenderBattlePlan().getTotalStrengthString());
@@ -998,7 +998,6 @@ class BattleTest {
 
         @Test
         void testSalusaSecundusLowSpiceNeededForSardaukar() {
-            game.setTurnSummary(new TestTopic());
             Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
             Force emperorForce = new Force("Emperor", 9);
             Force sardaukarForce = new Force("Emperor*", 1);
@@ -1013,7 +1012,6 @@ class BattleTest {
 
         @Test
         void testSalusaSecundusOccupiedNegatesSardaukar() {
-            game.setTurnSummary(new TestTopic());
             Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
             Force sardaukarForce = new Force("Emperor*", 1);
             Force bgForce = new Force("BG", 15);
@@ -1030,16 +1028,98 @@ class BattleTest {
     }
 
     @Nested
+    @DisplayName("#jacurutuSietchBattleResolution")
+    class JacurutuSietchBattleResolution {
+        Territory jacurutuSietch;
+        Leader duncanIdaho;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            game.putTerritoryInAnotherTerritory(jacurutuSietch, garaKulon);
+
+            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            emperor = new EmperorFaction("empPlayer", "empUser", game);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(ecaz);
+            game.addFaction(emperor);
+            atreides.setChat(atreidesChat);
+            ecaz.setChat(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            emperor.setChat(new TestTopic());
+            emperor.setLedger(new TestTopic());
+            harkonnen.setChat(new TestTopic());
+
+            jacurutuSietch.addForces("Atreides", 3);
+            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        }
+
+        @Test
+        void testWinnerSpiceInJacurutuSietch() throws InvalidGameStateException {
+            harkonnen.addTreacheryCard(cheapHero);
+            jacurutuSietch.addForces("Harkonnen", 5);
+            Battle battle = new Battle(game, "Jacurutu Sietch", List.of(jacurutuSietch), List.of(atreides, harkonnen), jacurutuSietch.getForces(), null);
+            assertEquals(atreides, battle.getAggressor(game));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, true);
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 5 " + Emojis.SPICE + " for 5 " + Emojis.HARKONNEN_TROOP + " not dialed.\n\n"));
+        }
+
+        @Test
+        void testWinnerSpiceInJacurutuSietchNoUndialedForces() throws InvalidGameStateException {
+            harkonnen.addTreacheryCard(cheapHero);
+            jacurutuSietch.addForces("Harkonnen", 5);
+            Battle battle = new Battle(game, "Jacurutu Sietch", List.of(jacurutuSietch), List.of(atreides, harkonnen), jacurutuSietch.getForces(), null);
+            assertEquals(atreides, battle.getAggressor(game));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true, 0, null, null);
+            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 2, true, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, true);
+            assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 5 " + Emojis.SPICE + " for 5 " + Emojis.HARKONNEN_TROOP + " not dialed.\n\n"));
+        }
+
+        @Test
+        void testWinnerSpiceInJacurutuSietchWithStarredUndialed() throws InvalidGameStateException {
+            emperor.addTreacheryCard(cheapHero);
+            jacurutuSietch.addForces("Emperor", 5);
+            jacurutuSietch.addForces("Emperor*", 1);
+            Battle battle = new Battle(game, "Jacurutu Sietch", List.of(jacurutuSietch), List.of(atreides, emperor), jacurutuSietch.getForces(), null);
+            assertEquals(atreides, battle.getAggressor(game));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, emperor, null, cheapHero, false, 0, false, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, true);
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 6 " + Emojis.SPICE + " for 5 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " not dialed.\n\n"));
+        }
+
+        @Test
+        void testWinnerSpiceInJacurutuSietchAgainstEcazAlly() throws InvalidGameStateException {
+            game.createAlliance(emperor, ecaz);
+            emperor.addTreacheryCard(cheapHero);
+            jacurutuSietch.addForces("Emperor", 5);
+            jacurutuSietch.addForces("Emperor*", 1);
+            jacurutuSietch.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, "Jacurutu Sietch", List.of(jacurutuSietch), List.of(atreides, emperor, ecaz), jacurutuSietch.getForces(), "Emperor");
+            battle.setEcazCombatant(game, emperor.getName());
+            assertEquals(atreides, battle.getAggressor(game));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, emperor, null, cheapHero, false, 0, false, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, true);
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 7 " + Emojis.SPICE + " for 5 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 1 " + Emojis.ECAZ_TROOP + " not dialed.\n\n"));
+        }
+    }
+
+    @Nested
     @DisplayName("#battlePlans2")
     class BattlePlans2 {
-        TestTopic modInfo;
         Leader duncanIdaho;
-        TreacheryCard cheapHero;
-        TreacheryCard crysknife;
-        TreacheryCard chaumas;
-        TreacheryCard shield;
         Territory arrakeen;
-        Territory carthag;
         Battle battle1;
         Battle battle2;
         Battle battle2a;
@@ -1048,10 +1128,6 @@ class BattleTest {
         void setUp() throws IOException {
             bt = null;
 
-            game = new Game();
-            modInfo = new TestTopic();
-            game.setModInfo(modInfo);
-            game.setTurnSummary(new TestTopic());
             atreides = new AtreidesFaction("aPlayer", "aUser", game);
             bg = new BGFaction("fPlayer", "fUser", game);
             harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
@@ -1079,17 +1155,12 @@ class BattleTest {
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
 //            ecaz.setAlly("Atreides");
 //            atreides.setAlly("Ecaz");
-            carthag = game.getTerritory("Carthag");
             carthag.addForces("Ecaz", 5);
             carthag.addForces("Atreides", 1);
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
             battle2a = new Battle(game, "Carthag", List.of(carthag), List.of(harkonnen, atreides, ecaz), carthag.getForces(), "Atreides");
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
-            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
-            crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")). findFirst().orElseThrow();
-            chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")). findFirst().orElseThrow();
-            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
         }
 
         @Test
@@ -1119,18 +1190,13 @@ class BattleTest {
 //    @Nested
 //    @DisplayName("#lasgunShieldDestroysEverything")
 //    class LasgunShieldDestroysEverything {
-//        TestTopic modInfo;
-//        Leader duncanIdaho;
-//        TreacheryCard cheapHero;
-//        TreacheryCard lasgun;
-//        TreacheryCard shield;
+////        Leader duncanIdaho;
+////        TreacheryCard lasgun;
 //        Battle battle;
 //
 //        @BeforeEach
 //        void setUp() throws IOException, InvalidGameStateException {
-//            modInfo = new TestTopic();
-//            game.setModInfo(modInfo);
-//            atreides = new AtreidesFaction("p", "u", game);
+//////            atreides = new AtreidesFaction("p", "u", game);
 //            bg = new BGFaction("p", "u", game);
 //            harkonnen = new HarkonnenFaction("p", "u", game);
 //            ecaz = new EcazFaction("p", "u", game);
@@ -1143,9 +1209,7 @@ class BattleTest {
 //            game.addFaction(emperor);
 //            game.addFaction(richese);
 //            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
-//            cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")). findFirst().orElseThrow();
-//            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
-//            shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")). findFirst().orElseThrow();
+////            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
 //            atreides.setForcesLost(7);
 //            atreides.addTreacheryCard(lasgun);
 //            atreides.setChat(new TestTopic());
@@ -1164,9 +1228,7 @@ class BattleTest {
 //            battle = new Battle(game, "Arrakeen", List.of(cielagoNorth_eastSector), List.of(atreides, harkonnen), cielagoNorth_eastSector.getForces(), null);
 //            battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 0, false, 0, lasgun, null);
 //            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, shield);
-//            modInfo = new TestTopic();
-//            game.setModInfo(modInfo);
-//            battle.printBattleResolution(game, false);
+//////            battle.printBattleResolution(game, false);
 //        }
 //
 //        @Test
