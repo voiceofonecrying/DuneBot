@@ -6,6 +6,7 @@ import model.DuneChoice;
 import model.Game;
 import model.Territory;
 import model.TleilaxuTanks;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,8 +18,8 @@ public class FremenFaction extends Faction {
     boolean wormRideActive;
     int wormsToPlace;
 
-    public FremenFaction(String player, String userName, Game game) throws IOException {
-        super("Fremen", player, userName, game);
+    public FremenFaction(String player, String userName) throws IOException {
+        super("Fremen", player, userName);
 
         setSpice(3);
         this.freeRevival = 3;
@@ -27,11 +28,16 @@ public class FremenFaction extends Faction {
         this.lowThreshold = 2;
         this.occupiedIncome = 0;
         this.homeworld = "Southern Hemisphere";
+        this.wormRides = null;
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         Territory southernHemisphere = game.getTerritories().addHomeworld(game, homeworld, name);
         southernHemisphere.addForces(name, 17);
         southernHemisphere.addForces(name + "*", 3);
         game.getHomeworlds().put(name, homeworld);
-        this.wormRides = null;
     }
 
     @Override

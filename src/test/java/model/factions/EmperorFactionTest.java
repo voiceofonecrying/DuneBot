@@ -26,7 +26,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new EmperorFaction("player", "player", game);
+        faction = new EmperorFaction("player", "player");
         game.addFaction(faction);
     }
 
@@ -308,7 +308,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     class SecondHomeworldOccupation {
         @BeforeEach
         public void setUp() throws IOException {
-            game.addFaction(new HarkonnenFaction("p", "u", game));
+            game.addFaction(new HarkonnenFaction("p", "u"));
         }
 
         @Test

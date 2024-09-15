@@ -63,11 +63,11 @@ public class BattlePlanTest {
         game = new Game();
         game.setTurnSummary(new TestTopic());
         game.setModInfo(new TestTopic());
-        atreides = new AtreidesFaction("p", "u", game);
-        bt = new BTFaction("p", "u", game);
-        choam = new ChoamFaction("p", "u", game);
-        emperor = new EmperorFaction("p", "u", game);
-        harkonnen = new HarkonnenFaction("p", "u", game);
+        atreides = new AtreidesFaction("p", "u");
+        bt = new BTFaction("p", "u");
+        choam = new ChoamFaction("p", "u");
+        emperor = new EmperorFaction("p", "u");
+        harkonnen = new HarkonnenFaction("p", "u");
         atreides.setLedger(new TestTopic());
         choam.setLedger(new TestTopic());
         emperor.setLedger(new TestTopic());
@@ -76,6 +76,10 @@ public class BattlePlanTest {
         emperor.setChat(new TestTopic());
         atreidesChat = new TestTopic();
         atreides.setChat(atreidesChat);
+        game.addFaction(atreides);
+        game.addFaction(bt);
+        game.addFaction(emperor);
+        game.addFaction(harkonnen);
         Force atreidesForce = new Force("Atreides", 11);
         battle = new Battle(game, "Funeral Plain", List.of(game.getTerritory("Funeral Plain")), List.of(atreides, harkonnen), List.of(atreidesForce), null);
         Force harkonnenForce = new Force("Harkonnen", 10);
@@ -1160,7 +1164,7 @@ public class BattlePlanTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            ecaz = new EcazFaction("p", "u", game);
+            ecaz = new EcazFaction("p", "u");
             ecaz.setChat(new TestTopic());
             game.addFaction(ecaz);
             game.addFaction(emperor);
@@ -1231,8 +1235,8 @@ public class BattlePlanTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            ecaz = new EcazFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
+            ecaz = new EcazFaction("p", "u");
+            fremen = new FremenFaction("p", "u");
             carthag = game.getTerritory("Carthag");
             garaKulon = game.getTerritory("Gara Kulon");
             game.addFaction(fremen);
@@ -1253,7 +1257,8 @@ public class BattlePlanTest {
 
         @Test
         void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
-            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            IxFaction ix = new IxFaction("iPlayer", "iUser");
+            game.addFaction(ix);
             TestTopic ixChat = new TestTopic();
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -1290,7 +1295,8 @@ public class BattlePlanTest {
 
         @Test
         void testKaramadCyborgs() throws InvalidGameStateException, IOException {
-            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            IxFaction ix = new IxFaction("iPlayer", "iUser");
+            game.addFaction(ix);
             TestTopic ixChat = new TestTopic();
             ix.setChat(ixChat);
             carthag.addForces("Ix", 2);
@@ -1335,7 +1341,7 @@ public class BattlePlanTest {
 
         @Test
         void testNoFieldForces() throws IOException {
-            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);
@@ -1349,7 +1355,7 @@ public class BattlePlanTest {
 
         @Test
         void testNoFieldForcesFewerReserves() throws IOException {
-            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);
@@ -1372,7 +1378,8 @@ public class BattlePlanTest {
 
         @Test
         void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException, IOException {
-            RicheseFaction richese = new RicheseFaction("p", "u", game);
+            RicheseFaction richese = new RicheseFaction("p", "u");
+            game.addFaction(richese);
             richese.setChat(new TestTopic());
             garaKulon.setRicheseNoField(5);
             garaKulon.addForces("NoField", 5);
@@ -1393,7 +1400,8 @@ public class BattlePlanTest {
     class GetForcesDialed {
         @Test
         void testSuboidsAlwaysCountHalf() throws IOException, InvalidGameStateException {
-            IxFaction ix = new IxFaction("iPlayer", "iUser", game);
+            IxFaction ix = new IxFaction("iPlayer", "iUser");
+            game.addFaction(ix);
             TestTopic ixChat = new TestTopic();
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -1405,7 +1413,8 @@ public class BattlePlanTest {
 
         @Test
         void testNoFieldForces() throws IOException, InvalidGameStateException {
-            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
+            game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);
             Territory carthag = game.getTerritory("Carthag");
@@ -1418,7 +1427,7 @@ public class BattlePlanTest {
 
         @Test
         void testNoFieldForcesFewerReserves() throws IOException, InvalidGameStateException {
-            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);

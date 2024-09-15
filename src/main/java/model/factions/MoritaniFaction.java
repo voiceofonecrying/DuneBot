@@ -5,6 +5,7 @@ import enums.GameOption;
 import enums.UpdateType;
 import model.*;
 import model.topics.DuneTopic;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -16,8 +17,8 @@ public class MoritaniFaction extends Faction {
     private final List<String> assassinationTargets;
     private boolean newAssassinationTargetNeeded;
 
-    public MoritaniFaction(String player, String userName, Game game) throws IOException {
-        super("Moritani", player, userName, game);
+    public MoritaniFaction(String player, String userName) throws IOException {
+        super("Moritani", player, userName);
 
         setSpice(12);
         this.freeRevival = 2;
@@ -26,9 +27,6 @@ public class MoritaniFaction extends Faction {
         this.lowThreshold = 7;
         this.occupiedIncome = 2;
         this.homeworld = "Grumman";
-        Territory grumman = game.getTerritories().addHomeworld(game, homeworld, name);
-        grumman.addForces(name, 20);
-        game.getHomeworlds().put(name, homeworld);
         this.terrorTokens = new LinkedList<>();
         this.assassinationTargets = new LinkedList<>();
         this.newAssassinationTargetNeeded = false;
@@ -39,6 +37,14 @@ public class MoritaniFaction extends Faction {
         terrorTokens.add("Robbery");
         terrorTokens.add("Sabotage");
         terrorTokens.add("Sneak Attack");
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
+        Territory grumman = game.getTerritories().addHomeworld(game, homeworld, name);
+        grumman.addForces(name, 20);
+        game.getHomeworlds().put(name, homeworld);
     }
 
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {

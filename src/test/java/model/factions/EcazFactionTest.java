@@ -24,7 +24,7 @@ public class EcazFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new EcazFaction("player", "player", game);
+        faction = new EcazFaction("player", "player");
         game.addFaction(faction);
     }
 
@@ -157,8 +157,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.setChat(ecazChat);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
-            atreides = new AtreidesFaction("p", "u", game);
-            bg = new BGFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
+            bg = new BGFaction("p", "u");
             carthag = game.getTerritory("Carthag");
             carthag.setEcazAmbassador("BG");
         }
@@ -205,7 +205,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void setUp() throws IOException {
             faction.setChat(chat);
             faction.setLedger(ledger);
-            harkonnen = new HarkonnenFaction("p", "u", game);
+            harkonnen = new HarkonnenFaction("p", "u");
             game.addFaction(harkonnen);
             modInfo = new TestTopic();
             game.setModInfo(modInfo);
@@ -277,7 +277,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testTriggerHarkonnenShowTraitor() throws IOException {
             AtreidesFaction atreides;
-            atreides = new AtreidesFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
             game.addFaction(atreides);
             atreides.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
 
@@ -289,7 +289,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testTriggerHarkonnenShowFaceDancer() throws IOException {
             BTFaction bt;
-            bt = new BTFaction("p", "u", game);
+            bt = new BTFaction("p", "u");
             game.addFaction(bt);
             bt.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
             bt.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));

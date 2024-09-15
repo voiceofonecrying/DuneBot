@@ -25,7 +25,7 @@ class ChoamFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new ChoamFaction("player", "player", game);
+        faction = new ChoamFaction("player", "player");
         game.addFaction(faction);
     }
 
@@ -397,7 +397,7 @@ class ChoamFactionTest extends FactionTestTemplate {
             faction.setChat(chat);
             faction.setLedger(ledger);
             faction.addTreacheryCard(new TreacheryCard("Shield"));
-            richese = new RicheseFaction("p", "u", game);
+            richese = new RicheseFaction("p", "u");
             game.addFaction(richese);
             richese.setChat(new TestTopic());
             richese.setLedger(new TestTopic());

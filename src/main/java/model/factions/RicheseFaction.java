@@ -8,6 +8,7 @@ import model.Game;
 import model.TechToken;
 import model.Territory;
 import model.TreacheryCard;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ public class RicheseFaction extends Faction {
     Integer frontOfShieldNoField;
     List<Integer> behindShieldNoField;
 
-    public RicheseFaction(String player, String userName, Game game) throws IOException {
-        super("Richese", player, userName, game);
+    public RicheseFaction(String player, String userName) throws IOException {
+        super("Richese", player, userName);
 
         setSpice(5);
         this.freeRevival = 2;
@@ -28,9 +29,6 @@ public class RicheseFaction extends Faction {
         this.lowThreshold = 9;
         this.occupiedIncome = 1;
         this.homeworld = "Richese";
-        Territory richese = game.getTerritories().addHomeworld(game, homeworld, name);
-        richese.addForces(name, 20);
-        game.getHomeworlds().put(name, homeworld);
         this.behindShieldNoField = new ArrayList<>();
         this.behindShieldNoField.add(0);
         this.behindShieldNoField.add(3);
@@ -47,6 +45,14 @@ public class RicheseFaction extends Faction {
         treacheryCardCache.add(new TreacheryCard("Juice of Sapho"));
         treacheryCardCache.add(new TreacheryCard("Karama"));
         treacheryCardCache.add(new TreacheryCard("Nullentropy Box"));
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
+        Territory richese = game.getTerritories().addHomeworld(game, homeworld, name);
+        richese.addForces(name, 20);
+        game.getHomeworlds().put(name, homeworld);
     }
 
     public boolean hasFrontOfShieldNoField() {

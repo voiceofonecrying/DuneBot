@@ -4,6 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import model.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,8 +18,8 @@ public class EcazFaction extends Faction {
 
     private Leader loyalLeader;
 
-    public EcazFaction(String player, String userName, Game game) throws IOException {
-        super("Ecaz", player, userName, game);
+    public EcazFaction(String player, String userName) throws IOException {
+        super("Ecaz", player, userName);
 
         setSpice(12);
         this.freeRevival = 2;
@@ -26,11 +27,7 @@ public class EcazFaction extends Faction {
         this.highThreshold = 7;
         this.lowThreshold = 6;
         this.homeworld = "Ecaz";
-        Territory ecaz = game.getTerritories().addHomeworld(game, homeworld, name);
-        ecaz.addForces(name, 14);
-        game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
-        game.getTerritories().get("Imperial Basin (Center Sector)").addForces("Ecaz", 6);
         this.ambassadorPool = new LinkedList<>();
         this.ambassadorSupply = new LinkedList<>();
         this.triggeredAmbassadors = new LinkedList<>();
@@ -45,6 +42,15 @@ public class EcazFaction extends Faction {
         ambassadorPool.add("Guild");
         ambassadorPool.add("BT");
         drawNewSupply();
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
+        Territory ecaz = game.getTerritories().addHomeworld(game, homeworld, name);
+        ecaz.addForces(name, 14);
+        game.getHomeworlds().put(name, homeworld);
+        game.getTerritories().get("Imperial Basin (Center Sector)").addForces("Ecaz", 6);
     }
 
     public void drawNewSupply() {

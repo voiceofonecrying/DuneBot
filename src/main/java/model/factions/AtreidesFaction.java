@@ -4,14 +4,15 @@ import constants.Emojis;
 import enums.UpdateType;
 import model.Game;
 import model.Territory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 public class AtreidesFaction extends Faction {
     private int forcesLost;
 
-    public AtreidesFaction(String player, String userName, Game game) throws IOException {
-        super("Atreides", player, userName, game);
+    public AtreidesFaction(String player, String userName) throws IOException {
+        super("Atreides", player, userName);
 
         setSpice(10);
         this.freeRevival = 2;
@@ -21,12 +22,17 @@ public class AtreidesFaction extends Faction {
         this.lowThreshold = 5;
         this.occupiedIncome = 2;
         this.homeworld = "Caladan";
-        game.getTerritory("Arrakeen").addForces("Atreides", 10);
+
+        this.forcesLost = 0;
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         Territory caladan = game.getTerritories().addHomeworld(game, homeworld, name);
         caladan.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
-
-        this.forcesLost = 0;
+        game.getTerritory("Arrakeen").addForces("Atreides", 10);
     }
 
     /**

@@ -31,9 +31,9 @@ public class GameBattlePhaseTest {
     class StartBattlePhase {
         @BeforeEach
         void setUp() throws IOException {
-            BGFaction bg = new BGFaction("bgPlayer", "bgUser", game);
+            BGFaction bg = new BGFaction("bgPlayer", "bgUser");
             game.addFaction(bg);
-            fremen = new FremenFaction("fPlayer", "fUser", game);
+            fremen = new FremenFaction("fPlayer", "fUser");
             game.addFaction(fremen);
         }
 
@@ -69,7 +69,7 @@ public class GameBattlePhaseTest {
         @Test
         void testBattleWithNoField() throws IOException {
             game.setStorm(14);
-            RicheseFaction richeseFaction = new RicheseFaction("rPlayer", "rName", game);
+            RicheseFaction richeseFaction = new RicheseFaction("rPlayer", "rName");
             game.addFaction(richeseFaction);
             Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
             eastCielagoNorth.addForces("BG", 6);
@@ -156,7 +156,7 @@ public class GameBattlePhaseTest {
 
         @Test
         void testMoritaniInTwoStronholdBattlesGetsVidal() throws IOException {
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
@@ -177,9 +177,9 @@ public class GameBattlePhaseTest {
 
         @Test
         void testMoritaniTakesVidalFromEcaz() throws IOException {
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
-            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            ecaz = new EcazFaction("ePlayer", "eUser");
             game.addFaction(ecaz);
             ecaz.addLeader(dukeVidal);
             assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
@@ -207,9 +207,9 @@ public class GameBattlePhaseTest {
 
         @Test
         void testMoritaniTakesVidalFromHarkonnen() throws IOException {
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
-            HarkonnenFaction harkonnen = new HarkonnenFaction("ePlayer", "eUser", game);
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ePlayer", "eUser");
             game.addFaction(harkonnen);
             harkonnen.addLeader(dukeVidal);
             assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
@@ -237,7 +237,7 @@ public class GameBattlePhaseTest {
 
         @Test
         void testMoritaniWithAdvisorsDoesNotGetVidal() throws IOException {
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
@@ -259,9 +259,9 @@ public class GameBattlePhaseTest {
         @Test
         void testMoritaniWithEcazDoesNotGetVidal() throws IOException {
             game.setStorm(14);
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
-            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser");
             game.addFaction(ecaz);
             Territory arrakeen = game.getTerritory("Arrakeen");
             Territory tueksSietch = game.getTerritory("Tuek's Sietch");
@@ -282,7 +282,7 @@ public class GameBattlePhaseTest {
 
         @Test
         void testEcazWithAllyNotABattle() throws IOException {
-            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser");
             game.addFaction(ecaz);
             ecaz.setAlly("Fremen");
             fremen.setAlly("Ecaz");
@@ -300,9 +300,9 @@ public class GameBattlePhaseTest {
 
         @Test
         void testAllyWithEcazNotABattle() throws IOException {
-            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser");
             game.addFaction(ecaz);
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
             ecaz.setAlly("Moritani");
             moritani.setAlly("Ecaz");
@@ -320,9 +320,9 @@ public class GameBattlePhaseTest {
 
         @Test
         void testEcazAllyAndThirdHaveABattle() throws IOException {
-            ecaz = new EcazFaction("ecazPlayer", "ecazUser", game);
+            ecaz = new EcazFaction("ecazPlayer", "ecazUser");
             game.addFaction(ecaz);
-            moritani = new MoritaniFaction("mPlayer", "mUser", game);
+            moritani = new MoritaniFaction("mPlayer", "mUser");
             game.addFaction(moritani);
             ecaz.setAlly("Moritani");
             moritani.setAlly("Ecaz");
@@ -347,10 +347,10 @@ public class GameBattlePhaseTest {
         void testEcazAllyAndThirdHaveABattle2() throws IOException {
             TestTopic turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
-            ecaz = new EcazFaction("aPlayer", "aUser", game);
-            EmperorFaction emperor = new EmperorFaction("ePlayer", "eUser", game);
-            HarkonnenFaction harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+            ecaz = new EcazFaction("aPlayer", "aUser");
+            EmperorFaction emperor = new EmperorFaction("ePlayer", "eUser");
+            HarkonnenFaction harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(ecaz);
             game.addFaction(emperor);
             game.addFaction(harkonnen);

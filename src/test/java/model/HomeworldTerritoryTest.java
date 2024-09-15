@@ -23,11 +23,11 @@ public class HomeworldTerritoryTest {
         Game game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
-        AtreidesFaction atreides = new AtreidesFaction("p", "u", game);
+        AtreidesFaction atreides = new AtreidesFaction("p", "u");
         game.addFaction(atreides);
-        HarkonnenFaction harkonnen = new HarkonnenFaction("p", "u", game);
+        HarkonnenFaction harkonnen = new HarkonnenFaction("p", "u");
         game.addFaction(harkonnen);
-        EmperorFaction emperor = new EmperorFaction("p", "u", game);
+        EmperorFaction emperor = new EmperorFaction("p", "u");
         game.addFaction(emperor);
         caladan = (HomeworldTerritory) game.getTerritory(atreides.getHomeworld());
     }

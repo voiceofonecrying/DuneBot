@@ -4,14 +4,15 @@ import constants.Emojis;
 import enums.UpdateType;
 import model.Game;
 import model.Territory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
 public class GuildFaction extends Faction {
     private boolean allySpiceForShipping;
 
-    public GuildFaction(String player, String userName, Game game) throws IOException {
-        super("Guild", player, userName, game);
+    public GuildFaction(String player, String userName) throws IOException {
+        super("Guild", player, userName);
 
         setSpice(5);
         this.freeRevival = 1;
@@ -20,11 +21,16 @@ public class GuildFaction extends Faction {
         this.lowThreshold = 4;
         this.occupiedIncome = 2;
         this.homeworld = "Junction";
+        allySpiceForShipping = false;
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         game.getTerritories().get("Tuek's Sietch").addForces("Guild", 5);
         Territory junction = game.getTerritories().addHomeworld(game, homeworld, name);
         junction.addForces(name, 15);
         game.getHomeworlds().put(name, homeworld);
-        allySpiceForShipping = false;
     }
 
     public boolean isAllySpiceForShipping() {

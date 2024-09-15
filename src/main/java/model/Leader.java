@@ -7,14 +7,26 @@ import model.factions.Faction;
 public class Leader {
     private final String name;
     private final int value;
+    private final String originalFactionName;
     private LeaderSkillCard skillCard;
     private final boolean faceDown;
     private String battleTerritoryName;
     private boolean pulledBehindShield;
 
+    public Leader(String name, int value, String originalFactionName, LeaderSkillCard skillCard, boolean faceDown) {
+        this.name = name;
+        this.value = value;
+        this.originalFactionName = originalFactionName;
+        this.skillCard = skillCard;
+        this.faceDown = faceDown;
+        this.battleTerritoryName = null;
+        this.pulledBehindShield = false;
+    }
+
     public Leader(String name, int value, LeaderSkillCard skillCard, boolean faceDown) {
         this.name = name;
         this.value = value;
+        this.originalFactionName = "None";
         this.skillCard = skillCard;
         this.faceDown = faceDown;
         this.battleTerritoryName = null;
@@ -27,6 +39,10 @@ public class Leader {
 
     public int getValue() {
         return value;
+    }
+
+    public String getOriginalFactionName() {
+        return originalFactionName;
     }
 
     public int getStandardRevivalCost() {

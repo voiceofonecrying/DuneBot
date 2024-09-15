@@ -29,7 +29,7 @@ public class SpiceBlowAndNexusTest {
         gameActions = new TestTopic();
         game.setGameActions(gameActions);
         funeralPlain = game.getTerritory("Funeral Plain");
-        fremen = new FremenFaction("p", "u", game);
+        fremen = new FremenFaction("p", "u");
         fremenChat = new TestTopic();
         fremen.setChat(fremenChat);
         game.addFaction(fremen);

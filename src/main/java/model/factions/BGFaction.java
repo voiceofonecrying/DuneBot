@@ -8,6 +8,7 @@ import model.DuneChoice;
 import model.Game;
 import model.HomeworldTerritory;
 import model.Territory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -17,8 +18,8 @@ public class BGFaction extends Faction {
     private String predictionFactionName;
     private int predictionRound;
 
-    public BGFaction(String player, String userName, Game game) throws IOException {
-        super("BG", player, userName, game);
+    public BGFaction(String player, String userName) throws IOException {
+        super("BG", player, userName);
 
         setSpice(5);
         this.freeRevival = 1;
@@ -27,6 +28,11 @@ public class BGFaction extends Faction {
         this.lowThreshold = 10;
         this.occupiedIncome = 1;
         this.homeworld = "Wallach IX";
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         Territory wallachIX = game.getTerritories().addHomeworld(game, homeworld, name);
         wallachIX.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);

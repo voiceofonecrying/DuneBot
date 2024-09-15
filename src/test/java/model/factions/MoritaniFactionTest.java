@@ -25,7 +25,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new MoritaniFaction("player", "player", game);
+        faction = new MoritaniFaction("player", "player");
         game.addFaction(faction);
     }
 
@@ -151,7 +151,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         public void setUp() throws IOException {
             moritaniLedger = new TestTopic();
             faction.setLedger(moritaniLedger);
-            bt = new BTFaction("p", "u", game);
+            bt = new BTFaction("p", "u");
             btChat = new TestTopic();
             bt.setChat(btChat);
             btLedger = new TestTopic();
@@ -201,7 +201,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.setChat(moritaniChat);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
-            atreides = new AtreidesFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
             carthag = game.getTerritory("Carthag");
             carthag.addTerrorToken("Sabotage");
         }
@@ -259,7 +259,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.setLedger(moritaniLedger);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
-            atreides = new AtreidesFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
             atreides.setLedger(new TestTopic());
             game.addFaction(atreides);
         }

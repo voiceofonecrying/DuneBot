@@ -30,12 +30,12 @@ public class BattlesTest {
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
         game.setWhispers(new TestTopic());
-        atreides = new AtreidesFaction("aPlayer", "aUser", game);
-        bg = new BGFaction("bgPlayer", "bgUser", game);
-        emperor = new EmperorFaction("ePlayer", "eUser", game);
-        fremen = new FremenFaction("fPlayer", "fUser", game);
-        guild = new GuildFaction("gPlayer", "gUser", game);
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+        atreides = new AtreidesFaction("aPlayer", "aUser");
+        bg = new BGFaction("bgPlayer", "bgUser");
+        emperor = new EmperorFaction("ePlayer", "eUser");
+        fremen = new FremenFaction("fPlayer", "fUser");
+        guild = new GuildFaction("gPlayer", "gUser");
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
     }
 
     @AfterEach
@@ -47,12 +47,12 @@ public class BattlesTest {
         game = new Game();
         game.setTurnSummary(turnSummary);
         game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser", game);
-        bg = new BGFaction("bgPlayer", "bgUser", game);
-        emperor = new EmperorFaction("ePlayer", "eUser", game);
-        fremen = new FremenFaction("fPlayer", "fUser", game);
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+        ecaz = new EcazFaction("aPlayer", "aUser");
+        bg = new BGFaction("bgPlayer", "bgUser");
+        emperor = new EmperorFaction("ePlayer", "eUser");
+        fremen = new FremenFaction("fPlayer", "fUser");
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
         game.addFaction(ecaz);
         game.addFaction(bg);
         game.addFaction(emperor);
@@ -75,12 +75,12 @@ public class BattlesTest {
         game = new Game();
         game.setTurnSummary(turnSummary);
         game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser", game);
-        bg = new BGFaction("bgPlayer", "bgUser", game);
-        emperor = new EmperorFaction("ePlayer", "eUser", game);
-        fremen = new FremenFaction("fPlayer", "fUser", game);
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser", game);
+        ecaz = new EcazFaction("aPlayer", "aUser");
+        bg = new BGFaction("bgPlayer", "bgUser");
+        emperor = new EmperorFaction("ePlayer", "eUser");
+        fremen = new FremenFaction("fPlayer", "fUser");
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
         game.addFaction(ecaz);
         game.addFaction(bg);
         game.addFaction(emperor);
@@ -248,12 +248,12 @@ public class BattlesTest {
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
         game.setWhispers(new TestTopic());
-        atreides = new AtreidesFaction("aPlayer", "aUser", game);
-        ecaz = new EcazFaction("bgPlayer", "bgUser", game);
-        emperor = new EmperorFaction("ePlayer", "eUser", game);
-        fremen = new FremenFaction("fPlayer", "fUser", game);
-        guild = new GuildFaction("gPlayer", "gUser", game);
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+        atreides = new AtreidesFaction("aPlayer", "aUser");
+        ecaz = new EcazFaction("bgPlayer", "bgUser");
+        emperor = new EmperorFaction("ePlayer", "eUser");
+        fremen = new FremenFaction("fPlayer", "fUser");
+        guild = new GuildFaction("gPlayer", "gUser");
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
         game.addFaction(atreides);
         game.addFaction(ecaz);
         game.addFaction(emperor);

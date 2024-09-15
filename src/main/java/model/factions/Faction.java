@@ -11,6 +11,7 @@ import model.topics.DuneTopic;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -82,7 +83,7 @@ public class Faction {
     @Exclude
     protected DuneTopic chat;
 
-    public Faction(String name, String player, String userName, Game game) throws IOException {
+    public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
         this.name = name;
         this.player = player;
@@ -119,23 +120,14 @@ public class Faction {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
         ));
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
+        for (CSVRecord csvRecord : CSVParser.parse(bufferedReader, CSVFormat.EXCEL))
+            if (csvRecord.get(0).equals(this.getName()))
+                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), csvRecord.get(0), null, false));
+    }
 
-        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
-
-        for (CSVRecord csvRecord : csvParser) {
-            if (csvRecord.get(0).equals(this.getName())) {
-                TraitorCard traitorCard = new TraitorCard(
-                        csvRecord.get(1),
-                        csvRecord.get(0),
-                        Integer.parseInt(csvRecord.get(2))
-                );
-                this.leaders.add(new Leader(csvRecord.get(1), Integer.parseInt(csvRecord.get(2)), null, false));
-                traitorDeck.add(traitorCard);
-            }
-        }
-
+    public void joinGame(@NotNull Game game) {
         this.game = game;
+        leaders.forEach(l -> game.getTraitorDeck().add(new TraitorCard(l.getName(), l.getOriginalFactionName(), l.getValue())));
     }
 
     public void setUpdated(UpdateType updateType) {

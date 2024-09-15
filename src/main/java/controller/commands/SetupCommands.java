@@ -266,18 +266,18 @@ public class SetupCommands {
         Faction faction;
 
         switch (factionName.toUpperCase()) {
-            case "ATREIDES" -> faction = new AtreidesFaction(playerName, userName, game);
-            case "BG" -> faction = new BGFaction(playerName, userName, game);
-            case "BT" -> faction = new BTFaction(playerName, userName, game);
-            case "CHOAM" -> faction = new ChoamFaction(playerName, userName, game);
-            case "EMPEROR" -> faction = new EmperorFaction(playerName, userName, game);
-            case "FREMEN" -> faction = new FremenFaction(playerName, userName, game);
-            case "GUILD" -> faction = new GuildFaction(playerName, userName, game);
-            case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName, game);
-            case "IX" -> faction = new IxFaction(playerName, userName, game);
-            case "RICHESE" -> faction = new RicheseFaction(playerName, userName, game);
-            case "ECAZ" -> faction = new EcazFaction(playerName, userName, game);
-            case "MORITANI" -> faction = new MoritaniFaction(playerName, userName, game);
+            case "ATREIDES" -> faction = new AtreidesFaction(playerName, userName);
+            case "BG" -> faction = new BGFaction(playerName, userName);
+            case "BT" -> faction = new BTFaction(playerName, userName);
+            case "CHOAM" -> faction = new ChoamFaction(playerName, userName);
+            case "EMPEROR" -> faction = new EmperorFaction(playerName, userName);
+            case "FREMEN" -> faction = new FremenFaction(playerName, userName);
+            case "GUILD" -> faction = new GuildFaction(playerName, userName);
+            case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName);
+            case "IX" -> faction = new IxFaction(playerName, userName);
+            case "RICHESE" -> faction = new RicheseFaction(playerName, userName);
+            case "ECAZ" -> faction = new EcazFaction(playerName, userName);
+            case "MORITANI" -> faction = new MoritaniFaction(playerName, userName);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 

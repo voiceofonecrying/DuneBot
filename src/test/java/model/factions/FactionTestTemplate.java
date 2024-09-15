@@ -227,7 +227,7 @@ abstract class FactionTestTemplate {
 
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
-                bt = new BTFaction("p", "u", game);
+                bt = new BTFaction("p", "u");
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
                 bt.setSpice(0);
@@ -272,7 +272,7 @@ abstract class FactionTestTemplate {
 
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
-                bt = new BTFaction("p", "u", game);
+                bt = new BTFaction("p", "u");
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
                 bt.setSpice(0);
@@ -324,7 +324,7 @@ abstract class FactionTestTemplate {
 
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
-                bt = new BTFaction("p", "u", game);
+                bt = new BTFaction("p", "u");
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
                 bt.setSpice(0);
@@ -378,8 +378,8 @@ abstract class FactionTestTemplate {
 
         @BeforeEach
         public void setUp() throws IOException {
-            game.addFaction(new HarkonnenFaction("p", "u", game));
-            game.addFaction(new EmperorFaction("p", "u", game));
+            game.addFaction(new HarkonnenFaction("p", "u"));
+            game.addFaction(new EmperorFaction("p", "u"));
             homeworldName = getFaction().getHomeworld();
             territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
         }

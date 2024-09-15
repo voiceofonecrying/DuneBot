@@ -8,6 +8,7 @@ import model.DuneChoice;
 import model.Game;
 import model.Territory;
 import model.TreacheryCard;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ public class ChoamFaction extends Faction {
     private ChoamInflationType firstInflationType;
     private boolean allySpiceForBattle;
 
-    public ChoamFaction(String player, String userName, Game game) throws IOException {
-        super("CHOAM", player, userName, game);
+    public ChoamFaction(String player, String userName) throws IOException {
+        super("CHOAM", player, userName);
 
         setSpice(2);
         this.freeRevival = 0;
@@ -28,13 +29,18 @@ public class ChoamFaction extends Faction {
         this.highThreshold = 11;
         this.lowThreshold = 10;
         this.homeworld = "Tupile";
-        Territory tupile = game.getTerritories().addHomeworld(game, homeworld, name);
-        tupile.addForces(name, 20);
-        game.getHomeworlds().put(name, homeworld);
         this.occupiedIncome = 2;
         this.handLimit = 5;
         clearInflation();
         allySpiceForBattle = false;
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
+        Territory tupile = game.getTerritories().addHomeworld(game, homeworld, name);
+        tupile.addForces(name, 20);
+        game.getHomeworlds().put(name, homeworld);
     }
 
     @Override

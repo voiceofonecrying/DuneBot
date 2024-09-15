@@ -33,7 +33,7 @@ public class MentatPauseTest {
         mentatPause = new MentatPause();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
-        choam = new ChoamFaction("cPlayer", "cUser", game);
+        choam = new ChoamFaction("cPlayer", "cUser");
         game.addFaction(choam);
         choamChat = new TestTopic();
         choam.setChat(choamChat);
@@ -42,7 +42,7 @@ public class MentatPauseTest {
 
     @Test
     void testSpiceForAllyResetsToZero() throws IOException {
-        richese = new RicheseFaction("p", "u", game);
+        richese = new RicheseFaction("p", "u");
         richese.setLedger(new TestTopic());
         game.addFaction(richese);
         game.createAlliance(choam, richese);
@@ -83,7 +83,7 @@ public class MentatPauseTest {
 
         @BeforeEach
         public void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u", game);
+            emperor = new EmperorFaction("p", "u");
             emperorChat = new TestTopic();
             emperor.setChat(emperorChat);
             game.addFaction(emperor);
@@ -123,25 +123,25 @@ public class MentatPauseTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fp4", "un4", game);
+            fremen = new FremenFaction("fp4", "un4");
             fremen.setChat(new TestTopic());
             game.addFaction(fremen);
 
-            moritani = new MoritaniFaction("fp3", "un3", game);
+            moritani = new MoritaniFaction("fp3", "un3");
             moritani.setChat(moritaniChat);
             game.addFaction(moritani);
             moritani.setLedger(moritaniLedger);
 
-            richese = new RicheseFaction("fp6", "un6", game);
+            richese = new RicheseFaction("fp6", "un6");
             richese.setChat(new TestTopic());
             game.addFaction(richese);
             richese.setLedger(richeseLedger);
 
-            bt = new BTFaction("p", "u", game);
+            bt = new BTFaction("p", "u");
             bt.setChat(new TestTopic());
             game.addFaction(bt);
 
-            guild = new GuildFaction("fp1", "un5", game);
+            guild = new GuildFaction("fp1", "un5");
             guild.setChat(new TestTopic());
             game.addFaction(guild);
             guild.setLedger(guildLedger);

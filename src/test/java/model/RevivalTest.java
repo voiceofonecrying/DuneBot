@@ -27,13 +27,13 @@ public class RevivalTest {
         game.setTurnSummary(turnSummary);
         game.startRevival();
         revival = game.getRevival();
-        bt = new BTFaction("p", "u", game);
+        bt = new BTFaction("p", "u");
         bt.setChat(new TestTopic());
         bt.setLedger(new TestTopic());
-        choam = new ChoamFaction("p", "u", game);
+        choam = new ChoamFaction("p", "u");
         choam.setChat(new TestTopic());
         choam.setLedger(new TestTopic());
-        harkonnen = new HarkonnenFaction("p", "u", game);
+        harkonnen = new HarkonnenFaction("p", "u");
         harkonnen.setChat(new TestTopic());
         harkonnen.setLedger(new TestTopic());
         game.addFaction(bt);

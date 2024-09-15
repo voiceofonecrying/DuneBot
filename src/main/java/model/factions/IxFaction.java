@@ -6,14 +6,15 @@ import model.DuneChoice;
 import model.Game;
 import model.Territory;
 import model.TleilaxuTanks;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class IxFaction extends Faction {
-    public IxFaction(String player, String userName, Game game) throws IOException {
-        super("Ix", player, userName, game);
+    public IxFaction(String player, String userName) throws IOException {
+        super("Ix", player, userName);
 
         setSpice(10);
         this.freeRevival = 1;
@@ -22,6 +23,11 @@ public class IxFaction extends Faction {
         this.lowThreshold = 4;
         this.occupiedIncome = 2;
         this.homeworld = "Ix";
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix", 3);
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix*", 3);
         Territory ix = game.getTerritories().addHomeworld(game, homeworld, name);

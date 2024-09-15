@@ -45,14 +45,14 @@ class BiddingTest {
         biddingPhase = new TestTopic();
         game.setBiddingPhase(biddingPhase);
 
-        atreides = new AtreidesFaction("p", "u", game);
-        bg = new BGFaction("p", "u", game);
-        emperor = new EmperorFaction("p", "u", game);
-        fremen = new FremenFaction("p", "u", game);
-        guild = new GuildFaction("p", "u", game);
-        harkonnen = new HarkonnenFaction("p", "u", game);
-        ix = new IxFaction("p", "u", game);
-        richese = new RicheseFaction("p", "u", game);
+        atreides = new AtreidesFaction("p", "u");
+        bg = new BGFaction("p", "u");
+        emperor = new EmperorFaction("p", "u");
+        fremen = new FremenFaction("p", "u");
+        guild = new GuildFaction("p", "u");
+        harkonnen = new HarkonnenFaction("p", "u");
+        ix = new IxFaction("p", "u");
+        richese = new RicheseFaction("p", "u");
 
         atreides.setChat(new TestTopic());
         bg.setChat(new TestTopic());

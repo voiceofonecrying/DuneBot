@@ -47,12 +47,12 @@ class BattleTest {
         modInfo = new TestTopic();
         game.setModInfo(modInfo);
         game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser", game);
-        bg = new BGFaction("bgPlayer", "bgUser", game);
-        emperor = new EmperorFaction("ePlayer", "eUser", game);
-        fremen = new FremenFaction("fPlayer", "fUser", game);
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-        richese = new RicheseFaction("rPlayer", "rUser", game);
+        ecaz = new EcazFaction("aPlayer", "aUser");
+        bg = new BGFaction("bgPlayer", "bgUser");
+        emperor = new EmperorFaction("ePlayer", "eUser");
+        fremen = new FremenFaction("fPlayer", "fUser");
+        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+        richese = new RicheseFaction("rPlayer", "rUser");
         atreidesChat = new TestTopic();
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
@@ -78,12 +78,12 @@ class BattleTest {
     class OldTestsRelyingOnGlobalAddingFactions {
         @BeforeEach
         void setUp() throws IOException {
-            ecaz = new EcazFaction("aPlayer", "aUser", game);
-            bg = new BGFaction("bgPlayer", "bgUser", game);
-            emperor = new EmperorFaction("ePlayer", "eUser", game);
-            fremen = new FremenFaction("fPlayer", "fUser", game);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            richese = new RicheseFaction("rPlayer", "rUser", game);
+            ecaz = new EcazFaction("aPlayer", "aUser");
+            bg = new BGFaction("bgPlayer", "bgUser");
+            emperor = new EmperorFaction("ePlayer", "eUser");
+            fremen = new FremenFaction("fPlayer", "fUser");
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(ecaz);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -627,12 +627,12 @@ class BattleTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser", game);
-            bg = new BGFaction("fPlayer", "fUser", game);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            ecaz = new EcazFaction("ePlayer", "eUser", game);
-            bt = new BTFaction("btPlayer", "btUser", game);
-            emperor = new EmperorFaction("empPlayer", "empUser", game);
+            atreides = new AtreidesFaction("aPlayer", "aUser");
+            bg = new BGFaction("fPlayer", "fUser");
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            ecaz = new EcazFaction("ePlayer", "eUser");
+            bt = new BTFaction("btPlayer", "btUser");
+            emperor = new EmperorFaction("empPlayer", "empUser");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);
@@ -1038,10 +1038,10 @@ class BattleTest {
             jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
             game.putTerritoryInAnotherTerritory(jacurutuSietch, garaKulon);
 
-            atreides = new AtreidesFaction("aPlayer", "aUser", game);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            ecaz = new EcazFaction("ePlayer", "eUser", game);
-            emperor = new EmperorFaction("empPlayer", "empUser", game);
+            atreides = new AtreidesFaction("aPlayer", "aUser");
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            ecaz = new EcazFaction("ePlayer", "eUser");
+            emperor = new EmperorFaction("empPlayer", "empUser");
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
@@ -1128,12 +1128,12 @@ class BattleTest {
         void setUp() throws IOException {
             bt = null;
 
-            atreides = new AtreidesFaction("aPlayer", "aUser", game);
-            bg = new BGFaction("fPlayer", "fUser", game);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            ecaz = new EcazFaction("ePlayer", "eUser", game);
-            emperor = new EmperorFaction("empPlayer", "empUser", game);
-            choam = new ChoamFaction("p", "u", game);
+            atreides = new AtreidesFaction("aPlayer", "aUser");
+            bg = new BGFaction("fPlayer", "fUser");
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            ecaz = new EcazFaction("ePlayer", "eUser");
+            emperor = new EmperorFaction("empPlayer", "empUser");
+            choam = new ChoamFaction("p", "u");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);

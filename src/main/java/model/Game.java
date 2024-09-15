@@ -516,6 +516,7 @@ public class Game {
     public void addFaction(Faction faction) {
         if (faction == null)
             throw new IllegalArgumentException("Cannot add a null faction");
+        faction.joinGame(this);
         factions.add(faction);
     }
 

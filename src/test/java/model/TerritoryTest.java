@@ -45,9 +45,9 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fakePlayer1", "userName1", game);
+            fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
-            atreides = new AtreidesFaction("fakePlayer2", "userName2", game);
+            atreides = new AtreidesFaction("fakePlayer2", "userName2");
             game.addFaction(atreides);
         }
 
@@ -90,13 +90,13 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fakePlayer1", "userName1", game);
+            fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
-            atreides = new AtreidesFaction("fakePlayer2", "userName2", game);
+            atreides = new AtreidesFaction("fakePlayer2", "userName2");
             game.addFaction(atreides);
-            bg = new BGFaction("fakePlayer3", "userName3", game);
+            bg = new BGFaction("fakePlayer3", "userName3");
             game.addFaction(bg);
-            richese = new RicheseFaction("fakePlayer4", "userName4", game);
+            richese = new RicheseFaction("fakePlayer4", "userName4");
             game.addFaction(richese);
         }
 
@@ -148,7 +148,7 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            Faction fremen = new FremenFaction("fakePlayer1", "userName1", game);
+            Faction fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
             sihayaRidge.setSpice(6);
             sihayaRidge.addForces("Fremen", numFremen);
@@ -182,7 +182,7 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            Faction atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
+            Faction atreides = new AtreidesFaction("fakePlayer1", "userName1");
             game.addFaction(atreides);
             sihayaRidge.setSpice(6);
             sihayaRidge.addForces("Atreides", numForces);
@@ -224,11 +224,11 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p", "u", game);
+            fremen = new FremenFaction("p", "u");
             fremen.setLedger(new TestTopic());
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
-            atreides = new AtreidesFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
             atreides.setLedger(new TestTopic());
             game.addFaction(fremen);
             game.addFaction(atreides);

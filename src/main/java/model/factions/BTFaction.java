@@ -6,6 +6,7 @@ import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 import model.TraitorCard;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
@@ -14,8 +15,8 @@ public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
     private List<String> factionsNeedingRevivalLimit;
 
-    public BTFaction(String player, String userName, Game game) throws IOException {
-        super("BT", player, userName, game);
+    public BTFaction(String player, String userName) throws IOException {
+        super("BT", player, userName);
 
         setSpice(5);
         this.freeRevival = 2;
@@ -26,6 +27,11 @@ public class BTFaction extends Faction {
         this.lowThreshold = 8;
         this.occupiedIncome = 2;
         this.homeworld = "Tleilax";
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         Territory tleilax = game.getTerritories().addHomeworld(game, homeworld, name);
         tleilax.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);

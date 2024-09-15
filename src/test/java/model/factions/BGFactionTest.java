@@ -25,7 +25,7 @@ class BGFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new BGFaction("player", "player", game);
+        faction = new BGFaction("player", "player");
         game.addFaction(faction);
     }
 

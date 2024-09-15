@@ -114,15 +114,15 @@ class GameTest {
     class ChoamCharity {
         @BeforeEach
         public void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u", game);
+            emperor = new EmperorFaction("p", "u");
             emperor.setLedger(new TestTopic());
-            bg = new BGFaction("p", "u", game);
+            bg = new BGFaction("p", "u");
             bg.setLedger(new TestTopic());
-            choam = new ChoamFaction("p", "u", game);
+            choam = new ChoamFaction("p", "u");
             choam.setLedger(new TestTopic());
-            atreides = new AtreidesFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
-            richese = new RicheseFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
+            fremen = new FremenFaction("p", "u");
+            richese = new RicheseFaction("p", "u");
 
             game.addFaction(emperor);
             game.addFaction(bg);
@@ -234,15 +234,15 @@ class GameTest {
     class ShippingPhase {
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("ePlayer", "eUser", game);
+            emperor = new EmperorFaction("ePlayer", "eUser");
             emperor.setLedger(new TestTopic());
-            guild = new GuildFaction("gPlayer", "gUser", game);
+            guild = new GuildFaction("gPlayer", "gUser");
             guild.setLedger(new TestTopic());
-            richese = new RicheseFaction("rPlayer", "rUser", game);
+            richese = new RicheseFaction("rPlayer", "rUser");
             richese.setLedger(new TestTopic());
-            fremen = new FremenFaction("fPlayer", "fUser", game);
+            fremen = new FremenFaction("fPlayer", "fUser");
             fremen.setLedger(new TestTopic());
-            atreides = new AtreidesFaction("p", "u", game);
+            atreides = new AtreidesFaction("p", "u");
             atreides.setLedger(new TestTopic());
             game.addFaction(emperor);
             game.addFaction(guild);
@@ -367,7 +367,7 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             game.addGameOption(GameOption.HOMEWORLDS);
-            Faction moritani = new MoritaniFaction("p", "u", game);
+            Faction moritani = new MoritaniFaction("p", "u");
             moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             game.addFaction(moritani);
@@ -375,7 +375,7 @@ class GameTest {
             assertFalse(moritani.isHighThreshold());
             game.getTerritory("Carthag").addTerrorToken("Robbery");
 
-            ecaz = new EcazFaction("p", "u", game);
+            ecaz = new EcazFaction("p", "u");
             game.addFaction(ecaz);
             game.getTerritory("Arrakeen").addForces("Ecaz", 2);
             game.getTerritory("Polar Sink").addForces("Ecaz", 2);
@@ -386,7 +386,7 @@ class GameTest {
             ecazMovement.setSecondMovingFrom("Polar Sink");
             ecazMovement.setSecondForce(2);
 
-            richese = new RicheseFaction("p", "u", game);
+            richese = new RicheseFaction("p", "u");
             game.addFaction(richese);
             game.getTerritory("Arrakeen").setRicheseNoField(5);
             game.getTerritory("Polar Sink").addForces("Richese", 2);
@@ -418,14 +418,14 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("ePlayer", "eUser", game);
-            ecaz = new EcazFaction("aPlayer", "aUser", game);
+            emperor = new EmperorFaction("ePlayer", "eUser");
+            ecaz = new EcazFaction("aPlayer", "aUser");
             game.addFaction(emperor);
             game.addFaction(ecaz);
             emperor.setLedger(new TestTopic());
             ecaz.setLedger(new TestTopic());
             game.createAlliance(ecaz, emperor);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
             game.addFaction(harkonnen);
             garaKulon = game.getTerritory("Gara Kulon");
             garaKulon.addForces("Harkonnen", 10);
@@ -466,7 +466,7 @@ class GameTest {
 
         @Test
         void atreidesHoldsAtomics() throws IOException, NullPointerException {
-            atreides = new AtreidesFaction("fakePlayer", "userName", game);
+            atreides = new AtreidesFaction("fakePlayer", "userName");
             game.addFaction(atreides);
             atreides.addTreacheryCard(familyAtomics);
             assertEquals(game.getFactionWithAtomics().getName(), "Atreides");
@@ -478,7 +478,7 @@ class GameTest {
     class BreakShieldWall {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer", "userName", game);
+            atreides = new AtreidesFaction("fakePlayer", "userName");
             game.addFaction(atreides);
             atreides.addTreacheryCard(familyAtomics);
         }
@@ -526,14 +526,14 @@ class GameTest {
     class InitialStorm {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
-            bt = new BTFaction("fp7", "un7", game);
-            ix = new IxFaction("fp8", "un8", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
+            bt = new BTFaction("fp7", "un7");
+            ix = new IxFaction("fp8", "un8");
             game.addGameOption(GameOption.TECH_TOKENS);
         }
 
@@ -679,12 +679,12 @@ class GameTest {
     class StormOrderFactions {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -765,11 +765,11 @@ class GameTest {
     class IxCanMoveHMS {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -779,21 +779,21 @@ class GameTest {
 
         @Test
         void ixNotInGame() throws IOException {
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(harkonnen);
             assertFalse(game.ixCanMoveHMS());
         }
 
         @Test
         void ixInGameInHMS() throws IOException {
-            ix = new IxFaction("fp6", "un6", game);
+            ix = new IxFaction("fp6", "un6");
             game.addFaction(ix);
             assertTrue(game.ixCanMoveHMS());
         }
 
         @Test
         void ixInGameNotInHMS() throws IOException {
-            ix = new IxFaction("fp6", "un6", game);
+            ix = new IxFaction("fp6", "un6");
             game.addFaction(ix);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             hms.removeForce("Ix");
@@ -808,12 +808,12 @@ class GameTest {
     class GetFactionsWithTreacheryCard {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -843,13 +843,13 @@ class GameTest {
     class StartNewTurn {
         @BeforeEach
         void setUp() throws IOException {
-            FremenFaction fremen = new FremenFaction("p", "u", game);
+            FremenFaction fremen = new FremenFaction("p", "u");
             game.addFaction(fremen);
         }
 
         @Test
         void testNewTurnResetsOccupation() throws IOException {
-            guild = new GuildFaction("p", "u", game);
+            guild = new GuildFaction("p", "u");
             game.addFaction(guild);
             HomeworldTerritory junction = (HomeworldTerritory) game.getTerritory(guild.getHomeworld());
             junction.addForces("Fremen*", 1);
@@ -865,7 +865,7 @@ class GameTest {
 
         @Test
         void testNewTurnResetsSalusaSecundusOccupation() throws IOException {
-            emperor = new EmperorFaction("p", "u", game);
+            emperor = new EmperorFaction("p", "u");
             game.addFaction(emperor);
             HomeworldTerritory salusaSecudus = (HomeworldTerritory) game.getTerritory(emperor.getSecondHomeworld());
             salusaSecudus.addForces("Fremen*", 1);
@@ -885,12 +885,12 @@ class GameTest {
     class StartStormPhase {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("p", "u", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("p", "u");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1093,8 +1093,8 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u", game);
-            fremen = new FremenFaction("p", "u", game);
+            emperor = new EmperorFaction("p", "u");
+            fremen = new FremenFaction("p", "u");
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             game.addFaction(emperor);
@@ -1355,12 +1355,12 @@ class GameTest {
     class DrawSpiceBlowNoFremen {
         @Test
         void shaiHuludWithNoFremenDoesNotThrowException() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser", game);
-            bg = new BGFaction("bgPlayer", "bgUser", game);
-            bt = new BTFaction("btPlayer", "btUser", game);
-            emperor = new EmperorFaction("ePlayer", "eUser", game);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
-            ix = new IxFaction("iPlayer", "iUser", game);
+            atreides = new AtreidesFaction("aPlayer", "aUser");
+            bg = new BGFaction("bgPlayer", "bgUser");
+            bt = new BTFaction("btPlayer", "btUser");
+            emperor = new EmperorFaction("ePlayer", "eUser");
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+            ix = new IxFaction("iPlayer", "iUser");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(bt);
@@ -1387,12 +1387,12 @@ class GameTest {
     class RemoveForces {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1576,12 +1576,12 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1628,12 +1628,12 @@ class GameTest {
     class ReviveForces {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1", game);
-            bg = new BGFaction("fakePlayer2", "userName2", game);
-            emperor = new EmperorFaction("fp3", "un3", game);
-            fremen = new FremenFaction("fp4", "un4", game);
-            guild = new GuildFaction("fp5", "un5", game);
-            harkonnen = new HarkonnenFaction("fp6", "un6", game);
+            atreides = new AtreidesFaction("fakePlayer1", "userName1");
+            bg = new BGFaction("fakePlayer2", "userName2");
+            emperor = new EmperorFaction("fp3", "un3");
+            fremen = new FremenFaction("fp4", "un4");
+            guild = new GuildFaction("fp5", "un5");
+            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -1779,16 +1779,16 @@ class GameTest {
     class UpdateStrongholdSkills {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser", game);
+            atreides = new AtreidesFaction("aPlayer", "aUser");
             game.addFaction(atreides);
 
-            guild = new GuildFaction("gPlayer", "gUser", game);
+            guild = new GuildFaction("gPlayer", "gUser");
             game.addFaction(guild);
 
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser", game);
+            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
             game.addFaction(harkonnen);
 
-            ecaz = new EcazFaction("ePlayer", "eUser", game);
+            ecaz = new EcazFaction("ePlayer", "eUser");
             game.addFaction(ecaz);
 
         }
@@ -1865,15 +1865,15 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p1", "un1", game);
+            fremen = new FremenFaction("p1", "un1");
             game.addFaction(fremen);
             fremen.setLedger(fremenLedger);
 
-            guild = new GuildFaction("p2", "un2", game);
+            guild = new GuildFaction("p2", "un2");
             game.addFaction(guild);
             guild.setLedger(guildLedger);
 
-            bt = new BTFaction("p3", "un3", game);
+            bt = new BTFaction("p3", "un3");
             game.addFaction(bt);
             bt.setLedger(btLedger);
 
@@ -1941,11 +1941,11 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p1", "un1", game);
+            fremen = new FremenFaction("p1", "un1");
             game.addFaction(fremen);
             fremen.setLedger(fremenLedger);
 
-            guild = new GuildFaction("p2", "un2", game);
+            guild = new GuildFaction("p2", "un2");
             game.addFaction(guild);
             guild.setLedger(guildLedger);
 

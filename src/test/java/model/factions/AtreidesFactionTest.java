@@ -25,7 +25,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new AtreidesFaction("player", "player", game);
+        faction = new AtreidesFaction("player", "player");
         game.addFaction(faction);
     }
 

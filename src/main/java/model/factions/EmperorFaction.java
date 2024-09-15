@@ -7,6 +7,7 @@ import model.Game;
 import model.HomeworldTerritory;
 import model.Territory;
 import model.TleilaxuTanks;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -17,8 +18,8 @@ public class EmperorFaction extends Faction {
     private final String secondHomeworld;
     private boolean isSecundusHighThreshold;
 
-    public EmperorFaction(String player, String userName, Game game) throws IOException {
-        super("Emperor", player, userName, game);
+    public EmperorFaction(String player, String userName) throws IOException {
+        super("Emperor", player, userName);
 
         setSpice(10);
         this.freeRevival = 1;
@@ -27,16 +28,21 @@ public class EmperorFaction extends Faction {
         this.lowThreshold = 4;
         this.homeworld = "Kaitain";
         this.secondHomeworld = "Salusa Secundus";
+        this.occupiedIncome = 2;
+        this.secundusHighThreshold = 2;
+        this.secundusLowThreshold = 2;
+        this.isSecundusHighThreshold = true;
+    }
+
+    @Override
+    public void joinGame(@NotNull Game game) {
+        super.joinGame(game);
         Territory kaitain = game.getTerritories().addHomeworld(game, homeworld, name);
         kaitain.addForces(name, 15);
         Territory salusaSecundus = game.getTerritories().addHomeworld(game, secondHomeworld, name);
         salusaSecundus.addForces(name + "*", 5);
         game.getHomeworlds().put(name, homeworld);
         game.getHomeworlds().put(name + "*", secondHomeworld);
-        this.occupiedIncome = 2;
-        this.secundusHighThreshold = 2;
-        this.secundusLowThreshold = 2;
-        this.isSecundusHighThreshold = true;
     }
 
     @Override
