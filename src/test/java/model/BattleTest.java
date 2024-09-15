@@ -47,17 +47,30 @@ class BattleTest {
         modInfo = new TestTopic();
         game.setModInfo(modInfo);
         game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser");
-        bg = new BGFaction("bgPlayer", "bgUser");
-        emperor = new EmperorFaction("ePlayer", "eUser");
-        fremen = new FremenFaction("fPlayer", "fUser");
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-        richese = new RicheseFaction("rPlayer", "rUser");
+        atreides = new AtreidesFaction("p", "u");
+        bg = new BGFaction("p", "u");
+        bt = new BTFaction("p", "u");
+        choam = new ChoamFaction("p", "u");
+        ecaz = new EcazFaction("p", "u");
+        emperor = new EmperorFaction("p", "u");
+        fremen = new FremenFaction("p", "u");
+        harkonnen = new HarkonnenFaction("p", "u");
+        richese = new RicheseFaction("p", "u");
         atreidesChat = new TestTopic();
+        atreides.setChat(atreidesChat);
+        bg.setChat(new TestTopic());
+        bt.setChat(new TestTopic());
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
         fremen.setChat(new TestTopic());
+        harkonnen.setChat(new TestTopic());
         richese.setChat(new TestTopic());
+        atreides.setLedger(new TestTopic());
+        choam.setLedger(new TestTopic());
+        ecaz.setLedger(new TestTopic());
+        emperor.setLedger(new TestTopic());
+        fremen.setLedger(new TestTopic());
+        harkonnen.setLedger(new TestTopic());
         richese.setLedger(new TestTopic());
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
@@ -78,23 +91,12 @@ class BattleTest {
     class OldTestsRelyingOnGlobalAddingFactions {
         @BeforeEach
         void setUp() throws IOException {
-            ecaz = new EcazFaction("aPlayer", "aUser");
-            bg = new BGFaction("bgPlayer", "bgUser");
-            emperor = new EmperorFaction("ePlayer", "eUser");
-            fremen = new FremenFaction("fPlayer", "fUser");
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-            richese = new RicheseFaction("rPlayer", "rUser");
             game.addFaction(ecaz);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(harkonnen);
             game.addFaction(richese);
-            ecaz.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            fremen.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
-            richese.setLedger(new TestTopic());
         }
 
         @Test
@@ -112,8 +114,6 @@ class BattleTest {
             richeseHomeworld.removeForces("Richese", 13);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             Force bgForces = new Force("BG", 1);
-            bg.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, noFieldForces, bgForces), null);
             richese.setSpice(8);
             try {
@@ -133,8 +133,6 @@ class BattleTest {
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);
-            bg.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
             BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
             BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
@@ -159,8 +157,6 @@ class BattleTest {
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);
-            bg.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
             BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
             BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
@@ -184,8 +180,6 @@ class BattleTest {
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);
-            bg.setChat(new TestTopic());
-            richese.setChat(new TestTopic());
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(richese, bg), List.of(richeseForces, bgForces), null);
             BattlePlan richesePlan = battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
             BattlePlan bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, poisonTooth, null);
@@ -221,8 +215,7 @@ class BattleTest {
 
         @Test
         void testAggressorMustChooseOpponentEcazAllyFalse() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
@@ -232,8 +225,7 @@ class BattleTest {
 
         @Test
         void testAggressorMustChooseOpponentEcazAllyTrue() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Fremen", 1);
             garaKulon.addForces("Fremen*", 1);
             garaKulon.addForces("Harkonnen", 10);
@@ -263,8 +255,7 @@ class BattleTest {
 
         @Test
         void testEcazMustChooseBattleFactionTrue() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
@@ -274,8 +265,7 @@ class BattleTest {
 
         @Test
         void testEcazAllyFighting() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
@@ -288,8 +278,7 @@ class BattleTest {
 
         @Test
         void testEcazFighting() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
@@ -302,8 +291,7 @@ class BattleTest {
 
         @Test
         void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 6);
             garaKulon.addForces("Emperor*", 1);
@@ -351,8 +339,7 @@ class BattleTest {
 
         @Test
         void testBattleResolvedEcazAlly() {
-            emperor.setAlly("Ecaz");
-            ecaz.setAlly("Emperor");
+            game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
@@ -368,10 +355,8 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(10);
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -400,11 +385,9 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(10);
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -433,12 +416,10 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(10);
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                westCielagoNorth.addForces("Emperor*", 1);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_westSector.addForces("Emperor*", 1);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -467,12 +448,10 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(10);
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                westCielagoNorth.setRicheseNoField(5);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_westSector.setRicheseNoField(5);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -501,15 +480,12 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(10);
-                ecaz.setAlly("Fremen");
-                fremen.setAlly("Ecaz");
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                westCielagoNorth.addForces("Emperor*", 1);
-                westCielagoNorth.addForces("Ecaz", 1);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                game.createAlliance(fremen, ecaz);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_westSector.addForces("Emperor*", 1);
+                cielagoNorth_westSector.addForces("Ecaz", 1);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -538,15 +514,12 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(1);
-                ecaz.setAlly("Fremen");
-                fremen.setAlly("Ecaz");
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                westCielagoNorth.addForces("Emperor*", 1);
-                westCielagoNorth.addForces("Ecaz", 1);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                game.createAlliance(fremen, ecaz);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_westSector.addForces("Emperor*", 1);
+                cielagoNorth_westSector.addForces("Ecaz", 1);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -575,15 +548,12 @@ class BattleTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.setStorm(4);
-                ecaz.setAlly("Fremen");
-                fremen.setAlly("Ecaz");
-                Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-                westCielagoNorth.addForces("BG", 6);
-                westCielagoNorth.addForces("Emperor*", 1);
-                westCielagoNorth.addForces("Ecaz", 1);
-                Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-                eastCielagoNorth.addForces("Fremen", 7);
-                eastCielagoNorth.addForces("Fremen*", 2);
+                game.createAlliance(fremen, ecaz);
+                cielagoNorth_westSector.addForces("BG", 6);
+                cielagoNorth_westSector.addForces("Emperor*", 1);
+                cielagoNorth_westSector.addForces("Ecaz", 1);
+                cielagoNorth_eastSector.addForces("Fremen", 7);
+                cielagoNorth_eastSector.addForces("Fremen*", 2);
 
                 game.startBattlePhase();
                 battles = game.getBattles();
@@ -627,28 +597,17 @@ class BattleTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser");
-            bg = new BGFaction("fPlayer", "fUser");
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-            ecaz = new EcazFaction("ePlayer", "eUser");
-            bt = new BTFaction("btPlayer", "btUser");
-            emperor = new EmperorFaction("empPlayer", "empUser");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
             game.addFaction(bt);
             game.addFaction(emperor);
-            atreides.setChat(atreidesChat);
-            bt.setChat(new TestTopic());
-            ecaz.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            harkonnen.setChat(new TestTopic());
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Harkonnen", 1);
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
-            ecaz.setAlly("Atreides");
-            atreides.setAlly("Ecaz");
+            game.createAlliance(atreides, ecaz);
+            turnSummary.clear();
             carthag.addForces("Ecaz", 5);
             carthag.addForces("Atreides", 1);
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
@@ -813,7 +772,6 @@ class BattleTest {
 
         @Test
         void testBattlePlanSpendingTooMuch() {
-            atreides.setChat(atreidesChat);
             assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true, 5, null, null));
             assertEquals(3, atreidesChat.messages.size());
         }
@@ -883,7 +841,6 @@ class BattleTest {
             bt.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
-            emperor.setChat(new TestTopic());
             battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false, 0, null, null);
             battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false, 0, null, null);
             assertTrue(battle3.isAggressorWin(game));
@@ -898,7 +855,6 @@ class BattleTest {
             emperor.addStrongholdCard(new StrongholdCard("Habbanya Sietch"));
             bt.addTreacheryCard(cheapHero);
             emperor.addTreacheryCard(cheapHero);
-            emperor.setChat(new TestTopic());
             battle3.setBattlePlan(game, bt, null, cheapHero, false, 1, false, 0, null, null);
             battle3.setBattlePlan(game, emperor, null, cheapHero, false, 1, false, 0, null, null);
             assertFalse(battle3.isAggressorWin(game));
@@ -959,8 +915,6 @@ class BattleTest {
 
         @Test
         void testZoalHasOpposingLeaderValue() throws InvalidGameStateException {
-            TestTopic emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
             Leader zoal = bt.getLeader("Zoal").orElseThrow();
             Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             bt.addTreacheryCard(crysknife);
@@ -972,8 +926,6 @@ class BattleTest {
 
         @Test
         void testZoalHasNoValue() throws InvalidGameStateException {
-            TestTopic emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
             Leader zoal = bt.getLeader("Zoal").orElseThrow();
             bt.addTreacheryCard(crysknife);
             emperor.addTreacheryCard(cheapHero);
@@ -1038,20 +990,10 @@ class BattleTest {
             jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
             game.putTerritoryInAnotherTerritory(jacurutuSietch, garaKulon);
 
-            atreides = new AtreidesFaction("aPlayer", "aUser");
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-            ecaz = new EcazFaction("ePlayer", "eUser");
-            emperor = new EmperorFaction("empPlayer", "empUser");
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
             game.addFaction(emperor);
-            atreides.setChat(atreidesChat);
-            ecaz.setChat(new TestTopic());
-            ecaz.setLedger(new TestTopic());
-            emperor.setChat(new TestTopic());
-            emperor.setLedger(new TestTopic());
-            harkonnen.setChat(new TestTopic());
 
             jacurutuSietch.addForces("Atreides", 3);
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
@@ -1128,33 +1070,17 @@ class BattleTest {
         void setUp() throws IOException {
             bt = null;
 
-            atreides = new AtreidesFaction("aPlayer", "aUser");
-            bg = new BGFaction("fPlayer", "fUser");
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-            ecaz = new EcazFaction("ePlayer", "eUser");
-            emperor = new EmperorFaction("empPlayer", "empUser");
-            choam = new ChoamFaction("p", "u");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
             game.addFaction(emperor);
             game.addFaction(choam);
-            atreides.setChat(new TestTopic());
-            ecaz.setChat(new TestTopic());
-            emperor.setChat(new TestTopic());
-            harkonnen.setChat(new TestTopic());
-            choam.setChat(new TestTopic());
-            atreides.setLedger(new TestTopic());
-            choam.setLedger(new TestTopic());
-            emperor.setLedger(new TestTopic());
-            harkonnen.setLedger(new TestTopic());
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Atreides", 1);
             arrakeen.addForces("Harkonnen", 1);
             battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), "Atreides");
-//            ecaz.setAlly("Atreides");
-//            atreides.setAlly("Ecaz");
+            game.createAlliance(atreides, ecaz);
             carthag.addForces("Ecaz", 5);
             carthag.addForces("Atreides", 1);
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
@@ -1196,12 +1122,6 @@ class BattleTest {
 //
 //        @BeforeEach
 //        void setUp() throws IOException, InvalidGameStateException {
-//////            atreides = new AtreidesFaction("p", "u", game);
-//            bg = new BGFaction("p", "u", game);
-//            harkonnen = new HarkonnenFaction("p", "u", game);
-//            ecaz = new EcazFaction("p", "u", game);
-//            emperor = new EmperorFaction("p", "u", game);
-//            richese = new RicheseFaction("p", "u", game);
 //            game.addFaction(atreides);
 //            game.addFaction(bg);
 //            game.addFaction(harkonnen);
@@ -1212,10 +1132,8 @@ class BattleTest {
 ////            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
 //            atreides.setForcesLost(7);
 //            atreides.addTreacheryCard(lasgun);
-//            atreides.setChat(new TestTopic());
 //            harkonnen.addTreacheryCard(cheapHero);
 //            harkonnen.addTreacheryCard(shield);
-//            harkonnen.setChat(new TestTopic());
 //            cielagoNorth_eastSector.addForces("Atreides", 5);
 //            cielagoNorth_eastSector.addForces("Harkonnen", 3);
 //            cielagoNorth_eastSector.setRicheseNoField(5);
