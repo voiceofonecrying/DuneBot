@@ -4,15 +4,12 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 
-import static model.Initializers.getCSVFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BattleTest {
@@ -30,6 +27,8 @@ class BattleTest {
     HarkonnenFaction harkonnen;
     RicheseFaction richese;
     TestTopic atreidesChat;
+    Leader duncanIdaho;
+    Leader burseg;
     Territory carthag;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_eastSector;
@@ -47,6 +46,7 @@ class BattleTest {
         modInfo = new TestTopic();
         game.setModInfo(modInfo);
         game.setWhispers(new TestTopic());
+
         atreides = new AtreidesFaction("p", "u");
         bg = new BGFaction("p", "u");
         bt = new BTFaction("p", "u");
@@ -56,6 +56,7 @@ class BattleTest {
         fremen = new FremenFaction("p", "u");
         harkonnen = new HarkonnenFaction("p", "u");
         richese = new RicheseFaction("p", "u");
+
         atreidesChat = new TestTopic();
         atreides.setChat(atreidesChat);
         bg.setChat(new TestTopic());
@@ -65,6 +66,7 @@ class BattleTest {
         fremen.setChat(new TestTopic());
         harkonnen.setChat(new TestTopic());
         richese.setChat(new TestTopic());
+
         atreides.setLedger(new TestTopic());
         choam.setLedger(new TestTopic());
         ecaz.setLedger(new TestTopic());
@@ -72,10 +74,15 @@ class BattleTest {
         fremen.setLedger(new TestTopic());
         harkonnen.setLedger(new TestTopic());
         richese.setLedger(new TestTopic());
+
+        duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        burseg = emperor.getLeader("Burseg").orElseThrow();
+
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
         garaKulon = game.getTerritory("Gara Kulon");
+
         cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Hero")).findFirst().orElseThrow();
         crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")).findFirst().orElseThrow();
         chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")).findFirst().orElseThrow();
@@ -272,7 +279,6 @@ class BattleTest {
             Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(ecaz, harkonnen, emperor), garaKulon.getForces(), "Emperor");
             battle.setEcazCombatant(game, emperor.getName());
             assertEquals(emperor, battle.getDefender(game));
-            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
         }
 
@@ -587,7 +593,6 @@ class BattleTest {
     @Nested
     @DisplayName("#battlePlans")
     class BattlePlans {
-        Leader duncanIdaho;
         Territory arrakeen;
         Territory habbanyaSietch;
         Battle battle1;
@@ -644,154 +649,6 @@ class BattleTest {
             atreidesPlan.revealOpponentBattlePlan(ecazPlan);
             ecazPlan.revealOpponentBattlePlan(atreidesPlan);
             assertEquals("5", ecazPlan.getTotalStrengthString());
-        }
-
-        @Test
-        void testWeirdingWayValidDefense() throws IOException {
-            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
-            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
-                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
-                for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
-                }
-            }
-            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")).findFirst().orElseThrow();
-            atreides.addTreacheryCard(chaumas);
-            atreides.addTreacheryCard(weirdingWay);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chaumas, weirdingWay));
-        }
-
-        //        @Test
-//        void testWeirdingWayInvalidDefense() throws IOException {
-//            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
-//            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
-//                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
-//                for (CSVRecord csvRecord : csvParser) {
-//                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
-//                }
-//            }
-//            TreacheryCard weirdingWay = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Weirding Way")). findFirst().orElseThrow();
-//            atreides.addTreacheryCard(weirdingWay);
-//            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, weirdingWay));
-//        }
-//
-        @Test
-        void testChemistryValidWeapon() throws IOException {
-            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
-            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
-                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
-                for (CSVRecord csvRecord : csvParser) {
-                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
-                }
-            }
-            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")).findFirst().orElseThrow();
-            atreides.addTreacheryCard(chemistry);
-            atreides.addTreacheryCard(shield);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, shield));
-        }
-
-//        @Test
-//        void testChemistryInvalidWeapon() throws IOException {
-//            game.addGameOption(GameOption.EXPANSION_TREACHERY_CARDS);
-//            if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
-//                CSVParser csvParser = getCSVFile("ExpansionTreacheryCards.csv");
-//                for (CSVRecord csvRecord : csvParser) {
-//                    game.getTreacheryDeck().add(new TreacheryCard(csvRecord.get(0)));
-//                }
-//            }
-//            TreacheryCard chemistry = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chemistry")). findFirst().orElseThrow();
-//            atreides.addTreacheryCard(chemistry);
-//            // Move
-//            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, chemistry, null));
-//        }
-
-        @Test
-        void testBattlePlanLeaderAvailable() {
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanNoLeaderWithCheapHero() {
-            atreides.addTreacheryCard(cheapHero);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, false, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanNoLeaderValid() {
-            atreides.removeLeader("Duncan Idaho");
-            atreides.removeLeader("Lady Jessica");
-            atreides.removeLeader("Gurney Halleck");
-            atreides.removeLeader("Thufir Hawat");
-            atreides.removeLeader("Dr. Yueh");
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, null, false, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanOtherFactionLeaderInvalid() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanHarkonnenCapturedLeader() {
-            harkonnen.addLeader(atreides.removeLeader("Duncan Idaho"));
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, harkonnen, duncanIdaho, null, false, 1, false, 1, null, null));
-        }
-
-        @Test
-        void testBattlePlanFactionNotInvolved() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, bg, null, cheapHero, false, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanNotEnoughSpice() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false, 11, null, null));
-        }
-
-        @Test
-        void testBattlePlanHasWeapon() {
-            atreides.addTreacheryCard(crysknife);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, crysknife, null));
-        }
-
-        @Test
-        void testBattlePlanHasDefense() {
-            atreides.addTreacheryCard(shield);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 3, null, shield));
-        }
-
-//        @Test
-//        void testBattlePlanDoesntHaveWeapon() {
-//            // Move
-//            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, crysknife, null));
-//        }
-//
-//        @Test
-//        void testBattlePlanDoesntHaveDefense() {
-//            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false,3, null, shield));
-//        }
-
-        @Test
-        void testBattlePlanSpendingTooMuch() {
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, true, 5, null, null));
-            assertEquals(3, atreidesChat.messages.size());
-        }
-
-        @Test
-        void testBattlePlanAtreidesHasKH() {
-            atreides.setForcesLost(7);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, true, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanNoLeaderWithCheapHeroAndKH() {
-            atreides.addTreacheryCard(cheapHero);
-            atreides.setForcesLost(10);
-            assertDoesNotThrow(() -> battle1.setBattlePlan(game, atreides, null, cheapHero, true, 4, false, 3, null, null));
-        }
-
-        @Test
-        void testBattlePlanNotEnoughTroops() {
-            assertThrows(InvalidGameStateException.class, () -> battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 11, false, 10, null, null));
         }
 
         @Test
@@ -916,7 +773,6 @@ class BattleTest {
         @Test
         void testZoalHasOpposingLeaderValue() throws InvalidGameStateException {
             Leader zoal = bt.getLeader("Zoal").orElseThrow();
-            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             bt.addTreacheryCard(crysknife);
             battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
             battle3.setBattlePlan(game, emperor, burseg, null, false, 7, false, 5, null, null);
@@ -944,7 +800,6 @@ class BattleTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(emperor.isSecundusHighThreshold());
             Battle battle = new Battle(game, "Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
-            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
         }
 
@@ -958,7 +813,6 @@ class BattleTest {
             game.removeForces("Salusa Secundus", emperor, 0, 4, true);
             assertFalse(emperor.isSecundusHighThreshold());
             Battle battle = new Battle(game, "Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(emperorForce, sardaukarForce, bgForce), null);
-            Leader burseg = new Leader("Burseg", 1, null, false);
             assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, emperor, burseg, null, false, 11, false, 1, null, null));
         }
 
@@ -973,7 +827,6 @@ class BattleTest {
             game.removeForces("Salusa Secundus", emperor, 0, 5, false);
             assertTrue(emperor.isSecundusOccupied());
             Battle battle = new Battle(game, "Wallach IX", List.of(wallachIX), List.of(emperor, bg), List.of(sardaukarForce, bgForce), null);
-            Leader burseg = emperor.getLeader("Burseg").orElseThrow();
             assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, emperor, burseg, null, false, 2, false, 1, null, null));
             assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 1, false, 1, null, null));
         }
@@ -983,7 +836,6 @@ class BattleTest {
     @DisplayName("#jacurutuSietchBattleResolution")
     class JacurutuSietchBattleResolution {
         Territory jacurutuSietch;
-        Leader duncanIdaho;
 
         @BeforeEach
         void setUp() throws IOException {
@@ -996,7 +848,6 @@ class BattleTest {
             game.addFaction(emperor);
 
             jacurutuSietch.addForces("Atreides", 3);
-            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
         }
 
         @Test
@@ -1060,7 +911,6 @@ class BattleTest {
     @Nested
     @DisplayName("#battlePlans2")
     class BattlePlans2 {
-        Leader duncanIdaho;
         Territory arrakeen;
         Battle battle1;
         Battle battle2;
@@ -1068,8 +918,6 @@ class BattleTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            bt = null;
-
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);
@@ -1086,7 +934,6 @@ class BattleTest {
             battle2 = new Battle(game, "Carthag", List.of(carthag), List.of(atreides, harkonnen, ecaz), carthag.getForces(), "Atreides");
             battle2a = new Battle(game, "Carthag", List.of(carthag), List.of(harkonnen, atreides, ecaz), carthag.getForces(), "Atreides");
 
-            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
         }
 
         @Test
@@ -1116,19 +963,11 @@ class BattleTest {
 //    @Nested
 //    @DisplayName("#lasgunShieldDestroysEverything")
 //    class LasgunShieldDestroysEverything {
-////        Leader duncanIdaho;
 ////        TreacheryCard lasgun;
 //        Battle battle;
 //
 //        @BeforeEach
 //        void setUp() throws IOException, InvalidGameStateException {
-//            game.addFaction(atreides);
-//            game.addFaction(bg);
-//            game.addFaction(harkonnen);
-//            game.addFaction(ecaz);
-//            game.addFaction(emperor);
-//            game.addFaction(richese);
-//            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
 ////            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
 //            atreides.setForcesLost(7);
 //            atreides.addTreacheryCard(lasgun);
