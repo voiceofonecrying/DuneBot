@@ -8,6 +8,7 @@ import model.Force;
 import model.Game;
 import model.Territory;
 import model.factions.Faction;
+import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -66,7 +67,9 @@ public class BGCommands {
         territory.getForces().removeIf(force -> force.getName().equals("BG"));
         territory.addForces("Advisor", fighters);
         discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
-        discordGame.getTurnSummary().queueMessage(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
+        game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
+        if (game.hasFaction("Moritani"))
+            ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, bg, amount);
         discordGame.pushGame();
         game.setUpdated(UpdateType.MAP);
     }
