@@ -4,11 +4,11 @@ import constants.Emojis;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import exceptions.InvalidGameStateException;
 import model.Force;
 import model.Game;
 import model.Territory;
-import model.factions.Faction;
-import model.factions.MoritaniFaction;
+import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -41,7 +41,7 @@ public class BGCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -51,25 +51,14 @@ public class BGCommands {
         }
     }
 
-    private static void adviseEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private static void adviseEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Territory territory = game.getTerritory(discordGame.required(CommandOptions.territory).getAsString());
         advise(discordGame, game, territory, 1);
     }
 
-    public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException {
-        Faction bg = game.getFaction("BG");
-        if (amount == 2 && !bg.isHighThreshold()) {
-            discordGame.getFactionChat(bg).queueMessage("You are at Low Threshold and cannot send 2 " + Emojis.BG_ADVISOR);
-            amount = 1;
-        }
-        territory.placeForceFromReserves(game, bg, amount, false);
-        int fighters = territory.getForceStrength("BG");
-        territory.getForces().removeIf(force -> force.getName().equals("BG"));
-        territory.addForces("Advisor", fighters);
+    public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        ((BGFaction) game.getFaction("BG")).advise(game, territory, amount);
         discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
-        game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
-        if (game.hasFaction("Moritani"))
-            ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, bg, amount);
         discordGame.pushGame();
         game.setUpdated(UpdateType.MAP);
     }

@@ -25,7 +25,7 @@ class BTFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new BTFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -399,8 +399,6 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testAskedAboutFDSwapInMentatPause() {
-        chat = new TestTopic();
-        faction.setChat(chat);
         faction.performMentatPauseActions(false);
         assertEquals(1, chat.getMessages().size());
         assertEquals("Would you like to swap a Face Dancer? " + faction.getPlayer(), chat.getMessages().getFirst());

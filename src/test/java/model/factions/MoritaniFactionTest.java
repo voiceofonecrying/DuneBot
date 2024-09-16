@@ -26,7 +26,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new MoritaniFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -141,7 +141,6 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#assassinateLeader")
     class AssassinateLeader {
-        TestTopic moritaniLedger;
         BTFaction bt;
         TestTopic btChat;
         TestTopic btLedger;
@@ -149,8 +148,6 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         @BeforeEach
         public void setUp() throws IOException {
-            moritaniLedger = new TestTopic();
-            faction.setLedger(moritaniLedger);
             bt = new BTFaction("p", "u");
             btChat = new TestTopic();
             bt.setChat(btChat);
@@ -166,7 +163,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             Leader wykk = bt.getLeader("Wykk").orElseThrow();
             assertDoesNotThrow(() -> faction.assassinateLeader(bt, wykk));
             assertEquals(Emojis.MORITANI + " collect 2 " + Emojis.SPICE + " by assassinating Wykk!", turnSummary.getMessages().getFirst());
-            assertEquals("+2 " + Emojis.SPICE + " assassination of Wykk = 14 " + Emojis.SPICE, moritaniLedger.getMessages().getFirst());
+            assertEquals("+2 " + Emojis.SPICE + " assassination of Wykk = 14 " + Emojis.SPICE, ledger.getMessages().getFirst());
         }
 
         @Test
@@ -183,7 +180,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertDoesNotThrow(() -> faction.assassinateLeader(bt, zoal));
             assertEquals(15, faction.getSpice());
             assertEquals(Emojis.MORITANI + " collect 3 " + Emojis.SPICE + " by assassinating Zoal!", turnSummary.getMessages().getFirst());
-            assertEquals("+3 " + Emojis.SPICE + " assassination of Zoal = 15 " + Emojis.SPICE, moritaniLedger.getMessages().getFirst());
+            assertEquals("+3 " + Emojis.SPICE + " assassination of Zoal = 15 " + Emojis.SPICE, ledger.getMessages().getFirst());
         }
     }
 
@@ -193,12 +190,9 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         AtreidesFaction atreides;
         Territory carthag;
         TestTopic turnSummary;
-        TestTopic moritaniChat;
 
         @BeforeEach
         void setUp() throws IOException {
-            moritaniChat = new TestTopic();
-            faction.setChat(moritaniChat);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
@@ -210,15 +204,15 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         void testMoritaniDoesNotTrigger() {
             faction.checkForTerrorTrigger(carthag, faction, 3);
             assertTrue(turnSummary.getMessages().isEmpty());
-            assertTrue(moritaniChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
 
         @Test
         void testOtherFactionTriggers() {
             faction.checkForTerrorTrigger(carthag, atreides, 3);
             assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
-            assertTrue(moritaniChat.getMessages().getFirst().contains("Will you trigger your Terror Token in Carthag?"));
-            assertEquals(3, moritaniChat.getChoices().getFirst().size());
+            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your Terror Token in Carthag?"));
+            assertEquals(3, chat.getChoices().getFirst().size());
         }
 
         @Test
@@ -227,7 +221,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             atreides.setAlly("Moritani");
             faction.checkForTerrorTrigger(carthag, atreides, 3);
             assertTrue(turnSummary.getMessages().isEmpty());
-            assertTrue(moritaniChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
 
         @Test
@@ -239,24 +233,18 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertFalse(faction.isHighThreshold);
             faction.checkForTerrorTrigger(carthag, atreides, 2);
             assertEquals(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time", turnSummary.getMessages().get(1));
-            assertTrue(moritaniChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
     }
 
     @Nested
     @DisplayName("#robberyTerrorToken")
     class RobberyTerrorToken {
-        TestTopic moritaniChat;
-        TestTopic moritaniLedger;
         TestTopic turnSummary;
         AtreidesFaction atreides;
 
         @BeforeEach
         void setUp() throws IOException {
-            moritaniChat = new TestTopic();
-            faction.setChat(moritaniChat);
-            moritaniLedger = new TestTopic();
-            faction.setLedger(moritaniLedger);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
@@ -276,7 +264,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(atreidesStartingSpice - 6, atreides.getSpice());
             assertEquals(moritaniStartingSpice + 6, faction.getSpice());
             assertEquals(Emojis.MORITANI + " stole 6 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
-            assertEquals(moritaniLedger.getMessages().getFirst(), "+6 " + Emojis.SPICE + " stolen from " + Emojis.ATREIDES + " with Robbery = 18 " + Emojis.SPICE);
+            assertEquals(ledger.getMessages().getFirst(), "+6 " + Emojis.SPICE + " stolen from " + Emojis.ATREIDES + " with Robbery = 18 " + Emojis.SPICE);
         }
 
         @Test
@@ -291,7 +279,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(atreidesStartingSpice, atreides.getSpice());
             assertEquals(moritaniStartingSpice, faction.getSpice());
             assertEquals(Emojis.MORITANI + " stole 0 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
-            assertEquals(moritaniLedger.getMessages().getFirst(),  Emojis.ATREIDES + " had no " + Emojis.SPICE + " to steal");
+            assertEquals(ledger.getMessages().getFirst(),  Emojis.ATREIDES + " had no " + Emojis.SPICE + " to steal");
         }
 
         @Test
@@ -300,8 +288,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
             faction.robberyDraw();
             assertEquals(1, faction.getTreacheryHand().size());
-            assertEquals(0, moritaniChat.getMessages().size());
-            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(1, ledger.getMessages().size());
             assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().getFirst());
         }
 
@@ -317,9 +305,9 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertDoesNotThrow(() -> faction.robberyDraw());
             assertEquals(5, faction.getHandLimit());
             assertEquals(5, faction.getTreacheryHand().size());
-            assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals(5, moritaniChat.getChoices().getFirst().size());
-            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(5, chat.getChoices().getFirst().size());
+            assertEquals(1, ledger.getMessages().size());
             assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().getFirst());
             assertTrue(game.isRobberyDiscardOutstanding());
         }
@@ -333,8 +321,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
             assertDoesNotThrow(() -> faction.robberyDraw());
             assertEquals(1, faction.getTreacheryHand().size());
-            assertEquals(0, moritaniChat.getMessages().size());
-            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(0, chat.getMessages().size());
+            assertEquals(1, ledger.getMessages().size());
             assertEquals("The " + Emojis.TREACHERY + " deck was empty and has been replenished from the discard pile.", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().get(1));
         }
@@ -354,9 +342,9 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertDoesNotThrow(() -> faction.robberyDraw());
             assertEquals(5, faction.getHandLimit());
             assertEquals(5, faction.getTreacheryHand().size());
-            assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals(5, moritaniChat.getChoices().getFirst().size());
-            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(5, chat.getChoices().getFirst().size());
+            assertEquals(1, ledger.getMessages().size());
             assertEquals(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.", turnSummary.getMessages().get(1));
             assertTrue(game.isRobberyDiscardOutstanding());
         }
@@ -371,14 +359,14 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.robberyDraw();
             assertEquals(5, faction.getTreacheryHand().size());
             assertEquals(5, faction.getHandLimit());
-            assertEquals(1, moritaniLedger.getMessages().size());
+            assertEquals(1, ledger.getMessages().size());
             int discardSize = game.getTreacheryDiscard().size();
             assertTrue(game.isRobberyDiscardOutstanding());
 
             faction.robberyDiscard(faction.getTreacheryHand().getFirst().name());
             assertEquals(4, faction.getTreacheryHand().size());
             assertEquals(4, faction.getHandLimit());
-            assertEquals(2, moritaniLedger.getMessages().size());
+            assertEquals(2, ledger.getMessages().size());
             assertEquals(turnSummarySize + 2, turnSummary.getMessages().size());
             assertEquals(discardSize + 1, game.getTreacheryDiscard().size());
             assertFalse(game.isRobberyDiscardOutstanding());
@@ -396,8 +384,6 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @BeforeEach
         void setUp() {
             faction = getFaction();
-            chat = new TestTopic();
-            faction.setChat(chat);
         }
 
         @Test

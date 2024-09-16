@@ -27,7 +27,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new EmperorFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -142,10 +142,6 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmperorCanPayForOneSardaukar() throws InvalidGameStateException {
-        TestTopic chat = new TestTopic();
-        faction.setChat(chat);
-        TestTopic ledger = new TestTopic();
-        faction.setLedger(ledger);
         faction.removeForces(faction.getHomeworld(), 1, false, true);
         faction.removeForces(faction.getSecondHomeworld(), 1, true, true);
         faction.setStarRevived(false);
@@ -191,8 +187,6 @@ class EmperorFactionTest extends FactionTestTemplate {
     public void testKaitainHighDiscard() {
         TestTopic turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
-        TestTopic emperorLedger = new TestTopic();
-        faction.setLedger(emperorLedger);
         TreacheryCard kulon = game.getTreacheryDeck().stream()
                 .filter(t -> t.name().equals("Kulon"))
                 .findFirst()

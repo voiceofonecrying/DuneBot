@@ -25,7 +25,7 @@ class GuildFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new GuildFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test

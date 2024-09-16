@@ -5,6 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,7 +27,7 @@ class BGFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new BGFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -189,6 +190,64 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(0, faction.homeworldDialAdvantage(game, territory));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(3, faction.homeworldDialAdvantage(game, territory));
+        }
+    }
+
+    @Nested
+    @DisplayName("#advise")
+    class Advise {
+        Territory carthag;
+        Territory polarSink;
+
+        @BeforeEach
+        public void setUp() {
+            carthag = game.getTerritory("Carthag");
+            polarSink = game.getTerritory("Polar Sink");
+        }
+
+        @Test
+        public void testAdvisorCannotBeSentToTerritoryWithBGFighter() {
+            carthag.addForces("BG", 1);
+            assertThrows(InvalidGameStateException.class, () -> faction.advise(game, carthag, 1));
+        }
+
+        @Test
+        public void testAdvisorSentToTerritoryRemainsAdvisor() throws InvalidGameStateException {
+            carthag.addForces("Advisor", 1);
+            faction.advise(game, carthag, 1);
+            assertEquals(2, carthag.getForceStrength("Advisor"));
+            assertEquals(0, carthag.getForceStrength("BG"));
+        }
+
+        @Test
+        public void testAdvisorSentToTerritoryWithBGAdvisors() {
+            carthag.addForces("Advisor", 1);
+            assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
+        }
+
+        @Test
+        public void testAdvisorCanBeSentToPolarSinkWithBGFightersPresent() {
+            polarSink.addForces("BG", 1);
+            assertDoesNotThrow(() -> faction.advise(game, polarSink, 1));
+        }
+
+        @Test
+        public void testAdvisorSentToPolarSinkBecomesFighter() throws InvalidGameStateException {
+            polarSink.addForces("BG", 1);
+            faction.advise(game, polarSink, 1);
+            assertEquals(2, polarSink.getForceStrength("BG"));
+            assertEquals(0, polarSink.getForceStrength("Advisor"));
+        }
+
+        @Test
+        public void testAdvisorCanTriggerTerrorToken() throws IOException, InvalidGameStateException {
+            Faction moritani = new MoritaniFaction("p", "u");
+            moritani.setChat(new TestTopic());
+            game.addFaction(moritani);
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.addTerrorToken("Robbery");
+            faction.advise(game, carthag, 1);
+            assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.BG, turnSummary.getMessages().getLast());
         }
     }
 }

@@ -25,7 +25,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new RicheseFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -175,7 +175,6 @@ class RicheseFactionTest extends FactionTestTemplate {
         @BeforeEach
         public void setUp() throws IOException {
             sietchTabr = game.getTerritory("Sietch Tabr");
-            faction.setLedger(new TestTopic());
             choam = new ChoamFaction("p", "u");
             choam.setLedger(new TestTopic());
             game.addFaction(choam);
@@ -219,7 +218,6 @@ class RicheseFactionTest extends FactionTestTemplate {
         @BeforeEach
         public void setUp() throws IOException {
             sietchTabr = game.getTerritory("Sietch Tabr");
-            faction.setLedger(new TestTopic());
             choam = new ChoamFaction("p", "u");
             choam.setLedger(new TestTopic());
             game.addFaction(choam);

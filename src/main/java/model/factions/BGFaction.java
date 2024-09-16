@@ -157,6 +157,22 @@ public class BGFaction extends Faction {
         }
     }
 
+    public void advise(Game game, Territory territory, int amount) throws InvalidGameStateException {
+        boolean isPolarSink = territory.getTerritoryName().equals("Polar Sink");
+        if (!isPolarSink && territory.hasForce("BG"))
+            throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
+        territory.placeForceFromReserves(game, this, amount, false);
+        if (!isPolarSink) {
+            // placeForcesFromReserves flipped advisors to fighters, so flip them back
+            int fighters = territory.getForceStrength("BG");
+            territory.getForces().removeIf(force -> force.getName().equals("BG"));
+            territory.addForces("Advisor", fighters);
+        }
+        game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
+        if (game.hasFaction("Moritani"))
+            ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, this, amount);
+    }
+
     public void bgFlipMessageAndButtons(Game game, String territoryName) {
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("bg-flip-" + territoryName, "Flip"));

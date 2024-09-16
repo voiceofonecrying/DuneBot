@@ -30,6 +30,12 @@ abstract class FactionTestTemplate {
         ledger = new TestTopic();
     }
 
+    void commonPostInstantiationSetUp() {
+        getFaction().setChat(chat);
+        getFaction().setLedger(ledger);
+        game.addFaction(getFaction());
+    }
+
     @Nested
     @DisplayName("#revival")
     class Revival {

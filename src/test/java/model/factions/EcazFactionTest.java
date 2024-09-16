@@ -25,7 +25,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     @BeforeEach
     void setUp() throws IOException {
         faction = new EcazFaction("player", "player");
-        game.addFaction(faction);
+        commonPostInstantiationSetUp();
     }
 
     @Test
@@ -149,12 +149,9 @@ public class EcazFactionTest extends FactionTestTemplate {
         BGFaction bg;
         Territory carthag;
         TestTopic turnSummary;
-        TestTopic ecazChat;
 
         @BeforeEach
         void setUp() throws IOException {
-            ecazChat = new TestTopic();
-            faction.setChat(ecazChat);
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
@@ -167,15 +164,15 @@ public class EcazFactionTest extends FactionTestTemplate {
         void testEcazDoesNotTrigger() {
             faction.checkForAmbassadorTrigger(carthag, faction);
             assertTrue(turnSummary.getMessages().isEmpty());
-            assertTrue(ecazChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
 
         @Test
         void testOtherFactionTriggers() {
             faction.checkForAmbassadorTrigger(carthag, atreides);
             assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG ambassador.", turnSummary.getMessages().getFirst());
-            assertTrue(ecazChat.getMessages().getFirst().contains("Will you trigger your BG ambassador against " + Emojis.ATREIDES + " in Carthag?"));
-            assertEquals(2, ecazChat.getChoices().getFirst().size());
+            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your BG ambassador against " + Emojis.ATREIDES + " in Carthag?"));
+            assertEquals(2, chat.getChoices().getFirst().size());
         }
 
         @Test
@@ -184,14 +181,14 @@ public class EcazFactionTest extends FactionTestTemplate {
             atreides.setAlly("Ecaz");
             faction.checkForAmbassadorTrigger(carthag, atreides);
             assertTrue(turnSummary.getMessages().isEmpty());
-            assertTrue(ecazChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
 
         @Test
         void testAmbassadorFactionDoesNotTrigger() {
             faction.checkForAmbassadorTrigger(carthag, bg);
             assertTrue(turnSummary.getMessages().isEmpty());
-            assertTrue(ecazChat.getMessages().isEmpty());
+            assertTrue(chat.getMessages().isEmpty());
         }
     }
 
@@ -203,8 +200,6 @@ public class EcazFactionTest extends FactionTestTemplate {
 
         @BeforeEach
         public void setUp() throws IOException {
-            faction.setChat(chat);
-            faction.setLedger(ledger);
             harkonnen = new HarkonnenFaction("p", "u");
             game.addFaction(harkonnen);
             modInfo = new TestTopic();
