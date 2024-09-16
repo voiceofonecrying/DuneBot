@@ -149,7 +149,7 @@ public class HarkCommands {
 
         }
 
-        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), null, true);
+        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
 
         game.getLeaderTanks().add(killedLeader);
 

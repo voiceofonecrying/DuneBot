@@ -23,7 +23,7 @@ public class GameBattlePhaseTest {
     @BeforeEach
     void setUp() throws IOException {
         game = new Game();
-        dukeVidal = new Leader("Duke Vidal", 6, null, false);
+        dukeVidal = new Leader("Duke Vidal", 6, "None", null, false);
     }
 
     @Nested

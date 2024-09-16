@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class HomeworldTerritory extends Territory {
     // make nativeName final after all games have started with HomeworldTerritory class
-    private String nativeName;
+    private final String nativeName;
     private String occupierName;
     @Exclude
     private Game game;
@@ -26,10 +26,6 @@ public class HomeworldTerritory extends Territory {
 
     public String getNativeName() {
         return nativeName;
-    }
-
-    public void setNativeName(String nativeName) {
-        this.nativeName = nativeName;
     }
 
     public String getOccupierName() {

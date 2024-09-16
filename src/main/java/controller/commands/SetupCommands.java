@@ -693,7 +693,7 @@ public class SetupCommands {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
 
-        Leader updatedLeader = new Leader(leader.getName(), leader.getValue(), leaderSkillCard, leader.isFaceDown());
+        Leader updatedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), leaderSkillCard, leader.isFaceDown());
 
         faction.removeLeader(leader);
         faction.addLeader(updatedLeader);

@@ -5,7 +5,6 @@ import caches.GameCache;
 import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
 import controller.channels.*;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -17,7 +16,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -37,10 +35,15 @@ import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -466,74 +469,42 @@ public class DiscordGame {
             }
         }
 
-        // Migrate modRoleMention into existing games
-        if (game.getModRoleMention() == null) {
-            List<Role> roles = gameCategory.getGuild().getRolesByName(game.getModRole(), false);
-            if (roles.size() == 1)
-                game.setModRoleMention(roles.getFirst().getAsMention());
-        }
-
-        // Temporary migration to properly mark Homeworlds and Discovery Token Territory objects
-        Territory t = game.getTerritories().get("Jacurutu Sietch");
-        if (t != null) t.setDiscoveryToken(true);
-        t = game.getTerritories().get("Cistern");
-        if (t != null) t.setDiscoveryToken(true);
-        t = game.getTerritories().get("Ecological Testing Station");
-        if (t != null) t.setDiscoveryToken(true);
-        t = game.getTerritories().get("Shrine");
-        if (t != null) t.setDiscoveryToken(true);
-        t = game.getTerritories().get("Orgiz Processing Station");
-        if (t != null) {
-            t.setDiscoveryToken(true);
-            t.setStronghold(false);
-        }
-
-        // Temporary migration to set native Faction for each homeworld
-        HomeworldTerritory h = (HomeworldTerritory) game.getTerritories().get("Caladan");
-        if (h != null) h.setNativeName("Atreides");
-        h = (HomeworldTerritory) game.getTerritories().get("Wallach IX");
-        if (h != null) h.setNativeName("BG");
-        h = (HomeworldTerritory) game.getTerritories().get("Tleilax");
-        if (h != null) h.setNativeName("BT");
-        h = (HomeworldTerritory) game.getTerritories().get("Tupile");
-        if (h != null) h.setNativeName("CHOAM");
-        h = (HomeworldTerritory) game.getTerritories().get("Ecaz");
-        if (h != null) h.setNativeName("Ecaz");
-        h = (HomeworldTerritory) game.getTerritories().get("Kaitain");
-        if (h != null) h.setNativeName("Emperor");
-        h = (HomeworldTerritory) game.getTerritories().get("Salusa Secundus");
-        if (h != null) h.setNativeName("Emperor");
-        h = (HomeworldTerritory) game.getTerritories().get("Southern Hemisphere");
-        if (h != null) h.setNativeName("Fremen");
-        h = (HomeworldTerritory) game.getTerritories().get("Junction");
-        if (h != null) h.setNativeName("Guild");
-        h = (HomeworldTerritory) game.getTerritories().get("Giedi Prime");
-        if (h != null) h.setNativeName("Harkonnen");
-        h = (HomeworldTerritory) game.getTerritories().get("Ix");
-        if (h != null) h.setNativeName("Ix");
-        h = (HomeworldTerritory) game.getTerritories().get("Grumman");
-        if (h != null) h.setNativeName("Moritani");
-        h = (HomeworldTerritory) game.getTerritories().get("Richese");
-        if (h != null) h.setNativeName("Richese");
-
-        // Temporary migration of Game::tanks to Game::tleilaxuTanks
-        if (!game.hasTleilaxuTanks)
-            game.getTanks().forEach(force -> game.getTleilaxuTanks().getForces().add(force));
-        game.clearOldTanks();
-
-        // Migrate old split ally spice support to new single support value
-        for (Faction f : game.getFactions()) {
-            if (f.hasAlly() && !f.switchedToSpiceForAlly) {
-                Faction ally = game.getFaction(f.getAlly());
-                int totalSupport = Math.min(f.getSpice(), ally.getAllySpiceBidding() + ally.getAllySpiceShipment());
-                if (totalSupport > 0) {
-                    f.setSpiceForAlly(totalSupport);
-                    ally.setAllySpiceBidding(0);
-                    ally.setAllySpiceShipment(0);
-                    f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        // Migration to ensure all Leader objects have originalFactionName set
+        List<Leader> leadersFromCSV = new ArrayList<>();
+        for (Faction f: game.getFactions()) {
+            for (Leader l : f.getLeaders()) {
+                if (l.getOriginalFactionName() == null || l.getOriginalFactionName().isEmpty()) {
+                    if (leadersFromCSV.isEmpty()) {
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
+                        ));
+                        try {
+                            for (CSVRecord csvRecord : CSVParser.parse(bufferedReader, CSVFormat.EXCEL))
+                                leadersFromCSV.add(new Leader(csvRecord.get(1), 0, csvRecord.get(0), null, false));
+                        } catch (IOException e) {
+                            break;
+                        }
+                    }
+                    if (l.getName().equals("Kwisatz Haderach"))
+                        l.setOriginalFactionName("Atreides");
+                    else
+                        for (Leader l2 : leadersFromCSV) {
+                            if (l.getName().equals(l2.getName()))
+                                l.setOriginalFactionName(l2.getOriginalFactionName());
+                        }
                 }
             }
-            f.switchedToSpiceForAlly = true;
+        }
+        for (Leader l : game.getLeaderTanks()) {
+            if (l.getOriginalFactionName() == null || l.getOriginalFactionName().isEmpty()) {
+                if (l.getName().equals("Kwisatz Haderach"))
+                    l.setOriginalFactionName("Atreides");
+                else
+                    for (Leader l2 : leadersFromCSV) {
+                        if (l.getName().equals(l2.getName()))
+                            l.setOriginalFactionName(l2.getOriginalFactionName());
+                    }
+            }
         }
 
         for (Faction f : game.getFactions()) {

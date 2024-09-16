@@ -110,7 +110,7 @@ class BattleTest {
         void testNoFieldInBattlePlanFewerForcesInReserves() {
             richese.addTreacheryCard(cheapHero);
             richese.addTreacheryCard(chaumas);
-            Leader alia = new Leader("Alia", 5, null, false);
+            Leader alia = new Leader("Alia", 5, "BG", null, false);
             bg.addLeader(alia);
             Force noFieldForces = new Force("NoField", 3);
             Territory richeseHomeworld = game.getTerritory("Richese");
@@ -136,7 +136,7 @@ class BattleTest {
         void testJuiceOfSaphoAdded() throws InvalidGameStateException {
             richese.addTreacheryCard(cheapHero);
             richese.addTreacheryCard(chaumas);
-            Leader alia = new Leader("Alia", 5, null, false);
+            Leader alia = new Leader("Alia", 5, "BG", null, false);
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);
@@ -160,7 +160,7 @@ class BattleTest {
             richese.addTreacheryCard(chaumas);
             TreacheryCard portableSnooper = new TreacheryCard("Portable Snooper");
             bg.addTreacheryCard(portableSnooper);
-            Leader alia = new Leader("Alia", 5, null, false);
+            Leader alia = new Leader("Alia", 5, "BG", null, false);
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);
@@ -183,7 +183,7 @@ class BattleTest {
             richese.addTreacheryCard(cheapHero);
             TreacheryCard poisonTooth = new TreacheryCard("Poison Tooth");
             bg.addTreacheryCard(poisonTooth);
-            Leader alia = new Leader("Alia", 5, null, false);
+            Leader alia = new Leader("Alia", 5, "BG", null, false);
             bg.addLeader(alia);
             Force richeseForces = new Force("Richese", 3);
             Force bgForces = new Force("BG", 1);

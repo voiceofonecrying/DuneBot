@@ -48,8 +48,6 @@ public class Game {
     private final LinkedList<NexusCard> nexusDeck;
     private final LinkedList<NexusCard> nexusDiscard;
     private final TleilaxuTanks tleilaxuTanks;
-    public boolean hasTleilaxuTanks;
-    private LinkedList<Force> tanks;
     private final LinkedList<Leader> leaderTanks;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
@@ -119,7 +117,6 @@ public class Game {
         this.spiceDiscardA = new LinkedList<>();
         this.spiceDiscardB = new LinkedList<>();
         this.tleilaxuTanks = new TleilaxuTanks();
-        this.tanks = new LinkedList<>();
         this.leaderTanks = new LinkedList<>();
         this.nexusDeck = new LinkedList<>();
         this.nexusDiscard = new LinkedList<>();
@@ -449,10 +446,6 @@ public class Game {
         this.mod = mod;
     }
 
-    public String getModRoleMention() {
-        return modRoleMention;
-    }
-
     public void setModRoleMention(String modRoleMention) {
         this.modRoleMention = modRoleMention;
     }
@@ -590,14 +583,7 @@ public class Game {
     }
 
     public List<Force> getTanks() {
-        if (hasTleilaxuTanks)
-            return tleilaxuTanks.getForces();
-        return tanks;
-    }
-
-    public void clearOldTanks() {
-        hasTleilaxuTanks = true;
-        tanks = new LinkedList<>();
+        return tleilaxuTanks.getForces();
     }
 
     public LinkedList<Leader> getLeaderTanks() {
@@ -1220,7 +1206,7 @@ public class Game {
                 for (Faction faction1 : factions) {
                     faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
                 }
-                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, null, false));
+                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, "None", null, false));
                 turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }

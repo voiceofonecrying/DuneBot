@@ -62,11 +62,6 @@ public class Faction {
     private NexusCard nexusCard;
     private Shipment shipment;
     private Movement movement;
-    @Exclude
-    private int allySpiceShipment;
-    @Exclude
-    private int allySpiceBidding;
-    public boolean switchedToSpiceForAlly;
     private int spiceForAlly;
     private boolean allySpiceFinishedForTurn;
     protected boolean isHighThreshold;
@@ -107,8 +102,6 @@ public class Faction {
         this.specialKaramaPowerUsed = false;
         this.shipment = new Shipment();
         this.movement = new Movement();
-        this.allySpiceShipment = 0;
-        this.allySpiceBidding = 0;
         this.spiceForAlly = 0;
         this.allySpiceFinishedForTurn = false;
         this.nexusCard = null;
@@ -187,8 +180,6 @@ public class Faction {
 
     public void removeAlly() {
         ally = null;
-        allySpiceBidding = 0;
-        allySpiceShipment = 0;
         spiceForAlly = 0;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
@@ -793,30 +784,6 @@ public class Faction {
                         territoryName
                 )
         );
-    }
-
-    public int getAllySpiceShipment() {
-        return allySpiceShipment;
-    }
-
-    public void setAllySpiceShipment(int allySpiceShipment) {
-        if (getAllySpiceShipment() != allySpiceShipment && hasAlly()) {
-            Faction ally = getGame().getFaction(getAlly());
-            ally.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        }
-        this.allySpiceShipment = allySpiceShipment;
-    }
-
-    public int getAllySpiceBidding() {
-        return allySpiceBidding;
-    }
-
-    public void setAllySpiceBidding(int allySpiceBidding) {
-        if (getAllySpiceBidding() != allySpiceBidding && hasAlly()) {
-            Faction ally = getGame().getFaction(getAlly());
-            ally.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        }
-        this.allySpiceBidding = allySpiceBidding;
     }
 
     public int getSpiceForAlly() {

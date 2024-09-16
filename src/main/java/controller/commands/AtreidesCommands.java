@@ -46,7 +46,7 @@ public class AtreidesCommands {
             return;
         atreides.addForceLost(discordGame.required(amount).getAsInt());
         if (atreides.getForcesLost() >= 7) {
-            atreides.addLeader(new Leader("Kwisatz Haderach", 2, null, false));
+            atreides.addLeader(new Leader("Kwisatz Haderach", 2, "Atreides", null, false));
             discordGame.getTurnSummary().queueMessage("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");
         }
         discordGame.pushGame();

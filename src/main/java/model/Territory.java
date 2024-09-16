@@ -12,7 +12,7 @@ public class Territory {
     private final String territoryName;
     private final int sector;
     private boolean isStronghold;
-    private boolean isDiscoveryToken;
+    private final boolean isDiscoveryToken;
     private boolean justDiscovered;
     private final boolean isNearShieldWall;
     protected final List<Force> forces;
@@ -71,10 +71,6 @@ public class Territory {
 
     public boolean isDiscoveryToken() {
         return isDiscoveryToken;
-    }
-
-    public void setDiscoveryToken(boolean isDiscoveryToken) {
-        this.isDiscoveryToken = isDiscoveryToken;
     }
 
     public boolean isJustDiscovered() {
