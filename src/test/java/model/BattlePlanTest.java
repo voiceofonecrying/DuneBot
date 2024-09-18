@@ -77,11 +77,11 @@ public class BattlePlanTest {
         game.addFaction(bt);
         game.addFaction(emperor);
         game.addFaction(harkonnen);
-        Force atreidesForce = new Force("Atreides", 11);
-        battle = new Battle(game, "Funeral Plain", List.of(game.getTerritory("Funeral Plain")), List.of(atreides, harkonnen), List.of(atreidesForce), null);
-        Force harkonnenForce = new Force("Harkonnen", 10);
-        carthagBattle = new Battle(game, "Carthag", List.of(game.getTerritory("Carthag")), List.of(atreides, harkonnen), List.of(atreidesForce, harkonnenForce), null);
-//        arrakeenBattle = new Battle(game, "Arrakeen", List.of(game.getTerritory("Arrakeen")), List.of(atreides, harkonnen), List.of(atreidesForce, harkonnenForce), null);
+        Territory funeralPlain = game.getTerritory("Funeral Plain");
+        funeralPlain.addForces("Atreides", 11);
+        battle = new Battle(game, List.of(funeralPlain), List.of(atreides, harkonnen));
+        carthagBattle = new Battle(game, List.of(game.getTerritory("Carthag")), List.of(atreides, harkonnen));
+//        arrakeenBattle = new Battle(game, "Arrakeen", List.of(game.getTerritory("Arrakeen")), List.of(atreides, harkonnen), null);
         zoal = bt.getLeader("Zoal").orElseThrow();
         wykk = bt.getLeader("Wykk").orElseThrow();
         duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
@@ -682,14 +682,14 @@ public class BattlePlanTest {
 
     @Test
     void testHarassAndWithdrawWeaponNotOnHomeworld() {
-        battle = new Battle(game, "Tleilax", List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen), null, null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen));
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, bt, true, zoal, null, false, harassAndWithdraw, null, 0, false, 0));
     }
 
     @Test
     void testHarassAndWithdrawWeaponNotOnSecondHomeworld() {
         emperor.addTreacheryCard(harassAndWithdraw);
-        battle = new Battle(game, "Salusa Secundus", List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen), null, null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen));
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, emperor, true, bashar, null, false, harassAndWithdraw, null, 0, false, 0));
     }
 
@@ -698,7 +698,7 @@ public class BattlePlanTest {
         zoal.setPulledBehindShield(true);
         LeaderSkillCard planetologist = new LeaderSkillCard("Planetologist");
         zoal.setSkillCard(planetologist);
-        battle = new Battle(game, "Tleilax", List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen), List.of(), null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen));
         assertDoesNotThrow(() -> new BattlePlan(game, battle, bt, true, zoal, null, false, harassAndWithdraw, null, 0, false, 0));
     }
 
@@ -708,20 +708,20 @@ public class BattlePlanTest {
         bashar.setPulledBehindShield(true);
         LeaderSkillCard planetologist = new LeaderSkillCard("Planetologist");
         bashar.setSkillCard(planetologist);
-        battle = new Battle(game, "Salusa Secundus", List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen), List.of(), null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen));
         assertDoesNotThrow(() -> new BattlePlan(game, battle, emperor, true, bashar, null, false, harassAndWithdraw, null, 0, false, 0));
     }
 
     @Test
     void testHarassAndWithdrawDefenseNotOnHomeworld() {
-        battle = new Battle(game, "Tleilax", List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen), null, null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Tleilax", "BT")), List.of(bt, harkonnen));
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, bt, true, zoal, null, false, null, harassAndWithdraw, 0, false, 0));
     }
 
     @Test
     void testHarassAndWithdrawDefenseNotOnSecondHomeworld() {
         emperor.addTreacheryCard(harassAndWithdraw);
-        battle = new Battle(game, "Salusa Secundus", List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen), null, null);
+        battle = new Battle(game, List.of(new HomeworldTerritory(game, "Salusa Secundus", "Emperor")), List.of(emperor, harkonnen));
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, emperor, true, bashar, null, false, null, harassAndWithdraw, 0, false, 0));
     }
 
@@ -1253,7 +1253,7 @@ public class BattlePlanTest {
         void testForcesRemainingEcazNotAllied() throws InvalidGameStateException {
             redChasm.addForces("Harkonnen", 10);
             redChasm.addForces("Ecaz", 3);
-            battle = new Battle(game, "Red Chasm", List.of(redChasm), List.of(harkonnen, ecaz), redChasm.getForces(), null);
+            battle = new Battle(game, List.of(redChasm), List.of(harkonnen, ecaz));
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 0, false, 0);
@@ -1268,12 +1268,12 @@ public class BattlePlanTest {
             redChasm.addForces("Emperor", 3);
             redChasm.addForces("Emperor*", 1);
             redChasm.addForces("Ecaz", 1);
-            battle = new Battle(game, "Gara Kulon", List.of(redChasm), List.of(harkonnen, emperor, ecaz), redChasm.getForces(), "Emperor");
+            battle = new Battle(game, List.of(redChasm), List.of(harkonnen, emperor, ecaz));
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
-            assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
         }
 
         @Test
@@ -1286,20 +1286,20 @@ public class BattlePlanTest {
             redChasm.addForces("Emperor", 6);
             redChasm.addForces("Emperor*", 1);
             redChasm.addForces("Ecaz", 7);
-            Battle battle = new Battle(game, "Gara Kulon", List.of(redChasm), List.of(harkonnen, emperor, ecaz), redChasm.getForces(), "Emperor");
+            Battle battle = new Battle(game, List.of(redChasm), List.of(harkonnen, emperor, ecaz));
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
             assertTrue(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
-            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
             bp.setForcesDialed(5, 0);
             assertEquals(5, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals(1, bp.getSpecialNotDialed());
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
         }
     }
 
@@ -1326,7 +1326,7 @@ public class BattlePlanTest {
         void testFremenNegateSardaukar() throws InvalidGameStateException {
             garaKulon.addForces("Emperor", 1);
             garaKulon.addForces("Emperor*", 3);
-            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(emperor, fremen), garaKulon.getForces(), null);
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(emperor, fremen));
             BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
             assertEquals(1, bp.getRegularDialed());
             assertEquals(2, bp.getSpecialDialed());
@@ -1340,7 +1340,7 @@ public class BattlePlanTest {
             TestTopic ixChat = new TestTopic();
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-            Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
+            Battle battle = new Battle(game, List.of(hms), List.of(ix, emperor));
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
             assertEquals(2, bp.getRegularDialed());
             assertEquals(3, bp.getSpecialDialed());
@@ -1351,7 +1351,7 @@ public class BattlePlanTest {
         void testKaramadSardaukar() throws InvalidGameStateException {
             carthag.addForces("Emperor", 1);
             carthag.addForces("Emperor*", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen), carthag.getForces(), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             battle.negateSpecialForces(game, emperor);
             BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
             assertEquals(1, bp.getRegularDialed());
@@ -1363,7 +1363,7 @@ public class BattlePlanTest {
         void testKaramadFedaykin() throws InvalidGameStateException {
             carthag.addForces("Fremen", 1);
             carthag.addForces("Fremen*", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(fremen, harkonnen));
             battle.negateSpecialForces(game, fremen);
             BattlePlan bp = new BattlePlan(game, battle, fremen, true, fremen.getLeader("Chani").orElseThrow(), null, false, null, null, 3, false, 0);
             assertEquals(1, bp.getRegularDialed());
@@ -1379,7 +1379,7 @@ public class BattlePlanTest {
             ix.setChat(ixChat);
             carthag.addForces("Ix", 2);
             carthag.addForces("Ix*", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(ix, harkonnen), carthag.getForces(), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(ix, harkonnen));
             battle.negateSpecialForces(game, ix);
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 2, false, 1);
             assertEquals(2, bp.getRegularDialed());
@@ -1394,7 +1394,7 @@ public class BattlePlanTest {
             carthag.addForces("Emperor", 1);
             carthag.addForces("Emperor*", 3);
             carthag.addForces("Ecaz", 2);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(emperor, harkonnen, ecaz), carthag.getForces(), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen, ecaz));
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             battle.negateSpecialForces(game, emperor);
@@ -1409,7 +1409,7 @@ public class BattlePlanTest {
             game.addFaction(harkonnen);
             carthag.addForces("Fremen", 1);
             carthag.addForces("Fremen*", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(fremen, harkonnen), carthag.getForces(), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(fremen, harkonnen));
             battle.karamaFremenMustPay(game);
             BattlePlan bp = new BattlePlan(game, battle, fremen, true, fremen.getLeader("Chani").orElseThrow(), null, false, null, null, 3, false, 0);
             assertEquals(0, bp.getRegularDialed());
@@ -1425,8 +1425,7 @@ public class BattlePlanTest {
             richese.setChat(richeseChat);
             Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
-            Force noField = new Force("NoField", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             assertDoesNotThrow(() -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3));
             assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, true, 3));
         }
@@ -1443,8 +1442,7 @@ public class BattlePlanTest {
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
-            Force noField = new Force("NoField", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             try {
                 new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
                 fail("Expected InvalidGameStateException was not thrown.");
@@ -1462,7 +1460,7 @@ public class BattlePlanTest {
             garaKulon.setRicheseNoField(5);
             garaKulon.addForces("NoField", 5);
             garaKulon.addForces("Fremen", 3);
-            Battle battle = new Battle(game, "Gara Kulon", List.of(garaKulon), List.of(fremen, richese), garaKulon.getForces(), "Emperor");
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(fremen, richese));
             Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
             assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, richese, true, ladyHelena, null, false, null, null, 3, false, 0));
             BattlePlan bp = new BattlePlan(game, battle, richese, true, ladyHelena, null, false, null, null, 2, false, 0);
@@ -1483,7 +1481,7 @@ public class BattlePlanTest {
             TestTopic ixChat = new TestTopic();
             ix.setChat(ixChat);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-            Battle battle = new Battle(game, "Hidden Mobile Stronghold", List.of(hms), List.of(ix, emperor), hms.getForces(), null);
+            Battle battle = new Battle(game, List.of(hms), List.of(ix, emperor));
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
             assertEquals(2, bp.getRegularDialed());
             assertEquals(3, bp.getSpecialDialed());
@@ -1497,8 +1495,7 @@ public class BattlePlanTest {
             richese.setChat(richeseChat);
             Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
-            Force noField = new Force("NoField", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             BattlePlan bp = new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
             assertEquals(3, bp.getRegularDialed());
         }
@@ -1515,8 +1512,7 @@ public class BattlePlanTest {
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
-            Force noField = new Force("NoField", 3);
-            Battle battle = new Battle(game, "Carthag", List.of(carthag), List.of(richese, harkonnen), List.of(noField), null);
+            Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             try {
                 new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
                 fail("Expected InvalidGameStateException was not thrown.");
@@ -1542,7 +1538,7 @@ public class BattlePlanTest {
             atreides.addTreacheryCard(cheapHero);
             arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Harkonnen", 1);
-            battle1 = new Battle(game, "Arrakeen", List.of(arrakeen), List.of(atreides, harkonnen), arrakeen.getForces(), null);
+            battle1 = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
         }
 
         @Test

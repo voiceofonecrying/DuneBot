@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,72 +39,6 @@ public class BattlesTest {
 
     @AfterEach
     void tearDown() {
-    }
-
-    @Test
-    void testAggregateForces() throws IOException, InvalidGameStateException {
-        game = new Game();
-        game.setTurnSummary(turnSummary);
-        game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser");
-        bg = new BGFaction("bgPlayer", "bgUser");
-        emperor = new EmperorFaction("ePlayer", "eUser");
-        fremen = new FremenFaction("fPlayer", "fUser");
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
-        game.addFaction(ecaz);
-        game.addFaction(bg);
-        game.addFaction(emperor);
-        game.addFaction(fremen);
-        game.addFaction(harkonnen);
-        game.addFaction(richese);
-        Territory carthag = game.getTerritory("Carthag");
-        carthag.addForces("Emperor", 5);
-        carthag.addForces("Emperor*", 2);
-        game.startBattlePhase();
-        Battles battles = game.getBattles();
-        List<Force> battleForces = battles.aggregateForces(List.of(carthag), List.of(emperor, harkonnen));
-        assertEquals(carthag.getForceStrength("Emperor*"), battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
-        assertEquals(carthag.getForceStrength("Emperor"), battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
-        assertEquals(carthag.getForceStrength("Harkonnen"), battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
-    }
-
-    @Test
-    void aggregateForcesMultipleSectorsPlusNoField() throws IOException, InvalidGameStateException {
-        game = new Game();
-        game.setTurnSummary(turnSummary);
-        game.setWhispers(new TestTopic());
-        ecaz = new EcazFaction("aPlayer", "aUser");
-        bg = new BGFaction("bgPlayer", "bgUser");
-        emperor = new EmperorFaction("ePlayer", "eUser");
-        fremen = new FremenFaction("fPlayer", "fUser");
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-        RicheseFaction richese = new RicheseFaction("rPlayer", "rUser");
-        game.addFaction(ecaz);
-        game.addFaction(bg);
-        game.addFaction(emperor);
-        game.addFaction(fremen);
-        game.addFaction(harkonnen);
-        game.addFaction(richese);
-        Territory cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
-        Territory cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
-        cielagoNorth_eastSector.addForces("Emperor", 2);
-        cielagoNorth_eastSector.addForces("Harkonnen", 3);
-        cielagoNorth_westSector.addForces("Emperor", 2);
-        cielagoNorth_westSector.addForces("Emperor*", 2);
-        cielagoNorth_westSector.setRicheseNoField(5);
-        List<Territory> cielagoNorthSectors = List.of(
-                game.getTerritory("Cielago North (West Sector)"),
-                game.getTerritory("Cielago North (Center Sector)"),
-                game.getTerritory("Cielago North (East Sector)")
-        );
-        game.startBattlePhase();
-        Battles battles = game.getBattles();
-        List<Force> battleForces = battles.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese));
-        assertEquals(2, battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
-        assertEquals(4, battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
-        assertEquals(3, battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
-        assertEquals(5, battleForces.stream().filter(f -> f.getName().equals("NoField")).findFirst().orElseThrow().getStrength());
     }
 
     @Test

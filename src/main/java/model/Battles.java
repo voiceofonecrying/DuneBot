@@ -22,24 +22,6 @@ public class Battles {
         getBattles(game);
     }
 
-    public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
-        List<Force> forces = new ArrayList<>();
-        for (Faction f: factions) {
-            Optional<Integer> optInt;
-            optInt = territorySectors.stream().map(t -> t.getForceStrength(f.getName() + "*")).reduce(Integer::sum);
-            int totalSpecialStrength = optInt.orElse(0);
-            if (totalSpecialStrength > 0) forces.add(new Force(f.getName() + "*", totalSpecialStrength));
-            optInt  = territorySectors.stream().map(t -> t.getForceStrength(f.getName())).reduce(Integer::sum);
-            int totalForceStrength = optInt.orElse(0);
-            if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
-            Integer noField = territorySectors.stream().map(Territory::getRicheseNoField).filter(Objects::nonNull).findFirst().orElse(null);
-            if (noField != null && f.getName().equals("Richese")) {
-                forces.add(new Force("NoField", noField));
-            }
-        }
-        return forces;
-    }
-
     public List<Battle> getBattles(Game game) {
         battles = new ArrayList<>();
         moritaniCanTakeVidal = false;
@@ -63,9 +45,7 @@ public class Battles {
                                 factions.get(0).getAlly().equals("Ecaz") && factions.get(1).getName().equals("Ecaz"))) {
                     addBattle = false;
                 }
-                String ecazAllyName = factions.stream().filter(f -> f instanceof EcazFaction).map(Faction::getAlly).findFirst().orElse(null);
-                List<Force> forces = aggregateForces(territorySectors, factions);
-                if (addBattle) battles.add(new Battle(game, aggregateTerritoryName, territorySectors, factions, forces, ecazAllyName));
+                if (addBattle) battles.add(new Battle(game, territorySectors, factions));
             }
         }
         if (dukeVidalCount >= 2) moritaniCanTakeVidal = true;
@@ -110,25 +90,11 @@ public class Battles {
         Faction aggressor = currentBattle.getAggressor(game);
         if (opponent.equals(aggressor.getName()))
             throw new InvalidGameStateException("Cannot set aggressor's opponent to be the aggressor");
-        String ecazAlly = null;
-        if (currentBattle.hasEcazAndAlly())
-            ecazAlly = game.getFaction("Ecaz").getAlly();
-        boolean opponentIsEcazAlly = ecazAlly != null && ecazAlly.equals(opponent);
-        boolean aggressorIsEcazAlly = ecazAlly != null && ecazAlly.equals(aggressor.getName());
-        List<Force> newForces = new ArrayList<>();
-        for (Force f : currentBattle.getForces()) {
-            if (f.getFactionName().equals(opponent)) newForces.add(f);
-            else if (f.getFactionName().equals("Ecaz") && opponentIsEcazAlly) newForces.add(f);
-            else if (f.getFactionName().equals(aggressor.getName())) newForces.add(f);
-            else if (f.getFactionName().equals("Ecaz") && aggressorIsEcazAlly) newForces.add(f);
-        }
-        currentBattle = new Battle(game, currentBattle.getWholeTerritoryName(), currentBattle.getTerritorySectors(),
+        currentBattle = new Battle(game, currentBattle.getTerritorySectors(),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
-                ).toList(),
-                newForces,
-                currentBattle.getEcazAllyName()
+                ).toList()
         );
     }
 

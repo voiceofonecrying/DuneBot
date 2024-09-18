@@ -40,17 +40,17 @@ public class Battle {
     public DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
 
-    public Battle(Game game, String wholeTerritoryName, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder, List<Force> forces, String ecazAllyName) {
-        this.wholeTerritoryName = wholeTerritoryName;
+    public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
+        this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
         this.territorySectors = territorySectors;
         this.factionNames = new ArrayList<>();
         battleFactionsInStormOrder.forEach(f -> factionNames.add(f.getName()));
+        this.ecazAllyName = battleFactionsInStormOrder.stream().filter(f -> f instanceof EcazFaction).map(Faction::getAlly).findFirst().orElse(null);
         if (factionNames.get(0).equals("Ecaz") && factionNames.get(1).equals(ecazAllyName) || factionNames.get(0).equals(ecazAllyName) && factionNames.get(1).equals("Ecaz"))
             factionNames.add(factionNames.remove(1));
-        this.forces = forces;
-        this.ecazAllyName = ecazAllyName;
+        this.forces = aggregateForces(territorySectors, battleFactionsInStormOrder);
         this.fedaykinNegated = false;
-        this.sardaukarNegated = factionNames.stream().anyMatch(n -> n.equals("Emperor")) && factionNames.stream().anyMatch(n -> n.equals("Fremen"));
+        this.sardaukarNegated = battleFactionsInStormOrder.stream().anyMatch(f -> f instanceof FremenFaction);
         try {
             EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
             if (emperor.isSecundusOccupied())
@@ -67,6 +67,24 @@ public class Battle {
         this.poisonToothTBD = DecisionStatus.NA;
     }
 
+    public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
+        List<Force> forces = new ArrayList<>();
+        for (Faction f: factions) {
+            Optional<Integer> optInt;
+            optInt = territorySectors.stream().map(t -> t.getForceStrength(f.getName() + "*")).reduce(Integer::sum);
+            int totalSpecialStrength = optInt.orElse(0);
+            if (totalSpecialStrength > 0) forces.add(new Force(f.getName() + "*", totalSpecialStrength));
+            optInt  = territorySectors.stream().map(t -> t.getForceStrength(f.getName())).reduce(Integer::sum);
+            int totalForceStrength = optInt.orElse(0);
+            if (totalForceStrength > 0) forces.add(new Force(f.getName(), totalForceStrength));
+            Integer noField = territorySectors.stream().map(Territory::getRicheseNoField).filter(Objects::nonNull).findFirst().orElse(null);
+            if (noField != null && f.getName().equals("Richese")) {
+                forces.add(new Force("NoField", noField));
+            }
+        }
+        return forces;
+    }
+
     public String getWholeTerritoryName() {
         return wholeTerritoryName;
     }
@@ -77,10 +95,6 @@ public class Battle {
 
     public List<String> getFactionNames() {
         return factionNames;
-    }
-
-    public String getEcazAllyName() {
-        return ecazAllyName;
     }
 
     public List<Faction> getFactions(Game game) {
@@ -555,6 +569,8 @@ public class Battle {
 
         if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
+        if (isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach())
+            resolution += emojis + " loses Kwisatz Haderach to the tanks\n";
         int regularForcesDialed = battlePlan.getRegularDialed();
         int specialForcesDialed = battlePlan.getSpecialDialed();
         int regularForcesTotal = getForces().stream()
@@ -820,6 +836,9 @@ public class Battle {
         resolution += getWinnerString(game) + "\n";
         resolution += factionBattleResults(game, true);
         resolution += factionBattleResults(game, false);
+        String carnage = lasgunShieldCarnage(game);
+        if (!carnage.isEmpty())
+            resolution += "\nLasgun-Shield carnage:\n" + carnage;
         resolution += aggressorBattlePlan.checkAuditor(defender.getEmoji());
         resolution += defenderBattlePlan.checkAuditor(aggressor.getEmoji());
 
@@ -852,6 +871,40 @@ public class Battle {
 
         DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
         resultsChannel.publish(resolution);
+    }
+
+    private String lasgunShieldCarnage(Game game) {
+        List<Territory> allTerritorySectors = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().startsWith(wholeTerritoryName)).toList();
+        String carnage = "";
+        if (aggressorBattlePlan.isLasgunShieldExplosion()) {
+            String otherForces = nonCombatantForces(allTerritorySectors);
+            if (!otherForces.isEmpty())
+                carnage += otherForces;
+            Territory noFieldTerritory = allTerritorySectors.stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
+            if (noFieldTerritory != null)
+                carnage += Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be " + noFieldTerritory.getRicheseNoField() + " " + Emojis.RICHESE_TROOP + " and loses them to the tanks\n";
+            String ambassador = allTerritorySectors.stream().map(Territory::getEcazAmbassador).filter(Objects::nonNull).findFirst().orElse(null);
+            if (ambassador != null)
+                carnage += Emojis.ECAZ + " " + ambassador + " ambassador returned to supply\n";
+            carnage += String.join("", allTerritorySectors.stream().filter(s -> s.getSpice() > 0).map(s -> s.getSpice() + " " + Emojis.SPICE + " destroyed in " + s.getTerritoryName() + "\n").toList());
+        }
+        return carnage;
+    }
+
+    private String nonCombatantForces(List<Territory> allTerritorySectors) {
+        return String.join("", allTerritorySectors.stream().map(this::nonCombatantForcesInSector).toList());
+    }
+
+    private String nonCombatantForcesInSector(Territory t) {
+        boolean battleSector = territorySectors.contains(t);
+        List<Force> nonCombatantForces = new ArrayList<>(t.getForces().stream().filter(f -> !battleSector || !factionNames.contains(f.getFactionName())).toList());
+        nonCombatantForces.sort((a, b) -> {
+            if (a.getFactionName().equals(b.getFactionName()))
+                return a.getName().compareTo(b.getName());
+            else
+                return a.getFactionName().compareTo(b.getFactionName());
+        });
+        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
     }
 
     private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {

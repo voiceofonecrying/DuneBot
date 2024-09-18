@@ -1071,12 +1071,6 @@ public class Faction {
     }
 
     public int performFreeRevivals() {
-        if (this instanceof BTFaction)
-            // This can be removed after D50 and D53 finish
-            setMaxRevival(20);
-        if (this instanceof ChoamFaction)
-            // This can be removed after D63 and D65 finish
-            setMaxRevival(20);
         int numStarRevived = countFreeStarredRevival();
         starRevived = numStarRevived > 0;
         TleilaxuTanks tanks = game.getTleilaxuTanks();
