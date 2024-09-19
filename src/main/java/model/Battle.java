@@ -37,8 +37,12 @@ public class Battle {
     private DecisionStatus juiceOfSaphoTBD;
     private DecisionStatus portableSnooperTBD;
     private DecisionStatus stoneBurnerTBD;
-    public DecisionStatus mirrorWeaponStoneBurnerTBD;
+    private DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
+    private boolean aggressorCallsTraitor;
+    private DecisionStatus aggresstorTraitorTBD;
+    private boolean defenderCallsTraitor;
+    private DecisionStatus defenderTraitorTBD;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -65,6 +69,8 @@ public class Battle {
         this.stoneBurnerTBD = DecisionStatus.NA;
         this.mirrorWeaponStoneBurnerTBD = DecisionStatus.NA;
         this.poisonToothTBD = DecisionStatus.NA;
+        this.aggresstorTraitorTBD = DecisionStatus.NA;
+        this.defenderTraitorTBD = DecisionStatus.NA;
     }
 
     public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
@@ -871,6 +877,43 @@ public class Battle {
 
         DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
         resultsChannel.publish(resolution);
+
+        checkForTraitorCall(game, getAggressor(game), defenderBattlePlan, true, publishToTurnSummary);
+        checkForTraitorCall(game, getDefender(game), aggressorBattlePlan, false, publishToTurnSummary);
+    }
+
+    private void checkForTraitorCall(Game game, Faction faction, BattlePlan opponentPlan, boolean isAggressor, boolean publishToTurnSummary) {
+        if (opponentPlan.hasKwisatzHaderach())
+            return;
+        if (faction instanceof BTFaction)
+            return;
+
+        String opponentLeader;
+        if (opponentPlan.getLeader() != null)
+            opponentLeader = opponentPlan.getLeader().getName();
+        else if (opponentPlan.getCheapHero() != null)
+            opponentLeader = "Cheap Hero";
+        else
+            opponentLeader = "";
+
+        checkForTraitorCall(faction, opponentLeader, isAggressor, false, game.getModInfo(), publishToTurnSummary);
+        if (faction.getAlly().equals("Harkonnen"))
+            checkForTraitorCall(game.getFaction("Harkonnen"), opponentLeader, isAggressor, true, game.getModInfo(), publishToTurnSummary);
+    }
+
+    private void checkForTraitorCall(Faction faction, String opponentLeader, boolean isAggressor, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
+        String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
+        if (faction.getTraitorHand().stream().anyMatch(t -> t.name().equals(opponentLeader))) {
+            if (publishToTurnSummary)
+                faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + wholeTerritoryName + "? " + faction.getPlayer());
+            if (isAggressor)
+                aggresstorTraitorTBD = DecisionStatus.OPEN;
+            else
+                defenderTraitorTBD = DecisionStatus.OPEN;
+            modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
+        } else {
+            modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
+        }
     }
 
     private String lasgunShieldCarnage(Game game) {
