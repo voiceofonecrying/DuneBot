@@ -28,10 +28,13 @@ class BattleTest {
     RicheseFaction richese;
     TestTopic atreidesChat;
     TestTopic bgChat;
+    TestTopic btChat;
     TestTopic harkonnenChat;
     Leader duncanIdaho;
     Leader burseg;
     Leader alia;
+    Leader feydRautha;
+    Leader zoal;
     Territory carthag;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_eastSector;
@@ -65,7 +68,8 @@ class BattleTest {
         atreides.setChat(atreidesChat);
         bgChat = new TestTopic();
         bg.setChat(bgChat);
-        bt.setChat(new TestTopic());
+        btChat = new TestTopic();
+        bt.setChat(btChat);
         ecaz.setChat(new TestTopic());
         emperor.setChat(new TestTopic());
         fremen.setChat(new TestTopic());
@@ -85,6 +89,8 @@ class BattleTest {
         duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
         burseg = emperor.getLeader("Burseg").orElseThrow();
         alia = bg.getLeader("Alia").orElseThrow();
+        feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
+        zoal = bt.getLeader("Zoal").orElseThrow();
 
         carthag = game.getTerritory("Carthag");
         cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
@@ -677,7 +683,7 @@ class BattleTest {
             Battle ecazBattle = new Battle(game, List.of(tueksSietch), List.of(harkonnen, ecaz));
             harkonnen.addTreacheryCard(hunterSeeker);
             harkonnen.addTreacheryCard(weirdingWay);
-            ecazBattle.setBattlePlan(game, harkonnen, harkonnen.getLeader("Feyd Rautha").orElseThrow(), null, false, 6, false, 4, hunterSeeker, weirdingWay);
+            ecazBattle.setBattlePlan(game, harkonnen, feydRautha, null, false, 6, false, 4, hunterSeeker, weirdingWay);
             ecazBattle.setBattlePlan(game, ecaz, ecaz.getLeader("Bindikk Narvi").orElseThrow(), null, false, 5, false, 0, null, null);
             BattlePlan atreidesPlan = ecazBattle.getAggressorBattlePlan();
             BattlePlan ecazPlan = ecazBattle.getDefenderBattlePlan();
@@ -807,7 +813,6 @@ class BattleTest {
 
         @Test
         void testZoalHasOpposingLeaderValue() throws InvalidGameStateException {
-            Leader zoal = bt.getLeader("Zoal").orElseThrow();
             bt.addTreacheryCard(crysknife);
             battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
             battle3.setBattlePlan(game, emperor, burseg, null, false, 7, false, 5, null, null);
@@ -817,7 +822,6 @@ class BattleTest {
 
         @Test
         void testZoalHasNoValue() throws InvalidGameStateException {
-            Leader zoal = bt.getLeader("Zoal").orElseThrow();
             bt.addTreacheryCard(crysknife);
             emperor.addTreacheryCard(cheapHero);
             battle3.setBattlePlan(game, bt, zoal, null, false, 5, false, 5, crysknife, null);
@@ -1139,6 +1143,12 @@ class BattleTest {
     }
 
     @Nested
+    @DisplayName("#earlyTraitorChoices")
+    class EarlyTraitorChoices {
+        Battle battle;
+    }
+
+    @Nested
     @DisplayName("#traitorCalls")
     class TraitorCalls {
         Battle battle;
@@ -1148,6 +1158,7 @@ class BattleTest {
             game.addFaction(bg);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
+            game.addFaction(bt);
             atreides.addTreacheryCard(chaumas);
             arrakeen.addForces("BG", 1);
             battle = new Battle(game, List.of(arrakeen), List.of(bg, atreides));
@@ -1171,8 +1182,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertTrue(bgChat.getMessages().isEmpty());
             assertTrue(atreidesChat.getMessages().isEmpty());
-            assertEquals(Emojis.BG + " cannot call Traitor in Arrakeen.", modInfo.getMessages().getFirst());
-            assertEquals(Emojis.ATREIDES + " cannot call Traitor in Arrakeen.", modInfo.getMessages().getLast());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
 
         @Test
@@ -1197,8 +1207,7 @@ class BattleTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
-            assertEquals(Emojis.BG + " can call Traitor against Duncan Idaho in Arrakeen.", modInfo.getMessages().getFirst());
-            assertEquals(Emojis.ATREIDES + " cannot call Traitor in Arrakeen.", modInfo.getMessages().getLast());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
 
         @Test
@@ -1223,8 +1232,7 @@ class BattleTest {
             assertTrue(battle.isAggressorWin(game));
             assertTrue(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor against Alia in Arrakeen? p", atreidesChat.getMessages().getLast());
-            assertEquals(Emojis.BG + " cannot call Traitor in Arrakeen.", modInfo.getMessages().getFirst());
-            assertEquals(Emojis.ATREIDES + " can call Traitor against Alia in Arrakeen.", modInfo.getMessages().getLast());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
 
         @Test
@@ -1247,8 +1255,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
             assertEquals("Will you call Traitor against Alia in Arrakeen? p", atreidesChat.getMessages().getLast());
-            assertEquals(Emojis.BG + " can call Traitor against Duncan Idaho in Arrakeen.", modInfo.getMessages().getFirst());
-            assertEquals(Emojis.ATREIDES + " can call Traitor against Alia in Arrakeen.", modInfo.getMessages().getLast());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
 
         @Test
@@ -1259,11 +1266,19 @@ class BattleTest {
             battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 4, false, 0, chaumas, null);
             modInfo.clear();
             bgChat.clear();
-            atreidesChat.clear();
+            battle.printBattleResolution(game, false);
+            assertFalse(battle.isAggressorWin(game));
+            assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
+            assertTrue(bgChat.getMessages().isEmpty());
+            int bgTraitorMessageIndex = modInfo.getMessages().size() - 2;
+            assertEquals(Emojis.BG + " cannot call Traitor against Kwisatz Haderach.", modInfo.getMessages().get(bgTraitorMessageIndex));
+            modInfo.clear();
+            bgChat.clear();
             battle.printBattleResolution(game, true);
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertTrue(bgChat.getMessages().isEmpty());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
 
         @Test
@@ -1312,6 +1327,23 @@ class BattleTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? p", harkonnenChat.getMessages().getLast());
+        }
+
+        @Test
+        void testBTDoNotGetAskedAboutTraitor() throws InvalidGameStateException {
+            carthag.addForces("BT", 1);
+            bt.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            battle = new Battle(game, List.of(carthag), List.of(harkonnen, bt));
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 1, false, 0, null, null);
+            battle.setBattlePlan(game, bt, zoal, null, false, 1, false, 1, null, null);
+            modInfo.clear();
+            battle.printBattleResolution(game, false);
+            assertEquals(Emojis.BT + " does not call Traitors.", modInfo.getMessages().getLast());
+            modInfo.clear();
+            btChat.clear();
+            battle.printBattleResolution(game, true);
+            assertTrue(btChat.getMessages().isEmpty());
+            assertTrue(modInfo.getMessages().isEmpty());
         }
     }
 }

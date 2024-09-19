@@ -384,8 +384,10 @@ public class Battle {
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
         if (planIsForAggressor) {
             aggressorBattlePlan = battlePlan;
+            presentEarlyTraitorChoices(getAggressor(game), getDefender(game));
         } else {
             defenderBattlePlan = battlePlan;
+            presentEarlyTraitorChoices(getDefender(game), getAggressor(game));
         }
         if (aggressorBattlePlan != null && defenderBattlePlan != null) {
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
@@ -397,6 +399,9 @@ public class Battle {
         applyHMSStrongholdCard(game, faction, battlePlan);
         presentSpiceBankerChoices(game, faction, battlePlan, spice);
         return battlePlan;
+    }
+
+    private void presentEarlyTraitorChoices(Faction faction, Faction opponent) {
     }
 
     private void applyHMSStrongholdCard(Game game, Faction faction, BattlePlan battlePlan) {
@@ -883,10 +888,16 @@ public class Battle {
     }
 
     private void checkForTraitorCall(Game game, Faction faction, BattlePlan opponentPlan, boolean isAggressor, boolean publishToTurnSummary) {
-        if (opponentPlan.hasKwisatzHaderach())
+        DuneTopic modInfo = game.getModInfo();
+        if (faction instanceof BTFaction) {
+            if (!publishToTurnSummary)
+                modInfo.publish(faction.getEmoji() + " does not call Traitors.");
             return;
-        if (faction instanceof BTFaction)
+        } else if (opponentPlan.hasKwisatzHaderach()) {
+            if (!publishToTurnSummary)
+                modInfo.publish(faction.getEmoji() + " cannot call Traitor against Kwisatz Haderach.");
             return;
+        }
 
         String opponentLeader;
         if (opponentPlan.getLeader() != null)
@@ -896,9 +907,9 @@ public class Battle {
         else
             opponentLeader = "";
 
-        checkForTraitorCall(faction, opponentLeader, isAggressor, false, game.getModInfo(), publishToTurnSummary);
+        checkForTraitorCall(faction, opponentLeader, isAggressor, false, modInfo, publishToTurnSummary);
         if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game.getFaction("Harkonnen"), opponentLeader, isAggressor, true, game.getModInfo(), publishToTurnSummary);
+            checkForTraitorCall(game.getFaction("Harkonnen"), opponentLeader, isAggressor, true, modInfo, publishToTurnSummary);
     }
 
     private void checkForTraitorCall(Faction faction, String opponentLeader, boolean isAggressor, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
@@ -906,12 +917,13 @@ public class Battle {
         if (faction.getTraitorHand().stream().anyMatch(t -> t.name().equals(opponentLeader))) {
             if (publishToTurnSummary)
                 faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + wholeTerritoryName + "? " + faction.getPlayer());
+            else
+                modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
             if (isAggressor)
                 aggresstorTraitorTBD = DecisionStatus.OPEN;
             else
                 defenderTraitorTBD = DecisionStatus.OPEN;
-            modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
-        } else {
+        } else if (!publishToTurnSummary) {
             modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
         }
     }
