@@ -1213,11 +1213,24 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
+    public void killLeader(Faction targetFaction, String leaderName, boolean faceDown) {
+        Leader leader = leaderTanks.stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElse(null);
+        if (leader != null) {
+            leader.setFaceDown(faceDown);
+            turnSummary. publish(leaderName + " has been placed face " + (faceDown ? "down" : "up") + " in the tanks.");
+        } else {
+            leader = targetFaction.removeLeader(leaderName);
+            leader.setFaceDown(faceDown);
+            leaderTanks.add(leader);
+            String message = leaderName + " was sent to the tanks" + (faceDown ? " face down." : ".");
+            targetFaction.getLedger().publish(message);
+            turnSummary.publish(targetFaction.getEmoji() + " " + message);
+        }
+        setUpdated(UpdateType.MAP);
+    }
+
     public void killLeader(Faction targetFaction, String leaderName) {
-        leaderTanks.add(targetFaction.removeLeader(leaderName));
-        String message = leaderName + " was sent to the tanks.";
-        targetFaction.getLedger().publish(message);
-        turnSummary.publish(targetFaction.getEmoji() + " " + message);
+        killLeader(targetFaction, leaderName, false);
     }
 
     public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount) {

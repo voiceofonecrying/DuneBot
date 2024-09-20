@@ -42,7 +42,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
-import static controller.commands.CommandOptions.leader;
 import static controller.commands.ShowCommands.refreshChangedInfo;
 import static controller.commands.ShowCommands.showFactionInfo;
 
@@ -378,7 +377,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("display-state", "Displays some element of the game in mod-info.").addOptions(data));
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
         commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
-        commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(faction, leader));
+        commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(factionOrTanks, leader, faceDown));
         commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader, revivalCost));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
         commandData.add(Commands.slash("remove-hold", "Remove the hold and allow gameplay to proceed."));
@@ -744,9 +743,15 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
+        String factionName = discordGame.required(factionOrTanks).getAsString();
+        Faction targetFaction = null;
+        if (!factionName.equals("Tanks"))
+            targetFaction = game.getFaction(factionName);
         String leaderName = discordGame.required(leader).getAsString();
-        game.killLeader(targetFaction, leaderName);
+        boolean isFaceDown = false;
+        if (discordGame.optional(faceDown) != null)
+            isFaceDown = discordGame.required(faceDown).getAsBoolean();
+        game.killLeader(targetFaction, leaderName, isFaceDown);
         discordGame.pushGame();
     }
 

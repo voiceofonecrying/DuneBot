@@ -48,6 +48,8 @@ public class MoritaniFaction extends Faction {
     }
 
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {
+        if (game.getLeaderTanks().contains(leader))
+            throw new IllegalArgumentException("Moritani cannot assassintate a leader in the tanks.");
         int spiceGained = leader.getStandardRevivalCost();
         game.getTurnSummary().publish(Emojis.MORITANI + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
         game.killLeader(triggeringFaction, leader.getName());

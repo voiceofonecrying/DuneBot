@@ -9,7 +9,7 @@ public class Leader {
     private final int value;
     private String originalFactionName;
     private LeaderSkillCard skillCard;
-    private final boolean faceDown;
+    private boolean faceDown;
     private String battleTerritoryName;
     private boolean pulledBehindShield;
 
@@ -62,6 +62,10 @@ public class Leader {
 
     public boolean isFaceDown() {
         return faceDown;
+    }
+
+    public void setFaceDown(boolean faceDown) {
+        this.faceDown = faceDown;
     }
 
     public String getBattleTerritoryName() {

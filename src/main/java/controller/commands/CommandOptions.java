@@ -56,6 +56,8 @@ public class CommandOptions {
             .addChoice("Moritani", "Moritani");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
+    public static final OptionData factionOrTanks = new OptionData(OptionType.STRING, "faction-or-tanks", "Holder of the leader to kill or flip face down", true)
+            .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
             .setAutoComplete(true);
     public static final OptionData karamaFaction = new OptionData(OptionType.STRING, "karama-faction", "The faction playing Karama", true)
@@ -108,6 +110,7 @@ public class CommandOptions {
     public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);
     public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
+    public static final OptionData faceDown = new OptionData(OptionType.BOOLEAN, "face-down", "Put leader face down in the tanks", false);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
     public static final OptionData revivalCost = new OptionData(OptionType.INTEGER, "revival-cost", "How much spent to revive if different than leader value", false);
     public static final OptionData combatLeader = new OptionData(OptionType.STRING, "combat-leader", "The leader or None.", true).setAutoComplete(true);
@@ -261,6 +264,7 @@ public class CommandOptions {
         switch (optionName) {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner", "whisper-recipient" ->
                     choices = factions(game, searchValue);
+            case "faction-or-tanks" -> choices = factionsOrTanks(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
             case "sand-territory" -> choices = sandTerritories(game, searchValue);
@@ -274,7 +278,8 @@ public class CommandOptions {
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
             case "from" -> choices = fromTerritories(event, game, searchValue);
             case "bgterritories" -> choices = bgTerritories(game, searchValue);
-            case "leadertokill", "factionleader" -> choices = leaders(event, game, searchValue);
+            case "factionleader" -> choices = leaders(event, game, searchValue);
+            case "leadertokill" -> choices = leadersToKillOrFlip(event, game, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
             case "combat-leader" -> choices = combatLeaders(event, discordGame, searchValue);
             case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
@@ -302,6 +307,13 @@ public class CommandOptions {
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(factionName -> new Command.Choice(factionName, factionName))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> factionsOrTanks(@NotNull Game game, String searchValue) {
+        List<Command.Choice> choices = factions(game, searchValue);
+        if (!game.getLeaderTanks().isEmpty())
+            choices.add(new Command.Choice("Tanks", "Tanks"));
+        return choices;
     }
 
     private static List<Command.Choice> starredForcesFactions(@NotNull Game game, String searchValue) {
@@ -444,6 +456,22 @@ public class CommandOptions {
                 .filter(leader -> leader.matches(searchRegex(searchValue)))
                 .map(leader -> new Command.Choice(leader, leader))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> leadersToKillOrFlip(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        String holder = event.getOptionsByName("faction-or-tanks").getFirst().getAsString();
+        if (holder.equals("Tanks")) {
+            return game.getLeaderTanks().stream().map(Leader::getName)
+                    .filter(leader -> leader.matches(searchRegex(searchValue)))
+                    .map(leader -> new Command.Choice(leader, leader))
+                    .collect(Collectors.toList());
+        } else {
+            Faction faction = game.getFaction(holder);
+            return faction.getLeaders().stream().map(Leader::getName)
+                    .filter(leader -> leader.matches(searchRegex(searchValue)))
+                    .map(leader -> new Command.Choice(leader, leader))
+                    .collect(Collectors.toList());
+        }
     }
 
     private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {

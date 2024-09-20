@@ -1617,10 +1617,10 @@ class GameTest {
             assertEquals("Caid was sent to the tanks.", emperorLedger.getMessages().getFirst());
         }
 
-        @Test
-        void testCantKillLeaderInTanks() {
-            assertThrows(IllegalArgumentException.class, () -> game.killLeader(emperor, "Caid"));
-        }
+//        @Test
+//        void testCantKillLeaderInTanks() {
+//            assertThrows(IllegalArgumentException.class, () -> game.killLeader(emperor, "Caid"));
+//        }
     }
 
     @Nested
