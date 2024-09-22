@@ -192,11 +192,7 @@ public class Bidding {
     }
 
     private void runRicheseBid(Game game, String bidType, boolean blackMarket) throws InvalidGameStateException {
-        for (Faction faction : game.getFactions()) {
-            faction.setMaxBid(0);
-            faction.setAutoBid(false);
-            faction.setBid("");
-        }
+        clearFactionBidInfo(game);
         if (bidType.equalsIgnoreCase("Silent")) {
             silentAuction = true;
             if (blackMarket) {
