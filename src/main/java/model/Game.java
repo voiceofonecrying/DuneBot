@@ -993,6 +993,7 @@ public class Game {
 
         boolean shaiHuludSpotted = false;
         boolean nexus = false;
+        boolean greatMaker = false;
         int spiceMultiplier = 1;
 
         do {
@@ -1007,7 +1008,8 @@ public class Game {
 
             drawn = spiceDeck.pop();
             boolean saveWormForReshuffle = false;
-            if (drawn.name().equalsIgnoreCase("Shai-Hulud") || drawn.name().equalsIgnoreCase("Great Maker")) {
+            boolean cardIsGreatMaker = drawn.name().equalsIgnoreCase("Great Maker");
+            if (drawn.name().equalsIgnoreCase("Shai-Hulud") || cardIsGreatMaker) {
                 if (turn <= 1) {
                     saveWormForReshuffle = true;
                     message.append(drawn.name())
@@ -1022,6 +1024,8 @@ public class Game {
                     } else {
                         message.append(getTerritory(Objects.requireNonNull(lastCard).name()).shaiHuludAppears(this, drawn.name(), true));
                         nexus = true;
+                        if (cardIsGreatMaker)
+                            greatMaker = true;
                     }
                 } else {
                     spiceMultiplier = 1;
@@ -1030,6 +1034,8 @@ public class Game {
                         fremen = (FremenFaction) getFaction("Fremen");
                     message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted!");
                     nexus = true;
+                    if (cardIsGreatMaker)
+                        greatMaker = true;
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
                         fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
@@ -1045,7 +1051,9 @@ public class Game {
             } else {
                 message.append(Emojis.SPICE + " has been spotted in ").append(drawn.name());
                 message.append(drawn.sector() == storm ? " - blown away by the storm" : "").append("!\n");
-                if (nexus)
+                if (greatMaker)
+                    gameActions.publish(gameRoleMention + " Please vote whether you want a Nexus. A majority is required to have one.");
+                else if (nexus)
                     gameActions.publish(gameRoleMention + " We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.");
             }
             if (saveWormForReshuffle) {
