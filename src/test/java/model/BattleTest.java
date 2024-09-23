@@ -668,6 +668,22 @@ class BattleTest {
         }
 
         @Test
+        void testFirstSubmissionPublishesToGameActionsSecondDoesNot() throws InvalidGameStateException {
+            TestTopic gameActions = new TestTopic();
+            game.setGameActions(gameActions);
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            assertEquals(Emojis.ATREIDES + " battle plan submitted.", gameActions.getMessages().getLast());
+            gameActions.clear();
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            assertTrue(gameActions.getMessages().isEmpty());
+            battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            assertEquals(Emojis.HARKONNEN + " battle plan submitted.", gameActions.getMessages().getLast());
+            gameActions.clear();
+            battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            assertTrue(gameActions.getMessages().isEmpty());
+        }
+
+        @Test
         void testEcazAllyChoiceMakesOpponentAggressor() {
             battle2.setEcazCombatant(game, "Ecaz");
             assertInstanceOf(HarkonnenFaction.class, battle2.getAggressor(game));

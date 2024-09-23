@@ -383,9 +383,13 @@ public class Battle {
 
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
         if (planIsForAggressor) {
+            if (aggressorBattlePlan == null && game.getGameActions() != null)
+                game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             aggressorBattlePlan = battlePlan;
             presentEarlyTraitorChoices(getAggressor(game), getDefender(game));
         } else {
+            if (defenderBattlePlan == null && game.getGameActions() != null)
+                game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             defenderBattlePlan = battlePlan;
             presentEarlyTraitorChoices(getDefender(game), getAggressor(game));
         }
