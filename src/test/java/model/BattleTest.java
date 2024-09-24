@@ -317,7 +317,7 @@ class BattleTest {
 //        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
-            battle.updateTroopsDialed("Ecaz", 5, 0);
+            battle.updateTroopsDialed(game, "Ecaz", 5, 0);
             assertEquals(5, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
@@ -641,9 +641,12 @@ class BattleTest {
         Battle battle2;
         Battle battle2a;
         Battle battle3;
+        TestTopic gameActions;
 
         @BeforeEach
         void setUp() throws IOException {
+            gameActions = new TestTopic();
+            game.setGameActions(gameActions);
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(harkonnen);
@@ -669,8 +672,6 @@ class BattleTest {
 
         @Test
         void testFirstSubmissionPublishesToGameActionsSecondDoesNot() throws InvalidGameStateException {
-            TestTopic gameActions = new TestTopic();
-            game.setGameActions(gameActions);
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
             assertEquals(Emojis.ATREIDES + " battle plan submitted.", gameActions.getMessages().getLast());
             gameActions.clear();
@@ -681,6 +682,14 @@ class BattleTest {
             gameActions.clear();
             battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
             assertTrue(gameActions.getMessages().isEmpty());
+        }
+
+        @Test
+        void testBattlePlanMessagePublishedAfterChoosingForcesDialed() throws InvalidGameStateException {
+            battle3.setBattlePlan(game, emperor, burseg, null, false, 1, false, 0, null, null);
+            assertTrue(gameActions.getMessages().isEmpty());
+            battle3.updateTroopsDialed(game, "Emperor", 2, 0);
+            assertEquals(Emojis.EMPEROR + " battle plan submitted.", gameActions.getMessages().getLast());
         }
 
         @Test

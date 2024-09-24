@@ -120,7 +120,7 @@ public class BattleButtons implements Pressable {
         int regularDialed = Integer.parseInt(event.getComponentId().split("-")[2]);
         int specialDialed = Integer.parseInt(event.getComponentId().split("-")[3]);
         Battle battle = game.getBattles().getCurrentBattle();
-        discordGame.queueMessage(battle.updateTroopsDialed(factionName, regularDialed, specialDialed));
+        discordGame.queueMessage(battle.updateTroopsDialed(game, factionName, regularDialed, specialDialed));
         discordGame.pushGame();
     }
 

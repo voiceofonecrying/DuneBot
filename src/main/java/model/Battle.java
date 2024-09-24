@@ -383,12 +383,12 @@ public class Battle {
 
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
         if (planIsForAggressor) {
-            if (aggressorBattlePlan == null && game.getGameActions() != null)
+            if (aggressorBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             aggressorBattlePlan = battlePlan;
             presentEarlyTraitorChoices(getAggressor(game), getDefender(game));
         } else {
-            if (defenderBattlePlan == null && game.getGameActions() != null)
+            if (defenderBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             defenderBattlePlan = battlePlan;
             presentEarlyTraitorChoices(getDefender(game), getAggressor(game));
@@ -484,7 +484,7 @@ public class Battle {
         spiceBankerTBD = DecisionStatus.CLOSED;
     }
 
-    public String updateTroopsDialed(String factionName, int regularDialed, int specialDialed) throws InvalidGameStateException {
+    public String updateTroopsDialed(Game game, String factionName, int regularDialed, int specialDialed) throws InvalidGameStateException {
         BattlePlan battlePlan;
         if (getAggressorName().equals(factionName))
             battlePlan = aggressorBattlePlan;
@@ -492,6 +492,8 @@ public class Battle {
             battlePlan = defenderBattlePlan;
         else
             throw new InvalidGameStateException(factionName + " is not in the current battle.");
+        if (!battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
+            game.getGameActions().publish(Emojis.getFactionEmoji(factionName) + " battle plan submitted.");
         battlePlan.setForcesDialed(regularDialed, specialDialed);
         String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
         String regularEmoji = Emojis.getForceEmoji(emojiFactionName);

@@ -25,6 +25,7 @@ public class BattlePlan {
     private int specialDialed;
     private int regularNotDialed;
     private int specialNotDialed;
+    private boolean dialedForcesSettled;
     private final boolean hasEcazAndAlly;
     private final int ecazTroopsForAlly;
     private final String dialFactionName;
@@ -58,6 +59,7 @@ public class BattlePlan {
         this.originalDefense = defense;
         this.wholeNumberDial = wholeNumberDial;
         this.plusHalfDial = plusHalfDial;
+        this.dialedForcesSettled = true;
         this.hasEcazAndAlly = battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"));
         this.ecazTroopsForAlly = hasEcazAndAlly ? battle.getForces().stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0) : 0;
         this.dialFactionName = hasEcazAndAlly && faction instanceof EcazFaction ? faction.getAlly() : faction.getName();
@@ -109,7 +111,12 @@ public class BattlePlan {
         return regularNotDialed + specialNotDialed;
     }
 
+    public boolean isDialedForcesSettled() {
+        return dialedForcesSettled;
+    }
+
     public void setForcesDialed(int newRegularDialed, int newSpecialDialed) {
+        dialedForcesSettled = true;
         int delta = regularDialed - newRegularDialed;
         regularDialed = newRegularDialed;
         regularNotDialed += delta;
@@ -226,6 +233,7 @@ public class BattlePlan {
                     break;
             }
             faction.getChat().publish("How would you like to take troop losses?", choices);
+            dialedForcesSettled = false;
         }
 
         if (spice > spiceUsed)
