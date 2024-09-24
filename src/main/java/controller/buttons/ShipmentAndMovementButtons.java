@@ -1041,6 +1041,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "-fremen-ride" -> {
                 game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
                 faction.getMovement().clear();
+                ((FremenFaction) faction).setWormRideActive(false);
                 discordGame.queueMessage("You will not ride the worm.");
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
