@@ -20,6 +20,7 @@ public class Battle {
     private final String ecazAllyName;
     private BattlePlan aggressorBattlePlan;
     private BattlePlan defenderBattlePlan;
+    private boolean resolutionPublished;
     private boolean fedaykinNegated;
     private boolean sardaukarNegated;
     private boolean cyborgsNegated;
@@ -39,10 +40,6 @@ public class Battle {
     private DecisionStatus stoneBurnerTBD;
     private DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
-    private boolean aggressorCallsTraitor;
-    private DecisionStatus aggresstorTraitorTBD;
-    private boolean defenderCallsTraitor;
-    private DecisionStatus defenderTraitorTBD;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -53,6 +50,7 @@ public class Battle {
         if (factionNames.get(0).equals("Ecaz") && factionNames.get(1).equals(ecazAllyName) || factionNames.get(0).equals(ecazAllyName) && factionNames.get(1).equals("Ecaz"))
             factionNames.add(factionNames.remove(1));
         this.forces = aggregateForces(territorySectors, battleFactionsInStormOrder);
+        this.resolutionPublished = false;
         this.fedaykinNegated = false;
         this.sardaukarNegated = battleFactionsInStormOrder.stream().anyMatch(f -> f instanceof FremenFaction);
         try {
@@ -69,8 +67,6 @@ public class Battle {
         this.stoneBurnerTBD = DecisionStatus.NA;
         this.mirrorWeaponStoneBurnerTBD = DecisionStatus.NA;
         this.poisonToothTBD = DecisionStatus.NA;
-        this.aggresstorTraitorTBD = DecisionStatus.NA;
-        this.defenderTraitorTBD = DecisionStatus.NA;
     }
 
     public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
@@ -212,25 +208,23 @@ public class Battle {
     }
 
     public String getForcesMessage(Game game) {
-        StringBuilder message = new StringBuilder();
-        String vs = "";
         boolean ecazInBattle = factionNames.stream().anyMatch(f -> f.equals("Ecaz"));
         boolean ecazAllyInBattle = getFactions(game).stream().anyMatch(f -> f.getAlly().equals("Ecaz"));
         boolean ecazAllyComplete = false;
+        List<String> factionForceStrings = new ArrayList<>();
         for (Faction f : getFactions(game)) {
             if (ecazAllyComplete && (f.getName().equals("Ecaz") || f.getAlly().equals("Ecaz"))) continue;
-            message.append(vs);
-            message.append(getFactionForceMessage(f.getName()));
+            String factionForceString = getFactionForceMessage(f.getName());
             if (ecazAllyInBattle && !ecazAllyComplete && f.getName().equals("Ecaz") && f.hasAlly()) {
-                message.append(getFactionForceMessage(f.getAlly()));
+                factionForceString += getFactionForceMessage(f.getAlly());
                 ecazAllyComplete = true;
             } else if (ecazInBattle && !ecazAllyComplete && f.getAlly().equals("Ecaz")) {
-                message.append(getFactionForceMessage("Ecaz"));
+                factionForceString += getFactionForceMessage("Ecaz");
                 ecazAllyComplete = true;
             }
-            vs = "vs ";
+            factionForceStrings.add(factionForceString);
         }
-        return message.toString().trim();
+        return String.join("vs ", factionForceStrings).trim();
     }
 
     public void negateSpecialForces(Game game, Faction targetFaction) throws InvalidGameStateException {
@@ -386,12 +380,10 @@ public class Battle {
             if (aggressorBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             aggressorBattlePlan = battlePlan;
-            presentEarlyTraitorChoices(getAggressor(game), getDefender(game));
         } else {
             if (defenderBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
             defenderBattlePlan = battlePlan;
-            presentEarlyTraitorChoices(getDefender(game), getAggressor(game));
         }
         if (aggressorBattlePlan != null && defenderBattlePlan != null) {
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
@@ -403,9 +395,6 @@ public class Battle {
         applyHMSStrongholdCard(game, faction, battlePlan);
         presentSpiceBankerChoices(game, faction, battlePlan, spice);
         return battlePlan;
-    }
-
-    private void presentEarlyTraitorChoices(Faction faction, Faction opponent) {
     }
 
     private void applyHMSStrongholdCard(Game game, Faction faction, BattlePlan battlePlan) {
@@ -835,8 +824,64 @@ public class Battle {
         }
         return resolution;
     }
+    
+    public void battleResolution(Game game, boolean publishToTurnSummary, boolean playedJuiceOfSapho, boolean noKillStoneBurner, boolean portableSnooper, boolean noPoisonTooth, boolean overrideDecisions) throws InvalidGameStateException {
+        BattlePlan aggressorPlan = getAggressorBattlePlan();
+        BattlePlan defenderPlan = getDefenderBattlePlan();
+        if (aggressorPlan == null || defenderPlan == null)
+            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        if (isSpiceBankerDecisionOpen() && !overrideDecisions && publishToTurnSummary)
+            throw new InvalidGameStateException(getSpiceBankerFactionEmoji() + " must decide on Spice Banker");
+        if (isHMSCardDecisionOpen() && !overrideDecisions && publishToTurnSummary)
+            throw new InvalidGameStateException(getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
+
+        defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
+        boolean aggressorNoKillStoneBurner = false;
+        boolean defenderNoKillStoneBurner = false;
+        if (noKillStoneBurner) {
+            aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
+            defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+        }
+        boolean aggressorPlanAddedPortableSnooper = false;
+        boolean defenderPlanAddedPortableSnooper = false;
+        if (portableSnooper) {
+            if (getAggressor(game).hasTreacheryCard("Portable Snooper"))
+                aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
+            if (getDefender(game).hasTreacheryCard("Portable Snooper"))
+                defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+            if (aggressorPlan.isOpponentHasBureaucrat())
+                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+        }
+        boolean aggressorPlanHasPoisonTooth = false;
+        boolean defenderPlanHasPoisonTooth = false;
+        if (noPoisonTooth) {
+            aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
+            defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
+            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
+            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+        }
+        printBattleResolution(game, publishToTurnSummary);
+        if (!publishToTurnSummary) {
+            if (overrideDecisions || !isSpiceBankerDecisionOpen() && !isHMSCardDecisionOpen()) {
+                String publishChoiceId = "battle-publish-resolution-turn-" + game.getTurn() + "-" + wholeTerritoryName + "-" + playedJuiceOfSapho + "-" + noKillStoneBurner + "-" + portableSnooper + "-" + noPoisonTooth + "-" + overrideDecisions;
+                game.getModInfo().publish("Use this button to publish the above resolution to turn summary.", List.of(new DuneChoice(publishChoiceId, "Publish")));
+            }
+        }
+        if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
+        else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
+        if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
+        else if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
+        if (aggressorNoKillStoneBurner) aggressorPlan.restoreKillWithStoneBurner();
+        else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
+        if (playedJuiceOfSapho) defenderPlan.setJuiceOfSapho(false);
+    }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
+        resolutionPublished = publishToTurnSummary;
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
         String wholeTerritoryName = getWholeTerritoryName();
@@ -889,48 +934,124 @@ public class Battle {
         DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
         resultsChannel.publish(resolution);
 
-        checkForTraitorCall(game, getAggressor(game), defenderBattlePlan, true, publishToTurnSummary);
-        checkForTraitorCall(game, getDefender(game), aggressorBattlePlan, false, publishToTurnSummary);
+        checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary);
+        checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, BattlePlan opponentPlan, boolean isAggressor, boolean publishToTurnSummary) {
+    private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary) {
         DuneTopic modInfo = game.getModInfo();
         if (faction instanceof BTFaction) {
             if (!publishToTurnSummary)
                 modInfo.publish(faction.getEmoji() + " does not call Traitors.");
+            battlePlan.setCanCallTraitor(false);
+            return;
+        } else if (battlePlan.isDeclinedTraitor()) {
+            if (!publishToTurnSummary)
+                modInfo.publish(faction.getEmoji() + " declined calling Traitor in " + wholeTerritoryName + ".");
             return;
         } else if (opponentPlan.hasKwisatzHaderach()) {
             if (!publishToTurnSummary)
                 modInfo.publish(faction.getEmoji() + " cannot call Traitor against Kwisatz Haderach.");
+            battlePlan.setCanCallTraitor(false);
             return;
         }
 
-        String opponentLeader;
-        if (opponentPlan.getLeader() != null)
-            opponentLeader = opponentPlan.getLeader().getName();
-        else if (opponentPlan.getCheapHero() != null)
-            opponentLeader = "Cheap Hero";
-        else
-            opponentLeader = "";
-
-        checkForTraitorCall(faction, opponentLeader, isAggressor, false, modInfo, publishToTurnSummary);
+        String opponentLeader = opponentPlan.getLeaderNameForTraitor();
+        checkForTraitorCall(game, faction, battlePlan, opponent, opponentLeader, false, modInfo, publishToTurnSummary);
         if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game.getFaction("Harkonnen"), opponentLeader, isAggressor, true, modInfo, publishToTurnSummary);
+            checkForTraitorCall(game, game.getFaction("Harkonnen"), battlePlan, opponent, opponentLeader, true, modInfo, publishToTurnSummary);
     }
 
-    private void checkForTraitorCall(Faction faction, String opponentLeader, boolean isAggressor, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
+    private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, String opponentLeader, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
         String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
         if (faction.getTraitorHand().stream().anyMatch(t -> t.name().equals(opponentLeader))) {
-            if (publishToTurnSummary)
-                faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + wholeTerritoryName + "? " + faction.getPlayer());
-            else
+            if (publishToTurnSummary) {
+                if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkWillCallTraitor()) {
+                    faction.getChat().publish(opponentLeader + " has betrayed " + opponent.getEmoji() + " for you!");
+                } else if (!isHarkonnenAllyPower && battlePlan.isCanCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkCanCallTraitor()) {
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("traitor-call-yes-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
+                    choices.add(new DuneChoice("traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "No"));
+                    faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                }
+            } else if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkWillCallTraitor()) {
+                modInfo.publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + ".");
+            } else if (!isHarkonnenAllyPower && battlePlan.isDeclinedTraitor() || isHarkonnenAllyPower && battlePlan.isHarkDeclinedTraitor()) {
+                modInfo.publish(faction.getEmoji() + " declined Traitor call in " + wholeTerritoryName + ".");
+            } else {
                 modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
-            if (isAggressor)
-                aggresstorTraitorTBD = DecisionStatus.OPEN;
-            else
-                defenderTraitorTBD = DecisionStatus.OPEN;
+                battlePlan.setCanCallTraitor(true);
+            }
         } else if (!publishToTurnSummary) {
             modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
+            battlePlan.setCanCallTraitor(false);
+        }
+    }
+
+    public boolean isResolutionPublished() {
+        return resolutionPublished;
+    }
+
+    public void willCallTraitor(Game game, Faction faction, boolean willCallTraitor, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
+        if (turn != game.getTurn())
+            throw new InvalidGameStateException("It is no longer turn " + turn);
+        if (!wholeTerritoryForTraitor.equals(wholeTerritoryName))
+            throw new InvalidGameStateException("The current battle is not in " + wholeTerritoryForTraitor);
+
+        BattlePlan plan;
+        BattlePlan opponentPlan;
+        Faction opponent;
+        if (faction == getAggressor(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getAggressorName())) {
+            plan = aggressorBattlePlan;
+            opponentPlan = defenderBattlePlan;
+            opponent = getDefender(game);
+        } else if (faction == getDefender(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getDefenderName())) {
+            plan = defenderBattlePlan;
+            opponentPlan = aggressorBattlePlan;
+            opponent = getAggressor(game);
+        } else
+            throw new InvalidGameStateException(faction.getName() + " does not have a battle plan for this battle.");
+
+        boolean isHarkonnenAllyPower = faction instanceof HarkonnenFaction && faction != getAggressor(game) && faction != getDefender(game);
+        if (isHarkonnenAllyPower) {
+            String harkAllyEmoji = Emojis.getFactionEmoji(faction.getAlly());
+            if (willCallTraitor) {
+                if (resolutionPublished && faction.getTraitorHand().stream().anyMatch(t -> t.name().equals(opponentPlan.getLeaderNameForTraitor()))) {
+                    game.getModInfo().publish(faction.getEmoji() + " will call Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + ".");
+                    faction.getChat().publish(opponentPlan.getLeaderNameForTraitor() + " has betrayed " + opponent.getEmoji() + " for your ally!");
+                    game.getFaction(faction.getAlly()).getChat().publish(opponentPlan.getLeaderNameForTraitor() + " has betrayed " + opponent.getEmoji() + " for you and " + faction.getEmoji() + "!");
+                } else if (!resolutionPublished && plan.isHarkCanCallTraitor()) {
+                    plan.setHarkWillCallTraitor(true);
+                    game.getModInfo().publish(faction.getEmoji() + " will call Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + " if possible.");
+                } else {
+                    faction.getChat().publish("You cannot call Traitor for " + harkAllyEmoji + ".");
+                }
+                plan.setHarkCanCallTraitor(false);
+            } else if (plan.isHarkCanCallTraitor()) {
+                plan.setHarkDeclinedTraitor(true);
+                game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + ".");
+                plan.setHarkCanCallTraitor(false);
+            }
+        } else if (willCallTraitor) {
+            if (resolutionPublished && faction.getTraitorHand().stream().anyMatch(t -> t.name().equals(opponentPlan.getLeaderNameForTraitor()))) {
+                game.getModInfo().publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + ".");
+                faction.getChat().publish(opponentPlan.getLeaderNameForTraitor() + " has betrayed " + opponent.getEmoji() + " for you!");
+            } else if (!resolutionPublished && plan.isCanCallTraitor()) {
+                plan.setWillCallTraitor(true);
+                game.getModInfo().publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + " if possible.");
+                if (faction.getAlly().equals("Harkonnen")) {
+                    plan.presentEarlyTraitorChoices(game, game.getFaction("Harkonnen"), opponent, true);
+                    if (plan.isHarkCanCallTraitor())
+                        game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
+                }
+            } else {
+                faction.getChat().publish("You cannot call Traitor.");
+            }
+            plan.setCanCallTraitor(false);
+        } else if (plan.isCanCallTraitor()) {
+            plan.setDeclinedTraitor(true);
+            game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
+            plan.setCanCallTraitor(false);
         }
     }
 

@@ -7,9 +7,13 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.Faction;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.ActionComponent;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 public class BattleButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
@@ -24,6 +28,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-portable-snooper")) portableSnooperDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-poison-tooth")) poisonToothDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -186,5 +191,26 @@ public class BattleButtons implements Pressable {
             throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
         }
         discordGame.pushGame();
+    }
+
+    private static void publishResolution(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
+        String[] params = event.getComponentId().replace("battle-publish-resolution-turn-", "").split("-");
+        int turn = Integer.parseInt(params[0]);
+        String wholeTerritoryName = params[1];
+        boolean playedJuiceOfSapho = params[2].equals("true");
+        boolean noKillStoneBurner = params[3].equals("true");
+        boolean portableSnooper = params[4].equals("true");
+        boolean noPoisonTooth = params[5].equals("true");
+        boolean overrideDecisions = params[6].equals("true");
+        game.getBattles().getCurrentBattle().battleResolution(game, true, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, overrideDecisions);
+        discordGame.queueDeleteMessage();
+        deletePublishResolutionButtonsInChannel(event.getMessageChannel());
+        discordGame.queueMessage("Published to turn summary");
+    }
+
+    public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
+        List<Message> messagesToDelete = messages.stream().filter(message -> message.getButtons().stream().map(ActionComponent::getId).anyMatch(id -> id != null && id.startsWith("battle-publish-resolution"))).toList();
+        messagesToDelete.forEach(message -> message.delete().complete());
     }
 }

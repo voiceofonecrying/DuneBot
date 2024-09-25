@@ -8,6 +8,7 @@ import model.factions.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BattlePlan {
     private final boolean aggressor;
@@ -44,6 +45,12 @@ public class BattlePlan {
     private boolean portableSnooperAdded;
     public boolean stoneBurnerNoKill;
     private boolean opponentStoneBurnerNoKill;
+    private boolean canCallTraitor;
+    private boolean declinedTraitor;
+    private boolean willCallTraitor;
+    private boolean harkCanCallTraitor;
+    private boolean harkDeclinedTraitor;
+    private boolean harkWillCallTraitor;
 
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
@@ -77,6 +84,36 @@ public class BattlePlan {
         game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + getPlanMessage(false));
         faction.getChat().publish("Your battle plan for " + wholeTerritoryName + " has been submitted:\n" + getPlanMessage(false));
         faction.getChat().publish(getForcesRemainingString());
+        Faction opponent = aggressor ? battle.getDefender(game) : battle.getAggressor(game);
+        this.canCallTraitor = false;
+        this.declinedTraitor = false;
+        this.willCallTraitor = false;
+        this.harkCanCallTraitor = false;
+        this.harkDeclinedTraitor = false;
+        this.harkWillCallTraitor = false;
+        presentEarlyTraitorChoices(game, faction, opponent, false);
+    }
+
+    public void presentEarlyTraitorChoices(Game game, Faction faction, Faction opponent, boolean isHarkonnenAllyPower) {
+        if (faction instanceof BTFaction)
+            return;
+        List<String> eligibleTraitors = faction.getTraitorHand().stream().filter(t -> (t.factionName().equals(opponent.getName()) || t.factionName().equals("Any")) && game.getLeaderTanks().stream().noneMatch(l -> l.getName().equals(t.name()))).map(TraitorCard::name).collect(Collectors.toList());
+        if (!isHarkonnenAllyPower && faction.getAlly().equals("Harkonnen"))
+            eligibleTraitors.add("one of " + Emojis.HARKONNEN + "'s traitors");
+        String traitors = String.join(" or ", eligibleTraitors);
+        if (!traitors.isEmpty()) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("traitor-call-yes-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes, I will call no matter what."));
+            choices.add(new DuneChoice("traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "No, arranged battle or not worth it."));
+            choices.add(new DuneChoice("traitor-call-wait-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Wait until I see battle wheels."));
+            String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
+            String tag = isHarkonnenAllyPower ? " " + faction.getPlayer() : "";
+            faction.getChat().publish("Will you call Traitor " + forYourAlly + "if " + opponent.getEmoji() + " plays " + traitors + "?" + tag, choices);
+            if (isHarkonnenAllyPower)
+                harkCanCallTraitor = true;
+            else
+                canCallTraitor = true;
+        }
     }
 
     public Leader getLeader() {
@@ -85,6 +122,15 @@ public class BattlePlan {
 
     public TreacheryCard getCheapHero() {
         return cheapHero;
+    }
+
+    public String getLeaderNameForTraitor() {
+        String leaderNameForTraitor = "";
+        if (getLeader() != null)
+            leaderNameForTraitor = getLeader().getName();
+        else if (getCheapHero() != null)
+            leaderNameForTraitor = "Cheap Hero";
+        return leaderNameForTraitor;
     }
 
     public int getWholeNumberDial() {
@@ -754,6 +800,53 @@ public class BattlePlan {
             else if (defense.name().equals("Reinforcements") && numForcesInReserve < 3)
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
         }
+    }
 
+    public boolean isCanCallTraitor() {
+        return canCallTraitor;
+    }
+
+    public void setCanCallTraitor(boolean canCallTraitor) {
+        this.canCallTraitor = canCallTraitor;
+    }
+
+    public boolean isDeclinedTraitor() {
+        return declinedTraitor;
+    }
+
+    public void setDeclinedTraitor(boolean declinedTraitor) {
+        this.declinedTraitor = declinedTraitor;
+    }
+
+    public boolean isWillCallTraitor() {
+        return willCallTraitor;
+    }
+
+    public void setWillCallTraitor(boolean willCallTraitor) {
+        this.willCallTraitor = willCallTraitor;
+    }
+
+    public boolean isHarkCanCallTraitor() {
+        return harkCanCallTraitor;
+    }
+
+    public void setHarkCanCallTraitor(boolean harkCanCallTraitor) {
+        this.harkCanCallTraitor = harkCanCallTraitor;
+    }
+
+    public boolean isHarkDeclinedTraitor() {
+        return harkDeclinedTraitor;
+    }
+
+    public void setHarkDeclinedTraitor(boolean harkDeclinedTraitor) {
+        this.harkDeclinedTraitor = harkDeclinedTraitor;
+    }
+
+    public boolean isHarkWillCallTraitor() {
+        return harkWillCallTraitor;
+    }
+
+    public void setHarkWillCallTraitor(boolean harkWillCallTraitor) {
+        this.harkWillCallTraitor = harkWillCallTraitor;
     }
 }

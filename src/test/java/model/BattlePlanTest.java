@@ -16,16 +16,21 @@ public class BattlePlanTest {
     Battle battle;
     Battle carthagBattle;
     AtreidesFaction atreides;
+    Faction bg;
     BTFaction bt;
     ChoamFaction choam;
     EmperorFaction emperor;
     HarkonnenFaction harkonnen;
     TestTopic atreidesChat;
+    TestTopic btChat;
+    TestTopic harkonnenChat;
     Leader zoal;
     Leader wykk;
     Leader duncanIdaho;
     Leader ummanKudu;
     Leader bashar;
+    Territory carthag;
+    Territory arrakeen;
     TreacheryCard cheapHero;
     TreacheryCard kulon;
     TreacheryCard baliset;
@@ -61,18 +66,23 @@ public class BattlePlanTest {
         game.setTurnSummary(new TestTopic());
         game.setModInfo(new TestTopic());
         atreides = new AtreidesFaction("p", "u");
+        bg = new BGFaction("p", "u");
         bt = new BTFaction("p", "u");
         choam = new ChoamFaction("p", "u");
         emperor = new EmperorFaction("p", "u");
         harkonnen = new HarkonnenFaction("p", "u");
         atreides.setLedger(new TestTopic());
+        bg.setLedger(new TestTopic());
         choam.setLedger(new TestTopic());
         emperor.setLedger(new TestTopic());
-        bt.setChat(new TestTopic());
-        harkonnen.setChat(new TestTopic());
-        emperor.setChat(new TestTopic());
+        harkonnen.setLedger(new TestTopic());
         atreidesChat = new TestTopic();
         atreides.setChat(atreidesChat);
+        btChat = new TestTopic();
+        bt.setChat(btChat);
+        harkonnenChat = new TestTopic();
+        harkonnen.setChat(harkonnenChat);
+        emperor.setChat(new TestTopic());
         game.addFaction(atreides);
         game.addFaction(bt);
         game.addFaction(emperor);
@@ -87,6 +97,8 @@ public class BattlePlanTest {
         duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
         ummanKudu = harkonnen.getLeader("Umman Kudu").orElseThrow();
         bashar = emperor.getLeader("Bashar").orElseThrow();
+        arrakeen = game.getTerritory("Arrakeen");
+        carthag = game.getTerritory("Carthag");
         cheapHero = new TreacheryCard("Cheap Hero");
         kulon = new TreacheryCard("Kulon");
         baliset = new TreacheryCard("Baliset");
@@ -1308,14 +1320,12 @@ public class BattlePlanTest {
     class NumForcesNotDialed {
         EcazFaction ecaz;
         FremenFaction fremen;
-        Territory carthag;
         Territory garaKulon;
 
         @BeforeEach
         void setUp() throws IOException {
             ecaz = new EcazFaction("p", "u");
             fremen = new FremenFaction("p", "u");
-            carthag = game.getTerritory("Carthag");
             garaKulon = game.getTerritory("Gara Kulon");
             game.addFaction(fremen);
             game.addFaction(ecaz);
@@ -1423,7 +1433,6 @@ public class BattlePlanTest {
             game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);
-            Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             assertDoesNotThrow(() -> new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3));
@@ -1440,7 +1449,6 @@ public class BattlePlanTest {
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
             richeseHomeworld.removeForces("Richese", 18);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
-            Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             try {
@@ -1493,7 +1501,6 @@ public class BattlePlanTest {
             game.addFaction(richese);
             TestTopic richeseChat = new TestTopic();
             richese.setChat(richeseChat);
-            Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             BattlePlan bp = new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 3, false, 3);
@@ -1510,7 +1517,6 @@ public class BattlePlanTest {
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
             richeseHomeworld.removeForces("Richese", 18);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
-            Territory carthag = game.getTerritory("Carthag");
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
             try {
@@ -1527,7 +1533,6 @@ public class BattlePlanTest {
     @Nested
     @DisplayName("#arrakeenStrongholdCard")
     class ArrakeenStrongholdCard {
-        Territory arrakeen;
         Battle battle1;
 
         @BeforeEach
@@ -1536,7 +1541,6 @@ public class BattlePlanTest {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             atreides.addStrongholdCard(new StrongholdCard("Arrakeen"));
             atreides.addTreacheryCard(cheapHero);
-            arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Harkonnen", 1);
             battle1 = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
         }
@@ -1562,6 +1566,100 @@ public class BattlePlanTest {
             assertEquals(0, bp.getRegularDialed());
             assertEquals(10, bp.getNumForcesNotDialed());
             assertFalse(atreidesChat.getMessages().getFirst().contains("This dial can be supported with"));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentEarlyTraitorChoices")
+    class PresentEarlyTraitorChoices {
+        Battle battle1;
+        Battle battle2;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(bg);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(bt);
+            atreides.addTreacheryCard(chaumas);
+            arrakeen.addForces("BG", 1);
+            battle1 = new Battle(game, List.of(arrakeen), List.of(bg, atreides));
+            carthag.addForces("BT", 1);
+            battle2 = new Battle(game, List.of(carthag), List.of(harkonnen, bt));
+        }
+
+        @Test
+        void testFactionDoesNotHoldOpponentsTraitor() throws InvalidGameStateException {
+            atreides.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            BattlePlan battlePlan = new BattlePlan(game, battle1, atreides, false, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertNotEquals("Will you call Traitor if " + Emojis.BG + " plays Feyd Rautha?", atreidesChat.getMessages().getLast());
+            assertEquals(0, atreidesChat.getChoices().size());
+            assertFalse(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testFactionHoldsOpponentsTraitor() throws InvalidGameStateException {
+            atreides.addTraitorCard(new TraitorCard("Alia", "BG", 5));
+            BattlePlan battlePlan = new BattlePlan(game, battle1, atreides, false, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertEquals("Will you call Traitor if " + Emojis.BG + " plays Alia?", atreidesChat.getMessages().getLast());
+            assertEquals(3, atreidesChat.getChoices().getLast().size());
+            assertTrue(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testFactionHoldsCheapHeroTraitor() throws InvalidGameStateException {
+            atreides.addTraitorCard(new TraitorCard("Cheap Hero", "Any", 0));
+            BattlePlan battlePlan = new BattlePlan(game, battle1, atreides, false, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertEquals("Will you call Traitor if " + Emojis.BG + " plays Cheap Hero?", atreidesChat.getMessages().getLast());
+            assertEquals(3, atreidesChat.getChoices().getLast().size());
+            assertTrue(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testHarkonnenHoldsOpponentsTraitor() throws InvalidGameStateException {
+            harkonnen.addTraitorCard(new TraitorCard("Zoal", "BT", -1));
+            harkonnen.addTraitorCard(new TraitorCard("Blin", "BT", 2));
+            harkonnen.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+            harkonnen.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            BattlePlan battlePlan = new BattlePlan(game, battle2, harkonnen, true, ummanKudu, null, false, null, null, 0, false, 0);
+            assertEquals("Will you call Traitor if " + Emojis.BT + " plays Zoal or Blin?", harkonnenChat.getMessages().getLast());
+            assertEquals(3, harkonnenChat.getChoices().getLast().size());
+            assertTrue(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testFactionHoldsOpponentsTraitorInTheTanks() throws InvalidGameStateException {
+            atreides.addTraitorCard(new TraitorCard("Alia", "BG", 5));
+            game.killLeader(bg, "Alia");
+            BattlePlan battlePlan = new BattlePlan(game, battle1, atreides, false, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertNotEquals("Will you call Traitor if " + Emojis.BG + " plays Alia?", atreidesChat.getMessages().getLast());
+            assertEquals(0, atreidesChat.getChoices().size());
+            assertFalse(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testFactionIsAlliedWithHarkonnen() throws InvalidGameStateException {
+            game.createAlliance(atreides, harkonnen);
+            BattlePlan battlePlan = new BattlePlan(game, battle1, atreides, false, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertEquals("Will you call Traitor if " + Emojis.BG + " plays one of " + Emojis.HARKONNEN + "'s traitors?", atreidesChat.getMessages().getLast());
+            assertEquals(3, atreidesChat.getChoices().getLast().size());
+            assertTrue(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
+        }
+
+        @Test
+        void testBTDoesNotCallTraitors() throws InvalidGameStateException {
+            bt.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            BattlePlan battlePlan = new BattlePlan(game, battle2, bt, false, zoal, null, false, null, null, 0, false, 0);
+            assertFalse(btChat.getMessages().getLast().contains("Will you call Traitor"));
+            assertEquals(0, btChat.getChoices().size());
+            assertFalse(battlePlan.isCanCallTraitor());
+            assertFalse(battlePlan.isWillCallTraitor());
         }
     }
 

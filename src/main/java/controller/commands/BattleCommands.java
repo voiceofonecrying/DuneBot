@@ -64,59 +64,13 @@ public class BattleCommands {
     }
 
     public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
-        Battle currentBattle = game.getBattles().getCurrentBattle();
         boolean playedJuiceOfSapho = discordGame.optional(useJuiceOfSapho) != null && discordGame.required(useJuiceOfSapho).getAsBoolean();
         boolean noKillStoneBurner = discordGame.optional(stoneBurnerDoesNotKill) != null && discordGame.required(stoneBurnerDoesNotKill).getAsBoolean();
         boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
         boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
         boolean overrideDecisions = discordGame.optional(forceResolution) != null && discordGame.required(forceResolution).getAsBoolean();
 
-        BattlePlan aggressorPlan = currentBattle.getAggressorBattlePlan();
-        BattlePlan defenderPlan = currentBattle.getDefenderBattlePlan();
-        if (aggressorPlan == null || defenderPlan == null)
-            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-        if (currentBattle.isSpiceBankerDecisionOpen() && !overrideDecisions && publishToTurnSummary)
-            throw new InvalidGameStateException(currentBattle.getSpiceBankerFactionEmoji() + " must decide on Spice Banker");
-        if (currentBattle.isHMSCardDecisionOpen() && !overrideDecisions && publishToTurnSummary)
-            throw new InvalidGameStateException(currentBattle.getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
-
-        defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
-        boolean aggressorNoKillStoneBurner = false;
-        boolean defenderNoKillStoneBurner = false;
-        if (noKillStoneBurner) {
-            aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
-            defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
-            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-        }
-        boolean aggressorPlanAddedPortableSnooper = false;
-        boolean defenderPlanAddedPortableSnooper = false;
-        if (portableSnooper) {
-            if (currentBattle.getAggressor(game).hasTreacheryCard("Portable Snooper"))
-                aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
-            if (currentBattle.getDefender(game).hasTreacheryCard("Portable Snooper"))
-                defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
-            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-            if (aggressorPlan.isOpponentHasBureaucrat())
-                aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-        }
-        boolean aggressorPlanHasPoisonTooth = false;
-        boolean defenderPlanHasPoisonTooth = false;
-        if (noPoisonTooth) {
-            aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
-            defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
-            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-        }
-        currentBattle.printBattleResolution(game, publishToTurnSummary);
-        if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
-        else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
-        if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
-        else if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
-        if (aggressorNoKillStoneBurner) aggressorPlan.restoreKillWithStoneBurner();
-        else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
-        if (playedJuiceOfSapho) defenderPlan.setJuiceOfSapho(false);
+        game.getBattles().getCurrentBattle().battleResolution(game, publishToTurnSummary, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, overrideDecisions);
     }
 
     public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
