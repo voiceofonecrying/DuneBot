@@ -81,7 +81,7 @@ public class RicheseButtons implements Pressable {
     private static void confirmLast(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will sell last.");
-        discordGame.getModInfo().queueMessage(Emojis.RICHESE + "will be given buttons when it is time for the last card.");
+        discordGame.getModInfo().queueMessage(Emojis.RICHESE + " will be given buttons when it is time for the last card.");
         game.getBidding().setCacheCardDecisionInProgress(false);
         RunCommands.bidding(discordGame, game);
     }

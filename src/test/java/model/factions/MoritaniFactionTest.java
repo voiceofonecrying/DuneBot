@@ -18,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MoritaniFactionTest extends FactionTestTemplate {
     private MoritaniFaction faction;
 
+    Territory arrakeen;
+    Territory carthag;
+
     @Override
     Faction getFaction() {
         return faction;
@@ -27,6 +30,9 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     void setUp() throws IOException {
         faction = new MoritaniFaction("player", "player");
         commonPostInstantiationSetUp();
+
+        arrakeen = game.getTerritory("Arrakeen");
+        carthag = game.getTerritory("Carthag");
     }
 
     @Test
@@ -188,7 +194,6 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @DisplayName("#checkForTerrorTrigger")
     class CheckForTerrorTrigger {
         AtreidesFaction atreides;
-        Territory carthag;
         TestTopic turnSummary;
 
         @BeforeEach
@@ -196,7 +201,6 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
-            carthag = game.getTerritory("Carthag");
             carthag.addTerrorToken("Sabotage");
         }
 
@@ -371,10 +375,34 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(discardSize + 1, game.getTreacheryDiscard().size());
             assertFalse(game.isRobberyDiscardOutstanding());
         }
+    }
+
+    @Nested
+    @DisplayName("#placeTerrorToken")
+    class PlaceTerrorToken {
+        @BeforeEach
+        void setUp() {
+            faction.placeTerrorToken(arrakeen, "Sabotage");
+        }
 
         @Test
-        void testRobberyDraw() {
-            faction.robberyDraw();
+        void testPlacementPublishedToLedger() {
+            assertEquals("Sabotage Terror Token was placed in Arrakeen.", ledger.getMessages().getFirst());
+        }
+    }
+
+    @Nested
+    @DisplayName("#moveTerrorToken")
+    class MoveTerrorToken {
+        @BeforeEach
+        void setUp() {
+            faction.placeTerrorToken(arrakeen, "Sabotage");
+            faction.moveTerrorToken(carthag, "Sabotage", arrakeen);
+        }
+
+        @Test
+        void testMovementPublishedToLedger() {
+            assertEquals("Sabotage Terror Token was moved to Carthag from Arrakeen.", ledger.getMessages().getLast());
         }
     }
 

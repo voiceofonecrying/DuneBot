@@ -185,6 +185,7 @@ public class MoritaniFaction extends Faction {
         terrorTokens.removeIf(a -> a.equals(terror));
         territory.addTerrorToken(terror);
         game.getTurnSummary().publish("A " + Emojis.MORITANI + " Terror Token has been placed in " + territory.getTerritoryName());
+        ledger.publish(terror + " Terror Token was placed in " + territory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
@@ -192,6 +193,7 @@ public class MoritaniFaction extends Faction {
     public void moveTerrorToken(Territory toTerritory, String terror, Territory fromTerritory) {
         fromTerritory.removeTerrorToken(terror);
         toTerritory.addTerrorToken(terror);
+        ledger.publish(terror + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
