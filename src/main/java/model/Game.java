@@ -1135,7 +1135,7 @@ public class Game {
         if (force != 0 || specialForce != 0)
             moveForces(faction, from, to, force, specialForce, false);
         if (secondForce != 0 || secondSpecialForce != 0) {
-            turnSummary.publish(faction.getEmoji() + " use Planetologist to move another force to " + movingTo);
+            turnSummary.publish(faction.getEmoji() + " use Planetologist to move another group to " + movingTo);
             moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, false);
         }
         if (hasFaction("Ecaz"))
