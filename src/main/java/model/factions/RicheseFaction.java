@@ -94,7 +94,7 @@ public class RicheseFaction extends Faction {
             if (territory.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
                 ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, territory.getTerritoryName());
             if (!crossShip)
-                ((BGFaction) game.getFaction("BG")).presentAdvisorButtons(game, faction, territory);
+                ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, faction, territory);
         }
         game.getTurnSummary().publish(turnSummaryMessage);
         if (!(faction instanceof RicheseFaction))

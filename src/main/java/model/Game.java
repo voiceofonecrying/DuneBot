@@ -1364,11 +1364,13 @@ public class Game {
         }
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
-        for (Territory territory : territories.values()) {
-            if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
-                BGFaction bg = (BGFaction) getFaction("BG");
-                bg.flipForces(territory);
-                turnSummary.publish("Advisors are alone in " + territory.getTerritoryName() + " and have flipped to fighters.");
+        if (!hasGameOption(GameOption.BG_COEXIST_WITH_ALLY)) {
+            for (Territory territory : territories.values()) {
+                if (territory.countActiveFactions() == 0 && territory.hasForce("Advisor")) {
+                    BGFaction bg = (BGFaction) getFaction("BG");
+                    bg.flipForces(territory);
+                    turnSummary.publish(Emojis.BG_ADVISOR + " are alone in " + territory.getTerritoryName() + " and have flipped to " + Emojis.BG_FIGHTER);
+                }
             }
         }
 

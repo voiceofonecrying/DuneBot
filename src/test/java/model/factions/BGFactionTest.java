@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.HomeworldTerritory;
 import model.Territory;
 import model.TestTopic;
@@ -197,11 +198,13 @@ class BGFactionTest extends FactionTestTemplate {
     @DisplayName("#advise")
     class Advise {
         Territory carthag;
+        Territory arrakeen;
         Territory polarSink;
 
         @BeforeEach
         public void setUp() {
             carthag = game.getTerritory("Carthag");
+            arrakeen = game.getTerritory("Arrakeen");
             polarSink = game.getTerritory("Polar Sink");
         }
 
@@ -248,6 +251,57 @@ class BGFactionTest extends FactionTestTemplate {
             carthag.addTerrorToken("Robbery");
             faction.advise(game, carthag, 1);
             assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.BG, turnSummary.getMessages().getLast());
+        }
+
+        @Nested
+        @DisplayName("#allyCoexistence")
+        class AllyCoexistence {
+            EmperorFaction emperor;
+
+            @BeforeEach
+            public void setUp() throws IOException {
+                emperor = new EmperorFaction("p", "u");
+                emperor.setLedger(new TestTopic());
+                game.addFaction(emperor);
+                game.createAlliance(faction, emperor);
+                carthag.addForces("Emperor", 1);
+            }
+
+            @Test
+            public void testAdviseButtonDisabledWithAllyInTerritoryWithGF9Rules() {
+                faction.presentAdvisorChoices(game, emperor, carthag);
+                DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
+                assertEquals("Advise", adviseChoice.getLabel());
+                assertTrue(adviseChoice.isDisabled());
+            }
+
+            @Test
+            public void testAdviseButtonEnabledWithAllyNotInTerritory() {
+                faction.presentAdvisorChoices(game, emperor, arrakeen);
+                DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
+                assertEquals("Advise", adviseChoice.getLabel());
+                assertFalse(adviseChoice.isDisabled());
+            }
+
+            @Test
+            public void testAdviseButtonEnabledWithAllyInTerritoryWithAllyCoexistence() {
+                game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
+                faction.presentAdvisorChoices(game, emperor, carthag);
+                DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
+                assertEquals("Advise", adviseChoice.getLabel());
+                assertFalse(adviseChoice.isDisabled());
+            }
+
+            @Test
+            public void testBGCannotAdviseAllyTerritoryWithGF9Rules() {
+                assertThrows(InvalidGameStateException.class, () -> faction.advise(game, carthag, 1));
+            }
+
+            @Test
+            public void testBGCanAdviseAllyTerrititoryWithAllyCoexistence() {
+                game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
+                assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
+            }
         }
     }
 }

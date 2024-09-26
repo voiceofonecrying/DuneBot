@@ -265,7 +265,7 @@ public class CommandManager extends ListenerAdapter {
             if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
                 ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
             if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
-                ((BGFaction) game.getFaction("BG")).presentAdvisorButtons(game, targetFaction, targetTerritory);
+                ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, targetFaction, targetTerritory);
         }
 
         turnSummary.queueMessage(message.toString());

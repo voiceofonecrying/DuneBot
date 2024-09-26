@@ -43,6 +43,8 @@ class GameTest {
     private TestTopic fremenChat;
     private TestTopic guildChat;
     private TestTopic moritaniChat;
+    Territory arrakeen;
+    Territory habbanyaSietch;
 
 
     @BeforeEach
@@ -52,6 +54,14 @@ class GameTest {
         game.setTurnSummary(turnSummary);
         TestTopic gameActions = new TestTopic();
         game.setGameActions(gameActions);
+
+        bg = new BGFaction("p", "u");
+        bgChat = new TestTopic();
+        bg.setChat(bgChat);
+        bg.setLedger(new TestTopic());
+
+        arrakeen = game.getTerritory("Arrakeen");
+        habbanyaSietch = game.getTerritory("Habbanya Sietch");
         tanks = game.getTleilaxuTanks();
 
         familyAtomics = game.getTreacheryDeck().stream()
@@ -116,8 +126,6 @@ class GameTest {
         public void setUp() throws IOException {
             emperor = new EmperorFaction("p", "u");
             emperor.setLedger(new TestTopic());
-            bg = new BGFaction("p", "u");
-            bg.setLedger(new TestTopic());
             choam = new ChoamFaction("p", "u");
             choam.setLedger(new TestTopic());
             atreides = new AtreidesFaction("p", "u");
@@ -253,7 +261,6 @@ class GameTest {
 
         @Test
         void testFremenAlliedWithGuildShipFree() {
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             game.createAlliance(guild, fremen);
             assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false));
         }
@@ -268,7 +275,6 @@ class GameTest {
 
         @Test
         void testNormalPaymentToGuild() throws InvalidGameStateException {
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 10 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
                     emperor.payForShipment(game, 10, habbanyaSietch, false, false));
             assertEquals(0, emperor.getSpice());
@@ -278,7 +284,6 @@ class GameTest {
         @Test
         void testNormalPaymentToGuildAsAlly() throws InvalidGameStateException {
             game.createAlliance(guild, emperor);
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
                     emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
@@ -290,7 +295,6 @@ class GameTest {
             game.createAlliance(guild, emperor);
             guild.setSpiceForAlly(3);
             guild.setAllySpiceForShipping(true);
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.GUILD + "), 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
                     emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(8, emperor.getSpice());
@@ -301,7 +305,6 @@ class GameTest {
         void testPaymentToGuildAsAllyGuildSupportNotForShipping() throws InvalidGameStateException {
             game.createAlliance(guild, emperor);
             guild.setSpiceForAlly(3);
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
                     emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
@@ -312,7 +315,6 @@ class GameTest {
         void testPaymentToFremenAsAlly() throws InvalidGameStateException {
             game.createAlliance(fremen, emperor);
             fremen.setSpiceForAlly(3);
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.FREMEN + ") paid to " + Emojis.GUILD,
                     emperor.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(8, emperor.getSpice());
@@ -326,7 +328,6 @@ class GameTest {
             atreides.setSpiceForAlly(3);
             Territory carthag = game.getTerritory("Carthag");
             atreides.payForShipment(game, 10, carthag, false, false);
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(0, atreides.getSpice());
             assertEquals(0, atreides.getSpiceForAlly());
             assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
@@ -337,7 +338,6 @@ class GameTest {
             game.createAlliance(atreides, emperor);
             atreides.setSpiceForAlly(3);
             atreides.bribe(game, guild, 10, "For test");
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(0, atreides.getSpice());
             assertEquals(0, atreides.getSpiceForAlly());
             assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
@@ -345,7 +345,6 @@ class GameTest {
 
         @Test
         void testKaramaPayment() throws InvalidGameStateException {
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE,
                     emperor.payForShipment(game, 5, habbanyaSietch, true, false));
             assertEquals(5, emperor.getSpice());
@@ -354,7 +353,6 @@ class GameTest {
 
         @Test
         void testGuildPaysSpiceBank() throws InvalidGameStateException {
-            Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
             assertEquals(" for 5 " + Emojis.SPICE,
                     guild.payForShipment(game, 5, habbanyaSietch, false, false));
             assertEquals(0, guild.getSpice());
@@ -527,7 +525,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -680,7 +677,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -766,7 +762,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -809,7 +804,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -886,7 +880,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("p", "u");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -897,8 +890,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            bgChat = new TestTopic();
-            bg.setChat(bgChat);
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             guildChat = new TestTopic();
@@ -1356,7 +1347,6 @@ class GameTest {
         @Test
         void shaiHuludWithNoFremenDoesNotThrowException() throws IOException {
             atreides = new AtreidesFaction("aPlayer", "aUser");
-            bg = new BGFaction("bgPlayer", "bgUser");
             bt = new BTFaction("btPlayer", "btUser");
             emperor = new EmperorFaction("ePlayer", "eUser");
             harkonnen = new HarkonnenFaction("hPlayer", "hUser");
@@ -1388,7 +1378,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -1399,8 +1388,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            bgChat = new TestTopic();
-            bg.setChat(bgChat);
             emperorChat = new TestTopic();
             emperor.setChat(emperorChat);
             fremenChat = new TestTopic();
@@ -1577,7 +1564,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -1588,8 +1574,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            bgChat = new TestTopic();
-            bg.setChat(bgChat);
             emperorChat = new TestTopic();
             emperor.setChat(emperorChat);
             emperorLedger = new TestTopic();
@@ -1629,7 +1613,6 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            bg = new BGFaction("fakePlayer2", "userName2");
             emperor = new EmperorFaction("fp3", "un3");
             fremen = new FremenFaction("fp4", "un4");
             guild = new GuildFaction("fp5", "un5");
@@ -1640,8 +1623,6 @@ class GameTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            bgChat = new TestTopic();
-            bg.setChat(bgChat);
             emperorChat = new TestTopic();
             emperor.setChat(emperorChat);
             emperor.setLedger(new TestTopic());
@@ -1822,7 +1803,6 @@ class GameTest {
         @Test
         void testWithStrongholdCardsEcazAlly() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
-            Territory arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Ecaz", 1);
             atreides.setLedger(new TestTopic());
             ecaz.setLedger(new TestTopic());
@@ -1841,7 +1821,6 @@ class GameTest {
         @Test
         void testWithStrongholdCardsEcazAllyFalse() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
-            Territory arrakeen = game.getTerritory("Arrakeen");
             arrakeen.addForces("Harkonnen", 1);
             atreides.setLedger(new TestTopic());
             ecaz.setLedger(new TestTopic());
@@ -1979,6 +1958,32 @@ class GameTest {
             assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().getFirst());
 
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+    }
+
+    @Nested
+    @DisplayName("#spiceBlowPhase")
+    class SpiceBlowPhase {
+        String advisorFlipMessage = Emojis.BG_ADVISOR + " are alone in Habbanya Sietch and have flipped to " + Emojis.BG_FIGHTER;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(bg);
+            game.startBattlePhase();
+            habbanyaSietch.addForces("Advisor", 1);
+        }
+
+        @Test
+        void testAdvisorsAloneFlipWithGF9Rules() throws InvalidGameStateException {
+            game.startSpiceHarvest();
+            assertEquals(advisorFlipMessage, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testAdvisorsAloneDontFlipWithAllyCoexistence() throws InvalidGameStateException {
+            game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
+            game.startSpiceHarvest();
+            assertFalse(turnSummary.getMessages().contains(advisorFlipMessage));
         }
     }
 }

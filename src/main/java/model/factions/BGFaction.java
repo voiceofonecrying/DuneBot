@@ -140,7 +140,7 @@ public class BGFaction extends Faction {
         territory.addForces(to, count);
     }
 
-    public void presentAdvisorButtons(Game game, Faction targetFaction, Territory targetTerritory) {
+    public void presentAdvisorChoices(Game game, Faction targetFaction, Territory targetTerritory) {
         if (!(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
                 && !(game.hasGameOption(GameOption.HOMEWORLDS)
                         && !isHighThreshold()
@@ -148,7 +148,9 @@ public class BGFaction extends Faction {
         )) {
             List<DuneChoice> choices = new LinkedList<>();
             String territoryName = targetTerritory.getTerritoryName();
-            choices.add(new DuneChoice("bg-advise-" + territoryName, "Advise"));
+            DuneChoice adviseChoice = new DuneChoice("bg-advise-" + territoryName, "Advise");
+            adviseChoice.setDisabled(!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && targetFaction.getName().equals(ally) && targetTerritory.hasActiveFaction(targetFaction));
+            choices.add(adviseChoice);
             choices.add(new DuneChoice("secondary", "bg-advise-Polar Sink", "Advise to Polar Sink"));
             if (game.hasGameOption(GameOption.HOMEWORLDS))
                 choices.add(new DuneChoice("secondary", "bg-ht", "Advise 2 to Polar Sink"));
@@ -159,8 +161,12 @@ public class BGFaction extends Faction {
 
     public void advise(Game game, Territory territory, int amount) throws InvalidGameStateException {
         boolean isPolarSink = territory.getTerritoryName().equals("Polar Sink");
-        if (!isPolarSink && territory.hasForce("BG"))
-            throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
+        if (!isPolarSink) {
+            if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && ally != null && territory.getActiveFactions(game).contains(game.getFaction(ally)))
+                throw new InvalidGameStateException("BG cannot co-exist with their ally.");
+            if (territory.hasForce("BG"))
+                throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
+        }
         territory.placeForceFromReserves(game, this, amount, false);
         if (!isPolarSink) {
             // placeForcesFromReserves flipped advisors to fighters, so flip them back
