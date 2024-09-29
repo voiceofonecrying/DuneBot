@@ -1145,8 +1145,8 @@ public class Game {
     }
 
     public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {
-        if (!to.factionMayMoveIn(this, targetFaction))
-            throw new IllegalArgumentException("You cannot move into a territory with your ally.");
+        if (to.factionMayNotEnter(this, targetFaction, false))
+            throw new IllegalArgumentException("You cannot move into this territory.");
 
         StringBuilder message = new StringBuilder();
         message.append(targetFaction.getEmoji()).append(": ");

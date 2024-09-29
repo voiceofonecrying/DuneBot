@@ -15,7 +15,16 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TerritoryTest {
     private Game game;
     TestTopic turnSummary;
+    Faction atreides;
+    Faction bg;
+    Faction fremen;
+    Faction harkonnen;
+    Faction ix;
+    Faction richese;
+    Faction ecaz;
     Territory arrakeen;
+    Territory carthag;
+    Territory hms;
     Territory sihayaRidge;
     Territory cielagoNorth_westSector;
     Territory cielagoNorth_middleSector;
@@ -27,7 +36,22 @@ public class TerritoryTest {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        atreides = new AtreidesFaction("at", "at");
+        bg = new BGFaction("bg", "bg");
+        fremen = new FremenFaction("fr", "fr");
+        harkonnen = new HarkonnenFaction("ha", "ha");
+        ix = new IxFaction("ix", "ix");
+        richese = new RicheseFaction("ri", "ri");
+        ecaz = new EcazFaction("ec", "ec");
+        fremen.setChat(new TestTopic());
+        atreides.setLedger(new TestTopic());
+        bg.setLedger(new TestTopic());
+        fremen.setLedger(new TestTopic());
+        richese.setLedger(new TestTopic());
+        ecaz.setLedger(new TestTopic());
         arrakeen = game.getTerritory("Arrakeen");
+        carthag = game.getTerritory("Carthag");
+        hms = game.getTerritory("Hidden Mobile Stronghold");
         sihayaRidge = game.getTerritory("Sihaya Ridge");
         cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
         cielagoNorth_middleSector = game.getTerritory("Cielago North (Center Sector)");
@@ -38,16 +62,12 @@ public class TerritoryTest {
     @Nested
     @DisplayName("#getFactionCount")
     class GetFactionCount {
-        Faction fremen;
-        Faction atreides;
         final int numFremen = 4;
         final int numFedaykin = 2;
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
-            atreides = new AtreidesFaction("fakePlayer2", "userName2");
             game.addFaction(atreides);
         }
 
@@ -81,22 +101,14 @@ public class TerritoryTest {
     @Nested
     @DisplayName("#getTotalForceCount")
     class GetTotalForceCount {
-        Faction fremen;
-        Faction atreides;
-        Faction bg;
-        Faction richese;
         final int numFremen = 4;
         final int numFedaykin = 2;
 
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
-            atreides = new AtreidesFaction("fakePlayer2", "userName2");
             game.addFaction(atreides);
-            bg = new BGFaction("fakePlayer3", "userName3");
             game.addFaction(bg);
-            richese = new RicheseFaction("fakePlayer4", "userName4");
             game.addFaction(richese);
         }
 
@@ -148,7 +160,6 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            Faction fremen = new FremenFaction("fakePlayer1", "userName1");
             game.addFaction(fremen);
             sihayaRidge.setSpice(6);
             sihayaRidge.addForces("Fremen", numFremen);
@@ -182,7 +193,6 @@ public class TerritoryTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            Faction atreides = new AtreidesFaction("fakePlayer1", "userName1");
             game.addFaction(atreides);
             sihayaRidge.setSpice(6);
             sihayaRidge.addForces("Atreides", numForces);
@@ -218,18 +228,8 @@ public class TerritoryTest {
     @Nested
     @DisplayName("#shaiHuludAppears")
     class ShaiHuludAppears {
-        FremenFaction fremen;
-        TestTopic fremenChat;
-        AtreidesFaction atreides;
-
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p", "u");
-            fremen.setLedger(new TestTopic());
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
-            atreides = new AtreidesFaction("p", "u");
-            atreides.setLedger(new TestTopic());
             game.addFaction(fremen);
             game.addFaction(atreides);
         }
@@ -362,6 +362,110 @@ public class TerritoryTest {
         void testShrine() {
             Territory shrine = new Territory("Shrine", 1, true, false, true, false);
             assertEquals(1, shrine.costToShipInto());
+        }
+    }
+
+    @Nested
+    @DisplayName("#factionMayNotEnter")
+    class FactionMayNotEnter {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(bg);
+            game.addFaction(ix);
+            game.addFaction(ecaz);
+            game.addFaction(richese);
+
+            game.createAlliance(bg, ecaz);
+        }
+
+        @Test
+        void testFactionMayNotShipIntoTerritoryWithAlly() {
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, true));
+            game.createAlliance(atreides, richese);
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
+        }
+
+        @Test
+        void testFactionMayNotMoveIntoTerritoryWithAlly() {
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
+            game.createAlliance(atreides, richese);
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+        }
+
+        @Test
+        void testFactionMayNotShipIntoStrongholdWithTwoFactionsPresent() {
+            arrakeen.addForces("BG", 1);
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
+        }
+
+        @Test
+        void testFactionMayNotMoveIntoStrongholdWithTwoFactionsPresent() {
+            arrakeen.addForces("BG", 1);
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+        }
+
+        @Test
+        void testFactionMayNotShipIntoStrongholdWithTwoFactionsPresentWithNoField() {
+            arrakeen.setRicheseNoField(0);
+            assertTrue(arrakeen.factionMayNotEnter(game, bg, true));
+        }
+
+        @Test
+        void testFactionMayNotMoveIntoStrongholdWithTwoFactionsPresentWithNoField() {
+            arrakeen.setRicheseNoField(0);
+            assertTrue(arrakeen.factionMayNotEnter(game, bg, false));
+        }
+        @Test
+        void testEcazMayShipIntoTerritoryWithEcazAlly() {
+            carthag.addForces("BG", 1);
+            assertFalse(carthag.factionMayNotEnter(game, ecaz, true));
+        }
+
+        @Test
+        void testEcazMayMoveIntoTerritoryWithEcazAlly() {
+            carthag.addForces("BG", 1);
+            assertFalse(carthag.factionMayNotEnter(game, ecaz, false));
+        }
+
+        @Test
+        void testEcazAllyMayShipIntoTerritoryWithEcaz() {
+            carthag.addForces("Ecaz", 1);
+            assertFalse(carthag.factionMayNotEnter(game, bg, true));
+        }
+
+        @Test
+        void testEcazAllyMayMoveIntoTerritoryWithEcaz() {
+            carthag.addForces("Ecaz", 1);
+            assertFalse(carthag.factionMayNotEnter(game, bg, false));
+        }
+
+        @Test
+        void testIxMayShipIntoHMS() {
+            assertFalse(hms.factionMayNotEnter(game, ix, true));
+        }
+
+        @Test
+        void testNonIxMayNotShipIntoHMS() {
+            assertTrue(hms.factionMayNotEnter(game, atreides, true));
+        }
+
+        @Test
+        void testNonIxMayMoveIntoHMS() {
+            assertFalse(hms.factionMayNotEnter(game, atreides, false));
+        }
+
+        @Test
+        void testFactionMayNotShipIntoAftermath() {
+            arrakeen.setAftermathToken(true);
+            assertTrue(arrakeen.factionMayNotEnter(game, atreides, true));
+        }
+
+        @Test
+        void testFactionMayMoveIntoAftermath() {
+            arrakeen.setAftermathToken(true);
+            assertFalse(arrakeen.factionMayNotEnter(game, atreides, false));
         }
     }
 }

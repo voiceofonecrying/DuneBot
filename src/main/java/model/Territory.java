@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import model.factions.*;
 
@@ -433,10 +434,32 @@ public class Territory {
         return response;
     }
 
-    public boolean factionMayMoveIn(Game game, Faction faction) {
-        return territoryName.equals("Polar Sink") || !faction.hasAlly() || !hasActiveFaction(game.getFaction(faction.getAlly())) ||
-                (faction instanceof EcazFaction && getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getAlly()))
-                        || faction.getAlly().equals("Ecaz") && getActiveFactions(game).stream().anyMatch(f -> f instanceof EcazFaction));
+    public boolean factionMayNotEnter(Game game, Faction faction, boolean isShipment) {
+        if (isShipment) {
+            if (territoryName.equals("Hidden Mobile Stronghold") && !faction.getName().equals("Ix"))
+                return true;
+            if (aftermathToken)
+                return true;
+        }
+        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
+                && (faction.hasAlly() && hasAllyForces(game, faction)
+                || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
+    }
+
+    private boolean hasAllyForces(Game game, Faction faction) {
+        Faction ally = null;
+        if (faction.hasAlly())
+            ally = game.getFaction(faction.getAlly());
+        if (ally == null)
+            return false;
+        if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && ally instanceof BGFaction && hasForce("Advisor"))
+            return true;
+        return hasActiveFaction(ally);
+    }
+
+    private boolean notEcazAllyException(Game game, Faction faction) {
+        return (!(faction instanceof EcazFaction) || getActiveFactions(game).stream().noneMatch(f -> f.getName().equals(faction.getAlly())))
+                && (!faction.getAlly().equals("Ecaz") || getActiveFactions(game).stream().noneMatch(f -> f instanceof EcazFaction));
     }
 
     public String getAggregateTerritoryName() {
