@@ -582,10 +582,6 @@ public class Game {
         return tleilaxuTanks;
     }
 
-    public List<Force> getTanks() {
-        return tleilaxuTanks.getForces();
-    }
-
     public LinkedList<Leader> getLeaderTanks() {
         return leaderTanks;
     }

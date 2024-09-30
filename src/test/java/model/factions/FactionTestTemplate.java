@@ -600,7 +600,7 @@ abstract class FactionTestTemplate {
             faction.removeForces(territory.getTerritoryName(), forceName, 2, false, false);
             assertEquals(3, territory.getForceStrength(forceName));
             assertEquals(reservesStrength + 2, faction.getReservesStrength());
-            assertEquals(0, game.getTanks().stream().filter(tank -> tank.getName().equals(forceName)).count());
+            assertEquals(0, game.getTleilaxuTanks().getForces().stream().filter(f -> f.getName().equals(forceName)).count());
         }
 
         @Test

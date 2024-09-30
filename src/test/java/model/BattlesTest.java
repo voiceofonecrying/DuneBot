@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
-import model.factions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,30 +10,12 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BattlesTest {
-    Game game;
+public class BattlesTest extends DuneTest {
     Battles battles;
-    TestTopic turnSummary;
-    AtreidesFaction atreides;
-    BGFaction bg;
-    EmperorFaction emperor;
-    FremenFaction fremen;
-    GuildFaction guild;
-    HarkonnenFaction harkonnen;
-    EcazFaction ecaz;
 
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        game.setWhispers(new TestTopic());
-        atreides = new AtreidesFaction("aPlayer", "aUser");
-        bg = new BGFaction("bgPlayer", "bgUser");
-        emperor = new EmperorFaction("ePlayer", "eUser");
-        fremen = new FremenFaction("fPlayer", "fUser");
-        guild = new GuildFaction("gPlayer", "gUser");
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
     }
 
     @AfterEach
@@ -65,10 +46,8 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -87,14 +66,12 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
 
         game.startBattlePhase();
         battles = game.getBattles();
-        westCielagoNorth.removeForce("BG");
+        cielagoNorth_westSector.removeForce("BG");
         assertTrue(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertFalse(battles.aggressorMustChooseOpponent());
@@ -110,11 +87,8 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        Territory sietchTabr = game.getTerritory("Sietch Tabr");
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
         sietchTabr.addForces("Fremen*", 3);
         sietchTabr.addForces("BG", 1);
 
@@ -135,11 +109,8 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        Territory sietchTabr = game.getTerritory("Sietch Tabr");
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
         sietchTabr.addForces("Fremen*", 3);
         sietchTabr.addForces("BG", 1);
 
@@ -161,11 +132,9 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Atreides", 4);
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -176,17 +145,7 @@ public class BattlesTest {
 
 
     @Test
-    void aggressorMustChooseOpponentFalseWithEcazAlly() throws InvalidGameStateException, IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        game.setWhispers(new TestTopic());
-        atreides = new AtreidesFaction("aPlayer", "aUser");
-        ecaz = new EcazFaction("bgPlayer", "bgUser");
-        emperor = new EmperorFaction("ePlayer", "eUser");
-        fremen = new FremenFaction("fPlayer", "fUser");
-        guild = new GuildFaction("gPlayer", "gUser");
-        harkonnen = new HarkonnenFaction("hPlayer", "hUser");
+    void aggressorMustChooseOpponentFalseWithEcazAlly() throws InvalidGameStateException {
         game.addFaction(atreides);
         game.addFaction(ecaz);
         game.addFaction(emperor);
@@ -197,11 +156,9 @@ public class BattlesTest {
         ecaz.setAlly("Atreides");
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("Ecaz", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Atreides", 4);
+        cielagoNorth_westSector.addForces("Ecaz", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -220,15 +177,13 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Atreides", 4);
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
-        eastCielagoNorth.removeForce("Atreides");
+        cielagoNorth_eastSector.removeForce("Atreides");
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertFalse(battles.aggressorMustChooseOpponent());
@@ -244,11 +199,9 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(10);
-        Territory westCielagoNorth = game.getTerritory("Cielago North (West Sector)");
-        westCielagoNorth.addForces("BG", 6);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Atreides", 4);
+        cielagoNorth_westSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Atreides", 4);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -271,12 +224,10 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(5);
-        Territory northWindPassNorth = game.getTerritory("Wind Pass North (North Sector)");
-        northWindPassNorth.addForces("Fremen", 3);
-        northWindPassNorth.addForces("Emperor", 2);
-        northWindPassNorth.addForces("Emperor*", 1);
-        Territory southWindPassNorth = game.getTerritory("Wind Pass North (South Sector)");
-        southWindPassNorth.addForces("Atreides", 1);
+        windPassNorth_northSector.addForces("Fremen", 3);
+        windPassNorth_northSector.addForces("Emperor", 2);
+        windPassNorth_northSector.addForces("Emperor*", 1);
+        windPassNorth_southSector.addForces("Atreides", 1);
 
         game.startBattlePhase();
         battles = game.getBattles();
@@ -299,10 +250,8 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(14);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("BG", 6);
-        eastCielagoNorth.addForces("Fremen", 7);
-        game.setTurnSummary(turnSummary);
+        cielagoNorth_eastSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
         game.startBattlePhase();
         battles = game.getBattles();
         battles.nextBattle(game);
@@ -320,7 +269,6 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(14);
-        game.setTurnSummary(turnSummary);
         game.startBattlePhase();
         battles = game.getBattles();
 
@@ -337,19 +285,15 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(14);
-        Territory tueksSietch = game.getTerritory("Tuek's Sietch");
 //        tueksSietch.addForces("Guild", 5);
         tueksSietch.addForces("Harkonnen", 2);
-        Territory carthag = game.getTerritory("Carthag");
         carthag.addForces("BG", 2);
 //        carthag.addForces("Harkonnen", 10);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("BG", 6);
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Fremen*", 1);
-        eastCielagoNorth.addForces("Emperor", 4);
-        eastCielagoNorth.addForces("Emperor*", 3);
-        game.setTurnSummary(turnSummary);
+        cielagoNorth_eastSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Fremen*", 1);
+        cielagoNorth_eastSector.addForces("Emperor", 4);
+        cielagoNorth_eastSector.addForces("Emperor*", 3);
         game.startBattlePhase();
         battles = game.getBattles();
         battles.nextBattle(game);
@@ -370,19 +314,15 @@ public class BattlesTest {
         game.addFaction(harkonnen);
 
         game.setStorm(14);
-        Territory tueksSietch = game.getTerritory("Tuek's Sietch");
 //        tueksSietch.addForces("Guild", 5);
         tueksSietch.addForces("Harkonnen", 2);
-        Territory carthag = game.getTerritory("Carthag");
         carthag.addForces("BG", 2);
 //        carthag.addForces("Harkonnen", 10);
-        Territory eastCielagoNorth = game.getTerritory("Cielago North (East Sector)");
-        eastCielagoNorth.addForces("BG", 6);
-        eastCielagoNorth.addForces("Fremen", 7);
-        eastCielagoNorth.addForces("Fremen*", 1);
-        eastCielagoNorth.addForces("Emperor", 4);
-        eastCielagoNorth.addForces("Emperor*", 3);
-        game.setTurnSummary(turnSummary);
+        cielagoNorth_eastSector.addForces("BG", 6);
+        cielagoNorth_eastSector.addForces("Fremen", 7);
+        cielagoNorth_eastSector.addForces("Fremen*", 1);
+        cielagoNorth_eastSector.addForces("Emperor", 4);
+        cielagoNorth_eastSector.addForces("Emperor*", 3);
         game.startBattlePhase();
         battles = game.getBattles();
         battles.nextBattle(game);

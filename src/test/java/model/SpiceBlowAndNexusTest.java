@@ -2,7 +2,6 @@ package model;
 
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
-import model.factions.FremenFaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,26 +11,12 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class SpiceBlowAndNexusTest {
-    Game game;
-    TestTopic turnSummary;
-    TestTopic gameActions;
+public class SpiceBlowAndNexusTest extends DuneTest {
     SpiceBlowAndNexus spiceBlowAndNexus;
-    FremenFaction fremen;
-    TestTopic fremenChat;
-    Territory funeralPlain;
 
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        gameActions = new TestTopic();
-        game.setGameActions(gameActions);
-        funeralPlain = game.getTerritory("Funeral Plain");
-        fremen = new FremenFaction("p", "u");
-        fremenChat = new TestTopic();
-        fremen.setChat(fremenChat);
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
         game.addFaction(fremen);
     }
 
@@ -98,7 +83,7 @@ public class SpiceBlowAndNexusTest {
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(turnSummary.getMessages().get(2).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
-            assertEquals("Where would you like to ride to from Funeral Plain? p", fremenChat.getMessages().getFirst());
+            assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
             assertEquals(5, fremenChat.getChoices().getFirst().size());
         }
 
@@ -138,7 +123,7 @@ public class SpiceBlowAndNexusTest {
         void testShaiHuludDoesNotGiveFremenButtonsYet() {
             assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.WORM + " Shai-Hulud has been spotted in Funeral Plain!\n"));
             assertTrue(turnSummary.getMessages().getFirst().contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
-            assertNotEquals("Where would you like to ride to from Funeral Plain? p", fremenChat.getMessages().getFirst());
+            assertNotEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
         }
 
         @Test
@@ -147,7 +132,7 @@ public class SpiceBlowAndNexusTest {
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(turnSummary.getMessages().get(1).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
-            assertEquals("Where would you like to ride to from Funeral Plain? p", fremenChat.getMessages().getFirst());
+            assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
             assertEquals(5, fremenChat.getChoices().getFirst().size());
         }
 
@@ -166,7 +151,7 @@ public class SpiceBlowAndNexusTest {
             game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(turnSummary.getMessages().get(2).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
-            assertEquals("Where would you like to ride to from Funeral Plain? p", fremenChat.getMessages().getFirst());
+            assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
             assertEquals(5, fremenChat.getChoices().getFirst().size());
         }
 

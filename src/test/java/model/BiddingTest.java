@@ -3,7 +3,6 @@ package model;
 import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
-import model.factions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,63 +14,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BiddingTest {
-    private Game game;
+class BiddingTest extends DuneTest {
     private Bidding bidding;
     private TestTopic biddingPhase;
-    private TestTopic turnSummary;
-    private TestTopic modInfo;
-
-    private AtreidesFaction atreides;
-    private BGFaction bg;
-    private EmperorFaction emperor;
-    private FremenFaction fremen;
-    private GuildFaction guild;
-    private HarkonnenFaction harkonnen;
-    private IxFaction ix;
-    private RicheseFaction richese;
-
-    private TestTopic ixChat;
 
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
-        modInfo = new TestTopic();
-        game.setModInfo(modInfo);
-        TestTopic modLedger = new TestTopic();
-        game.setModLedger(modLedger);
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
+        game.setModLedger(new TestTopic());
         biddingPhase = new TestTopic();
         game.setBiddingPhase(biddingPhase);
-
-        atreides = new AtreidesFaction("p", "u");
-        bg = new BGFaction("p", "u");
-        emperor = new EmperorFaction("p", "u");
-        fremen = new FremenFaction("p", "u");
-        guild = new GuildFaction("p", "u");
-        harkonnen = new HarkonnenFaction("p", "u");
-        ix = new IxFaction("p", "u");
-        richese = new RicheseFaction("p", "u");
-
-        atreides.setChat(new TestTopic());
-        bg.setChat(new TestTopic());
-        emperor.setChat(new TestTopic());
-        fremen.setChat(new TestTopic());
-        guild.setChat(new TestTopic());
-        harkonnen.setChat(new TestTopic());
-        ixChat = new TestTopic();
-        ix.setChat(ixChat);
-        richese.setChat(new TestTopic());
-
-        atreides.setLedger(new TestTopic());
-        bg.setLedger(new TestTopic());
-        emperor.setLedger(new TestTopic());
-        fremen.setLedger(new TestTopic());
-        guild.setLedger(new TestTopic());
-        harkonnen.setLedger(new TestTopic());
-        ix.setLedger(new TestTopic());
-        richese.setLedger(new TestTopic());
     }
 
     @Nested
@@ -135,7 +87,7 @@ class BiddingTest {
         @Test
         public void testRicheseCanSellBlackMarket() {
             game.addFaction(richese);
-            richese.addTreacheryCard(new TreacheryCard("Kulon"));
+            richese.addTreacheryCard(kulon);
             bidding = game.startBidding();
             modInfo.clear();
             assertThrows(InvalidGameStateException.class, () -> bidding.cardCountsInBiddingPhase(game));
@@ -149,7 +101,7 @@ class BiddingTest {
         @Test
         public void testRicheseDoesNotSellBlackMarket() {
             game.addFaction(richese);
-            richese.addTreacheryCard(new TreacheryCard("Kulon"));
+            richese.addTreacheryCard(kulon);
             bidding = game.startBidding();
             modInfo.clear();
             bidding.setBlackMarketDecisionInProgress(false);
@@ -159,7 +111,7 @@ class BiddingTest {
         @Test
         public void testRicheseSellsBlackMarket() throws InvalidGameStateException {
             game.addFaction(richese);
-            richese.addTreacheryCard(new TreacheryCard("Kulon"));
+            richese.addTreacheryCard(kulon);
             bidding = game.startBidding();
             modInfo.clear();
             bidding.blackMarketAuction(game, "Kulon", "Silent");
@@ -708,7 +660,7 @@ class BiddingTest {
         public class RicheseBlackMarketNormal {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                richese.addTreacheryCard(familyAtomics);
                 bidding.blackMarketAuction(game, "Family Atomics", "Normal");
                 String cardHeader = biddingPhase.getMessages().getFirst();
                 int newlinePosition = cardHeader.indexOf("\n");
@@ -773,7 +725,7 @@ class BiddingTest {
         public class RicheseBlackMarketNormalAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Weather Control"));
+                richese.addTreacheryCard(weatherControl);
                 assertEquals(1, richese.getTreacheryHand().size());
                 bidding.blackMarketAuction(game, "Weather Control", "Normal");
                 assertEquals(0, richese.getTreacheryHand().size());
@@ -851,8 +803,7 @@ class BiddingTest {
 
             @Test
             public void testNextCardIsC1() {
-                biddingPhase = new TestTopic();
-                game.setBiddingPhase(biddingPhase);
+                biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
@@ -863,7 +814,7 @@ class BiddingTest {
         public class RicheseBlackMarketOnceAround {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                richese.addTreacheryCard(familyAtomics);
                 bidding.blackMarketAuction(game, "Family Atomics", "OnceAroundCCW");
 
                 bidding.bid(game, atreides, true, 1, null, null);
@@ -924,7 +875,7 @@ class BiddingTest {
         public class RicheseBlackMarketOnceAroundAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                richese.addTreacheryCard(familyAtomics);
                 assertEquals(1, richese.getTreacheryHand().size());
                 bidding.blackMarketAuction(game, "Family Atomics", "OnceAroundCCW");
                 assertEquals(0, richese.getTreacheryHand().size());
@@ -1004,8 +955,7 @@ class BiddingTest {
 
             @Test
             public void testNextCardIsC1() {
-                biddingPhase = new TestTopic();
-                game.setBiddingPhase(biddingPhase);
+                biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
@@ -1016,7 +966,7 @@ class BiddingTest {
         public class RicheseBlackMarketSilent {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                richese.addTreacheryCard(familyAtomics);
                 bidding.blackMarketAuction(game, "Family Atomics", "Silent");
 
                 bidding.bid(game, atreides, true, 1, null, null);
@@ -1077,7 +1027,7 @@ class BiddingTest {
         public class RicheseBlackMarketSilentAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+                richese.addTreacheryCard(familyAtomics);
                 assertEquals(1, richese.getTreacheryHand().size());
                 bidding.blackMarketAuction(game, "Family Atomics", "Silent");
                 assertEquals(0, richese.getTreacheryHand().size());
@@ -1157,8 +1107,7 @@ class BiddingTest {
 
             @Test
             public void testNextCardIsC1() {
-                biddingPhase = new TestTopic();
-                game.setBiddingPhase(biddingPhase);
+                biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
@@ -1171,36 +1120,36 @@ class BiddingTest {
         @BeforeEach
         void setUp() throws InvalidGameStateException {
             game.addFaction(atreides);
-            atreides.addTreacheryCard(new TreacheryCard("Shield"));
-            atreides.addTreacheryCard(new TreacheryCard("Shield"));
-            atreides.addTreacheryCard(new TreacheryCard("Shield"));
-            atreides.addTreacheryCard(new TreacheryCard("Shield"));
+            atreides.addTreacheryCard(shield);
+            atreides.addTreacheryCard(shield);
+            atreides.addTreacheryCard(shield);
+            atreides.addTreacheryCard(shield);
             game.addFaction(bg);
-            bg.addTreacheryCard(new TreacheryCard("Shield"));
-            bg.addTreacheryCard(new TreacheryCard("Shield"));
-            bg.addTreacheryCard(new TreacheryCard("Shield"));
+            bg.addTreacheryCard(shield);
+            bg.addTreacheryCard(shield);
+            bg.addTreacheryCard(shield);
             game.addFaction(emperor);
-            emperor.addTreacheryCard(new TreacheryCard("Shield"));
-            emperor.addTreacheryCard(new TreacheryCard("Shield"));
-            emperor.addTreacheryCard(new TreacheryCard("Shield"));
-            emperor.addTreacheryCard(new TreacheryCard("Shield"));
+            emperor.addTreacheryCard(shield);
+            emperor.addTreacheryCard(shield);
+            emperor.addTreacheryCard(shield);
+            emperor.addTreacheryCard(shield);
             game.addFaction(fremen);
-            fremen.addTreacheryCard(new TreacheryCard("Shield"));
-            fremen.addTreacheryCard(new TreacheryCard("Shield"));
-            fremen.addTreacheryCard(new TreacheryCard("Shield"));
-            fremen.addTreacheryCard(new TreacheryCard("Shield"));
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
             game.addFaction(harkonnen);
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(shield);
             game.addFaction(richese);
-            richese.addTreacheryCard(new TreacheryCard("Shield"));
-            richese.addTreacheryCard(new TreacheryCard("Shield"));
-            richese.addTreacheryCard(new TreacheryCard("Shield"));
+            richese.addTreacheryCard(shield);
+            richese.addTreacheryCard(shield);
+            richese.addTreacheryCard(shield);
 
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory geidiPrime = game.getTerritory(harkonnen.getHomeworld());
@@ -1239,7 +1188,7 @@ class BiddingTest {
 
         @Test
         void testAllHandsFilledWithCardsRemainingRicheseCardRemaining() throws InvalidGameStateException {
-            richese.addTreacheryCard(new TreacheryCard("Shield"));
+            richese.addTreacheryCard(shield);
             assertTrue(bidding.isRicheseCacheCardOutstanding());
             assertFalse(bidding.isCacheCardDecisionInProgress());
 
@@ -1316,7 +1265,7 @@ class BiddingTest {
 
         @Test
         public void testRicheseBlackMarketNormal() throws InvalidGameStateException {
-            richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            richese.addTreacheryCard(familyAtomics);
             bidding.blackMarketAuction(game, "Family Atomics", "Normal");
             bidding.setAutoPassEntireTurn(game, atreides, true);
             assertEquals("BG", bidding.getCurrentBidder());
@@ -1376,7 +1325,7 @@ class BiddingTest {
 
         @Test
         public void testRicheseBlackMarketNormal() throws InvalidGameStateException {
-            richese.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            richese.addTreacheryCard(familyAtomics);
             bidding.blackMarketAuction(game, "Family Atomics", "Normal");
             assertEquals("Atreides", bidding.getCurrentBidder());
         }

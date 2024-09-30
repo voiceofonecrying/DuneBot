@@ -19,59 +19,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class GameTest {
-
-    private Game game;
-    private TleilaxuTanks tanks;
-    private TreacheryCard familyAtomics;
-    private TreacheryCard shield;
-    private TreacheryCard weatherControl;
-    private Faction atreides;
-    private Faction bg;
-    private EmperorFaction emperor;
-    private Faction fremen;
-    private GuildFaction guild;
-    private Faction harkonnen;
-    private Faction bt;
-    private Faction ix;
-    private ChoamFaction choam;
-    private Faction richese;
-    private Faction ecaz;
-    private TestTopic turnSummary;
-    private TestTopic bgChat;
-    private TestTopic emperorChat;
-    private TestTopic fremenChat;
-    private TestTopic guildChat;
-    private TestTopic moritaniChat;
-    Territory arrakeen;
-    Territory habbanyaSietch;
-
-
+class GameTest extends DuneTest {
     @BeforeEach
-    public void setUp() throws IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        TestTopic gameActions = new TestTopic();
-        game.setGameActions(gameActions);
-
-        bg = new BGFaction("p", "u");
-        bgChat = new TestTopic();
-        bg.setChat(bgChat);
-        bg.setLedger(new TestTopic());
-
-        arrakeen = game.getTerritory("Arrakeen");
-        habbanyaSietch = game.getTerritory("Habbanya Sietch");
-        tanks = game.getTleilaxuTanks();
-
-        familyAtomics = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Family Atomics"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Family Atomics not found"));
-        weatherControl = game.getTreacheryDeck().stream()
-                .filter(t -> t.name().equals("Weather Control"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Weather Control not found"));
+    public void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
     }
 
     @Test
@@ -93,8 +44,6 @@ class GameTest {
 
     @Test
     public void testDiscoveryTokensAndReplaceShaiHulud() throws IOException {
-        TestTopic modInfo = new TestTopic();
-        game.setModInfo(modInfo);
         game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         SetupCommands.createDecks(game);
@@ -107,8 +56,6 @@ class GameTest {
 
     @Test
     public void testReplaceShaiHuludAndDiscoveryTokens() throws IOException {
-        TestTopic modInfo = new TestTopic();
-        game.setModInfo(modInfo);
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
         SetupCommands.createDecks(game);
@@ -124,14 +71,6 @@ class GameTest {
     class ChoamCharity {
         @BeforeEach
         public void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u");
-            emperor.setLedger(new TestTopic());
-            choam = new ChoamFaction("p", "u");
-            choam.setLedger(new TestTopic());
-            atreides = new AtreidesFaction("p", "u");
-            fremen = new FremenFaction("p", "u");
-            richese = new RicheseFaction("p", "u");
-
             game.addFaction(emperor);
             game.addFaction(bg);
             game.addFaction(choam);
@@ -242,16 +181,6 @@ class GameTest {
     class ShippingPhase {
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("ePlayer", "eUser");
-            emperor.setLedger(new TestTopic());
-            guild = new GuildFaction("gPlayer", "gUser");
-            guild.setLedger(new TestTopic());
-            richese = new RicheseFaction("rPlayer", "rUser");
-            richese.setLedger(new TestTopic());
-            fremen = new FremenFaction("fPlayer", "fUser");
-            fremen.setLedger(new TestTopic());
-            atreides = new AtreidesFaction("p", "u");
-            atreides.setLedger(new TestTopic());
             game.addFaction(emperor);
             game.addFaction(guild);
             game.addFaction(richese);
@@ -365,15 +294,11 @@ class GameTest {
         @BeforeEach
         void setUp() throws IOException {
             game.addGameOption(GameOption.HOMEWORLDS);
-            Faction moritani = new MoritaniFaction("p", "u");
-            moritaniChat = new TestTopic();
-            moritani.setChat(moritaniChat);
             game.addFaction(moritani);
             game.removeForces("Grumman", moritani, 13, false, true);
             assertFalse(moritani.isHighThreshold());
             game.getTerritory("Carthag").addTerrorToken("Robbery");
 
-            ecaz = new EcazFaction("p", "u");
             game.addFaction(ecaz);
             game.getTerritory("Arrakeen").addForces("Ecaz", 2);
             game.getTerritory("Polar Sink").addForces("Ecaz", 2);
@@ -384,7 +309,6 @@ class GameTest {
             ecazMovement.setSecondMovingFrom("Polar Sink");
             ecazMovement.setSecondForce(2);
 
-            richese = new RicheseFaction("p", "u");
             game.addFaction(richese);
             game.getTerritory("Arrakeen").setRicheseNoField(5);
             game.getTerritory("Polar Sink").addForces("Richese", 2);
@@ -399,13 +323,13 @@ class GameTest {
         @Test
         void testPlanetologistIsSingleMoveForTerrorTokens() {
             game.executeFactionMovement(ecaz);
-            assertEquals("Will you trigger your Terror Token in Carthag? p", moritaniChat.getMessages().getFirst());
+            assertEquals("Will you trigger your Terror Token in Carthag? mo", moritaniChat.getMessages().getFirst());
         }
 
         @Test
         void testPlanetologistWithNoFieldIsSingleMoveForTerrorTokens() {
             game.executeFactionMovement(richese);
-            assertEquals("Will you trigger your Terror Token in Carthag? p", moritaniChat.getMessages().getFirst());
+            assertEquals("Will you trigger your Terror Token in Carthag? mo", moritaniChat.getMessages().getFirst());
         }
     }
 
@@ -416,14 +340,9 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("ePlayer", "eUser");
-            ecaz = new EcazFaction("aPlayer", "aUser");
             game.addFaction(emperor);
             game.addFaction(ecaz);
-            emperor.setLedger(new TestTopic());
-            ecaz.setLedger(new TestTopic());
             game.createAlliance(ecaz, emperor);
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
             game.addFaction(harkonnen);
             garaKulon = game.getTerritory("Gara Kulon");
             garaKulon.addForces("Harkonnen", 10);
@@ -463,8 +382,7 @@ class GameTest {
         }
 
         @Test
-        void atreidesHoldsAtomics() throws IOException, NullPointerException {
-            atreides = new AtreidesFaction("fakePlayer", "userName");
+        void atreidesHoldsAtomics() throws NullPointerException {
             game.addFaction(atreides);
             atreides.addTreacheryCard(familyAtomics);
             assertEquals(game.getFactionWithAtomics().getName(), "Atreides");
@@ -476,7 +394,6 @@ class GameTest {
     class BreakShieldWall {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer", "userName");
             game.addFaction(atreides);
             atreides.addTreacheryCard(familyAtomics);
         }
@@ -524,13 +441,6 @@ class GameTest {
     class InitialStorm {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
-            bt = new BTFaction("fp7", "un7");
-            ix = new IxFaction("fp8", "un8");
             game.addGameOption(GameOption.TECH_TOKENS);
         }
 
@@ -676,11 +586,6 @@ class GameTest {
     class StormOrderFactions {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -761,10 +666,6 @@ class GameTest {
     class IxCanMoveHMS {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
@@ -773,22 +674,19 @@ class GameTest {
         }
 
         @Test
-        void ixNotInGame() throws IOException {
-            harkonnen = new HarkonnenFaction("fp6", "un6");
+        void ixNotInGame() {
             game.addFaction(harkonnen);
             assertFalse(game.ixCanMoveHMS());
         }
 
         @Test
-        void ixInGameInHMS() throws IOException {
-            ix = new IxFaction("fp6", "un6");
+        void ixInGameInHMS() {
             game.addFaction(ix);
             assertTrue(game.ixCanMoveHMS());
         }
 
         @Test
-        void ixInGameNotInHMS() throws IOException {
-            ix = new IxFaction("fp6", "un6");
+        void ixInGameNotInHMS() {
             game.addFaction(ix);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             hms.removeForce("Ix");
@@ -803,21 +701,12 @@ class GameTest {
     class GetFactionsWithTreacheryCard {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            shield = game.getTreacheryDeck().stream()
-                    .filter(t -> t.name().equals("Shield"))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Shield not found"));
         }
 
         @Test
@@ -837,13 +726,11 @@ class GameTest {
     class StartNewTurn {
         @BeforeEach
         void setUp() throws IOException {
-            FremenFaction fremen = new FremenFaction("p", "u");
             game.addFaction(fremen);
         }
 
         @Test
-        void testNewTurnResetsOccupation() throws IOException {
-            guild = new GuildFaction("p", "u");
+        void testNewTurnResetsOccupation() {
             game.addFaction(guild);
             HomeworldTerritory junction = (HomeworldTerritory) game.getTerritory(guild.getHomeworld());
             junction.addForces("Fremen*", 1);
@@ -858,8 +745,7 @@ class GameTest {
         }
 
         @Test
-        void testNewTurnResetsSalusaSecundusOccupation() throws IOException {
-            emperor = new EmperorFaction("p", "u");
+        void testNewTurnResetsSalusaSecundusOccupation() {
             game.addFaction(emperor);
             HomeworldTerritory salusaSecudus = (HomeworldTerritory) game.getTerritory(emperor.getSecondHomeworld());
             salusaSecudus.addForces("Fremen*", 1);
@@ -879,21 +765,12 @@ class GameTest {
     class StartStormPhase {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
-            guildChat = new TestTopic();
-            guild.setChat(guildChat);
         }
 
         @Test
@@ -939,7 +816,7 @@ class GameTest {
             assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 1 sectors this turn. Weather Control may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, fremenChat.messages.size());
-            assertEquals("fp4 will you play Weather Control?", fremenChat.messages.getFirst());
+            assertEquals("fr will you play Weather Control?", fremenChat.messages.getFirst());
         }
 
         @Test
@@ -997,7 +874,7 @@ class GameTest {
             assertEquals("**Turn 2 Storm Phase**", turnSummary.messages.get(0));
             assertEquals("The storm would move 5 sectors this turn. Weather Control and Family Atomics may be played at this time.", turnSummary.messages.get(1));
             assertEquals(1, guildChat.messages.size());
-            assertEquals("fp5 will you play Family Atomics?", guildChat.messages.getFirst());
+            assertEquals("gu will you play Family Atomics?", guildChat.messages.getFirst());
         }
 
         @Test
@@ -1048,7 +925,7 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (West Sector).", turnSummary.getMessages().get(1));
-            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (West Sector)? p", bgChat.getMessages().getFirst());
+            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (West Sector)? bg", bgChat.getMessages().getFirst());
             assertEquals(2, bgChat.getChoices().getFirst().size());
         }
 
@@ -1065,7 +942,7 @@ class GameTest {
 
             game.startStormPhase();
             assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (East Sector).", turnSummary.getMessages().get(1));
-            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (East Sector)? p", bgChat.getMessages().getFirst());
+            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (East Sector)? bg", bgChat.getMessages().getFirst());
             assertEquals(2, bgChat.getChoices().getFirst().size());
         }
     }
@@ -1084,10 +961,6 @@ class GameTest {
 
         @BeforeEach
         void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u");
-            fremen = new FremenFaction("p", "u");
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
             game.addFaction(emperor);
             game.addFaction(fremen);
 
@@ -1163,8 +1036,6 @@ class GameTest {
             game.getSpiceDeck().addFirst(shaiHulud);
             assertEquals(shaiHulud, game.getSpiceDeck().getFirst());
 
-            fremen.setLedger(new TestTopic());
-            emperor.setLedger(new TestTopic());
             game.createAlliance(fremen, emperor);
             sihayaRidge.addForces("Emperor", 3);
             sihayaRidge.addForces("Emperor*", 5);
@@ -1227,8 +1098,6 @@ class GameTest {
             game.getSpiceDeck().addFirst(greatMaker);
             assertEquals(greatMaker, game.getSpiceDeck().getFirst());
 
-            fremen.setLedger(new TestTopic());
-            emperor.setLedger(new TestTopic());
             game.createAlliance(fremen, emperor);
             sihayaRidge.addForces("Emperor", 3);
             sihayaRidge.addForces("Emperor*", 5);
@@ -1345,12 +1214,7 @@ class GameTest {
     @DisplayName("#drawSpiceBlowNoFremen")
     class DrawSpiceBlowNoFremen {
         @Test
-        void shaiHuludWithNoFremenDoesNotThrowException() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser");
-            bt = new BTFaction("btPlayer", "btUser");
-            emperor = new EmperorFaction("ePlayer", "eUser");
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
-            ix = new IxFaction("iPlayer", "iUser");
+        void shaiHuludWithNoFremenDoesNotThrowException() {
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(bt);
@@ -1377,21 +1241,12 @@ class GameTest {
     class RemoveForces {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
         }
 
         @Test
@@ -1559,27 +1414,15 @@ class GameTest {
     @DisplayName("killLeader")
     class KillLeader {
         List<Leader> leaders;
-        TestTopic emperorLedger;
 
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
-            emperorLedger = new TestTopic();
-            emperor.setLedger(emperorLedger);
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
 
             leaders = emperor.getLeaders();
             assertEquals(5, leaders.size());
@@ -1612,22 +1455,12 @@ class GameTest {
     class ReviveForces {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("fakePlayer1", "userName1");
-            emperor = new EmperorFaction("fp3", "un3");
-            fremen = new FremenFaction("fp4", "un4");
-            guild = new GuildFaction("fp5", "un5");
-            harkonnen = new HarkonnenFaction("fp6", "un6");
             game.addFaction(atreides);
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(harkonnen);
-            emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
-            emperor.setLedger(new TestTopic());
-            fremenChat = new TestTopic();
-            fremen.setChat(fremenChat);
         }
 
         @Test
@@ -1645,8 +1478,7 @@ class GameTest {
         @Test
         void testRevivalFlipsToHighThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            List<Force> tanks = game.getTanks();
-            assertTrue(tanks.isEmpty());
+            assertTrue(tanks.getForces().isEmpty());
             game.removeForces("Kaitain", emperor, 15, 0, true);
             assertFalse(emperor.isHighThreshold());
             game.removeForces("Salusa Secundus", emperor, 0, 5, true);
@@ -1663,8 +1495,7 @@ class GameTest {
         @Test
         void testSardaukarOnKaitainCountForHighThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            List<Force> tanks = game.getTanks();
-            assertTrue(tanks.isEmpty());
+            assertTrue(tanks.getForces().isEmpty());
             // Replace with game.moveForces after that is refactored
             game.getTerritory("Kaitain").addForces("Emperor*", 1);
             game.removeForces("Kaitain", emperor, 15, 0, true);
@@ -1677,8 +1508,7 @@ class GameTest {
         @Test
         void testRegularOnSalusaSecundusDoNotCountForHighThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            List<Force> tanks = game.getTanks();
-            assertTrue(tanks.isEmpty());
+            assertTrue(tanks.getForces().isEmpty());
             // Replace with game.moveForces after that is refactored
             game.getTerritory("Salusa Secundus").addForces("Emperor", 1);
             game.removeForces("Salusa Secundus", emperor, 0, 5, true);
@@ -1760,18 +1590,10 @@ class GameTest {
     class UpdateStrongholdSkills {
         @BeforeEach
         void setUp() throws IOException {
-            atreides = new AtreidesFaction("aPlayer", "aUser");
             game.addFaction(atreides);
-
-            guild = new GuildFaction("gPlayer", "gUser");
             game.addFaction(guild);
-
-            harkonnen = new HarkonnenFaction("hPlayer", "hUser");
             game.addFaction(harkonnen);
-
-            ecaz = new EcazFaction("ePlayer", "eUser");
             game.addFaction(ecaz);
-
         }
 
         @Test
@@ -1804,8 +1626,6 @@ class GameTest {
         void testWithStrongholdCardsEcazAlly() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             arrakeen.addForces("Ecaz", 1);
-            atreides.setLedger(new TestTopic());
-            ecaz.setLedger(new TestTopic());
             game.createAlliance(atreides, ecaz);
             game.updateStrongholdSkills();
             assertTrue(atreides.getStrongholdCards().isEmpty());
@@ -1822,8 +1642,6 @@ class GameTest {
         void testWithStrongholdCardsEcazAllyFalse() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             arrakeen.addForces("Harkonnen", 1);
-            atreides.setLedger(new TestTopic());
-            ecaz.setLedger(new TestTopic());
             game.createAlliance(atreides, ecaz);
             game.updateStrongholdSkills();
             assertTrue(atreides.getStrongholdCards().isEmpty());
@@ -1838,24 +1656,11 @@ class GameTest {
     @Nested
     @DisplayName("#createAlliance")
     class CreateAlliance {
-        TestTopic fremenLedger = new TestTopic();
-        TestTopic guildLedger = new TestTopic();
-        final TestTopic btLedger = new TestTopic();
-
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p1", "un1");
             game.addFaction(fremen);
-            fremen.setLedger(fremenLedger);
-
-            guild = new GuildFaction("p2", "un2");
             game.addFaction(guild);
-            guild.setLedger(guildLedger);
-
-            bt = new BTFaction("p3", "un3");
             game.addFaction(bt);
-            bt.setLedger(btLedger);
-
         }
 
         @Test
@@ -1888,12 +1693,9 @@ class GameTest {
         @Test
         void withCurrentAlliance() {
             game.createAlliance(fremen, guild);
-            turnSummary = new TestTopic();
-            fremenLedger = new TestTopic();
-            guildLedger = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            fremen.setLedger(fremenLedger);
-            guild.setLedger(guildLedger);
+            turnSummary.clear();
+            fremenLedger.clear();
+            guildLedger.clear();
             game.getUpdateTypes().clear();
 
             game.createAlliance(fremen, bt);
@@ -1915,20 +1717,12 @@ class GameTest {
     @Nested
     @DisplayName("#removeAlliance")
     class RemoveAlliance {
-        TestTopic fremenLedger = new TestTopic();
-        TestTopic guildLedger = new TestTopic();
-
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("p1", "un1");
             game.addFaction(fremen);
-            fremen.setLedger(fremenLedger);
-
-            guild = new GuildFaction("p2", "un2");
             game.addFaction(guild);
-            guild.setLedger(guildLedger);
-
         }
+
         @Test
         void noAlliance() {
             game.removeAlliance(fremen);
@@ -1942,12 +1736,9 @@ class GameTest {
         @Test
         void withAlliance() {
             game.createAlliance(fremen, guild);
-            turnSummary = new TestTopic();
-            fremenLedger = new TestTopic();
-            guildLedger = new TestTopic();
-            game.setTurnSummary(turnSummary);
-            fremen.setLedger(fremenLedger);
-            guild.setLedger(guildLedger);
+            turnSummary.clear();
+            fremenLedger.clear();
+            guildLedger.clear();
             game.getUpdateTypes().clear();
 
             game.removeAlliance(fremen);

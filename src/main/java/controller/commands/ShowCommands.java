@@ -698,7 +698,7 @@ public class ShowCommands {
         //Place tanks forces
         int i = 0;
         int offset = 0;
-        for (Force force : game.getTanks()) {
+        for (Force force : game.getTleilaxuTanks().getForces()) {
             if (force.getStrength() == 0) continue;
             BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
 

@@ -12,96 +12,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BattleTest {
-    Game game;
+class BattleTest extends DuneTest {
     Battles battles;
-    TestTopic turnSummary;
-    TestTopic modInfo;
-    AtreidesFaction atreides;
-    EcazFaction ecaz;
-    BGFaction bg;
-    BTFaction bt;
-    ChoamFaction choam;
-    EmperorFaction emperor;
-    FremenFaction fremen;
-    HarkonnenFaction harkonnen;
-    RicheseFaction richese;
-    TestTopic atreidesChat;
-    TestTopic bgChat;
-    TestTopic btChat;
-    TestTopic harkonnenChat;
-    Leader duncanIdaho;
-    Leader burseg;
-    Leader alia;
-    Leader feydRautha;
-    Leader zoal;
-    Territory carthag;
-    Territory cielagoNorth_westSector;
-    Territory cielagoNorth_eastSector;
-    Territory garaKulon;
-    Territory arrakeen;
-    TreacheryCard cheapHero;
-    TreacheryCard crysknife;
-    TreacheryCard chaumas;
-    TreacheryCard shield;
 
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        modInfo = new TestTopic();
-        game.setModInfo(modInfo);
-        game.setWhispers(new TestTopic());
-
-        atreides = new AtreidesFaction("p", "u");
-        bg = new BGFaction("p", "u");
-        bt = new BTFaction("p", "u");
-        choam = new ChoamFaction("p", "u");
-        ecaz = new EcazFaction("p", "u");
-        emperor = new EmperorFaction("p", "u");
-        fremen = new FremenFaction("p", "u");
-        harkonnen = new HarkonnenFaction("p", "u");
-        richese = new RicheseFaction("p", "u");
-
-        atreidesChat = new TestTopic();
-        atreides.setChat(atreidesChat);
-        bgChat = new TestTopic();
-        bg.setChat(bgChat);
-        btChat = new TestTopic();
-        bt.setChat(btChat);
-        ecaz.setChat(new TestTopic());
-        emperor.setChat(new TestTopic());
-        fremen.setChat(new TestTopic());
-        harkonnenChat = new TestTopic();
-        harkonnen.setChat(harkonnenChat);
-        richese.setChat(new TestTopic());
-
-        atreides.setLedger(new TestTopic());
-        bg.setLedger(new TestTopic());
-        choam.setLedger(new TestTopic());
-        ecaz.setLedger(new TestTopic());
-        emperor.setLedger(new TestTopic());
-        fremen.setLedger(new TestTopic());
-        harkonnen.setLedger(new TestTopic());
-        richese.setLedger(new TestTopic());
-
-        duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
-        burseg = emperor.getLeader("Burseg").orElseThrow();
-        alia = bg.getLeader("Alia").orElseThrow();
-        feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
-        zoal = bt.getLeader("Zoal").orElseThrow();
-
-        carthag = game.getTerritory("Carthag");
-        cielagoNorth_eastSector = game.getTerritory("Cielago North (East Sector)");
-        cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
-        garaKulon = game.getTerritory("Gara Kulon");
-        arrakeen = game.getTerritory("Arrakeen");
-
-        cheapHero = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Cheap Heroine")).findFirst().orElseThrow();
-        crysknife = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Crysknife")).findFirst().orElseThrow();
-        chaumas = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Chaumas")).findFirst().orElseThrow();
-        shield = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Shield")).findFirst().orElseThrow();
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
     }
 
     @AfterEach
@@ -619,11 +535,7 @@ class BattleTest {
             cielagoNorth_westSector.addForces("Emperor", 2);
             cielagoNorth_westSector.addForces("Emperor*", 2);
             cielagoNorth_westSector.setRicheseNoField(5);
-            List<Territory> cielagoNorthSectors = List.of(
-                    game.getTerritory("Cielago North (West Sector)"),
-                    game.getTerritory("Cielago North (Center Sector)"),
-                    game.getTerritory("Cielago North (East Sector)")
-            );
+            List<Territory> cielagoNorthSectors = List.of(cielagoNorth_westSector, cielagoNorth_middleSector, cielagoNorth_eastSector);
             Battle battle = new Battle(game, cielagoNorthSectors, List.of(emperor, harkonnen, richese));
             List<Force> battleForces = battle.aggregateForces(cielagoNorthSectors, List.of(emperor, harkonnen, richese));
             assertEquals(2, battleForces.stream().filter(f -> f.getName().equals("Emperor*")).findFirst().orElseThrow().getStrength());
@@ -1027,7 +939,6 @@ class BattleTest {
     @Nested
     @DisplayName("#lasgunShieldDestroysEverythingEvenAcrossStorm")
     class LasgunShieldDestroysEverythingEvenAcrossStorm {
-        TreacheryCard lasgun;
         Battle battle;
 
         @BeforeEach
@@ -1035,7 +946,6 @@ class BattleTest {
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
-            lasgun = game.getTreacheryDeck().stream().filter(c -> c.name().equals("Lasgun")). findFirst().orElseThrow();
             atreides.setForcesLost(7);
             atreides.addTreacheryCard(lasgun);
             harkonnen.addTreacheryCard(cheapHero);
@@ -1225,7 +1135,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
-            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertTrue(modInfo.getMessages().isEmpty());
         }
 
@@ -1250,7 +1160,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertTrue(battle.isAggressorWin(game));
             assertTrue(battle.getAggressorBattlePlan().isLeaderAlive());
-            assertEquals("Will you call Traitor against Alia in Arrakeen? p", atreidesChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Alia in Arrakeen? at", atreidesChat.getMessages().getLast());
             assertTrue(modInfo.getMessages().isEmpty());
         }
 
@@ -1272,8 +1182,8 @@ class BattleTest {
             bgChat.clear();
             atreidesChat.clear();
             battle.printBattleResolution(game, true);
-            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
-            assertEquals("Will you call Traitor against Alia in Arrakeen? p", atreidesChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Alia in Arrakeen? at", atreidesChat.getMessages().getLast());
             assertTrue(modInfo.getMessages().isEmpty());
         }
 
@@ -1325,7 +1235,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
-            assertEquals("Will you call Traitor against Cheap Hero in Arrakeen? p", bgChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Cheap Hero in Arrakeen? bg", bgChat.getMessages().getLast());
         }
 
         @Test
@@ -1399,7 +1309,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
-            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals(2, bgChat.getChoices().getLast().size());
             battle.willCallTraitor(game, bg, false, 0, "Arrakeen");
             assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().getLast());
@@ -1481,7 +1391,7 @@ class BattleTest {
             battle.printBattleResolution(game, true);
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
-            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? p", bgChat.getMessages().getLast());
+            assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals(2, bgChat.getChoices().getLast().size());
             assertTrue(modInfo.getMessages().isEmpty());
             battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
@@ -1541,7 +1451,7 @@ class BattleTest {
             @Test
             void testHarkonnenAllyAskedAfterFactionSaysTheyWillCallTraitor() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
-                assertEquals("Will you call Traitor for your ally if " + Emojis.ATREIDES + " plays Duncan Idaho or Gurney Halleck? p", harkonnenChat.getMessages().getLast());
+                assertEquals("Will you call Traitor for your ally if " + Emojis.ATREIDES + " plays Duncan Idaho or Gurney Halleck? ha", harkonnenChat.getMessages().getLast());
                 assertTrue(battle.getAggressorBattlePlan().isHarkCanCallTraitor());
                 assertEquals(Emojis.HARKONNEN + " can call Traitor for ally " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
             }
@@ -1565,7 +1475,7 @@ class BattleTest {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
                 battle.printBattleResolution(game, true);
-                assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? p", harkonnenChat.getMessages().getLast());
+                assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
                 assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
             }
@@ -1575,7 +1485,7 @@ class BattleTest {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
                 battle.printBattleResolution(game, true);
-                assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? p", harkonnenChat.getMessages().getLast());
+                assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, true, 0, "Arrakeen");
                 assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for your ally!", harkonnenChat.getMessages().getLast());
                 assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you and " + Emojis.HARKONNEN + "!", bgChat.getMessages().getLast());

@@ -3,7 +3,6 @@ package model;
 import constants.Emojis;
 import enums.ChoamInflationType;
 import exceptions.InvalidGameStateException;
-import model.factions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,36 +13,18 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MentatPauseTest {
-    private Game game;
+public class MentatPauseTest extends DuneTest {
     private MentatPause mentatPause;
-    private BTFaction bt;
-    private EmperorFaction emperor;
-    private FremenFaction fremen;
-    private GuildFaction guild;
-    private ChoamFaction choam;
-    private RicheseFaction richese;
-    private MoritaniFaction moritani;
-    private TestTopic choamChat;
-    private TestTopic turnSummary;
 
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
         mentatPause = new MentatPause();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        choam = new ChoamFaction("cPlayer", "cUser");
         game.addFaction(choam);
-        choamChat = new TestTopic();
-        choam.setChat(choamChat);
-        choam.setLedger(new TestTopic());
     }
 
     @Test
-    void testSpiceForAllyResetsToZero() throws IOException {
-        richese = new RicheseFaction("p", "u");
-        richese.setLedger(new TestTopic());
+    void testSpiceForAllyResetsToZero() {
         game.addFaction(richese);
         game.createAlliance(choam, richese);
         choam.setSpiceForAlly(5);
@@ -79,13 +60,8 @@ public class MentatPauseTest {
     @Nested
     @DisplayName("#decliningCharity")
     class DecliningCharity {
-        TestTopic emperorChat;
-
         @BeforeEach
         public void setUp() throws IOException {
-            emperor = new EmperorFaction("p", "u");
-            emperorChat = new TestTopic();
-            emperor.setChat(emperorChat);
             game.addFaction(emperor);
         }
 
@@ -109,42 +85,20 @@ public class MentatPauseTest {
             emperor.setDecliningCharity(true);
             mentatPause.startPhase(game);
             assertEquals(1, emperorChat.getMessages().size());
-            assertEquals("You have only 0 " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. p", emperorChat.getMessages().getFirst());
+            assertEquals("You have only 0 " + Emojis.SPICE + " but are declining CHOAM charity.\nYou must change this in your info channel if you want to receive charity. em", emperorChat.getMessages().getFirst());
         }
     }
 
     @Nested
     @DisplayName("#extortionAndTerrorTokenPlacementChoices")
     class ExtortionAndTerrorTokenPlacementChoices {
-        final TestTopic moritaniLedger = new TestTopic();
-        TestTopic moritaniChat = new TestTopic();
-        final TestTopic richeseLedger = new TestTopic();
-        final TestTopic guildLedger = new TestTopic();
-
         @BeforeEach
         void setUp() throws IOException {
-            fremen = new FremenFaction("fp4", "un4");
-            fremen.setChat(new TestTopic());
             game.addFaction(fremen);
-
-            moritani = new MoritaniFaction("fp3", "un3");
-            moritani.setChat(moritaniChat);
             game.addFaction(moritani);
-            moritani.setLedger(moritaniLedger);
-
-            richese = new RicheseFaction("fp6", "un6");
-            richese.setChat(new TestTopic());
             game.addFaction(richese);
-            richese.setLedger(richeseLedger);
-
-            bt = new BTFaction("p", "u");
-            bt.setChat(new TestTopic());
             game.addFaction(bt);
-
-            guild = new GuildFaction("fp1", "un5");
-            guild.setChat(new TestTopic());
             game.addFaction(guild);
-            guild.setLedger(guildLedger);
 
             game.advanceTurn();
             game.advanceTurn();
@@ -157,7 +111,7 @@ public class MentatPauseTest {
         void moritaniAskedAboutPlacingTerrorToken() {
             mentatPause.startPhase(game);
             assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals("Use these buttons to place a Terror Token from your supply. fp3", moritaniChat.getMessages().getFirst());
+            assertEquals("Use these buttons to place a Terror Token from your supply. mo", moritaniChat.getMessages().getFirst());
             assertEquals(7, moritaniChat.getChoices().getFirst().size());
             assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
             assertTrue(moritaniChat.getChoices().getFirst().get(5).isDisabled());
@@ -171,7 +125,7 @@ public class MentatPauseTest {
             moritani.placeTerrorToken(arrakeen, "Sabotage");
             mentatPause.startPhase(game);
             assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals("Use these buttons to place a Terror Token from your supply. fp3", moritaniChat.getMessages().getFirst());
+            assertEquals("Use these buttons to place a Terror Token from your supply. mo", moritaniChat.getMessages().getFirst());
             assertEquals(7, moritaniChat.getChoices().getFirst().size());
             assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
             assertFalse(moritaniChat.getChoices().getFirst().get(5).isDisabled());
@@ -194,7 +148,7 @@ public class MentatPauseTest {
             mentatPause.startPhase(game);
             assertTrue(moritani.getTerrorTokens().isEmpty());
             assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals("Which Terror Token would you like to move to a new stronghold? fp3", moritaniChat.getMessages().getFirst());
+            assertEquals("Which Terror Token would you like to move to a new stronghold? mo", moritaniChat.getMessages().getFirst());
             assertEquals(1, moritaniChat.getChoices().size());
             assertEquals("Atomics from Carthag", moritaniChat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("No move", moritaniChat.getChoices().getFirst().get(1).getLabel());
@@ -209,8 +163,7 @@ public class MentatPauseTest {
         @Test
         void firstPlayerPays() {
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionWouldPayExtortion(game, guild);
             assertEquals(Emojis.GUILD + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.", turnSummary.messages.getFirst());
             assertEquals(2, guild.getSpice());
@@ -224,8 +177,7 @@ public class MentatPauseTest {
         void fourthOffersToPayThenfirstPlayerPays() {
             fremen.setSpice(0);
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, choam);
             game.getMentatPause().factionWouldPayExtortion(game, guild);
@@ -240,8 +192,7 @@ public class MentatPauseTest {
         void fourthPlayerPays() {
             fremen.setSpice(0);
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, choam);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
@@ -255,8 +206,7 @@ public class MentatPauseTest {
         @Test
         void allDecline() {
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
             game.getMentatPause().factionDeclinesExtortion(game, choam);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
@@ -272,8 +222,7 @@ public class MentatPauseTest {
             choam.setSpice(3);
             moritani.setSpice(2);
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
             game.getMentatPause().factionDeclinesExtortion(game, choam);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
@@ -285,8 +234,7 @@ public class MentatPauseTest {
         void allDeclineFremenHas0Spice() {
             fremen.setSpice(0);
             mentatPause.startPhase(game);
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+            turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, choam);
             game.getMentatPause().factionDeclinesExtortion(game, richese);
             game.getMentatPause().factionDeclinesExtortion(game, bt);

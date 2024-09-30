@@ -1,5 +1,6 @@
 package model;
 
+import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -8,13 +9,10 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class TleilaxuTanksTest {
-    private TleilaxuTanks tanks;
-
+public class TleilaxuTanksTest extends DuneTest {
     @BeforeEach
-    void setUp() throws IOException {
-        Game game = new Game();
-        tanks = game.getTleilaxuTanks();
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
     }
 
     @Test

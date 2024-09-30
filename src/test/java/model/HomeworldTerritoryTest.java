@@ -1,9 +1,7 @@
 package model;
 
 import constants.Emojis;
-import model.factions.AtreidesFaction;
-import model.factions.EmperorFaction;
-import model.factions.HarkonnenFaction;
+import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,20 +12,14 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class HomeworldTerritoryTest {
-    private TestTopic turnSummary;
+public class HomeworldTerritoryTest extends DuneTest {
     private HomeworldTerritory caladan;
 
     @BeforeEach
-    public void setUp() throws IOException {
-        Game game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        AtreidesFaction atreides = new AtreidesFaction("p", "u");
+    public void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
         game.addFaction(atreides);
-        HarkonnenFaction harkonnen = new HarkonnenFaction("p", "u");
         game.addFaction(harkonnen);
-        EmperorFaction emperor = new EmperorFaction("p", "u");
         game.addFaction(emperor);
         caladan = (HomeworldTerritory) game.getTerritory(atreides.getHomeworld());
     }

@@ -2,9 +2,6 @@ package model;
 
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
-import model.factions.BTFaction;
-import model.factions.ChoamFaction;
-import model.factions.HarkonnenFaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,30 +9,14 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RevivalTest {
-    Game game;
+public class RevivalTest extends DuneTest {
     Revival revival;
-    TestTopic turnSummary;
-    BTFaction bt;
-    ChoamFaction choam;
-    HarkonnenFaction harkonnen;
 
     @BeforeEach
     void setUp() throws IOException, InvalidGameStateException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
+        super.setUp();
         game.startRevival();
         revival = game.getRevival();
-        bt = new BTFaction("p", "u");
-        bt.setChat(new TestTopic());
-        bt.setLedger(new TestTopic());
-        choam = new ChoamFaction("p", "u");
-        choam.setChat(new TestTopic());
-        choam.setLedger(new TestTopic());
-        harkonnen = new HarkonnenFaction("p", "u");
-        harkonnen.setChat(new TestTopic());
-        harkonnen.setLedger(new TestTopic());
         game.addFaction(bt);
         game.addFaction(choam);
         game.addFaction(harkonnen);

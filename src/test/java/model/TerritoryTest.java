@@ -1,7 +1,7 @@
 package model;
 
 import constants.Emojis;
-import model.factions.*;
+import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,51 +12,10 @@ import java.text.MessageFormat;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TerritoryTest {
-    private Game game;
-    TestTopic turnSummary;
-    Faction atreides;
-    Faction bg;
-    Faction fremen;
-    Faction harkonnen;
-    Faction ix;
-    Faction richese;
-    Faction ecaz;
-    Territory arrakeen;
-    Territory carthag;
-    Territory hms;
-    Territory sihayaRidge;
-    Territory cielagoNorth_westSector;
-    Territory cielagoNorth_middleSector;
-    Territory windPassNorth_northSector;
-    Territory windPass_northSector;
-
+public class TerritoryTest extends DuneTest {
     @BeforeEach
-    void setUp() throws IOException {
-        game = new Game();
-        turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
-        atreides = new AtreidesFaction("at", "at");
-        bg = new BGFaction("bg", "bg");
-        fremen = new FremenFaction("fr", "fr");
-        harkonnen = new HarkonnenFaction("ha", "ha");
-        ix = new IxFaction("ix", "ix");
-        richese = new RicheseFaction("ri", "ri");
-        ecaz = new EcazFaction("ec", "ec");
-        fremen.setChat(new TestTopic());
-        atreides.setLedger(new TestTopic());
-        bg.setLedger(new TestTopic());
-        fremen.setLedger(new TestTopic());
-        richese.setLedger(new TestTopic());
-        ecaz.setLedger(new TestTopic());
-        arrakeen = game.getTerritory("Arrakeen");
-        carthag = game.getTerritory("Carthag");
-        hms = game.getTerritory("Hidden Mobile Stronghold");
-        sihayaRidge = game.getTerritory("Sihaya Ridge");
-        cielagoNorth_westSector = game.getTerritory("Cielago North (West Sector)");
-        cielagoNorth_middleSector = game.getTerritory("Cielago North (Center Sector)");
-        windPassNorth_northSector = game.getTerritory("Wind Pass North (North Sector)");
-        windPass_northSector = game.getTerritory("Wind Pass (North Sector)");
+    void setUp() throws IOException, InvalidGameStateException {
+        super.setUp();
     }
 
     @Nested
