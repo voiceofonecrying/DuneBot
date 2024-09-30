@@ -381,17 +381,21 @@ public class TerritoryTest {
         }
 
         @Test
-        void testFactionMayNotShipIntoTerritoryWithAlly() {
+//        void testFactionMayNotShipIntoTerritoryWithAlly() {
+        void testFactionMayShipIntoTerritoryWithAlly() {
             assertFalse(arrakeen.factionMayNotEnter(game, richese, true));
             game.createAlliance(atreides, richese);
-            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
+//            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, true));
         }
 
         @Test
-        void testFactionMayNotMoveIntoTerritoryWithAlly() {
+//        void testFactionMayNotMoveIntoTerritoryWithAlly() {
+        void testFactionMayMoveIntoTerritoryWithAlly() {
             assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
             game.createAlliance(atreides, richese);
-            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+//            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
         }
 
         @Test

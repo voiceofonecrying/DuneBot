@@ -441,9 +441,10 @@ public class Territory {
             if (aftermathToken)
                 return true;
         }
-        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
-                && (faction.hasAlly() && hasAllyForces(game, faction)
-                || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
+//        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
+//                && (faction.hasAlly() && hasAllyForces(game, faction)
+//                || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
+        return isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction) && notEcazAllyException(game, faction);
     }
 
     private boolean hasAllyForces(Game game, Faction faction) {
