@@ -434,6 +434,14 @@ public class Territory {
         return response;
     }
 
+    public void flipAdvisorsIfAlone(Game game) {
+        if (countActiveFactions() == 0 && hasForce("Advisor")) {
+            BGFaction bg = (BGFaction) game.getFaction("BG");
+            bg.flipForces(this);
+            game.getTurnSummary().publish(Emojis.BG_ADVISOR + " are alone in " + territoryName + " and have flipped to " + Emojis.BG_FIGHTER);
+        }
+    }
+
     public boolean factionMayNotEnter(Game game, Faction faction, boolean isShipment) {
         if (isShipment) {
             if (territoryName.equals("Hidden Mobile Stronghold") && !faction.getName().equals("Ix"))

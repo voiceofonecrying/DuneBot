@@ -294,6 +294,7 @@ public class RunCommands {
             Faction bgFaction = game.getFaction("BG");
             String bgPlayer = bgFaction.getPlayer();
             for (Territory territory : game.getTerritories().values()) {
+                territory.flipAdvisorsIfAlone(game);
                 if (territory.getTerritoryName().equals("Polar Sink")) continue;
                 StringBuilder message = new StringBuilder();
                 if (territory.getForceStrength("Advisor") > 0) {
