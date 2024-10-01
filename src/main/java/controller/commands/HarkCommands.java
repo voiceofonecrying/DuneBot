@@ -155,7 +155,7 @@ public class HarkCommands {
         discordGame.pushGame();
     }
 
-    private static void nexusCardLoseTraitor(DiscordGame discordGame, Game game) {
+    private static void nexusCardLoseTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String traitorName = discordGame.required(traitor).getAsString();
         Faction faction = game.getFaction("Harkonnen");
         LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
@@ -168,5 +168,6 @@ public class HarkCommands {
         Collections.shuffle(traitorDeck);
         faction.getLedger().publish(traitorName + " has been shuffled back into the Traitor Deck.");
         game.getTurnSummary().publish(faction.getEmoji() + " loses " + traitorName + " and will draw a new Traitor in Mentat Pause.");
+        discordGame.pushGame();
     }
 }
