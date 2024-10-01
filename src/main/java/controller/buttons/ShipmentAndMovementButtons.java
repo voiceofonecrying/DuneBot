@@ -414,26 +414,30 @@ public class ShipmentAndMovementButtons implements Pressable {
         int specialForce = shipment.getSpecialForce();
         String crossShipFrom = shipment.getCrossShipFrom();
         Territory territory = game.getTerritory(territoryName);
-        if (noField >= 0) {
-            RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-            richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
-            if (force > 0)
-                CommandManager.placeForces(territory, faction, force, 0, true, false, discordGame, game, karama);
-            if (game.hasFaction("Ecaz"))
-                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
-            if (game.hasFaction("Moritani"))
-                ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
-        } else if (shipment.isToReserves()) {
+        if (shipment.isToReserves()) {
             game.removeForces(territoryName, faction, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             faction.subtractSpice(spice, "shipment from " + territory.getTerritoryName() + " back to reserves");
             discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
-        } else if (!crossShipFrom.isEmpty()) {
-            game.removeForces(crossShipFrom, faction, force, 0, false);
-            CommandManager.placeForces(territory, faction, force, specialForce, true, true, discordGame, game, false);
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
-        } else if (force > 0 || specialForce > 0)
-            CommandManager.placeForces(territory, faction, force, specialForce, !guildAmbassador, true, true, discordGame, game, karama);
+        } else {
+            if (territory.factionMustMoveOut(game, faction))
+                faction.getMovement().setMustMoveOutOf(territoryName);
+            if (noField >= 0) {
+                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
+                if (force > 0)
+                    CommandManager.placeForces(territory, faction, force, 0, true, false, discordGame, game, karama);
+                if (game.hasFaction("Ecaz"))
+                    ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
+                if (game.hasFaction("Moritani"))
+                    ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
+            } else if (!crossShipFrom.isEmpty()) {
+                game.removeForces(crossShipFrom, faction, force, 0, false);
+                CommandManager.placeForces(territory, faction, force, specialForce, true, true, discordGame, game, false);
+                discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
+            } else if (force > 0 || specialForce > 0)
+                CommandManager.placeForces(territory, faction, force, specialForce, !guildAmbassador, true, true, discordGame, game, karama);
+        }
         game.setUpdated(UpdateType.MAP);
         shipment.clear();
         if (guildAmbassador)
@@ -722,7 +726,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             finalizeButtons.add(execute);
             finalizeButtons.add(Button.danger("reset-shipping-forces" + buttonSuffix, "Reset forces"));
             finalizeButtons.add(Button.danger("reset-shipment" + buttonSuffix, "Start over"));
-            if (!guildAmbassador && !enterDiscoveryToken && faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")))
+            if (!guildAmbassador && !enterDiscoveryToken && faction.hasTreacheryCard("Karama"))
                 finalizeButtons.add(Button.secondary("karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)").withDisabled(disableConfirmButton));
 
             discordGame.getFactionChat(faction.getName()).queueMessage(new MessageCreateBuilder()
@@ -740,9 +744,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             message += fremenRide ? "ride." : "movement.";
             message += " Currently moving:\n**" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "** to " + faction.getMovement().getMovingTo();
             if (movement.isMovingNoField() || movement.getForce() != 0 || movement.getSpecialForce() != 0 || movement.getSecondForce() != 0 || movement.getSecondSpecialForce() != 0) {
-                if (!fremenRide && !enterDiscoveryToken && faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Hajr ")))
+                if (!fremenRide && !enterDiscoveryToken && faction.hasTreacheryCard("Hajr"))
                     forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
-                if (!fremenRide && !enterDiscoveryToken && faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
+                if (!fremenRide && !enterDiscoveryToken && faction.hasTreacheryCard("Ornithopter"))
                     forcesButtons.add(Button.secondary("Ornithopter", "Confirm Movement and play Ornithopter"));
                 forcesButtons.add(Button.success("execute-movement" + buttonSuffix, "Confirm Movement"));
                 forcesButtons.add(Button.danger("reset-moving-forces" + buttonSuffix, "Reset forces"));
@@ -1131,6 +1135,14 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void queueMovementButtons(Game game, Faction faction, DiscordGame discordGame) {
         String message = "Use the following buttons to perform your move.";
+        String mustMoveOutOf = faction.getMovement().getMustMoveOutOf();
+        if (mustMoveOutOf != null && !mustMoveOutOf.isEmpty()) {
+            message += "\nYou must move out of " + mustMoveOutOf;
+            if (faction.hasTreacheryCard("Hajr"))
+                message += "\nIf you need to move into " + mustMoveOutOf + " and then move out with Hajr, please ask the mod for help.";
+            if (faction.hasTreacheryCard("Ornithopter"))
+                message += "\nIf you need to move into " + mustMoveOutOf + " and then move out with Ornithopter, please ask the mod for help.";
+        }
 
         TreeSet<Button> movingFromButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
 
@@ -1143,10 +1155,14 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && territory.hasRicheseNoField() && faction instanceof RicheseFaction && !faction.isHighThreshold())
                 count--;
             if (count > 0) {
-                movingFromButtons.add(Button.primary("moving-from-" + territoryName, territoryName));
-                if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Ornithopter")))
-                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, territoryName + " (use Ornithopter)"));
-                if (faction.hasOrnithoperToken()) movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territoryName, territoryName + " (use Ornithopter Token)"));
+                boolean disabled = false;
+                if (mustMoveOutOf != null && !mustMoveOutOf.isEmpty())
+                    disabled = !territoryName.equals(mustMoveOutOf);
+                movingFromButtons.add(Button.primary("moving-from-" + territoryName, territoryName).withDisabled(disabled));
+                if (faction.hasTreacheryCard("Ornithopter"))
+                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, territoryName + " (use Ornithopter)").withDisabled(disabled));
+                if (faction.hasOrnithoperToken())
+                    movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territoryName, territoryName + " (use Ornithopter Token)").withDisabled(disabled));
             }
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));

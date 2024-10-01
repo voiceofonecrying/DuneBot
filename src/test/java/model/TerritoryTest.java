@@ -349,12 +349,10 @@ public class TerritoryTest extends DuneTest {
         }
 
         @Test
-//        void testFactionMayNotMoveIntoTerritoryWithAlly() {
-        void testFactionMayMoveIntoTerritoryWithAlly() {
+        void testFactionMayNotMoveIntoTerritoryWithAlly() {
             assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
             game.createAlliance(atreides, richese);
-//            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
-            assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
         }
 
         @Test
@@ -380,6 +378,7 @@ public class TerritoryTest extends DuneTest {
             arrakeen.setRicheseNoField(0);
             assertTrue(arrakeen.factionMayNotEnter(game, bg, false));
         }
+
         @Test
         void testEcazMayShipIntoTerritoryWithEcazAlly() {
             carthag.addForces("BG", 1);
@@ -429,6 +428,61 @@ public class TerritoryTest extends DuneTest {
         void testFactionMayMoveIntoAftermath() {
             arrakeen.setAftermathToken(true);
             assertFalse(arrakeen.factionMayNotEnter(game, atreides, false));
+        }
+    }
+
+    @Nested
+    @DisplayName("#factionMustMoveOut")
+    class FactionMustMoveOut {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(bg);
+            game.addFaction(ix);
+            game.addFaction(ecaz);
+            game.addFaction(richese);
+
+            game.createAlliance(bg, ecaz);
+        }
+
+        @Test
+        void testFactionMoveOutOfTerritoryWithAlly() {
+            arrakeen.addForces("Richese", 1);
+            assertFalse(arrakeen.factionMustMoveOut(game, richese));
+            game.createAlliance(atreides, richese);
+            assertTrue(arrakeen.factionMustMoveOut(game, richese));
+        }
+
+        @Test
+        void testFactionMoveOutOfTerritoryWithAllyNoField() {
+            arrakeen.setRicheseNoField(0);
+            assertFalse(arrakeen.factionMustMoveOut(game, richese));
+            game.createAlliance(atreides, richese);
+            assertTrue(arrakeen.factionMustMoveOut(game, richese));
+        }
+
+        @Test
+        void testFactionDoesNotHaveToMoveOutOfPolarSink() {
+            game.createAlliance(atreides, richese);
+            polarSink.addForces("Atreides", 1);
+            polarSink.addForces("Richese", 1);
+            assertFalse(polarSink.factionMustMoveOut(game, atreides));
+            assertFalse(polarSink.factionMustMoveOut(game, richese));
+        }
+
+        @Test
+        void testEcazDoesNotHaveToMoveOutOfTerritoryWithEcazAlly() {
+            carthag.addForces("BG", 1);
+            carthag.addForces("Ecaz", 1);
+            assertFalse(carthag.factionMustMoveOut(game, ecaz));
+        }
+
+        @Test
+        void testEcazAllyDoesNotHaveToMoveOutOfTerritoryWithEcaz() {
+            carthag.addForces("BG", 1);
+            carthag.addForces("Ecaz", 1);
+            assertFalse(carthag.factionMustMoveOut(game, bg));
         }
     }
 }

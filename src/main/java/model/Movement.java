@@ -4,6 +4,7 @@ public class Movement {
     private String movingFrom;
     private String secondMovingFrom;
     private String movingTo;
+    private String mustMoveOutOf;
     private int force;
     private int secondForce;
     private int specialForce;
@@ -18,6 +19,7 @@ public class Movement {
     public void clear() {
         this.movingFrom = "";
         this.movingTo = "";
+        this.mustMoveOutOf = null;
         this.force = 0;
         this.specialForce = 0;
         this.secondForce = 0;
@@ -41,6 +43,14 @@ public class Movement {
 
     public void setMovingTo(String movingTo) {
         this.movingTo = movingTo;
+    }
+
+    public String getMustMoveOutOf() {
+        return mustMoveOutOf;
+    }
+
+    public void setMustMoveOutOf(String mustMoveOutOf) {
+        this.mustMoveOutOf = mustMoveOutOf;
     }
 
     public int getForce() {

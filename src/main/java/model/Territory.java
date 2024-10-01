@@ -440,11 +440,15 @@ public class Territory {
                 return true;
             if (aftermathToken)
                 return true;
+            return isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction) && notEcazAllyException(game, faction);
         }
-//        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
-//                && (faction.hasAlly() && hasAllyForces(game, faction)
-//                || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
-        return isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction) && notEcazAllyException(game, faction);
+        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
+                && (faction.hasAlly() && hasAllyForces(game, faction)
+                || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
+    }
+
+    public boolean factionMustMoveOut(Game game, Faction faction) {
+        return !territoryName.equals("Polar Sink") && faction.hasAlly() && hasAllyForces(game, faction) && notEcazAllyException(game, faction);
     }
 
     private boolean hasAllyForces(Game game, Faction faction) {
