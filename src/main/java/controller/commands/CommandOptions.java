@@ -394,7 +394,11 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
-        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
+        Faction faction;
+        if (event.getSubcommandName() != null && event.getSubcommandName().equals("nexus-card-lose-traitor"))
+            faction = game.getFaction("Harkonnen");
+        else
+            faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTraitorHand().stream().map(TraitorCard::name)
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(traitor -> new Command.Choice(traitor, traitor))

@@ -7,6 +7,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
 import model.Leader;
+import model.TraitorCard;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -20,9 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static controller.commands.CommandOptions.*;
 
@@ -31,17 +30,10 @@ public class HarkCommands {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(
                 Commands.slash("hark", "Commands related to the Harkonnen.").addSubcommands(
-                        new SubcommandData(
-                                "capture-leader",
-                                "Capture a faction's leader after winning a battle."
-                        ).addOptions(faction, factionLeader),
-                        new SubcommandData(
-                                "kill-leader",
-                                "Kill a faction's leader after winning a battle."
-                        ).addOptions(faction, factionLeader),
-                        new SubcommandData(
-                                "return-leader",
-                                "Return a captured leader to their faction.").addOptions(nonHarkLeader)
+                        new SubcommandData("capture-leader", "Capture a faction's leader after winning a battle.").addOptions(faction, factionLeader),
+                        new SubcommandData("kill-leader", "Kill a faction's leader after winning a battle.").addOptions(faction, factionLeader),
+                        new SubcommandData("return-leader", "Return a captured leader to their faction.").addOptions(nonHarkLeader),
+                        new SubcommandData("nexus-card-lose-traitor", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor)
                 )
         );
 
@@ -58,6 +50,7 @@ public class HarkCommands {
             case "capture-leader" -> captureLeader(discordGame, game);
             case "kill-leader" -> killLeader(discordGame, game);
             case "return-leader" -> returnLeader(discordGame, game);
+            case "nexus-card-lose-traitor" -> nexusCardLoseTraitor(discordGame, game);
         }
     }
 
@@ -160,5 +153,20 @@ public class HarkCommands {
         game.setUpdated(UpdateType.MAP);
 
         discordGame.pushGame();
+    }
+
+    private static void nexusCardLoseTraitor(DiscordGame discordGame, Game game) {
+        String traitorName = discordGame.required(traitor).getAsString();
+        Faction faction = game.getFaction("Harkonnen");
+        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
+        TraitorCard traitorCard = faction.getTraitorHand().stream()
+                .filter(t -> t.name().equalsIgnoreCase(traitorName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Traitor: " + traitorName));
+        faction.removeTraitorCard(traitorCard);
+        traitorDeck.add(traitorCard);
+        Collections.shuffle(traitorDeck);
+        faction.getLedger().publish(traitorName + " has been shuffled back into the Traitor Deck.");
+        game.getTurnSummary().publish(faction.getEmoji() + " loses " + traitorName + " and will draw a new Traitor in Mentat Pause.");
     }
 }
