@@ -1247,7 +1247,7 @@ public class Game {
         String costString = "for free.";
         if (isPaid) {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
-            faction.subtractSpice(revivalCost, "Revivals");
+            faction.subtractSpice(revivalCost, "revivals");
             costString = "for " + revivalCost + " " + Emojis.SPICE;
             if (hasFaction("BT") && !(faction instanceof BTFaction)) {
                 Faction btFaction = getFaction("BT");

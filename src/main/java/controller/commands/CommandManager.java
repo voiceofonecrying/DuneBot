@@ -217,11 +217,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public static void reviveForces(Faction faction, boolean isPaid, int revivedValue, int starredAmountValue, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        game.reviveForces(faction, isPaid, revivedValue, starredAmountValue);
-        discordGame.pushGame();
-    }
-
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama);
     }
@@ -781,7 +776,8 @@ public class CommandManager extends ListenerAdapter {
         boolean isPaid = discordGame.required(paid).getAsBoolean();
         int revivedValue = discordGame.required(revived).getAsInt();
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
-        reviveForces(targetFaction, isPaid, revivedValue, starredAmountValue, game, discordGame);
+        game.reviveForces(targetFaction, isPaid, revivedValue, starredAmountValue);
+        discordGame.pushGame();
     }
 
     /**

@@ -1135,6 +1135,19 @@ public class Faction {
         return paidRevivalMessage;
     }
 
+    /**
+     * Just revive the leader. Calling function handles payment and messaging.
+     *
+     * @param isPaid indicates if faction must pay spice for the revival
+     * @param numForces the number of forces to revive
+     */
+    public void reviveForces(boolean isPaid, int numForces) {
+        if (numForces == 0)
+            game.getTurnSummary().publish(emoji + " does not purchase additional revivals.");
+        else
+            game.reviveForces(this, isPaid, numForces, 0);
+    }
+
     protected void presentExtortionChoices() {
         if (spice >= 3) {
             List<DuneChoice> choices = new ArrayList<>();

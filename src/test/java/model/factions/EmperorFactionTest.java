@@ -57,6 +57,87 @@ class EmperorFactionTest extends FactionTestTemplate {
             assertEquals(0, chat.getChoices().size());
             assertEquals(faction.getEmoji() + " has no revivable forces in the tanks", faction.getPaidRevivalMessage());
         }
+
+        @Test
+        public void testNoForcesInTanksTriggersReviveExtraAllyForces() throws IOException, InvalidGameStateException {
+            Faction bg = new BGFaction("bg", "bg");
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            game.createAlliance(faction, bg);
+            bg.removeForces("Wallach IX", 2, false, true);
+            faction.presentPaidRevivalChoices(0);
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.BG + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentAllyRevivalChoices")
+    class PresentAllyRevivalChoices {
+        Faction fremen;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            fremen = new FremenFaction("fr", "fr");
+            fremen.setLedger(new TestTopic());
+            game.addFaction(fremen);
+            game.createAlliance(faction, fremen);
+            turnSummary.clear();
+        }
+
+        @Test
+        public void testNoAllyForcesInTanks() {
+            faction.presentAllyRevivalChoices();
+            assertEquals(Emojis.FREMEN + " has no revivable forces.", chat.getMessages().getLast());
+            assertEquals(0, turnSummary.getChoices().size());
+        }
+
+        @Test
+        public void testOnlyFedaykinInTanks() {
+            fremen.removeForces("Southern Hemisphere", 2, true, true);
+            faction.presentAllyRevivalChoices();
+            assertEquals(Emojis.FREMEN + " has no revivable forces.", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testOneFremenForceTwoFedaykinInTanks() {
+            fremen.removeForces("Southern Hemisphere", 2, true, true);
+            fremen.removeForces("Southern Hemisphere", 1, false, true);
+            faction.presentAllyRevivalChoices();
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+            assertTrue(chat.getChoices().getLast().get(2).isDisabled());
+        }
+
+        @Test
+        public void testTwoFremenForceTwoFedaykinInTanks() {
+            fremen.removeForces("Southern Hemisphere", 2, true, true);
+            fremen.removeForces("Southern Hemisphere", 2, false, true);
+            faction.presentAllyRevivalChoices();
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+            assertFalse(chat.getChoices().getLast().get(2).isDisabled());
+            assertTrue(chat.getChoices().getLast().getLast().isDisabled());
+        }
+
+        @Test
+        public void testThreeFremenForceTwoFedaykinInTanks() {
+            fremen.removeForces("Southern Hemisphere", 2, true, true);
+            fremen.removeForces("Southern Hemisphere", 3, false, true);
+            faction.presentAllyRevivalChoices();
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+            assertFalse(chat.getChoices().getLast().getLast().isDisabled());
+        }
+
+        @Test
+        public void testEmperorDoesNotHaveEnoughSpiceToReviveAll() {
+            faction.subtractSpice(8, "test");
+            fremen.removeForces("Southern Hemisphere", 3, false, true);
+            faction.presentAllyRevivalChoices();
+            assertFalse(chat.getChoices().getLast().get(1).isDisabled());
+            assertTrue(chat.getChoices().getLast().get(2).isDisabled());
+        }
     }
 
     @Test
@@ -151,6 +232,49 @@ class EmperorFactionTest extends FactionTestTemplate {
         assertEquals(3, chat.getChoices().getFirst().size());
     }
 
+    @Nested
+    @DisplayName("#reviveForces")
+    class ReviveForces {
+        @BeforeEach
+        public void setUp() {
+        }
+
+        @Test
+        public void testNoSardaukarInTanks() {
+            faction.removeForces("Kaitain", 1, false, true);
+            faction.reviveForces(true, 1);
+            assertEquals(Emojis.EMPEROR + " revives 1 " + Emojis.EMPEROR_TROOP + " for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testSardaukarInTanksCannotBeRevived() {
+            faction.removeForces("Salusa Secundus", 1, true, true);
+            faction.setStarRevived(true);
+            assertThrows(IllegalArgumentException.class, () -> faction.reviveForces(true, 1));
+        }
+
+        @Test
+        public void testSardaukarInTanksCanBeRevived() {
+            faction.removeForces("Salusa Secundus", 1, true, true);
+            faction.setStarRevived(false);
+            faction.reviveForces(true, 1);
+            assertEquals(Emojis.EMPEROR + " revives 1 " + Emojis.EMPEROR_SARDAUKAR + " for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testCanReviveExtraAllyForces() throws IOException {
+            Faction bg = new BGFaction("bg", "bg");
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            game.createAlliance(faction, bg);
+            bg.removeForces("Wallach IX", 2, false, true);
+            faction.reviveForces(true, 0);
+            assertEquals(Emojis.EMPEROR + " does not purchase additional revivals.", turnSummary.getMessages().getLast());
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.BG + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+        }
+    }
+
     @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
@@ -185,8 +309,6 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testKaitainHighDiscard() {
-        TestTopic turnSummary = new TestTopic();
-        game.setTurnSummary(turnSummary);
         TreacheryCard kulon = game.getTreacheryDeck().stream()
                 .filter(t -> t.name().equals("Kulon"))
                 .findFirst()
