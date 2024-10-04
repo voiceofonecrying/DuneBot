@@ -265,6 +265,10 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public boolean hasTraitor(String leaderName) {
+        return traitorHand.stream().anyMatch(t -> t.name().equals(leaderName));
+    }
+
     public List<TraitorCard> getTraitorHand() {
         return traitorHand;
     }

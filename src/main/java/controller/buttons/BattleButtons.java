@@ -193,7 +193,7 @@ public class BattleButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void publishResolution(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
+    private static void publishResolution(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         String[] params = event.getComponentId().replace("battle-publish-resolution-turn-", "").split("-");
         int turn = Integer.parseInt(params[0]);
         String wholeTerritoryName = params[1];
@@ -206,6 +206,7 @@ public class BattleButtons implements Pressable {
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Published to turn summary");
+        discordGame.pushGame();
     }
 
     public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {

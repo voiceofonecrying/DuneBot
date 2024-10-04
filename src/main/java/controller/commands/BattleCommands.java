@@ -54,7 +54,7 @@ public class BattleCommands {
         }
     }
 
-    public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException {
+    public static void reviewResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         battleResolution(discordGame, game, false);
     }
 
@@ -63,7 +63,7 @@ public class BattleCommands {
         discordGame.pushGame();
     }
 
-    public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
+    public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException, ChannelNotFoundException {
         boolean playedJuiceOfSapho = discordGame.optional(useJuiceOfSapho) != null && discordGame.required(useJuiceOfSapho).getAsBoolean();
         boolean noKillStoneBurner = discordGame.optional(stoneBurnerDoesNotKill) != null && discordGame.required(stoneBurnerDoesNotKill).getAsBoolean();
         boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
@@ -71,6 +71,8 @@ public class BattleCommands {
         boolean overrideDecisions = discordGame.optional(forceResolution) != null && discordGame.required(forceResolution).getAsBoolean();
 
         game.getBattles().getCurrentBattle().battleResolution(game, publishToTurnSummary, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, overrideDecisions);
+        if (publishToTurnSummary)
+            discordGame.pushGame();
     }
 
     public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
