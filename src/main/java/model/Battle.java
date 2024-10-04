@@ -842,13 +842,13 @@ public class Battle {
         if (bothCallTraitor(game)) {
             resolution += getTraitorCallString(game, getAggressor(game), defenderBattlePlan.getLeaderNameForTraitor()) + "\n";
             resolution += getTraitorCallString(game, getDefender(game), aggressorBattlePlan.getLeaderNameForTraitor()) + "\n";
-            resolution += "Both factions call Traitor, and nobody wins.";
+            resolution += "**Nobody wins**";
         } else if (aggressorCallsTraitor(game)) {
             resolution += getTraitorCallString(game, getAggressor(game), defenderBattlePlan.getLeaderNameForTraitor()) + "\n";
-            resolution += getAggressorEmojis(game) + " wins with no losses";
+            resolution += getAggressorEmojis(game) + " **wins with no losses**";
         } else if (defenderCallsTraitor(game)) {
             resolution += getTraitorCallString(game, getDefender(game), aggressorBattlePlan.getLeaderNameForTraitor()) + "\n";
-            resolution += getDefenderEmojis(game) + " wins with no losses";
+            resolution += getDefenderEmojis(game) + " **wins with no losses**";
         } else if (aggressorBattlePlan.isLasgunShieldExplosion()) {
             resolution += "**KABOOM!**";
         } else {
@@ -877,7 +877,7 @@ public class Battle {
             throw new InvalidGameStateException("Traitor not found.");
     }
 
-    public void battleResolution(Game game, boolean publishToTurnSummary, boolean playedJuiceOfSapho, boolean noKillStoneBurner, boolean portableSnooper, boolean noPoisonTooth, boolean overrideDecisions) throws InvalidGameStateException {
+    public void battleResolution(Game game, boolean publishToTurnSummary, boolean playedJuiceOfSapho, boolean noKillStoneBurner, boolean portableSnooper, boolean noPoisonTooth, boolean aggressorCallsTraitor, boolean defenderCallsTraitor, boolean overrideDecisions) throws InvalidGameStateException {
         BattlePlan aggressorPlan = getAggressorBattlePlan();
         BattlePlan defenderPlan = getDefenderBattlePlan();
         if (aggressorPlan == null || defenderPlan == null)
@@ -887,49 +887,58 @@ public class Battle {
         if (isHMSCardDecisionOpen() && !overrideDecisions && publishToTurnSummary)
             throw new InvalidGameStateException(getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
 
-        defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
-        boolean aggressorNoKillStoneBurner = false;
-        boolean defenderNoKillStoneBurner = false;
-        if (noKillStoneBurner) {
-            aggressorNoKillStoneBurner = aggressorPlan.dontKillWithStoneBurner();
-            defenderNoKillStoneBurner = defenderPlan.dontKillWithStoneBurner();
-            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
+        if (aggressorCallsTraitor) {
+            aggressorPlan.setWillCallTraitor(true);
+            aggressorPlan.setHarkWillCallTraitor(true);
         }
-        boolean aggressorPlanAddedPortableSnooper = false;
-        boolean defenderPlanAddedPortableSnooper = false;
+        if (defenderCallsTraitor) {
+            defenderPlan.setWillCallTraitor(true);
+            defenderPlan.setHarkWillCallTraitor(true);
+        }
+
+        defenderPlan.setJuiceOfSapho(playedJuiceOfSapho);
+
+        boolean reRevealBattlePlans = false;
+        if (noKillStoneBurner) {
+            aggressorPlan.dontKillWithStoneBurner();
+            defenderPlan.dontKillWithStoneBurner();
+            reRevealBattlePlans = true;
+        }
+
         if (portableSnooper) {
             if (getAggressor(game).hasTreacheryCard("Portable Snooper"))
-                aggressorPlanAddedPortableSnooper = aggressorPlan.addPortableSnooper();
+                aggressorPlan.addPortableSnooper();
             if (getDefender(game).hasTreacheryCard("Portable Snooper"))
-                defenderPlanAddedPortableSnooper = defenderPlan.addPortableSnooper();
+                defenderPlan.addPortableSnooper();
+            reRevealBattlePlans = true;
+        }
+
+        if (noPoisonTooth) {
+            aggressorPlan.revokePoisonTooth();
+            defenderPlan.revokePoisonTooth();
+            reRevealBattlePlans = true;
+        }
+
+        if (reRevealBattlePlans) {
             aggressorPlan.revealOpponentBattlePlan(defenderPlan);
             defenderPlan.revealOpponentBattlePlan(aggressorPlan);
             if (aggressorPlan.isOpponentHasBureaucrat())
                 aggressorPlan.revealOpponentBattlePlan(defenderPlan);
         }
-        boolean aggressorPlanHasPoisonTooth = false;
-        boolean defenderPlanHasPoisonTooth = false;
-        if (noPoisonTooth) {
-            aggressorPlanHasPoisonTooth = aggressorPlan.revokePoisonTooth();
-            defenderPlanHasPoisonTooth = defenderPlan.revokePoisonTooth();
-            aggressorPlan.revealOpponentBattlePlan(defenderPlan);
-            defenderPlan.revealOpponentBattlePlan(aggressorPlan);
-        }
+
         printBattleResolution(game, publishToTurnSummary);
-        if (!publishToTurnSummary) {
-            if (overrideDecisions || !isSpiceBankerDecisionOpen() && !isHMSCardDecisionOpen()) {
-                String publishChoiceId = "battle-publish-resolution-turn-" + game.getTurn() + "-" + wholeTerritoryName + "-" + playedJuiceOfSapho + "-" + noKillStoneBurner + "-" + portableSnooper + "-" + noPoisonTooth + "-" + overrideDecisions;
-                game.getModInfo().publish("Use this button to publish the above resolution to turn summary.", List.of(new DuneChoice(publishChoiceId, "Publish")));
-            }
-            if (aggressorPlanHasPoisonTooth) aggressorPlan.restorePoisonTooth();
-            else if (defenderPlanHasPoisonTooth) defenderPlan.restorePoisonTooth();
-            if (aggressorPlanAddedPortableSnooper) aggressorPlan.removePortableSnooper();
-            else if (defenderPlanAddedPortableSnooper) defenderPlan.removePortableSnooper();
-            if (aggressorNoKillStoneBurner) aggressorPlan.restoreKillWithStoneBurner();
-            else if (defenderNoKillStoneBurner) defenderPlan.restoreKillWithStoneBurner();
-            if (playedJuiceOfSapho) defenderPlan.setJuiceOfSapho(false);
+        if (!publishToTurnSummary && (overrideDecisions || !isSpiceBankerDecisionOpen() && !isHMSCardDecisionOpen())) {
+            String publishChoiceId = "battle-publish-resolution-turn-" + game.getTurn() + "-" + wholeTerritoryName;
+            game.getModInfo().publish("Use this button to publish the above resolution to turn summary.", List.of(new DuneChoice(publishChoiceId, "Publish")));
         }
+    }
+
+    public void printBattleResolution(Game game, boolean publishToTurnSummary, int turn, String territoryName) throws InvalidGameStateException {
+        if (game.getTurn() != turn)
+            throw new InvalidGameStateException("It is not turn " + turn);
+        if (!wholeTerritoryName.equals(territoryName))
+            throw new InvalidGameStateException("The current battle is not in " + territoryName);
+        printBattleResolution(game, publishToTurnSummary);
     }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary) throws InvalidGameStateException {

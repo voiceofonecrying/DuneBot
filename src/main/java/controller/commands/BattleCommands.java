@@ -26,8 +26,8 @@ public class BattleCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
-                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho),
-                new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho),
+                new SubcommandData("review-resolution", "Print battle results to mod-info for review.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho, aggressorTraitor, defenderTraitor, forceResolution),
+                new SubcommandData("publish-resolution", "Publish battle results to turn summary.").addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho, aggressorTraitor, defenderTraitor, forceResolution),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
                 new SubcommandData("remove-leader-from-territory", "Remove a leader from a territory where they did not batttle.").addOptions(faction, removeLeader),
                 new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(starredForcesFaction),
@@ -60,7 +60,6 @@ public class BattleCommands {
 
     public static void publishResolution(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         battleResolution(discordGame, game, true);
-        discordGame.pushGame();
     }
 
     public static void battleResolution(DiscordGame discordGame, Game game, boolean publishToTurnSummary) throws InvalidGameStateException, ChannelNotFoundException {
@@ -68,11 +67,12 @@ public class BattleCommands {
         boolean noKillStoneBurner = discordGame.optional(stoneBurnerDoesNotKill) != null && discordGame.required(stoneBurnerDoesNotKill).getAsBoolean();
         boolean portableSnooper = discordGame.optional(addPortableSnooper) != null && discordGame.required(addPortableSnooper).getAsBoolean();
         boolean noPoisonTooth = discordGame.optional(deactivatePoisonTooth) != null && discordGame.required(deactivatePoisonTooth).getAsBoolean();
+        boolean aggressorCallsTraitor = discordGame.optional(aggressorTraitor) != null && discordGame.required(aggressorTraitor).getAsBoolean();
+        boolean defenderCallsTraitor = discordGame.optional(defenderTraitor) != null && discordGame.required(defenderTraitor).getAsBoolean();
         boolean overrideDecisions = discordGame.optional(forceResolution) != null && discordGame.required(forceResolution).getAsBoolean();
 
-        game.getBattles().getCurrentBattle().battleResolution(game, publishToTurnSummary, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, overrideDecisions);
-        if (publishToTurnSummary)
-            discordGame.pushGame();
+        game.getBattles().getCurrentBattle().battleResolution(game, publishToTurnSummary, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, aggressorCallsTraitor, defenderCallsTraitor, overrideDecisions);
+        discordGame.pushGame();
     }
 
     public static void placeLeaderInTerritory(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

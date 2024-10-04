@@ -197,12 +197,7 @@ public class BattleButtons implements Pressable {
         String[] params = event.getComponentId().replace("battle-publish-resolution-turn-", "").split("-");
         int turn = Integer.parseInt(params[0]);
         String wholeTerritoryName = params[1];
-        boolean playedJuiceOfSapho = params[2].equals("true");
-        boolean noKillStoneBurner = params[3].equals("true");
-        boolean portableSnooper = params[4].equals("true");
-        boolean noPoisonTooth = params[5].equals("true");
-        boolean overrideDecisions = params[6].equals("true");
-        game.getBattles().getCurrentBattle().battleResolution(game, true, playedJuiceOfSapho, noKillStoneBurner, portableSnooper, noPoisonTooth, overrideDecisions);
+        game.getBattles().getCurrentBattle().printBattleResolution(game, true, turn, wholeTerritoryName);
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Published to turn summary");

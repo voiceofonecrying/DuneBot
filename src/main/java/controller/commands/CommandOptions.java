@@ -125,6 +125,8 @@ public class CommandOptions {
     public static final OptionData addPortableSnooper = new OptionData(OptionType.BOOLEAN, "add-portable-snooper", "Allow battle plan resolution with Portable Snooper added (default = False)", false);
     public static final OptionData stoneBurnerDoesNotKill = new OptionData(OptionType.BOOLEAN, "stone-burner-does-not-kill", "Prevent Stone Burner from killing leaders (default = False)", false);
     public static final OptionData useJuiceOfSapho = new OptionData(OptionType.BOOLEAN, "use-juice-of-sapho", "Use Juice of Sapho", false);
+    public static final OptionData aggressorTraitor = new OptionData(OptionType.BOOLEAN, "aggressor-traitor", "Aggressor calls Traitor", false);
+    public static final OptionData defenderTraitor = new OptionData(OptionType.BOOLEAN, "defender-traitor", "Defender calls Traitor", false);
     public static final OptionData forceResolution = new OptionData(OptionType.BOOLEAN, "force-resolution", "Override outstanding player decisions and print resolution", false);
     public static final OptionData fromTerritory = new OptionData(OptionType.STRING, "from", "The territory.", true).setAutoComplete(true);
     public static final OptionData toTerritory = new OptionData(OptionType.STRING, "to", "Moving to this territory.", true).setAutoComplete(true);
