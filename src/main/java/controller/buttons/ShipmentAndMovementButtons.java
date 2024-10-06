@@ -442,7 +442,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         shipment.clear();
         if (guildAmbassador)
             shipment.setShipped(false);
-        discordGame.pushGame();
     }
 
     private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
@@ -466,6 +465,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             queueMovementButtons(game, faction, discordGame);
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
+        discordGame.pushGame();
     }
 
     private static void resetShipmentMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
