@@ -264,6 +264,17 @@ public class BattlePlanTest extends DuneTest {
     }
 
     @Test
+    void testTraitorLeaderDies() throws InvalidGameStateException {
+        BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, shield, 0, false, 0);
+        battlePlan.revealOpponentBattlePlan(crysknifePlan);
+        assertTrue(battlePlan.isLeaderAlive());
+        assertEquals(0, battlePlan.combatWater());
+        battlePlan.setLeaderIsTraitor(true);
+        assertFalse(battlePlan.isLeaderAlive());
+        assertEquals(2, battlePlan.combatWater());
+    }
+
+    @Test
     void testBattlePlanAtreidesHasKH() {
         atreides.setForcesLost(7);
         assertDoesNotThrow(() -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, true, null, null, 0, false, 0));

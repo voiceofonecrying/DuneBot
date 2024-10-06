@@ -51,6 +51,8 @@ public class BattlePlan {
     private boolean harkCanCallTraitor;
     private boolean harkDeclinedTraitor;
     private boolean harkWillCallTraitor;
+    private boolean leaderIsTraitor;
+    private boolean opponentIsTraitor;
 
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
@@ -91,6 +93,8 @@ public class BattlePlan {
         this.harkCanCallTraitor = false;
         this.harkDeclinedTraitor = false;
         this.harkWillCallTraitor = false;
+        this.leaderIsTraitor = false;
+        this.opponentIsTraitor = false;
         presentEarlyTraitorChoices(game, faction, opponent, false);
     }
 
@@ -114,6 +118,14 @@ public class BattlePlan {
             else
                 canCallTraitor = true;
         }
+    }
+
+    public void setLeaderIsTraitor(boolean leaderIsTraitor) {
+        this.leaderIsTraitor = leaderIsTraitor;
+    }
+
+    public void setOpponentIsTraitor(boolean opponentIsTraitor) {
+        this.opponentIsTraitor = opponentIsTraitor;
     }
 
     public Leader getLeader() {
@@ -516,18 +528,12 @@ public class BattlePlan {
                 || weapon != null && !stoneBurnerNoKill && weapon.name().equals("Stone Burner");
     }
 
-    public boolean dontKillWithStoneBurner() {
+    public void dontKillWithStoneBurner() {
         if (weapon != null) {
             if (weapon.name().equals("Stone Burner") || opponentWeapon != null && opponentWeapon.name().equals("Stone Burner") && weapon.name().equals("Mirror Weapon")) {
                 stoneBurnerNoKill = true;
-                return true;
             }
         }
-        return false;
-    }
-
-    public void restoreKillWithStoneBurner() {
-        stoneBurnerNoKill = false;
     }
 
     private boolean carthagStrongholdPoisonDefense() {
@@ -539,7 +545,11 @@ public class BattlePlan {
     }
 
     public boolean isLeaderAlive() {
-        if (isLasgunShieldExplosion()) {
+        if (leaderIsTraitor) {
+            return false;
+        } else if (opponentIsTraitor) {
+            return true;
+        } else if (isLasgunShieldExplosion()) {
             return false;
         } else if (stoneBurnerKills()) {
             return false;

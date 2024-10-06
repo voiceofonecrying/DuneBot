@@ -604,11 +604,20 @@ public class Battle {
         BattlePlan opponentBattlePlan = isAggressor ? defenderPlan : aggressorPlan;
         boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion() && neitherCallTraitor(game);
         boolean callsTraitor = isAggressor ? aggressorCallsTraitor(game) : defenderCallsTraitor(game);
+        if (callsTraitor) {
+            battlePlan.setOpponentIsTraitor(true);
+            opponentBattlePlan.setLeaderIsTraitor(true);
+        }
+        boolean opponentCallsTraitor = isAggressor ? defenderCallsTraitor(game) : aggressorCallsTraitor(game);
+        if (opponentCallsTraitor) {
+            opponentBattlePlan.setOpponentIsTraitor(true);
+            battlePlan.setLeaderIsTraitor(true);
+        }
         String emojis = faction.getEmoji();
         boolean isLoser = (isAggressor != isAggressorWin(game) || isLasgunShieldExplosion) && !callsTraitor || bothCallTraitor(game);
         String wholeTerritoryName = getWholeTerritoryName();
 
-        if (!callsTraitor && battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
+        if (battlePlan.getLeader() != null && (!callsTraitor && !battlePlan.isLeaderAlive() || opponentCallsTraitor))
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach())
             resolution += emojis + " loses Kwisatz Haderach to the tanks\n";
@@ -1020,13 +1029,13 @@ public class Battle {
             return;
         }
 
-        String opponentLeader = opponentPlan.getLeaderNameForTraitor();
-        checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentLeader, false, modInfo, publishToTurnSummary);
+        checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentPlan, false, modInfo, publishToTurnSummary);
         if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game, game.getFaction("Harkonnen"), faction, battlePlan, opponent, opponentLeader, true, modInfo, publishToTurnSummary);
+            checkForTraitorCall(game, game.getFaction("Harkonnen"), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary);
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, String opponentLeader, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
+    private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
+        String opponentLeader = opponentPlan.getLeaderNameForTraitor();
         String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
         if (faction.hasTraitor(opponentLeader)) {
             if (publishToTurnSummary) {

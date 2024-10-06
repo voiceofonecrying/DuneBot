@@ -1400,8 +1400,6 @@ class BattleTest extends DuneTest {
             bgChat.clear();
             atreidesChat.clear();
             battle.printBattleResolution(game, false);
-//            assertFalse(battle.isAggressorWin(game));
-            assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertTrue(bgChat.getMessages().isEmpty());
             assertTrue(atreidesChat.getMessages().isEmpty());
             assertEquals(Emojis.BG + " will call Traitor in Arrakeen.", modInfo.getMessages().get(1));
@@ -1410,8 +1408,6 @@ class BattleTest extends DuneTest {
             bgChat.clear();
             atreidesChat.clear();
             battle.printBattleResolution(game, true);
-//            assertFalse(battle.isAggressorWin(game));
-            assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!", bgChat.getMessages().getLast());
             assertTrue(modInfo.getMessages().isEmpty());
         }
@@ -1472,6 +1468,24 @@ class BattleTest extends DuneTest {
             assertFalse(modInfo.getMessages().contains(Emojis.BG + " will call Traitor in Arrakeen if possible."));
             assertTrue(modInfo.getMessages().contains(Emojis.BG + " calls Traitor in Arrakeen!"));
             assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!", bgChat.getMessages().getLast());
+        }
+
+        @Test
+        void testTraitorCallKillsTraitorLeader() throws InvalidGameStateException {
+            bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+            battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+            modInfo.clear();
+            bgChat.clear();
+            atreidesChat.clear();
+            battle.printBattleResolution(game, false);
+            assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses Duncan Idaho to the tanks"));
+            assertTrue(battle.getDefenderBattlePlan().isLeaderAlive());
+            battle.printBattleResolution(game, true);
+            turnSummary.clear();
+            battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses Duncan Idaho to the tanks"));
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.BG + " gains 2 " + Emojis.SPICE + " combat water"));
         }
 
         @Test
