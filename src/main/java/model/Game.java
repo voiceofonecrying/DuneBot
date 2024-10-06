@@ -1298,7 +1298,7 @@ public class Game {
         }
     }
 
-    public void startBattlePhase() {
+    public Battles startBattlePhase() {
         getFactions().forEach(f -> f.resetAllySpiceSupportAfterShipping(this));
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
         turnSummary.publish("**Turn " + turn + " Battle Phase**");
@@ -1338,6 +1338,7 @@ public class Game {
         }
         setUpdated(UpdateType.MAP);
         setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
+        return battles;
     }
 
     public void endBattlePhase() throws InvalidGameStateException {

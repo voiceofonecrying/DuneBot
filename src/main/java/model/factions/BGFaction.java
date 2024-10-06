@@ -17,6 +17,7 @@ import java.util.List;
 public class BGFaction extends Faction {
     private String predictionFactionName;
     private int predictionRound;
+    private boolean denyingAllyVoice;
 
     public BGFaction(String player, String userName) throws IOException {
         super("BG", player, userName);
@@ -187,4 +188,13 @@ public class BGFaction extends Faction {
         chat.publish("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
     }
 
+    public boolean isDenyingAllyVoice() {
+        return denyingAllyVoice;
+    }
+
+    public void setDenyingAllyVoice(boolean denyingAllyVoice) {
+        this.denyingAllyVoice = denyingAllyVoice;
+        ledger.publish("You are " + (denyingAllyVoice ? "denying " : "granting ") + "The Voice to " + Emojis.getFactionEmoji(ally));
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
 }

@@ -2,9 +2,7 @@ package model;
 
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 
@@ -339,5 +337,78 @@ public class BattlesTest extends DuneTest {
 
         assertFalse(battles.aggressorMustChooseBattle());
         assertEquals("Next battle: 2 " + Emojis.HARKONNEN_TROOP + " vs 5 " + Emojis.GUILD_TROOP + " in Tuek's Sietch", turnSummary.messages.get(3));
+    }
+
+    @Nested
+    @DisplayName("#callBattleActions")
+    class CallBattleActions {
+        Battles battles;
+        @BeforeEach
+        void setUp() {
+            game.setStorm(8);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.createAlliance(bg, emperor);
+            game.createAlliance(atreides, fremen);
+        }
+
+        @Test
+        void testBGGrantsTheVoice() throws InvalidGameStateException {
+            arrakeen.addForces("Emperor", 1);
+            battles = game.startBattlePhase();
+//            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.callBattleActions(game);
+            assertTrue(gameActions.getMessages().getFirst().contains(Emojis.EMPEROR + " use the Voice."));
+        }
+
+        @Test
+        void testBGDeniesTheVoice() throws InvalidGameStateException {
+            arrakeen.addForces("Emperor", 1);
+            bg.setDenyingAllyVoice(true);
+            battles = game.startBattlePhase();
+//            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.callBattleActions(game);
+            assertFalse(gameActions.getMessages().getFirst().contains("Voice"));
+        }
+
+        @Test
+        void testAtreidesGrantsPrescience() throws InvalidGameStateException {
+            carthag.addForces("Fremen", 1);
+            battles = game.startBattlePhase();
+//            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.callBattleActions(game);
+            assertTrue(gameActions.getMessages().getFirst().contains(Emojis.FREMEN + " ask the Prescience question."));
+        }
+
+        @Test
+        void testAtreidesDeniesPrescience() throws InvalidGameStateException {
+            carthag.addForces("Fremen", 1);
+            atreides.setDenyingAllyBattlePrescience(true);
+            battles = game.startBattlePhase();
+//            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.callBattleActions(game);
+            assertFalse(gameActions.getMessages().getFirst().contains("Prescience"));
+        }
+
+        @Test
+        void testNoVoiceOrPrescienceForNonAlly() throws InvalidGameStateException {
+            sietchTabr.addForces("Guild", 1);
+            sietchTabr.addForces("Harkonnen", 1);
+            battles = game.startBattlePhase();
+//            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.callBattleActions(game);
+            assertFalse(gameActions.getMessages().getFirst().contains("Voice"));
+            assertFalse(gameActions.getMessages().getFirst().contains("Prescience"));
+        }
     }
 }

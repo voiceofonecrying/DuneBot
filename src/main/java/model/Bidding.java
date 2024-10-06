@@ -458,21 +458,13 @@ public class Bidding {
 
     private void sendAtreidesCardPrescience(Game game, TreacheryCard card) {
         if (game.hasFaction("Atreides")) {
-            Faction atreides = game.getFaction("Atreides");
-            atreides.getChat().publish(
-                    MessageFormat.format(
-                            "You predict {0} {1} {0} is up for bid (R{2}:C{3}).",
-                            Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidCardNumber
-                    )
-            );
-            if (atreides.isHomeworldOccupied()) {
-                atreides.getOccupier().getChat().publish(
-                        MessageFormat.format(
-                                "Your " + Emojis.ATREIDES + " subjects in Caladan predict {0} {1} {0} is up for bid (R{2}:C{3}).",
-                                Emojis.TREACHERY, card.name().strip(), game.getTurn(), bidCardNumber
-                        )
-                );
-            }
+            String cardInfo = MessageFormat.format("{0} {1} {0} is up for bid (R{2}:C{3}).", Emojis.TREACHERY, card.name(), game.getTurn(), bidCardNumber);
+            AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
+            atreides.getChat().publish("You predict " + cardInfo);
+            if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
+                atreides.getAllianceThread().publish(atreides.getEmoji() + " predicts " + cardInfo);
+            if (atreides.isHomeworldOccupied())
+                atreides.getOccupier().getChat().publish("Your " + Emojis.ATREIDES + " subjects in Caladan predict " + cardInfo);
         }
     }
 

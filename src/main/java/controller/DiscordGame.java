@@ -10,6 +10,7 @@ import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
 import model.*;
+import model.factions.AtreidesFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;
 import net.dv8tion.jda.api.JDA;
@@ -390,6 +391,10 @@ public class DiscordGame {
         return new FactionWhispers(this, this.game, faction.getName(), interlocutor.getName());
     }
 
+    public AllianceThread getAllianceThread(Faction faction, String allyName) throws ChannelNotFoundException {
+        return new AllianceThread(this, faction, allyName);
+    }
+
     public GenericInteractionCreateEvent getEvent() {
         return this.event;
     }
@@ -510,6 +515,8 @@ public class DiscordGame {
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
+            if (f instanceof AtreidesFaction && f.hasAlly())
+                f.setAllianceThread(getAllianceThread(f, f.getAlly()));
         }
 
         game.setTurnSummary(getTurnSummary(game));

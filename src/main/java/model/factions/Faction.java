@@ -77,6 +77,8 @@ public class Faction {
     protected DuneTopic ledger;
     @Exclude
     protected DuneTopic chat;
+    @Exclude
+    protected DuneTopic allianceThread;
 
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
@@ -992,20 +994,28 @@ public class Faction {
         lastWhisper.put(recipientName, Instant.now().toString());
     }
 
+    public DuneTopic getLedger() {
+        return ledger;
+    }
+
     public void setLedger(DuneTopic ledger) {
         this.ledger = ledger;
     }
 
-    public DuneTopic getLedger() {
-        return ledger;
+    public DuneTopic getChat() {
+        return chat;
     }
 
     public void setChat(DuneTopic chat) {
         this.chat = chat;
     }
 
-    public DuneTopic getChat() {
-        return chat;
+    public DuneTopic getAllianceThread() {
+        return allianceThread;
+    }
+
+    public void setAllianceThread(DuneTopic allianceThread) {
+        this.allianceThread = allianceThread;
     }
 
     public void addSpice(int spice, String message) {

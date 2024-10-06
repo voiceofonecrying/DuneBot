@@ -362,41 +362,69 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
         }
 
-        if (faction.hasAlly() && faction.getSpice() > 0 && !faction.isAllySpiceFinishedForTurn()) {
+        if (faction.hasAlly()) {
             String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
-            String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.\nSet ally " + Emojis.SPICE + " support:";
-            List<Button> buttons = new ArrayList<>();
-            buttons.add(Button.primary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
-//            if (faction.getSpice() >= 4)
-//                buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 4) + "-quarter", "1/4 (" + Math.floorDiv(faction.getSpice(), 4) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 4)));
-            if (faction.getSpice() >= 2)
-                buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 2) + "-half", "Half (" + Math.floorDiv(faction.getSpice(), 2) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 2)));
-            buttons.add(Button.secondary("ally-support-" + faction.getSpice() + "-max", "Max (" + faction.getSpice() + ")").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
-            buttons.add(Button.secondary("ally-support-reset", "Reset support (0)").withDisabled(faction.getSpiceForAlly() == 0));
             switch (faction) {
-                case GuildFaction guild -> {
-                    if (guild.isAllySpiceForShipping()) {
-                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding AND shipping.\nSet ally " + Emojis.SPICE + " support:";
-                        buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
-                    } else {
-                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding ONLY.\nSet ally " + Emojis.SPICE + " support:";
-                        buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
-                    }
+                // Also BT, Fremen, Guild, Richese
+                // Future - Moritani, Ix, Ecaz
+                case AtreidesFaction atreides -> {
+                    String message = "You are currently " + (atreides.isGrantingAllyTreacheryPrescience() ? "granting " : "denying ") + Emojis.TREACHERY + " Prescience to " + allyEmoji;
+                    if (atreides.isGrantingAllyTreacheryPrescience())
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("atreides-ally-treachery-prescience-no", "Deny Bidding Prescience"))).build());
+                    else
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("atreides-ally-treachery-prescience-yes", "Grant Bidding Prescience"))).build());
+                    message = "You are currently " + (atreides.isDenyingAllyBattlePrescience() ? "denying " : "granting ") + "Battle Prescience to " + allyEmoji;
+                    if (atreides.isDenyingAllyBattlePrescience())
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("atreides-ally-battle-prescience-yes", "Grant Battle Prescience"))).build());
+                    else
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("atreides-ally-battle-prescience-n0", "Deny Battle Prescience"))).build());
                 }
-                case ChoamFaction choam -> {
-                    if (choam.isAllySpiceForBattle()) {
-                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, AND battles.\nSet ally " + Emojis.SPICE + " support:";
-                        buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
-                    } else {
-                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping ONLY.\nSet ally " + Emojis.SPICE + " support:";
-                        buttons.add(Button.danger("ally-support-battles", "Support battles"));
-                    }
+                case BGFaction bg -> {
+                    String message = "You are currently " + (bg.isDenyingAllyVoice() ? "denying " : "granting ") + "The Voice to " + allyEmoji;
+                    if (bg.isDenyingAllyVoice())
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("bg-ally-voice-yes", "Grant The Voice"))).build());
+                    else
+                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("bg-ally-voice-no", "Deny The Voice"))).build());
                 }
-                case EmperorFaction ignored ->
-                        message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, and battles.\nSet ally " + Emojis.SPICE + " support:";
-                default -> {}
+                default -> {
+                }
             }
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(buttons).build());
+            if (faction.getSpice() > 0 && !faction.isAllySpiceFinishedForTurn()) {
+                String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.\nSet ally " + Emojis.SPICE + " support:";
+                List<Button> buttons = new ArrayList<>();
+                buttons.add(Button.primary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
+//                if (faction.getSpice() >= 4)
+//                    buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 4) + "-quarter", "1/4 (" + Math.floorDiv(faction.getSpice(), 4) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 4)));
+                if (faction.getSpice() >= 2)
+                    buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 2) + "-half", "Half (" + Math.floorDiv(faction.getSpice(), 2) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 2)));
+                buttons.add(Button.secondary("ally-support-" + faction.getSpice() + "-max", "Max (" + faction.getSpice() + ")").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
+                buttons.add(Button.secondary("ally-support-reset", "Reset support (0)").withDisabled(faction.getSpiceForAlly() == 0));
+                switch (faction) {
+                    case GuildFaction guild -> {
+                        if (guild.isAllySpiceForShipping()) {
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding AND shipping.\nSet ally " + Emojis.SPICE + " support:";
+                            buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
+                        } else {
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                            buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
+                        }
+                    }
+                    case ChoamFaction choam -> {
+                        if (choam.isAllySpiceForBattle()) {
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, AND battles.\nSet ally " + Emojis.SPICE + " support:";
+                            buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
+                        } else {
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                            buttons.add(Button.danger("ally-support-battles", "Support battles"));
+                        }
+                    }
+                    case EmperorFaction ignored ->
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, and battles.\nSet ally " + Emojis.SPICE + " support:";
+                    default -> {
+                    }
+                }
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(buttons).build());
+            }
         }
     }
 

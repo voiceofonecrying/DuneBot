@@ -39,6 +39,7 @@ public class BattleButtons implements Pressable {
         discordGame.queueMessage("You selected " + territory + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle in " + territory + ".");
         BattleCommands.setBattleIndex(discordGame, game, battleIndex);
+        discordGame.pushGame();
     }
 
     private static void chooseOpponent(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -47,7 +48,13 @@ public class BattleButtons implements Pressable {
         String opponent = event.getComponentId().split("-")[1];
         discordGame.queueMessage("You selected " + opponent + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
-        BattleCommands.setOpponent(discordGame, game, opponent);
+        int space = opponent.indexOf(" ");
+        if (space != -1) opponent = opponent.substring(0, space);
+        battles.setOpponent(game, opponent);
+        Battle currentBattle = battles.getCurrentBattle();
+        if (currentBattle.hasEcazAndAlly()) BattleCommands.ecazAllyButtons(discordGame, game, currentBattle);
+        else battles.callBattleActions(game);
+        discordGame.pushGame();
     }
 
     private static void ecazChooseCombatant(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {

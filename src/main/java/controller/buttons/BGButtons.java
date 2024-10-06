@@ -5,6 +5,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
+import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
@@ -21,14 +22,12 @@ public class BGButtons implements Pressable {
             return;
         }
 
-        if (event.getComponentId().startsWith("bg-advise-")) {
-            advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]), 1);
-        } else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, discordGame);
+        if (event.getComponentId().startsWith("bg-advise-")) advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]), 1);
+        else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, discordGame);
         else if (event.getComponentId().startsWith("bg-flip-")) bgFlip(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, discordGame);
-        else if (event.getComponentId().startsWith("bg-ht")) {
-            advise(discordGame, game, game.getTerritory("Polar Sink"), 2);
-        }
+        else if (event.getComponentId().startsWith("bg-ht")) advise(discordGame, game, game.getTerritory("Polar Sink"), 2);
+        else if (event.getComponentId().startsWith("bg-ally-voice-")) allyVoice(event, game, discordGame);
     }
 
     private static void bgFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
@@ -47,5 +46,19 @@ public class BGButtons implements Pressable {
     private static void dontAdvise(ButtonInteractionEvent event, DiscordGame discordGame) {
         discordGame.queueMessage(Emojis.BG + " Don't advise in " + event.getComponentId().split("-")[3]);
         discordGame.queueDeleteMessage();
+    }
+
+    private static void allyVoice(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        BGFaction bg = (BGFaction) ButtonManager.getButtonPresser(event, game);
+        String action = event.getComponentId().replace("bg-ally-voice-", "");
+        if (action.equals("yes")) {
+            bg.setDenyingAllyVoice(false);
+            discordGame.queueMessage("You will allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
+        } else {
+            bg.setDenyingAllyVoice(true);
+            discordGame.queueMessage("You will not allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
+        }
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
     }
 }

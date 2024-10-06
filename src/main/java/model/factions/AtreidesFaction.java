@@ -10,6 +10,8 @@ import java.io.IOException;
 
 public class AtreidesFaction extends Faction {
     private int forcesLost;
+    private boolean denyingAllyBattlePrescience;
+    private boolean grantingAllyTreacheryPrescience;
 
     public AtreidesFaction(String player, String userName) throws IOException {
         super("Atreides", player, userName);
@@ -24,6 +26,7 @@ public class AtreidesFaction extends Faction {
         this.homeworld = "Caladan";
 
         this.forcesLost = 0;
+        this.grantingAllyTreacheryPrescience = false;
     }
 
     @Override
@@ -63,5 +66,25 @@ public class AtreidesFaction extends Faction {
      */
     public boolean isHasKH() {
         return forcesLost >= 7;
+    }
+
+    public boolean isDenyingAllyBattlePrescience() {
+        return denyingAllyBattlePrescience;
+    }
+
+    public void setDenyingAllyBattlePrescience(boolean denyingAllyBattlePrescience) {
+        this.denyingAllyBattlePrescience = denyingAllyBattlePrescience;
+        ledger.publish("You are " + (denyingAllyBattlePrescience ? "denying " : "granting ") + "Battle Prescience to " + Emojis.getFactionEmoji(ally));
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
+    public boolean isGrantingAllyTreacheryPrescience() {
+        return grantingAllyTreacheryPrescience;
+    }
+
+    public void setGrantingAllyTreacheryPrescience(boolean grantingAllyTreacheryPrescience) {
+        this.grantingAllyTreacheryPrescience = grantingAllyTreacheryPrescience;
+        ledger.publish("You are " + (grantingAllyTreacheryPrescience ? "granting " : "denying ") + Emojis.TREACHERY + " Prescience to " + Emojis.getFactionEmoji(ally));
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 }

@@ -152,14 +152,14 @@ public class Battles {
         else if (opponent.hasSkill("Mentat"))
             message += step++ + ". " + opponent.getEmoji() + " may use Mentat skill.\n";
 
-        if (aggressor instanceof BGFaction || aggressor.getAlly().equals("BG"))
+        if (aggressor instanceof BGFaction || (aggressor.getAlly().equals("BG") && !((BGFaction) game.getFaction("BG")).isDenyingAllyVoice()))
             message += step++ + ". " + aggressor.getEmoji() + " use the Voice.\n";
-        else if (opponent instanceof BGFaction || opponent.getAlly().equals("BG"))
+        else if (opponent instanceof BGFaction || (opponent.getAlly().equals("BG") && !((BGFaction) game.getFaction("BG")).isDenyingAllyVoice()))
             message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
 
-        if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides"))
+        if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides") && !((AtreidesFaction) game.getFaction("Atreides")).isDenyingAllyBattlePrescience())
             message += step++ + ". " + aggressor.getEmoji() + " ask the Prescience question.\n";
-        else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides"))
+        else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides") && !((AtreidesFaction) game.getFaction("Atreides")).isDenyingAllyBattlePrescience())
             message += step++ + ". " + opponent.getEmoji() + " ask the Prescience question.\n";
 
         String skilledLeaderFactions = "";
