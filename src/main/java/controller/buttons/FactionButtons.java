@@ -53,7 +53,11 @@ public class FactionButtons {
         discordGame.queueDeleteMessage();
         Battle battle = game.getBattles().getCurrentBattle();
         switch (response) {
-            case "wait" -> discordGame.queueMessage("You will wait for battle wheels to decide.");
+            case "wait" -> {
+                discordGame.queueMessage("You will wait for battle wheels to decide.");
+                if (battle.mightCallTraitor(game, faction, turn, wholeTerritoryName))
+                    discordGame.pushGame();
+            }
             case "yes" -> {
                 if (battle.isResolutionPublished())
                     discordGame.queueMessage("You will call Traitor.");

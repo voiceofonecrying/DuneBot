@@ -617,7 +617,7 @@ public class Battle {
         boolean isLoser = (isAggressor != isAggressorWin(game) || isLasgunShieldExplosion) && !callsTraitor || bothCallTraitor(game);
         String wholeTerritoryName = getWholeTerritoryName();
 
-        if (battlePlan.getLeader() != null && (!callsTraitor && !battlePlan.isLeaderAlive() || opponentCallsTraitor))
+        if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
         if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach())
             resolution += emojis + " loses Kwisatz Haderach to the tanks\n";
@@ -1130,6 +1130,36 @@ public class Battle {
             game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
             plan.setCanCallTraitor(false);
         }
+    }
+
+    public boolean mightCallTraitor(Game game, Faction faction, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
+        if (turn != game.getTurn())
+            throw new InvalidGameStateException("It is no longer turn " + turn);
+        if (!wholeTerritoryForTraitor.equals(wholeTerritoryName))
+            throw new InvalidGameStateException("The current battle is not in " + wholeTerritoryForTraitor);
+
+        BattlePlan plan;
+        Faction opponent;
+        if (faction == getAggressor(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getAggressorName())) {
+            plan = aggressorBattlePlan;
+            opponent = getDefender(game);
+        } else if (faction == getDefender(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getDefenderName())) {
+            plan = defenderBattlePlan;
+            opponent = getAggressor(game);
+        } else
+            throw new InvalidGameStateException(faction.getName() + " does not have a battle plan for this battle.");
+
+        if (!resolutionPublished) {
+            game.getModInfo().publish(faction.getEmoji() + " will wait for battle wheels  to decide whether to call Traitor in " + wholeTerritoryName);
+            if (faction.getAlly().equals("Harkonnen")) {
+                plan.presentEarlyTraitorChoices(game, game.getFaction("Harkonnen"), opponent, true);
+                if (plan.isHarkCanCallTraitor())
+                    game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
+                else
+                    game.getModInfo().publish(Emojis.HARKONNEN + " cannot call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
+            }
+        }
+        return plan.isHarkCanCallTraitor();
     }
 
     private String lasgunShieldCarnage(Game game) {
