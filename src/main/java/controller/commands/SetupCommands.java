@@ -432,7 +432,8 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getBGChat().queueMessage(game.getFaction("BG").getPlayer() + " Please make your secret prediction.");
+        Faction bg = game.getFaction("BG");
+        bg.getChat().publish(bg.getPlayer() + " Please make your secret prediction.");
         return StepStatus.STOP;
     }
 
@@ -490,7 +491,7 @@ public class SetupCommands {
                 game.drawTreacheryCard(ixFaction.getName(), false, false);
             }
             discordGame.getModInfo().queueMessage(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
-            IxCommands.initialCard(discordGame, game);
+            IxCommands.initialCard(game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
             discordGame.getModInfo().queueMessage(Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
@@ -534,7 +535,7 @@ public class SetupCommands {
                     .map(Optional::get)
                     .forEach(message::addFiles);
 
-            discordGame.getFactionChat(faction.getName()).queueMessage(message);
+            discordGame.getFactionChat(faction).queueMessage(message);
         }
 
         return StepStatus.STOP;
@@ -594,7 +595,7 @@ public class SetupCommands {
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             discordGame.getModInfo().queueMessage("Harkonnen can mulligan");
-            discordGame.getHarkonnenChat().queueMessage(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
+            faction.getChat().publish(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
             discordGame.getModInfo().queueMessage("Harkonnen cannot mulligan");
@@ -651,8 +652,8 @@ public class SetupCommands {
     public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction faction1 = game.getFactions().getFirst();
         Faction faction2 = game.getFactions().getLast();
-        discordGame.getFactionChat(faction1.getName()).queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
-        discordGame.getFactionChat(faction2.getName()).queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        discordGame.getFactionChat(faction1).queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        discordGame.getFactionChat(faction2).queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);
         discordGame.getTurnSummary().queueMessage("Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
 
@@ -706,7 +707,7 @@ public class SetupCommands {
         Collections.shuffle(game.getLeaderSkillDeck());
 
         faction.getLeaderSkillsHand().clear();
-        discordGame.getFactionChat(faction.getName()).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
+        discordGame.getFactionChat(faction).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
                         updatedLeader.getName(), leaderSkillCard.name()
                 )
         );

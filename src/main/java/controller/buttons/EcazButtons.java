@@ -21,7 +21,7 @@ public class EcazButtons implements Pressable {
 
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame);
+        if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame, game);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-choam-discard-")) choamDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-fremen-move-from-")) fremenMoveFrom(event, game, discordGame);
@@ -38,7 +38,7 @@ public class EcazButtons implements Pressable {
         switch (event.getComponentId()) {
             case "ecaz-get-vidal" -> getDukeVidal(game, discordGame);
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
-            case "ecaz-deny-offer" -> denyAlliance(discordGame);
+            case "ecaz-deny-offer" -> denyAlliance(discordGame, game);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
             case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(discordGame);
             case "ecaz-reset-ambassadors" -> resetAmbassadors(discordGame);
@@ -189,9 +189,9 @@ public class EcazButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void denyAlliance(DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void denyAlliance(DiscordGame discordGame, Game game) {
         discordGame.queueMessage("You have sent the Ambassador away empty-handed.");
-        discordGame.getEcazChat().queueMessage("Your ambassador has returned with news that no alliance will take place.");
+        game.getFaction("Ecaz").getChat().publish("Your ambassador has returned with news that no alliance will take place.");
         discordGame.queueDeleteMessage();
     }
 
@@ -206,12 +206,12 @@ public class EcazButtons implements Pressable {
     }
 
 
-    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = event.getComponentId().replace("ecaz-offer-alliance-", "");
         List<Button> buttons = new LinkedList<>();
         buttons.add(Button.primary("ecaz-accept-offer", "Yes"));
         buttons.add(Button.danger("ecaz-deny-offer", "No"));
-        FactionChat chatChannel = discordGame.getFactionChat(factionName);
+        FactionChat chatChannel = discordGame.getFactionChat(game.getFaction(factionName));
         String emoji = discordGame.getGame().getFaction(factionName).getEmoji();
         discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have offered alliance to " + emoji);
         chatChannel.queueMessage("An ambassador of " + Emojis.ECAZ + " has approached you to offer a formal alliance.  Do you accept?", buttons);

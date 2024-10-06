@@ -2,10 +2,11 @@ package controller.channels;
 
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import model.factions.Faction;
 
 public class FactionChat extends DiscordChannel {
-    public FactionChat(DiscordGame discordGame, String factionName) throws ChannelNotFoundException {
+    public FactionChat(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
         super(discordGame);
-        this.messageChannel = discordGame.getThreadChannel(factionName.toLowerCase() + "-info", "chat");
+        this.messageChannel = discordGame.getThreadChannel(faction.getName().toLowerCase() + "-info", "chat");
     }
 }

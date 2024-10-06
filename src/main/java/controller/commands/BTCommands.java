@@ -69,7 +69,7 @@ public class BTCommands {
             discordGame.pushGame();
             String newFDEmoji = newFD.name().equals("Cheap Hero") ? "" : game.getFaction(newFD.factionName()).getEmoji() + " ";
             String oldFDEmoji = traitorCard.name().equals("Cheap Hero") ? "" : game.getFaction(traitorCard.factionName()).getEmoji() + " ";
-            discordGame.getBTLedger().queueMessage(
+            faction.getChat().publish(
                     MessageFormat.format(
                             "{0}{1} is your new Face Dancer. You have swapped out {2}{3}.",
                             newFDEmoji, newFD.name(), oldFDEmoji, traitorCard.name()

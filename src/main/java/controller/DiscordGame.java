@@ -272,123 +272,15 @@ public class DiscordGame {
     }
 
     public FactionChat getFactionChat(Faction faction) throws ChannelNotFoundException {
-        return getFactionChat(faction.getName());
-    }
-
-    public FactionChat getFactionChat(String factionName) throws ChannelNotFoundException {
-        return new FactionChat(this, factionName);
-    }
-
-    public FactionChat getAtreidesChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Atreides");
-    }
-
-    public FactionChat getBGChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "BG");
-    }
-
-    public FactionChat getBTChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "BT");
-    }
-
-    public FactionChat getCHOAMChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "CHOAM");
-    }
-
-    public FactionChat getEcazChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Ecaz");
-    }
-
-    public FactionChat getEmperorChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Emperor");
-    }
-
-    public FactionChat getFremenChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Fremen");
-    }
-
-    public FactionChat getGuildChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Guild");
-    }
-
-    public FactionChat getHarkonnenChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Harkonnen");
-    }
-
-    public FactionChat getIxChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Ix");
-    }
-
-    public FactionChat getMoritaniChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Moritani");
-    }
-
-    public FactionChat getRicheseChat() throws ChannelNotFoundException {
-        return new FactionChat(this, "Richese");
+        return new FactionChat(this, faction);
     }
 
     public FactionLedger getFactionLedger(Faction faction) throws ChannelNotFoundException {
-        return getFactionLedger(faction.getName());
-    }
-
-    public FactionLedger getFactionLedger(String factionName) throws ChannelNotFoundException {
-        return new FactionLedger(this, factionName);
-    }
-
-    public FactionLedger getAtreidesLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Atreides");
-    }
-
-    public FactionLedger getBGLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "BG");
-    }
-
-    public FactionLedger getBTLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "BT");
-    }
-
-    public FactionLedger getCHOAMLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "CHOAM");
-    }
-
-    public FactionLedger getEcazLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Ecaz");
-    }
-
-    public FactionLedger getEmperorLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Emperor");
-    }
-
-    public FactionLedger getFremenLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Fremen");
-    }
-
-    public FactionLedger getGuildLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Guild");
-    }
-
-    public FactionLedger getHarkonnenLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Harkonnen");
-    }
-
-    public FactionLedger getIxLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Ix");
-    }
-
-    public FactionLedger getMoritaniLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Moritani");
-    }
-
-    public FactionLedger getRicheseLedger() throws ChannelNotFoundException {
-        return new FactionLedger(this, "Richese");
-    }
-
-    public FactionWhispers getFactionWhispers(String factionName, String interlocutorName) throws ChannelNotFoundException {
-        return new FactionWhispers(this, this.game, factionName, interlocutorName);
+        return new FactionLedger(this, faction);
     }
 
     public FactionWhispers getFactionWhispers(Faction faction, Faction interlocutor) throws ChannelNotFoundException {
-        return new FactionWhispers(this, this.game, faction.getName(), interlocutor.getName());
+        return new FactionWhispers(this, faction, interlocutor);
     }
 
     public AllianceThread getAllianceThread(Faction faction, String allyName) throws ChannelNotFoundException {
@@ -567,11 +459,6 @@ public class DiscordGame {
             String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + Objects.requireNonNull(buttonInteractionEvent.getMember()).getUser().getName() + "`";
             queueMessage("bot-data", message, fileUpload);
         }
-    }
-
-    public MessageCreateAction prepareMessage(String name, String message) throws ChannelNotFoundException {
-        TextChannel channel = getTextChannel(name);
-        return channel.sendMessage(message);
     }
 
     private static List<MessageCreateBuilder> splitMessageBuilders(MessageCreateBuilder inMessageCreateBuilder) {

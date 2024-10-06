@@ -71,9 +71,10 @@ public class HarkCommands {
                 break;
             }
         }
-        game.getFaction("Harkonnen").removeLeader(returningLeader);
-        discordGame.getHarkonnenLedger().queueMessage(returningLeader + " has returned to their original owner.");
-        discordGame.getTurnSummary().queueMessage(returningLeader + " has returned to their original owner.");
+        Faction harkonnen = game.getFaction("Harkonnen");
+        harkonnen.removeLeader(returningLeader);
+        harkonnen.getLedger().publish(returningLeader + " has returned to their original owner.");
+        game.getTurnSummary().publish(returningLeader + " has returned to their original owner.");
         discordGame.pushGame();
     }
 
@@ -103,7 +104,7 @@ public class HarkCommands {
             ));
         }
 
-        discordGame.getHarkonnenLedger().queueMessage("You have captured " + leader.getName());
+        harkonnenFaction.getLedger().publish("You have captured " + leader.getName());
         discordGame.getFactionLedger(faction).queueMessage(
                 leader.getName() + " has been captured by " + harkonnenFaction.getEmoji()
         );
@@ -146,9 +147,9 @@ public class HarkCommands {
 
         game.getLeaderTanks().add(killedLeader);
 
-        discordGame.getFactionChat(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        discordGame.getFactionLedger(factionName).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        discordGame.getHarkonnenLedger().queueMessage("You have killed " + killedLeader.getName());
+        discordGame.getFactionChat(faction).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        discordGame.getFactionLedger(faction).queueMessage(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        harkonnenFaction.getLedger().publish("You have killed " + killedLeader.getName());
 
         game.setUpdated(UpdateType.MAP);
 

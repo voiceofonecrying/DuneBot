@@ -6,10 +6,7 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
-import model.Bidding;
-import model.Game;
-import model.Movement;
-import model.Territory;
+import model.*;
 import model.factions.Faction;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -49,7 +46,7 @@ public class IxButtons implements Pressable {
         Faction faction = game.getFaction("Ix");
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        hmsQueueMovableTerritories(game, discordGame, 0);
+        hmsQueueMovableTerritories(game, 0);
     }
 
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -65,7 +62,7 @@ public class IxButtons implements Pressable {
         Faction faction = game.getFaction("Ix");
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        hmsQueueMovableTerritories(game, discordGame, 0);
+        hmsQueueMovableTerritories(game, 0);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -80,7 +77,7 @@ public class IxButtons implements Pressable {
     }
 
     //    private static void hmsQueueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
-    public static void hmsQueueMovableTerritories(Game game, DiscordGame discordGame, int startingIndex) throws ChannelNotFoundException {
+    public static void hmsQueueMovableTerritories(Game game, int startingIndex) {
         Faction faction = game.getFaction("Ix");
         Territory from = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
 
@@ -88,30 +85,32 @@ public class IxButtons implements Pressable {
         int spacesCanMove = 6;
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
                 .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
-        TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
-        moveableTerritories.stream().map(territory -> Button.primary("hms-move-" + territory, territory)).forEach(moveToButtons::add);
+        TreeSet<DuneChoice> moveToChoices = new TreeSet<>(Comparator.comparing(DuneChoice::getLabel));
+        moveableTerritories.stream().map(t -> new DuneChoice("hms-move-" + t, t)).forEach(moveToChoices::add);
 
-        List<Button> buttonsToShow = new ArrayList<>();
+        List<DuneChoice> choices = new ArrayList<>();
         int maxButtons = 24;
-        if (moveToButtons.size() - startingIndex > maxButtons) {
+        if (moveToChoices.size() - startingIndex > maxButtons) {
             int nextStartingIndex = startingIndex + maxButtons - 1; // Take one out for the "More choices" button
-            buttonsToShow.addAll(moveToButtons.stream().toList().subList(startingIndex, nextStartingIndex));
+            choices.addAll(moveToChoices.stream().toList().subList(startingIndex, nextStartingIndex));
             String buttonId = "hms-move-more-choices-" + nextStartingIndex;
-            buttonsToShow.add(Button.secondary(buttonId, "More choices"));
+            choices.add(new DuneChoice("secondary", buttonId, "More choices"));
         } else {
-            buttonsToShow.addAll(moveToButtons.stream().toList().subList(startingIndex, moveToButtons.size()));
+            choices.addAll(moveToChoices.stream().toList().subList(startingIndex, moveToChoices.size()));
         }
-        if (startingIndex == 0) buttonsToShow.add(Button.danger("hms-pass-movement", "No move"));
-        else buttonsToShow.add(Button.secondary("hms-reset-movement", "Start over"));
-        discordGame.getIxChat().queueMessage("Where will you move the HMS?", buttonsToShow);
+        if (startingIndex == 0)
+            choices.add(new DuneChoice("danger", "hms-pass-movement", "No move"));
+        else
+            choices.add(new DuneChoice("secondary", "hms-reset-movement", "Start over"));
+        faction.getChat().publish("Where will you move the HMS?", choices);
     }
 
-    private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         String moreChoices = "hms-move-more-choices-";
         int startingIndex = Integer.parseInt(event.getComponentId().replace(moreChoices, "").replace("-", " "));
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("Getting more choices");
-        hmsQueueMovableTerritories(game, discordGame, startingIndex);
+        hmsQueueMovableTerritories(game, startingIndex);
     }
 
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -186,7 +185,7 @@ public class IxButtons implements Pressable {
         game.setUpdated(UpdateType.MAP);
     }
 
-    private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         if (game.isSetupFinished()) {
             throw new InvalidGameStateException("Setup phase is completed.");
@@ -195,10 +194,10 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.confirmStartingCard(discordGame, event.getComponentId().split("-")[4]);
+        IxCommands.confirmStartingCard(game, event.getComponentId().split("-")[4]);
     }
 
-    private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws InvalidGameStateException {
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         if (game.isSetupFinished()) {
             throw new InvalidGameStateException("Setup phase is completed.");
@@ -207,7 +206,7 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("Choose a different card.");
         discordGame.queueDeleteMessage();
-        IxCommands.initialCardButtons(discordGame, game);
+        IxCommands.initialCardButtons(game);
     }
 
     private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -222,7 +221,7 @@ public class IxButtons implements Pressable {
         IxCommands.ixHandSelection(discordGame, game, event.getComponentId().split("-")[3]);
     }
 
-    private static void cardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void cardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[4]);
         if (buttonTurn != game.getTurn()) {
             throw new InvalidGameStateException("Button is from turn " + buttonTurn);
@@ -231,10 +230,10 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("You selected " + event.getComponentId().split("-")[6].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.sendBackLocationButtons(discordGame, game, event.getComponentId().split("-")[6]);
+        IxCommands.sendBackLocationButtons(game, event.getComponentId().split("-")[6]);
     }
 
-    private static void locationSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void locationSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[2]);
         if (buttonTurn != game.getTurn()) {
             throw new InvalidGameStateException("Button is from turn " + buttonTurn);
@@ -243,7 +242,7 @@ public class IxButtons implements Pressable {
         }
         discordGame.queueMessage("You selected to send it to the " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.confirmCardToSendBack(discordGame, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
+        IxCommands.confirmCardToSendBack(game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
     }
 
     private static void chooseDifferentCard(DiscordGame discordGame, Game game) throws InvalidGameStateException {

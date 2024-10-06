@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.*;
@@ -176,7 +175,7 @@ public class RunCommands {
 
         if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
             Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).getFirst();
-            discordGame.getFactionChat(faction.getName()).queueMessage("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
+            discordGame.getFactionChat(faction).queueMessage("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
                     List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
         }
         if (game.getTurn() == 1) {
@@ -228,9 +227,8 @@ public class RunCommands {
         ArrayList<Integer> stormDeck = game.getStormDeck();
         stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
         game.setStormMovement(stormMovement);
-        if (game.hasFaction("Fremen")) {
-            discordGame.getFremenChat().queueMessage("The storm will move " + game.getStormMovement() + " sectors next turn.");
-        }
+        if (game.hasFaction("Fremen"))
+            game.getFaction("Fremen").getChat().publish("The storm will move " + game.getStormMovement() + " sectors next turn.");
     }
 
     public static boolean startBiddingPhase(Game game) {
@@ -279,17 +277,12 @@ public class RunCommands {
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
         } else if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
-            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(discordGame, game);
-        } else ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
-        if (game.hasFaction("Atreides") && game.getFaction("Atreides").isHighThreshold()) {
-            SpiceCard nextCard = game.getSpiceDeck().peek();
-            if (nextCard != null) {
-                if (nextCard.discoveryToken() == null)
-                    discordGame.getAtreidesChat().queueMessage("You see visions of " + nextCard.name() + " in your future.");
-                else
-                    discordGame.getAtreidesChat().queueMessage("6 " + Emojis.SPICE + " will appear in " + nextCard.name() + " and destroy any forces and " + Emojis.SPICE + " there. A " + nextCard.discoveryToken() + " will appear in " + nextCard.tokenLocation());
-            }
-        }
+            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(game);
+        } else
+            ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+
+        if (game.hasFaction("Atreides"))
+            ((AtreidesFaction) game.getFaction("Atreides")).giveSpiceDeckPrescience();
         if (game.hasFaction("BG")) {
             Faction bgFaction = game.getFaction("BG");
             String bgPlayer = bgFaction.getPlayer();
@@ -305,13 +298,15 @@ public class RunCommands {
                             continue;
                     }
                     if (territory.getSector() == game.getStorm()) {
-                        discordGame.queueMessage("game-actions", territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
+                        bgFaction.getChat().publish(territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
                         continue;
                     }
-                    discordGame.getTurnSummary().queueMessage(game.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
-                    discordGame.getBGChat().queueMessage(new MessageCreateBuilder().setContent(
-                                    message.append("Will you flip to fighters in ").append(territory.getTerritoryName()).append("? ").append(bgPlayer).toString())
-                            .addActionRow(Button.primary("bg-flip-" + territory.getTerritoryName(), "Flip"), Button.secondary("bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")));
+                    game.getTurnSummary().publish(game.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
+                    List<DuneChoice> choices = List.of(
+                            new DuneChoice("bg-flip-" + territory.getTerritoryName(), "Flip"),
+                            new DuneChoice("secondary", "bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")
+                    );
+                    bgFaction.getChat().publish("Will you flip to fighters in " + territory.getTerritoryName() + "? " + bgPlayer, choices);
                 }
             }
         }

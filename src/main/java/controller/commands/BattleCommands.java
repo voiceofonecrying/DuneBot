@@ -145,7 +145,7 @@ public class BattleCommands {
         for (Battle battle : battles.getDefaultAggressorsBattles()) {
             buttons.add(Button.primary("chooseterritory-" + i++, battle.getWholeTerritoryName()));
         }
-        discordGame.getFactionChat(aggressor.getName()).queueMessage("Where would you like to battle? " + aggressor.getPlayer(), buttons);
+        discordGame.getFactionChat(aggressor).queueMessage("Where would you like to battle? " + aggressor.getPlayer(), buttons);
     }
 
     public static void setBattleIndex(DiscordGame discordGame, Game game, int battleIndex) throws InvalidGameStateException, ChannelNotFoundException {
@@ -171,16 +171,17 @@ public class BattleCommands {
             }
             buttons.add(Button.primary("chooseopponent-" + opponentName, opponentName));
         }
-        discordGame.getFactionChat(aggressor.getName()).queueMessage("Whom would you like to battle first? " + aggressor.getPlayer(), buttons);
+        discordGame.getFactionChat(aggressor).queueMessage("Whom would you like to battle first? " + aggressor.getPlayer(), buttons);
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
     }
 
     public static void ecazAllyButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        Faction ecaz = battle.getFactions(game).stream().filter(f -> f instanceof EcazFaction).findFirst().orElseThrow();
-        buttons.add(Button.primary("choosecombatant-Ecaz", "You - Ecaz"));
-        buttons.add(Button.primary("choosecombatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly()));
-        discordGame.getEcazChat().queueMessage("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), buttons);
+        Faction ecaz = game.getFaction("Ecaz");
+        List<DuneChoice> choices = List.of(
+                new DuneChoice("choosecombatant-Ecaz", "You - Ecaz"),
+                new DuneChoice("choosecombatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly())
+        );
+        ecaz.getChat().publish("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), choices);
         discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " must choose who will fight for their alliance.");
     }
 }

@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -184,43 +183,43 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void blackMarketMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
-        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
-        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
-        buttons.add(Button.primary("richeseblackmarketmethod-" + cardName + "-" + "Silent", "Silent"));
-        buttons.add(Button.secondary("richeseblackmarketmethod-reselect", "Start over"));
-        discordGame.getRicheseChat().queueMessage("How would you like to sell " + cardName.trim() + "?", buttons);
+    public static void blackMarketMethod(Game game, String cardName) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
+        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
+        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
+        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "Silent", "Silent"));
+        choices.add(new DuneChoice("secondary", "richeseblackmarketmethod-reselect", "Start over"));
+        game.getFaction("Richese").getChat().publish("How would you like to sell " + cardName.trim() + "?", choices);
     }
 
-    public static void confirmBlackMarket(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
-        buttons.add(Button.secondary("richeseblackmarket-reselect", "Start over"));
-        discordGame.getRicheseChat().queueMessage("", buttons);
+    public static void confirmBlackMarket(Game game, String cardName, String method) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("success", "richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
+        choices.add(new DuneChoice("secondary", "richeseblackmarket-reselect", "Start over"));
+        game.getFaction("Richese").getChat().publish("", choices);
     }
 
-    public static void confirmLast(DiscordGame discordGame) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("richesecachelast-confirm", "Confirm you wish to sell your card last."));
-        buttons.add(Button.secondary("richesecachecardmethod-reselect", "Start over"));
-        discordGame.getRicheseChat().queueMessage("", buttons);
+    public static void confirmLast(Game game) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richesecachelast-confirm", "Confirm you wish to sell your card last."));
+        choices.add(new DuneChoice("secondary", "richesecachecardmethod-reselect", "Start over"));
+        game.getFaction("Richese").getChat().publish("", choices);
     }
 
-    public static void cacheCardMethod(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
-        buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
-        buttons.add(Button.primary("richesecachecardmethod-" + cardName + "-" + "Silent", "Silent"));
-        buttons.add(Button.secondary("richesecachecardmethod-reselect", "Start over"));
-        discordGame.getRicheseChat().queueMessage("How would you like to sell " + cardName.trim() + "?", buttons);
+    public static void cacheCardMethod(Game game, String cardName) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
+        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
+        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "Silent", "Silent"));
+        choices.add(new DuneChoice("secondary", "richesecachecardmethod-reselect", "Start over"));
+        game.getFaction("Richese").getChat().publish("How would you like to sell " + cardName.trim() + "?", choices);
     }
 
-    public static void confirmCacheCard(DiscordGame discordGame, String cardName, String method) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("richesecachecardconfirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
-        buttons.add(Button.secondary("richesecachecardconfirm-reselect", "Start over"));
-        discordGame.getRicheseChat().queueMessage("", buttons);
+    public static void confirmCacheCard(Game game, String cardName, String method) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richesecachecardconfirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
+        choices.add(new DuneChoice("secondary", "richesecachecardconfirm-reselect", "Start over"));
+        game.getFaction("Richese").getChat().publish("", choices);
     }
 }

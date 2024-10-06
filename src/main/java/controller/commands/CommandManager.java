@@ -885,12 +885,11 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getFactionLedger(f).queueMessage(
                         discordGame.required(token).getAsString() + " was sent to " + game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
         }
-        game.getFaction(discordGame.required(faction).getAsString())
-                .getTechTokens().add(new TechToken(discordGame.required(token).getAsString()));
-        discordGame.getFactionLedger(discordGame.required(faction).getAsString()).queueMessage(discordGame.required(token).getAsString() + " transferred to you.");
-        discordGame.getTurnSummary().queueMessage(
-                discordGame.required(token).getAsString() + " has been transferred to " +
-                        game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
+        String tt = discordGame.required(token).getAsString();
+        Faction f = game.getFaction(discordGame.required(faction).getAsString());
+        f.getTechTokens().add(new TechToken(tt));
+        f.getLedger().publish(discordGame.required(token).getAsString() + " transferred to you.");
+        game.getTurnSummary().publish(tt + " has been transferred to " + f.getEmoji());
         game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }

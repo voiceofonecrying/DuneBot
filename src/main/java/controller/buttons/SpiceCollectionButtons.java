@@ -69,7 +69,7 @@ public class SpiceCollectionButtons  implements Pressable{
                     TreacheryCard card = game.getTreacheryDeck().pollLast();
                     faction.addTreacheryCard(card);
                     if (faction.getTreacheryHand().size() > faction.getHandLimit()) {
-                        discordGame.getFactionChat(faction.getName()).queueMessage("Your hand is over the limit. Please select a card to discard.");
+                        discordGame.getFactionChat(faction).queueMessage("Your hand is over the limit. Please select a card to discard.");
                     }
                     discordGame.getFactionLedger(faction).queueMessage(Objects.requireNonNull(card).name() + " found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");

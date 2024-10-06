@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -80,7 +79,7 @@ public class IxCommands {
         if (fromButton)
             event.getHook().sendMessage(message).queue();
         else {
-            discordGame.getIxChat().queueMessage(message);
+            game.getFaction("Ix").getChat().publish(message);
         }
         discordGame.pushGame();
     }
@@ -144,7 +143,7 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static void initialCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void initialCard(Game game) {
         StringBuilder message = new StringBuilder();
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         message.append(
@@ -160,42 +159,42 @@ public class IxCommands {
                             card.name(), card.type()
                     ));
         }
-        discordGame.getIxChat().queueMessage(message.toString());
-        initialCardButtons(discordGame, game);
+        ixFaction.getChat().publish(message.toString());
+        initialCardButtons(game);
     }
 
-    public static void initialCardButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void initialCardButtons(Game game) {
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        List<Button> buttons = new LinkedList<>();
+        List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
         for (TreacheryCard card : ixFaction.getTreacheryHand()) {
             i++;
-            buttons.add(Button.primary("ix-starting-card-" + i + "-" + card.name(), card.name()));
+            choices.add(new DuneChoice("ix-starting-card-" + i + "-" + card.name(), card.name()));
         }
-        discordGame.getIxChat().queueMessage("", buttons);
+        ixFaction.getChat().publish("", choices);
     }
 
-    public static void sendBackLocationButtons(DiscordGame discordGame, Game game, String cardName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
-        buttons.add(Button.primary("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
-        buttons.add(Button.secondary("ix-reset-card-selection", "Choose a different card"));
-        discordGame.getIxChat().queueMessage("Where do you want to send the " + cardName + "?", buttons);
+    public static void sendBackLocationButtons(Game game, String cardName) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
+        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
+        choices.add(new DuneChoice("secondary", "ix-reset-card-selection", "Choose a different card"));
+        game.getFaction("Ix").getChat().publish("Where do you want to send the " + cardName + "?", choices);
     }
 
-    public static void confirmCardToSendBack(DiscordGame discordGame, String cardName, String location) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
-        buttons.add(Button.primary("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
-        buttons.add(Button.secondary("ix-confirm-reject-reset", "Start over"));
-        discordGame.getIxChat().queueMessage("Confirm your selection of " + cardName.trim() + " to " + location + ".", buttons);
+    public static void confirmCardToSendBack(Game game, String cardName, String location) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
+        choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
+        choices.add(new DuneChoice("secondary", "ix-confirm-reject-reset", "Start over"));
+        game.getFaction("Ix").getChat().publish("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
     }
 
-    public static void confirmStartingCard(DiscordGame discordGame, String cardName) throws ChannelNotFoundException {
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.success("ix-confirm-start-" + cardName, "Confirm " + cardName));
-        buttons.add(Button.secondary("ix-confirm-start-reset", "Choose a different card"));
-        discordGame.getIxChat().queueMessage("Confirm your selection of " + cardName.trim() + ".", buttons);
+    public static void confirmStartingCard(Game game, String cardName) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("ix-confirm-start-" + cardName, "Confirm " + cardName));
+        choices.add(new DuneChoice("secondary", "ix-confirm-start-reset", "Choose a different card"));
+        game.getFaction("Ix").getChat().publish("Confirm your selection of " + cardName.trim() + ".", choices);
     }
 
     public static void ixHandSelection(DiscordGame discordGame, Game game, String ixCardName) throws ChannelNotFoundException {

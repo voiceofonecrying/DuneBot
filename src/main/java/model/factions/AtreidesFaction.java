@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.UpdateType;
 import model.Game;
+import model.SpiceCard;
 import model.Territory;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,6 +67,18 @@ public class AtreidesFaction extends Faction {
      */
     public boolean isHasKH() {
         return forcesLost >= 7;
+    }
+
+    public void giveSpiceDeckPrescience() {
+        if (isHighThreshold()) {
+            SpiceCard nextCard = game.getSpiceDeck().peek();
+            if (nextCard != null) {
+                if (nextCard.discoveryToken() == null)
+                    chat.publish("You see visions of " + nextCard.name() + " in your future.");
+                else
+                    chat.publish("6 " + Emojis.SPICE + " will appear in " + nextCard.name() + " and destroy any forces and " + Emojis.SPICE + " there. A " + nextCard.discoveryToken() + " will appear in " + nextCard.tokenLocation());
+            }
+        }
     }
 
     public boolean isDenyingAllyBattlePrescience() {
