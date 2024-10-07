@@ -2,19 +2,18 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.Alliance;
-import controller.channels.FactionChat;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import model.DuneChoice;
 import model.Game;
 import model.Leader;
 import model.Territory;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EcazButtons implements Pressable {
@@ -206,15 +205,14 @@ public class EcazButtons implements Pressable {
     }
 
 
-    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String factionName = event.getComponentId().replace("ecaz-offer-alliance-", "");
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("ecaz-accept-offer", "Yes"));
-        buttons.add(Button.danger("ecaz-deny-offer", "No"));
-        FactionChat chatChannel = discordGame.getFactionChat(game.getFaction(factionName));
-        String emoji = discordGame.getGame().getFaction(factionName).getEmoji();
-        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have offered alliance to " + emoji);
-        chatChannel.queueMessage("An ambassador of " + Emojis.ECAZ + " has approached you to offer a formal alliance.  Do you accept?", buttons);
+        Faction faction = game.getFaction(factionName);
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("ecaz-accept-offer", "Yes"));
+        choices.add(new DuneChoice("danger", "ecaz-deny-offer", "No"));
+        game.getTurnSummary().publish(Emojis.ECAZ + " have offered alliance to " + faction.getEmoji());
+        faction.getChat().publish("An ambassador of " + Emojis.ECAZ + " has approached you to offer a formal alliance.  Do you accept?", choices);
         discordGame.queueMessage("Your ambassador has been sent to negotiate an alliance.");
         discordGame.queueDeleteMessage();
     }

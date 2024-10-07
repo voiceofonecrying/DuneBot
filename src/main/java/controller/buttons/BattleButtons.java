@@ -52,7 +52,7 @@ public class BattleButtons implements Pressable {
         if (space != -1) opponent = opponent.substring(0, space);
         battles.setOpponent(game, opponent);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.hasEcazAndAlly()) BattleCommands.ecazAllyButtons(discordGame, game, currentBattle);
+        if (currentBattle.hasEcazAndAlly()) BattleCommands.ecazAllyButtons(discordGame, game);
         else battles.callBattleActions(game);
         discordGame.pushGame();
     }
@@ -93,7 +93,7 @@ public class BattleButtons implements Pressable {
         plan.setSpiceBankerSupport(spice);
         if (spice > 0) {
             discordGame.getModInfo().queueMessage(faction.getEmoji() + " updated battle plan:\n" + plan.getPlanMessage(false));
-            discordGame.getFactionChat(faction).queueMessage("Your updated battle plan has been submitted:\n" + plan.getPlanMessage(false));
+            faction.getChat().publish("Your updated battle plan has been submitted:\n" + plan.getPlanMessage(false));
         }
         currentBattle.spiceBankerDecisionMade();
         discordGame.pushGame();

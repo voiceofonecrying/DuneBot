@@ -68,10 +68,9 @@ public class SpiceCollectionButtons  implements Pressable{
                 case "Treachery Card Stash" -> {
                     TreacheryCard card = game.getTreacheryDeck().pollLast();
                     faction.addTreacheryCard(card);
-                    if (faction.getTreacheryHand().size() > faction.getHandLimit()) {
-                        discordGame.getFactionChat(faction).queueMessage("Your hand is over the limit. Please select a card to discard.");
-                    }
-                    discordGame.getFactionLedger(faction).queueMessage(Objects.requireNonNull(card).name() + " found in " + territory.getTerritoryName());
+                    if (faction.getTreacheryHand().size() > faction.getHandLimit())
+                        faction.getChat().publish("Your hand is over the limit. Please select a card to discard.");
+                    faction.getLedger().publish(Objects.requireNonNull(card).name() + " found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
@@ -85,7 +84,7 @@ public class SpiceCollectionButtons  implements Pressable{
                 }
                 case "Ornithopter" -> {
                     faction.setOrnithoperToken(true);
-                    discordGame.getFactionLedger(faction).queueMessage("Ornithopter found in " + territory.getTerritoryName());
+                    faction.getLedger().publish("Ornithopter found in " + territory.getTerritoryName());
                     discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered an Ornithopter in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);

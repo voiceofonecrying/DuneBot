@@ -222,7 +222,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         game.getTurnOrder().pollFirst();
         discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(Objects.requireNonNull(game.getTurnOrder().peekFirst())));
         discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time.");
-        sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
@@ -231,14 +231,14 @@ public class ShipmentAndMovementButtons implements Pressable {
         game.getTurnOrder().addLast("Guild");
         discordGame.queueMessage("You will take your turn last.");
         game.getTurnOrder().pollFirst();
-        sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
 
     private static void guildTakeTurn(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You will take your turn now.");
-        sendShipmentMessage("Guild", discordGame, game);
+        sendShipmentMessage("Guild", game);
         discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " will take their turn next.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
@@ -256,7 +256,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(game);
-        } else sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        } else sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
@@ -284,7 +284,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (last && game.hasFaction("Guild") && !(faction instanceof GuildFaction)) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(game);
-        } else sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+        } else sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
@@ -309,7 +309,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 game.getTurnOrder().addFirst("Guild");
                 queueGuildTurnOrderButtons(game);
             } else if (!game.getTurnOrder().isEmpty()) {
-                sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+                sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
             } else {
                 discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance.");
                 discordGame.pushGame();
@@ -344,7 +344,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 game.getTurnOrder().addFirst("Guild");
                 queueGuildTurnOrderButtons(game);
             } else if (!game.getTurnOrder().isEmpty()) {
-                sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+                sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
             } else {
                 discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance.");
                 discordGame.pushGame();
@@ -619,7 +619,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction, boolean isShipment, boolean hasNoField, boolean guildAmbassador, boolean fremenRide, boolean enterDiscoveryToken) throws ChannelNotFoundException {
+    private static void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction, boolean isShipment, boolean hasNoField, boolean guildAmbassador, boolean fremenRide, boolean enterDiscoveryToken) {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
 
         TreeSet<Button> forcesButtons = new TreeSet<>(getButtonComparator());
@@ -697,41 +697,39 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             if (faction instanceof RicheseFaction || faction.getAlly().equals("Richese")) {
                 RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-                MessageCreateBuilder noFieldButtonMessage = new MessageCreateBuilder()
-                        .setContent("No-Field options:");
-                TreeSet<Button> noFieldButtons = new TreeSet<>(getButtonComparator());
+                String buttonPrefix = (faction instanceof RicheseFaction) ? "richese-no-field-ship-" : "richese-ally-no-field-ship-";
+                List<DuneChoice> choices = new ArrayList<>();
                 List<Integer> noFields = new LinkedList<>();
                 noFields.add(0);
                 noFields.add(3);
                 noFields.add(5);
-                noFields.removeIf(integer -> Objects.equals(integer, richese.getFrontOfShieldNoField()) || integer.equals(richese.getShipment().getNoField()));
-                for (int noField : noFields) {
-                    if (faction instanceof RicheseFaction)
-                        noFieldButtons.add(Button.primary("richese-no-field-ship-" + noField, "Ship " + noField + " No-Field token."));
-                    else
-                        noFieldButtons.add(Button.primary("richese-ally-no-field-ship-" + noField, "Ship " + noField + " No-Field token."));
+                for (int nf : noFields) {
+                    DuneChoice choice = new DuneChoice(buttonPrefix + nf, "Ship " + nf + " No-Field token.");
+                    choice.setDisabled(nf == richese.getFrontOfShieldNoField() || nf == richese.getShipment().getNoField());
+                    choices.add(choice);
                 }
-                noFieldButtonMessage.addActionRow(noFieldButtons);
-                discordGame.getFactionChat(faction).queueMessage(noFieldButtonMessage);
+                faction.getChat().publish("No-Field options:", choices);
             }
-            List<Button> finalizeButtons = new LinkedList<>();
 
+            List<DuneChoice> choices = new ArrayList<>();
             boolean disableConfirmButton = true;
             Shipment shipment = faction.getShipment();
             if (shipment.getForce() > 0 || shipment.getSpecialForce() > 0 || hasNoField)
                 disableConfirmButton = false;
-            Button execute = Button.success("execute-shipment" + (guildAmbassador ? "-guild-ambassador" : ""), "Confirm Shipment").withDisabled(disableConfirmButton);
+            DuneChoice execute = new DuneChoice("execute-shipment" + (guildAmbassador ? "-guild-ambassador" : ""), "Confirm Shipment");
+            execute.setDisabled(disableConfirmButton);
 
-            if (faction.getShipment().hasShipped()) execute = execute.asDisabled();
-            finalizeButtons.add(execute);
-            finalizeButtons.add(Button.danger("reset-shipping-forces" + buttonSuffix, "Reset forces"));
-            finalizeButtons.add(Button.danger("reset-shipment" + buttonSuffix, "Start over"));
-            if (!guildAmbassador && !enterDiscoveryToken && faction.hasTreacheryCard("Karama"))
-                finalizeButtons.add(Button.secondary("karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)").withDisabled(disableConfirmButton));
-
-            discordGame.getFactionChat(faction).queueMessage(new MessageCreateBuilder()
-                    .setContent("Finalize or start over:")
-                    .addActionRow(finalizeButtons));
+            if (faction.getShipment().hasShipped())
+                execute.setDisabled(true);
+            choices.add(execute);
+            choices.add(new DuneChoice("danger", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
+            choices.add(new DuneChoice("danger", "reset-shipment" + buttonSuffix, "Start over"));
+            if (!guildAmbassador && !enterDiscoveryToken && faction.hasTreacheryCard("Karama")) {
+                DuneChoice choice = new DuneChoice("secondary", "karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)");
+                choice.setDisabled(disableConfirmButton);
+                choices.add(choice);
+            }
+            faction.getChat().publish("Finalize or start over:", choices);
         } else {
             Movement movement = faction.getMovement();
             if (faction instanceof RicheseFaction && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
@@ -1191,20 +1189,22 @@ public class ShipmentAndMovementButtons implements Pressable {
         messagesToQueue.forEach(discordGame::queueMessage);
     }
 
-    public static void sendShipmentMessage(String factionName, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void sendShipmentMessage(String factionName, Game game) {
         Faction faction = game.getFaction(factionName);
         if (faction.getReservesStrength() == 0 && faction.getSpecialReservesStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese") && !(faction instanceof GuildFaction) && !faction.getAlly().equals("Guild")) {
-            List<Button> passButton = List.of(Button.danger("pass-shipment", "Pass shipment"));
-            discordGame.getFactionChat(faction).queueMessage("You have no troops in reserves to ship.", passButton);
+            faction.getChat().publish("You have no troops in reserves to ship.", List.of(new DuneChoice("danger", "pass-shipment", "Pass shipment")));
             return;
         }
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("shipment", "Begin a ship action"));
-        buttons.add(Button.danger("pass-shipment", "Pass shipment"));
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("shipment", "Begin a ship action"));
+        choices.add(new DuneChoice("danger", "pass-shipment", "Pass shipment"));
         boolean lastFaction = game.getTurnOrder().size() == 1 && !isGuildNeedsToShip(game);
-        if (faction.getShipment().isMayPlaySapho())
-            buttons.add(Button.secondary("juice-of-sapho-last", "Play Juice of Sapho to go last").withDisabled(lastFaction));
-        discordGame.getFactionChat(faction).queueMessage("Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(factionName).getPlayer(), buttons);
+        if (faction.getShipment().isMayPlaySapho()) {
+            DuneChoice choice = new DuneChoice("secondary", "juice-of-sapho-last", "Play Juice of Sapho to go last");
+            choice.setDisabled(lastFaction);
+            choices.add(choice);
+        }
+        faction.getChat().publish("Use buttons to perform Shipment and Movement actions on your turn." + " " + game.getFaction(factionName).getPlayer(), choices);
     }
 
     public static void queueGuildTurnOrderButtons(Game game) {

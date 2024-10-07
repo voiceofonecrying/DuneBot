@@ -714,7 +714,7 @@ public class CommandManager extends ListenerAdapter {
 
         receiver.addTreacheryCard(card);
         game.getTreacheryDiscard().remove(card);
-        discordGame.getFactionLedger(receiver).queueMessage("Received " + cardName + " from discard.");
+        receiver.getLedger().publish("Received " + cardName + " from discard.");
 
         discordGame.pushGame();
     }
@@ -882,7 +882,7 @@ public class CommandManager extends ListenerAdapter {
         for (Faction f : game.getFactions()) {
             if (f.getTechTokens().removeIf(
                     techToken -> techToken.getName().equals(discordGame.required(token).getAsString())))
-                discordGame.getFactionLedger(f).queueMessage(
+                f.getLedger().publish(
                         discordGame.required(token).getAsString() + " was sent to " + game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
         }
         String tt = discordGame.required(token).getAsString();

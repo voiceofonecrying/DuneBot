@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
 import java.util.*;
@@ -175,8 +174,8 @@ public class RunCommands {
 
         if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
             Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).getFirst();
-            discordGame.getFactionChat(faction).queueMessage("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
-                    List.of(Button.primary("storm-1", "-1"), Button.secondary("storm0", "0"), Button.primary("storm1", "+1")));
+            faction.getChat().publish("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
+                    List.of(new DuneChoice("storm-1", "-1"), new DuneChoice("secondary", "storm0", "0"), new DuneChoice("storm1", "+1")));
         }
         if (game.getTurn() == 1) {
             discordGame.getModInfo().queueMessage("Run advance to complete turn 1 storm phase.");
@@ -270,16 +269,16 @@ public class RunCommands {
                 message += "\nIf not, you will have the option to play it to go last on your turn.";
             else if (game.hasFaction("Guild"))
                 message += "\nIf not, you will have the option to play it to go last if " + Emojis.GUILD + " defers to you.";
-            List<Button> buttons = List.of(
-                    Button.primary("juice-of-sapho-first", "Yes, go first"),
-                    Button.secondary("juice-of-sapho-don't-play", "No"));
-            discordGame.getFactionChat(saphoFaction).queueMessage(message, buttons);
+            List<DuneChoice> choices = List.of(
+                    new DuneChoice("juice-of-sapho-first", "Yes, go first"),
+                    new DuneChoice("secondary", "juice-of-sapho-don't-play", "No"));
+            saphoFaction.getChat().publish(message, choices);
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
         } else if (game.hasFaction("Guild")) {
             game.getTurnOrder().addFirst("Guild");
             ShipmentAndMovementButtons.queueGuildTurnOrderButtons(game);
         } else
-            ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), discordGame, game);
+            ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
 
         if (game.hasFaction("Atreides"))
             ((AtreidesFaction) game.getFaction("Atreides")).giveSpiceDeckPrescience();
@@ -289,7 +288,6 @@ public class RunCommands {
             for (Territory territory : game.getTerritories().values()) {
                 territory.flipAdvisorsIfAlone(game);
                 if (territory.getTerritoryName().equals("Polar Sink")) continue;
-                StringBuilder message = new StringBuilder();
                 if (territory.getForceStrength("Advisor") > 0) {
                     String bgAllyName = bgFaction.getAlly();
                     if (!bgAllyName.isEmpty()) {

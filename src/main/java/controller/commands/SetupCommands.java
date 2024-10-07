@@ -69,7 +69,7 @@ public class SetupCommands {
 
         switch (name) {
             case "faction" -> addFaction(event, discordGame, game);
-            case "show-game-options" -> showGameOptions(discordGame, game);
+            case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
             case "ix-hand-selection" -> ixHandSelection(discordGame, game);
@@ -96,7 +96,7 @@ public class SetupCommands {
         if (!game.isSetupStarted() && !game.isSetupFinished()) {
             game.setSetupStarted(true);
             createSetupSteps(game);
-            showSetupSteps(discordGame, game);
+            showSetupSteps(game);
         }
 
         StepStatus stepStatus;
@@ -206,12 +206,12 @@ public class SetupCommands {
         game.setSetupSteps(setupSteps);
     }
 
-    public static void showSetupSteps(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String stringBuilder = "The Game setup will perform the following steps:\n" +
+    public static void showSetupSteps(Game game) {
+        String steps = "The Game setup will perform the following steps:\n" +
                 game.getSetupSteps().stream().map(SetupStep::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.getModInfo().queueMessage(stringBuilder);
+        game.getModInfo().publish(steps);
     }
 
     public static StepStatus runSetupStep(Guild discordGuild, DiscordGame discordGame, Game game, SetupStep setupStep) throws ChannelNotFoundException, IOException, InvalidGameStateException {
@@ -222,20 +222,20 @@ public class SetupCommands {
         switch (setupStep) {
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
-            case BG_PREDICTION -> stepStatus = bgPredictionStep(discordGame, game);
-            case FREMEN_FORCES -> stepStatus = fremenForcesStep(discordGame, game);
-            case BG_FORCE -> stepStatus = bgForceStep(discordGame, game);
-            case MORITANI_FORCE -> stepStatus = moritaniForceStep(discordGame, game);
-            case IX_CARD_SELECTION -> stepStatus = ixCardSelectionStep(discordGame, game);
+            case BG_PREDICTION -> stepStatus = bgPredictionStep(game);
+            case FREMEN_FORCES -> stepStatus = fremenForcesStep(game);
+            case BG_FORCE -> stepStatus = bgForceStep(game);
+            case MORITANI_FORCE -> stepStatus = moritaniForceStep(game);
+            case IX_CARD_SELECTION -> stepStatus = ixCardSelectionStep(game);
             case TREACHERY_CARDS -> stepStatus = treacheryCardsStep(game);
             case LEADER_SKILL_CARDS -> stepStatus = leaderSkillCardsStep(discordGame, game);
             case SHOW_LEADER_SKILLS -> stepStatus = showLeaderSkillCardsStep(discordGuild, discordGame, game);
-            case ECAZ_LOYALTY -> stepStatus = ecazLoyaltyStep(discordGame, game);
-            case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(discordGame, game);
-            case TRAITORS -> stepStatus = traitorSelectionStep(discordGame, game);
+            case ECAZ_LOYALTY -> stepStatus = ecazLoyaltyStep(game);
+            case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(game);
+            case TRAITORS -> stepStatus = traitorSelectionStep(game);
             case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(game);
-            case STORM_SELECTION -> stepStatus = stormSelectionStep(discordGame, game);
-            case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(discordGame);
+            case STORM_SELECTION -> stepStatus = stormSelectionStep(game);
+            case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(game);
             case START_GAME -> stepStatus = startGameStep(discordGame, game);
         }
 
@@ -318,12 +318,12 @@ public class SetupCommands {
         }
     }
 
-    public static void showGameOptions(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String stringBuilder = "The following options are selected:\n" +
+    public static void showGameOptions(Game game) {
+        String options = "The following options are selected:\n" +
                 game.getGameOptions().stream().map(GameOption::name)
                         .collect(Collectors.joining("\n"));
 
-        discordGame.getModInfo().queueMessage(stringBuilder);
+        game.getModInfo().publish(options);
     }
 
     public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -431,15 +431,15 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus bgPredictionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus bgPredictionStep(Game game) {
         Faction bg = game.getFaction("BG");
         bg.getChat().publish(bg.getPlayer() + " Please make your secret prediction.");
         return StepStatus.STOP;
     }
 
-    public static StepStatus fremenForcesStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus fremenForcesStep(Game game) {
         Faction fremen = game.getFaction("Fremen");
-        discordGame.queueMessage("game-actions",
+        game.getGameActions().publish(
                 MessageFormat.format(
                         "{0} Please provide the placement of your 10 starting {1} and {2} forces including sector. {3}",
                         fremen.getEmoji(),
@@ -452,9 +452,9 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus bgForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus bgForceStep(Game game) {
         Faction bg = game.getFaction("BG");
-        discordGame.queueMessage("game-actions",
+        game.getGameActions().publish(
                 MessageFormat.format(
                         "{0} Please provide the placement of your starting {1} or {2}. {3}",
                         bg.getEmoji(),
@@ -467,9 +467,9 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus moritaniForceStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus moritaniForceStep(Game game) {
         Faction moritani = game.getFaction("Moritani");
-        discordGame.queueMessage("game-actions",
+        game.getGameActions().publish(
                 MessageFormat.format(
                         "{0} Please provide the placement of your starting {1}. {2}",
                         moritani.getEmoji(),
@@ -481,7 +481,7 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixCardSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus ixCardSelectionStep(Game game) {
         try {
             IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
             ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
@@ -490,11 +490,11 @@ public class SetupCommands {
             if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
                 game.drawTreacheryCard(ixFaction.getName(), false, false);
             }
-            discordGame.getModInfo().queueMessage(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
+            game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
             IxCommands.initialCard(game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
-            discordGame.getModInfo().queueMessage(Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
+            game.getModInfo().publish(Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
             return StepStatus.CONTINUE;
         }
     }
@@ -580,7 +580,7 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus harkonnenTraitorsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus harkonnenTraitorsStep(Game game) {
         Faction faction = game.getFaction("Harkonnen");
 
         for (int j = 0; j < 4; j++) {
@@ -594,22 +594,22 @@ public class SetupCommands {
 
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
-            discordGame.getModInfo().queueMessage("Harkonnen can mulligan");
+            game.getModInfo().publish("Harkonnen can mulligan");
             faction.getChat().publish(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
             return StepStatus.STOP;
         } else {
-            discordGame.getModInfo().queueMessage("Harkonnen cannot mulligan");
+            game.getModInfo().publish("Harkonnen cannot mulligan");
             return StepStatus.CONTINUE;
         }
     }
 
-    private static StepStatus ecazLoyaltyStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static StepStatus ecazLoyaltyStep(Game game) {
         EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
         List<Leader> leaders = ecaz.getLeaders();
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.getFirst());
         game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().getName()));
-        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().getName() + " as their loyal leader.");
+        game.getTurnSummary().publish(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().getName() + " as their loyal leader.");
         return StepStatus.CONTINUE;
     }
 
@@ -631,7 +631,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static StepStatus traitorSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus traitorSelectionStep(Game game) {
         for (Faction faction : game.getFactions()) {
             if (!(faction instanceof BTFaction) && faction.getTraitorHand().isEmpty()) {
                 IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", faction.getName()));
@@ -639,7 +639,7 @@ public class SetupCommands {
                     faction.presentTraitorSelection();
             }
         }
-        discordGame.getTurnSummary().queueMessage("__**Setup: Traitors**__");
+        game.getTurnSummary().publish("__**Setup: Traitors**__");
 
         return StepStatus.STOP;
     }
@@ -649,19 +649,19 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static StepStatus stormSelectionStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static StepStatus stormSelectionStep(Game game) {
         Faction faction1 = game.getFactions().getFirst();
         Faction faction2 = game.getFactions().getLast();
-        discordGame.getFactionChat(faction1).queueMessage(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
-        discordGame.getFactionChat(faction2).queueMessage(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        faction1.getChat().publish(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        faction2.getChat().publish(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
         game.setStormMovement(new Random().nextInt(6) + 1);
-        discordGame.getTurnSummary().queueMessage("Turn Marker is set to turn 1.  The game is beginning!  Initial storm is being calculated...");
+        game.getTurnSummary().publish("Turn Marker is set to turn 1. The game is beginning! Initial storm is being calculated...");
 
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixHMSPlacementStep(DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.getModInfo().queueMessage("Use /ix place-hms to set the initial placement of the HMS then /setup advance.");
+    public static StepStatus ixHMSPlacementStep(Game game) {
+        game.getModInfo().publish("Use /ix place-hms to set the initial placement of the HMS then /setup advance.");
 
         return StepStatus.STOP;
     }
@@ -707,7 +707,7 @@ public class SetupCommands {
         Collections.shuffle(game.getLeaderSkillDeck());
 
         faction.getLeaderSkillsHand().clear();
-        discordGame.getFactionChat(faction).queueMessage(MessageFormat.format("After years of training, {0} has become a {1}! ",
+        faction.getChat().publish(MessageFormat.format("After years of training, {0} has become a {1}! ",
                         updatedLeader.getName(), leaderSkillCard.name()
                 )
         );

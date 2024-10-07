@@ -12,11 +12,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static controller.commands.CommandOptions.*;
@@ -133,19 +131,18 @@ public class BattleCommands {
         if (currentBattle != null && !currentBattle.isResolved(game))
             discordGame.getModInfo().queueMessage("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
         battles.nextBattle(game);
-        if (battles.aggressorMustChooseBattle()) territoryButtons(discordGame, game, battles);
+        if (battles.aggressorMustChooseBattle()) territoryButtons(game, battles);
         else setBattleIndex(discordGame, game, 0);
         discordGame.pushGame();
     }
 
-    public static void territoryButtons(DiscordGame discordGame, Game game, Battles battles) throws ChannelNotFoundException {
+    public static void territoryButtons(Game game, Battles battles) {
         Faction aggressor = battles.getAggressor(game);
-        List<Button> buttons = new LinkedList<>();
+        List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
-        for (Battle battle : battles.getDefaultAggressorsBattles()) {
-            buttons.add(Button.primary("chooseterritory-" + i++, battle.getWholeTerritoryName()));
-        }
-        discordGame.getFactionChat(aggressor).queueMessage("Where would you like to battle? " + aggressor.getPlayer(), buttons);
+        for (Battle battle : battles.getDefaultAggressorsBattles())
+            choices.add(new DuneChoice("chooseterritory-" + i++, battle.getWholeTerritoryName()));
+        aggressor.getChat().publish("Where would you like to battle? " + aggressor.getPlayer(), choices);
     }
 
     public static void setBattleIndex(DiscordGame discordGame, Game game, int battleIndex) throws InvalidGameStateException, ChannelNotFoundException {
@@ -153,13 +150,13 @@ public class BattleCommands {
         battles.setTerritoryByIndex(battleIndex);
         Battle currentBattle = battles.getCurrentBattle();
         if (currentBattle.aggressorMustChooseOpponent()) opponentButtons(discordGame, game, currentBattle);
-        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, game, currentBattle);
+        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, game);
         else battles.callBattleActions(game);
     }
 
     public static void opponentButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
         Faction aggressor = battle.getAggressor(game);
-        List<Button> buttons = new LinkedList<>();
+        List<DuneChoice> choices = new ArrayList<>();
         boolean ecazAndAllyIdentified = false;
         for (Faction faction : battle.getFactions(game)) {
             String opponentName = faction.getName();
@@ -169,13 +166,13 @@ public class BattleCommands {
                 ecazAndAllyIdentified = true;
                 opponentName = faction.getName() + " and " + faction.getAlly();
             }
-            buttons.add(Button.primary("chooseopponent-" + opponentName, opponentName));
+            choices.add(new DuneChoice("chooseopponent-" + opponentName, opponentName));
         }
-        discordGame.getFactionChat(aggressor).queueMessage("Whom would you like to battle first? " + aggressor.getPlayer(), buttons);
+        aggressor.getChat().publish("Whom would you like to battle first? " + aggressor.getPlayer(), choices);
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
     }
 
-    public static void ecazAllyButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
+    public static void ecazAllyButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction ecaz = game.getFaction("Ecaz");
         List<DuneChoice> choices = List.of(
                 new DuneChoice("choosecombatant-Ecaz", "You - Ecaz"),
