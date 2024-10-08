@@ -31,6 +31,7 @@ public class Battle {
         OPEN,
         CLOSED
     }
+    private boolean overrideDecisions;
     private DecisionStatus hmsStrongholdCardTBD;
     private String hmsStrongholdCardFactionEmoji;
     private DecisionStatus spiceBankerTBD;
@@ -60,6 +61,7 @@ public class Battle {
         } catch (IllegalArgumentException ignored) {}
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
+        this.overrideDecisions = false;
         this.hmsStrongholdCardTBD = DecisionStatus.NA;
         this.spiceBankerTBD = DecisionStatus.NA;
         this.juiceOfSaphoTBD = DecisionStatus.NA;
@@ -891,10 +893,25 @@ public class Battle {
         BattlePlan defenderPlan = getDefenderBattlePlan();
         if (aggressorPlan == null || defenderPlan == null)
             throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
-        if (isSpiceBankerDecisionOpen() && !overrideDecisions && publishToTurnSummary)
-            throw new InvalidGameStateException(getSpiceBankerFactionEmoji() + " must decide on Spice Banker");
-        if (isHMSCardDecisionOpen() && !overrideDecisions && publishToTurnSummary)
-            throw new InvalidGameStateException(getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
+        boolean persistOverride = true;
+        if (isSpiceBankerDecisionOpen()) {
+            if (overrideDecisions) {
+                game.getModInfo().publish(getSpiceBankerFactionEmoji() + " Spice Banker decision has been overridden.");
+                spiceBankerTBD = DecisionStatus.CLOSED;
+                persistOverride = false;
+            } else if (publishToTurnSummary)
+                throw new InvalidGameStateException(getSpiceBankerFactionEmoji() + " must decide on Spice Banker");
+        }
+        if (isHMSCardDecisionOpen()) {
+            if (overrideDecisions) {
+                game.getModInfo().publish(getHmsStrongholdCardFactionEmoji() + " HMS Stronghold Card decision has been overridden.");
+                hmsStrongholdCardTBD = DecisionStatus.CLOSED;
+                persistOverride = false;
+            } else if (publishToTurnSummary)
+                throw new InvalidGameStateException(getHmsStrongholdCardFactionEmoji() + " must decide on HMS Stronghold Card");
+        }
+        if (persistOverride)
+            this.overrideDecisions = overrideDecisions;
 
         if (aggressorCallsTraitor) {
             aggressorPlan.setWillCallTraitor(true);
@@ -1009,6 +1026,8 @@ public class Battle {
 
         checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary);
         checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
+        if (publishToTurnSummary)
+            checkIfResolvable(game);
     }
 
     private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary) {
@@ -1426,6 +1445,47 @@ public class Battle {
         int combatWaterNow = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
         if (combatWaterNow != combatWaterBefore)
             changes += "\n" + getWinnerEmojis(game) + " gains " + combatWaterNow + " " + Emojis.SPICE + " combat water\n";
+        checkIfResolvable(game);
         return changes;
+    }
+
+    public void checkIfResolvable(Game game) {
+        boolean resolvable = true;
+        List<String> openIssues = new ArrayList<>();
+        if (juiceOfSaphoTBD == DecisionStatus.OPEN) {
+            openIssues.add("Juice of Sapho");
+            resolvable = false;
+        }
+        if (portableSnooperTBD == DecisionStatus.OPEN) {
+            openIssues.add("Portable Snooper");
+            resolvable = false;
+        }
+        if (stoneBurnerTBD == DecisionStatus.OPEN) {
+            openIssues.add("Stone Burner");
+            resolvable = false;
+        }
+        if (mirrorWeaponStoneBurnerTBD == DecisionStatus.OPEN) {
+            openIssues.add("Mirror Weapon as Stone Burner");
+            resolvable = false;
+        }
+        if (poisonToothTBD == DecisionStatus.OPEN) {
+            openIssues.add("Poison Tooth");
+            resolvable = false;
+        }
+        if (aggressorBattlePlan.isCanCallTraitor() || aggressorBattlePlan.isHarkCanCallTraitor()) {
+            openIssues.add("Aggressor Traitor Call");
+            resolvable = false;
+        }
+        if (defenderBattlePlan.isCanCallTraitor() || defenderBattlePlan.isHarkCanCallTraitor()) {
+            openIssues.add("Defender Traitor Call");
+            resolvable = false;
+        }
+
+        if (resolvable)
+            game.getModInfo().publish("The battle can be resolved.");
+        else if (overrideDecisions)
+            game.getModInfo().publish("The battle can be resolved with your override.");
+        else
+            game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
     }
 }

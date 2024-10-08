@@ -1185,7 +1185,7 @@ class BattleTest extends DuneTest {
             battle.printBattleResolution(game, true);
             assertTrue(bgChat.getMessages().isEmpty());
             assertTrue(atreidesChat.getMessages().isEmpty());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1210,7 +1210,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The following must be decided before the battle can be resolved:\n  Aggressor Traitor Call", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1235,7 +1235,7 @@ class BattleTest extends DuneTest {
             assertTrue(battle.isAggressorWin(game));
             assertTrue(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor against Alia in Arrakeen? at", atreidesChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The following must be decided before the battle can be resolved:\n  Defender Traitor Call", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1258,7 +1258,7 @@ class BattleTest extends DuneTest {
             battle.printBattleResolution(game, true);
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals("Will you call Traitor against Alia in Arrakeen? at", atreidesChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The following must be decided before the battle can be resolved:\n  Aggressor Traitor Call, Defender Traitor Call", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1281,7 +1281,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertTrue(bgChat.getMessages().isEmpty());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1331,7 +1331,7 @@ class BattleTest extends DuneTest {
             btChat.clear();
             battle.printBattleResolution(game, true);
             assertTrue(btChat.getMessages().isEmpty());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1359,7 +1359,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertTrue(bgChat.getMessages().isEmpty());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1409,7 +1409,7 @@ class BattleTest extends DuneTest {
             atreidesChat.clear();
             battle.printBattleResolution(game, true);
             assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!", bgChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1437,7 +1437,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertFalse(bgChat.getMessages().contains("Will you call Traitor against Lady Jessica in Arrakeen? p"));
             assertFalse(bgChat.getMessages().contains("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!"));
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
         }
 
         @Test
@@ -1463,7 +1463,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals(2, bgChat.getChoices().getLast().size());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The following must be decided before the battle can be resolved:\n  Aggressor Traitor Call", modInfo.getMessages().getFirst());
             battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
             assertFalse(modInfo.getMessages().contains(Emojis.BG + " will call Traitor in Arrakeen if possible."));
             assertTrue(modInfo.getMessages().contains(Emojis.BG + " calls Traitor in Arrakeen!"));
@@ -1510,7 +1510,7 @@ class BattleTest extends DuneTest {
             assertFalse(battle.isAggressorWin(game));
             assertFalse(battle.getAggressorBattlePlan().isLeaderAlive());
             assertTrue(bgChat.getMessages().isEmpty());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
             battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
             assertEquals("You cannot call Traitor.", bgChat.getMessages().getLast());
         }
@@ -1628,7 +1628,7 @@ class BattleTest extends DuneTest {
             atreidesChat.clear();
             battle.printBattleResolution(game, true);
             assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!", bgChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
             assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.BG + " calls Traitor against Duncan Idaho!"));
             assertFalse(turnSummary.getMessages().getFirst().contains("Alia to the tanks"));
             assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.BG_FIGHTER + " to the tanks"));
@@ -1653,7 +1653,7 @@ class BattleTest extends DuneTest {
             atreidesChat.clear();
             battle.printBattleResolution(game, true);
             assertEquals("Alia has betrayed " + Emojis.BG + " for you!", atreidesChat.getMessages().getLast());
-            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals("The battle can be resolved.", modInfo.getMessages().getFirst());
             assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " calls Traitor against Alia!"));
             assertFalse(turnSummary.getMessages().getFirst().contains("Duncan Idaho to the tanks"));
             assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES_TROOP + " to the tanks"));
