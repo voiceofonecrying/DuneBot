@@ -11,6 +11,7 @@ import java.io.IOException;
 
 public class AtreidesFaction extends Faction {
     private int forcesLost;
+    private boolean cardPrescienceBlocked;
     private boolean denyingAllyBattlePrescience;
     private boolean grantingAllyTreacheryPrescience;
 
@@ -79,6 +80,14 @@ public class AtreidesFaction extends Faction {
                     chat.publish("6 " + Emojis.SPICE + " will appear in " + nextCard.name() + " and destroy any forces and " + Emojis.SPICE + " there. A " + nextCard.discoveryToken() + " will appear in " + nextCard.tokenLocation());
             }
         }
+    }
+
+    public boolean isCardPrescienceBlocked() {
+        return cardPrescienceBlocked;
+    }
+
+    public void setCardPrescienceBlocked(boolean cardPrescienceBlocked) {
+        this.cardPrescienceBlocked = cardPrescienceBlocked;
     }
 
     public boolean isDenyingAllyBattlePrescience() {

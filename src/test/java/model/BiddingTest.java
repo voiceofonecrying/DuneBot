@@ -152,6 +152,102 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#prescienceBlockedBeforeCardIsAuctioned")
+    public class PrescienceBlockedBeforeCardIsAuctioned {
+        TestTopic atreidesAllianceThread;
+
+        @BeforeEach
+        public void setUp() throws IOException, InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.createAlliance(atreides, emperor);
+            atreides.setGrantingAllyTreacheryPrescience(true);
+            atreidesAllianceThread = new TestTopic();
+            atreides.setAllianceThread(atreidesAllianceThread);
+
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory caladan = game.getTerritory("Caladan");
+            caladan.removeForce("Atreides");
+            caladan.addForces("Harkonnen", 5);
+            assertTrue(atreides.isHomeworldOccupied());
+
+            atreides.setCardPrescienceBlocked(true);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            bidding.auctionNextCard(game, false);
+        }
+
+        @Test
+        public void testAtreidesInformedPrescienceWasBlocked() {
+            assertEquals("Your " + Emojis.TREACHERY + " Prescience was blocked by Karama.", atreidesChat.getMessages().getLast());
+            assertFalse(atreides.isCardPrescienceBlocked());
+        }
+
+        @Test
+        public void testAtreidesAllyInformedPrescienceWasBlocked() {
+            assertEquals(Emojis.ATREIDES + " " + Emojis.TREACHERY + " Prescience was blocked by Karama.", atreidesAllianceThread.getMessages().getLast());
+            assertFalse(atreides.isCardPrescienceBlocked());
+        }
+
+        @Test
+        public void testCaladanOccupierInformedPrescienceWasBlocked() {
+            assertEquals("Your " + Emojis.ATREIDES + " subjects in Caladan " + Emojis.TREACHERY + " Prescience was blocked by Karama.", harkonnenChat.getMessages().getLast());
+            assertFalse(atreides.isCardPrescienceBlocked());
+        }
+    }
+
+    @Nested
+    @DisplayName("#prescienceBlockedWhenCardIsAuctioned")
+    public class PrescienceBlockedWhenCardIsAuctioned {
+        TestTopic atreidesAllianceThread;
+
+        @BeforeEach
+        public void setUp() throws IOException, InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.createAlliance(atreides, emperor);
+            atreides.setGrantingAllyTreacheryPrescience(true);
+            atreidesAllianceThread = new TestTopic();
+            atreides.setAllianceThread(atreidesAllianceThread);
+
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory caladan = game.getTerritory("Caladan");
+            caladan.removeForce("Atreides");
+            caladan.addForces("Harkonnen", 5);
+            assertTrue(atreides.isHomeworldOccupied());
+
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            bidding.auctionNextCard(game, true);
+        }
+
+        @Test
+        public void testAtreidesInformedPrescienceWasBlocked() {
+            assertEquals("Your " + Emojis.TREACHERY + " Prescience was blocked by Karama.", atreidesChat.getMessages().getLast());
+        }
+
+        @Test
+        public void testAtreidesAllyInformedPrescienceWasBlocked() {
+            assertEquals(Emojis.ATREIDES + " " + Emojis.TREACHERY + " Prescience was blocked by Karama.", atreidesAllianceThread.getMessages().getLast());
+        }
+
+        @Test
+        public void testCaladanOccupierInformedPrescienceWasBlocked() {
+            assertEquals("Your " + Emojis.ATREIDES + " subjects in Caladan " + Emojis.TREACHERY + " Prescience was blocked by Karama.", harkonnenChat.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#assignAndPayForCard")
     public class AssignAndPayForCard {
         @BeforeEach

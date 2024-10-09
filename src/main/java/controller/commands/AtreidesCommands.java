@@ -22,10 +22,9 @@ public class AtreidesCommands {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(
                 Commands.slash("atreides", "Commands related to the Atreides Faction.").addSubcommands(
-                        new SubcommandData(
-                                "kh-count-increase",
-                                "Track forces lost for the purpose of unlocking the Kwisatz Haderach."
-                        ).addOptions(amount))
+                        new SubcommandData("kh-count-increase", "Track forces lost for the purpose of unlocking the Kwisatz Haderach.").addOptions(amount),
+                        new SubcommandData("block-card-prescience", "Block Atreides prescience on the next card for bid.").addOptions(atreidesKaramad)
+                )
         );
 
         return commandData;
@@ -37,6 +36,8 @@ public class AtreidesCommands {
 
         if (name.equals("kh-count-increase")) {
             addForcesLost(discordGame, game);
+        } else if (name.equals("block-card-prescience")) {
+            blockCardPrescience(discordGame, game);
         }
     }
 
@@ -49,6 +50,13 @@ public class AtreidesCommands {
             atreides.addLeader(new Leader("Kwisatz Haderach", 2, "Atreides", null, false));
             discordGame.getTurnSummary().queueMessage("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");
         }
+        discordGame.pushGame();
+    }
+
+    private static void blockCardPrescience(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        boolean prescienceBlocked = discordGame.optional(atreidesKaramad) != null && discordGame.required(atreidesKaramad).getAsBoolean();
+        AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
+        atreides.setCardPrescienceBlocked(prescienceBlocked);
         discordGame.pushGame();
     }
 }

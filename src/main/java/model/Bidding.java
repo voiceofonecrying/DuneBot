@@ -344,10 +344,13 @@ public class Bidding {
             runRicheseBid(game, bidType, true);
         }
 
-        sendAtreidesCardPrescience(game, card);
+        sendAtreidesCardPrescience(game, card, false);
     }
 
     public void auctionNextCard(Game game) throws InvalidGameStateException {
+        auctionNextCard(game, false);
+    }
+    public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
         if (bidCard != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
         } else if (numCardsForBid == 0) {
@@ -381,7 +384,7 @@ public class Bidding {
                 ));
             }
             TreacheryCard bidCard = nextBidCard(game);
-            sendAtreidesCardPrescience(game, bidCard);
+            sendAtreidesCardPrescience(game, bidCard, prescienceBlocked);
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
             currentBidder = factionBeforeFirstToBid.getName();
             String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
@@ -456,15 +459,24 @@ public class Bidding {
         game.getTurnSummary().publish("The bidding market now has " + market.size() + " " + Emojis.TREACHERY + " cards remaining for auction. There are " + numCardsForBid + " total cards this turn.");
     }
 
-    private void sendAtreidesCardPrescience(Game game, TreacheryCard card) {
+    private void sendAtreidesCardPrescience(Game game, TreacheryCard card, boolean prescienceBlocked) {
         if (game.hasFaction("Atreides")) {
             String cardInfo = MessageFormat.format("{0} {1} {0} is up for bid (R{2}:C{3}).", Emojis.TREACHERY, card.name(), game.getTurn(), bidCardNumber);
             AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
-            atreides.getChat().publish("You predict " + cardInfo);
-            if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
-                atreides.getAllianceThread().publish(atreides.getEmoji() + " predicts " + cardInfo);
-            if (atreides.isHomeworldOccupied())
-                atreides.getOccupier().getChat().publish("Your " + Emojis.ATREIDES + " subjects in Caladan predict " + cardInfo);
+            if (prescienceBlocked || atreides.isCardPrescienceBlocked()) {
+                atreides.getChat().publish("Your " + Emojis.TREACHERY + " Prescience was blocked by Karama.");
+                if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
+                    atreides.getAllianceThread().publish(atreides.getEmoji() + " " + Emojis.TREACHERY + " Prescience was blocked by Karama.");
+                if (atreides.isHomeworldOccupied())
+                    atreides.getOccupier().getChat().publish("Your " + Emojis.ATREIDES + " subjects in Caladan " + Emojis.TREACHERY + " Prescience was blocked by Karama.");
+                atreides.setCardPrescienceBlocked(false);
+            } else {
+                atreides.getChat().publish("You predict " + cardInfo);
+                if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
+                    atreides.getAllianceThread().publish(atreides.getEmoji() + " predicts " + cardInfo);
+                if (atreides.isHomeworldOccupied())
+                    atreides.getOccupier().getChat().publish("Your " + Emojis.ATREIDES + " subjects in Caladan predict " + cardInfo);
+            }
         }
     }
 
@@ -544,7 +556,7 @@ public class Bidding {
         } else if (ixAllySwapped) {
             throw new InvalidGameStateException(faction.getEmoji() + " ally " + ally.getEmoji() + " already swapped the previous card.");
         } else if (!previousWinner.equalsIgnoreCase(allyName)) {
-            throw new InvalidGameStateException(faction.getEmoji() + " ally " + ally.getEmoji() + " did not win previous card.");
+            throw new InvalidGameStateException(faction.getEmoji() + " ally " + ally.getEmoji() + " did not win the previous card.");
         }
 
         LinkedList<TreacheryCard> treacheryDeck = game.getTreacheryDeck();
@@ -569,7 +581,7 @@ public class Bidding {
         );
         DuneTopic turnSummary = game.getTurnSummary();
         turnSummary.publish(MessageFormat.format(
-                "{0} as {1} ally discarded {2}and took the {3} deck top card.",
+                "{0} as {1} ally discarded {2} and took the {3} deck top card.",
                 ally.getEmoji(), Emojis.IX, cardToDiscard.name(), Emojis.TREACHERY
         ));
         if (treacheryDeckReshuffled) {

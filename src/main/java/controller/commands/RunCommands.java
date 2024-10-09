@@ -19,13 +19,15 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import java.io.IOException;
 import java.util.*;
 
+import static controller.commands.CommandOptions.atreidesKaramad;
+
 public class RunCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(
                 Commands.slash("run", "Commands related to playing through phases and turns.").addSubcommands(
                         new SubcommandData("advance", "Continue to the next phase of the game."),
-                        new SubcommandData("bidding", "Run a regular bidding for a card"),
+                        new SubcommandData("bidding", "Run a regular bidding for a card").addOptions(atreidesKaramad),
                         new SubcommandData("battle", "Run the next battle"),
                         new SubcommandData("update-stronghold-skills", "Updates the Stronghold skill cards.")
                 )
@@ -236,7 +238,8 @@ public class RunCommands {
     }
 
     public static void bidding(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().auctionNextCard(game);
+        boolean prescienceBlocked = discordGame.optional(atreidesKaramad) != null && discordGame.required(atreidesKaramad).getAsBoolean();
+        game.getBidding().auctionNextCard(game, prescienceBlocked);
         discordGame.pushGame();
     }
 

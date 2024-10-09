@@ -162,7 +162,7 @@ public class CommandOptions {
                     .addChoice("OnceAroundCCW", "OnceAroundCCW")
                     .addChoice("Silent", "Silent")
                     .addChoice("Normal", "Normal");
-
+    public static final OptionData atreidesKaramad = new OptionData(OptionType.BOOLEAN, "prescience-blocked", "If someone Karama blocked Atreides card prescience", false);
     public static final OptionData paidToFaction =
             new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
                     .setAutoComplete(true);
