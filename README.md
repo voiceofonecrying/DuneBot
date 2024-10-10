@@ -1,5 +1,4 @@
 # DuneBot
-
 ## Docker Build
 To Build the docker image run the following command in the project directory: `docker build -t dunebot --progress=plain .`.
 
