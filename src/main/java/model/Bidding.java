@@ -347,9 +347,6 @@ public class Bidding {
         sendAtreidesCardPrescience(game, card, false);
     }
 
-    public void auctionNextCard(Game game) throws InvalidGameStateException {
-        auctionNextCard(game, false);
-    }
     public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
         if (bidCard != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
@@ -363,6 +360,13 @@ public class Bidding {
 
         DuneTopic turnSummary = game.getTurnSummary();
         if (!marketShownToIx && game.hasFaction("Ix")) {
+            if (treacheryDeckReshuffled) {
+                turnSummary.publish(MessageFormat.format(
+                        "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
+                        numCardsFromOldDeck, Emojis.TREACHERY
+                ));
+                treacheryDeckReshuffled = false;
+            }
             String message = MessageFormat.format(
                     "{0} {1} cards have been shown to {2}",
                     market.size(), Emojis.TREACHERY, Emojis.IX
@@ -382,6 +386,7 @@ public class Bidding {
                         "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
                         numCardsFromOldDeck, Emojis.TREACHERY
                 ));
+                treacheryDeckReshuffled = false;
             }
             TreacheryCard bidCard = nextBidCard(game);
             sendAtreidesCardPrescience(game, bidCard, prescienceBlocked);
@@ -454,6 +459,7 @@ public class Bidding {
                     "There were only {0} left in the {1} deck when bidding started. The {1} deck has been replenished from the discard pile.",
                     numCardsFromOldDeck, Emojis.TREACHERY
             ));
+            treacheryDeckReshuffled = false;
         }
         numCardsForBid++;
         game.getTurnSummary().publish("The bidding market now has " + market.size() + " " + Emojis.TREACHERY + " cards remaining for auction. There are " + numCardsForBid + " total cards this turn.");
@@ -512,7 +518,7 @@ public class Bidding {
         if (requestTechnology)
             game.getFaction("Ix").getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
         else
-            auctionNextCard(game);
+            auctionNextCard(game, false);
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
@@ -589,6 +595,7 @@ public class Bidding {
                     "There were no cards left in the {0} deck. The {0} deck has been replenished from the discard pile.",
                     Emojis.TREACHERY
             ));
+            treacheryDeckReshuffled = false;
         }
     }
 
