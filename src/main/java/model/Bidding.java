@@ -347,9 +347,6 @@ public class Bidding {
         sendAtreidesCardPrescience(game, card, false);
     }
 
-    public void auctionNextCard(Game game) throws InvalidGameStateException {
-        auctionNextCard(game, false);
-    }
     public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
         if (bidCard != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
@@ -363,6 +360,13 @@ public class Bidding {
 
         DuneTopic turnSummary = game.getTurnSummary();
         if (!marketShownToIx && game.hasFaction("Ix")) {
+            if (treacheryDeckReshuffled) {
+                turnSummary.publish(MessageFormat.format(
+                        "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
+                        numCardsFromOldDeck, Emojis.TREACHERY
+                ));
+                treacheryDeckReshuffled = false;
+            }
             String message = MessageFormat.format(
                     "{0} {1} cards have been shown to {2}",
                     market.size(), Emojis.TREACHERY, Emojis.IX
@@ -382,6 +386,7 @@ public class Bidding {
                         "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
                         numCardsFromOldDeck, Emojis.TREACHERY
                 ));
+                treacheryDeckReshuffled = false;
             }
             TreacheryCard bidCard = nextBidCard(game);
             sendAtreidesCardPrescience(game, bidCard, prescienceBlocked);
@@ -454,6 +459,7 @@ public class Bidding {
                     "There were only {0} left in the {1} deck when bidding started. The {1} deck has been replenished from the discard pile.",
                     numCardsFromOldDeck, Emojis.TREACHERY
             ));
+            treacheryDeckReshuffled = false;
         }
         numCardsForBid++;
         game.getTurnSummary().publish("The bidding market now has " + market.size() + " " + Emojis.TREACHERY + " cards remaining for auction. There are " + numCardsForBid + " total cards this turn.");
@@ -512,7 +518,7 @@ public class Bidding {
         if (requestTechnology)
             game.getFaction("Ix").getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
         else
-            auctionNextCard(game);
+            auctionNextCard(game, false);
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
@@ -589,6 +595,7 @@ public class Bidding {
                     "There were no cards left in the {0} deck. The {0} deck has been replenished from the discard pile.",
                     Emojis.TREACHERY
             ));
+            treacheryDeckReshuffled = false;
         }
     }
 
@@ -817,7 +824,7 @@ public class Bidding {
         return true;
     }
 
-    public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue) throws InvalidGameStateException {
+    public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue, boolean harkBonusBlocked) throws InvalidGameStateException {
         if (bidCard == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
         }
@@ -888,21 +895,26 @@ public class Bidding {
         clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
-        if (winner instanceof HarkonnenFaction) {
-            if (winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
-                if (game.drawTreacheryCard("Harkonnen", false, false))
-                    turnSummary.publish(MessageFormat.format("The {0} deck was empty and has been replenished from the discard pile.", Emojis.TREACHERY));
-                turnSummary.publish(MessageFormat.format("{0} draws another card from the {1} deck.", winner.getEmoji(), Emojis.TREACHERY));
-                winner.getLedger().publish("Received " + winner.getLastTreacheryCard().name() + " as an extra card. (" + currentCard + ")");
-            } else if (winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
-                game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
-                game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
-            } else if (winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
-                game.drawTreacheryCard(winner.getOccupier().getName(), true, false);
-                turnSummary.publish(MessageFormat.format(
-                        "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
-                        winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
-                ));
+        if (winner instanceof HarkonnenFaction harkonnen) {
+            if (harkBonusBlocked || harkonnen.isBonusCardBlocked()) {
+                harkonnen.setBonusCardBlocked(false);
+                turnSummary.publish(Emojis.HARKONNEN + " bonus card was blocked by Karama.");
+            } else {
+                if (winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
+                    if (game.drawTreacheryCard("Harkonnen", false, false))
+                        turnSummary.publish(MessageFormat.format("The {0} deck was empty and has been replenished from the discard pile.", Emojis.TREACHERY));
+                    turnSummary.publish(MessageFormat.format("{0} draws another card from the {1} deck.", winner.getEmoji(), Emojis.TREACHERY));
+                    winner.getLedger().publish("Received " + winner.getLastTreacheryCard().name() + " as an extra card. (" + currentCard + ")");
+                } else if (winner.isHomeworldOccupied() && winner.getOccupier().hasAlly()) {
+                    game.getModInfo().publish("Harkonnen occupier or ally may draw one from the deck (you must do this for them).");
+                    game.getTurnSummary().publish("Giedi Prime is occupied by " + winner.getOccupier().getName() + ", they or their ally may draw an additional card from the deck.");
+                } else if (winner.isHomeworldOccupied() && winner.getOccupier().getTreacheryHand().size() < winner.getOccupier().getHandLimit()) {
+                    game.drawTreacheryCard(winner.getOccupier().getName(), true, false);
+                    turnSummary.publish(MessageFormat.format(
+                            "Giedi Prime is occupied, {0} draws another card from the {1} deck instead of {2}.",
+                            winner.getEmoji(), Emojis.TREACHERY, Emojis.HARKONNEN
+                    ));
+                }
             }
         }
 
@@ -913,10 +925,13 @@ public class Bidding {
     }
 
     public void awardTopBidder(Game game) throws InvalidGameStateException {
+        awardTopBidder(game, false);
+    }
+    public void awardTopBidder(Game game, boolean harkBonusBlocked) throws InvalidGameStateException {
         String winnerName = bidLeader;
         if (winnerName.isEmpty()) {
             if (richeseCacheCard || blackMarketCard)
-                assignAndPayForCard(game, "Richese", "", 0);
+                assignAndPayForCard(game, "Richese", "", 0, harkBonusBlocked);
             else
                 throw new InvalidGameStateException("There is no top bidder for this card.");
         } else {
@@ -926,7 +941,7 @@ public class Bidding {
             else if (!winnerName.equals("Emperor"))
                 paidToFactionName = "Emperor";
             int spentValue = currentBid;
-            assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
+            assignAndPayForCard(game, winnerName, paidToFactionName, spentValue, harkBonusBlocked);
         }
     }
 
@@ -1091,6 +1106,7 @@ public class Bidding {
                     modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
                 else
                     modMessage += " and end the bidding phase.";
+                modMessage += " " + game.getModOrRoleMention();
                 game.getModInfo().publish(modMessage);
             } else if (topBidderDeclared) {
                 game.getModInfo().publish("Use /award-top-bidder to assign card to the winner and pay appropriate recipient.\nUse /award-bid if a Karama affected winner or payment. " + game.getModOrRoleMention());
@@ -1103,6 +1119,8 @@ public class Bidding {
     public boolean finishBiddingPhase(Game game) throws InvalidGameStateException {
         if (bidCard == null && !market.isEmpty() && !getEligibleBidOrder(game).isEmpty()) {
             throw new InvalidGameStateException("Use /run bidding to auction the next card.");
+        } else if (!marketShownToIx && game.hasFaction("Ix")) {
+            throw new InvalidGameStateException("Use /run bidding to show bidding cards to Ix");
         } else if (cacheCardDecisionInProgress) {
             throw new InvalidGameStateException("Richese must decide on their cache card.");
         } else if (ixRejectDecisionInProgress) {

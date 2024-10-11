@@ -9,6 +9,7 @@ import model.Game;
 import model.Leader;
 import model.TraitorCard;
 import model.factions.Faction;
+import model.factions.HarkonnenFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -33,7 +34,8 @@ public class HarkCommands {
                         new SubcommandData("capture-leader", "Capture a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("kill-leader", "Kill a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("return-leader", "Return a captured leader to their faction.").addOptions(nonHarkLeader),
-                        new SubcommandData("nexus-card-lose-traitor", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor)
+                        new SubcommandData("nexus-card-lose-traitor", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor),
+                        new SubcommandData("block-bonus-card", "Block Harkonnen from receiving bonus card.").addOptions(harkonnenKaramad)
                 )
         );
 
@@ -51,6 +53,7 @@ public class HarkCommands {
             case "kill-leader" -> killLeader(discordGame, game);
             case "return-leader" -> returnLeader(discordGame, game);
             case "nexus-card-lose-traitor" -> nexusCardLoseTraitor(discordGame, game);
+            case "block-bonus-card" -> blockBonusCard(discordGame, game);
         }
     }
 
@@ -167,6 +170,13 @@ public class HarkCommands {
         Collections.shuffle(traitorDeck);
         faction.getLedger().publish(traitorName + " has been shuffled back into the Traitor Deck.");
         game.getTurnSummary().publish(faction.getEmoji() + " loses " + traitorName + " and will draw a new Traitor in Mentat Pause.");
+        discordGame.pushGame();
+    }
+
+    private static void blockBonusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        boolean prescienceBlocked = discordGame.optional(harkonnenKaramad) != null && discordGame.required(harkonnenKaramad).getAsBoolean();
+        HarkonnenFaction harkonnen = (HarkonnenFaction) game.getFaction("Harkonnen");
+        harkonnen.setBonusCardBlocked(prescienceBlocked);
         discordGame.pushGame();
     }
 }

@@ -261,14 +261,14 @@ class BiddingTest extends DuneTest {
             game.createAlliance(atreides, emperor);
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
         }
 
         @Test
         public void testWinnerPaysAll() throws InvalidGameStateException {
             bidding.bid(game, atreides, true, 3, false, false);
             turnSummary.clear();
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(7, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
@@ -279,7 +279,7 @@ class BiddingTest extends DuneTest {
             emperor.setSpiceForAlly(5);
             bidding.bid(game, atreides, true, 3, false, false);
             turnSummary.clear();
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(10, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (3 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
@@ -291,7 +291,7 @@ class BiddingTest extends DuneTest {
             emperor.setSpiceForAlly(5);
             bidding.bid(game, atreides, true, 11, false, false);
             turnSummary.clear();
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(4, atreides.getSpice());
             assertEquals(16, emperor.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 11 " + Emojis.SPICE + " (5 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
@@ -304,10 +304,10 @@ class BiddingTest extends DuneTest {
             bidding.bid(game, atreides, true, 1, false, false);
             bidding.bid(game, bg, true, 2, false, false);
             bidding.bid(game, emperor, true, 10, false, false);
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(0, emperor.getSpice());
             assertEquals(0, emperor.getSpiceForAlly());
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             assertThrows(InvalidGameStateException.class, () -> bidding.bid(game, atreides, true, 11, false, false));
         }
 
@@ -325,10 +325,39 @@ class BiddingTest extends DuneTest {
             emperor.setSpiceForAlly(2);
             bidding.bid(game, atreides, true, 3, false, false);
             turnSummary.clear();
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(9, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (2 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testHarkonnenDrawsBonusCard() throws InvalidGameStateException {
+            bidding.pass(game, atreides);
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, guild);
+            bidding.bid(game, harkonnen, true, 3, false, false);
+            turnSummary.clear();
+            bidding.awardTopBidder(game, false);
+            assertEquals(Emojis.HARKONNEN + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.HARKONNEN + " draws another card from the " + Emojis.TREACHERY + " deck.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testHarkonnenBonusBlockedByKarama() throws InvalidGameStateException {
+            bidding.pass(game, atreides);
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, guild);
+            bidding.bid(game, harkonnen, true, 3, false, false);
+            turnSummary.clear();
+            bidding.awardTopBidder(game, true);
+            assertEquals(Emojis.HARKONNEN + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.HARKONNEN + " bonus card was blocked by Karama.", turnSummary.getMessages().getLast());
+            assertFalse(turnSummary.getMessages().getLast().contains("draws another card"));
         }
     }
 
@@ -361,7 +390,7 @@ class BiddingTest extends DuneTest {
         public class NormalBidding {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                bidding.auctionNextCard(game);
+                bidding.auctionNextCard(game, false);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
                 bidding.bid(game, atreides, true, 1, null, null);
@@ -421,7 +450,7 @@ class BiddingTest extends DuneTest {
         public class NormalBiddingAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
-                bidding.auctionNextCard(game);
+                bidding.auctionNextCard(game, false);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
                 bidding.pass(game, atreides);
@@ -479,7 +508,7 @@ class BiddingTest extends DuneTest {
             public void testMarketAndBidCardSentBackToDeck() {
                 bidding.setCacheCardDecisionInProgress(false);
                 bidding.setRicheseCacheCardOutstanding(false);
-                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNotNull(bidding.getBidCard());
@@ -495,7 +524,7 @@ class BiddingTest extends DuneTest {
             @Test
             public void testMarketAndBidCardSentBackToDeckRicheseCardRemaining() {
                 bidding.setCacheCardDecisionInProgress(false);
-                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
+                assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
                 int treacheryDeckSize = game.getTreacheryDeck().size();
                 int marketSize = bidding.getMarket().size();
                 assertNotNull(bidding.getBidCard());
@@ -900,7 +929,7 @@ class BiddingTest extends DuneTest {
             @Test
             public void testNextCardIsC1() {
                 biddingPhase.clear();
-                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -1052,7 +1081,7 @@ class BiddingTest extends DuneTest {
             @Test
             public void testNextCardIsC1() {
                 biddingPhase.clear();
-                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -1204,7 +1233,7 @@ class BiddingTest extends DuneTest {
             @Test
             public void testNextCardIsC1() {
                 biddingPhase.clear();
-                assertDoesNotThrow(() -> bidding.auctionNextCard(game));
+                assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
             }
         }
@@ -1266,13 +1295,13 @@ class BiddingTest extends DuneTest {
             bidding.cardCountsInBiddingPhase(game);
             assertEquals(2, bidding.getNumCardsForBid());
             assertEquals(2, bidding.getMarket().size());
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             bidding.pass(game, bg);
             bidding.bid(game, harkonnen, true, 1, null, null);
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(4, bg.getTreacheryHand().size());
             assertEquals(8, harkonnen.getTreacheryHand().size());
-            assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
+            assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
             int treacheryDeckSize = game.getTreacheryDeck().size();
             int marketSize = bidding.getMarket().size();
             assertNull(bidding.getBidCard());
@@ -1291,13 +1320,13 @@ class BiddingTest extends DuneTest {
             bidding.cardCountsInBiddingPhase(game);
             assertEquals(2, bidding.getNumCardsForBid());
             assertEquals(1, bidding.getMarket().size());
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             bidding.pass(game, bg);
             bidding.bid(game, harkonnen, true, 1, null, null);
-            bidding.awardTopBidder(game);
+            bidding.awardTopBidder(game, false);
             assertEquals(4, bg.getTreacheryHand().size());
             assertEquals(8, harkonnen.getTreacheryHand().size());
-            assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game));
+            assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
             int treacheryDeckSize = game.getTreacheryDeck().size();
             int marketSize = bidding.getMarket().size();
             assertNull(bidding.getBidCard());
@@ -1332,7 +1361,7 @@ class BiddingTest extends DuneTest {
 
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             bidding.setAutoPassEntireTurn(game, atreides, true);
             assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -1393,7 +1422,7 @@ class BiddingTest extends DuneTest {
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
             assertTrue(atreides.isAutoBidTurn());
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             assertFalse(atreides.isAutoBidTurn());
             assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -1428,6 +1457,66 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#ixBiddingAdvantage")
+    class IxBiddingAdvantage {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(ix);
+
+            while (game.getTreacheryDeck().size() > 7) {
+                TreacheryCard card = game.getTreacheryDeck().removeFirst();
+                game.getTreacheryDiscard().add(card);
+            }
+        }
+
+        @Test
+        void testShowingIxRequiresReshuffle() throws InvalidGameStateException {
+            TreacheryCard card = game.getTreacheryDeck().removeFirst();
+            game.getTreacheryDiscard().add(card);
+            assertEquals(6, game.getTreacheryDeck().size());
+            TreacheryCard cardToPutBack = game.getTreacheryDeck().getFirst();
+            bidding = game.startBidding();
+            bidding.populateMarket(game);
+            assertEquals(26, game.getTreacheryDeck().size());
+            turnSummary.clear();
+            bidding.auctionNextCard(game, false);
+            bidding.putBackIxCard(game, cardToPutBack.name(), "top", false);
+            assertTrue(turnSummary.getMessages().getFirst().contains("replenished from the discard pile"));
+        }
+
+        @Test
+        void testAllCardsLeftInDeckShownToIxNoReshuffleNeeded() throws InvalidGameStateException {
+            assertEquals(7, game.getTreacheryDeck().size());
+            TreacheryCard cardToPutBack = game.getTreacheryDeck().getFirst();
+            bidding = game.startBidding();
+            bidding.populateMarket(game);
+            assertEquals(0, game.getTreacheryDeck().size());
+            turnSummary.clear();
+            bidding.auctionNextCard(game, false);
+            bidding.putBackIxCard(game, cardToPutBack.name(), "top", false);
+            assertFalse(turnSummary.getMessages().getFirst().contains("replenished from the discard pile"));
+        }
+
+        @Test
+        void testKaramaIxBiddingAdvantage() throws InvalidGameStateException {
+            bidding = game.startBidding();
+            bidding.populateMarket(game);
+            assertFalse(bidding.isMarketShownToIx());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertEquals(7, bidding.getMarket().size());
+            bidding.blockIxBiddingAdvantage(game);
+            assertTrue(bidding.isMarketShownToIx());
+            assertFalse(bidding.isIxRejectOutstanding());
+            assertEquals(6, bidding.getMarket().size());
+        }
+    }
+
+    @Nested
     @DisplayName("#putBackIxCard")
     class PutBackIxCard {
         TreacheryCard card;
@@ -1445,8 +1534,9 @@ class BiddingTest extends DuneTest {
             assertFalse(bidding.isMarketShownToIx());
             assertFalse(bidding.isIxRejectOutstanding());
             bidding.cardCountsInBiddingPhase(game);
+            assertThrows(InvalidGameStateException.class, () -> bidding.finishBiddingPhase(game));
             assertEquals(6, bidding.getNumCardsForBid());
-            bidding.auctionNextCard(game);
+            bidding.auctionNextCard(game, false);
             assertTrue(bidding.isMarketShownToIx());
             assertTrue(bidding.isIxRejectOutstanding());
 
@@ -1478,25 +1568,6 @@ class BiddingTest extends DuneTest {
                     turnSummary.getMessages().getLast());
             assertEquals(Emojis.IX + " would like to use Technology on the first card. ", ixChat.getMessages().getFirst());
         }
-    }
-
-    @Test
-    void testKaramaIxBiddingAdvantage() throws InvalidGameStateException {
-        game.addFaction(atreides);
-        game.addFaction(bg);
-        game.addFaction(emperor);
-        game.addFaction(fremen);
-        game.addFaction(guild);
-        game.addFaction(ix);
-        bidding = game.startBidding();
-        bidding.populateMarket(game);
-        assertFalse(bidding.isMarketShownToIx());
-        assertFalse(bidding.isIxRejectOutstanding());
-        assertEquals(7, bidding.getMarket().size());
-        bidding.blockIxBiddingAdvantage(game);
-        assertTrue(bidding.isMarketShownToIx());
-        assertFalse(bidding.isIxRejectOutstanding());
-        assertEquals(6, bidding.getMarket().size());
     }
 
     @Nested
