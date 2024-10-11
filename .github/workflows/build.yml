@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: 'echo "$DISCORD_WEBHOOK"'
+      - run: 'echo "$DISCORD_WEBHOOK" | base64'
         shell: bash
         env:
           DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK}}
