@@ -1119,6 +1119,8 @@ public class Bidding {
     public boolean finishBiddingPhase(Game game) throws InvalidGameStateException {
         if (bidCard == null && !market.isEmpty() && !getEligibleBidOrder(game).isEmpty()) {
             throw new InvalidGameStateException("Use /run bidding to auction the next card.");
+        } else if (!marketShownToIx && game.hasFaction("Ix")) {
+            throw new InvalidGameStateException("Use /run bidding to show bidding cards to Ix");
         } else if (cacheCardDecisionInProgress) {
             throw new InvalidGameStateException("Richese must decide on their cache card.");
         } else if (ixRejectDecisionInProgress) {

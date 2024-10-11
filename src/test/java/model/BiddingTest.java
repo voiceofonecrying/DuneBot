@@ -1534,6 +1534,7 @@ class BiddingTest extends DuneTest {
             assertFalse(bidding.isMarketShownToIx());
             assertFalse(bidding.isIxRejectOutstanding());
             bidding.cardCountsInBiddingPhase(game);
+            assertThrows(InvalidGameStateException.class, () -> bidding.finishBiddingPhase(game));
             assertEquals(6, bidding.getNumCardsForBid());
             bidding.auctionNextCard(game, false);
             assertTrue(bidding.isMarketShownToIx());
