@@ -356,6 +356,7 @@ class BiddingTest extends DuneTest {
             turnSummary.clear();
             bidding.awardTopBidder(game, true);
             assertEquals(Emojis.HARKONNEN + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.HARKONNEN + " bonus card was blocked by Karama.", turnSummary.getMessages().getLast());
             assertFalse(turnSummary.getMessages().getLast().contains("draws another card"));
         }
     }

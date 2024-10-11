@@ -10,6 +10,8 @@ import java.io.IOException;
 
 public class HarkonnenFaction extends Faction {
     private Boolean hasTriggeredHT;
+    private boolean bonusCardBlocked;
+
     public HarkonnenFaction(String player, String userName) throws IOException {
         super("Harkonnen", player, userName);
 
@@ -41,6 +43,14 @@ public class HarkonnenFaction extends Faction {
 
     public void setTriggeredHT(boolean hasTriggeredHT) {
         this.hasTriggeredHT = hasTriggeredHT;
+    }
+
+    public boolean isBonusCardBlocked() {
+        return bonusCardBlocked;
+    }
+
+    public void setBonusCardBlocked(boolean bonusCardBlocked) {
+        this.bonusCardBlocked = bonusCardBlocked;
     }
 
     @Override
