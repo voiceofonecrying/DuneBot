@@ -212,11 +212,6 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public static void awardTopBidder(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        game.getBidding().awardTopBidder(game);
-        discordGame.pushGame();
-    }
-
     public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama);
     }
@@ -366,8 +361,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
         commandData.add(Commands.slash("homeworld-occupy", "Set the occupying faction in a homeworld.").addOptions(homeworld, faction));
         commandData.add(Commands.slash("add-card-to-bidding-market", "Add one more card from the deck to the bidding market."));
-        commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction));
-        commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient."));
+        commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction, harkonnenKaramad));
+        commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient.").addOptions(harkonnenKaramad));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
         commandData.add(Commands.slash("display-state", "Displays some element of the game in mod-info.").addOptions(data));
         commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
@@ -733,7 +728,14 @@ public class CommandManager extends ListenerAdapter {
         String winnerName = discordGame.required(faction).getAsString();
         String paidToFactionName = event.getOption("paid-to-faction", "Bank", OptionMapping::getAsString);
         int spentValue = discordGame.required(spent).getAsInt();
-        game.getBidding().assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
+        boolean harkBonusBlocked = discordGame.optional(harkonnenKaramad) != null && discordGame.required(harkonnenKaramad).getAsBoolean();
+        game.getBidding().assignAndPayForCard(game, winnerName, paidToFactionName, spentValue, harkBonusBlocked);
+        discordGame.pushGame();
+    }
+
+    public static void awardTopBidder(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        boolean harkBonusBlocked = discordGame.optional(harkonnenKaramad) != null && discordGame.required(harkonnenKaramad).getAsBoolean();
+        game.getBidding().awardTopBidder(game, harkBonusBlocked);
         discordGame.pushGame();
     }
 

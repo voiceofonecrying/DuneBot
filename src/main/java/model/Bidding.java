@@ -824,7 +824,7 @@ public class Bidding {
         return true;
     }
 
-    public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue) throws InvalidGameStateException {
+    public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue, boolean harkBonusBlocked) throws InvalidGameStateException {
         if (bidCard == null) {
             throw new InvalidGameStateException("There is no card up for bid.");
         }
@@ -895,7 +895,7 @@ public class Bidding {
         clearBidCardInfo(winnerName);
 
         // Harkonnen draw an additional card
-        if (winner instanceof HarkonnenFaction) {
+        if (winner instanceof HarkonnenFaction && !harkBonusBlocked) {
             if (winnerHand.size() < winner.getHandLimit() && !winner.isHomeworldOccupied()) {
                 if (game.drawTreacheryCard("Harkonnen", false, false))
                     turnSummary.publish(MessageFormat.format("The {0} deck was empty and has been replenished from the discard pile.", Emojis.TREACHERY));
@@ -920,10 +920,13 @@ public class Bidding {
     }
 
     public void awardTopBidder(Game game) throws InvalidGameStateException {
+        awardTopBidder(game, false);
+    }
+    public void awardTopBidder(Game game, boolean harkBonusBlocked) throws InvalidGameStateException {
         String winnerName = bidLeader;
         if (winnerName.isEmpty()) {
             if (richeseCacheCard || blackMarketCard)
-                assignAndPayForCard(game, "Richese", "", 0);
+                assignAndPayForCard(game, "Richese", "", 0, harkBonusBlocked);
             else
                 throw new InvalidGameStateException("There is no top bidder for this card.");
         } else {
@@ -933,7 +936,7 @@ public class Bidding {
             else if (!winnerName.equals("Emperor"))
                 paidToFactionName = "Emperor";
             int spentValue = currentBid;
-            assignAndPayForCard(game, winnerName, paidToFactionName, spentValue);
+            assignAndPayForCard(game, winnerName, paidToFactionName, spentValue, harkBonusBlocked);
         }
     }
 
@@ -1098,6 +1101,7 @@ public class Bidding {
                     modMessage += ". Then use /richese card-bid to auction the " + Emojis.RICHESE + " cache card.";
                 else
                     modMessage += " and end the bidding phase.";
+                modMessage += " " + game.getModOrRoleMention();
                 game.getModInfo().publish(modMessage);
             } else if (topBidderDeclared) {
                 game.getModInfo().publish("Use /award-top-bidder to assign card to the winner and pay appropriate recipient.\nUse /award-bid if a Karama affected winner or payment. " + game.getModOrRoleMention());

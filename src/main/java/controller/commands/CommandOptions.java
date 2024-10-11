@@ -166,6 +166,7 @@ public class CommandOptions {
     public static final OptionData paidToFaction =
             new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
                     .setAutoComplete(true);
+    public static final OptionData harkonnenKaramad = new OptionData(OptionType.BOOLEAN, "no-bonus-card", "If someone Karamas Harkonnen's bonus card", false);
     public static final OptionData richeseNoFields =
             new OptionData(OptionType.INTEGER, "richese-no-fields", "Value of Richese No-Fields token.", true)
                     .addChoice("0 No-Field", 0)
