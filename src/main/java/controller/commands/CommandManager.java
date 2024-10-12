@@ -644,6 +644,7 @@ public class CommandManager extends ListenerAdapter {
     private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         boolean discarded = false;
+        game.removeAlliance(faction);
         if (faction.getNexusCard() != null) {
             discarded = true;
             game.getNexusDiscard().add(faction.getNexusCard());
