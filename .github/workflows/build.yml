@@ -10,10 +10,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: 'echo "$DISCORD_WEBHOOK" | base64'
-        shell: bash
-        env:
-          DISCORD_WEBHOOK: ${{secrets.DISCORD_WEBHOOK}}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
