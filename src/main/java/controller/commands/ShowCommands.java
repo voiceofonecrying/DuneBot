@@ -426,6 +426,20 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(buttons).build());
             }
         }
+
+        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("pass-" + faction.getName(), "Pass Next Turn")).build());
+        if (faction.isAutoBid()) {
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("auto-pass-" + faction.getName(), "Enable Auto-Pass")).build());
+        } else {
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("auto-pass-" + faction.getName(), "Disable Auto-Pass")).build());
+        }
+
+        if (faction.isAutoBidTurn()) {
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("turn-pass-" + faction.getName(), "Enable Auto-Pass (Whole Round)")).build());
+        } else {
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("turn-pass-" + faction.getName(), "Disable Auto-Pass (Whole Round)")).build());
+        }
+
     }
 
     private static FileUpload drawGameBoard(Game game) throws IOException {
