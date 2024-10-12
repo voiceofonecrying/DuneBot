@@ -776,6 +776,8 @@ public class BattlePlan {
                 throw new InvalidGameStateException("Only Atreides can have the Kwisatz Haderach");
             if (!((AtreidesFaction) faction).isHasKH())
                 throw new InvalidGameStateException("Only " + ((AtreidesFaction) faction).getForcesLost() + " Atreides forces killed in battle. 7 required for Kwisatz Haderach");
+            if (faction.getLeader("Kwisatz Haderach").isEmpty())
+                throw new InvalidGameStateException("Atreides has lost Kwisatz Haderach to the tanks");
         }
 
         int spiceFromAlly = 0;

@@ -281,6 +281,13 @@ public class BattlePlanTest extends DuneTest {
     }
 
     @Test
+    void testBattlePlanKHInTanks() {
+        atreides.setForcesLost(7);
+        game.killLeader(atreides, "Kwisatz Haderach");
+        assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, true, null, null, 0, false, 0));
+    }
+
+    @Test
     void testBattlePlanAtreidesDoesNotHaveKH() {
         atreides.setForcesLost(6);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, true, null, null, 0, false, 0));

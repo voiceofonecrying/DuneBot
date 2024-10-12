@@ -275,6 +275,38 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Nested
+    @DisplayName("#withdrawForces")
+    class WithdrawForces extends FactionTestTemplate.WithdrawForces {
+        int secondHomeworldForcesBefore;
+        Territory salusaSecundus;
+
+        @Override
+        @BeforeEach
+        void setUp() {
+            falseWallEast_southSector = game.getTerritory("False Wall East (South Sector)");
+            falseWallEast_southSector.addForces("Emperor*", 1);
+            salusaSecundus = game.getTerritory(faction.getSecondHomeworld());
+            secondHomeworldForcesBefore = salusaSecundus.getForceStrength("Emperor*");
+
+            super.setUp();
+        }
+
+        @Override
+        @Test
+        void testForcesInSouthReturnedToReserves() {
+            assertFalse(falseWallEast_southSector.hasActiveFaction(faction));
+            assertTrue(turnSummary.getMessages().getFirst().contains("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw."));
+        }
+
+        @Override
+        @Test
+        void testForcesWereAddedToReserves() {
+            super.testForcesWereAddedToReserves();
+            assertEquals(secondHomeworldForcesBefore + 1, salusaSecundus.getForceStrength("Emperor*"));
+        }
+    }
+
     @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());

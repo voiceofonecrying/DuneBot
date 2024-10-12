@@ -594,7 +594,7 @@ public class Battle {
         return !aggressorCallsTraitor(game) && !defenderCallsTraitor(game);
     }
 
-    public String factionBattleResults(Game game, boolean isAggressor) throws InvalidGameStateException {
+    public String factionBattleResults(Game game, boolean isAggressor, boolean executeResolution) throws InvalidGameStateException {
         String resolution = "";
         Faction faction = isAggressor ? getAggressor(game) : getDefender(game);
         String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
@@ -619,10 +619,16 @@ public class Battle {
         boolean isLoser = (isAggressor != isAggressorWin(game) || isLasgunShieldExplosion) && !callsTraitor || bothCallTraitor(game);
         String wholeTerritoryName = getWholeTerritoryName();
 
-        if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive())
+        if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive()) {
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
-        if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach())
+            if (executeResolution)
+                game.killLeader(faction, battlePlan.getKilledLeaderString());
+        }
+        if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach()) {
             resolution += emojis + " loses Kwisatz Haderach to the tanks\n";
+            if (executeResolution)
+                game.killLeader(faction, "Kwisatz Haderach");
+        }
         int regularForcesDialed = battlePlan.getRegularDialed();
         int specialForcesDialed = battlePlan.getSpecialDialed();
         int regularForcesTotal = getForces().stream()
@@ -657,6 +663,8 @@ public class Battle {
                     if (savedSpecialForces > 0)
                         resolution += " " + savedSpecialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
                     resolution += " retreat to an empty adjacent non-stronghold with Diplomat\n";
+//                    if (executeResolution)
+//                        game.getModInfo().publish(troopFactionEmoji + " may retreat to an empty adjacent non-stronghold with Diplomat.");
                 }
             }
             // Replace conditional below if Lasgun-Shield takes precedence over returning forces to reserves
@@ -671,6 +679,8 @@ public class Battle {
                 regularForcesTotal -= regularForcesNotDialed;
                 specialForcesTotal -= specialForcesNotDialed;
                 resolution += " to reserves with Harass and Withdraw\n";
+//                if (executeResolution)
+//                    faction.withdrawForces(game, territorySectors);
             }
             String troopLosses = troopFactionEmoji + " loses ";
             if (regularForcesTotal > 0)
@@ -678,10 +688,18 @@ public class Battle {
             if (specialForcesTotal > 0)
                 troopLosses += specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*") + " ";
             troopLosses += "to the tanks\n";
-            if (regularForcesTotal > 0 || specialForcesTotal > 0)
+            if (regularForcesTotal > 0 || specialForcesTotal > 0) {
                 resolution += troopLosses;
+//                if (executeResolution) {
+//                    for (Territory t : territorySectors) {
+//                        game.removeForces(t.getTerritoryName(), faction, regularForcesTotal, specialForcesTotal, true);
+//                    }
+//                }
+            }
         } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
+            DuneTopic turnSummary = game.getTurnSummary();
             if (!(faction instanceof EcazFaction)) {
+                String savedForceEmoji;
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
                     savedSpecialForces = Math.min(specialForcesDialed, 3);
                     savedRegularForces = Math.min(regularForcesDialed, 3 - savedSpecialForces);
@@ -693,17 +711,47 @@ public class Battle {
                     if (savedSpecialForces > 0)
                         resolution += " " + savedSpecialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
+//                    if (executeResolution) {
+//                        boolean maySwap = false;
+//                        if (savedSpecialForces > 0) {
+//                            savedSpecialForces--;
+//                            savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+//                            if (savedRegularForces > 0)
+//                                maySwap = true;
+//                        } else {
+//                            savedRegularForces--;
+//                            savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+//                        }
+//                        turnSummary.publish(faction.getEmoji() + " leave 1 " + savedForceEmoji + " in " + wholeTerritoryName + ".");
+//                        if (maySwap)
+//                            turnSummary.publish(faction.getEmoji() + " may choose to leave 1 " + Emojis.getForceEmoji(faction.getName()) + " instead.");
+//                        for (Territory t : territorySectors) {
+//                            game.removeForces(t.getTerritoryName(), faction, savedRegularForces, savedSpecialForces, false);
+//                            game.getTurnSummary().publish(faction.forcesString(savedRegularForces, savedSpecialForces) + " returned to reserves with Suk Graduate.");
+//                        }
+//                    }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
-                    String savedTroopEmoji;
                     if (specialForcesDialed > 0) {
-                        savedTroopEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
                         specialForcesDialed--;
                     } else {
-                        savedTroopEmoji = Emojis.getForceEmoji(troopFactionName);
+                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
                         regularForcesDialed--;
                     }
-                    if (!savedTroopEmoji.isEmpty())
-                        resolution += troopFactionEmoji + " returns 1 " + savedTroopEmoji + " to reserves with Suk Graduate\n";
+                    if (!savedForceEmoji.isEmpty())
+                        resolution += troopFactionEmoji + " returns 1 " + savedForceEmoji + " to reserves with Suk Graduate\n";
+//                    if (executeResolution) {
+//                        boolean maySwap = false;
+//                        if (specialForcesDialed > 0 && regularForcesDialed > 0)
+//                            maySwap = true;
+//                        turnSummary.publish(faction.getEmoji() + " leave 1 " + savedForceEmoji + " in " + wholeTerritoryName + ".");
+//                        if (maySwap)
+//                            turnSummary.publish(faction.getEmoji() + " may choose to leave 1 " + Emojis.getForceEmoji(faction.getName()) + " instead.");
+//                        for (Territory t : territorySectors) {
+//                            game.removeForces(t.getTerritoryName(), faction, savedRegularForces, savedSpecialForces, false);
+//                            game.getTurnSummary().publish(faction.forcesString(savedRegularForces, savedSpecialForces) + " returned to reserves with Suk Graduate.");
+//                        }
+//                    }
                 }
             }
             if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
@@ -968,6 +1016,10 @@ public class Battle {
     }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary) throws InvalidGameStateException {
+        printBattleResolution(game, publishToTurnSummary, false);
+    }
+
+    public void printBattleResolution(Game game, boolean publishToTurnSummary, boolean executeResolution) throws InvalidGameStateException {
         resolutionPublished = publishToTurnSummary;
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
@@ -978,16 +1030,26 @@ public class Battle {
         resolution += MessageFormat.format("{0} **vs {1} in {2}**\n\n",
                 getAggressorEmojis(game), getDefenderEmojis(game), wholeTerritoryName
         );
+
+        RicheseFaction richeseFaction = null;
+        if (game.hasFaction("Richese"))
+            richeseFaction = (RicheseFaction) game.getFaction("Richese");
         Integer noFieldValue = getForces().stream().filter(f -> f.getName().equals("NoField")).map(Force::getStrength).findFirst().orElse(null);
-        if (noFieldValue != null)
+        if (noFieldValue != null) {
             resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
+            if (executeResolution && richeseFaction != null)
+                richeseFaction.revealNoField(game);
+        }
+
         resolution += getAggressorEmojis(game) + "\n";
         resolution += aggressorBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getDefenderEmojis(game) + "\n";
         resolution += defenderBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getWinnerString(game) + "\n";
-        resolution += factionBattleResults(game, true);
-        resolution += factionBattleResults(game, false);
+
+        resolution += factionBattleResults(game, true, executeResolution);
+        resolution += factionBattleResults(game, false, executeResolution);
+
         String carnage = lasgunShieldCarnage(game);
         if (!carnage.isEmpty())
             resolution += "\nLasgun-Shield carnage:\n" + carnage;
@@ -1000,11 +1062,9 @@ public class Battle {
             resolution += "\nBattle cannot be resolved yet.\n" + hmsStrongholdCardFactionEmoji + " must decide on HMS Stronghold Card\n";
 
         String resolutionDecisions = "";
-        RicheseFaction richeseFaction;
         boolean saphoHasBeenAuctioned = false;
         boolean portableSnooperHasBeenAuctioned = false;
-        if (game.hasFaction("Richese")) {
-            richeseFaction = (RicheseFaction) game.getFaction("Richese");
+        if (richeseFaction != null) {
             saphoHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Juice of Sapho"));
             portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
         }
@@ -1028,6 +1088,14 @@ public class Battle {
         checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
         if (publishToTurnSummary)
             checkIfResolvable(game);
+    }
+
+    public void resolveBattle(Game game, boolean publishToTurnSummary, int turn, String territoryName) throws InvalidGameStateException {
+        if (game.getTurn() != turn)
+            throw new InvalidGameStateException("It is not turn " + turn);
+        if (!wholeTerritoryName.equals(territoryName))
+            throw new InvalidGameStateException("The current battle is not in " + territoryName);
+        printBattleResolution(game, publishToTurnSummary, true);
     }
 
     private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary) {

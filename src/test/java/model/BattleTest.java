@@ -1659,4 +1659,134 @@ class BattleTest extends DuneTest {
             assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES_TROOP + " to the tanks"));
         }
     }
+
+    @Nested
+    @DisplayName("#resolveBattle")
+    class ResolveBattle {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(richese);
+            game.addFaction(atreides);
+            richese.addTreacheryCard(cheapHero);
+            garaKulon.setRicheseNoField(3);
+            garaKulon.addForces("Atreides", 1);
+            battle = new Battle(game, List.of(garaKulon), List.of(richese, atreides));
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithNoField")
+        class ResolutionWithNoField {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotRevealTheNoField() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
+                assertEquals(3, garaKulon.getRicheseNoField());
+            }
+
+            @Test
+            void testPublishDoesNotRevealTheNoField() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
+                assertEquals(3, garaKulon.getRicheseNoField());
+            }
+
+            @Test
+            void testResolveRevealsTheNoField() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(garaKulon.hasRicheseNoField());
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("The 3 " + Emojis.NO_FIELD + " in Gara Kulon reveals 3 " + Emojis.RICHESE_TROOP)));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithKilledLeader")
+        class ResolutionWithKilledLeader {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotKillLeader() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("Duncan Idaho to the tanks"));
+                assertTrue(atreides.getLeaders().contains(duncanIdaho));
+                assertFalse(game.getLeaderTanks().contains(duncanIdaho));
+            }
+
+            @Test
+            void testPublishDoesNotKillLeader() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("Duncan Idaho to the tanks"));
+                assertTrue(atreides.getLeaders().contains(duncanIdaho));
+                assertFalse(game.getLeaderTanks().contains(duncanIdaho));
+            }
+
+            @Test
+            void ResolveKillsLeader() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(atreides.getLeaders().contains(duncanIdaho));
+                assertTrue(game.getLeaderTanks().contains(duncanIdaho));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " Duncan Idaho was sent to the tanks.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithKilledKH")
+        class ResolutionWithKilledKH {
+            Leader kwisatzHaderach;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.setForcesLost(7);
+                kwisatzHaderach = atreides.getLeader("Kwisatz Haderach").orElseThrow();
+//                atreides.addLeader(kwisatzHaderach);
+                richese.addTreacheryCard(lasgun);
+                richese.addTreacheryCard(shield);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, lasgun, shield);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 0, false, 0, null, null);
+                assertTrue(battle.getDefenderBattlePlan().isLasgunShieldExplosion());
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotKillKH() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("Kwisatz Haderach to the tanks"));
+                assertTrue(atreides.getLeaders().contains(kwisatzHaderach));
+                assertFalse(game.getLeaderTanks().contains(kwisatzHaderach));
+            }
+
+            @Test
+            void testPublishDoesNotKillKH() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("Kwisatz Haderach to the tanks"));
+                assertTrue(atreides.getLeaders().contains(kwisatzHaderach));
+                assertFalse(game.getLeaderTanks().contains(kwisatzHaderach));
+            }
+
+            @Test
+            void ResolveKillsKH() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(atreides.getLeaders().contains(kwisatzHaderach));
+                assertTrue(game.getLeaderTanks().contains(kwisatzHaderach));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " Kwisatz Haderach was sent to the tanks.")));
+            }
+        }
+    }
 }

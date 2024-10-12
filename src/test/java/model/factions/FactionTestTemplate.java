@@ -10,12 +10,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 abstract class FactionTestTemplate {
     Game game;
     TestTopic turnSummary;
+    Faction faction;
     TestTopic chat;
     TestTopic ledger;
 
@@ -31,9 +33,10 @@ abstract class FactionTestTemplate {
     }
 
     void commonPostInstantiationSetUp() {
-        getFaction().setChat(chat);
-        getFaction().setLedger(ledger);
-        game.addFaction(getFaction());
+        faction = getFaction();
+        faction.setChat(chat);
+        faction.setLedger(ledger);
+        game.addFaction(faction);
     }
 
     @Nested
@@ -636,6 +639,53 @@ abstract class FactionTestTemplate {
         void invalidToTanksNegatives() {
             assertThrows(IllegalArgumentException.class,
                     () -> faction.removeForces(territory.getTerritoryName(), forceName, -1, true, false));
+        }
+    }
+
+    @Nested
+    @DisplayName("#withdrawForces")
+    class WithdrawForces {
+        String wholeTerritoryName;
+        Territory falseWallEast_farNorthSector;
+        Territory falseWallEast_middleSector;
+        Territory falseWallEast_southSector;
+        int homeworldForcesBefore;
+
+        @BeforeEach
+        void setUp() {
+            game.setStorm(7);
+            falseWallEast_farNorthSector = game.getTerritory("False Wall East (Far North Sector)");
+            falseWallEast_middleSector = game.getTerritory("False Wall East (Middle Sector)");
+            falseWallEast_southSector = game.getTerritory("False Wall East (South Sector)");
+
+            falseWallEast_southSector.addForces(faction.getName(), 1);
+            falseWallEast_middleSector.addForces(faction.getName(), 1);
+            falseWallEast_farNorthSector.addForces(faction.getName(), 1);
+            homeworldForcesBefore = faction.getHomeworldTerritory().getForceStrength(faction.getName());
+
+            faction.withdrawForces(game, List.of(falseWallEast_southSector, falseWallEast_middleSector));
+        }
+
+        @Test
+        void testForcesInSouthReturnedToReserves() {
+            assertFalse(falseWallEast_southSector.hasActiveFaction(faction));
+            assertTrue(turnSummary.getMessages().getLast().contains("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw."));
+        }
+
+        @Test
+        void testForcesInSouthAndMiddleReturnedToReserves() {
+            assertFalse(falseWallEast_middleSector.hasActiveFaction(faction));
+            assertTrue(turnSummary.getMessages().getLast().contains("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw."));
+        }
+
+        @Test
+        void testForcesWereAddedToReserves() {
+            assertEquals(homeworldForcesBefore + 2, faction.getHomeworldTerritory().getForceStrength(faction.getName()));
+        }
+
+        @Test
+        void testForcesInFarNorthNotReturnedToReserves() {
+            assertEquals(1, falseWallEast_farNorthSector.getForceStrength(faction.getName()));
         }
     }
 

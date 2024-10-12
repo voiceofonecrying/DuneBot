@@ -1162,6 +1162,15 @@ public class Faction {
             game.reviveForces(this, isPaid, numForces, 0);
     }
 
+    public void withdrawForces(Game game, List<Territory> territorySectors) {
+        for (Territory t : territorySectors) {
+            int force = t.getForceStrength(name);
+            int specialForce = t.getForceStrength(name + "*");
+            game.removeForces(t.getTerritoryName(), this, force, specialForce, false);
+            game.getTurnSummary().publish(forcesString(force, specialForce) + " returned to reserves with Harass and Withdraw.");
+        }
+    }
+
     protected void presentExtortionChoices() {
         if (spice >= 3) {
             List<DuneChoice> choices = new ArrayList<>();

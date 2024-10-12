@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.UpdateType;
 import model.Game;
+import model.Leader;
 import model.SpiceCard;
 import model.Territory;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +52,13 @@ public class AtreidesFaction extends Faction {
      * @param forcesLost The number of forces lost in battle by the Atreides player
      */
     public void setForcesLost(int forcesLost) {
+        if (this.forcesLost >= 7)
+            return;
         this.forcesLost = forcesLost;
+        if (this.forcesLost >= 7) {
+            addLeader(new Leader("Kwisatz Haderach", 2, "Atreides", null, false));
+            game.getTurnSummary().publish("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");
+        }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 

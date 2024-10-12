@@ -29,6 +29,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-poison-tooth")) poisonToothDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -208,6 +209,17 @@ public class BattleButtons implements Pressable {
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Published to turn summary");
+        discordGame.pushGame();
+    }
+
+    private static void resolveBattle(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        String[] params = event.getComponentId().replace("battle-resolve-turn-", "").split("-");
+        int turn = Integer.parseInt(params[0]);
+        String wholeTerritoryName = params[1];
+        game.getBattles().getCurrentBattle().resolveBattle(game, true, turn, wholeTerritoryName);
+        discordGame.queueDeleteMessage();
+        deletePublishResolutionButtonsInChannel(event.getMessageChannel());
+        discordGame.queueMessage("Resolving the battle");
         discordGame.pushGame();
     }
 
