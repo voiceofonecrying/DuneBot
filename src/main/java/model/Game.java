@@ -658,7 +658,7 @@ public class Game {
         territories.get("Imperial Basin (West Sector)").setRock(false);
         territories.get("Arrakeen").setRock(false);
 
-        String message = "The Shield Wall has been destroyed. ";
+        String message = factionWithAtomics.getEmoji() + " discards Family Atomics. The Shield Wall has been destroyed.\n";
         TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics");
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             getTreacheryDiscard().add(familyAtomics);
