@@ -1079,7 +1079,10 @@ public class Battle {
             }
         } else if (!publishToTurnSummary) {
             modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
-            battlePlan.setCanCallTraitor(false);
+            if (isHarkonnenAllyPower)
+                battlePlan.setHarkCanCallTraitor(false);
+            else
+                battlePlan.setCanCallTraitor(false);
         }
     }
 
