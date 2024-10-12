@@ -3,6 +3,10 @@ on:
     types:
       - closed
 
+permissions:
+  pull-requests: read
+  contents: read
+
 jobs:
   message:
     if: github.event.pull_request.merged == true
