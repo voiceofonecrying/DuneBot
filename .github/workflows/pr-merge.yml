@@ -1,8 +1,7 @@
 on:
   pull_request:
-    branches: [ "master" ]
-#    types:
-#      - closed
+    types:
+      - closed
 
 permissions:
   pull-requests: read
@@ -10,7 +9,7 @@ permissions:
 
 jobs:
   message:
-    if: github.event.pull_request.merged == false
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: kceb/pull-request-url-action@v1
