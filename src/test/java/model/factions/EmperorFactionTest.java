@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -286,17 +287,20 @@ class EmperorFactionTest extends FactionTestTemplate {
         void setUp() {
             falseWallEast_southSector = game.getTerritory("False Wall East (South Sector)");
             falseWallEast_southSector.addForces("Emperor*", 1);
+            falseWallEast_middleSector = game.getTerritory("False Wall East (Middle Sector)");
+            falseWallEast_middleSector.addForces("Emperor*", 1);
             salusaSecundus = game.getTerritory(faction.getSecondHomeworld());
             secondHomeworldForcesBefore = salusaSecundus.getForceStrength("Emperor*");
 
+            faction.withdrawForces(game, 0, 1, List.of(falseWallEast_southSector, falseWallEast_middleSector));
             super.setUp();
         }
 
         @Override
         @Test
-        void testForcesInSouthReturnedToReserves() {
-            assertFalse(falseWallEast_southSector.hasActiveFaction(faction));
-            assertTrue(turnSummary.getMessages().getFirst().contains("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw."));
+        void testOneForceReturnedToReserves() {
+            super.testOneForceReturnedToReserves();
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
         }
 
         @Override

@@ -671,16 +671,11 @@ public class Battle {
 //            if (!isLasgunShieldExplosion && (weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
             if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
-                resolution += troopFactionEmoji + " returns";
-                if (regularForcesNotDialed > 0)
-                    resolution += " " + regularForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName);
-                if (specialForcesNotDialed > 0)
-                    resolution += " " + specialForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName + "*");
+                resolution += troopFactionEmoji + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
                 regularForcesTotal -= regularForcesNotDialed;
                 specialForcesTotal -= specialForcesNotDialed;
-                resolution += " to reserves with Harass and Withdraw\n";
-//                if (executeResolution)
-//                    faction.withdrawForces(game, territorySectors);
+                if (executeResolution)
+                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors);
             }
             String troopLosses = troopFactionEmoji + " loses ";
             if (regularForcesTotal > 0)
@@ -756,12 +751,9 @@ public class Battle {
             }
             if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
-                resolution += troopFactionEmoji + " returns";
-                if (regularForcesNotDialed > 0)
-                    resolution += " " + regularForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName);
-                if (specialForcesNotDialed > 0)
-                    resolution += " " + specialForcesNotDialed + " " + Emojis.getForceEmoji(troopFactionName + "*");
-                resolution += " to reserves with Harass and Withdraw\n";
+                resolution += troopFactionEmoji + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
+                if (executeResolution)
+                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors);
             }
             if (regularForcesDialed > 0 || specialForcesDialed > 0) {
                 resolution += troopFactionEmoji + " loses";

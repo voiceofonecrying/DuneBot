@@ -645,7 +645,6 @@ abstract class FactionTestTemplate {
     @Nested
     @DisplayName("#withdrawForces")
     class WithdrawForces {
-        String wholeTerritoryName;
         Territory falseWallEast_farNorthSector;
         Territory falseWallEast_middleSector;
         Territory falseWallEast_southSector;
@@ -663,24 +662,18 @@ abstract class FactionTestTemplate {
             falseWallEast_farNorthSector.addForces(faction.getName(), 1);
             homeworldForcesBefore = faction.getHomeworldTerritory().getForceStrength(faction.getName());
 
-            faction.withdrawForces(game, List.of(falseWallEast_southSector, falseWallEast_middleSector));
+            faction.withdrawForces(game, 1, 0, List.of(falseWallEast_southSector, falseWallEast_middleSector));
         }
 
         @Test
-        void testForcesInSouthReturnedToReserves() {
-            assertFalse(falseWallEast_southSector.hasActiveFaction(faction));
-            assertTrue(turnSummary.getMessages().getLast().contains("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw."));
-        }
-
-        @Test
-        void testForcesInSouthAndMiddleReturnedToReserves() {
-            assertFalse(falseWallEast_middleSector.hasActiveFaction(faction));
-            assertTrue(turnSummary.getMessages().getLast().contains("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw."));
+        void testOneForceReturnedToReserves() {
+            assertFalse(falseWallEast_southSector.hasActiveFaction(faction) && falseWallEast_middleSector.hasActiveFaction(faction));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw.")));
         }
 
         @Test
         void testForcesWereAddedToReserves() {
-            assertEquals(homeworldForcesBefore + 2, faction.getHomeworldTerritory().getForceStrength(faction.getName()));
+            assertEquals(homeworldForcesBefore + 1, faction.getHomeworldTerritory().getForceStrength(faction.getName()));
         }
 
         @Test

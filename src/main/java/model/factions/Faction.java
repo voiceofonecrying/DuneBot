@@ -1162,12 +1162,18 @@ public class Faction {
             game.reviveForces(this, isPaid, numForces, 0);
     }
 
-    public void withdrawForces(Game game, List<Territory> territorySectors) {
-        for (Territory t : territorySectors) {
-            int force = t.getForceStrength(name);
-            int specialForce = t.getForceStrength(name + "*");
-            game.removeForces(t.getTerritoryName(), this, force, specialForce, false);
-            game.getTurnSummary().publish(forcesString(force, specialForce) + " returned to reserves with Harass and Withdraw.");
+    public void withdrawForces(Game game, int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom) {
+        int regularLeftToWithdraw = regularForces;
+        int starredLeftToWithdraw = starredForces;
+        for (Territory t : sectorsToWithdrawFrom) {
+            int regularPresent = t.getForceStrength(name);
+            int starredPresent = t.getForceStrength(name + "*");
+            int regularToWithdrawNow = Math.min(regularLeftToWithdraw, regularPresent);
+            int starredToWithdrawNow = Math.min(starredLeftToWithdraw, starredPresent);
+            regularLeftToWithdraw -= regularToWithdrawNow;
+            starredLeftToWithdraw -= starredToWithdrawNow;
+            game.removeForces(t.getTerritoryName(), this, regularToWithdrawNow, starredToWithdrawNow, false);
+            game.getTurnSummary().publish(forcesString(regularToWithdrawNow, starredToWithdrawNow) + " returned to reserves with Harass and Withdraw.");
         }
     }
 
