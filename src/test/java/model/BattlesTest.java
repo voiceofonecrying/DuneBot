@@ -339,24 +339,41 @@ public class BattlesTest extends DuneTest {
         assertEquals("Next battle: 2 " + Emojis.HARKONNEN_TROOP + " vs 5 " + Emojis.GUILD_TROOP + " in Tuek's Sietch", turnSummary.messages.get(3));
     }
 
-    @Test
-    void testDiplomatMustBeResolved() throws InvalidGameStateException {
-        game.addFaction(harkonnen);
-        game.addFaction(atreides);
-        carthag.addForces("Atreides", 5);
-        battles = game.startBattlePhase();
-        battles.nextBattle(game);
-        battles.setTerritoryByIndex(0);
-        assertEquals(1, battles.getBattles(game).size());
-        Battle battle = battles.getCurrentBattle();
-        feydRautha.setSkillCard(new LeaderSkillCard("Diplomat"));
-        battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
-        battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-        battle.printBattleResolution(game, false, true);
-        try {
+    @Nested
+    @DisplayName("#DiplomatMustBeResolved")
+    class DiplomatMustBeResolved {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(harkonnen);
+            game.addFaction(atreides);
+            carthag.addForces("Atreides", 5);
+            battles = game.startBattlePhase();
             battles.nextBattle(game);
-        } catch (InvalidGameStateException e) {
-            assertEquals(e.getMessage(), "Diplomat must be resolved before running the next battle.");
+            battles.setTerritoryByIndex(0);
+            assertEquals(1, battles.getBattles(game).size());
+            Battle battle = battles.getCurrentBattle();
+            duncanIdaho.setSkillCard(new LeaderSkillCard("Diplomat"));
+            duncanIdaho.setPulledBehindShield(true);
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(10, carthag.getForceStrength("Harkonnen"));
+            assertEquals(5, carthag.getForceStrength("Atreides"));
+        }
+
+        @Test
+        void testDiplomatMustBeResolvedBeforeNextBattle() {
+            try {
+                battles.nextBattle(game);
+                fail("Exception was not thrown");
+            } catch (InvalidGameStateException e) {
+                assertEquals("Diplomat must be resolved before running the next battle.", e.getMessage());
+            }
+        }
+
+        @Test
+        void testDiplomatMustBeResolvedBeforeEndingBattlePhase() {
+            assertThrows(InvalidGameStateException.class, () -> game.endBattlePhase());
         }
     }
 

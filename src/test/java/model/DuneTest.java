@@ -247,6 +247,10 @@ public class DuneTest {
                 .orElseThrow(() -> new IllegalArgumentException(cardName + " not found"));
     }
 
+    void throwTestTopicMessages(TestTopic topic) {
+        throw new RuntimeException("\n- " + String.join("\n- ", topic.getMessages()));
+    }
+
     @Test
     void testGameAndFactionsCreatedAndTopicsAdded() {
         assertEquals(turnSummary, game.getTurnSummary());

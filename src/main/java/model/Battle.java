@@ -41,6 +41,7 @@ public class Battle {
     private DecisionStatus stoneBurnerTBD;
     private DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
+    private boolean diplomatMustBeResolved;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -69,6 +70,7 @@ public class Battle {
         this.stoneBurnerTBD = DecisionStatus.NA;
         this.mirrorWeaponStoneBurnerTBD = DecisionStatus.NA;
         this.poisonToothTBD = DecisionStatus.NA;
+        this.diplomatMustBeResolved = false;
     }
 
     public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
@@ -653,18 +655,17 @@ public class Battle {
                     int leaderValue = battlePlan.getLeaderValue();
                     savedSpecialForces = Math.min(specialForcesNotDialed, leaderValue);
                     savedRegularForces = Math.min(regularForcesNotDialed, leaderValue - savedSpecialForces);
-                    specialForcesTotal -= savedSpecialForces;
-                    specialForcesNotDialed -= savedSpecialForces;
-                    regularForcesTotal -= savedRegularForces;
-                    regularForcesNotDialed -= savedRegularForces;
-                    resolution += troopFactionEmoji + " may have";
-                    if (savedRegularForces > 0)
-                        resolution += " " + savedRegularForces + " " + Emojis.getForceEmoji(troopFactionName);
-                    if (savedSpecialForces > 0)
-                        resolution += " " + savedSpecialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
-                    resolution += " retreat to an empty adjacent non-stronghold with Diplomat\n";
-//                    if (executeResolution)
-//                        game.getModInfo().publish(troopFactionEmoji + " may retreat to an empty adjacent non-stronghold with Diplomat.");
+                    if (savedRegularForces > 0 || savedSpecialForces > 0) {
+                        specialForcesTotal -= savedSpecialForces;
+                        specialForcesNotDialed -= savedSpecialForces;
+                        regularForcesTotal -= savedRegularForces;
+                        regularForcesNotDialed -= savedRegularForces;
+                        resolution += troopFactionEmoji + " may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat\n";
+                        if (executeResolution) {
+                            diplomatMustBeResolved = true;
+                            faction.getChat().publish("You may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. " + faction.getPlayer());
+                        }
+                    }
                 }
             }
             // Replace conditional below if Lasgun-Shield takes precedence over returning forces to reserves
@@ -1535,5 +1536,9 @@ public class Battle {
             game.getModInfo().publish("The battle can be resolved with your override.");
         else
             game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
+    }
+
+    public boolean isDiplomatMustBeResolved() {
+        return diplomatMustBeResolved;
     }
 }

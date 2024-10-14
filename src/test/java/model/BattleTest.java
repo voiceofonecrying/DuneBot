@@ -1973,5 +1973,41 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
             }
         }
+
+        @Nested
+        @DisplayName("#resolutionWithDiplomatBehind")
+        class ResolutionWithDiplomatBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                burseg.setSkillCard(new LeaderSkillCard("Diplomat"));
+                burseg.setPulledBehindShield(true);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testResolveReturnsForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(battle.isDiplomatMustBeResolved());
+                assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
+            }
+        }
     }
 }
