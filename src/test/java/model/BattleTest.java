@@ -1996,16 +1996,17 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+            void testPublishDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
                 assertFalse(battle.isDiplomatMustBeResolved());
             }
 
             @Test
-            void testResolveReturnsForce() throws InvalidGameStateException {
+            void testResolveSetsDiplomatFlag() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
                 assertTrue(battle.isDiplomatMustBeResolved());
+                assertEquals(Emojis.EMPEROR + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
                 assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
             }
         }

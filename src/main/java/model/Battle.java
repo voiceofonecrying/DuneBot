@@ -664,6 +664,7 @@ public class Battle {
                         if (executeResolution) {
                             diplomatMustBeResolved = true;
                             faction.getChat().publish("You may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. " + faction.getPlayer());
+                            game.getModInfo().publish(faction.getEmoji() + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention());
                         }
                     }
                 }
