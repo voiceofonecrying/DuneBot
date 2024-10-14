@@ -662,7 +662,7 @@ abstract class FactionTestTemplate {
             falseWallEast_farNorthSector.addForces(faction.getName(), 1);
             homeworldForcesBefore = faction.getHomeworldTerritory().getForceStrength(faction.getName());
 
-            faction.withdrawForces(game, 1, 0, List.of(falseWallEast_southSector, falseWallEast_middleSector));
+            faction.withdrawForces(game, 1, 0, List.of(falseWallEast_southSector, falseWallEast_middleSector), "Harass and Withdraw");
         }
 
         @Test

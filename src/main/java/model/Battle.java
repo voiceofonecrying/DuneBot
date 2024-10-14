@@ -675,7 +675,7 @@ public class Battle {
                 regularForcesTotal -= regularForcesNotDialed;
                 specialForcesTotal -= specialForcesNotDialed;
                 if (executeResolution)
-                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors);
+                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
             String troopLosses = troopFactionEmoji + " loses ";
             if (regularForcesTotal > 0)
@@ -700,60 +700,46 @@ public class Battle {
                     savedRegularForces = Math.min(regularForcesDialed, 3 - savedSpecialForces);
                     specialForcesDialed -= savedSpecialForces;
                     regularForcesDialed -= savedRegularForces;
-                    resolution += troopFactionEmoji + " saves";
-                    if (savedRegularForces > 0)
-                        resolution += " " + savedRegularForces + " " + Emojis.getForceEmoji(troopFactionName);
-                    if (savedSpecialForces > 0)
-                        resolution += " " + savedSpecialForces + " " + Emojis.getForceEmoji(troopFactionName + "*");
-                    resolution += " and may leave 1 in the territory with Suk Graduate\n";
-//                    if (executeResolution) {
-//                        boolean maySwap = false;
-//                        if (savedSpecialForces > 0) {
-//                            savedSpecialForces--;
-//                            savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
-//                            if (savedRegularForces > 0)
-//                                maySwap = true;
-//                        } else {
-//                            savedRegularForces--;
-//                            savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
-//                        }
-//                        turnSummary.publish(faction.getEmoji() + " leave 1 " + savedForceEmoji + " in " + wholeTerritoryName + ".");
-//                        if (maySwap)
-//                            turnSummary.publish(faction.getEmoji() + " may choose to leave 1 " + Emojis.getForceEmoji(faction.getName()) + " instead.");
-//                        for (Territory t : territorySectors) {
-//                            game.removeForces(t.getTerritoryName(), faction, savedRegularForces, savedSpecialForces, false);
-//                            game.getTurnSummary().publish(faction.forcesString(savedRegularForces, savedSpecialForces) + " returned to reserves with Suk Graduate.");
-//                        }
-//                    }
+                    if (savedRegularForces > 0 || savedSpecialForces > 0) {
+                        resolution += troopFactionEmoji + " saves " + faction.forcesString(savedRegularForces, savedSpecialForces) + " and may leave 1 in the territory with Suk Graduate\n";
+                        if (executeResolution) {
+                            if (savedSpecialForces > 0) {
+                                savedSpecialForces--;
+                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                            } else {
+                                savedRegularForces--;
+                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+                            }
+                            turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
+                            faction.withdrawForces(game, savedRegularForces, savedSpecialForces, territorySectors, "Suk Graduate");
+                        }
+                    }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
+                    boolean savedForceIsStarred = false;
                     if (specialForcesDialed > 0) {
                         savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
                         specialForcesDialed--;
+                        savedForceIsStarred = true;
                     } else {
                         savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
                         regularForcesDialed--;
                     }
-                    if (!savedForceEmoji.isEmpty())
+                    if (!savedForceEmoji.isEmpty()) {
                         resolution += troopFactionEmoji + " returns 1 " + savedForceEmoji + " to reserves with Suk Graduate\n";
-//                    if (executeResolution) {
-//                        boolean maySwap = false;
-//                        if (specialForcesDialed > 0 && regularForcesDialed > 0)
-//                            maySwap = true;
-//                        turnSummary.publish(faction.getEmoji() + " leave 1 " + savedForceEmoji + " in " + wholeTerritoryName + ".");
-//                        if (maySwap)
-//                            turnSummary.publish(faction.getEmoji() + " may choose to leave 1 " + Emojis.getForceEmoji(faction.getName()) + " instead.");
-//                        for (Territory t : territorySectors) {
-//                            game.removeForces(t.getTerritoryName(), faction, savedRegularForces, savedSpecialForces, false);
-//                            game.getTurnSummary().publish(faction.forcesString(savedRegularForces, savedSpecialForces) + " returned to reserves with Suk Graduate.");
-//                        }
-//                    }
+                        if (executeResolution) {
+                            if (savedForceIsStarred)
+                                faction.withdrawForces(game, 0, 1, territorySectors, "Suk Graduate");
+                            else
+                                faction.withdrawForces(game, 1, 0, territorySectors, "Suk Graduate");
+                        }
+                    }
                 }
             }
             if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
                     && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
                 resolution += troopFactionEmoji + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
                 if (executeResolution)
-                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors);
+                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
             if (regularForcesDialed > 0 || specialForcesDialed > 0) {
                 resolution += troopFactionEmoji + " loses";
