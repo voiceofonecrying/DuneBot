@@ -727,10 +727,9 @@ public class Battle {
                     if (!savedForceEmoji.isEmpty()) {
                         resolution += troopFactionEmoji + " returns 1 " + savedForceEmoji + " to reserves with Suk Graduate\n";
                         if (executeResolution) {
-                            if (savedForceIsStarred)
-                                faction.withdrawForces(game, 0, 1, territorySectors, "Suk Graduate");
-                            else
-                                faction.withdrawForces(game, 1, 0, territorySectors, "Suk Graduate");
+                            int savedRegular = savedForceIsStarred ? 0 : 1;
+                            int savedStarred = savedForceIsStarred ? 1 : 0;
+                            faction.withdrawForces(game, savedRegular, savedStarred, territorySectors, "Suk Graduate");
                         }
                     }
                 }
