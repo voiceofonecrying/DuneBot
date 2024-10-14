@@ -339,6 +339,27 @@ public class BattlesTest extends DuneTest {
         assertEquals("Next battle: 2 " + Emojis.HARKONNEN_TROOP + " vs 5 " + Emojis.GUILD_TROOP + " in Tuek's Sietch", turnSummary.messages.get(3));
     }
 
+    @Test
+    void testDiplomatMustBeResolved() throws InvalidGameStateException {
+        game.addFaction(harkonnen);
+        game.addFaction(atreides);
+        carthag.addForces("Atreides", 5);
+        battles = game.startBattlePhase();
+        battles.nextBattle(game);
+        battles.setTerritoryByIndex(0);
+        assertEquals(1, battles.getBattles(game).size());
+        Battle battle = battles.getCurrentBattle();
+        feydRautha.setSkillCard(new LeaderSkillCard("Diplomat"));
+        battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+        battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+        battle.printBattleResolution(game, false, true);
+        try {
+            battles.nextBattle(game);
+        } catch (InvalidGameStateException e) {
+            assertEquals(e.getMessage(), "Diplomat must be resolved before running the next battle.");
+        }
+    }
+
     @Nested
     @DisplayName("#callBattleActions")
     class CallBattleActions {

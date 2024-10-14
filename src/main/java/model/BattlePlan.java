@@ -407,7 +407,7 @@ public class BattlePlan {
         return defense != null && (defense.servesAsSnooper() || defense.name().equals("Chemistry"));
     }
 
-    private boolean isProjectileDefense() {
+    protected boolean isProjectileDefense() {
         return defense != null && (defense.servesAsShield() || defense.name().equals("Weirding Way"));
     }
 
@@ -645,7 +645,7 @@ public class BattlePlan {
                 opponentWeapon = stoneBurnerNoKill ? null : weapon;
         }
         opponentDefense = opponentPlan.getDefense();
-        if (isSkillInFront("Diplomat") && (defense == null && weapon.type().equals("Worthless Card") || defense.type().equals("Worthless Card")))
+        if (isSkillInFront("Diplomat") && (defense == null && weapon != null && weapon.type().equals("Worthless Card") || defense != null && defense.type().equals("Worthless Card")))
             defense = opponentDefense;
         if (opponentPlan.isSkillBehindAndLeaderAlive("Bureaucrat"))
             opponentHasBureaucrat = true;

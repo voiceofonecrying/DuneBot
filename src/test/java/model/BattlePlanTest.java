@@ -706,7 +706,7 @@ public class BattlePlanTest extends DuneTest {
     }
 
     @Test
-    void testReinforcementsWeaponCanBePlayedWithPlanetologisy() throws InvalidGameStateException {
+    void testReinforcementsWeaponCanBePlayedWithPlanetologist() throws InvalidGameStateException {
         atreides.addTreacheryCard(reinforcements);
         game.addFaction(atreides);
         atreides.removeReserves(8);
@@ -928,6 +928,51 @@ public class BattlePlanTest extends DuneTest {
         BattlePlan battlePlan = new BattlePlan(game, carthagBattle, harkonnen, true, ummanKudu, null, false, mirrorWeapon, shield, 0, false, 0);
         battlePlan.revealOpponentBattlePlan(chaumasPlan);
         assertFalse(battlePlan.isLeaderAlive());
+    }
+
+    @Test
+    void testDiplomatInFrontWorthlessDefense() throws InvalidGameStateException {
+        LeaderSkillCard diplomat = new LeaderSkillCard("Diplomat");
+        wykk.setSkillCard(diplomat);
+        wykk.setPulledBehindShield(false);
+        bt.addTreacheryCard(baliset);
+        BattlePlan battlePlan = new BattlePlan(game, battle, bt, true, wykk, null, false, null, baliset, 0, false, 0);
+        battlePlan.revealOpponentBattlePlan(shieldPlan);
+        assertTrue(battlePlan.isProjectileDefense());
+    }
+
+    @Test
+    void testDiplomatInFrontNoDefenseWorthlessWeapon() throws InvalidGameStateException {
+        LeaderSkillCard diplomat = new LeaderSkillCard("Diplomat");
+        wykk.setSkillCard(diplomat);
+        wykk.setPulledBehindShield(false);
+        bt.addTreacheryCard(baliset);
+        BattlePlan battlePlan = new BattlePlan(game, battle, bt, true, wykk, null, false, baliset, null, 0, false, 0);
+        battlePlan.revealOpponentBattlePlan(shieldPlan);
+        assertTrue(battlePlan.isProjectileDefense());
+    }
+
+    @Test
+    void testDiplomatInFrontHasDefenseWorthlessWeapon() throws InvalidGameStateException {
+        LeaderSkillCard diplomat = new LeaderSkillCard("Diplomat");
+        wykk.setSkillCard(diplomat);
+        wykk.setPulledBehindShield(false);
+        bt.addTreacheryCard(baliset);
+        bt.addTreacheryCard(snooper);
+        BattlePlan battlePlan = new BattlePlan(game, battle, bt, true, wykk, null, false, baliset, snooper, 0, false, 0);
+        battlePlan.revealOpponentBattlePlan(shieldPlan);
+        assertFalse(battlePlan.isProjectileDefense());
+    }
+
+    @Test
+    void testDiplomatInFrontNoDefenseNoWeapon() throws InvalidGameStateException {
+        LeaderSkillCard diplomat = new LeaderSkillCard("Diplomat");
+        wykk.setSkillCard(diplomat);
+        wykk.setPulledBehindShield(false);
+        bt.addTreacheryCard(baliset);
+        BattlePlan battlePlan = new BattlePlan(game, battle, bt, true, wykk, null, false, null, null, 0, false, 0);
+        battlePlan.revealOpponentBattlePlan(shieldPlan);
+        assertFalse(battlePlan.isProjectileDefense());
     }
 
     @Test
