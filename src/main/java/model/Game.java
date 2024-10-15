@@ -1217,6 +1217,12 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
+    public void removeForcesAndReportToTurnSummary(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
+        removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        turnSummary.publish(targetFaction.forcesString(amountValue, specialAmount) + " in " + territoryName + " were sent to " + (isToTanks ? "the tanks." : "reserves."));
+        targetFaction.checkForHighThreshold();
+    }
+
     public void killLeader(Faction targetFaction, String leaderName, boolean faceDown) {
         Leader leader = leaderTanks.stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElse(null);
         if (leader != null) {

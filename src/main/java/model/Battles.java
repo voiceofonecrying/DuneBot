@@ -103,6 +103,12 @@ public class Battles {
     }
 
     public void nextBattle(Game game) throws InvalidGameStateException {
+        if (currentBattle != null && !currentBattle.isResolved()) {
+            if (currentBattle.isDiplomatMustBeResolved())
+                throw new InvalidGameStateException("Diplomat must be resolved before running the next battle.");
+            else
+                game.getModInfo().publish("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
+        }
         if (noBattlesRemaining(game))
             throw new InvalidGameStateException("There are no more battles");
 

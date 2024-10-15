@@ -72,6 +72,7 @@ public class DuneTest {
     Leader bashar;
     Leader feydRautha;
     Leader ummanKudu;
+    Leader bindikkNarvi;
     Leader dukeVidal;
 
     Territory arrakeen;
@@ -108,6 +109,8 @@ public class DuneTest {
     TreacheryCard weatherControl;
     TreacheryCard baliset;
     TreacheryCard kulon;
+    TreacheryCard harassAndWithdraw;
+    TreacheryCard reinforcements;
 
     @BeforeEach
     void setUp() throws IOException, InvalidGameStateException {
@@ -200,6 +203,7 @@ public class DuneTest {
         bashar = emperor.getLeader("Bashar").orElseThrow();
         feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
         ummanKudu = harkonnen.getLeader("Umman Kudu").orElseThrow();
+        bindikkNarvi = ecaz.getLeader("Bindikk Narvi").orElseThrow();
         dukeVidal = new Leader("Duke Vidal", 6, "None", null, false);
 
         arrakeen = game.getTerritory("Arrakeen");
@@ -236,6 +240,8 @@ public class DuneTest {
         weatherControl = getTreacheryCard("Weather Control");
         baliset = new TreacheryCard("Baliset");
         kulon = getTreacheryCard("Kulon");
+        harassAndWithdraw = new TreacheryCard("Harass and Withdraw");
+        reinforcements = new TreacheryCard("Reinforcements");
     }
 
     TreacheryCard getTreacheryCard(String cardName) {
@@ -243,6 +249,10 @@ public class DuneTest {
                 .filter(t -> t.name().equals(cardName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(cardName + " not found"));
+    }
+
+    void throwTestTopicMessages(TestTopic topic) {
+        throw new RuntimeException("\n- " + String.join("\n- ", topic.getMessages()));
     }
 
     @Test

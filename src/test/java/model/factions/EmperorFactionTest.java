@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -272,6 +273,41 @@ class EmperorFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.EMPEROR + " does not purchase additional revivals.", turnSummary.getMessages().getLast());
             assertEquals("Would you like to purchase additional revivals for " + Emojis.BG + "? " + faction.getPlayer(), chat.getMessages().getLast());
             assertEquals(4, chat.getChoices().getLast().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("#withdrawForces")
+    class WithdrawForces extends FactionTestTemplate.WithdrawForces {
+        int secondHomeworldForcesBefore;
+        Territory salusaSecundus;
+
+        @Override
+        @BeforeEach
+        void setUp() {
+            falseWallEast_southSector = game.getTerritory("False Wall East (South Sector)");
+            falseWallEast_southSector.addForces("Emperor*", 1);
+            falseWallEast_middleSector = game.getTerritory("False Wall East (Middle Sector)");
+            falseWallEast_middleSector.addForces("Emperor*", 1);
+            salusaSecundus = game.getTerritory(faction.getSecondHomeworld());
+            secondHomeworldForcesBefore = salusaSecundus.getForceStrength("Emperor*");
+
+            faction.withdrawForces(game, 0, 1, List.of(falseWallEast_southSector, falseWallEast_middleSector), "Harass and Withdraw");
+            super.setUp();
+        }
+
+        @Override
+        @Test
+        void testOneForceReturnedToReserves() {
+            super.testOneForceReturnedToReserves();
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
+        }
+
+        @Override
+        @Test
+        void testForcesWereAddedToReserves() {
+            super.testForcesWereAddedToReserves();
+            assertEquals(secondHomeworldForcesBefore + 1, salusaSecundus.getForceStrength("Emperor*"));
         }
     }
 

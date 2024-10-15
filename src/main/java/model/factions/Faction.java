@@ -1162,6 +1162,25 @@ public class Faction {
             game.reviveForces(this, isPaid, numForces, 0);
     }
 
+    public void withdrawForces(Game game, int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom, String reason) {
+        int regularLeftToWithdraw = regularForces;
+        int starredLeftToWithdraw = starredForces;
+        for (Territory t : sectorsToWithdrawFrom) {
+            if (regularLeftToWithdraw == 0 && starredLeftToWithdraw == 0)
+                break;
+            int regularPresent = t.getForceStrength(name);
+            int starredPresent = t.getForceStrength(name + "*");
+            int regularToWithdrawNow = Math.min(regularLeftToWithdraw, regularPresent);
+            int starredToWithdrawNow = Math.min(starredLeftToWithdraw, starredPresent);
+            regularLeftToWithdraw -= regularToWithdrawNow;
+            starredLeftToWithdraw -= starredToWithdrawNow;
+            if (regularToWithdrawNow > 0 || starredToWithdrawNow > 0) {
+                game.removeForces(t.getTerritoryName(), this, regularToWithdrawNow, starredToWithdrawNow, false);
+                game.getTurnSummary().publish(forcesString(regularToWithdrawNow, starredToWithdrawNow) + " returned to reserves with " + reason + ".");
+            }
+        }
+    }
+
     protected void presentExtortionChoices() {
         if (spice >= 3) {
             List<DuneChoice> choices = new ArrayList<>();

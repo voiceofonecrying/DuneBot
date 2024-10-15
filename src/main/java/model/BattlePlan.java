@@ -407,7 +407,7 @@ public class BattlePlan {
         return defense != null && (defense.servesAsSnooper() || defense.name().equals("Chemistry"));
     }
 
-    private boolean isProjectileDefense() {
+    protected boolean isProjectileDefense() {
         return defense != null && (defense.servesAsShield() || defense.name().equals("Weirding Way"));
     }
 
@@ -645,7 +645,7 @@ public class BattlePlan {
                 opponentWeapon = stoneBurnerNoKill ? null : weapon;
         }
         opponentDefense = opponentPlan.getDefense();
-        if (isSkillInFront("Diplomat") && (defense == null && weapon.type().equals("Worthless Card") || defense.type().equals("Worthless Card")))
+        if (isSkillInFront("Diplomat") && (defense == null && weapon != null && weapon.type().equals("Worthless Card") || defense != null && defense.type().equals("Worthless Card")))
             defense = opponentDefense;
         if (opponentPlan.isSkillBehindAndLeaderAlive("Bureaucrat"))
             opponentHasBureaucrat = true;
@@ -776,6 +776,8 @@ public class BattlePlan {
                 throw new InvalidGameStateException("Only Atreides can have the Kwisatz Haderach");
             if (!((AtreidesFaction) faction).isHasKH())
                 throw new InvalidGameStateException("Only " + ((AtreidesFaction) faction).getForcesLost() + " Atreides forces killed in battle. 7 required for Kwisatz Haderach");
+            if (faction.getLeader("Kwisatz Haderach").isEmpty())
+                throw new InvalidGameStateException("Atreides has lost Kwisatz Haderach to the tanks");
         }
 
         int spiceFromAlly = 0;

@@ -1,6 +1,5 @@
 package controller.commands;
 
-import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -43,13 +42,7 @@ public class AtreidesCommands {
 
     private static void addForcesLost(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
-        if (atreides.getForcesLost() >= 7)
-            return;
         atreides.addForceLost(discordGame.required(amount).getAsInt());
-        if (atreides.getForcesLost() >= 7) {
-            atreides.addLeader(new Leader("Kwisatz Haderach", 2, "Atreides", null, false));
-            discordGame.getTurnSummary().queueMessage("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");
-        }
         discordGame.pushGame();
     }
 

@@ -127,9 +127,6 @@ public class BattleCommands {
 
     public static void setupBattle(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Battles battles = game.getBattles();
-        Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle != null && !currentBattle.isResolved(game))
-            discordGame.getModInfo().queueMessage("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
         battles.nextBattle(game);
         if (battles.aggressorMustChooseBattle()) territoryButtons(game, battles);
         else setBattleIndex(discordGame, game, 0);

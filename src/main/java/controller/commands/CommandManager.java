@@ -826,14 +826,7 @@ public class CommandManager extends ListenerAdapter {
         }
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
 
-        game.removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
-        String forcesString = "";
-        if (amountValue > 0) forcesString += MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName()));
-        if (specialAmount > 0) forcesString += MessageFormat.format("{0} {1} ", specialAmount, Emojis.getForceEmoji(targetFaction.getName() + "*"));
-        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                "{0}in {1} were sent to {2}.", forcesString, territoryName, (isToTanks ? "the tanks" : "reserves")
-        ));
-        targetFaction.checkForHighThreshold();
+        game.removeForcesAndReportToTurnSummary(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
         discordGame.pushGame();
     }
 
