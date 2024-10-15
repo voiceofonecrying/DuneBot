@@ -21,7 +21,6 @@ public class BattlePlanTest extends DuneTest {
     TreacheryCard poisonTooth;
     TreacheryCard shieldSnooper;
     TreacheryCard stoneBurner;
-    TreacheryCard reinforcements;
     BattlePlan emptyBattlePlan;
     BattlePlan kulonWeaponBattlePlan;
     BattlePlan crysknifePlan;
@@ -52,7 +51,6 @@ public class BattlePlanTest extends DuneTest {
         poisonTooth = new TreacheryCard("Poison Tooth");
         shieldSnooper = new TreacheryCard("Shield Snooper");
         stoneBurner = new TreacheryCard("Stone Burner");
-        reinforcements = new TreacheryCard("Reinforcements");
 
         atreides.addTreacheryCard(chaumas);
         atreides.addTreacheryCard(poisonTooth);

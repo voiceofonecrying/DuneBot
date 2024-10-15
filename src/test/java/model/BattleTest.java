@@ -2079,6 +2079,48 @@ class BattleTest extends DuneTest {
                 assertTrue(battle.isResolved());
             }
         }
+
+        @Nested
+        @DisplayName("#resolutionWithReinforcements")
+        class ResolutionWithReinforcements {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                kaitain.removeForces("Emperor", 8);
+                salusaSecundus.addForces("Emperor*", 1);
+                emperor.addTreacheryCard(reinforcements);
+                emperor.addTreacheryCard(cheapHero);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, reinforcements, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotKillReserves() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " must send 3 forces from reserves to the tanks for Reinforcements"));
+                assertEquals(2, kaitain.getForceStrength("Emperor"));
+                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotKillReserves() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " must send 3 forces from reserves to the tanks for Reinforcements"));
+                assertEquals(2, kaitain.getForceStrength("Emperor"));
+                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " in Kaitain were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus were sent to the tanks.")));
+            }
+        }
     }
 
     @Nested

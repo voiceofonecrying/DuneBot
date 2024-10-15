@@ -110,6 +110,7 @@ public class DuneTest {
     TreacheryCard baliset;
     TreacheryCard kulon;
     TreacheryCard harassAndWithdraw;
+    TreacheryCard reinforcements;
 
     @BeforeEach
     void setUp() throws IOException, InvalidGameStateException {
@@ -240,6 +241,7 @@ public class DuneTest {
         baliset = new TreacheryCard("Baliset");
         kulon = getTreacheryCard("Kulon");
         harassAndWithdraw = new TreacheryCard("Harass and Withdraw");
+        reinforcements = new TreacheryCard("Reinforcements");
     }
 
     TreacheryCard getTreacheryCard(String cardName) {

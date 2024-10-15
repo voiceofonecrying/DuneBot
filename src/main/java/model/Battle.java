@@ -769,32 +769,10 @@ public class Battle {
                 resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, executeResolution);
             }
         }
-//        if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
-//            int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
-//            if (!isLoser && (faction instanceof EcazFaction)) {
-//                if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
-//                    savedRegularForces = Math.min(ecazForces, 3);
-//                    ecazForces -= savedRegularForces;
-//                    resolution += Emojis.ECAZ + " saves " + savedRegularForces + " " + Emojis.ECAZ_TROOP;
-//                    resolution += " and may leave 1 in the territory with Suk Graduate\n";
-//                } else if (battlePlan.isSkillInFront("Suk Graduate")) {
-//                    if (ecazForces > 0) {
-//                        ecazForces--;
-//                        resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
-//                    }
-//                }
-//            }
-//            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn : ecazForces;
-//            resolution += killForces(game, game.getFaction("Ecaz"), forcesLost, 0, executeResolution);
-//        }
-        if (!callsTraitor && battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
-            resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
-        if (!callsTraitor && battlePlan.getCheapHero() != null)
-            resolution += emojis + " discards " + battlePlan.getCheapHero().name() + "\n";
-        if (!callsTraitor && battlePlan.weaponMustBeDiscarded(isLoser))
-            resolution += emojis + " discards " + battlePlan.getWeapon().name() + "\n";
-        if (!callsTraitor && battlePlan.defenseMustBeDiscarded(isLoser))
-            resolution += emojis + " discards " + battlePlan.getDefense().name() + "\n";
+        resolution += handleReinforcements(game, faction, callsTraitor, battlePlan, executeResolution);
+        resolution += handleCheapHeroDiscard(faction, callsTraitor, battlePlan, executeResolution);
+        resolution += handleWeaponDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
+        resolution += handleDefenseDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
         if (!callsTraitor && battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
             resolution += emojis + " discards Juice of Sapho\n";
         if (!callsTraitor && battlePlan.getSpice() > 0) {
@@ -920,6 +898,77 @@ public class Battle {
             faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
         else
             resolution += faction.getEmoji() + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
+        return resolution;
+    }
+
+    private String handleReinforcements(Game game, Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        TreacheryCard weapon = battlePlan.getWeapon();
+        TreacheryCard defense = battlePlan.getDefense();
+        if (!callsTraitor && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements"))) {
+            if (executeResolution) {
+                if (battlePlan.getNumForcesInReserve() < 3)
+                    game.getModInfo().publish("Reinforcements requires 3 forces in reserves. Sending all reserves to the tanks. " + game.getModOrRoleMention());
+                int reservesLeftToKill = 3;
+                Territory homeworld = game.getTerritory(faction.getHomeworld());
+                int reservesToKillNow = Math.min(reservesLeftToKill, homeworld.getForceStrength(faction.getName()));
+                if (reservesToKillNow > 0)
+                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, reservesToKillNow, 0, true);
+                reservesLeftToKill -= reservesToKillNow;
+                if (faction instanceof EmperorFaction emperor) {
+                    Territory secondHomeworld = game.getTerritory(emperor.getSecondHomeworld());
+                    reservesToKillNow = Math.min(reservesLeftToKill, secondHomeworld.getForceStrength(faction.getName()));
+                    if (reservesToKillNow > 0)
+                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, reservesToKillNow, 0, true);
+                    reservesLeftToKill -= reservesToKillNow;
+                }
+                reservesToKillNow = Math.min(reservesLeftToKill, homeworld.getForceStrength(faction.getName() + "*"));
+                if (reservesToKillNow > 0)
+                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, 0, reservesToKillNow, true);
+                reservesLeftToKill -= reservesToKillNow;
+                if (faction instanceof EmperorFaction emperor) {
+                    Territory secondHomeworld = game.getTerritory(emperor.getSecondHomeworld());
+                    reservesToKillNow = Math.min(reservesLeftToKill, secondHomeworld.getForceStrength(faction.getName() + "*"));
+                    if (reservesToKillNow > 0)
+                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, 0, reservesToKillNow, true);
+                }
+            } else {
+                resolution += faction.getEmoji() + " must send 3 forces from reserves to the tanks for Reinforcements\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleCheapHeroDiscard(Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!callsTraitor && battlePlan.getCheapHero() != null) {
+            if (executeResolution)
+                faction.discard(battlePlan.getCheapHero().name());
+            else
+                resolution += faction.getEmoji() + " discards " + battlePlan.getCheapHero().name() + "\n";
+        }
+        return resolution;
+    }
+
+    private String handleWeaponDiscard(Faction faction, boolean callsTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!callsTraitor && battlePlan.weaponMustBeDiscarded(isLoser)) {
+            if (executeResolution)
+                faction.discard(battlePlan.getWeapon().name());
+            else
+                resolution += faction.getEmoji() + " discards " + battlePlan.getWeapon().name() + "\n";
+        }
+        return resolution;
+    }
+
+    private String handleDefenseDiscard(Faction faction, boolean callsTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!callsTraitor && battlePlan.defenseMustBeDiscarded(isLoser)) {
+            if (executeResolution)
+                faction.discard(battlePlan.getDefense().name());
+            else
+                resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+        }
         return resolution;
     }
 
