@@ -594,7 +594,8 @@ public class Battle {
         String resolution = "";
         Faction faction = isAggressor ? getAggressor(game) : getDefender(game);
         String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
-        String troopFactionEmoji = Emojis.getFactionEmoji(troopFactionName);
+        Faction troopFaction = game.getFaction(troopFactionName);
+        String troopFactionEmoji = troopFaction.getEmoji();
         Faction opponentFaction = isAggressor ? getDefender(game) : getAggressor(game);
         BattlePlan aggressorPlan = getAggressorBattlePlan();
         BattlePlan defenderPlan = getDefenderBattlePlan();
@@ -673,7 +674,7 @@ public class Battle {
                 if (executeResolution)
                     faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
-            resolution += killForces(game, faction, regularForcesTotal, specialForcesTotal, executeResolution);
+            resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
         } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
             DuneTopic turnSummary = game.getTurnSummary();
             if (!(faction instanceof EcazFaction)) {
@@ -723,7 +724,7 @@ public class Battle {
                 if (executeResolution)
                     faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
-            resolution += killForces(game, faction, regularForcesDialed, specialForcesDialed, executeResolution);
+            resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, executeResolution);
         }
         if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
             int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
@@ -740,10 +741,8 @@ public class Battle {
                     }
                 }
             }
-            resolution += Emojis.ECAZ + " loses ";
-            resolution += isLoser ? battlePlan.getEcazTroopsForAlly() : ecazForces;
-            resolution += " " + Emojis.ECAZ_TROOP;
-            resolution += " to the tanks\n";
+            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() : ecazForces;
+            resolution += killForces(game, game.getFaction("Ecaz"), forcesLost, 0, executeResolution);
         }
         if (!callsTraitor && battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
