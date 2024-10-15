@@ -1163,13 +1163,15 @@ public class Battle {
         if (!resolutionDecisions.isEmpty())
             resolution += "\n" + resolutionDecisions;
 
-        DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
-        resultsChannel.publish(resolution);
+        if (!executeResolution) {
+            DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
+            resultsChannel.publish(resolution);
 
-        checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary);
-        checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
-        if (publishToTurnSummary)
-            checkIfResolvable(game);
+            checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary);
+            checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
+            if (publishToTurnSummary)
+                checkIfResolvable(game);
+        }
     }
 
     public void resolveBattle(Game game, boolean publishToTurnSummary, int turn, String territoryName) throws InvalidGameStateException {
