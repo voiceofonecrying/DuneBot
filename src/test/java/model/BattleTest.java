@@ -257,9 +257,9 @@ class BattleTest extends DuneTest {
             carthag.addForces("Emperor", 5);
             carthag.addForces("Emperor*", 2);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
-            assertFalse(battle.isResolved(game));
+            assertFalse(battle.isResolved());
             carthag.removeForce("Harkonnen");
-            assertTrue(battle.isResolved(game));
+            assertTrue(battle.isResolved());
         }
 
         @Test
@@ -269,9 +269,9 @@ class BattleTest extends DuneTest {
             garaKulon.addForces("Emperor", 5);
             garaKulon.addForces("Ecaz", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            assertFalse(battle.isResolved(game));
+            assertFalse(battle.isResolved());
             garaKulon.removeForce("Harkonnen");
-            assertTrue(battle.isResolved(game));
+            assertTrue(battle.isResolved());
         }
 
         @Nested
@@ -1804,7 +1804,6 @@ class BattleTest extends DuneTest {
             emperor.addTreacheryCard(cheapHero);
             kaitain = game.getTerritory(emperor.getHomeworld());
             salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
-            cielagoNorth_eastSector.setRicheseNoField(3);
             cielagoNorth_eastSector.addForces("Atreides", 5);
             kaitain.removeForces("Emperor", 5);
             cielagoNorth_eastSector.addForces("Emperor", 3);
@@ -2008,6 +2007,76 @@ class BattleTest extends DuneTest {
                 assertTrue(battle.isDiplomatMustBeResolved());
                 assertEquals(Emojis.EMPEROR + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
                 assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionLoserForcesToTheTanks")
+        class ResolutionLoserForcesToTheTanks {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotKillForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 5 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertFalse(battle.isResolved());
+            }
+
+            @Test
+            void testPublishDoesNotKillForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 5 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertFalse(battle.isResolved());
+            }
+
+            @Test
+            void testResolveKillsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(battle.isResolved());
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWinnerForcesToTheTanks")
+        class ResolutionWinnerForcesToTheTanks {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotKillForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertFalse(battle.isResolved());
+            }
+
+            @Test
+            void testPublishDoesNotKillForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertFalse(battle.isResolved());
+            }
+
+            @Test
+            void testResolveKillsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(battle.isResolved());
             }
         }
     }

@@ -1174,8 +1174,10 @@ public class Faction {
             int starredToWithdrawNow = Math.min(starredLeftToWithdraw, starredPresent);
             regularLeftToWithdraw -= regularToWithdrawNow;
             starredLeftToWithdraw -= starredToWithdrawNow;
-            game.removeForces(t.getTerritoryName(), this, regularToWithdrawNow, starredToWithdrawNow, false);
-            game.getTurnSummary().publish(forcesString(regularToWithdrawNow, starredToWithdrawNow) + " returned to reserves with " + reason + ".");
+            if (regularToWithdrawNow > 0 || starredToWithdrawNow > 0) {
+                game.removeForces(t.getTerritoryName(), this, regularToWithdrawNow, starredToWithdrawNow, false);
+                game.getTurnSummary().publish(forcesString(regularToWithdrawNow, starredToWithdrawNow) + " returned to reserves with " + reason + ".");
+            }
         }
     }
 

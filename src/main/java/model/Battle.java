@@ -154,10 +154,9 @@ public class Battle {
         return factionNames.stream().anyMatch(n -> n.equals(force.getFactionName()));
     }
 
-    public boolean isResolved(Game game) {
+    public boolean isResolved() {
         Set<String> factionsLeft = new HashSet<>();
-        for (Territory t : territorySectors) {
-            Territory territory = game.getTerritory(t.getTerritoryName());
+        for (Territory territory : territorySectors) {
             territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
@@ -165,12 +164,7 @@ public class Battle {
                     .forEach(force -> factionsLeft.add(force.getFactionName()));
             if (territory.hasRicheseNoField()) factionsLeft.add("Richese");
         }
-
-        if (factionsLeft.size() <= 1) return true;
-        List<String> namesList = factionsLeft.stream().toList();
-        return factionsLeft.size() == 2 && hasEcazAndAlly()
-                && (namesList.get(0).equals("Ecaz") && namesList.get(1).equals(ecazAllyName)
-                || namesList.get(0).equals(ecazAllyName) && namesList.get(1).equals("Ecaz"));
+        return factionsLeft.size() <= 1 || factionsLeft.size() == 2 && hasEcazAndAlly() && factionsLeft.contains("Ecaz") && factionsLeft.contains(ecazAllyName);
     }
 
     public String getFactionsMessage(Game game) {
@@ -679,19 +673,25 @@ public class Battle {
                 if (executeResolution)
                     faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
-            String troopLosses = troopFactionEmoji + " loses ";
-            if (regularForcesTotal > 0)
-                troopLosses += regularForcesTotal + " " + Emojis.getForceEmoji(troopFactionName) + " ";
-            if (specialForcesTotal > 0)
-                troopLosses += specialForcesTotal + " " + Emojis.getForceEmoji(troopFactionName + "*") + " ";
-            troopLosses += "to the tanks\n";
+            String troopLosses = troopFactionEmoji + " loses " + faction.forcesString(regularForcesTotal, specialForcesTotal) + " to the tanks\n";
             if (regularForcesTotal > 0 || specialForcesTotal > 0) {
                 resolution += troopLosses;
-//                if (executeResolution) {
-//                    for (Territory t : territorySectors) {
-//                        game.removeForces(t.getTerritoryName(), faction, regularForcesTotal, specialForcesTotal, true);
-//                    }
-//                }
+                if (executeResolution) {
+                    int regularLeftToKill = regularForcesTotal;
+                    int starredLeftToKill = specialForcesTotal;
+                    for (Territory t : territorySectors) {
+                        if (regularLeftToKill == 0 && starredLeftToKill == 0)
+                            break;
+                        int regularPresent = t.getForceStrength(faction.getName());
+                        int starredPresent = t.getForceStrength(faction.getName() + "*");
+                        int regularToKillNow = Math.min(regularLeftToKill, regularPresent);
+                        int starredToKillNow = Math.min(starredLeftToKill, starredPresent);
+                        regularLeftToKill -= regularToKillNow;
+                        starredLeftToKill -= starredToKillNow;
+                        if (regularToKillNow > 0 || starredToKillNow > 0)
+                            game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true);
+                    }
+                }
             }
         } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
             DuneTopic turnSummary = game.getTurnSummary();
@@ -743,12 +743,23 @@ public class Battle {
                     faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
             }
             if (regularForcesDialed > 0 || specialForcesDialed > 0) {
-                resolution += troopFactionEmoji + " loses";
-                if (regularForcesDialed > 0)
-                    resolution += " " + regularForcesDialed + " " + Emojis.getForceEmoji(troopFactionName);
-                if (specialForcesDialed > 0)
-                    resolution += " " + specialForcesDialed + " " + Emojis.getForceEmoji(troopFactionName + "*");
-                resolution += " to the tanks\n";
+                resolution += troopFactionEmoji + " loses " + faction.forcesString(regularForcesDialed, specialForcesDialed) + " to the tanks\n";
+                if (executeResolution) {
+                    int regularLeftToKill = regularForcesDialed;
+                    int starredLeftToKill = specialForcesDialed;
+                    for (Territory t : territorySectors) {
+                        if (regularLeftToKill == 0 && starredLeftToKill == 0)
+                            break;
+                        int regularPresent = t.getForceStrength(faction.getName());
+                        int starredPresent = t.getForceStrength(faction.getName() + "*");
+                        int regularToKillNow = Math.min(regularLeftToKill, regularPresent);
+                        int starredToKillNow = Math.min(starredLeftToKill, starredPresent);
+                        regularLeftToKill -= regularToKillNow;
+                        starredLeftToKill -= starredToKillNow;
+                        if (regularToKillNow > 0 || starredToKillNow > 0)
+                            game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true);
+                    }
+                }
             }
         }
         if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {

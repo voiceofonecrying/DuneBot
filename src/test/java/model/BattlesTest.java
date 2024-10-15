@@ -358,7 +358,7 @@ public class BattlesTest extends DuneTest {
             battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
             battle.printBattleResolution(game, false, true);
             assertEquals(10, carthag.getForceStrength("Harkonnen"));
-            assertEquals(5, carthag.getForceStrength("Atreides"));
+            assertEquals(2, carthag.getForceStrength("Atreides"));
         }
 
         @Test
