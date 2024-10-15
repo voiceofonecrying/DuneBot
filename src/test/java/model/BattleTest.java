@@ -2094,6 +2094,7 @@ class BattleTest extends DuneTest {
             game.addFaction(emperor);
             game.addFaction(atreides);
             game.addFaction(ecaz);
+            ecaz.addLeader(dukeVidal);
             game.createAlliance(ecaz, emperor);
             atreides.setForcesLost(7);
             emperor.addTreacheryCard(cheapHero);
@@ -2206,121 +2207,129 @@ class BattleTest extends DuneTest {
             }
         }
 
-//        @Nested
-//        @DisplayName("#resolutionWithSukGraduateInFront")
-//        class ResolutionWithSukGraduateInFront {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                bashar.setSkillCard(new LeaderSkillCard("Suk Graduate"));
-//                bashar.setPulledBehindShield(false);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveReturnsForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithSukGraduateBehind")
-//        class ResolutionWithSukGraduateBehind {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                burseg.setSkillCard(new LeaderSkillCard("Suk Graduate"));
-//                burseg.setPulledBehindShield(true);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveReturnsForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(3, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.EMPEROR + " leaves 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North, may return it to reserves.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithDiplomatBehind")
-//        class ResolutionWithDiplomatBehind {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                burseg.setSkillCard(new LeaderSkillCard("Diplomat"));
-//                burseg.setPulledBehindShield(true);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
-//                assertFalse(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
-//                assertFalse(battle.isDiplomatMustBeResolved());
-//            }
-//
-//            @Test
-//            void testPublishDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
-//                assertFalse(battle.isDiplomatMustBeResolved());
-//            }
-//
-//            @Test
-//            void testResolveSetsDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertTrue(battle.isDiplomatMustBeResolved());
-//                assertEquals(Emojis.EMPEROR + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
-//                assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
-//            }
-//        }
+        @Nested
+        @DisplayName("#resolutionWithSukGraduateInFront")
+        class ResolutionWithSukGraduateInFront {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                bindikkNarvi.setSkillCard(new LeaderSkillCard("Suk Graduate"));
+                bindikkNarvi.setPulledBehindShield(false);
+                battle.setBattlePlan(game, ecaz, dukeVidal, null, false, 1, true, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveReturnsForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(10, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.ECAZ_TROOP + " returned to reserves with Suk Graduate.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSukGraduateBehind")
+        class ResolutionWithSukGraduateBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                dukeVidal.setSkillCard(new LeaderSkillCard("Suk Graduate"));
+                dukeVidal.setPulledBehindShield(true);
+                battle.setBattlePlan(game, ecaz, dukeVidal, null, false, 5, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " saves 3 " + Emojis.ECAZ_TROOP + " and may leave 1 in the territory with Suk Graduate"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " saves 3 " + Emojis.ECAZ_TROOP + " and may leave 1 in the territory with Suk Graduate"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveReturnsForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(11, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " leaves 1 " + Emojis.ECAZ_TROOP + " in Cielago North, may return it to reserves.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.ECAZ_TROOP + " returned to reserves with Suk Graduate.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithDiplomatBehind")
+        class ResolutionWithDiplomatBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                bindikkNarvi.setSkillCard(new LeaderSkillCard("Diplomat"));
+                bindikkNarvi.setPulledBehindShield(true);
+                battle.setBattlePlan(game, ecaz, bindikkNarvi, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, false, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " may retreat 2 " + Emojis.ECAZ_TROOP + " to an empty adjacent non-stronghold with Diplomat"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testPublishDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " may retreat 2 " + Emojis.ECAZ_TROOP + " to an empty adjacent non-stronghold with Diplomat"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testResolveSetsDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(battle.isDiplomatMustBeResolved());
+                assertEquals(Emojis.ECAZ + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
+                assertEquals("You may retreat 2 " + Emojis.ECAZ_TROOP + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. ec", ecazChat.getMessages().getLast());
+            }
+        }
 
         @Nested
         @DisplayName("#resolutionLoserForcesToTheTanks")
@@ -2512,122 +2521,122 @@ class BattleTest extends DuneTest {
             }
         }
 
-//        @Nested
-//        @DisplayName("#resolutionWithSukGraduateInFront")
-//        class ResolutionWithSukGraduateInFront {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                bashar.setSkillCard(new LeaderSkillCard("Suk Graduate"));
-//                bashar.setPulledBehindShield(false);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveReturnsForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithSukGraduateBehind")
-//        class ResolutionWithSukGraduateBehind {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                burseg.setSkillCard(new LeaderSkillCard("Suk Graduate"));
-//                burseg.setPulledBehindShield(true);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveReturnsForce() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(3, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.EMPEROR + " leaves 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North, may return it to reserves.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithDiplomatBehind")
-//        class ResolutionWithDiplomatBehind {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                burseg.setSkillCard(new LeaderSkillCard("Diplomat"));
-//                burseg.setPulledBehindShield(true);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, false, 0, null, null);
-//                assertFalse(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
-//                assertFalse(battle.isDiplomatMustBeResolved());
-//            }
-//
-//            @Test
-//            void testPublishDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
-//                assertFalse(battle.isDiplomatMustBeResolved());
-//            }
-//
-//            @Test
-//            void testResolveSetsDiplomatFlag() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertTrue(battle.isDiplomatMustBeResolved());
-//                assertEquals(Emojis.EMPEROR + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
-//                assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
-//            }
-//        }
-//
+        @Nested
+        @DisplayName("#resolutionWithSukGraduateInFront")
+        class ResolutionWithSukGraduateInFront {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                bashar.setSkillCard(new LeaderSkillCard("Suk Graduate"));
+                bashar.setPulledBehindShield(false);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 1 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Suk Graduate"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveReturnsForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSukGraduateBehind")
+        class ResolutionWithSukGraduateBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                burseg.setSkillCard(new LeaderSkillCard("Suk Graduate"));
+                burseg.setPulledBehindShield(true);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotReturnForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " saves 3 " + Emojis.EMPEROR_SARDAUKAR + " and may leave 1 in the territory with Suk Graduate"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveReturnsForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(3, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.EMPEROR + " leaves 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North, may return it to reserves.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Suk Graduate.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithDiplomatBehind")
+        class ResolutionWithDiplomatBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                burseg.setSkillCard(new LeaderSkillCard("Diplomat"));
+                burseg.setPulledBehindShield(true);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, true, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testPublishDoesNotSetResolveDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat"));
+                assertFalse(battle.isDiplomatMustBeResolved());
+            }
+
+            @Test
+            void testResolveSetsDiplomatFlag() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(battle.isDiplomatMustBeResolved());
+                assertEquals(Emojis.EMPEROR + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
+                assertEquals("You may retreat 3 " + Emojis.EMPEROR_SARDAUKAR + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. em", emperorChat.getMessages().getLast());
+            }
+        }
+
         @Nested
         @DisplayName("#resolutionLoserForcesToTheTanks")
         class ResolutionLoserForcesToTheTanks {

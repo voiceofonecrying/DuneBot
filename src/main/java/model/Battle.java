@@ -645,8 +645,9 @@ public class Battle {
         TreacheryCard weapon = battlePlan.getWeapon();
         TreacheryCard defense = battlePlan.getDefense();
         int ecazForcesWithdrawn = 0;
+        DuneTopic turnSummary = game.getTurnSummary();
         if (isLoser) {
-            if (!(faction instanceof EcazFaction)) {
+            if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
                     int leaderValue = battlePlan.getLeaderValue();
                     savedSpecialForces = Math.min(specialForcesNotDialed, leaderValue);
@@ -656,7 +657,7 @@ public class Battle {
                         specialForcesNotDialed -= savedSpecialForces;
                         regularForcesTotal -= savedRegularForces;
                         regularForcesNotDialed -= savedRegularForces;
-                        resolution += troopFactionEmoji + " may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat\n";
+                        resolution += faction.getEmoji() + " may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat\n";
                         if (executeResolution) {
                             diplomatMustBeResolved = true;
                             faction.getChat().publish("You may retreat " + faction.forcesString(savedRegularForces, savedSpecialForces) + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. " + faction.getPlayer());
@@ -665,8 +666,8 @@ public class Battle {
                     }
                 }
             }
-            if (canHarassAndWithdraw(faction, weapon, defense)) {
-                if (faction instanceof EcazFaction) {
+            if (!opponentCallsTraitor && canHarassAndWithdraw(faction, weapon, defense)) {
+                if (faction instanceof EcazFaction && hasEcazAndAlly()) {
                     ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
                     resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
                 } else {
@@ -677,8 +678,7 @@ public class Battle {
             }
             resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
         } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
-            DuneTopic turnSummary = game.getTurnSummary();
-            if (!(faction instanceof EcazFaction)) {
+            if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
                 String savedForceEmoji;
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
                     savedSpecialForces = Math.min(specialForcesDialed, 3);
@@ -719,8 +719,8 @@ public class Battle {
                     }
                 }
             }
-            if (canHarassAndWithdraw(faction, weapon, defense)) {
-                if (faction instanceof EcazFaction) {
+            if (!opponentCallsTraitor && canHarassAndWithdraw(faction, weapon, defense)) {
+                if (faction instanceof EcazFaction && hasEcazAndAlly()) {
                     ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
                     resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
                 } else {
@@ -729,24 +729,64 @@ public class Battle {
             }
             resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, executeResolution);
         }
-        if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
-            int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
-            if (!isLoser && (faction instanceof EcazFaction)) {
+        if (hasEcazAndAlly() && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+            if (isLoser) {
+                int ecazForcesnotDialed = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
+                int ecazForcesToKill = battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn;
+                if (faction instanceof EcazFaction && battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
+                    int leaderValue = battlePlan.getLeaderValue();
+                    savedRegularForces = Math.min(ecazForcesnotDialed, leaderValue);
+                    if (savedRegularForces > 0) {
+                        ecazForcesToKill -= savedRegularForces;
+                        resolution += faction.getEmoji() + " may retreat " + faction.forcesString(savedRegularForces, 0) + " to an empty adjacent non-stronghold with Diplomat\n";
+                        if (executeResolution) {
+                            diplomatMustBeResolved = true;
+                            faction.getChat().publish("You may retreat " + faction.forcesString(savedRegularForces, 0) + " to an empty adjacent non-stronghold with Diplomat.\nPlease tell the mod where you would like to move them. " + faction.getPlayer());
+                            game.getModInfo().publish(faction.getEmoji() + " retreat with Diplomat must be resolved. " + game.getModOrRoleMention());
+                        }
+                    }
+                }
+                resolution += killForces(game, game.getFaction("Ecaz"), ecazForcesToKill, 0, executeResolution);
+            } else if (!callsTraitor) {
+                int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
                     savedRegularForces = Math.min(ecazForces, 3);
                     ecazForces -= savedRegularForces;
                     resolution += Emojis.ECAZ + " saves " + savedRegularForces + " " + Emojis.ECAZ_TROOP;
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
+                    if (executeResolution) {
+                        turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + wholeTerritoryName + ", may return it to reserves.");
+                        game.getFaction("Ecaz").withdrawForces(game, 2, 0, territorySectors, "Suk Graduate");
+                    }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     if (ecazForces > 0) {
                         ecazForces--;
                         resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
+                        if (executeResolution)
+                            game.getFaction("Ecaz").withdrawForces(game, 1, 0, territorySectors, "Suk Graduate");
                     }
                 }
+                resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, executeResolution);
             }
-            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn : ecazForces;
-            resolution += killForces(game, game.getFaction("Ecaz"), forcesLost, 0, executeResolution);
         }
+//        if (hasEcazAndAlly() && (isLoser || !battlePlan.stoneBurnerForTroops()) && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+//            int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
+//            if (!isLoser && (faction instanceof EcazFaction)) {
+//                if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
+//                    savedRegularForces = Math.min(ecazForces, 3);
+//                    ecazForces -= savedRegularForces;
+//                    resolution += Emojis.ECAZ + " saves " + savedRegularForces + " " + Emojis.ECAZ_TROOP;
+//                    resolution += " and may leave 1 in the territory with Suk Graduate\n";
+//                } else if (battlePlan.isSkillInFront("Suk Graduate")) {
+//                    if (ecazForces > 0) {
+//                        ecazForces--;
+//                        resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
+//                    }
+//                }
+//            }
+//            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn : ecazForces;
+//            resolution += killForces(game, game.getFaction("Ecaz"), forcesLost, 0, executeResolution);
+//        }
         if (!callsTraitor && battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             resolution += emojis + " must send 3 forces from reserves to the tanks for Reinforcements\n";
         if (!callsTraitor && battlePlan.getCheapHero() != null)

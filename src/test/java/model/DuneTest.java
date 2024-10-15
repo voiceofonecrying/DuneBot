@@ -72,6 +72,7 @@ public class DuneTest {
     Leader bashar;
     Leader feydRautha;
     Leader ummanKudu;
+    Leader bindikkNarvi;
     Leader dukeVidal;
 
     Territory arrakeen;
@@ -201,6 +202,7 @@ public class DuneTest {
         bashar = emperor.getLeader("Bashar").orElseThrow();
         feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
         ummanKudu = harkonnen.getLeader("Umman Kudu").orElseThrow();
+        bindikkNarvi = ecaz.getLeader("Bindikk Narvi").orElseThrow();
         dukeVidal = new Leader("Duke Vidal", 6, "None", null, false);
 
         arrakeen = game.getTerritory("Arrakeen");
