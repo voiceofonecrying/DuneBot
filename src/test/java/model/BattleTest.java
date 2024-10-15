@@ -2101,7 +2101,7 @@ class BattleTest extends DuneTest {
             salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
             ecazHomeworld = game.getTerritory(ecaz.getHomeworld());
             cielagoNorth_eastSector.addForces("Atreides", 5);
-            ecazHomeworld.removeForces("Ecaz", 6);
+            ecazHomeworld.removeForces("Ecaz", 5);
             cielagoNorth_eastSector.addForces("Ecaz", 5);
             kaitain.removeForces("Emperor", 5);
             cielagoNorth_eastSector.addForces("Emperor", 3);
@@ -2112,87 +2112,100 @@ class BattleTest extends DuneTest {
             battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(ecaz, atreides, emperor));
         }
 
-//        @Nested
-//        @DisplayName("#resolutionWithHarassAndWithdrawFromLoser")
-//        class ResolutionWithHarassAndWithdrawFromLoser {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                ecaz.addTreacheryCard(harassAndWithdraw);
-//                ecaz.addTreacheryCard(cheapHero);
-//                battle.setBattlePlan(game, ecaz, null, cheapHero, false, 1, true, 0, harassAndWithdraw, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, false, 0, null, null);
-//                assertFalse(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                throwTestTopicMessages(modInfo);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " returns 6 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
-//                assertEquals(8, ecazHomeworld.getForceStrength("Ecaz"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertEquals(8, ecazHomeworld.getForceStrength("Ecaz"));
-////                throwTestTopicMessages(turnSummary);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " returns 6 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
-//                assertEquals(8, ecazHomeworld.getForceStrength("Ecaz"));
-//            }
-//
-//            @Test
-//            void testResolveWithdrawsForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(14, kaitain.getForceStrength("Emperor"));
-//                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithHarassAndWithdrawFromWinner")
-//        class ResolutionWithHarassAndWithdrawFromWinner {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                emperor.addTreacheryCard(harassAndWithdraw);
-//                emperor.addTreacheryCard(cheapHero);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, harassAndWithdraw, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveWithdrawsForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(14, kaitain.getForceStrength("Emperor"));
-//                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//            }
-//        }
-//
+        @Nested
+        @DisplayName("#resolutionWithHarassAndWithdrawFromLoser")
+        class ResolutionWithHarassAndWithdrawFromLoser {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                ecaz.addTreacheryCard(harassAndWithdraw);
+                ecaz.addTreacheryCard(cheapHero);
+                battle.setBattlePlan(game, ecaz, null, cheapHero, false, 1, true, 0, harassAndWithdraw, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, false, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " returns 2 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " returns 2 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(11, ecazHomeworld.getForceStrength("Ecaz"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.ECAZ_TROOP + " returned to reserves with Harass and Withdraw.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.ECAZ_TROOP + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithHarassAndWithdrawFromWinner")
+        class ResolutionWithHarassAndWithdrawFromWinner {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                ecaz.addLeader(dukeVidal);
+                ecaz.addTreacheryCard(harassAndWithdraw);
+                battle.setBattlePlan(game, ecaz, dukeVidal, null, false, 1, true, 0, harassAndWithdraw, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " returns 2 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " returns 2 " + Emojis.ECAZ_TROOP + " to reserves with Harass and Withdraw"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
+                assertEquals(9, ecazHomeworld.getForceStrength("Ecaz"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(11, ecazHomeworld.getForceStrength("Ecaz"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.ECAZ_TROOP + " returned to reserves with Harass and Withdraw.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.ECAZ_TROOP + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+        }
+
 //        @Nested
 //        @DisplayName("#resolutionWithSukGraduateInFront")
 //        class ResolutionWithSukGraduateInFront {
@@ -2419,86 +2432,86 @@ class BattleTest extends DuneTest {
             battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(emperor, atreides, ecaz));
         }
 
-//        @Nested
-//        @DisplayName("#resolutionWithHarassAndWithdrawFromLoser")
-//        class ResolutionWithHarassAndWithdrawFromLoser {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                emperor.addTreacheryCard(harassAndWithdraw);
-//                emperor.addTreacheryCard(cheapHero);
-//                battle.setBattlePlan(game, emperor, null, cheapHero, false, 1, true, 0, harassAndWithdraw, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 0, false, 0, null, null);
-//                assertFalse(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveWithdrawsForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(14, kaitain.getForceStrength("Emperor"));
-//                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//            }
-//        }
-//
-//        @Nested
-//        @DisplayName("#resolutionWithHarassAndWithdrawFromWinner")
-//        class ResolutionWithHarassAndWithdrawFromWinner {
-//            @BeforeEach
-//            void setUp() throws InvalidGameStateException {
-//                emperor.addTreacheryCard(harassAndWithdraw);
-//                emperor.addTreacheryCard(cheapHero);
-//                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, harassAndWithdraw, null);
-//                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-//                assertTrue(battle.isAggressorWin(game));
-//                turnSummary.clear();
-//                modInfo.clear();
-//            }
-//
-//            @Test
-//            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, false);
-//                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, true, false);
-//                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
-//                assertEquals(10, kaitain.getForceStrength("Emperor"));
-//                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
-//            }
-//
-//            @Test
-//            void testResolveWithdrawsForces() throws InvalidGameStateException {
-//                battle.printBattleResolution(game, false, true);
-//                assertEquals(14, kaitain.getForceStrength("Emperor"));
-//                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
-//            }
-//        }
-//
+        @Nested
+        @DisplayName("#resolutionWithHarassAndWithdrawFromLoser")
+        class ResolutionWithHarassAndWithdrawFromLoser {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                emperor.addTreacheryCard(harassAndWithdraw);
+                emperor.addTreacheryCard(cheapHero);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 1, true, 0, harassAndWithdraw, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 2, false, 0, null, null);
+                assertFalse(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(14, kaitain.getForceStrength("Emperor"));
+                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithHarassAndWithdrawFromWinner")
+        class ResolutionWithHarassAndWithdrawFromWinner {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                emperor.addTreacheryCard(harassAndWithdraw);
+                emperor.addTreacheryCard(cheapHero);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 1, true, 0, harassAndWithdraw, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testPublishDoesNotWithdrawForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " returns 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to reserves with Harass and Withdraw"));
+                assertEquals(10, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(14, kaitain.getForceStrength("Emperor"));
+                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " returned to reserves with Harass and Withdraw.")));
+            }
+        }
+
 //        @Nested
 //        @DisplayName("#resolutionWithSukGraduateInFront")
 //        class ResolutionWithSukGraduateInFront {

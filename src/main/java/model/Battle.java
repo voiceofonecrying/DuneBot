@@ -644,6 +644,7 @@ public class Battle {
         int savedRegularForces;
         TreacheryCard weapon = battlePlan.getWeapon();
         TreacheryCard defense = battlePlan.getDefense();
+        int ecazForcesWithdrawn = 0;
         if (isLoser) {
             if (!(faction instanceof EcazFaction)) {
                 if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
@@ -664,15 +665,15 @@ public class Battle {
                     }
                 }
             }
-            // Replace conditional below if Lasgun-Shield takes precedence over returning forces to reserves
-//            if (!isLasgunShieldExplosion && (weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
-            if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
-                    && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
-                resolution += troopFactionEmoji + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
-                regularForcesTotal -= regularForcesNotDialed;
-                specialForcesTotal -= specialForcesNotDialed;
-                if (executeResolution)
-                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
+            if (canHarassAndWithdraw(faction, weapon, defense)) {
+                if (faction instanceof EcazFaction) {
+                    ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
+                    resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
+                } else {
+                    resolution += harassAndWithdraw(game, faction, regularForcesNotDialed, specialForcesNotDialed, executeResolution);
+                    regularForcesTotal -= regularForcesNotDialed;
+                    specialForcesTotal -= specialForcesNotDialed;
+                }
             }
             resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
         } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
@@ -718,11 +719,13 @@ public class Battle {
                     }
                 }
             }
-            if ((weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
-                    && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))) {
-                resolution += troopFactionEmoji + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
-                if (executeResolution)
-                    faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
+            if (canHarassAndWithdraw(faction, weapon, defense)) {
+                if (faction instanceof EcazFaction) {
+                    ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
+                    resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
+                } else {
+                    resolution += harassAndWithdraw(game, faction, regularForcesNotDialed, specialForcesNotDialed, executeResolution);
+                }
             }
             resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, executeResolution);
         }
@@ -741,7 +744,7 @@ public class Battle {
                     }
                 }
             }
-            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() : ecazForces;
+            int forcesLost = isLoser ? battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn : ecazForces;
             resolution += killForces(game, game.getFaction("Ecaz"), forcesLost, 0, executeResolution);
         }
         if (!callsTraitor && battlePlan.getNumForcesInReserve() >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
@@ -861,6 +864,22 @@ public class Battle {
             else
                 resolution += faction.getEmoji() + " loses " + faction.forcesString(regularLeftToKill, starredLeftToKill) + " to the tanks\n";
         }
+        return resolution;
+    }
+
+    private boolean canHarassAndWithdraw(Faction faction, TreacheryCard weapon, TreacheryCard defense) {
+        // Replace first line below if Lasgun-Shield takes precedence over returning forces to reserves
+//        return (!isLasgunShieldExplosion && (weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
+        return (weapon != null && weapon.name().equals("Harass and Withdraw") || defense != null && defense.name().equals("Harass and Withdraw"))
+                && !faction.getHomeworld().equals(wholeTerritoryName) && !(faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName));
+    }
+
+    private String harassAndWithdraw(Game game, Faction faction, int regularForcesNotDialed, int specialForcesNotDialed, boolean executeResolution) {
+        String resolution = "";
+        if (executeResolution)
+            faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
+        else
+            resolution += faction.getEmoji() + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
         return resolution;
     }
 
