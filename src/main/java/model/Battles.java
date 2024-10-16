@@ -103,7 +103,7 @@ public class Battles {
     }
 
     public void nextBattle(Game game) throws InvalidGameStateException {
-        if (currentBattle != null && !currentBattle.isResolved()) {
+        if (currentBattle != null && !currentBattle.isResolved(game)) {
             if (currentBattle.isDiplomatMustBeResolved())
                 throw new InvalidGameStateException("Diplomat must be resolved before running the next battle.");
             else
