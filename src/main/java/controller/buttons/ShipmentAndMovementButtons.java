@@ -1077,7 +1077,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             }
             default -> {
                 game.getTurnSummary().publish(faction.getEmoji() + " does not ship.");
-//                faction.resetAllySpiceSupportAfterShipping(game);
+                faction.resetAllySpiceSupportAfterShipping(game);
                 faction.getShipment().clear();
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
                 queueMovementButtons(game, faction, discordGame);
