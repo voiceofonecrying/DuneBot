@@ -25,7 +25,7 @@ public class BiddingButtons implements Pressable {
         String infoChannelName = faction.getName().toLowerCase() + "-info";
 
         discordGame.queueMessage("You will pass the next bid.");
-        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("pass-" + faction.getName(), "Pass Next Turn")).build());
+        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("pass-" + faction.getName(), "Pass One Time")).build());
         discordGame.pushGame();
     }
 
@@ -33,7 +33,7 @@ public class BiddingButtons implements Pressable {
         Faction faction = game.getFaction(event.getComponentId().split("-")[2]);
         faction.setAutoBidTurn(!faction.isAutoBidTurn());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
-        if (faction.isAutoBidTurn()) {
+        if (!faction.isAutoBidTurn()) {
             discordGame.queueMessage("You will not pass on every card this round.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("turn-pass-" + faction.getName(), "Enable Auto-Pass (Whole Round)")).build());
         } else {
@@ -47,7 +47,7 @@ public class BiddingButtons implements Pressable {
         Faction faction = game.getFaction(event.getComponentId().split("-")[2]);
         faction.setAutoBid(!faction.isAutoBid());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
-        if (faction.isAutoBid()) {
+        if (!faction.isAutoBid()) {
             discordGame.queueMessage("You will not pass on this card.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("auto-pass-" + faction.getName(), "Enable Auto-Pass")).build());
         } else {
