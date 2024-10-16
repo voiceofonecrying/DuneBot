@@ -677,7 +677,7 @@ public class Battle {
                 }
             }
             resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
-        } else if (!callsTraitor && regularForcesDialed > 0 || specialForcesDialed > 0) {
+        } else if (!callsTraitor && (regularForcesDialed > 0 || specialForcesDialed > 0)) {
             if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
                 String savedForceEmoji;
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
