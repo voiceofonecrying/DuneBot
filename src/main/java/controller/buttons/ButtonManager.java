@@ -96,6 +96,7 @@ public class ButtonManager extends ListenerAdapter {
             EcazButtons.press(event, game, discordGame);
             BGButtons.press(event, game, discordGame);
             ChoamButtons.press(event, game, discordGame);
+            BiddingButtons.press(event, game, discordGame);
             switch (event.getComponentId()) {
                 case "graphic" -> {
                     getButtonPresser(event, game).setGraphicDisplay(true);
