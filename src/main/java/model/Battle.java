@@ -154,9 +154,10 @@ public class Battle {
         return factionNames.stream().anyMatch(n -> n.equals(force.getFactionName()));
     }
 
-    public boolean isResolved() {
+    public boolean isResolved(Game game) {
         Set<String> factionsLeft = new HashSet<>();
-        for (Territory territory : territorySectors) {
+        for (Territory t : territorySectors) {
+            Territory territory = game.getTerritory(t.getTerritoryName());
             territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
                     .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
