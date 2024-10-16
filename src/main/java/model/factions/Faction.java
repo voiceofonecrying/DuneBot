@@ -819,7 +819,13 @@ public class Faction {
 
     public void resetAllySpiceSupportAfterShipping(Game game) {
         if (hasAlly()) {
-            Faction allyFaction = game.getFaction(ally);
+            Faction allyFaction;
+            try {
+                allyFaction = game.getFaction(ally);
+            } catch (IllegalArgumentException e) {
+                chat.publish("Could not reset ally spice support. Ally name is " + ally);
+                return;
+            }
             if (!(allyFaction instanceof EmperorFaction) && !(allyFaction instanceof ChoamFaction)) {
                 allyFaction.setAllySpiceFinishedForTurn(true);
                 if (allyFaction.getSpiceForAlly() != 0)
