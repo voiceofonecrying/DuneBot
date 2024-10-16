@@ -705,7 +705,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                 noFields.add(5);
                 for (int nf : noFields) {
                     DuneChoice choice = new DuneChoice(buttonPrefix + nf, "Ship " + nf + " No-Field token.");
-                    choice.setDisabled(nf == richese.getFrontOfShieldNoField() || nf == richese.getShipment().getNoField());
+                    Integer fosnf = richese.getFrontOfShieldNoField();
+                    choice.setDisabled(fosnf != null && nf == fosnf || nf == richese.getShipment().getNoField());
                     choices.add(choice);
                 }
                 faction.getChat().publish("No-Field options:", choices);
