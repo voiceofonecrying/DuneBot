@@ -204,8 +204,8 @@ public class FactionButtons {
                 case "choam" -> recipient = "CHOAM";
                 default -> StringUtils.capitalize(recipient);
             }
-            FactionWhispers senderWhispers = discordGame.getFactionWhispers(faction.getName(), recipient);
-            FactionWhispers recipientWhispers = discordGame.getFactionWhispers(recipient, faction.getName());
+            FactionWhispers senderWhispers = discordGame.getFactionWhispers(faction, game.getFaction(recipient));
+            FactionWhispers recipientWhispers = discordGame.getFactionWhispers(game.getFaction(recipient), faction);
             faction.sendWhisper(faction, message, senderWhispers, recipientWhispers);
             discordGame.queueMessage("Message has been sent as a whisper.");
             discordGame.queueDeleteMessage();
