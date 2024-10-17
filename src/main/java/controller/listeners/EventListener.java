@@ -9,7 +9,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import utils.CardImages;
@@ -110,8 +112,17 @@ public class EventListener extends ListenerAdapter {
                             && threadChannel.getParentChannel().getName().equals(f.getName().toLowerCase() + "-info"))
                     .map(f -> channelName.substring(0, channelName.indexOf("-")))
                     .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
-                    .findFirst().ifPresent(emoji -> event.getChannel()
-                            .sendMessage("Use /player whisper if you wish to send a private message to " + emoji + ".").queue());
+                    .findFirst().ifPresent(emoji -> {
+                        List<Button> buttons = new ArrayList<>();
+                        String recipientLowerCase = threadChannel.getName().replace("-whispers", "");
+                        buttons.add(Button.primary("whisper-" + recipientLowerCase + "-yes-" + event.getMessage().getContentRaw(), "Yes"));
+                        buttons.add(Button.primary("whisper-" + recipientLowerCase + "-no", "No"));
+                        MessageCreateBuilder response = new MessageCreateBuilder()
+                                .setContent("Would you like to send this message as a whisper to " + emoji + "?\n" + event.getMessage().getContentRaw())
+                                .addActionRow(buttons);
+                        event.getChannel().sendMessage(response.build()).queue();
+//                        discordGame.queueMessage(response);
+                    });
         }
     }
 }
