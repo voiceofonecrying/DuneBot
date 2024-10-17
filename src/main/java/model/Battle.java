@@ -774,29 +774,8 @@ public class Battle {
         resolution += handleCheapHeroDiscard(faction, callsTraitor, battlePlan, executeResolution);
         resolution += handleWeaponDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
         resolution += handleDefenseDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
-        if (!callsTraitor && battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
-            resolution += emojis + " discards Juice of Sapho\n";
-        if (!callsTraitor && battlePlan.getSpice() > 0) {
-            int spiceFromAlly = 0;
-            if (faction.hasAlly())
-                spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
-            resolution += emojis + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice";
-            if (spiceFromAlly > 0)
-                resolution += "\n" + Emojis.getFactionEmoji(faction.getAlly()) + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support";
-            if (!(faction instanceof ChoamFaction) && game.hasFaction("CHOAM")) {
-                int choamEligibleSpice = battlePlan.getSpice();
-                if (faction.getAlly().equals("CHOAM"))
-                    choamEligibleSpice -= spiceFromAlly;
-                if (choamEligibleSpice > 1)
-                    resolution += MessageFormat.format(
-                            "\n{0} gains {1} {2} combat spice",
-                            Emojis.CHOAM, Math.floorDiv(choamEligibleSpice, 2), Emojis.SPICE
-                    );
-            }
-            resolution += "\n";
-        }
-        if (!callsTraitor && battlePlan.getSpiceBankerSupport() > 0)
-            resolution += emojis + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker";
+        resolution += handleJuiceofSaphoDiscard(faction, callsTraitor, battlePlan, executeResolution);
+        resolution += handleSpicePayments(game, faction, callsTraitor, battlePlan, executeResolution);
 
         Territory spiceTerritory = getTerritorySectors().stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
         if (!isLoser) {
@@ -969,6 +948,64 @@ public class Battle {
                 faction.discard(battlePlan.getDefense().name());
             else
                 resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+        }
+        return resolution;
+    }
+
+    private String handleJuiceofSaphoDiscard(Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!callsTraitor && battlePlan.isJuiceOfSapho()) {
+            if (executeResolution && faction.hasTreacheryCard("Juice of Sapho"))
+                faction.discard("Juice of Sapho");
+            else
+                resolution += faction.getEmoji() + " discards Juice of Sapho\n";
+        }
+        return resolution;
+    }
+
+    private String handleSpicePayments(Game game, Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        DuneTopic turnSummary = game.getTurnSummary();
+        if (!callsTraitor && battlePlan.getSpice() > 0) {
+            int spiceFromAlly = 0;
+            if (faction.hasAlly())
+                spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
+
+            if (executeResolution) {
+                faction.subtractSpice(battlePlan.getSpice() - spiceFromAlly, "combat spice");
+                turnSummary.publish(faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice.");
+            } else
+                resolution += faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice\n";
+
+            if (spiceFromAlly > 0) {
+                Faction allyFaction = game.getFaction(faction.getAlly());
+                if (executeResolution) {
+                    allyFaction.subtractSpice(spiceFromAlly, "ally support");
+                    turnSummary.publish(allyFaction.getEmoji() + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support.");
+                } else
+                    resolution += allyFaction.getEmoji() + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support\n";
+            }
+
+            if (!(faction instanceof ChoamFaction) && game.hasFaction("CHOAM")) {
+                Faction choam = game.getFaction("CHOAM");
+                int choamEligibleSpice = battlePlan.getSpice();
+                if (faction.getAlly().equals("CHOAM"))
+                    choamEligibleSpice -= spiceFromAlly;
+                if (choamEligibleSpice > 1) {
+                    if (executeResolution) {
+                        choam.addSpice(choamEligibleSpice, "combat spice");
+                        turnSummary.publish(choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice.");
+                    } else
+                        resolution += choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice\n";
+                }
+            }
+        }
+        if (!callsTraitor && battlePlan.getSpiceBankerSupport() > 0) {
+            if (executeResolution) {
+                faction.subtractSpice(battlePlan.getSpiceBankerSupport(), "combat spice");
+                turnSummary.publish(faction.getEmoji() + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker\n");
+            } else
+                resolution += faction.getEmoji() + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker\n";
         }
         return resolution;
     }

@@ -1754,7 +1754,6 @@ class BattleTest extends DuneTest {
             void setUp() throws InvalidGameStateException {
                 atreides.setForcesLost(7);
                 kwisatzHaderach = atreides.getLeader("Kwisatz Haderach").orElseThrow();
-//                atreides.addLeader(kwisatzHaderach);
                 richese.addTreacheryCard(lasgun);
                 richese.addTreacheryCard(shield);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, lasgun, shield);
@@ -1788,11 +1787,123 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " Kwisatz Haderach was sent to the tanks.")));
             }
         }
+
+        @Nested
+        @DisplayName("#resolutionWithCombatSpice")
+        class ResolutionWithCombatSpice {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 2, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Nested
+            @DisplayName("#factionsOwnSpice")
+            class FactionsOwnSpice {
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice.")));
+                    assertEquals(8, atreides.getSpice());
+                }
+            }
+
+            @Nested
+            @DisplayName("#factionAndAllySpice")
+            class FactionsAndAllySpice {
+                @BeforeEach
+                void setUp() {
+                    game.addFaction(emperor);
+                    game.createAlliance(atreides, emperor);
+                    emperor.setSpiceForAlly(1);
+                    turnSummary.clear();
+                }
+
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(10, emperor.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(10, emperor.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice.")));
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support.")));
+                    assertEquals(9, atreides.getSpice());
+                    assertEquals(9, emperor.getSpice());
+                }
+            }
+
+            @Nested
+            @DisplayName("#factionsOwnSpiceCHOAMInGame")
+            class FactionsOwnSpiceCHOAMInGame {
+                @BeforeEach
+                void setUp() {
+                    game.addFaction(choam);
+                }
+
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(2, choam.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(2, choam.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice.")));
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
+                    assertEquals(8, atreides.getSpice());
+                }
+            }
+        }
     }
 
     @Nested
     @DisplayName("#resolveBattleMultipleSectors")
-    class resolveBattleMultipleSectors {
+    class ResolveBattleMultipleSectors {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
@@ -2125,7 +2236,7 @@ class BattleTest extends DuneTest {
 
     @Nested
     @DisplayName("#resolveEcazAllyBattle")
-    class resolveEcazAllyBattle {
+    class ResolveEcazAllyBattle {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
@@ -2454,7 +2565,7 @@ class BattleTest extends DuneTest {
 
     @Nested
     @DisplayName("#resolveAllyEcazBattle")
-    class resolveAllyEcazBattle {
+    class ResolveAllyEcazBattle {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
