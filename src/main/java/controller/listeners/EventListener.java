@@ -2,9 +2,11 @@ package controller.listeners;
 
 import constants.Emojis;
 import controller.CommandCompletionGuard;
+import controller.channels.FactionWhispers;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
+import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -30,11 +32,17 @@ public class EventListener extends ListenerAdapter {
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         CompletableFuture
-                .runAsync(() -> runOnMessageReceived(event))
+                .runAsync(() -> {
+                    try {
+                        runOnMessageReceived(event);
+                    } catch (ChannelNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .thenRunAsync(CommandCompletionGuard::decrementCommandCount);
     }
 
-    public void runOnMessageReceived(@NotNull MessageReceivedEvent event) {
+    public void runOnMessageReceived(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException {
         Guild guild = event.getGuild();
         String message = event.getMessage().getContentStripped();
 
@@ -104,14 +112,18 @@ public class EventListener extends ListenerAdapter {
             event.getChannel().sendMessage(StringUtils.join(mentionedPlayers, " ")).queue();
 
         if (event.getChannel() instanceof ThreadChannel threadChannel) {
-            String channelName = threadChannel.getName();
-            game.getFactions().stream()
-                    .filter(f -> channelName.endsWith("-whispers")
-                            && threadChannel.getParentChannel().getName().equals(f.getName().toLowerCase() + "-info"))
-                    .map(f -> channelName.substring(0, channelName.indexOf("-")))
-                    .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
-                    .findFirst().ifPresent(emoji -> event.getChannel()
-                            .sendMessage("Use /player whisper if you wish to send a private message to " + emoji + ".").queue());
+            if (threadChannel.getName().endsWith("-whispers")) {
+
+                Faction recipient = game.getFaction(threadChannel.getName().split("-")[0]);
+                Faction sender = game.getFactions().stream()
+                        .filter(f -> threadChannel.getName().endsWith("-whispers") && threadChannel.getParentChannel().getName()
+                                .equals(f.getName().toLowerCase() + "-info")).findFirst().orElseThrow(() -> new IllegalArgumentException("No faction to whisper to."));
+                String whisperedMessage = event.getMessage().getContentRaw();
+                FactionWhispers senderWhispers = discordGame.getFactionWhispers(sender, recipient);
+                FactionWhispers recipientWhispers = discordGame.getFactionWhispers(recipient, sender);
+                sender.sendWhisper(recipient, whisperedMessage, senderWhispers, recipientWhispers);
+                discordGame.sendAllMessages();
+            }
         }
     }
 }
