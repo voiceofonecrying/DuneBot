@@ -1348,6 +1348,8 @@ public class Game {
     }
 
     public void endBattlePhase() throws InvalidGameStateException {
+        if (battles.getCurrentBattle() != null && battles.getCurrentBattle().isRihaniDeciphererMustBeResolved(this))
+            throw new InvalidGameStateException("Rihani Decipherer must be resolved.");
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));

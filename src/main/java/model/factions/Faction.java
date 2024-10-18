@@ -1080,6 +1080,19 @@ public class Faction {
                 ));
     }
 
+    public void discardTraitor(String traitorName) {
+        TraitorCard traitor = traitorHand.stream().filter(
+                        traitorCard -> traitorCard.name().toLowerCase()
+                                .contains(traitorName.toLowerCase())
+                ).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
+        traitorHand.remove(traitor);
+        game.getTraitorDeck().add(traitor);
+        ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
+        game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
     public int countFreeStarredRevival() {
         return 0;
     }

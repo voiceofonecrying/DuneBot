@@ -77,7 +77,7 @@ public class BattlePlan {
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
         // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
         this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
-        this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors().getFirst());
+        this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors(game).getFirst());
         this.numStrongholdsOccupied = getNumStrongholdsOccupied(game, faction);
         this.spiceBankerSupport = 0;
         this.juiceOfSapho = false;
@@ -764,7 +764,7 @@ public class BattlePlan {
             throw new InvalidGameStateException(faction.getName() + " does not have " + leader.getName());
         if (cheapHero != null && !faction.hasTreacheryCard(cheapHero.name()))
             throw new InvalidGameStateException(faction.getName() + " does not have " + cheapHero.name());
-        List<String> battleTerritoryNames = battle.getTerritorySectors().stream().map(Territory::getTerritoryName).toList();
+        List<String> battleTerritoryNames = battle.getTerritorySectors(game).stream().map(Territory::getTerritoryName).toList();
         if (leader == null && cheapHero == null && !faction.getLeaders().stream()
                 .filter(l -> !l.getName().equals("Kwisatz Haderach") && (l.getBattleTerritoryName() == null || battleTerritoryNames.stream().anyMatch(n -> n.equals(l.getBattleTerritoryName()))))
                 .toList().isEmpty())

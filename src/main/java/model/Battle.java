@@ -14,7 +14,8 @@ import java.util.stream.IntStream;
 
 public class Battle {
     private final String wholeTerritoryName;
-    private final List<Territory> territorySectors;
+    private List<String> sectorNames;
+    private List<Territory> territorySectors;
     private final List<String> factionNames;
     private final List<Force> forces;
     private final String ecazAllyName;
@@ -42,9 +43,12 @@ public class Battle {
     private DecisionStatus mirrorWeaponStoneBurnerTBD;
     private DecisionStatus poisonToothTBD;
     private boolean diplomatMustBeResolved;
+    private String rihaniDeciphererFaction;
+    private int rihaniDeciphererExectedTraitors;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
+        this.sectorNames = territorySectors.stream().map(Territory::getTerritoryName).toList();
         this.territorySectors = territorySectors;
         this.factionNames = new ArrayList<>();
         battleFactionsInStormOrder.forEach(f -> factionNames.add(f.getName()));
@@ -95,8 +99,12 @@ public class Battle {
         return wholeTerritoryName;
     }
 
-    public List<Territory> getTerritorySectors() {
-        return territorySectors;
+    public List<Territory> getTerritorySectors(Game game) {
+        if (sectorNames == null) {
+            sectorNames = territorySectors.stream().map(Territory::getTerritoryName).toList();
+            territorySectors = null;
+        }
+        return sectorNames.stream().map(game::getTerritory).toList();
     }
 
     public List<String> getFactionNames() {
@@ -156,7 +164,7 @@ public class Battle {
 
     public boolean isResolved(Game game) {
         Set<String> factionsLeft = new HashSet<>();
-        for (Territory t : territorySectors) {
+        for (Territory t : getTerritorySectors(game)) {
             Territory territory = game.getTerritory(t.getTerritoryName());
             territory.getForces().stream()
                     .filter(force -> !(force.getName().equalsIgnoreCase("Advisor")))
@@ -314,7 +322,7 @@ public class Battle {
             cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
         else if (!leaderName.equals("None")) {
             leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
-            Territory battleTerritory = getTerritorySectors().stream()
+            Territory battleTerritory = getTerritorySectors(game).stream()
                     .filter(t -> t.getTotalForceCount(faction) > 0)
                     .findAny().orElseThrow();
             leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
@@ -697,7 +705,7 @@ public class Battle {
                                 savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
                             }
                             turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
-                            faction.withdrawForces(game, savedRegularForces, savedSpecialForces, territorySectors, "Suk Graduate");
+                            faction.withdrawForces(game, savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
                         }
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
@@ -715,7 +723,7 @@ public class Battle {
                         if (executeResolution) {
                             int savedRegular = savedForceIsStarred ? 0 : 1;
                             int savedStarred = savedForceIsStarred ? 1 : 0;
-                            faction.withdrawForces(game, savedRegular, savedStarred, territorySectors, "Suk Graduate");
+                            faction.withdrawForces(game, savedRegular, savedStarred, getTerritorySectors(game), "Suk Graduate");
                         }
                     }
                 }
@@ -757,59 +765,34 @@ public class Battle {
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
                     if (executeResolution) {
                         turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + wholeTerritoryName + ", may return it to reserves.");
-                        game.getFaction("Ecaz").withdrawForces(game, 2, 0, territorySectors, "Suk Graduate");
+                        game.getFaction("Ecaz").withdrawForces(game, 2, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     if (ecazForces > 0) {
                         ecazForces--;
                         resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
                         if (executeResolution)
-                            game.getFaction("Ecaz").withdrawForces(game, 1, 0, territorySectors, "Suk Graduate");
+                            game.getFaction("Ecaz").withdrawForces(game, 1, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 }
                 resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, executeResolution);
             }
         }
         resolution += handleReinforcements(game, faction, callsTraitor, battlePlan, executeResolution);
+
         resolution += handleCheapHeroDiscard(faction, callsTraitor, battlePlan, executeResolution);
         resolution += handleWeaponDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
         resolution += handleDefenseDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
-        if (!callsTraitor && battlePlan.isJuiceOfSapho() && faction.hasTreacheryCard("Juice of Sapho"))
-            resolution += emojis + " discards Juice of Sapho\n";
-        if (!callsTraitor && battlePlan.getSpice() > 0) {
-            int spiceFromAlly = 0;
-            if (faction.hasAlly())
-                spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
-            resolution += emojis + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice";
-            if (spiceFromAlly > 0)
-                resolution += "\n" + Emojis.getFactionEmoji(faction.getAlly()) + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support";
-            if (!(faction instanceof ChoamFaction) && game.hasFaction("CHOAM")) {
-                int choamEligibleSpice = battlePlan.getSpice();
-                if (faction.getAlly().equals("CHOAM"))
-                    choamEligibleSpice -= spiceFromAlly;
-                if (choamEligibleSpice > 1)
-                    resolution += MessageFormat.format(
-                            "\n{0} gains {1} {2} combat spice",
-                            Emojis.CHOAM, Math.floorDiv(choamEligibleSpice, 2), Emojis.SPICE
-                    );
-            }
-            resolution += "\n";
-        }
-        if (!callsTraitor && battlePlan.getSpiceBankerSupport() > 0)
-            resolution += emojis + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker";
+        resolution += handleJuiceofSaphoDiscard(faction, callsTraitor, battlePlan, executeResolution);
 
-        Territory spiceTerritory = getTerritorySectors().stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
-        if (!isLoser) {
-            if (battlePlan.isSkillInFront("Rihani Decipherer"))
-                resolution += troopFactionEmoji + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer\n";
-            else if (battlePlan.isSkillBehindAndLeaderAlive("Rihani Decipherer"))
-                resolution += troopFactionEmoji + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
+        resolution += handleSpicePayments(game, faction, callsTraitor, battlePlan, executeResolution);
 
-            if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Sandmaster"))
-                resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory + " with Sandmaster\n";
-        }
-        if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler"))
-            resolution += troopFactionEmoji + " gains " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
+        resolution += handleRihaniDecipherer(game, faction, isLoser, battlePlan, executeResolution);
+
+        Territory spiceTerritory = getTerritorySectors(game).stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
+        resolution += handleSandmaster(game, spiceTerritory, isLoser, battlePlan, executeResolution);
+        resolution += handleSmuggler(game, faction, spiceTerritory, battlePlan, executeResolution);
+
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
@@ -868,7 +851,7 @@ public class Battle {
         String resolution = "";
         if (regularLeftToKill > 0 || starredLeftToKill > 0) {
             if (executeResolution)
-                for (Territory t : territorySectors) {
+                for (Territory t : getTerritorySectors(game)) {
                     if (regularLeftToKill == 0 && starredLeftToKill == 0)
                         break;
                     int regularPresent = t.getForceStrength(faction.getName());
@@ -896,7 +879,7 @@ public class Battle {
     private String harassAndWithdraw(Game game, Faction faction, int regularForcesNotDialed, int specialForcesNotDialed, boolean executeResolution) {
         String resolution = "";
         if (executeResolution)
-            faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, territorySectors, "Harass and Withdraw");
+            faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, getTerritorySectors(game), "Harass and Withdraw");
         else
             resolution += faction.getEmoji() + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
         return resolution;
@@ -969,6 +952,129 @@ public class Battle {
                 faction.discard(battlePlan.getDefense().name());
             else
                 resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+        }
+        return resolution;
+    }
+
+    private String handleJuiceofSaphoDiscard(Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!callsTraitor && battlePlan.isJuiceOfSapho()) {
+            if (executeResolution && faction.hasTreacheryCard("Juice of Sapho"))
+                faction.discard("Juice of Sapho");
+            else
+                resolution += faction.getEmoji() + " discards Juice of Sapho\n";
+        }
+        return resolution;
+    }
+
+    private String handleSpicePayments(Game game, Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        DuneTopic turnSummary = game.getTurnSummary();
+        if (!callsTraitor && battlePlan.getSpice() > 0) {
+            int spiceFromAlly = 0;
+            if (faction.hasAlly())
+                spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
+
+            if (executeResolution) {
+                faction.subtractSpice(battlePlan.getSpice() - spiceFromAlly, "combat spice");
+                turnSummary.publish(faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice.");
+            } else
+                resolution += faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice\n";
+
+            if (spiceFromAlly > 0) {
+                Faction allyFaction = game.getFaction(faction.getAlly());
+                if (executeResolution) {
+                    allyFaction.subtractSpice(spiceFromAlly, "ally support");
+                    turnSummary.publish(allyFaction.getEmoji() + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support.");
+                } else
+                    resolution += allyFaction.getEmoji() + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support\n";
+            }
+
+            if (!(faction instanceof ChoamFaction) && game.hasFaction("CHOAM")) {
+                Faction choam = game.getFaction("CHOAM");
+                int choamEligibleSpice = battlePlan.getSpice();
+                if (faction.getAlly().equals("CHOAM"))
+                    choamEligibleSpice -= spiceFromAlly;
+                if (choamEligibleSpice > 1) {
+                    if (executeResolution) {
+                        choam.addSpice(choamEligibleSpice, "combat spice");
+                        turnSummary.publish(choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice.");
+                    } else
+                        resolution += choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice\n";
+                }
+            }
+        }
+        if (!callsTraitor && battlePlan.getSpiceBankerSupport() > 0) {
+            if (executeResolution) {
+                faction.subtractSpice(battlePlan.getSpiceBankerSupport(), "combat spice");
+                turnSummary.publish(faction.getEmoji() + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker\n");
+            } else
+                resolution += faction.getEmoji() + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker\n";
+        }
+        return resolution;
+    }
+
+    private String handleRihaniDecipherer(Game game, Faction faction, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser) {
+            LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
+            if (battlePlan.isSkillInFront("Rihani Decipherer")) {
+                if (executeResolution) {
+                    Collections.shuffle(traitorDeck);
+                    TraitorCard traitorCard1 = traitorDeck.getFirst();
+                    String faction1 = traitorCard1.factionName();
+                    String traitor1 = (faction1.equals("Any") ? "" : Emojis.getFactionEmoji(faction1) + " ") + traitorCard1.name();
+                    TraitorCard traitorCard2 = traitorDeck.get(1);
+                    String faction2 = traitorCard2.factionName();
+                    String traitor2 = (faction2.equals("Any") ? "" : Emojis.getFactionEmoji(faction2) + " ") + traitorCard2.name();
+                    faction.getChat().publish(traitor1 + " and " + traitor2 + " are in the Traitor deck.");
+                    game.getTurnSummary().publish(faction.getEmoji() + " has been shown 2 Traitor cards for Rihani Decipherer.");
+                } else
+                    resolution += faction.getEmoji() + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer\n";
+            } else if (battlePlan.isSkillBehindAndLeaderAlive("Rihani Decipherer")) {
+                if (executeResolution) {
+                    rihaniDeciphererFaction = faction.getName();
+                    rihaniDeciphererExectedTraitors = faction.getTraitorHand().size();
+                    Collections.shuffle(traitorDeck);
+                    faction.addTraitorCard(traitorDeck.pop());
+                    faction.addTraitorCard(traitorDeck.pop());
+                    faction.getChat().publish("You must discard two Traitors.");
+                    List<DuneChoice> choices = faction.getTraitorHand().stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
+                    faction.getChat().publish("First discard:", choices);
+                    faction.getChat().publish("Second discard:", choices);
+                    game.getTurnSummary().publish(faction.getEmoji() + " has drawn 2 Traitor cards for Rihani Decipherer.");
+                } else
+                    resolution += faction.getEmoji() + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleSandmaster(Game game, Territory spiceTerritory, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser) {
+            if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Sandmaster")) {
+                if (executeResolution) {
+                    spiceTerritory.addSpice(game, 3);
+                    game.getTurnSummary().publish("3 " + Emojis.SPICE + " were added to " + spiceTerritory.getTerritoryName() + " with Sandmaster.");
+                } else
+                    resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory.getTerritoryName() + " with Sandmaster\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleSmuggler(Game game, Faction faction, Territory spiceTerritory, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler")) {
+            int spiceToTake = Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue());
+            String territoryName = spiceTerritory.getTerritoryName();
+            if (executeResolution) {
+                spiceTerritory.setSpice(spiceTerritory.getSpice() - spiceToTake);
+                faction.addSpice(spiceToTake, "Smuggler in " + territoryName);
+                game.getTurnSummary().publish(faction.getEmoji() + " took " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler.");
+            } else
+                resolution += faction.getEmoji() + " will take " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler";
         }
         return resolution;
     }
@@ -1305,6 +1411,8 @@ public class Battle {
             game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
             plan.setCanCallTraitor(false);
         }
+        if (resolutionPublished)
+            checkIfResolvable(game);
     }
 
     public boolean mightCallTraitor(Game game, Faction faction, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
@@ -1341,7 +1449,7 @@ public class Battle {
         List<Territory> allTerritorySectors = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         String carnage = "";
         if (aggressorBattlePlan.isLasgunShieldExplosion() && !aggressorCallsTraitor(game) && !defenderCallsTraitor(game)) {
-            String otherForces = nonCombatantForces(allTerritorySectors);
+            String otherForces = nonCombatantForces(game, allTerritorySectors);
             if (!otherForces.isEmpty())
                 carnage += otherForces;
             Territory noFieldTerritory = allTerritorySectors.stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
@@ -1355,12 +1463,12 @@ public class Battle {
         return carnage;
     }
 
-    private String nonCombatantForces(List<Territory> allTerritorySectors) {
-        return String.join("", allTerritorySectors.stream().map(this::nonCombatantForcesInSector).toList());
+    private String nonCombatantForces(Game game, List<Territory> allTerritorySectors) {
+        return String.join("", allTerritorySectors.stream().map(t -> nonCombatantForcesInSector(game, t)).toList());
     }
 
-    private String nonCombatantForcesInSector(Territory t) {
-        boolean battleSector = territorySectors.contains(t);
+    private String nonCombatantForcesInSector(Game game, Territory t) {
+        boolean battleSector = getTerritorySectors(game).contains(t);
         List<Force> nonCombatantForces = new ArrayList<>(t.getForces().stream().filter(f -> !battleSector || !factionNames.contains(f.getFactionName())).toList());
         nonCombatantForces.sort((a, b) -> {
             if (a.getFactionName().equals(b.getFactionName()))
@@ -1647,5 +1755,12 @@ public class Battle {
 
     public boolean isDiplomatMustBeResolved() {
         return diplomatMustBeResolved;
+    }
+
+    public boolean isRihaniDeciphererMustBeResolved(Game game) {
+        // Need to block /run battle and /run advance
+        if (rihaniDeciphererFaction == null)
+            return false;
+        return game.getFaction(rihaniDeciphererFaction).getTraitorHand().size() != rihaniDeciphererExectedTraitors;
     }
 }

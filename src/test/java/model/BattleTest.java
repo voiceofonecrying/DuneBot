@@ -1386,7 +1386,8 @@ class BattleTest extends DuneTest {
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals(2, bgChat.getChoices().getLast().size());
             battle.willCallTraitor(game, bg, false, 0, "Arrakeen");
-            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().getLast());
+            int num = modInfo.getMessages().size();
+            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().get(num - 2));
         }
 
         @Test
@@ -1565,7 +1566,8 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, true);
                 assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
-                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
+                int num = modInfo.getMessages().size();
+                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().get(num - 2));
             }
 
             @Test
@@ -1691,6 +1693,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, false, false);
                 assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
                 assertEquals(3, garaKulon.getRicheseNoField());
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " loses 3 " + Emojis.RICHESE_TROOP + " to the tanks"));
             }
 
             @Test
@@ -1698,6 +1701,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, true, false);
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
                 assertEquals(3, garaKulon.getRicheseNoField());
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " loses 3 " + Emojis.RICHESE_TROOP + " to the tanks"));
             }
 
             @Test
@@ -1705,6 +1709,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, false, true);
                 assertFalse(garaKulon.hasRicheseNoField());
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("The 3 " + Emojis.NO_FIELD + " in Gara Kulon reveals 3 " + Emojis.RICHESE_TROOP)));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.RICHESE_TROOP + " in Gara Kulon were sent to the tanks.")));
             }
         }
 
@@ -1754,7 +1759,6 @@ class BattleTest extends DuneTest {
             void setUp() throws InvalidGameStateException {
                 atreides.setForcesLost(7);
                 kwisatzHaderach = atreides.getLeader("Kwisatz Haderach").orElseThrow();
-//                atreides.addLeader(kwisatzHaderach);
                 richese.addTreacheryCard(lasgun);
                 richese.addTreacheryCard(shield);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, lasgun, shield);
@@ -1788,11 +1792,287 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " Kwisatz Haderach was sent to the tanks.")));
             }
         }
+
+        @Nested
+        @DisplayName("#resolutionWithCombatSpice")
+        class ResolutionWithCombatSpice {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 2, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Nested
+            @DisplayName("#factionsOwnSpice")
+            class FactionsOwnSpice {
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice.")));
+                    assertEquals(8, atreides.getSpice());
+                }
+            }
+
+            @Nested
+            @DisplayName("#factionAndAllySpice")
+            class FactionsAndAllySpice {
+                @BeforeEach
+                void setUp() {
+                    game.addFaction(emperor);
+                    game.createAlliance(atreides, emperor);
+                    emperor.setSpiceForAlly(1);
+                    turnSummary.clear();
+                }
+
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(10, emperor.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(10, emperor.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice.")));
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.EMPEROR + " loses 1 " + Emojis.SPICE + " ally support.")));
+                    assertEquals(9, atreides.getSpice());
+                    assertEquals(9, emperor.getSpice());
+                }
+            }
+
+            @Nested
+            @DisplayName("#factionsOwnSpiceCHOAMInGame")
+            class FactionsOwnSpiceCHOAMInGame {
+                @BeforeEach
+                void setUp() {
+                    game.addFaction(choam);
+                }
+
+                @Test
+                void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(2, choam.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice"));
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                    assertEquals(10, atreides.getSpice());
+                    assertEquals(2, choam.getSpice());
+                }
+
+                @Test
+                void testResolveRemovesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice.")));
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
+                    assertEquals(8, atreides.getSpice());
+                }
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithRihaniDeciphererInFront")
+        class ResolutionWithRihaniDeciphererInFront {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Rihani Decipherer"));
+                duncanIdaho.setPulledBehindShield(false);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                atreidesChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotShowTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testPublishDoesNotShowTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testResolveShowsTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(atreidesChat.getMessages().getFirst().contains(" are in the Traitor deck."));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has been shown 2 Traitor cards for Rihani Decipherer.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithRihaniDeciphererBehind")
+        class ResolutionWithRihaniDeciphererBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Rihani Decipherer"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                atreidesChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+                assertEquals(1, atreides.getTraitorHand().size());
+            }
+
+            @Test
+            void testPublishDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+                assertEquals(1, atreides.getTraitorHand().size());
+            }
+
+            @Test
+            void testResolveDrawsTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(3, atreides.getTraitorHand().size());
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has drawn 2 Traitor cards for Rihani Decipherer.")));
+                assertTrue(atreidesChat.getMessages().getFirst().contains("You must discard two Traitors."));
+                assertTrue(atreidesChat.getMessages().get(1).contains("First discard:"));
+                assertEquals(3, atreidesChat.getChoices().getFirst().size());
+                assertTrue(atreidesChat.getMessages().get(2).contains("Second discard:"));
+                assertEquals(3, atreidesChat.getChoices().getFirst().size());
+                assertTrue(battle.isRihaniDeciphererMustBeResolved(game));
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSandmasterBehind")
+        class ResolutionWithSandmasterBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                garaKulon.setSpice(1);
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Sandmaster"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAddSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
+                assertEquals(1, garaKulon.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotAddSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
+                assertEquals(1, garaKulon.getSpice());
+            }
+
+            @Test
+            void testResolveAddsSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.SPICE + " were added to Gara Kulon with Sandmaster.")));
+                assertEquals(4, garaKulon.getSpice());
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSmugglerBehind")
+        class ResolutionWithSmugglerBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                garaKulon.setSpice(3);
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Smuggler"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testResolveTakesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+//                throwTestTopicMessages(turnSummary);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " took 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler.")));
+                assertEquals(12, atreides.getSpice());
+                assertEquals(1, garaKulon.getSpice());
+            }
+        }
     }
 
     @Nested
     @DisplayName("#resolveBattleMultipleSectors")
-    class resolveBattleMultipleSectors {
+    class ResolveBattleMultipleSectors {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
@@ -2125,7 +2405,7 @@ class BattleTest extends DuneTest {
 
     @Nested
     @DisplayName("#resolveEcazAllyBattle")
-    class resolveEcazAllyBattle {
+    class ResolveEcazAllyBattle {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
@@ -2454,7 +2734,7 @@ class BattleTest extends DuneTest {
 
     @Nested
     @DisplayName("#resolveAllyEcazBattle")
-    class resolveAllyEcazBattle {
+    class ResolveAllyEcazBattle {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;

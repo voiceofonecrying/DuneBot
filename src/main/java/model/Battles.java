@@ -90,7 +90,7 @@ public class Battles {
         Faction aggressor = currentBattle.getAggressor(game);
         if (opponent.equals(aggressor.getName()))
             throw new InvalidGameStateException("Cannot set aggressor's opponent to be the aggressor");
-        currentBattle = new Battle(game, currentBattle.getTerritorySectors(),
+        currentBattle = new Battle(game, currentBattle.getTerritorySectors(game),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
@@ -109,6 +109,8 @@ public class Battles {
             else
                 game.getModInfo().publish("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
         }
+        if (currentBattle != null && currentBattle.isRihaniDeciphererMustBeResolved(game))
+            throw new InvalidGameStateException("Rihani Decipherer must be resolved before running the next battle.");
         if (noBattlesRemaining(game))
             throw new InvalidGameStateException("There are no more battles");
 
