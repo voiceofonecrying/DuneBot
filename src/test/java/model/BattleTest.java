@@ -2007,24 +2007,65 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testReviewDoesNotDrawTraitors() throws InvalidGameStateException {
+            void testReviewDoesNotAddSpice() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, false);
                 assertTrue(modInfo.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
                 assertEquals(1, garaKulon.getSpice());
             }
 
             @Test
-            void testPublishDoesNotDrawTraitors() throws InvalidGameStateException {
+            void testPublishDoesNotAddSpice() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
                 assertTrue(turnSummary.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
                 assertEquals(1, garaKulon.getSpice());
             }
 
             @Test
-            void testResolveDrawsTraitors() throws InvalidGameStateException {
+            void testResolveAddsSpice() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.SPICE + " were added to Gara Kulon with Sandmaster.")));
                 assertEquals(4, garaKulon.getSpice());
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSmugglerBehind")
+        class ResolutionWithSmugglerBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                garaKulon.setSpice(3);
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Smuggler"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testResolveTakesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+//                throwTestTopicMessages(turnSummary);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " took 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler.")));
+                assertEquals(12, atreides.getSpice());
+                assertEquals(1, garaKulon.getSpice());
             }
         }
     }

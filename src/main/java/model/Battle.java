@@ -790,10 +790,9 @@ public class Battle {
         resolution += handleRihaniDecipherer(game, faction, isLoser, battlePlan, executeResolution);
 
         Territory spiceTerritory = getTerritorySectors(game).stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
-        resolution += handleSandmaster(game, faction, spiceTerritory, isLoser, battlePlan, executeResolution);
+        resolution += handleSandmaster(game, spiceTerritory, isLoser, battlePlan, executeResolution);
+        resolution += handleSmuggler(game, faction, spiceTerritory, battlePlan, executeResolution);
 
-        if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler"))
-            resolution += troopFactionEmoji + " takes " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
@@ -1051,7 +1050,7 @@ public class Battle {
         return resolution;
     }
 
-    private String handleSandmaster(Game game, Faction faction, Territory spiceTerritory, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleSandmaster(Game game, Territory spiceTerritory, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
         if (!isLoser) {
             if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Sandmaster")) {
@@ -1061,6 +1060,21 @@ public class Battle {
                 } else
                     resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory.getTerritoryName() + " with Sandmaster\n";
             }
+        }
+        return resolution;
+    }
+
+    private String handleSmuggler(Game game, Faction faction, Territory spiceTerritory, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler")) {
+            int spiceToTake = Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue());
+            String territoryName = spiceTerritory.getTerritoryName();
+            if (executeResolution) {
+                spiceTerritory.setSpice(spiceTerritory.getSpice() - spiceToTake);
+                faction.addSpice(spiceToTake, "Smuggler in " + territoryName);
+                game.getTurnSummary().publish(faction.getEmoji() + " took " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler.");
+            } else
+                resolution += faction.getEmoji() + " will take " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler";
         }
         return resolution;
     }
