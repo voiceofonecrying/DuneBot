@@ -1386,7 +1386,8 @@ class BattleTest extends DuneTest {
             assertEquals("Will you call Traitor against Duncan Idaho in Arrakeen? bg", bgChat.getMessages().getLast());
             assertEquals(2, bgChat.getChoices().getLast().size());
             battle.willCallTraitor(game, bg, false, 0, "Arrakeen");
-            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().getLast());
+            int num = modInfo.getMessages().size();
+            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().get(num - 2));
         }
 
         @Test
@@ -1565,7 +1566,8 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, true);
                 assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
-                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
+                int num = modInfo.getMessages().size();
+                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().get(num - 2));
             }
 
             @Test
@@ -1975,7 +1977,6 @@ class BattleTest extends DuneTest {
             @Test
             void testResolveDrawsTraitors() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-//                throwTestTopicMessages(atreidesChat);
                 assertEquals(3, atreides.getTraitorHand().size());
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has drawn 2 Traitor cards for Rihani Decipherer.")));
                 assertTrue(atreidesChat.getMessages().getFirst().contains("You must discard two Traitors."));
@@ -1983,11 +1984,47 @@ class BattleTest extends DuneTest {
                 assertEquals(3, atreidesChat.getChoices().getFirst().size());
                 assertTrue(atreidesChat.getMessages().get(2).contains("Second discard:"));
                 assertEquals(3, atreidesChat.getChoices().getFirst().size());
-                // Implement buttons before the line below
                 assertTrue(battle.isRihaniDeciphererMustBeResolved(game));
                 atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
                 atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
                 assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSandmasterBehind")
+        class ResolutionWithSandmasterBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                garaKulon.setSpice(1);
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Sandmaster"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
+                assertEquals(1, garaKulon.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("3 " + Emojis.SPICE + " will be added to Gara Kulon with Sandmaster"));
+                assertEquals(1, garaKulon.getSpice());
+            }
+
+            @Test
+            void testResolveDrawsTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.SPICE + " were added to Gara Kulon with Sandmaster.")));
+                assertEquals(4, garaKulon.getSpice());
             }
         }
     }

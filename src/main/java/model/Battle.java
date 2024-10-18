@@ -790,10 +790,8 @@ public class Battle {
         resolution += handleRihaniDecipherer(game, faction, isLoser, battlePlan, executeResolution);
 
         Territory spiceTerritory = getTerritorySectors(game).stream().filter(t -> t.getSpice() > 0).findFirst().orElse(null);
-        if (!isLoser) {
-            if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Sandmaster"))
-                resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory + " with Sandmaster\n";
-        }
+        resolution += handleSandmaster(game, faction, spiceTerritory, isLoser, battlePlan, executeResolution);
+
         if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler"))
             resolution += troopFactionEmoji + " takes " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
@@ -1048,6 +1046,20 @@ public class Battle {
                     game.getTurnSummary().publish(faction.getEmoji() + " has drawn 2 Traitor cards for Rihani Decipherer.");
                 } else
                     resolution += faction.getEmoji() + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleSandmaster(Game game, Faction faction, Territory spiceTerritory, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser) {
+            if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Sandmaster")) {
+                if (executeResolution) {
+                    spiceTerritory.addSpice(game, 3);
+                    game.getTurnSummary().publish("3 " + Emojis.SPICE + " were added to " + spiceTerritory.getTerritoryName() + " with Sandmaster.");
+                } else
+                    resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory.getTerritoryName() + " with Sandmaster\n";
             }
         }
         return resolution;
