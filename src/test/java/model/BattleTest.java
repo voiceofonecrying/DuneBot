@@ -1691,6 +1691,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, false, false);
                 assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
                 assertEquals(3, garaKulon.getRicheseNoField());
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " loses 3 " + Emojis.RICHESE_TROOP + " to the tanks"));
             }
 
             @Test
@@ -1698,6 +1699,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, true, false);
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " reveals"));
                 assertEquals(3, garaKulon.getRicheseNoField());
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " loses 3 " + Emojis.RICHESE_TROOP + " to the tanks"));
             }
 
             @Test
@@ -1705,6 +1707,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, false, true);
                 assertFalse(garaKulon.hasRicheseNoField());
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("The 3 " + Emojis.NO_FIELD + " in Gara Kulon reveals 3 " + Emojis.RICHESE_TROOP)));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.RICHESE_TROOP + " in Gara Kulon were sent to the tanks.")));
             }
         }
 
@@ -1897,6 +1900,94 @@ class BattleTest extends DuneTest {
                     assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
                     assertEquals(8, atreides.getSpice());
                 }
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithRihaniDeciphererInFront")
+        class ResolutionWithRihaniDeciphererInFront {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Rihani Decipherer"));
+                duncanIdaho.setPulledBehindShield(false);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                atreidesChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotShowTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testPublishDoesNotShowTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testResolveShowsTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(atreidesChat.getMessages().getFirst().contains(" are in the Traitor deck."));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has been shown 2 Traitor cards for Rihani Decipherer.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithRihaniDeciphererBehind")
+        class ResolutionWithRihaniDeciphererBehind {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.addTraitorCard(game.getTraitorDeck().pop());
+                duncanIdaho.setSkillCard(new LeaderSkillCard("Rihani Decipherer"));
+                duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                atreidesChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+                assertEquals(1, atreides.getTraitorHand().size());
+            }
+
+            @Test
+            void testPublishDoesNotDrawTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer"));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
+                assertEquals(1, atreides.getTraitorHand().size());
+            }
+
+            @Test
+            void testResolveDrawsTraitors() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+//                throwTestTopicMessages(atreidesChat);
+                assertEquals(3, atreides.getTraitorHand().size());
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has drawn 2 Traitor cards for Rihani Decipherer.")));
+                assertTrue(atreidesChat.getMessages().getFirst().contains("You must discard two Traitors."));
+                assertTrue(atreidesChat.getMessages().get(1).contains("First discard:"));
+                assertEquals(3, atreidesChat.getChoices().getFirst().size());
+                assertTrue(atreidesChat.getMessages().get(2).contains("Second discard:"));
+                assertEquals(3, atreidesChat.getChoices().getFirst().size());
+                // Implement buttons before the line below
+                assertTrue(battle.isRihaniDeciphererMustBeResolved(game));
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
+                assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
             }
         }
     }

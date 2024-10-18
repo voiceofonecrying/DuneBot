@@ -284,7 +284,7 @@ public class CommandOptions {
             case "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertokill" -> choices = leadersToKillOrFlip(event, game, searchValue);
             case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
-            case "combat-leader" -> choices = combatLeaders(event, discordGame, searchValue);
+            case "combat-leader" -> choices = combatLeaders(event, discordGame, game, searchValue);
             case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
             case "weapon" -> choices = weapon(event, discordGame, searchValue);
             case "defense" -> choices = defense(event, discordGame, searchValue);
@@ -511,7 +511,7 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+    private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game, String searchValue) throws ChannelNotFoundException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         Battles battles = null;
         try {
@@ -519,7 +519,7 @@ public class CommandOptions {
         } catch (InvalidGameStateException e) {
             // Battle territory not found. Continue without filtering leaders in other territories.
         }
-        List<String> battleTerritoryNames = battles == null ? new ArrayList<>() : battles.getCurrentBattle().getTerritorySectors().stream().map(Territory::getTerritoryName).toList();
+        List<String> battleTerritoryNames = battles == null ? new ArrayList<>() : battles.getCurrentBattle().getTerritorySectors(game).stream().map(Territory::getTerritoryName).toList();
         List<Command.Choice> choices = new ArrayList<>();
         if (faction.getLeaders().stream().filter(leader -> !leader.getName().equals("Kwisatz Haderach")).toList().isEmpty()) choices.add(new Command.Choice("None", "None"));
         choices.addAll(faction.getLeaders().stream()

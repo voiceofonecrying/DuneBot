@@ -25,6 +25,7 @@ public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("traitor-selection-")) selectTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("traitor-call-")) callTraitor(event, game, discordGame);
+        else if (event.getComponentId().startsWith("traitor-discard-")) discardTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
         else if (event.getComponentId().startsWith("play-harvester-")) harvester(event, game, discordGame);
         else if (event.getComponentId().startsWith("atreides-ally-battle-prescience-")) allyBattlePrescience(event, game, discordGame);
@@ -80,6 +81,14 @@ public class FactionButtons {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         List<Message> messagesToDelete = messages.stream().filter(message -> message.getButtons().stream().map(ActionComponent::getId).anyMatch(id -> id != null && id.startsWith("traitor-call"))).toList();
         messagesToDelete.forEach(message -> message.delete().complete());
+    }
+
+    public static void discardTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String traitorName = event.getComponentId().replace("traitor-discard-", "");
+        faction.discardTraitor(traitorName);
+        discordGame.queueMessage("You discarded " + traitorName);
+        discordGame.pushGame();
     }
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
