@@ -795,7 +795,7 @@ public class Battle {
                 resolution += "3 " + Emojis.SPICE + " will be added to " + spiceTerritory + " with Sandmaster\n";
         }
         if (spiceTerritory != null && battlePlan.isSkillBehindAndLeaderAlive("Smuggler"))
-            resolution += troopFactionEmoji + " gains " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
+            resolution += troopFactionEmoji + " takes " + Math.min(spiceTerritory.getSpice(), battlePlan.getLeaderValue()) + " " + Emojis.SPICE + " for Smuggler";
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
@@ -1385,6 +1385,8 @@ public class Battle {
             game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
             plan.setCanCallTraitor(false);
         }
+        if (resolutionPublished)
+            checkIfResolvable(game);
     }
 
     public boolean mightCallTraitor(Game game, Faction faction, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
