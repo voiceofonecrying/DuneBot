@@ -1230,6 +1230,10 @@ public class Game {
             turnSummary. publish(leaderName + " has been placed face " + (faceDown ? "down" : "up") + " in the tanks.");
         } else {
             leader = targetFaction.removeLeader(leaderName);
+            if (leader.getSkillCard() != null) {
+                leaderSkillDeck.add(leader.getSkillCard());
+                leader.removeSkillCard();
+            }
             leader.setFaceDown(faceDown);
             leaderTanks.add(leader);
             String message = leaderName + " was sent to the tanks" + (faceDown ? " face down." : ".");
