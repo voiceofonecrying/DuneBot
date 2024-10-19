@@ -54,6 +54,10 @@ public class Leader {
         return skillCard;
     }
 
+    public void removeSkillCard() {
+        skillCard = null;
+    }
+
     public void setSkillCard(LeaderSkillCard skillCard) throws InvalidGameStateException {
         if (this.skillCard != null)
             throw new InvalidGameStateException(name + " has a skill that must be removed before adding a new one.");

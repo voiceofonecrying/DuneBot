@@ -122,6 +122,7 @@ public class HarkCommands {
 
         if (leader.getSkillCard() != null) {
             game.getLeaderSkillDeck().add(leader.getSkillCard());
+            leader.removeSkillCard();
         }
 
         faction.removeLeader(leader);
