@@ -539,6 +539,7 @@ public class SetupCommands {
 
     public static void newLeaderSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
+        Collections.shuffle(game.getLeaderSkillDeck());
         factionLeaderSkillsChoice(discordGame, game, game.getFaction(factionName));
     }
 
