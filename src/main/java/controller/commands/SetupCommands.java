@@ -541,6 +541,7 @@ public class SetupCommands {
         String factionName = discordGame.required(faction).getAsString();
         Collections.shuffle(game.getLeaderSkillDeck());
         factionLeaderSkillsChoice(discordGame, game, game.getFaction(factionName));
+        discordGame.pushGame();
     }
 
     public static StepStatus leaderSkillCardsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
