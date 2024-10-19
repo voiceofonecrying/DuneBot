@@ -52,6 +52,7 @@ public class SetupCommands {
                         new SubcommandData("traitor", "Select a starting traitor from hand.")
                                 .addOptions(faction, CommandOptions.traitor),
                         new SubcommandData("advance", "Advance the setup of the game."),
+                        new SubcommandData("new-leader-skills", "Give the player two new leader skills to choose from.").addOptions(faction),
                         new SubcommandData("leader-skill", "Add leader skill to faction")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand"),
@@ -75,6 +76,7 @@ public class SetupCommands {
             case "ix-hand-selection" -> ixHandSelection(discordGame, game);
             case "traitor" -> selectTraitor(discordGame, game);
             case "advance" -> advance(event.getGuild(), discordGame, game);
+            case "new-leader-skills" -> newLeaderSkills(discordGame, game);
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
@@ -514,30 +516,36 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
+    public static void factionLeaderSkillsChoice(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException {
+        // Drawing two Leader Skill Cards for user to choose from
+        game.drawCard("leader skills deck", faction.getName());
+        game.drawCard("leader skills deck", faction.getName());
+
+        MessageCreateBuilder message = new MessageCreateBuilder();
+        message.setContent(faction.getPlayer());
+        message.addContent(" please select your leader and their skill from the following two options:\n");
+        faction.getLeaderSkillsHand().forEach(leaderSkillCard -> message.addContent("* " + leaderSkillCard.name() + "\n"));
+
+        faction.getLeaderSkillsHand().stream()
+                .map(leaderSkillCard -> CardImages.getLeaderSkillImage(
+                        discordGame.getEvent().getGuild(), leaderSkillCard.name())
+                )
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(message::addFiles);
+
+        discordGame.getFactionChat(faction).queueMessage(message);
+    }
+
+    public static void newLeaderSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        factionLeaderSkillsChoice(discordGame, game, game.getFaction(factionName));
+    }
+
     public static StepStatus leaderSkillCardsStep(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Collections.shuffle(game.getLeaderSkillDeck());
-        for (Faction faction : game.getFactions()) {
-
-            // Drawing two Leader Skill Cards for user to choose from
-            game.drawCard("leader skills deck", faction.getName());
-            game.drawCard("leader skills deck", faction.getName());
-
-            MessageCreateBuilder message = new MessageCreateBuilder();
-            message.setContent(faction.getPlayer());
-            message.addContent(" please select your leader and their skill from the following two options:\n");
-            faction.getLeaderSkillsHand().forEach(leaderSkillCard -> message.addContent("* " + leaderSkillCard.name() + "\n"));
-
-            faction.getLeaderSkillsHand().stream()
-                    .map(leaderSkillCard -> CardImages.getLeaderSkillImage(
-                            discordGame.getEvent().getGuild(), leaderSkillCard.name())
-                    )
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(message::addFiles);
-
-            discordGame.getFactionChat(faction).queueMessage(message);
-        }
-
+        for (Faction faction : game.getFactions())
+            factionLeaderSkillsChoice(discordGame, game, faction);
         return StepStatus.STOP;
     }
 
