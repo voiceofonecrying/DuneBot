@@ -524,6 +524,22 @@ public class Faction {
         return techTokens;
     }
 
+    public boolean hasTechToken(String techToken) {
+        return techTokens.stream().anyMatch(t -> t.getName().equals(techToken));
+    }
+
+    public void addTechToken(String techToken) throws InvalidGameStateException {
+        if (hasTechToken(techToken))
+            throw new InvalidGameStateException(name + " already has " + techToken);
+        techTokens.add(new TechToken(techToken));
+    }
+
+    public void removeTechToken(String techToken) throws InvalidGameStateException {
+        if (!hasTechToken(techToken))
+            throw new InvalidGameStateException(name + " does not have " + techToken);
+        techTokens.removeIf(t -> t.getName().equals(techToken));
+    }
+
     public String getBid() {
         return bid;
     }

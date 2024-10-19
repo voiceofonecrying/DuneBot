@@ -1997,7 +1997,6 @@ class BattleTest extends DuneTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 garaKulon.setSpice(1);
-                atreides.addTraitorCard(game.getTraitorDeck().pop());
                 duncanIdaho.setSkillCard(new LeaderSkillCard("Sandmaster"));
                 duncanIdaho.setPulledBehindShield(true);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
@@ -2034,9 +2033,46 @@ class BattleTest extends DuneTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 garaKulon.setSpice(3);
-                atreides.addTraitorCard(game.getTraitorDeck().pop());
                 duncanIdaho.setSkillCard(new LeaderSkillCard("Smuggler"));
                 duncanIdaho.setPulledBehindShield(true);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotTakeSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(3, garaKulon.getSpice());
+            }
+
+            @Test
+            void testResolveTakesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+//                throwTestTopicMessages(turnSummary);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " took 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler.")));
+                assertEquals(12, atreides.getSpice());
+                assertEquals(1, garaKulon.getSpice());
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithLoserHoldingOneTechToken")
+        class ResolutionWithLoserHoldingOneTechToken {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.addGameOption(GameOption.TECH_TOKENS);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
                 turnSummary.clear();
@@ -2071,8 +2107,8 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("#resolveBattleMultipleSectors")
-    class ResolveBattleMultipleSectors {
+    @DisplayName("#resolveBattleMultipleSectorsAndStarredForces")
+    class ResolveBattleMultipleSectorsAndStarredForces {
         Battle battle;
         Territory kaitain;
         Territory salusaSecundus;
