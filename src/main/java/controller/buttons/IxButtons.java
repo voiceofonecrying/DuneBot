@@ -42,7 +42,7 @@ public class IxButtons implements Pressable {
     }
 
     public static void hmsSubPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage(Emojis.IX + " to decide if they want to move the HMS. " + game.getFaction("Ix").getPlayer());
+        discordGame.getTurnSummary().queueMessage(Emojis.IX + " to decide if they want to move the HMS.");
         Faction faction = game.getFaction("Ix");
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
@@ -102,8 +102,9 @@ public class IxButtons implements Pressable {
             choices.add(new DuneChoice("danger", "hms-pass-movement", "No move"));
         else
             choices.add(new DuneChoice("secondary", "hms-reset-movement", "Start over"));
-        faction.getChat().publish("Where will you move the HMS?", choices);
+        faction.getChat().publish("Where will you move the HMS? " + game.getFaction("Ix").getPlayer(), choices);
     }
+
 
     private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         String moreChoices = "hms-move-more-choices-";
