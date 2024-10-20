@@ -31,6 +31,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-take-tech-token-")) techTokenDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -231,6 +232,12 @@ public class BattleButtons implements Pressable {
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Resolving the battle");
         discordGame.pushGame();
+    }
+
+    private static void dontResolveBattle(ButtonInteractionEvent event, DiscordGame discordGame) {
+        discordGame.queueDeleteMessage();
+        deletePublishResolutionButtonsInChannel(event.getMessageChannel());
+        discordGame.queueMessage("You will resolve the battle yourself.");
     }
 
     public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {

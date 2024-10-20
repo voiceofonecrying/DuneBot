@@ -1745,7 +1745,7 @@ public class Battle {
         return changes;
     }
 
-    public void checkIfResolvable(Game game) {
+    public void checkIfResolvable(Game game) throws InvalidGameStateException {
         boolean resolvable = true;
         List<String> openIssues = new ArrayList<>();
         if (juiceOfSaphoTBD == DecisionStatus.OPEN) {
@@ -1783,6 +1783,28 @@ public class Battle {
             game.getModInfo().publish("The battle can be resolved with your override.");
         else
             game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
+
+        if (resolvable || overrideDecisions) {
+            String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
+            String manualResolutions = "";
+            if (aggressorBattlePlan.isLasgunShieldExplosion())
+                manualResolutions += "\n- Lasgun-Shield carnage";
+            if (wholeTerritoryName.equals("Jacurutu Sietch"))
+                manualResolutions += "\n- Jacurutu Sietch spice";
+            if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS))
+                manualResolutions += "\n- Sietch Tabr and Tuek's Sietch stronghold cards (or HMS acting as those)";
+            Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
+                manualResolutions += "\n- Caladan homeworld advantage";
+            if (!manualResolutions.isEmpty())
+                resolveString += "\nThe following still must be executed manually:" + manualResolutions;
+            else
+                resolveString += "\nThe bot can resolve all aspects of this battle.";
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("battle-resolve-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
+            choices.add(new DuneChoice("secondary", "battle-dont-resolve", "No"));
+            game.getModInfo().publish(resolveString, choices);
+        }
     }
 
     public boolean isDiplomatMustBeResolved() {
