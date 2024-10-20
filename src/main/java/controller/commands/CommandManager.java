@@ -874,19 +874,10 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        for (Faction f : game.getFactions()) {
-            if (f.getTechTokens().removeIf(
-                    techToken -> techToken.getName().equals(discordGame.required(token).getAsString())))
-                f.getLedger().publish(
-                        discordGame.required(token).getAsString() + " was sent to " + game.getFaction(discordGame.required(faction).getAsString()).getEmoji());
-        }
+    public void assignTechToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String tt = discordGame.required(token).getAsString();
-        Faction f = game.getFaction(discordGame.required(faction).getAsString());
-        f.getTechTokens().add(new TechToken(tt));
-        f.getLedger().publish(discordGame.required(token).getAsString() + " transferred to you.");
-        game.getTurnSummary().publish(tt + " has been transferred to " + f.getEmoji());
-        game.setUpdated(UpdateType.MAP);
+        Faction recipient = game.getFaction(discordGame.required(faction).getAsString());
+        game.assignTechToken(tt, recipient);
         discordGame.pushGame();
     }
 

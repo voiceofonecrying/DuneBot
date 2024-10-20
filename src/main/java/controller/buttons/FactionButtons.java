@@ -84,6 +84,7 @@ public class FactionButtons {
     }
 
     public static void discardTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String traitorName = event.getComponentId().replace("traitor-discard-", "");
         faction.discardTraitor(traitorName);

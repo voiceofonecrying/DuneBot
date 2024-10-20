@@ -28,8 +28,12 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-portable-snooper")) portableSnooperDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-poison-tooth")) poisonToothDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-take-tech-token-")) techTokenDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-keep-captured-leader")) keepCapturedLeader(discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-kill-captured-leader")) killCapturedLeader(discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -201,6 +205,31 @@ public class BattleButtons implements Pressable {
         discordGame.pushGame();
     }
 
+    private static void techTokenDecision(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String ttName = event.getComponentId().replace("battle-take-tech-token-", "");
+        game.assignTechToken(ttName, faction);
+        discordGame.queueMessage("You took " + Emojis.getTechTokenEmoji(ttName));
+        discordGame.pushGame();
+    }
+
+    private static void keepCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Battle battle = game.getBattles().getCurrentBattle();
+        game.harkonnenKeepLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
+        discordGame.queueMessage("You kept " + battle.getHarkonnenCapturedLeader());
+        discordGame.pushGame();
+    }
+
+    private static void killCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Battle battle = game.getBattles().getCurrentBattle();
+        game.harkonnenKillLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
+        discordGame.queueMessage("You killed " + battle.getHarkonnenCapturedLeader());
+        discordGame.pushGame();
+    }
+
     private static void publishResolution(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         String[] params = event.getComponentId().replace("battle-publish-resolution-turn-", "").split("-");
         int turn = Integer.parseInt(params[0]);
@@ -221,6 +250,12 @@ public class BattleButtons implements Pressable {
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Resolving the battle");
         discordGame.pushGame();
+    }
+
+    private static void dontResolveBattle(ButtonInteractionEvent event, DiscordGame discordGame) {
+        discordGame.queueDeleteMessage();
+        deletePublishResolutionButtonsInChannel(event.getMessageChannel());
+        discordGame.queueMessage("You will resolve the battle yourself.");
     }
 
     public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {

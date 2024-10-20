@@ -1,12 +1,8 @@
 package controller.commands;
 
-import constants.Emojis;
-import controller.channels.TurnSummary;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
-import model.Leader;
 import model.TraitorCard;
 import model.factions.Faction;
 import model.factions.HarkonnenFaction;
@@ -21,7 +17,6 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.MessageFormat;
 import java.util.*;
 
 import static controller.commands.CommandOptions.*;
@@ -84,77 +79,14 @@ public class HarkCommands {
     public static void captureLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
-
-        Faction faction = game.getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName).orElseThrow();
-
-        Faction harkonnenFaction = game.getFaction("Harkonnen");
-
-        harkonnenFaction.addLeader(leader);
-        faction.removeLeader(leader);
-
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (leader.getSkillCard() != null) {
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} have captured a {1} skilled leader: {2} the {3}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(),
-                    leader.getName(), leader.getSkillCard().name()
-            ));
-        } else {
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} have captured a {1} leader",
-                    harkonnenFaction.getEmoji(), faction.getEmoji()
-            ));
-        }
-
-        harkonnenFaction.getLedger().publish("You have captured " + leader.getName());
-        faction.getLedger().publish(leader.getName() + " has been captured by " + harkonnenFaction.getEmoji());
-
+        game.harkonnenKeepLeader(factionName, leaderName);
         discordGame.pushGame();
     }
 
     public static void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
-
-        Faction faction = game.getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName).orElseThrow();
-
-        if (leader.getSkillCard() != null) {
-            game.getLeaderSkillDeck().add(leader.getSkillCard());
-            leader.removeSkillCard();
-        }
-
-        faction.removeLeader(leader);
-
-        Faction harkonnenFaction = game.getFaction("Harkonnen");
-
-        harkonnenFaction.addSpice(2, "killing " + leader.getName());
-
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-        if (leader.getSkillCard() != null) {
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.getName(), Emojis.SPICE
-            ));
-        } else {
-            turnSummary.queueMessage(MessageFormat.format(
-                    "{0} has killed the {1} leader for 2 {2}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
-            ));
-
-        }
-
-        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
-
-        game.getLeaderTanks().add(killedLeader);
-
-        faction.getChat().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        faction.getLedger().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        harkonnenFaction.getLedger().publish("You have killed " + killedLeader.getName());
-
-        game.setUpdated(UpdateType.MAP);
-
+        game.harkonnenKillLeader(factionName, leaderName);
         discordGame.pushGame();
     }
 

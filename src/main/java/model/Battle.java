@@ -45,6 +45,10 @@ public class Battle {
     private boolean diplomatMustBeResolved;
     private String rihaniDeciphererFaction;
     private int rihaniDeciphererExectedTraitors;
+    private String techTokenReceiver;
+    private int expectedTechTokens;
+    private String harkonnenCapturedLeader;
+    private String harkonnenLeaderVictim;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -794,19 +798,17 @@ public class Battle {
         resolution += handleSmuggler(game, faction, spiceTerritory, battlePlan, executeResolution);
 
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
+            resolution += handleTechTokens(game, faction, isLoser, opponentFaction, executeResolution);
+            resolution += handleCombatWater(game, faction, isLoser, executeResolution);
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
-                if (techTokens.size() == 1)
-                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + "\n";
-                else if (techTokens.size() > 1) {
-                    resolution += emojis + " loses a Tech Token: ";
-                    resolution += techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).reduce("", String::concat);
-                    resolution += "\n";
-                }
+//                if (techTokens.size() == 1)
+//                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + " to " + opponentFaction.getEmoji() + "\n";
+//                else if (techTokens.size() > 1) {
+//                    String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());;
+//                    resolution += emojis + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
+//                }
             } else {
-                int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
-                if (combatWater > 0)
-                    resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
                 if (getWholeTerritoryName().equals("Jacurutu Sietch")) {
                     int opponentRegularNotDialed = opponentBattlePlan.getRegularNotDialed();
                     int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
@@ -834,8 +836,8 @@ public class Battle {
         }
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
         Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
-        if (!isLoser && winner instanceof HarkonnenFaction)
-            resolution += Emojis.HARKONNEN + " captures a " + loser.getEmoji() + " leader\n";
+        Leader loserLeader = isAggressorWin(game) ? getDefenderBattlePlan().getLeader() : getAggressorBattlePlan().getLeader();
+        resolution += handleHarkonnenLeaderCapture(game, winner, loser, loserLeader, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReservesStrength() > 0 || regularForcesDialed > 0)) {
@@ -1038,7 +1040,7 @@ public class Battle {
                     Collections.shuffle(traitorDeck);
                     faction.addTraitorCard(traitorDeck.pop());
                     faction.addTraitorCard(traitorDeck.pop());
-                    faction.getChat().publish("You must discard two Traitors.");
+                    faction.getChat().publish("You must discard two Traitors. " + faction.getPlayer());
                     List<DuneChoice> choices = faction.getTraitorHand().stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
                     faction.getChat().publish("First discard:", choices);
                     faction.getChat().publish("Second discard:", choices);
@@ -1075,6 +1077,75 @@ public class Battle {
                 game.getTurnSummary().publish(faction.getEmoji() + " took " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler.");
             } else
                 resolution += faction.getEmoji() + " will take " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler";
+        }
+        return resolution;
+    }
+
+    private String handleTechTokens(Game game, Faction faction, boolean isLoser, Faction opponentFaction, boolean executeResolution) throws InvalidGameStateException {
+        String resolution = "";
+        if (isLoser) {
+            List<TechToken> techTokens = faction.getTechTokens();
+            if (techTokens.size() == 1) {
+                String ttName = techTokens.getFirst().getName();
+                String ttEmoji = Emojis.getTechTokenEmoji(ttName);
+                if (executeResolution) {
+                    faction.removeTechToken(ttName);
+                    opponentFaction.addTechToken(ttName);
+                    game.getTurnSummary().publish(opponentFaction.getEmoji() + " takes " + ttEmoji + " from " + faction.getEmoji());
+                } else
+                    resolution += faction.getEmoji() + " loses " + ttEmoji + " to " + opponentFaction.getEmoji() + "\n";
+            } else if (techTokens.size() > 1) {
+                if (executeResolution) {
+                    techTokenReceiver = opponentFaction.getName();
+                    expectedTechTokens = opponentFaction.getTechTokens().size() + 1;
+                    List<DuneChoice> choices = new ArrayList<>();
+                    techTokens.forEach(tt -> choices.add(new DuneChoice("battle-take-tech-token-" + tt.getName(), tt.getName())));
+                    opponentFaction.getChat().publish("Which Tech Token would you like to take? " + opponentFaction.getPlayer(), choices);
+                    game.getTurnSummary().publish(opponentFaction.getEmoji() + " must choose which Tech Token to take from " + faction.getEmoji());
+                } else {
+                    String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());
+                    resolution += faction.getEmoji() + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
+                }
+            }
+        }
+        return resolution;
+    }
+
+    private String handleCombatWater(Game game, Faction faction, boolean isLoser, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser) {
+            int combatWater = getAggressorBattlePlan().combatWater() + getDefenderBattlePlan().combatWater();
+            if (combatWater > 0) {
+                if (executeResolution) {
+                    game.getTurnSummary().publish(faction.getEmoji() + " gains " + combatWater + " " + Emojis.SPICE + " combat water.");
+                    faction.addSpice(combatWater, "combat water");
+                } else
+                    resolution += faction.getEmoji() + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, Leader loserLeader, boolean isLoser, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
+            if (executeResolution) {
+                String leaderName = loserLeader == null ? "" : loserLeader.getName();
+                List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream().filter(l -> !l.getName().equals(leaderName)).toList());
+                if (eligibleLeaders.isEmpty()) {
+                    game.getTurnSummary().publish(loser.getEmoji() + " has no eligible leaders to capture.");
+                } else {
+                    Collections.shuffle(eligibleLeaders);
+                    Leader leader = eligibleLeaders.getFirst();
+                    harkonnenCapturedLeader = leader.getName();
+                    harkonnenLeaderVictim = loser.getName();
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("battle-harkonnen-keep-captured-leader", "Keep"));
+                    choices.add(new DuneChoice("battle-harkonnen-kill-captured-leader", "Kill for 2 spice"));
+                    harkonnen.getChat().publish("Will you keep or kill " + leader.getName() + "? " + harkonnen.getPlayer(), choices);
+                }
+            } else
+                resolution += Emojis.HARKONNEN + " captures a " + loser.getEmoji() + " leader\n";
         }
         return resolution;
     }
@@ -1713,7 +1784,7 @@ public class Battle {
         return changes;
     }
 
-    public void checkIfResolvable(Game game) {
+    public void checkIfResolvable(Game game) throws InvalidGameStateException {
         boolean resolvable = true;
         List<String> openIssues = new ArrayList<>();
         if (juiceOfSaphoTBD == DecisionStatus.OPEN) {
@@ -1751,6 +1822,28 @@ public class Battle {
             game.getModInfo().publish("The battle can be resolved with your override.");
         else
             game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
+
+        if (resolvable || overrideDecisions) {
+            String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
+            String manualResolutions = "";
+            if (aggressorBattlePlan.isLasgunShieldExplosion())
+                manualResolutions += "\n- Lasgun-Shield carnage";
+            if (wholeTerritoryName.equals("Jacurutu Sietch"))
+                manualResolutions += "\n- Jacurutu Sietch spice";
+            if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS))
+                manualResolutions += "\n- Sietch Tabr and Tuek's Sietch stronghold cards (or HMS acting as those)";
+            Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
+                manualResolutions += "\n- Caladan homeworld advantage";
+            if (!manualResolutions.isEmpty())
+                resolveString += "\nThe following still must be executed manually:" + manualResolutions;
+            else
+                resolveString += "\nThe bot can resolve all aspects of this battle.";
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("battle-resolve-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
+            choices.add(new DuneChoice("secondary", "battle-dont-resolve", "No"));
+            game.getModInfo().publish(resolveString, choices);
+        }
     }
 
     public boolean isDiplomatMustBeResolved() {
@@ -1758,9 +1851,28 @@ public class Battle {
     }
 
     public boolean isRihaniDeciphererMustBeResolved(Game game) {
-        // Need to block /run battle and /run advance
         if (rihaniDeciphererFaction == null)
             return false;
         return game.getFaction(rihaniDeciphererFaction).getTraitorHand().size() != rihaniDeciphererExectedTraitors;
+    }
+
+    public boolean isTechTokenMustBeResolved(Game game) {
+        if (techTokenReceiver == null)
+            return false;
+        return game.getFaction(techTokenReceiver).getTechTokens().size() != expectedTechTokens;
+    }
+
+    public String getHarkonnenLeaderVictim() {
+        return harkonnenLeaderVictim;
+    }
+
+    public String getHarkonnenCapturedLeader() {
+        return harkonnenCapturedLeader;
+    }
+
+    public boolean isHarkonnenCaptureMustBeResolved(Game game) {
+        if (harkonnenCapturedLeader == null)
+            return false;
+        return game.getFaction(harkonnenLeaderVictim).getLeader(harkonnenCapturedLeader).isPresent();
     }
 }
