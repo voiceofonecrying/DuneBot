@@ -628,6 +628,7 @@ public class Battle {
         String emojis = faction.getEmoji();
         boolean isLoser = (isAggressor != isAggressorWin(game) || isLasgunShieldExplosion) && !callsTraitor || bothCallTraitor(game);
         String wholeTerritoryName = getWholeTerritoryName();
+        boolean battleIsOnAHomeworld =  game.getHomeworlds().containsValue(wholeTerritoryName);
 
         if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive()) {
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
@@ -661,7 +662,7 @@ public class Battle {
         DuneTopic turnSummary = game.getTurnSummary();
         if (isLoser) {
             if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
-                if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
+                if (battlePlan.isSkillBehindAndLeaderAlive("Diplomat") && !battleIsOnAHomeworld) {
                     int leaderValue = battlePlan.getLeaderValue();
                     savedSpecialForces = Math.min(specialForcesNotDialed, leaderValue);
                     savedRegularForces = Math.min(regularForcesNotDialed, leaderValue - savedSpecialForces);
@@ -746,7 +747,7 @@ public class Battle {
             if (isLoser) {
                 int ecazForcesnotDialed = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 int ecazForcesToKill = battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn;
-                if (faction instanceof EcazFaction && battlePlan.isSkillBehindAndLeaderAlive("Diplomat")) {
+                if (faction instanceof EcazFaction && battlePlan.isSkillBehindAndLeaderAlive("Diplomat") && !battleIsOnAHomeworld) {
                     int leaderValue = battlePlan.getLeaderValue();
                     savedRegularForces = Math.min(ecazForcesnotDialed, leaderValue);
                     if (savedRegularForces > 0) {
