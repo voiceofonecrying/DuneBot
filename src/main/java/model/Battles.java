@@ -109,8 +109,12 @@ public class Battles {
             else
                 game.getModInfo().publish("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
         }
-        if (currentBattle != null && currentBattle.isRihaniDeciphererMustBeResolved(game))
-            throw new InvalidGameStateException("Rihani Decipherer must be resolved before running the next battle.");
+        if (currentBattle != null) {
+            if (currentBattle.isRihaniDeciphererMustBeResolved(game))
+                throw new InvalidGameStateException("Rihani Decipherer must be resolved before running the next battle.");
+            else if (currentBattle.isTechTokenMustBeResolved(game))
+                throw new InvalidGameStateException("Tech Token must be selected before running the next battle.");
+        }
         if (noBattlesRemaining(game))
             throw new InvalidGameStateException("There are no more battles");
 

@@ -2060,7 +2060,6 @@ class BattleTest extends DuneTest {
             @Test
             void testResolveTakesSpice() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-//                throwTestTopicMessages(turnSummary);
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " took 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler.")));
                 assertEquals(12, atreides.getSpice());
                 assertEquals(1, garaKulon.getSpice());
@@ -2073,6 +2072,7 @@ class BattleTest extends DuneTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.addGameOption(GameOption.TECH_TOKENS);
+                richese.addTechToken("Heighliners");
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
                 turnSummary.clear();
@@ -2080,28 +2080,82 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testReviewDoesNotTakeSpice() throws InvalidGameStateException {
+            void testReviewDoesNotTransferToken() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, false);
-                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
-                assertEquals(10, atreides.getSpice());
-                assertEquals(3, garaKulon.getSpice());
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " loses " + Emojis.HEIGHLINERS + " to " + Emojis.ATREIDES));
+                assertTrue(richese.hasTechToken("Heighliners"));
+                assertFalse(atreides.hasTechToken("Heighliners"));
             }
 
             @Test
-            void testPublishDoesNotTakeSpice() throws InvalidGameStateException {
+            void testPublishDoesNotTransferToken() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " will take 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler"));
-                assertEquals(10, atreides.getSpice());
-                assertEquals(3, garaKulon.getSpice());
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " loses " + Emojis.HEIGHLINERS + " to " + Emojis.ATREIDES));
+                assertTrue(richese.hasTechToken("Heighliners"));
+                assertFalse(atreides.hasTechToken("Heighliners"));
             }
 
             @Test
-            void testResolveTakesSpice() throws InvalidGameStateException {
+            void testResolveTransfersToken() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-//                throwTestTopicMessages(turnSummary);
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " took 2 " + Emojis.SPICE + " from Gara Kulon with Smuggler.")));
-                assertEquals(12, atreides.getSpice());
-                assertEquals(1, garaKulon.getSpice());
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " takes " + Emojis.HEIGHLINERS + " from " + Emojis.RICHESE)));
+                assertTrue(atreides.hasTechToken("Heighliners"));
+                assertFalse(richese.hasTechToken("Heighliners"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithLoserHoldingTwoTechTokens")
+        class ResolutionWithLoserHoldingTwoTechTokens {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.addGameOption(GameOption.TECH_TOKENS);
+                richese.addTechToken("Heighliners");
+                richese.addTechToken("Spice Production");
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                atreidesChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotTransferTokenOrAskWinner() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " loses " + Emojis.HEIGHLINERS + " or " + Emojis.SPICE_PRODUCTION + " to " + Emojis.ATREIDES));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertTrue(richese.hasTechToken("Heighliners"));
+                assertFalse(atreides.hasTechToken("Heighliners"));
+                assertTrue(richese.hasTechToken("Spice Production"));
+                assertFalse(atreides.hasTechToken("Spice Production"));
+                assertFalse(battle.isTechTokenMustBeResolved(game));
+            }
+
+            @Test
+            void testPublishDoesNotTransferTokenOrAskWinner() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " loses " + Emojis.HEIGHLINERS + " or " + Emojis.SPICE_PRODUCTION + " to " + Emojis.ATREIDES));
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertTrue(richese.hasTechToken("Heighliners"));
+                assertFalse(atreides.hasTechToken("Heighliners"));
+                assertTrue(richese.hasTechToken("Spice Production"));
+                assertFalse(atreides.hasTechToken("Spice Production"));
+                assertFalse(battle.isTechTokenMustBeResolved(game));
+            }
+
+            @Test
+            void testResolveAsksWinner() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " must choose which Tech Token to take from " + Emojis.RICHESE)));
+                assertEquals("Which Tech Token would you like to take? at", atreidesChat.getMessages().getFirst());
+                assertEquals(2, atreidesChat.getChoices().getFirst().size());
+                assertTrue(richese.hasTechToken("Heighliners"));
+                assertFalse(atreides.hasTechToken("Heighliners"));
+                assertTrue(richese.hasTechToken("Spice Production"));
+                assertFalse(atreides.hasTechToken("Spice Production"));
+                assertTrue(battle.isTechTokenMustBeResolved(game));
+                game.assignTechToken("Heighliners", atreides);
+                assertFalse(battle.isTechTokenMustBeResolved(game));
             }
         }
     }

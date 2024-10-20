@@ -1253,7 +1253,7 @@ public class Game {
         possessor.getLedger().publish(tt + " was sent to " + recipient.getEmoji());
         recipient.addTechToken(tt);
         recipient.getLedger().publish(tt + " transferred to you.");
-        turnSummary.publish(tt + " has been transferred to " + recipient.getEmoji());
+        turnSummary.publish(Emojis.getTechTokenEmoji(tt) + " has been transferred to " + recipient.getEmoji());
         setUpdated(UpdateType.MAP);
     }
 
@@ -1362,8 +1362,13 @@ public class Game {
     }
 
     public void endBattlePhase() throws InvalidGameStateException {
-        if (battles.getCurrentBattle() != null && battles.getCurrentBattle().isRihaniDeciphererMustBeResolved(this))
-            throw new InvalidGameStateException("Rihani Decipherer must be resolved.");
+        Battle currentBattle = battles.getCurrentBattle();
+        if (currentBattle != null) {
+            if (currentBattle.isRihaniDeciphererMustBeResolved(this))
+                throw new InvalidGameStateException("Rihani Decipherer must be resolved.");
+            else if (currentBattle.isTechTokenMustBeResolved(this))
+                throw new InvalidGameStateException("Tech Token must be selected before advancing.");
+        }
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));

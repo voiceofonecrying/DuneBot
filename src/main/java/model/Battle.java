@@ -45,6 +45,8 @@ public class Battle {
     private boolean diplomatMustBeResolved;
     private String rihaniDeciphererFaction;
     private int rihaniDeciphererExectedTraitors;
+    private String techTokenReceiver;
+    private int expectedTechTokens;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -794,15 +796,15 @@ public class Battle {
         resolution += handleSmuggler(game, faction, spiceTerritory, battlePlan, executeResolution);
 
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
+            resolution += handleTechTokens(game, faction, isLoser, opponentFaction, executeResolution);
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
-                if (techTokens.size() == 1)
-                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + "\n";
-                else if (techTokens.size() > 1) {
-                    resolution += emojis + " loses a Tech Token: ";
-                    resolution += techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).reduce("", String::concat);
-                    resolution += "\n";
-                }
+//                if (techTokens.size() == 1)
+//                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + " to " + opponentFaction.getEmoji() + "\n";
+//                else if (techTokens.size() > 1) {
+//                    String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());;
+//                    resolution += emojis + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
+//                }
             } else {
                 int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
                 if (combatWater > 0)
@@ -1038,7 +1040,7 @@ public class Battle {
                     Collections.shuffle(traitorDeck);
                     faction.addTraitorCard(traitorDeck.pop());
                     faction.addTraitorCard(traitorDeck.pop());
-                    faction.getChat().publish("You must discard two Traitors.");
+                    faction.getChat().publish("You must discard two Traitors. " + faction.getPlayer());
                     List<DuneChoice> choices = faction.getTraitorHand().stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
                     faction.getChat().publish("First discard:", choices);
                     faction.getChat().publish("Second discard:", choices);
@@ -1075,6 +1077,36 @@ public class Battle {
                 game.getTurnSummary().publish(faction.getEmoji() + " took " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler.");
             } else
                 resolution += faction.getEmoji() + " will take " + spiceToTake + " " + Emojis.SPICE + " from " + territoryName + " with Smuggler";
+        }
+        return resolution;
+    }
+
+    private String handleTechTokens(Game game, Faction faction, boolean isLoser, Faction opponentFaction, boolean executeResolution) throws InvalidGameStateException {
+        String resolution = "";
+        if (isLoser) {
+            List<TechToken> techTokens = faction.getTechTokens();
+            if (techTokens.size() == 1) {
+                String ttName = techTokens.getFirst().getName();
+                String ttEmoji = Emojis.getTechTokenEmoji(ttName);
+                if (executeResolution) {
+                    faction.removeTechToken(ttName);
+                    opponentFaction.addTechToken(ttName);
+                    game.getTurnSummary().publish(opponentFaction.getEmoji() + " takes " + ttEmoji + " from " + faction.getEmoji());
+                } else
+                    resolution += faction.getEmoji() + " loses " + ttEmoji + " to " + opponentFaction.getEmoji() + "\n";
+            } else if (techTokens.size() > 1) {
+                if (executeResolution) {
+                    techTokenReceiver = opponentFaction.getName();
+                    expectedTechTokens = opponentFaction.getTechTokens().size() + 1;
+                    List<DuneChoice> choices = new ArrayList<>();
+                    techTokens.forEach(tt -> choices.add(new DuneChoice("battle-take-tech-token-" + tt.getName(), tt.getName())));
+                    opponentFaction.getChat().publish("Which Tech Token would you like to take? " + opponentFaction.getPlayer(), choices);
+                    game.getTurnSummary().publish(opponentFaction.getEmoji() + " must choose which Tech Token to take from " + faction.getEmoji());
+                } else {
+                    String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());
+                    resolution += faction.getEmoji() + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
+                }
+            }
         }
         return resolution;
     }
@@ -1758,9 +1790,14 @@ public class Battle {
     }
 
     public boolean isRihaniDeciphererMustBeResolved(Game game) {
-        // Need to block /run battle and /run advance
         if (rihaniDeciphererFaction == null)
             return false;
         return game.getFaction(rihaniDeciphererFaction).getTraitorHand().size() != rihaniDeciphererExectedTraitors;
+    }
+
+    public boolean isTechTokenMustBeResolved(Game game) {
+        if (techTokenReceiver == null)
+            return false;
+        return game.getFaction(techTokenReceiver).getTechTokens().size() != expectedTechTokens;
     }
 }
