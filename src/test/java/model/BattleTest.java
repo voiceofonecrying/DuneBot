@@ -247,7 +247,6 @@ class BattleTest extends DuneTest {
             game.startBattlePhase();
             battles = game.getBattles();
             Battle battle = new Battle(game, List.of(garaKulon), List.of(fremen, richese));
-            Leader ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
             assertThrows(InvalidGameStateException.class, () -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 3, false, 0, null, null));
             assertDoesNotThrow(() -> battle.setBattlePlan(game, richese, ladyHelena, null, false, 2, false, 0, null, null));
         }
@@ -1387,7 +1386,7 @@ class BattleTest extends DuneTest {
             assertEquals(2, bgChat.getChoices().getLast().size());
             battle.willCallTraitor(game, bg, false, 0, "Arrakeen");
             int num = modInfo.getMessages().size();
-            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().get(num - 2));
+            assertEquals(Emojis.BG + " declines calling Traitor in Arrakeen.", modInfo.getMessages().get(num - 3));
         }
 
         @Test
@@ -1567,7 +1566,7 @@ class BattleTest extends DuneTest {
                 assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
                 int num = modInfo.getMessages().size();
-                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().get(num - 2));
+                assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().get(num - 3));
             }
 
             @Test
@@ -2156,6 +2155,39 @@ class BattleTest extends DuneTest {
                 assertTrue(battle.isTechTokenMustBeResolved(game));
                 game.assignTechToken("Heighliners", atreides);
                 assertFalse(battle.isTechTokenMustBeResolved(game));
+            }
+        }
+        @Nested
+        @DisplayName("#resolutionWithCombatWater")
+        class ResolutionWithCombatWater {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.addTreacheryCard(chaumas);
+                battle.setBattlePlan(game, richese, ladyHelena, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, chaumas, null);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " combat water"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " combat water"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testResolveGivesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " combat water.")));
+                assertEquals(14, atreides.getSpice());
             }
         }
     }

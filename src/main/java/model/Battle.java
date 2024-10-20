@@ -797,6 +797,7 @@ public class Battle {
 
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
             resolution += handleTechTokens(game, faction, isLoser, opponentFaction, executeResolution);
+            resolution += handleCombatWater(game, faction, isLoser, executeResolution);
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
 //                if (techTokens.size() == 1)
@@ -806,9 +807,6 @@ public class Battle {
 //                    resolution += emojis + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
 //                }
             } else {
-                int combatWater = aggressorPlan.combatWater() + defenderPlan.combatWater();
-                if (combatWater > 0)
-                    resolution += emojis + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
                 if (getWholeTerritoryName().equals("Jacurutu Sietch")) {
                     int opponentRegularNotDialed = opponentBattlePlan.getRegularNotDialed();
                     int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
@@ -1106,6 +1104,21 @@ public class Battle {
                     String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());
                     resolution += faction.getEmoji() + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
                 }
+            }
+        }
+        return resolution;
+    }
+
+    private String handleCombatWater(Game game, Faction faction, boolean isLoser, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser) {
+            int combatWater = getAggressorBattlePlan().combatWater() + getDefenderBattlePlan().combatWater();
+            if (combatWater > 0) {
+                if (executeResolution) {
+                    game.getTurnSummary().publish(faction.getEmoji() + " gains " + combatWater + " " + Emojis.SPICE + " combat water.");
+                    faction.addSpice(combatWater, "combat water");
+                } else
+                    resolution += faction.getEmoji() + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
             }
         }
         return resolution;
