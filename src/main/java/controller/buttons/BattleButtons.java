@@ -29,6 +29,8 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-poison-tooth")) poisonToothDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-take-tech-token-")) techTokenDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-keep-captured-leader")) keepCapturedLeader(discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-kill-captured-leader")) killCapturedLeader(discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
@@ -209,6 +211,22 @@ public class BattleButtons implements Pressable {
         String ttName = event.getComponentId().replace("battle-take-tech-token-", "");
         game.assignTechToken(ttName, faction);
         discordGame.queueMessage("You took " + Emojis.getTechTokenEmoji(ttName));
+        discordGame.pushGame();
+    }
+
+    private static void keepCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Battle battle = game.getBattles().getCurrentBattle();
+        game.harkonnenKeepLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
+        discordGame.queueMessage("You kept " + battle.getHarkonnenCapturedLeader());
+        discordGame.pushGame();
+    }
+
+    private static void killCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Battle battle = game.getBattles().getCurrentBattle();
+        game.harkonnenKillLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
+        discordGame.queueMessage("You killed " + battle.getHarkonnenCapturedLeader());
         discordGame.pushGame();
     }
 

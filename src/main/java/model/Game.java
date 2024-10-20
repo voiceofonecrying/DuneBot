@@ -1247,6 +1247,69 @@ public class Game {
         killLeader(targetFaction, leaderName, false);
     }
 
+    public void harkonnenKeepLeader(String factionName, String leaderName) {
+        Faction faction = getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+
+        Faction harkonnenFaction = getFaction("Harkonnen");
+
+        harkonnenFaction.addLeader(leader);
+        faction.removeLeader(leader);
+
+        if (leader.getSkillCard() != null) {
+            turnSummary.publish(MessageFormat.format(
+                    "{0} has captured a {1} skilled leader: {2} the {3}",
+                    harkonnenFaction.getEmoji(), faction.getEmoji(),
+                    leader.getName(), leader.getSkillCard().name()
+            ));
+        } else {
+            turnSummary.publish(MessageFormat.format(
+                    "{0} has captured a {1} leader",
+                    harkonnenFaction.getEmoji(), faction.getEmoji()
+            ));
+        }
+
+        faction.getChat().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        harkonnenFaction.getLedger().publish("You have captured " + leader.getName());
+    }
+
+    public void harkonnenKillLeader(String factionName, String leaderName) {
+        Faction faction = getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+
+        if (leader.getSkillCard() != null) {
+            leaderSkillDeck.add(leader.getSkillCard());
+            // Need to combine with conditionals below
+//            leader.removeSkillCard();
+        }
+
+        faction.removeLeader(leader);
+
+        Faction harkonnenFaction = getFaction("Harkonnen");
+
+        harkonnenFaction.addSpice(2, "killing " + leader.getName());
+
+        if (leader.getSkillCard() != null) {
+            turnSummary.publish(MessageFormat.format(
+                    "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
+                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.getName(), Emojis.SPICE
+            ));
+        } else {
+            turnSummary.publish(MessageFormat.format(
+                    "{0} has killed the {1} leader for 2 {2}",
+                    harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
+            ));
+        }
+
+        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
+        leaderTanks.add(killedLeader);
+
+        faction.getChat().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        setUpdated(UpdateType.MAP);
+    }
+
     public void assignTechToken(String tt, Faction recipient) throws InvalidGameStateException {
         Faction possessor = factions.stream().filter(f -> f.hasTechToken(tt)).findAny().orElseThrow();
         possessor.removeTechToken(tt);
@@ -1368,6 +1431,8 @@ public class Game {
                 throw new InvalidGameStateException("Rihani Decipherer must be resolved.");
             else if (currentBattle.isTechTokenMustBeResolved(this))
                 throw new InvalidGameStateException("Tech Token must be selected before advancing.");
+            else if (currentBattle.isHarkonnenCaptureMustBeResolved(this))
+                throw new InvalidGameStateException("Harkonnen must decide to keep or kill " + currentBattle.getHarkonnenCapturedLeader() + ".");
         }
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");

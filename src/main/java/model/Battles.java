@@ -114,6 +114,8 @@ public class Battles {
                 throw new InvalidGameStateException("Rihani Decipherer must be resolved before running the next battle.");
             else if (currentBattle.isTechTokenMustBeResolved(game))
                 throw new InvalidGameStateException("Tech Token must be selected before running the next battle.");
+            else if (currentBattle.isHarkonnenCaptureMustBeResolved(game))
+                throw new InvalidGameStateException("Harkonnen must decide to keep or kill " + currentBattle.getHarkonnenCapturedLeader() + " before running the next battle.");
         }
         if (noBattlesRemaining(game))
             throw new InvalidGameStateException("There are no more battles");

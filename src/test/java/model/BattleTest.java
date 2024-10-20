@@ -1662,6 +1662,58 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#resolveBattleHarkonnenLeaderCapture")
+    class ResolveBattleHarkonnenLeaderCapture {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(harkonnen);
+            game.addFaction(atreides);
+            carthag.addForces("Atreides", 5);
+            battle = new Battle(game, List.of(carthag), List.of(harkonnen, atreides));
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithNoField")
+        class ResolutionWithNoField {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                harkonnenChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader"));
+                assertTrue(harkonnenChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testPublishDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader"));
+                assertTrue(harkonnenChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testResolveAsksHarkonnenAndBlocksAdvance() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(harkonnenChat.getMessages().getFirst().contains("Will you keep or kill"));
+                assertTrue(harkonnenChat.getMessages().getFirst().contains("? ha"));
+                assertEquals(2, harkonnenChat.getChoices().getFirst().size());
+                assertTrue(battle.isHarkonnenCaptureMustBeResolved(game));
+                game.killLeader(atreides, battle.getHarkonnenCapturedLeader());
+                assertFalse(battle.isHarkonnenCaptureMustBeResolved(game));
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolveBattle")
     class ResolveBattle {
         Battle battle;
