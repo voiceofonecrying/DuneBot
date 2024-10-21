@@ -936,6 +936,22 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#lasgunShieldOnHomeworld")
+    class LasgunShieldOnHomeworld {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            harkonnen.addTreacheryCard(lasgun);
+            harkonnen.addTreacheryCard(shield);
+            game.getTerritory(atreides.getHomeworld()).addForces("Harkonnen", 1);
+            battle = new Battle(game, List.of(cielagoNorth_eastSector), List.of(atreides, harkonnen));
+        }
+    }
+
+    @Nested
     @DisplayName("#lasgunShieldDestroysEverythingEvenAcrossStorm")
     class LasgunShieldDestroysEverythingEvenAcrossStorm {
         Battle battle;
