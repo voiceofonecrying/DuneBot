@@ -149,7 +149,7 @@ public class BattleButtons implements Pressable {
             battle.juiceOfSaphoAdd(game, faction);
             discordGame.queueMessage("You will play Juice of Sapho.");
         } else if (event.getComponentId().equals("battle-juice-of-sapho-don't-add")) {
-            battle.juiceOfSaphoDontAdd();
+            battle.juiceOfSaphoDontAdd(game);
             discordGame.queueMessage("You will not play Juice of Sapho.");
         } else {
             throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());

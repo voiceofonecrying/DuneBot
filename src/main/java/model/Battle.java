@@ -1648,8 +1648,9 @@ public class Battle {
         juiceOfSaphoTBD = DecisionStatus.CLOSED;
     }
 
-    public void juiceOfSaphoDontAdd() {
+    public void juiceOfSaphoDontAdd(Game game) throws InvalidGameStateException {
         juiceOfSaphoTBD = DecisionStatus.CLOSED;
+        checkIfResolvable(game);
     }
 
     public void portableSnooperAdd(Game game, Faction faction) throws InvalidGameStateException {
@@ -1729,10 +1730,11 @@ public class Battle {
         game.getTurnSummary().publish(turnSummaryString);
     }
 
-    public void stoneBurnerKill(Game game, Faction faction) {
+    public void stoneBurnerKill(Game game, Faction faction) throws InvalidGameStateException {
         game.getTurnSummary().publish(faction.getEmoji() + " kills both leaders.");
         stoneBurnerTBD = DecisionStatus.CLOSED;
         mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
+        checkIfResolvable(game);
     }
 
     public void removePoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
@@ -1757,9 +1759,10 @@ public class Battle {
         poisonToothTBD = DecisionStatus.CLOSED;
     }
 
-    public void keepPoisonTooth(Game game, Faction faction) {
+    public void keepPoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
         game.getTurnSummary().publish(faction.getEmoji() + " kept Poison Tooth in their Battle Plan.");
         poisonToothTBD = DecisionStatus.CLOSED;
+        checkIfResolvable(game);
     }
 
     public String outcomeDifferences(Game game, boolean wasAggressorLeaderAlive, boolean wasDefenderLeaderAlive, boolean announceStillDead, String oldResolutionString, int combatWaterBefore) throws InvalidGameStateException {
