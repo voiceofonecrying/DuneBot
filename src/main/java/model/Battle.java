@@ -1674,8 +1674,9 @@ public class Battle {
         portableSnooperTBD = DecisionStatus.CLOSED;
     }
 
-    public void portableSnooperDontAdd() {
+    public void portableSnooperDontAdd(Game game) throws InvalidGameStateException {
         portableSnooperTBD = DecisionStatus.CLOSED;
+        checkIfResolvable(game);
     }
 
     public void stoneBurnerNoKill(Game game, Faction faction) throws InvalidGameStateException {

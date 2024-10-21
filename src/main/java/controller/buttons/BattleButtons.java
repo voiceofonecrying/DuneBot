@@ -165,7 +165,7 @@ public class BattleButtons implements Pressable {
             battle.portableSnooperAdd(game, faction);
             discordGame.queueMessage("You will add Portable Snooper to your plan.");
         } else if (event.getComponentId().equals("battle-portable-snooper-don't-add")) {
-            battle.portableSnooperDontAdd();
+            battle.portableSnooperDontAdd(game);
             discordGame.queueMessage("You will not add Portable Snooper.");
         } else {
             throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
