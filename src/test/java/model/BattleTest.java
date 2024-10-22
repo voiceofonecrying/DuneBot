@@ -1665,6 +1665,36 @@ class BattleTest extends DuneTest {
     @DisplayName("#checkIfResolvable")
     class CheckIfResolvable {
         @Nested
+        @DisplayName("#juiceOfSapho")
+        class JuiceOfSapho {
+            Battle battle;
+            BattlePlan bgPlan;
+            TreacheryCard juiceOfSapho;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.addFaction(richese);
+                game.addFaction(bg);
+                richese.addTreacheryCard(cheapHero);
+                juiceOfSapho = richese.getTreacheryCardFromCache("Juice of Sapho");
+                garaKulon.addForces("Richese", 3);
+                garaKulon.addForces("BG", 1);
+                battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
+                bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+            }
+
+            @Test
+            void neitherFactionHasJuiceOfSapho() throws InvalidGameStateException {
+                richese.removeTreacheryCardFromCache(juiceOfSapho);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
+                battle.printBattleResolution(game, false, false);
+                battle.printBattleResolution(game, true, false);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+            }
+        }
+
+        @Nested
         @DisplayName("#portableSnooper")
         class PortableSnooper {
             Battle battle;

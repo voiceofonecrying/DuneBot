@@ -1572,17 +1572,15 @@ public class Battle {
     private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
         String decisionAnnouncement = "";
         if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
-            juiceOfSaphoTBD = DecisionStatus.OPEN;
-            boolean factionHasJuiceOfSapho = faction.hasTreacheryCard("Juice of Sapho");
-//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (!publishToTurnSummary && factionHasJuiceOfSapho)
-//                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
-                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho.\n";
-            if (publishToTurnSummary && factionHasJuiceOfSapho) {
-                List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
-                choices.add(new DuneChoice("battle-juice-of-sapho-don't-add", "No, keep it out"));
-                faction.getChat().publish("Will you play Juice of Sapho to become the aggressor in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            if (faction.hasTreacheryCard("Juice of Sapho")) {
+                juiceOfSaphoTBD = DecisionStatus.OPEN;
+                if (publishToTurnSummary) {
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
+                    choices.add(new DuneChoice("battle-juice-of-sapho-don't-add", "No, keep it out"));
+                    faction.getChat().publish("Will you play Juice of Sapho to become the aggressor in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                } else
+                    decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho.\n";
             }
         }
         return decisionAnnouncement;
@@ -1593,17 +1591,15 @@ public class Battle {
         TreacheryCard opponentWeapon = opponentPlan.getWeapon();
         boolean isPoisonWeapon = opponentWeapon != null && opponentWeapon.isStoppedBySnooper();
         if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null && isPoisonWeapon) {
-            boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
-            if (factionHasPortableSnooper) {
+            if (faction.hasTreacheryCard("Portable Snooper")) {
                 portableSnooperTBD = DecisionStatus.OPEN;
                 if (publishToTurnSummary) {
                     List<DuneChoice> choices = new LinkedList<>();
                     choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
                     choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
                     faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
-                } else {
+                } else
                     decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
-                }
             }
         }
         return decisionAnnouncement;
