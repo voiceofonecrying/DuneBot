@@ -1952,6 +1952,7 @@ class BattleTest extends DuneTest {
                     assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 2 " + Emojis.SPICE + " combat spice.")));
                     assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
                     assertEquals(8, atreides.getSpice());
+                    assertEquals(3, choam.getSpice());
                 }
             }
         }

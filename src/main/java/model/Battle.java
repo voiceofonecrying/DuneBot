@@ -1018,7 +1018,7 @@ public class Battle {
                     choamEligibleSpice -= spiceFromAlly;
                 if (choamEligibleSpice > 1) {
                     if (executeResolution) {
-                        choam.addSpice(choamEligibleSpice, "combat spice");
+                        choam.addSpice(Math.floorDiv(choamEligibleSpice, 2), "combat spice");
                         turnSummary.publish(choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice.");
                     } else
                         resolution += choam.getEmoji() + " gains " + Math.floorDiv(choamEligibleSpice, 2) + " " + Emojis.SPICE + " combat spice\n";
