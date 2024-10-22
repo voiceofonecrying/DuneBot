@@ -1662,6 +1662,51 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#checkIfResolvable")
+    class CheckIfResolvable {
+        @Nested
+        @DisplayName("#portableSnooper")
+        class PortableSnooper {
+            Battle battle;
+            BattlePlan bgPlan;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.addFaction(richese);
+                game.addFaction(bg);
+                richese.addTreacheryCard(cheapHero);
+                richese.addTreacheryCard(chaumas);
+                TreacheryCard portableSnooper = richese.removeTreacheryCardFromCache(richese.getTreacheryCardFromCache("Portable Snooper"));
+                bg.addTreacheryCard(portableSnooper);
+                assertTrue(richese.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper")));
+                garaKulon.addForces("Richese", 3);
+                garaKulon.addForces("BG", 1);
+                battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
+                bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+            }
+
+            @Test
+            void testPortableSnooperNotNeeded() throws InvalidGameStateException {
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
+                battle.printBattleResolution(game, true, false);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+            }
+
+            @Test
+            void testPortableSnooperCanSaveLeader() throws InvalidGameStateException {
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
+                battle.printBattleResolution(game, true, false);
+                battle.checkIfResolvable(game);
+                assertFalse(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+                battle.portableSnooperAdd(game, bg);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolveBattleHarkonnenLeaderCapture")
     class ResolveBattleHarkonnenLeaderCapture {
         Battle battle;

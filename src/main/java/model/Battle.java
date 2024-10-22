@@ -1348,13 +1348,13 @@ public class Battle {
             portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
         }
         if (portableSnooperHasBeenAuctioned)
-            resolutionDecisions += portableSnooperDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
+            resolutionDecisions += portableSnooperDecision(aggressor, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
         resolutionDecisions += stoneBurnerDecision(aggressor, true, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
         resolutionDecisions += poisonToothDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
         if (saphoHasBeenAuctioned)
             resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, publishToTurnSummary);
         if (portableSnooperHasBeenAuctioned)
-            resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, publishToTurnSummary);
+            resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         resolutionDecisions += stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         resolutionDecisions += poisonToothDecision(defender, defenderBattlePlan, publishToTurnSummary);
         if (!resolutionDecisions.isEmpty())
@@ -1588,9 +1588,11 @@ public class Battle {
         return decisionAnnouncement;
     }
 
-    private String portableSnooperDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+    private String portableSnooperDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentPlan, boolean publishToTurnSummary) {
         String decisionAnnouncement = "";
-        if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
+        TreacheryCard opponentWeapon = opponentPlan.getWeapon();
+        boolean isPoisonWeapon = opponentWeapon != null && opponentWeapon.isStoppedBySnooper();
+        if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null && isPoisonWeapon) {
             portableSnooperTBD = DecisionStatus.OPEN;
             boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
 //            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
