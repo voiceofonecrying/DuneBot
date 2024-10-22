@@ -20,6 +20,10 @@ public record TreacheryCard(String name) {
         return Emojis.TREACHERY + " **" + name + "** _" + type() + "_";
     }
 
+    public boolean isStoppedBySnooper() {
+        return type().equals("Weapon - Poison") || name().equals("Chemistry");
+    }
+
     public boolean servesAsShield() {
         return type().equals("Defense - Projectile") || name().equals("Shield Snooper");
     }

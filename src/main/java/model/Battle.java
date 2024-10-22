@@ -1348,13 +1348,13 @@ public class Battle {
             portableSnooperHasBeenAuctioned = richeseFaction.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper"));
         }
         if (portableSnooperHasBeenAuctioned)
-            resolutionDecisions += portableSnooperDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
+            resolutionDecisions += portableSnooperDecision(aggressor, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
         resolutionDecisions += stoneBurnerDecision(aggressor, true, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
         resolutionDecisions += poisonToothDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
         if (saphoHasBeenAuctioned)
-            resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, publishToTurnSummary);
+            resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         if (portableSnooperHasBeenAuctioned)
-            resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, publishToTurnSummary);
+            resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         resolutionDecisions += stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         resolutionDecisions += poisonToothDecision(defender, defenderBattlePlan, publishToTurnSummary);
         if (!resolutionDecisions.isEmpty())
@@ -1569,39 +1569,37 @@ public class Battle {
         return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
     }
 
-    private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+    private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentBattlePlan, boolean publishToTurnSummary) {
         String decisionAnnouncement = "";
         if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
-            juiceOfSaphoTBD = DecisionStatus.OPEN;
-            boolean factionHasJuiceOfSapho = faction.hasTreacheryCard("Juice of Sapho");
-//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (!publishToTurnSummary && factionHasJuiceOfSapho)
-//                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho" + ifTheyHaveIt + ".\n";
-                decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho.\n";
-            if (publishToTurnSummary && factionHasJuiceOfSapho) {
-                List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
-                choices.add(new DuneChoice("battle-juice-of-sapho-don't-add", "No, keep it out"));
-                faction.getChat().publish("Will you play Juice of Sapho to become the aggressor in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            if (faction.hasTreacheryCard("Juice of Sapho") && battlePlan.getDoubleBattleStrength() == opponentBattlePlan.getDoubleBattleStrength()) {
+                juiceOfSaphoTBD = DecisionStatus.OPEN;
+                if (publishToTurnSummary) {
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(new DuneChoice("battle-juice-of-sapho-add", "Yes, add it"));
+                    choices.add(new DuneChoice("battle-juice-of-sapho-don't-add", "No, keep it out"));
+                    faction.getChat().publish("Will you play Juice of Sapho to become the aggressor in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                } else
+                    decisionAnnouncement += faction.getEmoji() + " may play Juice of Sapho.\n";
             }
         }
         return decisionAnnouncement;
     }
 
-    private String portableSnooperDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+    private String portableSnooperDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentPlan, boolean publishToTurnSummary) {
         String decisionAnnouncement = "";
-        if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
-            portableSnooperTBD = DecisionStatus.OPEN;
-            boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
-//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (!publishToTurnSummary && factionHasPortableSnooper)
-//                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
-                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
-            if (publishToTurnSummary && factionHasPortableSnooper) {
-                List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
-                choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
-                faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+        TreacheryCard opponentWeapon = opponentPlan.getWeapon();
+        boolean isPoisonWeapon = opponentWeapon != null && opponentWeapon.isStoppedBySnooper();
+        if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null && isPoisonWeapon) {
+            if (faction.hasTreacheryCard("Portable Snooper")) {
+                portableSnooperTBD = DecisionStatus.OPEN;
+                if (publishToTurnSummary) {
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
+                    choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
+                    faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                } else
+                    decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
             }
         }
         return decisionAnnouncement;
