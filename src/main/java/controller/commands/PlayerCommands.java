@@ -29,6 +29,7 @@ public class PlayerCommands {
                 new SubcommandData("pass", "Pass your turn during a bid."),
                 new SubcommandData("battle-plan", "Submit your plan for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
                 new SubcommandData("battle-plan-kh", "Submit your plan using Kwisatz-Haderach for the current battle").addOptions(combatLeader, weapon, defense, combatDial, combatSpice),
+                new SubcommandData("cancel-battle-plan", "Cancel your plan for the current battle"),
                 new SubcommandData("whisper", "Whisper to another player.").addOptions(message, whisperFaction),
                 new SubcommandData("hold-game", "Prevent the bot from proceeding until mod can resolve your issue.").addOptions(holdgameReason)
         ));
@@ -54,6 +55,7 @@ public class PlayerCommands {
             case "set-auto-pass-entire-turn" -> responseMessage = setAutoPassEntireTurn(event, discordGame, game);
             case "battle-plan" -> responseMessage = battlePlan(event, discordGame, game, false);
             case "battle-plan-kh" -> responseMessage = battlePlanKH(event, discordGame, game);
+            case "cancel-battle-plan" -> responseMessage = cancelBattlePlan(event, discordGame, game);
             case "whisper" -> responseMessage = whisper(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
         }
@@ -76,6 +78,15 @@ public class PlayerCommands {
         String weaponName = discordGame.required(weapon).getAsString();
         String defenseName = discordGame.required(defense).getAsString();
         return currentBattle.setBattlePlan(game, faction, leaderName, kwisatzHaderach, dial, spice, weaponName, defenseName);
+    }
+
+    private static String cancelBattlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Battle currentBattle = game.getBattles().getCurrentBattle();
+        if (currentBattle == null)
+            throw new InvalidGameStateException("There is no current battle.");
+        Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+        currentBattle.removeBattlePlan(faction);
+        return "You have canceled your battle plan.";
     }
 
     private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
