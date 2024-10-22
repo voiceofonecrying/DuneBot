@@ -1593,17 +1593,17 @@ public class Battle {
         TreacheryCard opponentWeapon = opponentPlan.getWeapon();
         boolean isPoisonWeapon = opponentWeapon != null && opponentWeapon.isStoppedBySnooper();
         if (portableSnooperTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null && isPoisonWeapon) {
-            portableSnooperTBD = DecisionStatus.OPEN;
             boolean factionHasPortableSnooper = faction.hasTreacheryCard("Portable Snooper");
-//            String ifTheyHaveIt = publishToTurnSummary ? " if they have it" : "";
-            if (!publishToTurnSummary && factionHasPortableSnooper)
-//                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper" + ifTheyHaveIt + ".\n";
-                decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
-            if (publishToTurnSummary && factionHasPortableSnooper) {
-                List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
-                choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
-                faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+            if (factionHasPortableSnooper) {
+                portableSnooperTBD = DecisionStatus.OPEN;
+                if (publishToTurnSummary) {
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(new DuneChoice("battle-portable-snooper-add", "Yes, add it"));
+                    choices.add(new DuneChoice("battle-portable-snooper-don't-add", "No, keep it out"));
+                    faction.getChat().publish("Will you play Portable Snooper in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                } else {
+                    decisionAnnouncement += faction.getEmoji() + " may play Portable Snooper.\n";
+                }
             }
         }
         return decisionAnnouncement;

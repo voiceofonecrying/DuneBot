@@ -1669,6 +1669,7 @@ class BattleTest extends DuneTest {
         class PortableSnooper {
             Battle battle;
             BattlePlan bgPlan;
+            TreacheryCard portableSnooper;
 
             @BeforeEach
             void setUp() throws InvalidGameStateException {
@@ -1676,9 +1677,7 @@ class BattleTest extends DuneTest {
                 game.addFaction(bg);
                 richese.addTreacheryCard(cheapHero);
                 richese.addTreacheryCard(chaumas);
-                TreacheryCard portableSnooper = richese.removeTreacheryCardFromCache(richese.getTreacheryCardFromCache("Portable Snooper"));
-                bg.addTreacheryCard(portableSnooper);
-                assertTrue(richese.getTreacheryCardCache().stream().noneMatch(c -> c.name().equals("Portable Snooper")));
+                portableSnooper = richese.getTreacheryCardFromCache("Portable Snooper");
                 garaKulon.addForces("Richese", 3);
                 garaKulon.addForces("BG", 1);
                 battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
@@ -1687,6 +1686,8 @@ class BattleTest extends DuneTest {
 
             @Test
             void testPortableSnooperNotNeeded() throws InvalidGameStateException {
+                richese.removeTreacheryCardFromCache(portableSnooper);
+                bg.addTreacheryCard(portableSnooper);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
                 battle.printBattleResolution(game, true, false);
                 battle.checkIfResolvable(game);
@@ -1695,11 +1696,23 @@ class BattleTest extends DuneTest {
 
             @Test
             void testPortableSnooperCanSaveLeader() throws InvalidGameStateException {
+                richese.removeTreacheryCardFromCache(portableSnooper);
+                bg.addTreacheryCard(portableSnooper);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
                 battle.printBattleResolution(game, true, false);
                 battle.checkIfResolvable(game);
                 assertFalse(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
                 battle.portableSnooperAdd(game, bg);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+            }
+
+            @Test
+            void neitherFactionHasPortableSnooper() throws InvalidGameStateException {
+                richese.removeTreacheryCardFromCache(portableSnooper);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
+                battle.printBattleResolution(game, false, false);
+                battle.printBattleResolution(game, true, false);
                 battle.checkIfResolvable(game);
                 assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
             }
