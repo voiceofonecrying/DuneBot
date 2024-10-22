@@ -315,6 +315,24 @@ public class Battle {
         faction.getLeaders().stream().filter(l -> l.getBattleTerritoryName() != null && l.getBattleTerritoryName().equals(getWholeTerritoryName())).forEach(l -> l.setBattleTerritoryName(null));
     }
 
+    public void removeBattlePlan(Faction faction) throws InvalidGameStateException {
+        if (!getAggressorName().equals(faction.getName()) && !getDefenderName().equals(faction.getName()))
+            throw new InvalidGameStateException("You are not in the current battle.");
+
+        removePreviouslySubmittedLeaderFromTerritory(faction);
+
+        boolean planIsForAggressor = false;
+        if (getAggressorName().equals(faction.getName()))
+            planIsForAggressor = true;
+        else if (!getDefenderName().equals(faction.getName()))
+            throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
+
+        if (planIsForAggressor)
+            aggressorBattlePlan = null;
+        else
+            defenderBattlePlan = null;
+    }
+
     public String setBattlePlan(Game game, Faction faction, String leaderName, boolean kwisatzHaderach, String dial, int spice, String weaponName, String defenseName) throws InvalidGameStateException {
         if (!getAggressorName().equals(faction.getName()) && !getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException("You are not in the current battle.");
