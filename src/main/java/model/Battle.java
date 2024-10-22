@@ -1352,7 +1352,7 @@ public class Battle {
         resolutionDecisions += stoneBurnerDecision(aggressor, true, aggressorBattlePlan, defenderBattlePlan, publishToTurnSummary);
         resolutionDecisions += poisonToothDecision(aggressor, aggressorBattlePlan, publishToTurnSummary);
         if (saphoHasBeenAuctioned)
-            resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, publishToTurnSummary);
+            resolutionDecisions += juiceOfSaphoDecision(defender, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         if (portableSnooperHasBeenAuctioned)
             resolutionDecisions += portableSnooperDecision(defender, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
         resolutionDecisions += stoneBurnerDecision(defender, false, defenderBattlePlan, aggressorBattlePlan, publishToTurnSummary);
@@ -1569,10 +1569,10 @@ public class Battle {
         return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
     }
 
-    private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, boolean publishToTurnSummary) {
+    private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentBattlePlan, boolean publishToTurnSummary) {
         String decisionAnnouncement = "";
         if (juiceOfSaphoTBD != DecisionStatus.CLOSED && battlePlan.getDefense() == null) {
-            if (faction.hasTreacheryCard("Juice of Sapho")) {
+            if (faction.hasTreacheryCard("Juice of Sapho") && battlePlan.getDoubleBattleStrength() == opponentBattlePlan.getDoubleBattleStrength()) {
                 juiceOfSaphoTBD = DecisionStatus.OPEN;
                 if (publishToTurnSummary) {
                     List<DuneChoice> choices = new LinkedList<>();

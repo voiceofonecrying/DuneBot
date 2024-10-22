@@ -1681,11 +1681,33 @@ class BattleTest extends DuneTest {
                 garaKulon.addForces("BG", 1);
                 battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
                 bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                richese.removeTreacheryCardFromCache(juiceOfSapho);
+            }
+
+            @Test
+            void testJuiceOfSaphoNotNeeded() throws InvalidGameStateException {
+                bg.addTreacheryCard(juiceOfSapho);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
+                battle.printBattleResolution(game, true, false);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+            }
+
+            @Test
+            void testPortableSnooperCanSaveLeader() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                bg.addTreacheryCard(juiceOfSapho);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+                battle.printBattleResolution(game, true, false);
+                battle.checkIfResolvable(game);
+                assertFalse(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+                battle.juiceOfSaphoAdd(game, bg);
+                battle.checkIfResolvable(game);
+                assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
             }
 
             @Test
             void neitherFactionHasJuiceOfSapho() throws InvalidGameStateException {
-                richese.removeTreacheryCardFromCache(juiceOfSapho);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
                 battle.printBattleResolution(game, false, false);
                 battle.printBattleResolution(game, true, false);
@@ -1712,11 +1734,11 @@ class BattleTest extends DuneTest {
                 garaKulon.addForces("BG", 1);
                 battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
                 bgPlan = battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                richese.removeTreacheryCardFromCache(portableSnooper);
             }
 
             @Test
             void testPortableSnooperNotNeeded() throws InvalidGameStateException {
-                richese.removeTreacheryCardFromCache(portableSnooper);
                 bg.addTreacheryCard(portableSnooper);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, null, null);
                 battle.printBattleResolution(game, true, false);
@@ -1726,7 +1748,6 @@ class BattleTest extends DuneTest {
 
             @Test
             void testPortableSnooperCanSaveLeader() throws InvalidGameStateException {
-                richese.removeTreacheryCardFromCache(portableSnooper);
                 bg.addTreacheryCard(portableSnooper);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
                 battle.printBattleResolution(game, true, false);
@@ -1739,7 +1760,6 @@ class BattleTest extends DuneTest {
 
             @Test
             void neitherFactionHasPortableSnooper() throws InvalidGameStateException {
-                richese.removeTreacheryCardFromCache(portableSnooper);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
                 battle.printBattleResolution(game, false, false);
                 battle.printBattleResolution(game, true, false);
