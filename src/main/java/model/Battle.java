@@ -1056,14 +1056,7 @@ public class Battle {
                 if (executeResolution) {
                     rihaniDeciphererFaction = faction.getName();
                     rihaniDeciphererExectedTraitors = faction.getTraitorHand().size();
-                    Collections.shuffle(traitorDeck);
-                    faction.addTraitorCard(traitorDeck.pop());
-                    faction.addTraitorCard(traitorDeck.pop());
-                    faction.getChat().publish("You must discard two Traitors. " + faction.getPlayer());
-                    List<DuneChoice> choices = faction.getTraitorHand().stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
-                    faction.getChat().publish("First discard:", choices);
-                    faction.getChat().publish("Second discard:", choices);
-                    game.getTurnSummary().publish(faction.getEmoji() + " has drawn 2 Traitor cards for Rihani Decipherer.");
+                    faction.drawTwoTraitorsAndMustDiscardTwo("Rihani Decipherer");
                 } else
                     resolution += faction.getEmoji() + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
             }

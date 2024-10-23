@@ -1777,4 +1777,48 @@ class GameTest extends DuneTest {
             assertFalse(turnSummary.getMessages().contains(advisorFlipMessage));
         }
     }
+
+    @Nested
+    @DisplayName("#harkonnenSecretAlly")
+    class HarkonnenSecretAlly {
+        NexusCard harkNexusCard;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            harkNexusCard = game.getNexusDeck().stream().filter(c -> c.name().equals("Harkonnen")).findFirst().orElseThrow();
+        }
+
+        @Test
+        void testNobodyHasHarkonnenNexusCard() {
+            assertThrows(InvalidGameStateException.class, () -> game.harkonnenSecretAlly());
+        }
+
+        @Test
+        void testAtreidesHasHarkonnenNexusCard() {
+            atreides.addTraitorCard(game.getTraitorDeck().pop());
+            atreides.setNexusCard(harkNexusCard);
+            assertDoesNotThrow(() -> game.harkonnenSecretAlly());
+            assertEquals(Emojis.ATREIDES + " has drawn 2 Traitor cards for " + Emojis.HARKONNEN + " Secret Ally.", turnSummary.getMessages().getLast());
+            assertEquals("You must discard two Traitors. at", atreidesChat.getMessages().getFirst());
+            assertEquals("First discard:", atreidesChat.getMessages().get(1));
+            assertEquals("Second discard:", atreidesChat.getMessages().getLast());
+            assertEquals(3, atreidesChat.getChoices().getFirst().size());
+            assertEquals(3, atreidesChat.getChoices().getLast().size());
+        }
+
+        @Test
+        void testAtreidesHasHarkonnenNexusCardHarkonnenInTheGame() {
+            game.addFaction(harkonnen);
+            atreides.setNexusCard(harkNexusCard);
+            assertThrows(InvalidGameStateException.class, () -> game.harkonnenSecretAlly());
+        }
+
+        @Test
+        void testHarkonnenHasHarkonnenNexusCard() {
+            game.addFaction(harkonnen);
+            harkonnen.setNexusCard(harkNexusCard);
+            assertThrows(InvalidGameStateException.class, () -> game.harkonnenSecretAlly());
+        }
+    }
 }
