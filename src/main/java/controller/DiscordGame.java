@@ -814,8 +814,18 @@ public class DiscordGame {
         return event.getOption(optionName);
     }
 
+    /**
+     * Gets the OptionMapping for the given OptionData, or null if the event is not a SlashCommandInteractionEvent
+     * (like a button press).
+     * @param optionData The OptionData to get the OptionMapping for.
+     * @return The value for the option
+     */
     public OptionMapping optional(OptionData optionData) {
-        return optional(optionData, (SlashCommandInteractionEvent) event);
+        if (event instanceof SlashCommandInteractionEvent slashCommandInteractionEvent) {
+            return optional(optionData, slashCommandInteractionEvent);
+        } else {
+            return null;
+        }
     }
 
     public RichCustomEmoji getEmoji(String emojiName) {
