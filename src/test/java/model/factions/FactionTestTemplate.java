@@ -579,6 +579,18 @@ abstract class FactionTestTemplate {
         assertEquals(" for bidding and shipping!", getFaction().getSpiceSupportPhasesString());
     }
 
+    @Test
+    void testDrawTwoTraitorsAndMustDiscardTwo() {
+        faction.addTraitorCard(game.getTraitorDeck().pop());
+        faction.drawTwoTraitorsAndMustDiscardTwo("testing purposes");
+        assertEquals("You must discard two Traitors. player", chat.getMessages().getFirst());
+        assertEquals("First discard:", chat.getMessages().get(1));
+        assertEquals("Second discard:", chat.getMessages().getLast());
+        assertEquals(3, chat.getChoices().getFirst().size());
+        assertEquals(3, chat.getChoices().getLast().size());
+        assertEquals(faction.getEmoji() + " has drawn 2 Traitor cards for testing purposes.", turnSummary.getMessages().getLast());
+    }
+
     @Nested
     @DisplayName("#removeForces")
     class RemoveForces {

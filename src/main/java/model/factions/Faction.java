@@ -867,6 +867,10 @@ public class Faction {
         this.nexusCard = nexusCard;
     }
 
+    public boolean hasNexusCard(String nexusCardName) {
+        return nexusCard != null && nexusCard.name().equals(nexusCardName);
+    }
+
     public boolean isGraphicDisplay() {
         return graphicDisplay;
     }
@@ -1107,6 +1111,18 @@ public class Faction {
         ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
         game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
+    public void drawTwoTraitorsAndMustDiscardTwo(String reason) {
+        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
+        Collections.shuffle(traitorDeck);
+        addTraitorCard(traitorDeck.pop());
+        addTraitorCard(traitorDeck.pop());
+        chat.publish("You must discard two Traitors. " + player);
+        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
+        chat.publish("First discard:", choices);
+        chat.publish("Second discard:", choices);
+        game.getTurnSummary().publish(emoji + " has drawn 2 Traitor cards for " + reason + ".");
     }
 
     public int countFreeStarredRevival() {
