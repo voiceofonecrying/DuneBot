@@ -692,7 +692,7 @@ public class Battle {
                     }
                 }
                 if (isLasgunShieldExplosion) {
-                    int homeworldLasgunShieldLosses = 0;
+                    int homeworldLasgunShieldLosses;
                     if (faction.getHomeworld().equals(wholeTerritoryName)) {
                         homeworldLasgunShieldLosses = faction.homeworldDialAdvantage(game, game.getTerritory(wholeTerritoryName));
                         if (regularForcesDialed + specialForcesDialed >= homeworldLasgunShieldLosses) {
