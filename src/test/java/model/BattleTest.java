@@ -939,41 +939,89 @@ class BattleTest extends DuneTest {
     @DisplayName("#lasgunShieldOnHomeworld")
     class LasgunShieldOnHomeworld {
         Battle battle;
-        Territory caladan;
 
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
+            game.addFaction(fremen);
             game.addFaction(harkonnen);
             harkonnen.addTreacheryCard(lasgun);
             harkonnen.addTreacheryCard(shield);
             harkonnen.addTreacheryCard(cheapHero);
-            caladan = game.getTerritory(atreides.getHomeworld());
-            caladan.addForces("Harkonnen", 1);
-            battle = new Battle(game, List.of(caladan), List.of(atreides, harkonnen));
-            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
         }
 
-        @Test
-        void testAtreidesLosesOnly3ToLasgunShieldOnCaladan() throws InvalidGameStateException {
-            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
-            battle.printBattleResolution(game, false, true);
-            assertEquals(8, caladan.getForceStrength("Atreides"));
+        @Nested
+        @DisplayName("#atreidesOnCaladan")
+        class AtreidesOnCaladan {
+            Territory caladan;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                caladan = game.getTerritory(atreides.getHomeworld());
+                caladan.addForces("Harkonnen", 1);
+                battle = new Battle(game, List.of(caladan), List.of(atreides, harkonnen));
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+            }
+
+            @Test
+            void testAtreidesLosesOnly2ToLasgunShieldOnCaladan() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(8, caladan.getForceStrength("Atreides"));
+            }
+
+            @Test
+            void testAtreidesLosesOnly2ToLasgunShieldOnCaladanDialedAway1() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(8, caladan.getForceStrength("Atreides"));
+            }
+
+            @Test
+            void testAtreidesLosesDialToLasgunShieldOnCaladanDialedAway4() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(6, caladan.getForceStrength("Atreides"));
+            }
         }
 
-        @Test
-        void testAtreidesLosesOnly3ToLasgunShieldOnCaladanDialedAway1() throws InvalidGameStateException {
-            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
-            battle.printBattleResolution(game, false, true);
-            assertEquals(8, caladan.getForceStrength("Atreides"));
-        }
+        @Nested
+        @DisplayName("#fremenOnSouthernHemisphere")
+        class FremenOnSouthernHemisphere {
+            Territory southernHemisphere;
 
-        @Test
-        void testAtreidesLosesOnly3ToLasgunShieldOnCaladanDialedAway4() throws InvalidGameStateException {
-            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
-            battle.printBattleResolution(game, false, true);
-            assertEquals(6, caladan.getForceStrength("Atreides"));
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                southernHemisphere = game.getTerritory(fremen.getHomeworld());
+                southernHemisphere.addForces("Harkonnen", 1);
+                battle = new Battle(game, List.of(southernHemisphere), List.of(fremen, harkonnen));
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+            }
+
+            @Test
+            void testFremenLosesOnly2ToLasgunShieldOnCaladan() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 0, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(15, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(3, southernHemisphere.getForceStrength("Fremen*"));
+            }
+
+            @Test
+            void testFremenLosesOnly2ToLasgunShieldOnCaladanDialedAway1Fedaykin() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 2, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(16, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(2, southernHemisphere.getForceStrength("Fremen*"));
+            }
+
+            @Test
+            void testFremenLosesDialToLasgunShieldOnCaladanDialedAway2Fedaykin1Force() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 4, true, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(16, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(1, southernHemisphere.getForceStrength("Fremen*"));
+            }
         }
     }
 

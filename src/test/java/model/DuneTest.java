@@ -68,6 +68,7 @@ public class DuneTest {
     Leader alia;
     Leader zoal;
     Leader wykk;
+    Leader chani;
     Leader burseg;
     Leader bashar;
     Leader feydRautha;
@@ -200,6 +201,7 @@ public class DuneTest {
         alia = bg.getLeader("Alia").orElseThrow();
         zoal = bt.getLeader("Zoal").orElseThrow();
         wykk = bt.getLeader("Wykk").orElseThrow();
+        chani = fremen.getLeader("Chani").orElseThrow();
         burseg = emperor.getLeader("Burseg").orElseThrow();
         bashar = emperor.getLeader("Bashar").orElseThrow();
         feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
