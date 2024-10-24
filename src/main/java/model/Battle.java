@@ -1856,6 +1856,8 @@ public class Battle {
             Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
             if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
                 manualResolutions += "\n- Caladan homeworld advantage";
+            if (aggressorBattlePlan.getLeader() != null && aggressorBattlePlan.getLeader().equals("Auditor") || defenderBattlePlan.getLeader() != null && defenderBattlePlan.getLeader().equals("Auditor"))
+                manualResolutions += "\n- Auditor";
             if (!manualResolutions.isEmpty())
                 resolveString += "\nThe following still must be executed manually:" + manualResolutions;
             else
