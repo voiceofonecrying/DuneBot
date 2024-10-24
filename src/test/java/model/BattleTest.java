@@ -939,15 +939,41 @@ class BattleTest extends DuneTest {
     @DisplayName("#lasgunShieldOnHomeworld")
     class LasgunShieldOnHomeworld {
         Battle battle;
+        Territory caladan;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             harkonnen.addTreacheryCard(lasgun);
             harkonnen.addTreacheryCard(shield);
-            game.getTerritory(atreides.getHomeworld()).addForces("Harkonnen", 1);
-            battle = new Battle(game, List.of(cielagoNorth_eastSector), List.of(atreides, harkonnen));
+            harkonnen.addTreacheryCard(cheapHero);
+            caladan = game.getTerritory(atreides.getHomeworld());
+            caladan.addForces("Harkonnen", 1);
+            battle = new Battle(game, List.of(caladan), List.of(atreides, harkonnen));
+            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+        }
+
+        @Test
+        void testAtreidesLosesOnly3ToLasgunShieldOnCaladan() throws InvalidGameStateException {
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(8, caladan.getForceStrength("Atreides"));
+        }
+
+        @Test
+        void testAtreidesLosesOnly3ToLasgunShieldOnCaladanDialedAway1() throws InvalidGameStateException {
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(8, caladan.getForceStrength("Atreides"));
+        }
+
+        @Test
+        void testAtreidesLosesOnly3ToLasgunShieldOnCaladanDialedAway4() throws InvalidGameStateException {
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(6, caladan.getForceStrength("Atreides"));
         }
     }
 
