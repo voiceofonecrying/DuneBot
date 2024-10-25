@@ -430,7 +430,7 @@ public class ShowCommands {
             }
         }
 
-        if (game.getPhase() == 4){
+        if (game.isInBiddingPHase()) {
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass-" + faction.getName(), "Pass One Time")).build());
             if (!faction.isAutoBid()) {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass-" + faction.getName(), "Enable Auto-Pass")).build());

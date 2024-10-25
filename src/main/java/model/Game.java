@@ -381,6 +381,10 @@ public class Game {
             TechToken.collectSpice(this, TechToken.SPICE_PRODUCTION);
     }
 
+    public boolean isInBiddingPHase() {
+        return bidding != null;
+    }
+
     public Bidding getBidding() throws InvalidGameStateException {
         if (bidding == null) throw new InvalidGameStateException("Game is not in bidding phase.");
         return bidding;
