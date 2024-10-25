@@ -716,14 +716,13 @@ public class Battle {
                     else if (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))
                         homeworldLasgunShieldLosses = faction.homeworldDialAdvantage(game, game.getTerritory(wholeTerritoryName));
                     if (homeworldLasgunShieldLosses != 0) {
-                        if (regularForcesDialed + specialForcesDialed >= homeworldLasgunShieldLosses) {
-                            regularForcesTotal = regularForcesDialed;
+                        if (regularForcesTotal - regularForcesDialed >= homeworldLasgunShieldLosses) {
+                            regularForcesTotal = regularForcesDialed + homeworldLasgunShieldLosses;
                             specialForcesTotal = specialForcesDialed;
-                        } else if (regularForcesTotal + specialForcesDialed > homeworldLasgunShieldLosses) {
-                            specialForcesTotal = specialForcesDialed;
-                            regularForcesTotal = homeworldLasgunShieldLosses - specialForcesDialed;
-                        } else if (regularForcesTotal + specialForcesTotal > homeworldLasgunShieldLosses) {
-                            specialForcesTotal = homeworldLasgunShieldLosses - regularForcesTotal;
+                        } else {
+                            int regularsLostToLasgunShield = regularForcesTotal - regularForcesDialed;
+                            if (specialForcesTotal - specialForcesDialed > homeworldLasgunShieldLosses - regularsLostToLasgunShield)
+                                specialForcesTotal = specialForcesDialed + homeworldLasgunShieldLosses - regularsLostToLasgunShield;
                         }
                     }
                 }
