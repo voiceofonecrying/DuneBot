@@ -698,14 +698,34 @@ public class Battle {
                     }
                 }
             }
-            if (!opponentCallsTraitor && canHarassAndWithdraw(faction, weapon, defense)) {
-                if (faction instanceof EcazFaction && hasEcazAndAlly()) {
-                    ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
-                    resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
-                } else {
-                    resolution += harassAndWithdraw(game, faction, regularForcesNotDialed, specialForcesNotDialed, executeResolution);
-                    regularForcesTotal -= regularForcesNotDialed;
-                    specialForcesTotal -= specialForcesNotDialed;
+            if (!opponentCallsTraitor) {
+                if (canHarassAndWithdraw(faction, weapon, defense)) {
+                    if (faction instanceof EcazFaction && hasEcazAndAlly()) {
+                        ecazForcesWithdrawn = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
+                        resolution += harassAndWithdraw(game, faction, ecazForcesWithdrawn, 0, executeResolution);
+                    } else {
+                        resolution += harassAndWithdraw(game, faction, regularForcesNotDialed, specialForcesNotDialed, executeResolution);
+                        regularForcesTotal -= regularForcesNotDialed;
+                        specialForcesTotal -= specialForcesNotDialed;
+                    }
+                }
+                if (isLasgunShieldExplosion) {
+                    int homeworldLasgunShieldLosses = 0;
+                    if (faction.getHomeworld().equals(wholeTerritoryName))
+                        homeworldLasgunShieldLosses = faction.homeworldDialAdvantage(game, game.getTerritory(wholeTerritoryName));
+                    else if (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))
+                        homeworldLasgunShieldLosses = faction.homeworldDialAdvantage(game, game.getTerritory(wholeTerritoryName));
+                    if (homeworldLasgunShieldLosses != 0) {
+                        if (regularForcesDialed + specialForcesDialed >= homeworldLasgunShieldLosses) {
+                            regularForcesTotal = regularForcesDialed;
+                            specialForcesTotal = specialForcesDialed;
+                        } else if (regularForcesTotal + specialForcesDialed > homeworldLasgunShieldLosses) {
+                            specialForcesTotal = specialForcesDialed;
+                            regularForcesTotal = homeworldLasgunShieldLosses - specialForcesDialed;
+                        } else if (regularForcesTotal + specialForcesTotal > homeworldLasgunShieldLosses) {
+                            specialForcesTotal = homeworldLasgunShieldLosses - regularForcesTotal;
+                        }
+                    }
                 }
             }
             resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
@@ -1849,6 +1869,8 @@ public class Battle {
             Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
             if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
                 manualResolutions += "\n- Caladan homeworld advantage";
+            if (aggressorBattlePlan.getLeader() != null && aggressorBattlePlan.getLeader().getName().equals("Auditor") || defenderBattlePlan.getLeader() != null && defenderBattlePlan.getLeader().getName().equals("Auditor"))
+                manualResolutions += "\n- Auditor";
             if (!manualResolutions.isEmpty())
                 resolveString += "\nThe following still must be executed manually:" + manualResolutions;
             else

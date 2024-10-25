@@ -936,6 +936,138 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#lasgunShieldOnHomeworld")
+    class LasgunShieldOnHomeworld {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(fremen);
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            harkonnen.addTreacheryCard(lasgun);
+            harkonnen.addTreacheryCard(shield);
+            harkonnen.addTreacheryCard(cheapHero);
+        }
+
+        @Nested
+        @DisplayName("#atreidesOnCaladan")
+        class AtreidesOnCaladan {
+            Territory caladan;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                caladan = game.getTerritory(atreides.getHomeworld());
+                caladan.addForces("Harkonnen", 1);
+                battle = new Battle(game, List.of(caladan), List.of(atreides, harkonnen));
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+            }
+
+            @Test
+            void testAtreidesLosesOnly2ToLasgunShieldOnCaladan() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(8, caladan.getForceStrength("Atreides"));
+            }
+
+            @Test
+            void testAtreidesLosesOnly2ToLasgunShieldOnCaladanDialedAway1() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(8, caladan.getForceStrength("Atreides"));
+            }
+
+            @Test
+            void testAtreidesLosesDialToLasgunShieldOnCaladanDialedAway4() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 2, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(6, caladan.getForceStrength("Atreides"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#fremenOnSouthernHemisphere")
+        class FremenOnSouthernHemisphere {
+            Territory southernHemisphere;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                southernHemisphere = game.getTerritory(fremen.getHomeworld());
+                southernHemisphere.addForces("Harkonnen", 1);
+                battle = new Battle(game, List.of(southernHemisphere), List.of(fremen, harkonnen));
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+            }
+
+            @Test
+            void testFremenLosesOnly2ToLasgunShieldOnSouthernHemisphere() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 0, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(15, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(3, southernHemisphere.getForceStrength("Fremen*"));
+            }
+
+            @Test
+            void testFremenLosesOnly2ToLasgunShieldOnSouthernHemisphereDialedAway1Fedaykin() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 2, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(16, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(2, southernHemisphere.getForceStrength("Fremen*"));
+            }
+
+            @Test
+            void testFremenLosesDialToLasgunShieldOnSouthernHemisphereDialedAway2Fedaykin1Force() throws InvalidGameStateException {
+                battle.setBattlePlan(game, fremen, chani, null, false, 4, true, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(16, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(1, southernHemisphere.getForceStrength("Fremen*"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#emperorOnSalusaSecundus")
+        class EmperorOnSalusaSecundus {
+            Territory salusaSecundus;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
+                salusaSecundus.addForces("Harkonnen", 1);
+                salusaSecundus.addForces("Emperor", 3);
+                battle = new Battle(game, List.of(salusaSecundus), List.of(emperor, harkonnen));
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, lasgun, shield);
+            }
+
+            @Test
+            void testFremenLosesOnly3ToLasgunShieldOnSalusaSecundus() throws InvalidGameStateException {
+                battle.setBattlePlan(game, emperor, bashar, null, false, 0, false, 0, null, null);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, salusaSecundus.getForceStrength("Emperor"));
+                assertEquals(5, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testFremenLosesOnly3ToLasgunShieldOnSalusaSecundusDialedAway1Sardaukar() throws InvalidGameStateException {
+                battle.setBattlePlan(game, emperor, bashar, null, false, 1, false, 0, null, null);
+                battle.updateTroopsDialed(game, "Emperor", 0, 1);
+                battle.printBattleResolution(game, false, true);
+//                assertEquals(1, salusaSecundus.getForceStrength("Emperor"));
+                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
+            }
+
+            @Test
+            void testFremenLosesDialToLasgunShieldOnSalusaSecundusDialedAway1Sardaukar3Force() throws InvalidGameStateException {
+                battle.setBattlePlan(game, emperor, bashar, null, false, 2, true, 0, null, null);
+                battle.updateTroopsDialed(game, "Emperor", 3, 1);
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, salusaSecundus.getForceStrength("Emperor"));
+                assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#lasgunShieldDestroysEverythingEvenAcrossStorm")
     class LasgunShieldDestroysEverythingEvenAcrossStorm {
         Battle battle;
