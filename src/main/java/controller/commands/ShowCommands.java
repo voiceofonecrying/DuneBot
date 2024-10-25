@@ -443,7 +443,7 @@ public class ShowCommands {
             } else {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass-" + faction.getName(), "Disable Auto-Pass (Whole Round)")).build());
             }
-            StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,1).setDefaultValues("0");
+            StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
             int maxPossibleBid = faction.getSpice();
             if (faction.hasAlly()) {
                 maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();

@@ -62,13 +62,23 @@ public class CommandManager extends ListenerAdapter {
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         if (event.getComponentId().startsWith("bidding-menu-")) {
-            event.reply("You chose " + event.getValues().getFirst()).queue();
-            int bid = Integer.parseInt(event.getInteraction().getSelectedOptions().getFirst().getValue());
+            event.reply("Your bid has been submitted.").queue();
+            int bid = 0;
+            boolean useExact = true;
+            if (event.getInteraction().getSelectedOptions().size() == 2) {
+                if (!event.getInteraction().getSelectedOptions().get(0).getValue().equals("auto-increment")) {
+                    CommandCompletionGuard.decrementCommandCount();
+                    event.getMessageChannel().sendMessage("You cannot select two bids.").queue();
+                    return;
+                }
+                bid = Integer.parseInt(event.getInteraction().getSelectedOptions().get(1).getValue());
+                useExact = false;
+            } else bid = Integer.parseInt(event.getInteraction().getSelectedOptions().getFirst().getValue());
             try {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
                 Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-                PlayerCommands.bid(event, discordGame, game, faction.isUseExactBid(), bid);
+                PlayerCommands.bid(event, discordGame, game, useExact, bid);
                 discordGame.pushGame();
                 showFactionInfo(faction.getName(), discordGame);
                 discordGame.sendAllMessages();
