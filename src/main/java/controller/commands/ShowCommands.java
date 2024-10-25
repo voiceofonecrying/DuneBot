@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.csv.CSVFormat;
@@ -52,13 +53,13 @@ public class ShowCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
             case "board" -> showBoard(discordGame, game);
-            case "faction-info" -> showFactionInfo(discordGame);
+            case "faction-info" -> showFactionInfoHandler(discordGame);
             case "front-of-shields" -> refreshFrontOfShieldInfo(discordGame, game);
         }
     }
@@ -68,9 +69,11 @@ public class ShowCommands {
         discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
         game.setUpdated(UpdateType.MAP);
     }
+    public static void showFactionInfoHandler(DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+        showFactionInfo(discordGame.required(faction).getAsString(), discordGame);
+    }
 
-    public static void showFactionInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
-        String factionName = discordGame.required(faction).getAsString();
+    public static void showFactionInfo(String factionName, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (discordGame.getGame().getFaction(factionName).isGraphicDisplay())
             drawFactionInfo(discordGame, discordGame.getGame(), factionName);
         else writeFactionInfo(discordGame, factionName);
@@ -93,7 +96,7 @@ public class ShowCommands {
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
-    public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException {
+    public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException, InvalidGameStateException {
         if (game.getMute()) return;
 
         MessageChannel infoChannel = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
@@ -348,7 +351,7 @@ public class ShowCommands {
         sendInfoButtons(game, discordGame, faction);
     }
 
-    public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
+    public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (faction.isGraphicDisplay())
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("text", "Try Text mode. It's easier to read!")).build());
@@ -440,6 +443,19 @@ public class ShowCommands {
             } else {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass-" + faction.getName(), "Disable Auto-Pass (Whole Round)")).build());
             }
+            StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,1).setDefaultValues("0");
+            int maxPossibleBid = faction.getSpice();
+            if (faction.hasAlly()) {
+                maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
+            }
+            for (int i=game.getBidding().getCurrentBid() + 1; i<=Math.min(maxPossibleBid, 25 + game.getBidding().getCurrentBid()); i++) {
+                String optionString = String.valueOf(i);
+                if (i == game.getFaction(faction.getAlly()).getSpiceForAlly()) {
+                    optionString += " (Ally support limit)";
+                }
+                menu.addOption(optionString, String.valueOf(i));
+            }
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(menu.build()).build());
         }
     }
 
@@ -900,7 +916,7 @@ public class ShowCommands {
         return rotated;
     }
 
-    public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException, IOException {
+    public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         writeFactionInfo(discordGame, discordGame.getGame().getFaction(factionName));
     }
 
@@ -912,7 +928,7 @@ public class ShowCommands {
      * @throws ChannelNotFoundException if the channel is not found
      * @throws IOException              if the image cannot be written
      */
-    public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException {
+    public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         MessageChannel infoChannel = discordGame.getTextChannel(faction.getName().toLowerCase() + "-info");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(infoChannel).complete();
 
@@ -1047,7 +1063,7 @@ public class ShowCommands {
         }
     }
 
-    public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    public static void refreshChangedInfo(DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Game game = discordGame.getGame();
         boolean frontOfShieldModified = false;
         for (Faction faction : game.getFactions()) {

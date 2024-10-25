@@ -652,6 +652,10 @@ public class Bidding {
         return bidCardNumber;
     }
 
+    public int getCurrentBid() {
+        return currentBid;
+    }
+
     public int getNumCardsForBid() {
         return numCardsForBid;
     }

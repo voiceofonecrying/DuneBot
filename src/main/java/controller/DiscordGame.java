@@ -454,9 +454,12 @@ public class DiscordGame {
             SlashCommandInteractionEvent slashCommandInteractionEvent = (SlashCommandInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Command: `" + slashCommandInteractionEvent.getCommandString() + "`";
             queueMessage("bot-data", message, fileUpload);
-        } else {
+        } else if (getEvent() instanceof ButtonInteractionEvent){
             ButtonInteractionEvent buttonInteractionEvent = (ButtonInteractionEvent) event;
             String message = getEvent() == null ? "Manual update" : "Button Pressed: `" + buttonInteractionEvent.getComponentId() + " pressed by " + Objects.requireNonNull(buttonInteractionEvent.getMember()).getUser().getName() + "`";
+            queueMessage("bot-data", message, fileUpload);
+        } else {
+            String message = getEvent() == null ? "Dropdown menu update" : "a bid was entered by " + Objects.requireNonNull(event.getMember()).getUser().getName();
             queueMessage("bot-data", message, fileUpload);
         }
     }

@@ -6,6 +6,7 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import controller.DiscordGame;
 import model.factions.Faction;
+import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -49,7 +50,7 @@ public class PlayerCommands {
 
         String responseMessage = "";
         switch (command) {
-            case "bid" -> responseMessage = bid(event, discordGame, game);
+            case "bid" -> responseMessage = bid(event, discordGame, game, discordGame.required(incrementOrExact).getAsBoolean(), discordGame.required(amount).getAsInt());
             case "pass" -> responseMessage = pass(event, discordGame, game);
             case "set-auto-pass" -> responseMessage = setAutoPass(event, discordGame, game);
             case "set-auto-pass-entire-turn" -> responseMessage = setAutoPassEntireTurn(event, discordGame, game);
@@ -106,10 +107,8 @@ public class PlayerCommands {
         return game.getBidding().setAutoPassEntireTurn(game, faction, enabled);
     }
 
-    private static String bid(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static String bid(GenericInteractionCreateEvent event, DiscordGame discordGame, Game game, boolean useExact, int bidAmount) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        boolean useExact = discordGame.required(incrementOrExact).getAsBoolean();
-        int bidAmount = discordGame.required(amount).getAsInt();
         Boolean newOutbidAllySetting = null;
         if (discordGame.optional(outbidAlly) != null)
             newOutbidAllySetting = discordGame.optional(outbidAlly).getAsBoolean();
