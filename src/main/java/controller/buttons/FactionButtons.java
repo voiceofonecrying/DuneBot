@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import controller.channels.FactionWhispers;
 import controller.commands.SetupCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -13,6 +14,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +32,7 @@ public class FactionButtons {
         else if (event.getComponentId().startsWith("play-harvester-")) harvester(event, game, discordGame);
         else if (event.getComponentId().startsWith("atreides-ally-battle-prescience-")) allyBattlePrescience(event, game, discordGame);
         else if (event.getComponentId().startsWith("atreides-ally-treachery-prescience-")) allyTreacheryCardPrescience(event, game, discordGame);
+        else if (event.getComponentId().startsWith("whisper-")) whisper(event, game, discordGame);
     }
 
     public static void selectTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
@@ -197,5 +200,28 @@ public class FactionButtons {
         }
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
+    }
+
+    private static void whisper(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String recipient = event.getComponentId().split("-")[1];
+        String action = event.getComponentId().split("-")[2];
+        if (action.equals("yes")) {
+            String message = event.getComponentId().replace("whisper-" + recipient + "-yes-", "");
+            switch (recipient) {
+                case "bg" -> recipient = "BG";
+                case "bt" -> recipient = "BT";
+                case "choam" -> recipient = "CHOAM";
+                default -> StringUtils.capitalize(recipient);
+            }
+            FactionWhispers senderWhispers = discordGame.getFactionWhispers(faction, game.getFaction(recipient));
+            FactionWhispers recipientWhispers = discordGame.getFactionWhispers(game.getFaction(recipient), faction);
+            faction.sendWhisper(faction, message, senderWhispers, recipientWhispers);
+            discordGame.queueMessage("Message has been sent as a whisper.");
+            discordGame.queueDeleteMessage();
+        } else {
+            discordGame.queueMessage("Message was not sent as a whisper.");
+            discordGame.queueDeleteMessage();
+        }
     }
 }
