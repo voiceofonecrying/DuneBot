@@ -25,6 +25,7 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -57,6 +58,36 @@ public class CommandManager extends ListenerAdapter {
         this.members.add(event.getMember());
     }
 
+    @Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        CommandCompletionGuard.incrementCommandCount();
+        if (event.getComponentId().startsWith("bidding-menu-")) {
+            event.reply("Your bid has been submitted.").queue();
+            int bid = 0;
+            boolean useExact = true;
+            if (event.getInteraction().getSelectedOptions().size() == 2) {
+                if (!event.getInteraction().getSelectedOptions().get(0).getValue().equals("auto-increment")) {
+                    CommandCompletionGuard.decrementCommandCount();
+                    event.getMessageChannel().sendMessage("You cannot select two bids.").queue();
+                    return;
+                }
+                bid = Integer.parseInt(event.getInteraction().getSelectedOptions().get(1).getValue());
+                useExact = false;
+            } else bid = Integer.parseInt(event.getInteraction().getSelectedOptions().getFirst().getValue());
+            try {
+                DiscordGame discordGame = new DiscordGame(event);
+                Game game = discordGame.getGame();
+                Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+                PlayerCommands.bid(event, discordGame, game, useExact, bid);
+                discordGame.pushGame();
+                showFactionInfo(faction.getName(), discordGame);
+                discordGame.sendAllMessages();
+            } catch (ChannelNotFoundException | InvalidGameStateException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        CommandCompletionGuard.decrementCommandCount();
+    }
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
@@ -641,7 +672,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         boolean discarded = false;
         game.removeAlliance(faction);
@@ -654,19 +685,19 @@ public class CommandManager extends ListenerAdapter {
             game.getTurnSummary().publish(faction.getEmoji() + " has replaced their Nexus Card.");
         else
             game.getTurnSummary().publish(faction.getEmoji() + " has drawn a Nexus Card.");
-        showFactionInfo(discordGame);
+        showFactionInfo(faction.getName(), discordGame);
         discordGame.pushGame();
     }
 
-    public static void discardNexusCard(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException {
+    public static void discardNexusCard(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         game.getNexusDiscard().add(faction.getNexusCard());
         faction.setNexusCard(null);
         game.getTurnSummary().publish(faction.getEmoji() + " has discarded a Nexus Card.");
-        showFactionInfo(discordGame);
+        showFactionInfo(faction.getName(), discordGame);
         discordGame.pushGame();
     }
 
-    private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         discardNexusCard(discordGame, game, faction);
     }

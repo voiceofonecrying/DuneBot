@@ -4,6 +4,7 @@ import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.FactionWhispers;
 import controller.commands.SetupCommands;
+import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Battle;
@@ -95,7 +96,7 @@ public class FactionButtons {
         discordGame.pushGame();
     }
 
-    private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String support = event.getComponentId().split("-")[2];
         String ally = faction.getAlly();
@@ -153,6 +154,7 @@ public class FactionButtons {
                 discordGame.queueMessage("You have offered your ally " + support.replace("ally-support-", "") + " " + Emojis.SPICE + ".");
             }
         }
+        ShowCommands.showFactionInfo(ally, discordGame);
         discordGame.pushGame();
     }
 
