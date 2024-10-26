@@ -450,14 +450,23 @@ public class ReportsCommands {
             modAndMaxFactionWins.add(MutableTriple.of(moderator, maxWins, emojis));
         }
 
-//        modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
-//        moderatorsString.append("\n\n__Average number of turns__");
-//        for (Pair<String, Float> p : modAndAverageTurns) {
-//            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
-//        }
-        moderatorsString.append("\n\n__Most frequent faction winners for each mod__");
-        for (MutableTriple<String, Integer, List<String>> p : modAndMaxFactionWins)
-            moderatorsString.append("\n").append(p.getMiddle()).append(" - ").append(tagEmojis(guild, String.join(" ", p.getRight()))).append(" - ").append(p.getLeft());
+        modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
+        moderatorsString.append("\n\n__Average number of turns__");
+        for (Pair<String, Float> p : modAndAverageTurns) {
+            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
+        }
+//        moderatorsString.append("\n\n__Most frequent faction winners for each mod__");
+//        for (MutableTriple<String, Integer, List<String>> p : modAndMaxFactionWins)
+//            moderatorsString.append("\n").append(p.getMiddle()).append(" - ").append(tagEmojis(guild, String.join(" ", p.getRight()))).append(" - ").append(p.getLeft());
+        moderatorsString.append("\n\n__Moderator Assists__");
+        Set<String> assisters = gameResults.gameResults.stream().filter(gameResult -> gameResult.getAssistantModerators() != null).flatMap(gameResult -> gameResult.getAssistantModerators().stream()).collect(Collectors.toSet());
+        List<Pair<String, List<GameResult>>> assistersAndNumGames = new ArrayList<>();
+        assisters.forEach(m -> assistersAndNumGames.add(new ImmutablePair<>(m, gameResults.gameResults.stream().filter(gr -> gr.getAssistantModerators() != null && gr.getAssistantModerators().contains(m)).toList())));
+        assistersAndNumGames.sort((a, b) -> Integer.compare(b.getRight().size(), a.getRight().size()));
+        for (Pair<String, List<GameResult>> p : assistersAndNumGames) {
+            String assiter = getPlayerMention(p.getLeft(), members);
+            moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(assiter);
+        }
         return moderatorsString.toString();
     }
 
@@ -1152,17 +1161,22 @@ public class ReportsCommands {
 
             String[] lines;
             String moderator = "";
+            List<String> assistants = new ArrayList<>();
             String modString = raw.substring(modStart, factionsStart);
             if (!modString.isEmpty()) {
                 lines = modString.split("\n");
                 Matcher modMatcher = playerTags.matcher(modString);
-                if (modMatcher.find())
+                if (modMatcher.find()) {
                     moderator = "@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName();
-                else
+                    while (modMatcher.find())
+                        assistants.add("@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName());
+                } else
                     moderator = lines[1].substring(2).split("\\s+", 2)[0];
             } else if (gameName.equals("Discord 27"))
                 moderator = "@voiceofonecrying";
             gr.setModerator(moderator);
+            if (!assistants.isEmpty())
+                gr.setAssistantModerators(assistants);
 
             String winnersString;
             String strippedEmoji1 = "";
