@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
@@ -292,6 +293,7 @@ public class Bidding {
         );
         bidCardNumber++;
         runRicheseBid(game, bidType, false);
+        game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
     }
 
     public void removeRicheseCacheCardFromGame(Game game) throws InvalidGameStateException {
@@ -343,8 +345,8 @@ public class Bidding {
         } else {
             runRicheseBid(game, bidType, true);
         }
-
         sendAtreidesCardPrescience(game, card, false);
+        game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
     }
 
     public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
@@ -417,6 +419,7 @@ public class Bidding {
         bidCard = market.removeFirst();
         bidCardNumber++;
         cardFromMarket = true;
+        game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
         return bidCard;
     }
 
@@ -1166,6 +1169,7 @@ public class Bidding {
             emperor.getChat().publish("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", choices);
         }
         game.endBidding();
+        game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
         return true;
     }
 }
