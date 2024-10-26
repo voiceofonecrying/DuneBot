@@ -1140,6 +1140,7 @@ class BattleTest extends DuneTest {
                 battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, shield);
                 modInfo.clear();
                 battle.printBattleResolution(game, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("Lasgun-Shield carnage:\n"));
             }
 
             @Test
@@ -1208,6 +1209,7 @@ class BattleTest extends DuneTest {
                 battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
                 modInfo.clear();
                 battle.printBattleResolution(game, false);
+                assertFalse(modInfo.getMessages().getFirst().contains("Lasgun-Shield"));
             }
 
             @Test
@@ -3471,6 +3473,199 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.ECAZ_TROOP + " in Cielago North (East Sector) were sent to the tanks.")));
                 assertTrue(battle.isResolved(game));
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("#resolutionWithLasgunShieldCarnage")
+    class ResolutionWithLasgunShieldCarnage {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() throws IOException, InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            atreides.addTreacheryCard(lasgun);
+            harkonnen.addTreacheryCard(cheapHero);
+            harkonnen.addTreacheryCard(shield);
+            cielagoNorth_eastSector.addForces("Atreides", 5);
+            cielagoNorth_eastSector.addForces("Harkonnen", 2);
+            // battle specification reflects storm being in sector 1 and splitting Cielago North
+            battle = new Battle(game, List.of(cielagoNorth_eastSector), List.of(atreides, harkonnen));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, lasgun, null);
+            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, shield);
+            modInfo.clear();
+            turnSummary.clear();
+        }
+
+        @Nested
+        @DisplayName("#advsorsKilledByLasgunShield")
+        class AdvisorsKilledByLasgunShield {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(bg);
+                cielagoNorth_westSector.addForces("Advisor", 1);
+            }
+
+            @Test
+            void testReviewDoesNotKillAdvisor() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.BG + " loses 1 " + Emojis.BG_ADVISOR + " in Cielago North (West Sector) to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("BG"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Advisor"));
+            }
+
+            @Test
+            void testPublishDoesNotKillAdvisor() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.BG + " loses 1 " + Emojis.BG_ADVISOR + " in Cielago North (West Sector) to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("BG"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Advisor"));
+            }
+
+            @Test
+            void testResolveKillsAdvisor() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.BG_ADVISOR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertEquals(1, game.getTleilaxuTanks().getForceStrength("BG"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Advisor"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#noFieldRevealedAndForcesKilledByLasgunShield")
+        class NoFieldRevealedAndForcesKilledByLasgunShield {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(richese);
+                cielagoNorth_westSector.setRicheseNoField(5);
+            }
+
+            @Test
+            void testReviewDoesNotRevealNoFieldAndKill() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be 5 " + Emojis.RICHESE_TROOP + " and loses them to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Richese"));
+            }
+
+            @Test
+            void testPublishDoesNotRevealNoFieldAndKill() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be 5 " + Emojis.RICHESE_TROOP + " and loses them to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Richese"));
+            }
+
+            @Test
+            void testResolveRevealsAndKills() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("The 5 " + Emojis.NO_FIELD + " in Cielago North (West Sector) reveals 5 " + Emojis.RICHESE_TROOP)));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("5 " + Emojis.RICHESE_TROOP + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertEquals(5, richese.getFrontOfShieldNoField());
+                assertEquals(5, game.getTleilaxuTanks().getForceStrength("Richese"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#forcesAcrossStormKilledByLasgunShield")
+        class ForcesAcrossStormKilledByLasgunShield {
+            @BeforeEach
+            void setUp() {
+                cielagoNorth_westSector.addForces("Atreides", 2);
+                cielagoNorth_westSector.addForces("Harkonnen", 1);
+            }
+
+            @Test
+            void testReviewDoesNotKillAcrossStorm() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.ATREIDES_TROOP + " in Cielago North (West Sector) to the tanks"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.HARKONNEN + " loses 1 " + Emojis.HARKONNEN_TROOP + " in Cielago North (West Sector) to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Atreides"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Harkonnen"));
+            }
+
+            @Test
+            void testPublishDoesNotKillAcrossStorm() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 2 " + Emojis.ATREIDES_TROOP + " in Cielago North (West Sector) to the tanks"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " loses 1 " + Emojis.HARKONNEN_TROOP + " in Cielago North (West Sector) to the tanks"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Atreides"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Harkonnen"));
+            }
+
+            @Test
+            void testResolveKillsAcrossStorm() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.ATREIDES_TROOP + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.HARKONNEN_TROOP + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertEquals(7, game.getTleilaxuTanks().getForceStrength("Atreides"));
+                assertEquals(3, game.getTleilaxuTanks().getForceStrength("Harkonnen"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#ambassadorRemovedByLasgunShield")
+        class AmbassadorRemovedByLasgunShield {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(ecaz);
+                // Ambassador test really should be moved to a new test setup in a Stronghold
+                ecaz.placeAmbassador(cielagoNorth_westSector, "Fremen");
+            }
+
+            @Test
+            void testReviewDoesNotRemoveAmbassador() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                // Ambassador test really should be moved to a new test setup in a Stronghold
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
+                assertEquals("Fremen", cielagoNorth_westSector.getEcazAmbassador());
+            }
+
+            @Test
+            void testPublishDoesNotRemoveAmbassador() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                // Ambassador test really should be moved to a new test setup in a Stronghold
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
+                assertEquals("Fremen", cielagoNorth_westSector.getEcazAmbassador());
+            }
+
+            @Test
+            void testResolveRemovesAmbassador() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                // Ambassador test really should be moved to a new test setup in a Stronghold
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " Fremen ambassador returned to supply.")));
+                assertNull(cielagoNorth_westSector.getEcazAmbassador());
+                assertTrue(ecaz.getAmbassadorSupply().contains("Fremen"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#spiceDestroyeByLasgunShield")
+        class SpiceDestroyedByLasgunShield {
+            @BeforeEach
+            void setUp() {
+                cielagoNorth_westSector.setSpice(8);
+            }
+
+            @Test
+            void testReviewDoesNotRemoveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("8 " + Emojis.SPICE + " destroyed in Cielago North (West Sector)"));
+                assertEquals(8, cielagoNorth_westSector.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotRemoveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("8 " + Emojis.SPICE + " destroyed in Cielago North (West Sector)"));
+                assertEquals(8, cielagoNorth_westSector.getSpice());
+            }
+
+            @Test
+            void testResolveRemovesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("8 " + Emojis.SPICE + " in Cielago North (West Sector) was destroyed by Lasgun-Shield.")));
+                assertEquals(0, cielagoNorth_westSector.getSpice());
             }
         }
     }

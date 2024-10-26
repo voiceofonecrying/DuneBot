@@ -1227,6 +1227,12 @@ public class Game {
         targetFaction.checkForHighThreshold();
     }
 
+    public void removeAdvisorsAndReportToTurnSummary(String territoryName, Faction targetFaction, int amountValue, boolean isToTanks) {
+        removeForces(territoryName, targetFaction, amountValue, 0, isToTanks);
+        turnSummary.publish(amountValue + " " + Emojis.BG_ADVISOR + " in " + territoryName + " were sent to " + (isToTanks ? "the tanks." : "reserves."));
+        targetFaction.checkForHighThreshold();
+    }
+
     public void killLeader(Faction targetFaction, String leaderName, boolean faceDown) {
         Leader leader = leaderTanks.stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElse(null);
         if (leader != null) {

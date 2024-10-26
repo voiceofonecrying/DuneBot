@@ -376,6 +376,15 @@ public class Territory {
         return message;
     }
 
+    public String lasgunShieldDestroysSpice() {
+        String message = MessageFormat.format(
+                "{0} {1} in {2} was destroyed by Lasgun-Shield.",
+                spice, Emojis.SPICE, territoryName
+        );
+        spice = 0;
+        return message;
+    }
+
     public String shaiHuludAppears(Game game, String wormName, boolean firstWorm) {
         String response = "";
         if (firstWorm)
