@@ -1340,10 +1340,7 @@ public class Battle {
 
         resolution += factionBattleResults(game, true, executeResolution);
         resolution += factionBattleResults(game, false, executeResolution);
-
-        String carnage = lasgunShieldCarnage(game);
-        if (!carnage.isEmpty())
-            resolution += "\nLasgun-Shield carnage:\n" + carnage;
+        resolution += lasgunShieldCarnage(game, executeResolution);
         resolution += aggressorBattlePlan.checkAuditor(defender.getEmoji());
         resolution += defenderBattlePlan.checkAuditor(aggressor.getEmoji());
 
@@ -1547,29 +1544,61 @@ public class Battle {
         return plan.isHarkCanCallTraitor();
     }
 
-    private String lasgunShieldCarnage(Game game) {
+    private String lasgunShieldCarnage(Game game, boolean executeResolution) {
         List<Territory> allTerritorySectors = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         String carnage = "";
         if (aggressorBattlePlan.isLasgunShieldExplosion() && !aggressorCallsTraitor(game) && !defenderCallsTraitor(game)) {
-            String otherForces = nonCombatantForces(game, allTerritorySectors);
-            if (!otherForces.isEmpty())
-                carnage += otherForces;
             Territory noFieldTerritory = allTerritorySectors.stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
-            if (noFieldTerritory != null)
-                carnage += Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be " + noFieldTerritory.getRicheseNoField() + " " + Emojis.RICHESE_TROOP + " and loses them to the tanks\n";
             String ambassador = allTerritorySectors.stream().map(Territory::getEcazAmbassador).filter(Objects::nonNull).findFirst().orElse(null);
-            if (ambassador != null)
-                carnage += Emojis.ECAZ + " " + ambassador + " ambassador returned to supply\n";
-            carnage += String.join("", allTerritorySectors.stream().filter(s -> s.getSpice() > 0).map(s -> s.getSpice() + " " + Emojis.SPICE + " destroyed in " + s.getTerritoryName() + "\n").toList());
+            if (executeResolution) {
+                if (noFieldTerritory != null)
+                    ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
+                for (Territory t : allTerritorySectors) {
+                    for (Force f : nonCombatantForcesInSector(game, t)) {
+                        int regular = f.getName().equals(f.getFactionName()) ? f.getStrength() : 0;
+                        int starred = f.getName().equals(f.getFactionName() + "*") ? f.getStrength() : 0;
+                        if (regular > 0 || starred > 0)
+                            game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), game.getFaction(f.getFactionName()), regular, starred, true);
+                        else if (f.getName().equals("Advisor")) {
+                            game.removeAdvisorsAndReportToTurnSummary(t.getTerritoryName(), game.getFaction("BG"), f.getStrength(), true);
+                        }
+                    }
+                }
+                if (ambassador != null) {
+                    Territory territoryWithAmbassador = allTerritorySectors.stream().filter(t -> t.getEcazAmbassador() != null).findFirst().orElse(null);
+                    if (territoryWithAmbassador != null) {
+                        ((EcazFaction) game.getFaction("Ecaz")).getAmbassadorSupply().add(territoryWithAmbassador.getEcazAmbassador());
+                        territoryWithAmbassador.removeEcazAmbassador();
+                        game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
+                    }
+                }
+                allTerritorySectors.stream().filter(t -> t.getSpice() > 0).forEach(t -> game.getTurnSummary().publish(t.lasgunShieldDestroysSpice()));
+            } else {
+                if (noFieldTerritory != null)
+                    carnage += Emojis.RICHESE + " reveals " + Emojis.NO_FIELD + " to be " + noFieldTerritory.getRicheseNoField() + " " + Emojis.RICHESE_TROOP + " and loses them to the tanks\n";
+                String otherForces = nonCombatantForces(game, allTerritorySectors);
+                if (!otherForces.isEmpty())
+                    carnage += otherForces;
+                if (ambassador != null)
+                    carnage += Emojis.ECAZ + " " + ambassador + " ambassador returned to supply\n";
+                carnage += String.join("", allTerritorySectors.stream().filter(s -> s.getSpice() > 0).map(s -> s.getSpice() + " " + Emojis.SPICE + " destroyed in " + s.getTerritoryName() + "\n").toList());
+            }
         }
+        if (!carnage.isEmpty())
+            carnage = "\nLasgun-Shield carnage:\n" + carnage;
         return carnage;
     }
 
     private String nonCombatantForces(Game game, List<Territory> allTerritorySectors) {
-        return String.join("", allTerritorySectors.stream().map(t -> nonCombatantForcesInSector(game, t)).toList());
+        return String.join("", allTerritorySectors.stream().map(t -> nonCombatantForcesInSectorString(game, t)).toList());
     }
 
-    private String nonCombatantForcesInSector(Game game, Territory t) {
+    private String nonCombatantForcesInSectorString(Game game, Territory t) {
+        List<Force> nonCombatantForces = nonCombatantForcesInSector(game, t);
+        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
+    }
+
+    private List<Force> nonCombatantForcesInSector(Game game, Territory t) {
         boolean battleSector = getTerritorySectors(game).contains(t);
         List<Force> nonCombatantForces = new ArrayList<>(t.getForces().stream().filter(f -> !battleSector || !factionNames.contains(f.getFactionName())).toList());
         nonCombatantForces.sort((a, b) -> {
@@ -1578,7 +1607,7 @@ public class Battle {
             else
                 return a.getFactionName().compareTo(b.getFactionName());
         });
-        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
+        return nonCombatantForces;
     }
 
     private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentBattlePlan, boolean publishToTurnSummary) {
@@ -1859,8 +1888,6 @@ public class Battle {
         if (resolvable || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
             String manualResolutions = "";
-            if (aggressorBattlePlan.isLasgunShieldExplosion())
-                manualResolutions += "\n- Lasgun-Shield carnage";
             if (wholeTerritoryName.equals("Jacurutu Sietch"))
                 manualResolutions += "\n- Jacurutu Sietch spice";
             if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS))
