@@ -449,12 +449,6 @@ public class ReportsCommands {
             }
             modAndMaxFactionWins.add(MutableTriple.of(moderator, maxWins, emojis));
         }
-
-        modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
-        moderatorsString.append("\n\n__Average number of turns__");
-        for (Pair<String, Float> p : modAndAverageTurns) {
-            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
-        }
 //        moderatorsString.append("\n\n__Most frequent faction winners for each mod__");
 //        for (MutableTriple<String, Integer, List<String>> p : modAndMaxFactionWins)
 //            moderatorsString.append("\n").append(p.getMiddle()).append(" - ").append(tagEmojis(guild, String.join(" ", p.getRight()))).append(" - ").append(p.getLeft());
@@ -466,6 +460,12 @@ public class ReportsCommands {
         for (Pair<String, List<GameResult>> p : assistersAndNumGames) {
             String assiter = getPlayerMention(p.getLeft(), members);
             moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(assiter);
+        }
+
+        modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
+        moderatorsString.append("\n\n__Average number of turns__");
+        for (Pair<String, Float> p : modAndAverageTurns) {
+            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
         }
         return moderatorsString.toString();
     }
