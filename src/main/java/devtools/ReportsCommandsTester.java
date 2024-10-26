@@ -30,19 +30,9 @@ public class ReportsCommandsTester {
         EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
 //        String a = ReportsCommands.playedAllExpansion(guild, List.of());
 //        System.out.println(a + " " + a.length() + "\n============");
-//        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
-        System.out.println(ReportsCommands.playerFastestGame(guild, 3, 3, 3));
+        System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true));
+//        System.out.println(ReportsCommands.playerFastestGame(guild, 3, 3, 3));
 //        System.out.println(ReportsCommands.wonAsMostFactions(guild, List.of()));
-
-// To fix JSON:
-//        1. Edit JSON and CSV to have lower case. Keep CSV header as upper case.
-//        2. Change field name to lower case
-//        3. Have capitalize return lower case
-// To fix factionStats and solo wins:
-//        1. Change capitalization in updateFactionPerformance
-//        2. Change capitalization in factionNames
-//        3. Update turnStats to look for lower case G, F, Ecaz, BG
-//        4. Also undo the replace in gatherGameResults for victoryType
 
         testJDA.shutdownNow();
         System.exit(0);

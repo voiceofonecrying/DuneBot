@@ -13,6 +13,7 @@ public class GameResult {
     private String gameDuration;
     private String daysUntilArchive;
     private String moderator;
+    private List<String> assistantModerators;
     private String victoryType;
     private int turn;
     private List<Set<String>> winningFactions;
@@ -92,6 +93,14 @@ public class GameResult {
 
     public void setModerator(String moderator) {
         this.moderator = moderator;
+    }
+
+    public List<String> getAssistantModerators() {
+        return assistantModerators;
+    }
+
+    public void setAssistantModerators(List<String> assistantModerators) {
+        this.assistantModerators = assistantModerators;
     }
 
     public String getVictoryType() {
