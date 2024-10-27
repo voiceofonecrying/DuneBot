@@ -64,6 +64,7 @@ public class Game {
     private String phaseForWhispers;
     private Set<GameOption> gameOptions;
     private String mod;
+    private final HashMap<String, Integer> modCommandExecutions;
     private boolean teamMod = false;
     private String modRoleMention;
     private String gameRoleMention;
@@ -130,6 +131,7 @@ public class Game {
         this.shieldWallDestroyed = false;
         this.phaseForWhispers = "";
         this.mod = "";
+        this.modCommandExecutions = new HashMap<>();
         this.gameRoleMention = "";
         this.storm = 18;
         this.stormMovement = 0;
@@ -444,6 +446,13 @@ public class Game {
 
     public void setTeamMod(boolean teamMod) {
         this.teamMod = teamMod;
+    }
+
+    public void modExecutedACommand(String modAsMention) {
+        Integer numCalls = modCommandExecutions.get(modAsMention);
+        if (numCalls == null)
+            numCalls = 0;
+        modCommandExecutions.put(modAsMention, ++numCalls);
     }
 
     public String getMod() {

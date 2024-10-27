@@ -762,7 +762,7 @@ public class ReportsCommands {
             if (turnWins > maxTurnWins)
                 maxTurnWins = turnWins;
         }
-        StringBuilder response = new StringBuilder("__Turns Histogram__`\n\n");
+        StringBuilder response = new StringBuilder("__Turns Histogram__```\n\n");
         for (int j = maxTurnWins; j >= 1; j--) {
             StringBuilder responseRow = new StringBuilder(" ");
             for (int i = 1; i <= 10; i++) {
@@ -771,7 +771,7 @@ public class ReportsCommands {
             }
             response.append(responseRow).append("\n");
         }
-        response.append(" 1  2  3  4  5  6  7  8  9 10`");
+        response.append("\n 1  2  3  4  5  6  7  8  9 10```");
         return response.toString();
     }
 

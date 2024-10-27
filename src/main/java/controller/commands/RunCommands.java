@@ -40,6 +40,7 @@ public class RunCommands {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
+        game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
             case "advance" -> advance(discordGame, game);
             case "bidding" -> bidding(discordGame, game);

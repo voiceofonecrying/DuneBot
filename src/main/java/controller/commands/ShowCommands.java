@@ -57,6 +57,7 @@ public class ShowCommands {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
+        game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
             case "board" -> showBoard(discordGame, game);
             case "faction-info" -> showFactionInfoHandler(discordGame);

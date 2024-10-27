@@ -40,6 +40,7 @@ public class BattleCommands {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
+        game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
             case "review-resolution" -> reviewResolution(discordGame, game);
             case "publish-resolution" -> publishResolution(discordGame, game);
