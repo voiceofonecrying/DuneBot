@@ -438,6 +438,10 @@ public class Game {
         this.modRole = modRole;
     }
 
+    public boolean isTeamMod() {
+        return teamMod;
+    }
+
     public void setTeamMod(boolean teamMod) {
         this.teamMod = teamMod;
     }

@@ -928,7 +928,7 @@ public class ReportsCommands {
 
     private static final Pattern taggedEmojis = Pattern.compile("<:([a-zA-Z0-9_]+):\\d+>");
     private static final Pattern untaggedEmojis = Pattern.compile("(?<!<):([a-zA-Z0-9_]+):(?!\\d+>)");
-    private static final Pattern playerTags = Pattern.compile("<@([a-zA-Z0-9_]+)>");
+    private static final Pattern playerAndRoleTags = Pattern.compile("<@&?([a-zA-Z0-9_]+)>");
     private static final Pattern turn = Pattern.compile(".*Turn ([0-9]+)");
 
     private static String capitalize(String strippedEmoji) {
@@ -1165,9 +1165,13 @@ public class ReportsCommands {
             String modString = raw.substring(modStart, factionsStart);
             if (!modString.isEmpty()) {
                 lines = modString.split("\n");
-                Matcher modMatcher = playerTags.matcher(modString);
+                Matcher modMatcher = playerAndRoleTags.matcher(modString);
                 if (modMatcher.find()) {
-                    moderator = "@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName();
+                    Role mods = jda.getRoleById(modMatcher.group(1));
+                    if (mods != null)
+                        moderator = "@" + mods.getName();
+                    else
+                        moderator = "@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName();
                     while (modMatcher.find())
                         assistants.add("@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName());
                 } else
@@ -1282,7 +1286,7 @@ public class ReportsCommands {
                 } else {
                     continue;
                 }
-                Matcher matcher2 = playerTags.matcher(s.substring(matcherThatFoundEmoji.end()));
+                Matcher matcher2 = playerAndRoleTags.matcher(s.substring(matcherThatFoundEmoji.end()));
                 if (matcher2.find())
                     playerName = "@" + jda.retrieveUserById(matcher2.group(1)).complete().getName();
                 else {
@@ -1613,7 +1617,10 @@ public class ReportsCommands {
 
         String result = "__" + discordGame.getGameCategory().getName() + "__\n";
         result += "> " + discordGame.getTextChannel("front-of-shield").getJumpUrl() + "\n";
-        result += "Moderator:\n> " + game.getMod() + "\n";
+        result += "Moderator:\n";
+        if (game.isTeamMod())
+            result += "> " + Objects.requireNonNull(event.getGuild()).getJDA().getRolesByName("Moderators", false).getFirst().getAsMention() + "\n";
+        result += "> " + game.getMod() + "\n";
         result += "Factions:\n";
         StringBuilder factions = new StringBuilder();
         for (Faction f : game.getFactions()) {
