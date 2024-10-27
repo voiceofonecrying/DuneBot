@@ -175,7 +175,7 @@ public class CommandManager extends ListenerAdapter {
             }
 
             switch (name) {
-                case "gamestate" -> GameStateCommands.runCommand(event, discordGame);
+                case "gamestate" -> GameStateCommands.runCommand(event, discordGame, game);
                 case "show" -> ShowCommands.runCommand(event, discordGame, game);
                 case "setup" -> SetupCommands.runCommand(event, discordGame, game);
                 case "run" -> RunCommands.runCommand(event, discordGame, game);

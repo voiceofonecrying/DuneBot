@@ -68,6 +68,7 @@ public class SetupCommands {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
+        game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
             case "faction" -> addFaction(event, discordGame, game);
             case "show-game-options" -> showGameOptions(game);
