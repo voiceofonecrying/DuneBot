@@ -31,6 +31,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-take-tech-token-")) techTokenDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-harkonnen-keep-captured-leader")) keepCapturedLeader(discordGame, game);
         else if (event.getComponentId().startsWith("battle-harkonnen-kill-captured-leader")) killCapturedLeader(discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-return-captured-leader")) returnCapturedLeader(discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
@@ -227,6 +228,15 @@ public class BattleButtons implements Pressable {
         Battle battle = game.getBattles().getCurrentBattle();
         game.harkonnenKillLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
         discordGame.queueMessage("You killed " + battle.getHarkonnenCapturedLeader());
+        discordGame.pushGame();
+    }
+
+    private static void returnCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Battle battle = game.getBattles().getCurrentBattle();
+        String leader = battle.getHarkonnenCapturedLeader();
+        battle.returnHarkonnenCapturedLeader();
+        discordGame.queueMessage("You chose not to capture " + leader);
         discordGame.pushGame();
     }
 
