@@ -16,14 +16,17 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class ButtonManager extends ListenerAdapter {
     static boolean allowModButtonPress = false;
+    static Set<Long> buttonMessageIds = new HashSet<>();
 
     public static void setAllowModButtonPress() {
         allowModButtonPress = true;
@@ -68,12 +71,19 @@ public class ButtonManager extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+        Long messageId = event.getMessageIdLong();
+        if (buttonMessageIds.contains(messageId)) {
+            event.reply("You already pressed a button! Please grab a chairdog, pour spice coffee, and wait for me to finish").queue();
+            return;
+        }
+        buttonMessageIds.add(messageId);
         CommandCompletionGuard.incrementCommandCount();
         event.deferReply().queue();
         String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
         CompletableFuture<Void> future = Queue.getFuture(categoryName);
         Queue.putFuture(categoryName, future
                 .thenRunAsync(() -> runButtonCommand(event))
+                .thenRunAsync(() -> buttonMessageIds.remove(messageId))
                 .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
     }
 
