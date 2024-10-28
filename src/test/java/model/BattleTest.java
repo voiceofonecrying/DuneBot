@@ -1971,7 +1971,7 @@ class BattleTest extends DuneTest {
                 battle.printBattleResolution(game, false, true);
                 assertTrue(harkonnenChat.getMessages().getFirst().contains("Will you keep or kill"));
                 assertTrue(harkonnenChat.getMessages().getFirst().contains("? ha"));
-                assertEquals(2, harkonnenChat.getChoices().getFirst().size());
+                assertEquals(3, harkonnenChat.getChoices().getFirst().size());
                 assertTrue(battle.isHarkonnenCaptureMustBeResolved(game));
                 game.killLeader(atreides, battle.getHarkonnenCapturedLeader());
                 assertFalse(battle.isHarkonnenCaptureMustBeResolved(game));
