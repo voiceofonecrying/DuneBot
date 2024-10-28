@@ -1173,6 +1173,7 @@ public class Battle {
                     List<DuneChoice> choices = new ArrayList<>();
                     choices.add(new DuneChoice("battle-harkonnen-keep-captured-leader", "Keep"));
                     choices.add(new DuneChoice("battle-harkonnen-kill-captured-leader", "Kill for 2 spice"));
+                    choices.add(new DuneChoice("secondary", "battle-harkonnen-return-captured-leader", "No capture"));
                     harkonnen.getChat().publish("Will you keep or kill " + leader.getName() + "? " + harkonnen.getPlayer(), choices);
                 }
             } else
@@ -1930,6 +1931,10 @@ public class Battle {
 
     public String getHarkonnenCapturedLeader() {
         return harkonnenCapturedLeader;
+    }
+
+    public void returnHarkonnenCapturedLeader() {
+        harkonnenCapturedLeader = null;
     }
 
     public boolean isHarkonnenCaptureMustBeResolved(Game game) {
