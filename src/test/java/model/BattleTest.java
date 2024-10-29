@@ -3478,6 +3478,65 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#resolutionInJacururuSietchAndKHCounteIncrease")
+    class ResolutionInJacurutuSietchAndKHCounterIncrease {
+        Battle battle;
+        Territory jacurutuSietch;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(emperor);
+            game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            jacurutuSietch = game.getTerritory("Jacurutu Sietch");
+            jacurutuSietch.addForces("Atreides", 3);
+            jacurutuSietch.addForces("Emperor", 2);
+            jacurutuSietch.addForces("Emperor*", 2);
+            battle = new Battle(game, List.of(jacurutuSietch), List.of(atreides, emperor));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, null, null);
+            battle.setBattlePlan(game, emperor, bashar, null, false, 1, false, 0, null, null);
+            battle.updateTroopsDialed(game, "Emperor", 0, 1);
+            modInfo.clear();
+        }
+
+        @Nested
+        @DisplayName("#khCounterIncrease")
+        class KHCounterIncrease {
+            @Test
+            void testResolveIncreasesKHCounter() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(2, atreides.getForcesLost());
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " KH counter increased from 0 to 2.")));
+            }
+        }
+
+        @Nested
+        @DisplayName("#jacurutuSietchSpice")
+        class JacurutuSietchSpice {
+            @Test
+            void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 3 " + Emojis.SPICE + " for 2 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 3 " + Emojis.SPICE + " for 2 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testResolveGivesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 3 " + Emojis.SPICE + " for 2 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " not dialed.")));
+                assertEquals(13, atreides.getSpice());
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolutionWithLasgunShieldCarnage")
     class ResolutionWithLasgunShieldCarnage {
         Battle battle;

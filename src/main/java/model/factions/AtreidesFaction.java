@@ -57,7 +57,7 @@ public class AtreidesFaction extends Faction {
         int oldForcesLost = this.forcesLost;
         this.forcesLost = Math.min(7, forcesLost);
         if (this.forcesLost < 7) {
-            game.getTurnSummary().publish(Emojis.ATREIDES + " KH counter increased from " + oldForcesLost + " to " + this.forcesLost);
+            game.getTurnSummary().publish(Emojis.ATREIDES + " KH counter increased from " + oldForcesLost + " to " + this.forcesLost + ".");
         } else {
             addLeader(new Leader("Kwisatz Haderach", 2, "Atreides", null, false));
             game.getTurnSummary().publish("The sleeper has awakened! " + Emojis.ATREIDES + " Paul Muad'Dib! Muad'Dib! Muad'Dib!");

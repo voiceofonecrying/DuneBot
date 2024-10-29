@@ -838,6 +838,7 @@ public class Battle {
         if (!isLasgunShieldExplosion && !bothCallTraitor(game)) {
             resolution += handleTechTokens(game, faction, isLoser, opponentFaction, executeResolution);
             resolution += handleCombatWater(game, faction, isLoser, executeResolution);
+            resolution += handleJacurutuSietchSpice(game, faction, isLoser, opponentFaction, opponentBattlePlan, executeResolution);
             if (isLoser) {
                 List<TechToken> techTokens = faction.getTechTokens();
 //                if (techTokens.size() == 1)
@@ -847,20 +848,6 @@ public class Battle {
 //                    resolution += emojis + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
 //                }
             } else {
-                if (getWholeTerritoryName().equals("Jacurutu Sietch")) {
-                    int opponentRegularNotDialed = opponentBattlePlan.getRegularNotDialed();
-                    int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
-                    String forcesString = "";
-                    if (opponentRegularNotDialed > 0)
-                        forcesString += " " + opponentRegularNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName());
-                    if (opponentSpecialNotDialed > 0)
-                        forcesString += " " + opponentSpecialNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName() + "*");
-                    int ecazForcesNotDialed = Math.floorDiv(opponentBattlePlan.getEcazTroopsForAlly(), 2);
-                    if (ecazForcesNotDialed > 0)
-                        forcesString += " " + ecazForcesNotDialed + " " + Emojis.ECAZ_TROOP;
-                    if (!forcesString.isEmpty())
-                        resolution += emojis + " gains " + (opponentRegularNotDialed + opponentSpecialNotDialed + ecazForcesNotDialed) + " " + Emojis.SPICE + " for" + forcesString + " not dialed.\n";
-                }
                 if (strongholdCardApplies(game, "Sietch Tabr", faction) && opponentBattlePlan.getWholeNumberDial() > 0)
                     resolution += emojis + " gains " + opponentBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
             }
@@ -1152,6 +1139,31 @@ public class Battle {
                     faction.addSpice(combatWater, "combat water");
                 } else
                     resolution += faction.getEmoji() + " gains " + combatWater + " " + Emojis.SPICE + " combat water\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleJacurutuSietchSpice(Game game, Faction faction, boolean isLoser, Faction opponentFaction, BattlePlan opponentBattlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (!isLoser && getWholeTerritoryName().equals("Jacurutu Sietch")) {
+            int opponentRegularNotDialed = opponentBattlePlan.getRegularNotDialed();
+            int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
+            String forcesString = "";
+            if (opponentRegularNotDialed > 0)
+                forcesString += " " + opponentRegularNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName());
+            if (opponentSpecialNotDialed > 0)
+                forcesString += " " + opponentSpecialNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName() + "*");
+            int ecazForcesNotDialed = Math.floorDiv(opponentBattlePlan.getEcazTroopsForAlly(), 2);
+            if (ecazForcesNotDialed > 0)
+                forcesString += " " + ecazForcesNotDialed + " " + Emojis.ECAZ_TROOP;
+            if (!forcesString.isEmpty()) {
+                int spiceGained = opponentRegularNotDialed + opponentSpecialNotDialed + ecazForcesNotDialed;
+                if (executeResolution) {
+                    faction.addSpice(spiceGained, "Jacurutu Sietch");
+                    game.getTurnSummary().publish(faction.getEmoji() + " gains " + spiceGained + " " + Emojis.SPICE + " for" + forcesString + " not dialed.");
+                } else
+                    resolution += faction.getEmoji() + " gains " + spiceGained + " " + Emojis.SPICE + " for" + forcesString + " not dialed.\n";
             }
         }
         return resolution;
@@ -1889,8 +1901,6 @@ public class Battle {
         if (resolvable || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
             String manualResolutions = "";
-            if (wholeTerritoryName.equals("Jacurutu Sietch"))
-                manualResolutions += "\n- Jacurutu Sietch spice";
             if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS))
                 manualResolutions += "\n- Sietch Tabr and Tuek's Sietch stronghold cards (or HMS acting as those)";
             Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
