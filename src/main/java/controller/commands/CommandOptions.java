@@ -108,7 +108,8 @@ public class CommandOptions {
             .addChoice("Faction Info", "factions");
     public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "is-shipment", "Is this placement a shipment?", true);
     public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);
-    public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "totanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
+    public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "to-tanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
+    public static final OptionData killedInBattle = new OptionData(OptionType.BOOLEAN, "killed-in-battle", "For Atreides KH counter", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData faceDown = new OptionData(OptionType.BOOLEAN, "face-down", "Put leader face down in the tanks", false);
     public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);

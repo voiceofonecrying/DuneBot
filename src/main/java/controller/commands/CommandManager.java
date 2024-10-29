@@ -389,7 +389,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-hand-limit", "Change the hand limit for a faction.").addOptions(faction, amount));
         commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
-        commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, fromTerritory));
+        commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, killedInBattle, fromTerritory));
         commandData.add(Commands.slash("homeworld-occupy", "Set the occupying faction in a homeworld.").addOptions(homeworld, faction));
         commandData.add(Commands.slash("add-card-to-bidding-market", "Add one more card from the deck to the bidding market."));
         commandData.add(Commands.slash("award-bid", "Designate that a card has been won by a faction during bidding phase.").addOptions(faction, spent, paidToFaction, harkonnenKaramad));
@@ -856,8 +856,9 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         boolean isToTanks = discordGame.required(toTanks).getAsBoolean();
+        boolean isKilledInBattle = discordGame.required(killedInBattle).getAsBoolean();
 
-        game.removeForcesAndReportToTurnSummary(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
+        game.removeForcesAndReportToTurnSummary(territoryName, targetFaction, amountValue, specialAmount, isToTanks, isKilledInBattle);
         discordGame.pushGame();
     }
 

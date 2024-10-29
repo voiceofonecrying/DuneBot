@@ -24,9 +24,9 @@ public class RevivalTest extends DuneTest {
 
     @Test
     void testBTCollectsForFreeRevivals() throws InvalidGameStateException {
-        game.removeForces("Tleilax", bt, 4, false, true);
-        game.removeForces("Tupile", choam, 6, false, true);
-        game.removeForces("Giedi Prime", harkonnen, 2, false, true);
+        game.removeForces("Tleilax", bt, 4, 0, true);
+        game.removeForces("Tupile", choam, 6, 0, true);
+        game.removeForces("Giedi Prime", harkonnen, 2, 0, true);
         revival.startRevivingForces(game);
         assertEquals("**Turn 0 Revival Phase**", turnSummary.getMessages().getFirst());
         assertEquals(Emojis.BT + " revives 2 " + Emojis.BT_TROOP + " for free.", turnSummary.getMessages().get(1));

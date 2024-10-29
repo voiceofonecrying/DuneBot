@@ -1092,6 +1092,8 @@ public class Game {
                 message.append("all forces in the territory were killed in the spice blow!\n");
                 List<Force> forcesToRemove = new ArrayList<>(getTerritory(drawn.name()).getForces());
                 for (Force force : forcesToRemove) {
+                    // Is this removing Advisors and No-Fields?
+                    // Test for those and that KH counter does not increase
                     removeForces(drawn.name(), getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
                 }
             }
@@ -1234,9 +1236,11 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
-    public void removeForcesAndReportToTurnSummary(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
+    public void removeForcesAndReportToTurnSummary(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, boolean killedInBattle) {
         removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
         turnSummary.publish(targetFaction.forcesString(amountValue, specialAmount) + " in " + territoryName + " were sent to " + (isToTanks ? "the tanks." : "reserves."));
+        if (killedInBattle && targetFaction instanceof AtreidesFaction atreides)
+            atreides.addForceLost(amountValue);
         targetFaction.checkForHighThreshold();
     }
 

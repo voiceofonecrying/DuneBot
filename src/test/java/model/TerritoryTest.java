@@ -210,6 +210,16 @@ public class TerritoryTest extends DuneTest {
         }
 
         @Test
+        void testAdvisorsKilled() {
+            game.addFaction(bg);
+            assertEquals(0, game.getTleilaxuTanks().getForceStrength("BG"));
+            sihayaRidge.addForces("Advisor", 1);
+            assertTrue(sihayaRidge.shaiHuludAppears(game, "Shai-Hulud", true).contains("devoured"));
+            assertEquals(0, sihayaRidge.getForceStrength("Advisor"));
+            assertEquals(1, game.getTleilaxuTanks().getForceStrength("BG"));
+        }
+
+        @Test
         void testFremanAllyForcesNotKilled() {
             game.createAlliance(fremen, atreides);
             sihayaRidge.addForces("Atreides", 1);
@@ -233,8 +243,7 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testFremenHasNoReservesForGreatMaker() {
-            game.removeForces("Southern Hemisphere", fremen, 17, false, true);
-            game.removeForces("Southern Hemisphere", fremen, 3, true, true);
+            game.removeForces("Southern Hemisphere", fremen, 17, 3, true);
             assertTrue(sihayaRidge.shaiHuludAppears(game, "Great Maker", true).contains(Emojis.FREMEN + " have no forces in reserves to ride Great Maker.\n"));
         }
 
