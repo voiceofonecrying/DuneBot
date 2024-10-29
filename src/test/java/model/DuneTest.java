@@ -65,6 +65,7 @@ public class DuneTest {
     TestTopic richeseLedger;
 
     Leader duncanIdaho;
+    Leader ladyJessica;
     Leader alia;
     Leader zoal;
     Leader wykk;
@@ -73,6 +74,7 @@ public class DuneTest {
     Leader bashar;
     Leader feydRautha;
     Leader ummanKudu;
+    Leader cammarPilru;
     Leader bindikkNarvi;
     Leader ladyHelena;
     Leader dukeVidal;
@@ -198,6 +200,7 @@ public class DuneTest {
         richese.setLedger(richeseLedger);
 
         duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        ladyJessica = atreides.getLeader("Lady Jessica").orElseThrow();
         alia = bg.getLeader("Alia").orElseThrow();
         zoal = bt.getLeader("Zoal").orElseThrow();
         wykk = bt.getLeader("Wykk").orElseThrow();
@@ -206,6 +209,7 @@ public class DuneTest {
         bashar = emperor.getLeader("Bashar").orElseThrow();
         feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
         ummanKudu = harkonnen.getLeader("Umman Kudu").orElseThrow();
+        cammarPilru = ix.getLeader("Cammar Pilru").orElseThrow();
         bindikkNarvi = ecaz.getLeader("Bindikk Narvi").orElseThrow();
         ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
         dukeVidal = new Leader("Duke Vidal", 6, "None", null, false);

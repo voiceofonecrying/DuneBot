@@ -839,26 +839,10 @@ public class Battle {
             resolution += handleTechTokens(game, faction, isLoser, opponentFaction, executeResolution);
             resolution += handleCombatWater(game, faction, isLoser, executeResolution);
             resolution += handleJacurutuSietchSpice(game, faction, isLoser, opponentFaction, opponentBattlePlan, executeResolution);
-            if (isLoser) {
-                List<TechToken> techTokens = faction.getTechTokens();
-//                if (techTokens.size() == 1)
-//                    resolution += emojis + " loses " + Emojis.getTechTokenEmoji(techTokens.getFirst().getName()) + " to " + opponentFaction.getEmoji() + "\n";
-//                else if (techTokens.size() > 1) {
-//                    String ttString = String.join(" or ", techTokens.stream().map(TechToken::getName).map(Emojis::getTechTokenEmoji).toList());;
-//                    resolution += emojis + " loses " + ttString + " to " + opponentFaction.getEmoji() + "\n";
-//                }
-            } else {
-                if (strongholdCardApplies(game, "Sietch Tabr", faction) && opponentBattlePlan.getWholeNumberDial() > 0)
-                    resolution += emojis + " gains " + opponentBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
-            }
+            resolution += handleSietchTabrStrongholdCard(game, faction, isLoser, opponentBattlePlan, executeResolution);
         }
-        if (strongholdCardApplies(game, "Tuek's Sietch", faction)) {
-            int worthlessCardSpice = 0;
-            if (battlePlan.getWeapon() != null && battlePlan.getWeapon().type().equals("Worthless Card")) worthlessCardSpice += 2;
-            if (battlePlan.getDefense() != null && battlePlan.getDefense().type().equals("Worthless Card")) worthlessCardSpice += 2;
-            if (worthlessCardSpice > 0)
-                resolution += emojis + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n";
-        }
+        resolution += handleTueksSietchStrongholdCard(game, faction, battlePlan, executeResolution);
+
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
         Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
         Leader loserLeader = isAggressorWin(game) ? getDefenderBattlePlan().getLeader() : getAggressorBattlePlan().getLeader();
@@ -1164,6 +1148,36 @@ public class Battle {
                     game.getTurnSummary().publish(faction.getEmoji() + " gains " + spiceGained + " " + Emojis.SPICE + " for" + forcesString + " not dialed.");
                 } else
                     resolution += faction.getEmoji() + " gains " + spiceGained + " " + Emojis.SPICE + " for" + forcesString + " not dialed.\n";
+            }
+        }
+        return resolution;
+    }
+
+    private String handleSietchTabrStrongholdCard(Game game, Faction faction, boolean isLoser, BattlePlan opponentBattlePlan, boolean executeResolution) {
+        String resolution = "";
+        int dialSpice = opponentBattlePlan.getWholeNumberDial();
+        if (!isLoser && strongholdCardApplies(game, "Sietch Tabr", faction) && dialSpice > 0) {
+            if (executeResolution) {
+                game.getTurnSummary().publish(faction.getEmoji() + " gains " + dialSpice + " " + Emojis.SPICE + " for Sietch Tabr stronghold card.");
+                faction.addSpice(dialSpice, "Sietch Tabr Stronghold Card");
+            } else
+                resolution += faction.getEmoji() + " gains " + dialSpice + " " + Emojis.SPICE + " for Sietch Tabr stronghold card\n";
+        }
+        return resolution;
+    }
+
+    private String handleTueksSietchStrongholdCard(Game game, Faction faction, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        if (strongholdCardApplies(game, "Tuek's Sietch", faction)) {
+            int worthlessCardSpice = 0;
+            if (battlePlan.getWeapon() != null && battlePlan.getWeapon().type().equals("Worthless Card")) worthlessCardSpice += 2;
+            if (battlePlan.getDefense() != null && battlePlan.getDefense().type().equals("Worthless Card")) worthlessCardSpice += 2;
+            if (worthlessCardSpice > 0) {
+                if (executeResolution) {
+                    game.getTurnSummary().publish(faction.getEmoji() + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card.");
+                    faction.addSpice(worthlessCardSpice, "Tuek's Sietch Stronghold Card");
+                } else
+                    resolution += faction.getEmoji() + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n";
             }
         }
         return resolution;
@@ -1901,8 +1915,6 @@ public class Battle {
         if (resolvable || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
             String manualResolutions = "";
-            if (game.hasGameOption(GameOption.STRONGHOLD_SKILLS))
-                manualResolutions += "\n- Sietch Tabr and Tuek's Sietch stronghold cards (or HMS acting as those)";
             Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
             if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
                 manualResolutions += "\n- Caladan homeworld advantage";
