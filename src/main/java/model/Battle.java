@@ -901,7 +901,7 @@ public class Battle {
                     regularLeftToKill -= regularToKillNow;
                     starredLeftToKill -= starredToKillNow;
                     if (regularToKillNow > 0 || starredToKillNow > 0)
-                        game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true);
+                        game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true, true);
                 }
             else
                 resolution += faction.getEmoji() + " loses " + faction.forcesString(regularLeftToKill, starredLeftToKill) + " to the tanks\n";
@@ -937,24 +937,24 @@ public class Battle {
                 Territory homeworld = game.getTerritory(faction.getHomeworld());
                 int reservesToKillNow = Math.min(reservesLeftToKill, homeworld.getForceStrength(faction.getName()));
                 if (reservesToKillNow > 0)
-                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, reservesToKillNow, 0, true);
+                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, reservesToKillNow, 0, true, true);
                 reservesLeftToKill -= reservesToKillNow;
                 if (faction instanceof EmperorFaction emperor) {
                     Territory secondHomeworld = game.getTerritory(emperor.getSecondHomeworld());
                     reservesToKillNow = Math.min(reservesLeftToKill, secondHomeworld.getForceStrength(faction.getName()));
                     if (reservesToKillNow > 0)
-                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, reservesToKillNow, 0, true);
+                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, reservesToKillNow, 0, true, true);
                     reservesLeftToKill -= reservesToKillNow;
                 }
                 reservesToKillNow = Math.min(reservesLeftToKill, homeworld.getForceStrength(faction.getName() + "*"));
                 if (reservesToKillNow > 0)
-                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, 0, reservesToKillNow, true);
+                    game.removeForcesAndReportToTurnSummary(homeworld.getTerritoryName(), faction, 0, reservesToKillNow, true, true);
                 reservesLeftToKill -= reservesToKillNow;
                 if (faction instanceof EmperorFaction emperor) {
                     Territory secondHomeworld = game.getTerritory(emperor.getSecondHomeworld());
                     reservesToKillNow = Math.min(reservesLeftToKill, secondHomeworld.getForceStrength(faction.getName() + "*"));
                     if (reservesToKillNow > 0)
-                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, 0, reservesToKillNow, true);
+                        game.removeForcesAndReportToTurnSummary(secondHomeworld.getTerritoryName(), faction, 0, reservesToKillNow, true, true);
                 }
             } else {
                 resolution += faction.getEmoji() + " must send 3 forces from reserves to the tanks for Reinforcements\n";
@@ -1559,7 +1559,7 @@ public class Battle {
                         int regular = f.getName().equals(f.getFactionName()) ? f.getStrength() : 0;
                         int starred = f.getName().equals(f.getFactionName() + "*") ? f.getStrength() : 0;
                         if (regular > 0 || starred > 0)
-                            game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), game.getFaction(f.getFactionName()), regular, starred, true);
+                            game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), game.getFaction(f.getFactionName()), regular, starred, true, true);
                         else if (f.getName().equals("Advisor")) {
                             game.removeAdvisorsAndReportToTurnSummary(t.getTerritoryName(), game.getFaction("BG"), f.getStrength(), true);
                         }

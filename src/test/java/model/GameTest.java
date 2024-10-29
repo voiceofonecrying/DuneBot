@@ -295,7 +295,7 @@ class GameTest extends DuneTest {
         void setUp() throws IOException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(moritani);
-            game.removeForces("Grumman", moritani, 13, false, true);
+            game.removeForces("Grumman", moritani, 13, 0, true);
             assertFalse(moritani.isHighThreshold());
             game.getTerritory("Carthag").addTerrorToken("Robbery");
 

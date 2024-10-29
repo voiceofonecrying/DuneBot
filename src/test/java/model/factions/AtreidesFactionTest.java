@@ -157,8 +157,11 @@ class AtreidesFactionTest extends FactionTestTemplate {
     public void testSetForcesLost(RepetitionInfo repetitionInfo) {
         int forcesLost = repetitionInfo.getCurrentRepetition();
         faction.setForcesLost(forcesLost);
-        assertEquals(faction.getForcesLost(), forcesLost);
-        assertEquals(faction.isHasKH(), forcesLost >= 7);
+        assertEquals(Math.min(7, forcesLost), faction.getForcesLost());
+        if (forcesLost < 7)
+            assertFalse(faction.isHasKH());
+        else
+            assertTrue(faction.isHasKH());
     }
 
     @Test
