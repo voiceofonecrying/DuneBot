@@ -3537,6 +3537,181 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#strongholdCards")
+    class StrongholdCards {
+        Battle battle;
+        StrongholdCard sietchTabrCard;
+        StrongholdCard tueksSietchCard;
+        StrongholdCard hmsCard;
+
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            game.addFaction(atreides);
+            game.addFaction(ix);
+            sietchTabrCard = new StrongholdCard("Sietch Tabr");
+            tueksSietchCard = new StrongholdCard("Tuek's Sietch");
+            hmsCard = new StrongholdCard("Hidden Mobile Stronghold");
+            atreides.addStrongholdCard(sietchTabrCard);
+            atreides.addStrongholdCard(tueksSietchCard);
+            atreides.addStrongholdCard(hmsCard);
+            atreides.addTreacheryCard(baliset);
+            atreides.addTreacheryCard(kulon);
+        }
+
+        @Nested
+        @DisplayName("#sietchTabr")
+        class SietchTabr {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                sietchTabr.addForces("Atreides", 4);
+                sietchTabr.addForces("Ix", 1);
+                sietchTabr.addForces("Ix*", 1);
+                battle = new Battle(game, List.of(sietchTabr), List.of(atreides, ix));
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, baliset, kulon);
+                battle.setBattlePlan(game, ix, cammarPilru, null, false, 2, true, 1, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card\n"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card\n"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testResolveGivesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card.")));
+                assertEquals(12, atreides.getSpice());
+            }
+        }
+
+        @Nested
+        @DisplayName("tueksSietch")
+        class TueksSietch {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                tueksSietch.addForces("Atreides", 4);
+                tueksSietch.addForces("Ix", 1);
+                tueksSietch.addForces("Ix*", 1);
+                battle = new Battle(game, List.of(tueksSietch), List.of(atreides, ix));
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, baliset, kulon);
+                battle.setBattlePlan(game, ix, cammarPilru, null, false, 2, true, 1, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n"));
+                assertEquals(10, atreides.getSpice());
+            }
+
+            @Test
+            void testResolveGivesSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card.")));
+                assertEquals(14, atreides.getSpice());
+            }
+        }
+
+        @Nested
+        @DisplayName("hiddenMobileStronghold")
+        class HiddenMobileStronghold {
+            @BeforeEach
+            void setUp() {
+                hms.addForces("Atreides", 4);
+                hms.addForces("Ix", 1);
+                hms.addForces("Ix*", 1);
+            }
+
+            @Nested
+            @DisplayName("#sietchTabrChosen")
+            class SietchTabrChosen {
+                @BeforeEach
+                void setUp() throws InvalidGameStateException {
+                    battle = new Battle(game, List.of(hms), List.of(atreides, ix));
+                    battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, baliset, kulon);
+                    battle.setHMSStrongholdCard(atreides, "Sietch Tabr");
+                    battle.setBattlePlan(game, ix, cammarPilru, null, false, 2, true, 1, null, null);
+                    modInfo.clear();
+                }
+
+                @Test
+                void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card\n"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card\n"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testResolveGivesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 2 " + Emojis.SPICE + " for Sietch Tabr stronghold card.")));
+                    assertEquals(12, atreides.getSpice());
+                }
+            }
+
+            @Nested
+            @DisplayName("#tueksSietchChosen")
+            class TueksSietchChosen {
+                @BeforeEach
+                void setUp() throws InvalidGameStateException {
+                    battle = new Battle(game, List.of(hms), List.of(atreides, ix));
+                    battle.setHMSStrongholdCard(atreides, "Tuek's Sietch");
+                    battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, baliset, kulon);
+                    battle.setBattlePlan(game, ix, cammarPilru, null, false, 2, true, 1, null, null);
+                    modInfo.clear();
+                }
+
+                @Test
+                void testReviewDoesNotGiveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, false);
+                    assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testPublishDoesNotGiveSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, true, false);
+                    assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n"));
+                    assertEquals(10, atreides.getSpice());
+                }
+
+                @Test
+                void testResolveGivesSpice() throws InvalidGameStateException {
+                    battle.printBattleResolution(game, false, true);
+                    assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " gains 4 " + Emojis.SPICE + " for Tuek's Sietch stronghold card.")));
+                    assertEquals(14, atreides.getSpice());
+                }
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolutionWithLasgunShieldCarnage")
     class ResolutionWithLasgunShieldCarnage {
         Battle battle;
