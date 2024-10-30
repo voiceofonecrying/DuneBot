@@ -1618,9 +1618,17 @@ public class ReportsCommands {
         String result = "__" + discordGame.getGameCategory().getName() + "__\n";
         result += "> " + discordGame.getTextChannel("front-of-shield").getJumpUrl() + "\n";
         result += "Moderator:\n";
-        if (game.isTeamMod())
+        String modCommandsExecuted = "";
+        if (game.isTeamMod()) {
+            List<Map.Entry<String, Integer>> list = new ArrayList<>(game.getModCommandExecutions().entrySet());
+            list.sort(Map.Entry.comparingByValue());
             result += "> " + Objects.requireNonNull(event.getGuild()).getJDA().getRolesByName("Moderators", false).getFirst().getAsMention() + "\n";
-        result += "> " + game.getMod() + "\n";
+            result += String.join("", list.reversed().stream().map(e -> "> " + e.getKey() + "\n").toList());
+            modCommandsExecuted = String.join("", list.reversed().stream().map(e -> "\n" + e.getValue() + " - " + e.getKey()).toList());
+            if (!game.getModCommandExecutions().containsKey(game.getMod()))
+                result += "> " + game.getMod() + "\n";
+        } else
+            result += "> " + game.getMod() + "\n";
         result += "Factions:\n";
         StringBuilder factions = new StringBuilder();
         for (Faction f : game.getFactions()) {
@@ -1642,6 +1650,8 @@ public class ReportsCommands {
             result += "> " + Emojis.getFactionEmoji(winner2Name) + " - " + game.getFaction(winner2Name).getPlayer() + "\n";
         result += "Summary:\n";
         result += "> Edit this text to add a summary, or remove the Summary section if you do not wish to include one.";
+//        if (game.isTeamMod() && !modCommandsExecuted.isEmpty())
+//            result += "\n\nCommand executions by each mod team member (data capture started Oct. 27):" + modCommandsExecuted;
         result += "\n\n(Use the Discord menu item Copy Text to retain formatting when pasting.)";
         discordGame.getModInfo().queueMessage(result);
     }

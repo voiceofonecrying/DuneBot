@@ -455,6 +455,10 @@ public class Game {
         modCommandExecutions.put(modAsMention, ++numCalls);
     }
 
+    public HashMap<String, Integer> getModCommandExecutions() {
+        return modCommandExecutions;
+    }
+
     public String getMod() {
         return mod;
     }
