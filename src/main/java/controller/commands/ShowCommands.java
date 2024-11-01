@@ -449,7 +449,7 @@ public class ShowCommands {
             if (faction.hasAlly()) {
                 maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
             }
-            for (int i=game.getBidding().getCurrentBid() + 1; i<=Math.min(maxPossibleBid, 25 + game.getBidding().getCurrentBid()); i++) {
+            for (int i=game.getBidding().getCurrentBid() + 1; i<=Math.min(maxPossibleBid, 24 + game.getBidding().getCurrentBid()); i++) {
                 String optionString = String.valueOf(i);
                 if (faction.hasAlly() && i == game.getFaction(faction.getAlly()).getSpiceForAlly()) {
                     optionString += " (Ally support limit)";
