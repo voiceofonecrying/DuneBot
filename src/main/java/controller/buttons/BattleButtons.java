@@ -35,6 +35,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
+        else if (event.getComponentId().startsWith("battle-cancel-audit")) cancelAudit(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -266,6 +267,20 @@ public class BattleButtons implements Pressable {
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("You will resolve the battle yourself.");
+    }
+
+    private static void cancelAudit(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
+        String response = event.getComponentId().replace("battle-cancel-audit-", "");
+        Battle battle = game.getBattles().getCurrentBattle();
+        if (response.equals("yes")) {
+            battle.cancelAudit(game, true);
+            discordGame.queueMessage("You will pay to cancel the audit.");
+        } else {
+            battle.cancelAudit(game, false);
+            discordGame.queueMessage("You will not pay to cancel the audit.");
+        }
+        discordGame.pushGame();
     }
 
     public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {

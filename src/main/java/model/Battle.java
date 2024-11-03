@@ -49,6 +49,7 @@ public class Battle {
     private int expectedTechTokens;
     private String harkonnenCapturedLeader;
     private String harkonnenLeaderVictim;
+    private boolean auditorMustBeResolved;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -79,6 +80,7 @@ public class Battle {
         this.mirrorWeaponStoneBurnerTBD = DecisionStatus.NA;
         this.poisonToothTBD = DecisionStatus.NA;
         this.diplomatMustBeResolved = false;
+        this.auditorMustBeResolved = false;
     }
 
     public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
@@ -1368,8 +1370,8 @@ public class Battle {
         resolution += factionBattleResults(game, true, executeResolution);
         resolution += factionBattleResults(game, false, executeResolution);
         resolution += lasgunShieldCarnage(game, executeResolution);
-        resolution += aggressorBattlePlan.checkAuditor(defender.getEmoji());
-        resolution += defenderBattlePlan.checkAuditor(aggressor.getEmoji());
+        resolution += checkAuditor(aggressorBattlePlan, defender, executeResolution);
+        resolution += checkAuditor(defenderBattlePlan, aggressor, executeResolution);
 
         if (isSpiceBankerDecisionOpen() && !publishToTurnSummary)
             resolution += "\nBattle cannot be resolved yet.\n" + spiceBankerFactionEmoji + " must decide on Spice Banker\n";
@@ -1614,6 +1616,22 @@ public class Battle {
         if (!carnage.isEmpty())
             carnage = "\nLasgun-Shield carnage:\n" + carnage;
         return carnage;
+    }
+
+    private String checkAuditor(BattlePlan battlePlan, Faction opponent, boolean executeResolution) {
+        String resolution = "";
+        String auditorString = battlePlan.checkAuditor(opponent.getEmoji());
+        // Yuck! Checking empty string coming back from BattlePlan. Probably should move that logic here into Battle.
+        if (executeResolution && !auditorString.isEmpty()) {
+            int spice = battlePlan.isLeaderAlive() ? 2 : 1;
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("battle-cancel-audit-yes", "Yes"));
+            choices.add(new DuneChoice("battle-cancel-audit-no", "No"));
+            opponent.getChat().publish("Will you pay " + spice + " " + Emojis.SPICE + " to cancel the audit? " + opponent.getPlayer(), choices);
+            auditorMustBeResolved = true;
+        } else
+            resolution += auditorString;
+        return resolution;
     }
 
     private String nonCombatantForces(Game game, List<Territory> allTerritorySectors) {
@@ -1963,5 +1981,38 @@ public class Battle {
         if (harkonnenCapturedLeader == null)
             return false;
         return game.getFaction(harkonnenLeaderVictim).getLeader(harkonnenCapturedLeader).isPresent();
+    }
+
+    public boolean isAuditorMustBeResolved() {
+        return auditorMustBeResolved;
+    }
+
+    public void cancelAudit(Game game, boolean cancel) throws InvalidGameStateException {
+        Faction aggressor = getAggressor(game);
+        Faction defender = getDefender(game);
+        Faction choam;
+        BattlePlan choamPlan;
+        Faction auditedFaction;
+        if (aggressor instanceof ChoamFaction) {
+            choam = aggressor;
+            choamPlan = aggressorBattlePlan;
+            auditedFaction = defender;
+        } else if (defender instanceof ChoamFaction) {
+            choam = defender;
+            choamPlan = defenderBattlePlan;
+            auditedFaction = aggressor;
+        } else {
+            throw new InvalidGameStateException("CHOAM is not in this battle.");
+        }
+
+        int auditAmount = choamPlan.isLeaderAlive() ? 2 : 1;
+        if (cancel) {
+            auditedFaction.subtractSpice(auditAmount, "cancel audit");
+            choam.addSpice(auditAmount, auditedFaction.getEmoji() + " canceled audit");
+            game.getTurnSummary().publish(auditedFaction.getEmoji() + " paid " + Emojis.CHOAM + " " + auditAmount + " " + Emojis.SPICE + " to cancel the audit.");
+        } else {
+            game.getModInfo().publish(auditedFaction.getEmoji() + " does not cancel the audit.\nShow " + Emojis.CHOAM + " " + auditAmount + " of " + auditedFaction.getEmoji() + " " + Emojis.TREACHERY + " cards not played in this battle. " + game.getModOrRoleMention());
+        }
+        auditorMustBeResolved = false;
     }
 }
