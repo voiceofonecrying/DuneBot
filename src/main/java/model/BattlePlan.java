@@ -230,8 +230,8 @@ public class BattlePlan {
                 if (isIx)
                     regularStrengthUsed += troopsNeeded;
                 else {
+                    regularStrengthUsed += Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
                     troopsNeeded -= Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
-                    regularStrengthUsed = regularStrength;
                     specialStrengthUsed += troopsNeeded;
                 }
             }
