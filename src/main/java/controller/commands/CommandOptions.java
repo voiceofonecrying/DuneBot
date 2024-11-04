@@ -508,7 +508,7 @@ public class CommandOptions {
     private static List<Command.Choice> reviveLeaders(Game game, String searchValue) {
         return game.getLeaderTanks().stream()
                 .filter(l -> l.getName().matches(searchRegex(searchValue)))
-                .map(l -> new Command.Choice(l.getName() + " (" + l.getStandardRevivalCost() + ")", l.getName()))
+                .map(l -> new Command.Choice(l.getNameAndValueString(), l.getName()))
                 .collect(Collectors.toList());
     }
 

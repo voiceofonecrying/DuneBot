@@ -39,13 +39,22 @@ public class Leader {
         this.originalFactionName = originalFactionName;
     }
 
-    public int getStandardRevivalCost() {
+    public String getNameAndValueString() {
+        String valueString = String.valueOf(value);
+        if (name.equals("Zoal"))
+            valueString = "X";
+        return name + " (" + valueString + ")";
+    }
+
+    public int getAssassinationValue() {
         return name.equals("Zoal") ? 3 : value;
     }
 
     public int getRevivalCost(Faction revivingFaction) {
-        int cost = getStandardRevivalCost();
-        if (revivingFaction instanceof BTFaction || revivingFaction.getAlly().equals("BT"))
+        int cost = value;
+        if (name.equals("Zoal"))
+            cost = 3;
+        else if (revivingFaction instanceof BTFaction || revivingFaction.getAlly().equals("BT"))
             cost = Math.ceilDiv(cost, 2);
         return cost;
     }
