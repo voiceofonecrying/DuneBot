@@ -173,7 +173,7 @@ abstract class FactionTestTemplate {
             ledger = new TestTopic();
             faction.setLedger(ledger);
             leader = faction.getLeaders().getFirst();
-            leaderValue = leader.getStandardRevivalCost();
+            leaderValue = leader.getAssassinationValue();
             game.killLeader(faction, leader.getName());
             assertFalse(faction.getLeaders().contains(leader));
             assertTrue(game.getLeaderTanks().contains(leader));
