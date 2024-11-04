@@ -3747,88 +3747,61 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " may audit 2 " + Emojis.TREACHERY + " cards not used in the battle unless " + Emojis.ATREIDES + " cancels the audit for 2 " + Emojis.SPICE + "\n"));
             }
 
-            @Nested
-            @DisplayName("#publishGivesChoices")
-            class PublishGivesChoices {
-                @BeforeEach
-                void setUp() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, true);
-                    assertTrue(battle.isAuditorMustBeResolved());
-                    assertEquals("Will you pay 2 " + Emojis.SPICE + " to cancel the audit? at", atreidesChat.getMessages().getLast());
-                    assertEquals(2, atreidesChat.getChoices().getLast().size());
-                }
-
-                @Test
-                void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
-                    assertFalse(game.getLeaderTanks().contains(auditor));
-                    battle.cancelAudit(game, true);
-                    assertFalse(battle.isAuditorMustBeResolved());
-                    assertEquals(8, atreides.getSpice());
-                    assertEquals(4, choam.getSpice());
-                    assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 2 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
-                }
+            @Test
+            void testResolveGivesChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(battle.isAuditorMustBeResolved());
+                assertEquals("Will you pay 2 " + Emojis.SPICE + " to cancel the audit? at", atreidesChat.getMessages().getLast());
+                assertEquals(2, atreidesChat.getChoices().getLast().size());
+                assertFalse(game.getLeaderTanks().contains(auditor));
             }
 
-            @Nested
-            @DisplayName("#opponentHasNoCards")
-            class OpponentHasNoCards {
-                @Test
-                void testReviewDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, false);
-                }
-
-                @Test
-                void testPublishDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, true, false);
-                }
-
-                @Test
-                void testResolveGivesChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, true);
-                }
+            @Test
+            void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, true);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(8, atreides.getSpice());
+                assertEquals(4, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 2 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasTwoCardsPlayedOneInBattle")
-            class OpponentHasTwoCardsPlayedOneInBattle {
-                @Test
-                void testReviewDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, false);
-                }
-
-                @Test
-                void testPublishDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, true, false);
-                }
-
-                @Test
-                void testResolveGivesChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, true);
-                }
+            @Test
+            void testAuditedOpponentHasNoCards() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has no " + Emojis.TREACHERY + " cards not played in the battle.", choamChat.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasTwoShieldsPlayedOneInBattle")
-            class OpponentHasTwoShieldsPlayedOneInBattle {
-                @Test
-                void testReviewDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, false);
-                }
-
-                @Test
-                void testPublishDoesNotGiveChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, true, false);
-                }
-
-                @Test
-                void testResolveGivesChoices() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, true);
-                }
+            @Test
+            void testAuditedOpponentHasOneCard() throws InvalidGameStateException {
+                atreides.addTreacheryCard(shield);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, choamChat.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasTwoCards")
-            class OpponentHasTwoCards {
+            @Test
+            void testAuditedOpponentHasTwoCards() throws InvalidGameStateException {
+                atreides.addTreacheryCard(shield);
+                atreides.addTreacheryCard(lasgun);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                boolean lasgunAndShield = choamChat.getMessages().getLast().equals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY);
+                boolean shielsAndLasgun = choamChat.getMessages().getLast().equals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY);
+                assertTrue(lasgunAndShield || shielsAndLasgun);
             }
         }
 
@@ -3858,47 +3831,72 @@ class BattleTest extends DuneTest {
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " may audit 1 " + Emojis.TREACHERY + " cards not used in the battle unless " + Emojis.ATREIDES + " cancels the audit for 1 " + Emojis.SPICE + "\n"));
             }
 
-            @Nested
-            @DisplayName("#publishGivesChoices")
-            class PublishGivesChoices {
-                @BeforeEach
-                void setUp() throws InvalidGameStateException {
-                    battle.printBattleResolution(game, false, true);
-                    assertTrue(battle.isAuditorMustBeResolved());
-                    assertEquals("Will you pay 1 " + Emojis.SPICE + " to cancel the audit? at", atreidesChat.getMessages().getLast());
-                    assertEquals(2, atreidesChat.getChoices().getLast().size());
-                }
-
-                @Test
-                void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
-                    assertTrue(game.getLeaderTanks().contains(auditor));
-                    assertEquals(12, atreides.getSpice());
-                    battle.cancelAudit(game, true);
-                    assertFalse(battle.isAuditorMustBeResolved());
-                    assertEquals(11, atreides.getSpice());
-                    assertEquals(3, choam.getSpice());
-                    assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 1 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
-                }
+            @Test
+            void testResolveGivesChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(battle.isAuditorMustBeResolved());
+                assertEquals("Will you pay 1 " + Emojis.SPICE + " to cancel the audit? at", atreidesChat.getMessages().getLast());
+                assertEquals(2, atreidesChat.getChoices().getLast().size());
+                assertTrue(game.getLeaderTanks().contains(auditor));
+                assertEquals(12, atreides.getSpice());
             }
 
-            @Nested
-            @DisplayName("#opponentHasTwoCardsPlayedBothInBattle")
-            class OpponentHasTwoCardsPlayedBothInBattle {
+            @Test
+            void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, true);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(11, atreides.getSpice());
+                assertEquals(3, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 1 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasThreeCardsPlayedTwoInBattle")
-            class OpponentHasThreeCardsPlayedTwoInBattle {
+            @Test
+            void testAuditedOpponentHasTwoCardsPlayedBothInBattle() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(12, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has no " + Emojis.TREACHERY + " cards not played in the battle.", choamChat.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasTwoShieldsPlayedOneInBattle")
-            class OpponentHasTwoShieldsPlayedOneInBattle {
+            @Test
+            void testAuditedOpponentHasThreeCardsPlayedTwoInBattle() throws InvalidGameStateException {
+                atreides.addTreacheryCard(lasgun);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(12, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY, choamChat.getMessages().getLast());
             }
 
-            @Nested
-            @DisplayName("#opponentHasFourCardsPlayedTwoInBattle")
-            class OpponentHasFourCardsPlayedTwoInBattle {
+            @Test
+            void testAuditedOpponentHasTwoShieldsPlayedOneInBattle() throws InvalidGameStateException {
+                atreides.addTreacheryCard(shield);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(12, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, choamChat.getMessages().getLast());
+            }
+
+            @Test
+            void testAuditedOpponentHasFourCardsPlayedTwoInBattle() throws InvalidGameStateException {
+                atreides.addTreacheryCard(shield);
+                atreides.addTreacheryCard(shield);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, false);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(12, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, choamChat.getMessages().getLast());
             }
         }
     }

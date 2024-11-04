@@ -50,6 +50,7 @@ public class Battle {
     private String harkonnenCapturedLeader;
     private String harkonnenLeaderVictim;
     private boolean auditorMustBeResolved;
+    private List<String> cardsForAudit;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -1340,6 +1341,8 @@ public class Battle {
     }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary, boolean executeResolution) throws InvalidGameStateException {
+        if (executeResolution)
+            populateCardsForAudit(game);
         resolutionPublished = publishToTurnSummary;
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
@@ -1361,6 +1364,9 @@ public class Battle {
                 richeseFaction.revealNoField(game);
         }
 
+        cardsForAudit = new ArrayList<>();
+        if (executeResolution)
+            populateCardsForAudit(game);
         resolution += getAggressorEmojis(game) + "\n";
         resolution += aggressorBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getDefenderEmojis(game) + "\n";
@@ -1987,6 +1993,44 @@ public class Battle {
         return auditorMustBeResolved;
     }
 
+    public void populateCardsForAudit(Game game) {
+        Faction aggressor = getAggressor(game);
+        Faction defender = getDefender(game);
+        Faction choam = null;
+        BattlePlan choamPlan = null;
+        Faction auditedFaction = null;
+        BattlePlan auditedPlan = null;
+        if (aggressor instanceof ChoamFaction) {
+            choam = aggressor;
+            choamPlan = aggressorBattlePlan;
+            auditedFaction = defender;
+            auditedPlan = defenderBattlePlan;
+        } else if (defender instanceof ChoamFaction) {
+            choam = defender;
+            choamPlan = defenderBattlePlan;
+            auditedFaction = aggressor;
+            auditedPlan = aggressorBattlePlan;
+        }
+        if (choam != null && choamPlan.getLeader() != null && choamPlan.getLeader().getName().equals("Auditor")) {
+            cardsForAudit = new ArrayList<>();
+            List<String> cards = auditedFaction.getTreacheryHand().stream().map(TreacheryCard::name).toList();
+            boolean cheapHeroFound = false;
+            boolean weaponFound = false;
+            boolean defenseFound = false;
+            for (String card : cards) {
+                if (!cheapHeroFound && auditedPlan.getCheapHero() != null && card.equals(auditedPlan.getCheapHero().name())) {
+                    cheapHeroFound = true;
+                } else if (!weaponFound && auditedPlan.getWeapon() != null && card.equals(auditedPlan.getWeapon().name())) {
+                    weaponFound = true;
+                } else if (!defenseFound && auditedPlan.getDefense() != null && card.equals(auditedPlan.getDefense().name())) {
+                    defenseFound = true;
+                } else {
+                    cardsForAudit.add(card);
+                }
+            }
+        }
+    }
+
     public void cancelAudit(Game game, boolean cancel) throws InvalidGameStateException {
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
@@ -2011,6 +2055,16 @@ public class Battle {
             choam.addSpice(auditAmount, auditedFaction.getEmoji() + " canceled audit");
             game.getTurnSummary().publish(auditedFaction.getEmoji() + " paid " + Emojis.CHOAM + " " + auditAmount + " " + Emojis.SPICE + " to cancel the audit.");
         } else {
+            game.getTurnSummary().publish(auditedFaction.getEmoji() + " accepts audit from " + Emojis.CHOAM);
+            List<String> cardsToShow = new ArrayList<>();
+            if (cardsForAudit != null) {
+                Collections.shuffle(cardsForAudit);
+                cardsToShow = cardsForAudit.subList(0, Math.min(auditAmount, cardsForAudit.size())).stream().map(c -> Emojis.TREACHERY + " " + c + " " + Emojis.TREACHERY).toList();
+            }
+            if (cardsToShow.isEmpty())
+                choam.getChat().publish(auditedFaction.getEmoji() + " has no " + Emojis.TREACHERY + " cards not played in the battle.");
+            else
+                choam.getChat().publish(auditedFaction.getEmoji() + " has " + String.join(" and ", cardsToShow));
             game.getModInfo().publish(auditedFaction.getEmoji() + " does not cancel the audit.\nShow " + Emojis.CHOAM + " " + auditAmount + " of " + auditedFaction.getEmoji() + " " + Emojis.TREACHERY + " cards not played in this battle. " + game.getModOrRoleMention());
         }
         auditorMustBeResolved = false;
