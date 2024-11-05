@@ -19,7 +19,6 @@ public class RicheseButtons implements Pressable {
             blackMarketMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richeseblackmarket-")) confirmBlackMarket(event, discordGame, game);
         else if (event.getComponentId().startsWith("richesecachetime-")) cacheCardTime(event, discordGame, game);
-        else if (event.getComponentId().equals("richesecachelast-confirm")) confirmLast(discordGame, game);
         else if (event.getComponentId().startsWith("richesecachecard-")) cacheCard(event, discordGame, game);
         else if (event.getComponentId().startsWith("richesecachecardmethod-"))
             cacheCardMethod(event, discordGame, game);
@@ -40,7 +39,7 @@ public class RicheseButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         String cardName = event.getComponentId().split("-")[1];
         if (cardName.equals("reselect")) {
             discordGame.queueMessage("Starting over");
@@ -69,31 +68,25 @@ public class RicheseButtons implements Pressable {
         }
     }
 
-    private static void cacheCardTime(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void cacheCardTime(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String time = event.getComponentId().split("-")[1];
         discordGame.queueDeleteMessage();
         if (time.equals("last")) {
-            discordGame.queueMessage("You selected last.");
-            RicheseCommands.confirmLast(game);
+            discordGame.queueMessage("You will sell last.");
+            discordGame.getModInfo().queueMessage(Emojis.RICHESE + " will be given buttons when it is time for the last card.");
+            game.getBidding().setCacheCardDecisionInProgress(false);
+            RunCommands.bidding(discordGame, game);
         }
     }
 
-    private static void confirmLast(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You will sell last.");
-        discordGame.getModInfo().queueMessage(Emojis.RICHESE + " will be given buttons when it is time for the last card.");
-        game.getBidding().setCacheCardDecisionInProgress(false);
-        RunCommands.bidding(discordGame, game);
-    }
-
-    private static void cacheCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void cacheCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         discordGame.queueDeleteMessage();
         String cardName = event.getComponentId().split("-")[1];
         discordGame.queueMessage("You selected " + cardName.trim() + ".");
         RicheseCommands.cacheCardMethod(game, cardName);
     }
 
-    private static void cacheCardMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void cacheCardMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         String cardName = event.getComponentId().split("-")[1];
         discordGame.queueDeleteMessage();
         if (cardName.equals("reselect")) {

@@ -200,13 +200,6 @@ public class RicheseCommands {
         game.getFaction("Richese").getChat().publish("", choices);
     }
 
-    public static void confirmLast(Game game) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("richesecachelast-confirm", "Confirm you wish to sell your card last."));
-        choices.add(new DuneChoice("secondary", "richesecachecardmethod-reselect", "Start over"));
-        game.getFaction("Richese").getChat().publish("", choices);
-    }
-
     public static void cacheCardMethod(Game game, String cardName) {
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
