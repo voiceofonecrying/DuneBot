@@ -1557,6 +1557,7 @@ public class Game {
             if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
                 faction.addSpice(2, "for High Threshold advantage");
                 harkonnenFaction.setTriggeredHT(true);
+                turnSummary.publish(Emojis.HARKONNEN + "gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage");
             }
         }
         if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
