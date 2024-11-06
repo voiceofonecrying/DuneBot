@@ -383,7 +383,7 @@ public class Game {
             TechToken.collectSpice(this, TechToken.SPICE_PRODUCTION);
     }
 
-    public boolean isInBiddingPHase() {
+    public boolean isInBiddingPhase() {
         return bidding != null;
     }
 

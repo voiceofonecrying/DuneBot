@@ -17,7 +17,7 @@ public class BiddingButtons implements Pressable {
         else if (event.getComponentId().startsWith("bidding-turn-pass")) toggleAutoPassTurn(event, discordGame, game);
         else if (event.getComponentId().startsWith("bidding-pass")) passOnce(event, discordGame, game);
         game.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-}
+    }
 
     private static void passOnce(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
@@ -56,5 +56,4 @@ public class BiddingButtons implements Pressable {
         }
         discordGame.pushGame();
     }
-
-    }
+}
