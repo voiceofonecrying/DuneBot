@@ -432,17 +432,17 @@ public class ShowCommands {
         }
 
         if (game.isInBiddingPHase()) {
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass-" + faction.getName(), "Pass One Time")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass", "Pass One Time")).build());
             if (!faction.isAutoBid()) {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass-" + faction.getName(), "Enable Auto-Pass")).build());
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass", "Enable Auto-Pass")).build());
             } else {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass-" + faction.getName(), "Disable Auto-Pass")).build());
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
             }
 
             if (!faction.isAutoBidTurn()) {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass-" + faction.getName(), "Enable Auto-Pass (Whole Round)")).build());
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
             } else {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass-" + faction.getName(), "Disable Auto-Pass (Whole Round)")).build());
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass", "Disable Auto-Pass (Whole Round)")).build());
             }
             StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
             int maxPossibleBid = faction.getSpice();

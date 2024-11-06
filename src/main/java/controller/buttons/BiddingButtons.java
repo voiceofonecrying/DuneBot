@@ -20,39 +20,39 @@ public class BiddingButtons implements Pressable {
 }
 
     private static void passOnce(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
-        Faction faction = game.getFaction(event.getComponentId().split("-")[2]);
+        Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().pass(game, faction);
         String infoChannelName = faction.getName().toLowerCase() + "-info";
 
         discordGame.queueMessage("You will pass the next bid.");
-        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass-" + faction.getName(), "Pass One Time")).build());
+        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass", "Pass One Time")).build());
         discordGame.pushGame();
     }
 
-    private static void toggleAutoPassTurn(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction faction = game.getFaction(event.getComponentId().split("-")[3]);
-        faction.setAutoBidTurn(!faction.isAutoBidTurn());
+    private static void toggleAutoPassTurn(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getBidding().setAutoPassEntireTurn(game, faction, !faction.isAutoBidTurn());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (!faction.isAutoBidTurn()) {
             discordGame.queueMessage("You will not pass on every card this round.");
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass-" + faction.getName(), "Enable Auto-Pass (Whole Round)")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
         } else {
             discordGame.queueMessage("You will pass on every card this round.");
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass-" + faction.getName(), "Disable Auto-Pass (Whole Round)")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass", "Disable Auto-Pass (Whole Round)")).build());
         }
         discordGame.pushGame();
     }
 
-    private static void toggleAutoPass(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction faction = game.getFaction(event.getComponentId().split("-")[3]);
-        faction.setAutoBid(!faction.isAutoBid());
+    private static void toggleAutoPass(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getBidding().setAutoPass(game, faction, !faction.isAutoBid());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (!faction.isAutoBid()) {
             discordGame.queueMessage("You will not pass on this card.");
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass-" + faction.getName(), "Enable Auto-Pass")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass", "Enable Auto-Pass")).build());
         } else {
             discordGame.queueMessage("You will pass on this card.");
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass-" + faction.getName(), "Disable Auto-Pass")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
         }
         discordGame.pushGame();
     }
