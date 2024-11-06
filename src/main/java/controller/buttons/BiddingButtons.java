@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 public class BiddingButtons implements Pressable {
-
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         if (event.getComponentId().startsWith("bidding-auto-pass")) toggleAutoPass(event, discordGame, game);
         else if (event.getComponentId().startsWith("bidding-turn-pass")) toggleAutoPassTurn(event, discordGame, game);
@@ -34,10 +33,14 @@ public class BiddingButtons implements Pressable {
         game.getBidding().setAutoPassEntireTurn(game, faction, !faction.isAutoBidTurn());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (!faction.isAutoBidTurn()) {
-            discordGame.queueMessage("You will not pass on every card this round.");
+            discordGame.queueMessage("You will not auto-pass on every card this round.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
         } else {
-            discordGame.queueMessage("You will pass on every card this round.");
+            int maxBid = faction.getMaxBid();
+            if (maxBid > game.getBidding().getCurrentBid())
+                discordGame.queueMessage("You will auto-pass on this card if the bid gets to " + maxBid + " or higher and then auto-pass on every card this round.");
+            else
+                discordGame.queueMessage("You will auto-pass on every card this round.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass", "Disable Auto-Pass (Whole Round)")).build());
         }
         discordGame.pushGame();
@@ -48,10 +51,14 @@ public class BiddingButtons implements Pressable {
         game.getBidding().setAutoPass(game, faction, !faction.isAutoBid());
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (!faction.isAutoBid()) {
-            discordGame.queueMessage("You will not pass on this card.");
+            discordGame.queueMessage("You will not auto-pass on this card.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass", "Enable Auto-Pass")).build());
         } else {
-            discordGame.queueMessage("You will pass on this card.");
+            int maxBid = faction.getMaxBid();
+            if (maxBid > game.getBidding().getCurrentBid())
+                discordGame.queueMessage("You will auto-pass on this card if the bid gets to " + maxBid + " or higher.");
+            else
+                discordGame.queueMessage("You will auto-pass on this card.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
         }
         discordGame.pushGame();
