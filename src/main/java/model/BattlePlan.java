@@ -225,17 +225,21 @@ public class BattlePlan {
                 if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
                 specialStrengthUsed++;
             }
-            while (isIx && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+            while (isIx && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 1) {
                 dialUsed++;
-                specialStrengthUsed++;
+                specialStrengthUsed += 2;
             }
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
                 int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-                if (isIx)
+                if (isIx) {
+                    int specialsToUse = Math.min(troopsNeeded, specialStrength - specialStrengthUsed);
+                    specialStrengthUsed += specialsToUse;
+                    troopsNeeded -= specialsToUse;
                     regularStrengthUsed += troopsNeeded;
-                else {
-                    regularStrengthUsed += Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
-                    troopsNeeded -= Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
+                } else {
+                    int regularsToUse = Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
+                    regularStrengthUsed += regularsToUse;
+                    troopsNeeded -= regularsToUse;
                     specialStrengthUsed += troopsNeeded;
                 }
             }
@@ -280,8 +284,25 @@ public class BattlePlan {
         specialNotDialed = specialStrength - specialStrengthUsed;
 
         int swappableSpecials = specialDialed;
-        if (faction instanceof IxFaction) swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
-        if (swappableSpecials > 0 && regularStrength - regularDialed >= 2) {
+        if (faction instanceof IxFaction) {
+            swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
+            if (swappableSpecials > 0 && regularStrength - regularDialed >= 1) {
+                List<DuneChoice> choices = new ArrayList<>();
+                int numStarsReplaced = 0;
+                while (regularStrength - regularDialed >= numStarsReplaced) {
+                    int altRegularDialed = regularDialed + numStarsReplaced;
+                    int altSpecialDialed = specialDialed - numStarsReplaced;
+                    String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
+                    String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
+                    choices.add(new DuneChoice(id, label));
+                    numStarsReplaced++;
+                    if (altSpecialDialed == spice)
+                        break;
+                }
+                faction.getChat().publish("How would you like to take troop losses?", choices);
+                dialedForcesSettled = false;
+            }
+        } else if (swappableSpecials > 0 && regularStrength - regularDialed >= 2) {
             List<DuneChoice> choices = new ArrayList<>();
             int numStarsReplaced = 0;
             while (regularStrength - regularDialed >= numStarsReplaced * 2) {
@@ -291,7 +312,7 @@ public class BattlePlan {
                 String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
                 choices.add(new DuneChoice(id, label));
                 numStarsReplaced++;
-                if (altSpecialDialed == 0 || faction instanceof IxFaction && altSpecialDialed == specialStrength - spice)
+                if (altSpecialDialed == 0)
                     break;
             }
             faction.getChat().publish("How would you like to take troop losses?", choices);

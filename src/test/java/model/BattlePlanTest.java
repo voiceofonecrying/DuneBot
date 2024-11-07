@@ -1369,8 +1369,8 @@ public class BattlePlanTest extends DuneTest {
             battle.negateSpecialForces(game, ix);
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 2, false, 1);
             assertEquals(0, bp.getRegularDialed());
-            assertEquals(2, bp.getSpecialDialed());
-            assertEquals(3, bp.getNumForcesNotDialed());
+            assertEquals(3, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
         }
 
         @Test
