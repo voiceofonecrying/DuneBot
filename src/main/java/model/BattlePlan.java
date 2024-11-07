@@ -225,6 +225,10 @@ public class BattlePlan {
                 if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
                 specialStrengthUsed++;
             }
+            while (isIx && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+                dialUsed++;
+                specialStrengthUsed++;
+            }
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
                 int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
                 if (isIx)
