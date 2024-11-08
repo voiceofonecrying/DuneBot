@@ -408,7 +408,7 @@ public class Initializers {
             case "ally 6" -> {
                 return new Point(35, 783);
             }
-            case "turn 0", "turn 1" -> {
+            case "turn 1" -> {
                 return new Point(124, 60);
             }
             case "turn 2" -> {
@@ -435,7 +435,7 @@ public class Initializers {
             case "turn 9" -> {
                 return new Point(65, 80);
             }
-            case "turn 10" -> {
+            case "turn 0" -> {
                 return new Point(93, 60);
             }
             case "phase 1" -> {
