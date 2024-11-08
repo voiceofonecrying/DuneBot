@@ -131,7 +131,7 @@ public class RunCommands {
                 game.advancePhase();
                 game.startRevival();
                 if (!game.getRevival().isRecruitsDecisionNeeded())
-                    discordGame.getModInfo().queueMessage("Bidding phase ended. Run advance to start revivals.");
+                    discordGame.getModInfo().queueMessage("Bidding phase has ended. Run advance to start revivals. " + game.getModOrRoleMention());
             }
         } else if (phase == 5 && subPhase == 1) {
             if (game.getRevival().performPreSteps(game)) {
@@ -146,7 +146,7 @@ public class RunCommands {
             }
         } else if (phase == 5 && subPhase == 3) {
             game.endRevival();
-            discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement.");
+            discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement. " + game.getModOrRoleMention());
             game.advancePhase();
         } else if (phase == 6) {
             startShipmentPhase(discordGame, game);
