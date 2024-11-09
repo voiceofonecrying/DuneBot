@@ -894,6 +894,8 @@ public class Game {
     public void startStormPhase() {
         turnSummary.publish("**Turn " + turn + " Storm Phase**");
         phaseForWhispers = "Turn " + turn + " Storm Phase\n";
+        if (hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))
+            territories.values().forEach(t -> t.flipAdvisorsIfAlone(this));
 
         for (Territory newDiscovery : territories.values().stream().filter(Territory::isJustDiscovered).toList()) {
             for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
