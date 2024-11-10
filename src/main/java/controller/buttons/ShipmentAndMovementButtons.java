@@ -3,7 +3,6 @@ package controller.buttons;
 import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.CommandManager;
-import controller.commands.RunCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -294,7 +293,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         return game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild");
     }
 
-    private static void passMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static void passMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (event.getComponentId().contains("-enter-discovery-token")) {
@@ -312,8 +311,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             } else if (!game.getTurnOrder().isEmpty()) {
                 sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
             } else {
-                RunCommands.advance(discordGame, game);
-                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
+//                RunCommands.advance(discordGame, game);
+//                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
+                discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
+                discordGame.pushGame();
                 return;
             }
             if (game.getTurnOrder().size() > 1 && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild")) {
@@ -325,7 +326,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
     }
 
-    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.executeFactionMovement(faction);
         if (event.getComponentId().contains("-fremen-ride")) {
@@ -347,8 +348,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             } else if (!game.getTurnOrder().isEmpty()) {
                 sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
             } else {
-                RunCommands.advance(discordGame, game);
-                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
+//                RunCommands.advance(discordGame, game);
+//                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
+                discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
+                discordGame.pushGame();
                 return;
             }
             if (!game.getTurnOrder().isEmpty() && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild") && game.getTurnOrder().size() > 1) {
