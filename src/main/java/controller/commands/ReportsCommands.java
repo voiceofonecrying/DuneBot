@@ -56,6 +56,7 @@ public class ReportsCommands {
                 new SubcommandData("played-all-twelve", "Who has played all twelve factions?"),
                 new SubcommandData("won-as-all-original-six", "Who has won with all original six factions?"),
                 new SubcommandData("won-as-all-expansion", "Who has won with all six expansion factions?"),
+                new SubcommandData("solo-victories", "Factions and players with solo victories"),
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?"),
                 new SubcommandData("high-faction-wins", "Which player-faction combos have won the most?"),
                 new SubcommandData("most-player-alliance-wins", "Which players have won as allies the most?"),
@@ -81,6 +82,7 @@ public class ReportsCommands {
             case "played-all-twelve" -> responseMessage = playedAllTwelve(event.getGuild(), grList, members);
             case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), grList, members);
             case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), grList, members);
+            case "solo-victories" -> responseMessage = soloVictories(event.getGuild(), grList, members);
             case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), grList, members, false);
             case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), grList, members, true);
             case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(grList, members);
@@ -775,13 +777,13 @@ public class ReportsCommands {
         return response.toString();
     }
 
-    private static String soloVictories(Guild guild, GRList gameResults) {
+    private static String factionSoloVictories(Guild guild, GRList gameResults) {
         int numGames = gameResults.gameResults.size();
         List<GameResult> soloWinGames = gameResults.gameResults.stream()
                 .filter(gr -> gr.getWinningFactions().size() == 1 && gr.getWinningFactions().getFirst().size() == 1).toList();
         int numWins = soloWinGames.size();
         String winPercentage = new DecimalFormat("#0.0%").format(numWins / (float) numGames);
-        StringBuilder response = new StringBuilder("__Solo Victories__\n" + winPercentage + " - " + numWins + "/" + numGames);
+        StringBuilder response = new StringBuilder("__Faction Solo Wins__\n" + winPercentage + " - " + numWins + "/" + numGames);
         List<Pair<String, Integer>> factionsSoloWins = new ArrayList<>();
         for (String factionName : factionNames) {
             int factionSoloWins = soloWinGames.stream().filter(gr -> gr.isWinningFaction(factionName)).toList().size();
@@ -951,7 +953,7 @@ public class ReportsCommands {
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(turnsHistogram(grList)).queue();
         factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
-        factionStatsChannel.sendMessage(soloVictories(guild, grList)).queue();
+        factionStatsChannel.sendMessage(factionSoloVictories(guild, grList)).queue();
         factionStatsChannel.sendMessage(writeFactionAllyPerformance(guild, grList)).queue();
 
         TextChannel moderatorStats = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("moderator-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The moderator-stats channel was not found."));
@@ -987,6 +989,7 @@ public class ReportsCommands {
         playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, grList, members, true)).queue();
+        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
 //        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
 
         FileUpload fileUpload;
@@ -1473,6 +1476,10 @@ public class ReportsCommands {
         return tagEmojis(guild, playedMax.toString());
     }
 
+    public static String soloVictories(Guild guild, GRList gameResults, List<Member> members) {
+        return factionSoloVictories(guild, gameResults) + "\n\n" + playerSoloVictories(guild, gameResults, members);
+    }
+
     private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
     private static final List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
 
@@ -1531,6 +1538,31 @@ public class ReportsCommands {
         if (maxGames == 0)
             return "No players have played.";
         return tagEmojis(guild, result.toString());
+    }
+
+    private static String playerSoloVictories(Guild guild, GRList gameResults, List<Member> members) {
+        List<GameResult> soloWinGames = gameResults.gameResults.stream()
+                .filter(gr -> gr.getWinningPlayers().size() == 1 && gr.getWinningPlayers().getFirst().size() == 1).toList();
+        StringBuilder response = new StringBuilder("__Player Solo Wins__");
+        Set<String> players = getAllPlayers(gameResults);
+        List<Pair<String, Integer>> playersSoloWins = new ArrayList<>();
+        for (String playerName : players) {
+            int playerSoloWins = soloWinGames.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
+            if (playerSoloWins > 0)
+                playersSoloWins.add(new ImmutablePair<>(playerName, playerSoloWins));
+        }
+        playersSoloWins.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
+        for (Pair<String, Integer> fsw : playersSoloWins) {
+            // Capturing the faction win counts should really be done above with a Triple instead of a Pair
+            StringBuilder factionCounts = new StringBuilder();
+            factionNames.forEach(factionName -> {
+                int factionWins = soloWinGames.stream().filter(gr -> gr.isWinningPlayer(fsw.getLeft())).filter(gr -> gr.isWinningFaction(factionName)).toList().size();
+                if (factionWins > 0)
+                    factionCounts.append(factionWins).append(" ").append(tagEmojis(guild, Emojis.getFactionEmoji(factionName))).append(" ");
+            });
+            response.append("\n").append(fsw.getRight()).append(" - ").append(tagEmojis(guild, getPlayerMention(fsw.getLeft(), members))).append(" - ").append(factionCounts);
+        }
+        return response.toString();
     }
 
     public static String averageDaysPerTurn(Guild guild) {
