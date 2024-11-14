@@ -457,9 +457,11 @@ public class Territory {
                 return true;
             if (aftermathToken)
                 return true;
+            if (onlyEcazAndAllyPresent(game))
+                return false;
             return isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction) && notEcazAllyException(game, faction);
         }
-        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction)
+        return !territoryName.equals("Polar Sink") && notEcazAllyException(game, faction) && !onlyEcazAndAllyPresent(game)
                 && (faction.hasAlly() && hasAllyForces(game, faction)
                 || isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction));
     }
@@ -482,6 +484,16 @@ public class Territory {
     private boolean notEcazAllyException(Game game, Faction faction) {
         return (!(faction instanceof EcazFaction) || getActiveFactions(game).stream().noneMatch(f -> f.getName().equals(faction.getAlly())))
                 && (!faction.getAlly().equals("Ecaz") || getActiveFactions(game).stream().noneMatch(f -> f instanceof EcazFaction));
+    }
+
+    private boolean onlyEcazAndAllyPresent(Game game) {
+        if (getActiveFactions(game).size() == 2) {
+            Faction ecaz = null;
+            if (game.hasFaction("Ecaz"))
+                ecaz = game.getFaction("Ecaz");
+            return ecaz != null && ecaz.getAlly() != null && hasActiveFaction(ecaz) && hasActiveFaction(game.getFaction(ecaz.getAlly()));
+        }
+        return false;
     }
 
     public String getAggregateTerritoryName() {

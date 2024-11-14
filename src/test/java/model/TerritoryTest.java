@@ -412,6 +412,20 @@ public class TerritoryTest extends DuneTest {
             assertFalse(carthag.factionMayNotEnter(game, bg, false));
         }
 
+
+        @Test
+        void testThirdFactionMayShipIntoTerritoryWithEcazAlly() {
+            sietchTabr.addForces("Ecaz", 1);
+            sietchTabr.addForces("BG", 1);
+            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, true));
+        }
+        @Test
+        void testThirdFactionMayMoveIntoTerritoryWithEcazAlly() {
+            sietchTabr.addForces("Ecaz", 1);
+            sietchTabr.addForces("BG", 1);
+            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, false));
+        }
+
         @Test
         void testIxMayShipIntoHMS() {
             assertFalse(hms.factionMayNotEnter(game, ix, true));
