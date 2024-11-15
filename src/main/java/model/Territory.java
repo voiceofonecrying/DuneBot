@@ -261,6 +261,10 @@ public class Territory {
         return ecazAmbassador;
     }
 
+    public boolean hasEcazAmbassador() {
+        return ecazAmbassador != null;
+    }
+
     public void setEcazAmbassador(String ecazAmbassador) {
         this.ecazAmbassador = ecazAmbassador;
     }
