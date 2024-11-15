@@ -205,6 +205,18 @@ public class RunCommands {
                     richese.revealNoField(game);
                 }
 
+                territoriesInStorm.stream().filter(Territory::hasEcazAmbassador)
+                        .forEach(t ->{
+                            String ambassador = t.getEcazAmbassador();
+                            t.removeEcazAmbassador();
+                            ((EcazFaction) game.getFaction("Ecaz")).addAmbassadorToSupply(ambassador);
+                            message.append(Emojis.ECAZ + " ")
+                                    .append(ambassador)
+                                    .append(" Ambassador removed from ")
+                                    .append(t.getTerritoryName())
+                                    .append(" and returned to supply.\n");
+                        });
+
                 List<Territory> territoriesWithTroops = territoriesInStorm.stream()
                         .filter(t -> t.countFactions() > 0).toList();
 
