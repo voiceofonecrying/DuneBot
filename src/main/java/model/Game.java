@@ -683,9 +683,9 @@ public class Game {
         TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics");
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             getTreacheryDiscard().add(familyAtomics);
-            message += "Family Atomics has been moved to the discard pile.";
+            message += "Family Atomics has been moved to the discard pile.\n";
         } else {
-            message += "Family Atomics has been removed from the game.";
+            message += "Family Atomics has been removed from the game.\n";
         }
         return message;
     }

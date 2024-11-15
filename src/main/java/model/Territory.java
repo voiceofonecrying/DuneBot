@@ -316,6 +316,25 @@ public class Territory {
         this.discovered = discovered;
     }
 
+    public String shieldWallRemoveTroops(Game game) {
+        StringBuilder message = new StringBuilder();
+
+        for (Force force : new ArrayList<>(forces)) {
+            String name = force.getFactionName();
+            int strength = force.getStrength();
+            removeForces(name, strength);
+            game.getTleilaxuTanks().addForces(name, strength);
+
+            message.append(MessageFormat.format(
+                    "{0} lose {1} {2} to the atomic explosion.\n",
+                    Emojis.getFactionEmoji(force.getFactionName()),
+                    strength, Emojis.getForceEmoji(name)
+            ));
+        }
+
+        return message.toString();
+    }
+    
     public String stormTroopsFremen(Game game) {
         List<Force> fremenForces = forces.stream()
                 .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))

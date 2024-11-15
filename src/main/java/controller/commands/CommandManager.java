@@ -1090,7 +1090,10 @@ public class CommandManager extends ListenerAdapter {
         if (!factionWithAtomics.isNearShieldWall()) {
             throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
         } else {
-            String message = game.breakShieldWall(factionWithAtomics);
+            String message = game.breakShieldWall(factionWithAtomics) +
+                    game.getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(game) +
+                    game.getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(game);
+
             discordGame.getTurnSummary().queueMessage(message);
             game.setUpdated(UpdateType.MAP);
             discordGame.pushGame();
