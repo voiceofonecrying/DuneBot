@@ -46,8 +46,7 @@ public class EcazCommands {
 
     private static void removeAmbassadorFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String ambassadorName = discordGame.required(CommandOptions.ecazAmbassadorsOnMap).getAsString();
-        boolean toHand = discordGame.optional(CommandOptions.toHand) != null
-                && discordGame.required(CommandOptions.toHand).getAsBoolean();
+        boolean toHand = discordGame.required(CommandOptions.toHand).getAsBoolean();
         EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
 
         Territory territory = game.getTerritories().values().stream()

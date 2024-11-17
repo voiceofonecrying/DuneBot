@@ -251,7 +251,7 @@ public class CommandOptions {
                     .setAutoComplete(true);
 
     public static final OptionData toHand =
-            new OptionData(OptionType.BOOLEAN, "to-hand", "Move to hand (default=false)", false);
+            new OptionData(OptionType.BOOLEAN, "to-hand", "Return to supply (e.g. when removed by storm)", true);
 
     public static final OptionData showFactions =
             new OptionData(OptionType.BOOLEAN, "show-factions", "Show factions in each game", false);
