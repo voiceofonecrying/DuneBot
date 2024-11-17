@@ -722,6 +722,16 @@ public class Game {
         return deckReplenished;
     }
 
+    public void drawTraitorCard(String factionName) {
+        Faction faction = getFaction(factionName);
+        TraitorCard traitor = getTraitorDeck().pollLast();
+        assert traitor != null;
+
+        faction.addTraitorCard(traitor);
+        faction.getLedger().publish(traitor.name() + " drawn from traitor deck.");
+        turnSummary.publish(faction.getEmoji() + " draws a card from the traitor deck." );
+    }
+
     public void drawCard(String deckName, String faction) {
         switch (deckName) {
             case "traitor deck" -> getFaction(faction).addTraitorCard(getTraitorDeck().pollLast());
@@ -731,6 +741,10 @@ public class Game {
 
     public void shuffleTreacheryDeck() {
         Collections.shuffle(getTreacheryDeck());
+    }
+
+    public void shuffleTraitorDeck() {
+        Collections.shuffle(getTraitorDeck());
     }
 
     public HashMap<String, List<String>> getAdjacencyList() {
