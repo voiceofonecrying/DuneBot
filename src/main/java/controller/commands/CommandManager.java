@@ -191,8 +191,10 @@ public class CommandManager extends ListenerAdapter {
                 case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                 case "draw-treachery-card" -> drawTreacheryCard(discordGame, game);
+                case "draw-traitor-card" -> drawTraitorCard(discordGame, game);
                 case "shuffle-treachery-deck" -> shuffleTreacheryDeck(discordGame, game);
                 case "discard" -> discard(discordGame, game);
+                case "discard-traitor" -> discardTraitor(discordGame, game);
                 case "transfer-card" -> transferCard(discordGame, game);
                 case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
                 case "set-hand-limit" -> setHandLimit(discordGame, game);
@@ -382,8 +384,10 @@ public class CommandManager extends ListenerAdapter {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
         commandData.add(Commands.slash("draw-treachery-card", "Draw a card from the top of a deck.").addOptions(faction));
+        commandData.add(Commands.slash("draw-traitor-card", "Draw a card from the top of the traitor deck.").addOptions(faction));
         commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
         commandData.add(Commands.slash("discard", "Move a card from a faction's hand to the discard pile").addOptions(faction, card));
+        commandData.add(Commands.slash("discard-traitor", "Move a card from a player to the Traitor pile and shuffle the pile.").addOptions(faction, traitor));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
         commandData.add(Commands.slash("set-hand-limit", "Change the hand limit for a faction.").addOptions(faction, amount));
@@ -705,6 +709,20 @@ public class CommandManager extends ListenerAdapter {
     public void drawTreacheryCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         game.drawTreacheryCard(factionName, true, true);
+        discordGame.pushGame();
+    }
+
+    public void drawTraitorCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        game.drawTraitorCard(factionName);
+        discordGame.pushGame();
+    }
+
+    public void discardTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        String cardName = discordGame.required(traitor).getAsString();
+
+        game.getFaction(factionName).discardTraitor(cardName);
         discordGame.pushGame();
     }
 

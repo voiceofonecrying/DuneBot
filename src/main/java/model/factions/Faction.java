@@ -1108,6 +1108,7 @@ public class Faction {
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         traitorHand.remove(traitor);
         game.getTraitorDeck().add(traitor);
+        game.shuffleTraitorDeck();
         ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
         game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
