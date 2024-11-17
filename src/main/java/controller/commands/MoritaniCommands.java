@@ -21,7 +21,7 @@ public class MoritaniCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("moritani", "Commands related to the Moritani Faction.").addSubcommands(
-                new SubcommandData("remove-terror-token-from-map", "Remove a Moritani Terror Token from the map").addOptions(moritaniTerrorTokenOnMap, toHand),
+                new SubcommandData("remove-terror-token-from-map", "Remove a Moritani Terror Token from the map").addOptions(moritaniTerrorTokenOnMap, toPlayer),
                 new SubcommandData("trigger-terror-token", "Trigger a Moritani Terror Token").addOptions(faction, moritaniTerrorTokenOnMap),
                 new SubcommandData("robbery-draw", "Draw a card with Robbery Terror Token"),
                 new SubcommandData("robbery-discard", "Discard after Robbery to get back to hand limit").addOptions(card)
@@ -43,8 +43,7 @@ public class MoritaniCommands {
 
     public static void removeTerrorTokenFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
-        boolean toHand = discordGame.optional(CommandOptions.toHand) != null
-                && discordGame.required(CommandOptions.toHand).getAsBoolean();
+        boolean toHand = discordGame.required(CommandOptions.toPlayer).getAsBoolean();
         MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
 
         Territory territory = game.getTerritories().values().stream()

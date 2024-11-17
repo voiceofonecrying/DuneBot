@@ -250,8 +250,8 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "moritani-terror-token-on-map", "Moritani Terror Token on the Map", true)
                     .setAutoComplete(true);
 
-    public static final OptionData toHand =
-            new OptionData(OptionType.BOOLEAN, "to-hand", "Move to hand (default=false)", false);
+    public static final OptionData toPlayer =
+            new OptionData(OptionType.BOOLEAN, "to-player", "Return to the player's supply", true);
 
     public static final OptionData showFactions =
             new OptionData(OptionType.BOOLEAN, "show-factions", "Show factions in each game", false);
