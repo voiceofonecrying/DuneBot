@@ -514,7 +514,7 @@ public class Territory {
             Faction ecaz = null;
             if (game.hasFaction("Ecaz"))
                 ecaz = game.getFaction("Ecaz");
-            return ecaz != null && ecaz.getAlly() != null && hasActiveFaction(ecaz) && hasActiveFaction(game.getFaction(ecaz.getAlly()));
+            return ecaz != null && ecaz.hasAlly() && hasActiveFaction(ecaz) && hasActiveFaction(game.getFaction(ecaz.getAlly()));
         }
         return false;
     }
