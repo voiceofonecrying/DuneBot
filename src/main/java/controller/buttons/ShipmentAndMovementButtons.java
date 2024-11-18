@@ -724,7 +724,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             DuneChoice execute = new DuneChoice("execute-shipment" + (guildAmbassador ? "-guild-ambassador" : ""), "Confirm Shipment");
             execute.setDisabled(disableConfirmButton);
 
-            if (faction.getShipment().hasShipped())
+            if (!guildAmbassador && faction.getShipment().hasShipped())
                 execute.setDisabled(true);
             choices.add(execute);
             choices.add(new DuneChoice("danger", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
