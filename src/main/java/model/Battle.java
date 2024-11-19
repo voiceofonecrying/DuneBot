@@ -1770,9 +1770,9 @@ public class Battle {
             throw new InvalidGameStateException(faction.getName() + " is not the defender in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " played Juice of Sapho to become the aggressor.\n";
+        juiceOfSaphoTBD = DecisionStatus.CLOSED;
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
         game.getTurnSummary().publish(turnSummaryString);
-        juiceOfSaphoTBD = DecisionStatus.CLOSED;
     }
 
     public void juiceOfSaphoDontAdd(Game game) throws InvalidGameStateException {
@@ -1797,9 +1797,9 @@ public class Battle {
             throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " added Portable Snooper to their Battle Plan.\n";
+        portableSnooperTBD = DecisionStatus.CLOSED;
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, false, oldResolutionString, combatWaterBefore);
         game.getTurnSummary().publish(turnSummaryString);
-        portableSnooperTBD = DecisionStatus.CLOSED;
     }
 
     public void portableSnooperDontAdd(Game game) throws InvalidGameStateException {
@@ -1881,9 +1881,9 @@ public class Battle {
             throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
         String turnSummaryString = faction.getEmoji() + " removed Poison Tooth from their Battle Plan.\n";
+        poisonToothTBD = DecisionStatus.CLOSED;
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, true, oldResolutionString, combatWaterBefore);
         game.getTurnSummary().publish(turnSummaryString);
-        poisonToothTBD = DecisionStatus.CLOSED;
     }
 
     public void keepPoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
