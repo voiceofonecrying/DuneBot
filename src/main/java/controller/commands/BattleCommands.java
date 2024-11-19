@@ -31,7 +31,8 @@ public class BattleCommands {
                 new SubcommandData("karama-starred-forces", "Negate the starred forces advantage in the current battle.").addOptions(starredForcesFaction),
                 new SubcommandData("karama-fremen-must-pay-spice", "Require Fremen to pay spice for full force value in the current battle."),
                 new SubcommandData("set-hms-stronghold-card", "Set the HMS Stronghold Card.").addOptions(hmsStrongoldCard),
-                new SubcommandData("set-spice-banker-support", "Set the amount of spice to be spent with Spice Banker.").addOptions(spiceBankerPayment)
+                new SubcommandData("set-spice-banker-support", "Set the amount of spice to be spent with Spice Banker.").addOptions(spiceBankerPayment),
+                new SubcommandData("release-duke-vidal", "Set Duke Vidal aside, not assigned to any faction.")
         ));
         return commandData;
     }
@@ -50,6 +51,7 @@ public class BattleCommands {
             case "karama-fremen-must-pay-spice" -> karamaFremenMustPay(discordGame, game);
             case "set-hms-stronghold-card" -> setHMSStrongholdCard(discordGame, game);
             case "set-spice-banker-support" -> setSpiceBankerSupport(discordGame, game);
+            case "release-duke-vidal" -> releaseDukeVidal(discordGame, game);
         }
     }
 
@@ -123,6 +125,15 @@ public class BattleCommands {
         if (faction.getSpice() < spice)
             throw new InvalidGameStateException(faction.getEmoji() + " does not have enough spice.");
         game.getBattles().getCurrentBattle().setSpiceBankerSupport(faction, spice);
+        discordGame.pushGame();
+    }
+
+    public static void releaseDukeVidal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        Faction faction = game.getFactions().stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
+        if (faction != null) {
+            faction.removeLeader("Duke Vidal");
+            game.getTurnSummary().publish("Duke Vidal is no longer in service to " + faction.getEmoji());
+        }
         discordGame.pushGame();
     }
 
