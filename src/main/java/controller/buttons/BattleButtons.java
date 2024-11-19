@@ -197,10 +197,10 @@ public class BattleButtons implements Pressable {
         Battle battle = game.getBattles().getCurrentBattle();
         if (event.getComponentId().equals("battle-poison-tooth-remove")) {
             battle.removePoisonTooth(game, faction);
-            discordGame.queueMessage("You removed Poison Tooth from your plan.");
+            discordGame.queueMessage("You will not use Poison Tooth.");
         } else if (event.getComponentId().equals("battle-poison-tooth-keep")) {
             battle.keepPoisonTooth(game, faction);
-            discordGame.queueMessage("You kept Poison Tooth in your plan.");
+            discordGame.queueMessage("You will use Poison Tooth.");
         } else {
             throw new IllegalArgumentException("Button ID is invalid: " + event.getComponentId());
         }

@@ -1747,12 +1747,12 @@ public class Battle {
         String decisionAnnouncement = "";
         if (poisonToothTBD != DecisionStatus.CLOSED && battlePlan.getWeapon() != null && battlePlan.getWeapon().name().equals("Poison Tooth")) {
             poisonToothTBD = DecisionStatus.OPEN;
-            decisionAnnouncement += faction.getEmoji() + " must decide if they will remove Poison Tooth.\n";
+            decisionAnnouncement += faction.getEmoji() + " must decide if they will use Poison Tooth.\n";
             if (publishToTurnSummary) {
                 List<DuneChoice> choices = new LinkedList<>();
-                choices.add(new DuneChoice("battle-poison-tooth-remove", "Yes, remove it"));
-                choices.add(new DuneChoice("battle-poison-tooth-keep", "No, keep it in"));
-                faction.getChat().publish("Will you remove Poison Tooth from your plan in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                choices.add(new DuneChoice("battle-poison-tooth-keep", "Yes, kill"));
+                choices.add(new DuneChoice("battle-poison-tooth-remove", "No, don't kill with it"));
+                faction.getChat().publish("Will you use Poison Tooth from your plan in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
             }
         }
         return decisionAnnouncement;
@@ -1871,23 +1871,23 @@ public class Battle {
         int combatWaterBefore = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
         if (getAggressorName().equals(faction.getName())) {
             if (!aggressorBattlePlan.revokePoisonTooth())
-                throw new InvalidGameStateException(faction.getName() + " did not use Poison Tooth");
+                throw new InvalidGameStateException(faction.getName() + " did not play Poison Tooth");
             defenderBattlePlan.revealOpponentBattlePlan(aggressorBattlePlan);
         } else if (getDefenderName().equals(faction.getName())) {
             if (!defenderBattlePlan.revokePoisonTooth())
-                throw new InvalidGameStateException(faction.getName() + " did not use Poison Tooth");
+                throw new InvalidGameStateException(faction.getName() + " did not play Poison Tooth");
             aggressorBattlePlan.revealOpponentBattlePlan(defenderBattlePlan);
         } else {
             throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
         }
-        String turnSummaryString = faction.getEmoji() + " removed Poison Tooth from their Battle Plan.\n";
+        String turnSummaryString = faction.getEmoji() + " does not use Poison Tooth.\n";
         poisonToothTBD = DecisionStatus.CLOSED;
         turnSummaryString += outcomeDifferences(game, wasAggressorLeaderAlive, wasDefenderLeaderAlive, true, oldResolutionString, combatWaterBefore);
         game.getTurnSummary().publish(turnSummaryString);
     }
 
     public void keepPoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
-        game.getTurnSummary().publish(faction.getEmoji() + " kept Poison Tooth in their Battle Plan.");
+        game.getTurnSummary().publish(faction.getEmoji() + " will use Poison Tooth.");
         poisonToothTBD = DecisionStatus.CLOSED;
         checkIfResolvable(game);
     }
