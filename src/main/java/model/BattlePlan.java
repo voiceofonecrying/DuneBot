@@ -701,7 +701,7 @@ public class BattlePlan {
     }
 
     public boolean weaponMustBeDiscarded(boolean loser) {
-        if (inactivePoisonTooth)
+        if (inactivePoisonTooth && !loser)
             return false;
         return weapon != null && (loser || cardMustBeDiscarded(weapon));
     }

@@ -620,7 +620,14 @@ public class BattlePlanTest extends DuneTest {
     void testPoisonToothNotDiscardedIfNotUsed() throws InvalidGameStateException {
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0);
         battlePlan.revokePoisonTooth();
-        assertFalse(battlePlan.weaponMustBeDiscarded(true));
+        assertFalse(battlePlan.weaponMustBeDiscarded(false));
+    }
+
+    @Test
+    void testLoserMustDiscardPoisonToothEventIfNotUsed() throws InvalidGameStateException {
+        BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, poisonTooth, null, 0, false, 0);
+        battlePlan.revokePoisonTooth();
+        assertTrue(battlePlan.weaponMustBeDiscarded(true));
     }
 
     @Test
