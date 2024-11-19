@@ -1917,45 +1917,30 @@ public class Battle {
     }
 
     public void checkIfResolvable(Game game) throws InvalidGameStateException {
-        boolean resolvable = true;
         List<String> openIssues = new ArrayList<>();
-        if (juiceOfSaphoTBD == DecisionStatus.OPEN) {
+        if (juiceOfSaphoTBD == DecisionStatus.OPEN)
             openIssues.add("Juice of Sapho");
-            resolvable = false;
-        }
-        if (portableSnooperTBD == DecisionStatus.OPEN) {
+        if (portableSnooperTBD == DecisionStatus.OPEN)
             openIssues.add("Portable Snooper");
-            resolvable = false;
-        }
-        if (stoneBurnerTBD == DecisionStatus.OPEN) {
+        if (stoneBurnerTBD == DecisionStatus.OPEN)
             openIssues.add("Stone Burner");
-            resolvable = false;
-        }
-        if (mirrorWeaponStoneBurnerTBD == DecisionStatus.OPEN) {
+        if (mirrorWeaponStoneBurnerTBD == DecisionStatus.OPEN)
             openIssues.add("Mirror Weapon as Stone Burner");
-            resolvable = false;
-        }
-        if (poisonToothTBD == DecisionStatus.OPEN) {
+        if (poisonToothTBD == DecisionStatus.OPEN)
             openIssues.add("Poison Tooth");
-            resolvable = false;
-        }
-        if (aggressorBattlePlan.isCanCallTraitor() || aggressorBattlePlan.isHarkCanCallTraitor()) {
+        if (aggressorBattlePlan.isCanCallTraitor() || aggressorBattlePlan.isHarkCanCallTraitor())
             openIssues.add("Aggressor Traitor Call");
-            resolvable = false;
-        }
-        if (defenderBattlePlan.isCanCallTraitor() || defenderBattlePlan.isHarkCanCallTraitor()) {
+        if (defenderBattlePlan.isCanCallTraitor() || defenderBattlePlan.isHarkCanCallTraitor())
             openIssues.add("Defender Traitor Call");
-            resolvable = false;
-        }
 
-        if (resolvable)
+        if (openIssues.isEmpty())
             game.getModInfo().publish("The battle can be resolved.");
         else if (overrideDecisions)
             game.getModInfo().publish("The battle can be resolved with your override.");
         else
             game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
 
-        if (resolvable || overrideDecisions) {
+        if (openIssues.isEmpty() || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
             String manualResolutions = "";
             Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);

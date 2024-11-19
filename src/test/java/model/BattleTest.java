@@ -1852,13 +1852,13 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testPortableSnooperCanSaveLeader() throws InvalidGameStateException {
+            void testJuiceOfSaphoDecisionRequired() throws InvalidGameStateException {
                 richese.addTreacheryCard(chaumas);
                 bg.addTreacheryCard(juiceOfSapho);
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
                 battle.printBattleResolution(game, true, false);
                 battle.checkIfResolvable(game);
-                assertFalse(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+                assertEquals("The following must be decided before the battle can be resolved:\n  Juice of Sapho", modInfo.getMessages().getLast());
                 battle.juiceOfSaphoAdd(game, bg);
                 battle.checkIfResolvable(game);
                 assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
@@ -1910,7 +1910,7 @@ class BattleTest extends DuneTest {
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 2, false, 2, chaumas, null);
                 battle.printBattleResolution(game, true, false);
                 battle.checkIfResolvable(game);
-                assertFalse(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
+                assertEquals("The following must be decided before the battle can be resolved:\n  Portable Snooper", modInfo.getMessages().getLast());
                 battle.portableSnooperAdd(game, bg);
                 battle.checkIfResolvable(game);
                 assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
