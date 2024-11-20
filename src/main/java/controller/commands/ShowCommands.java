@@ -440,7 +440,7 @@ public class ShowCommands {
             } else {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
             }
-            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama"))) {
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
                 playCardMenu.addOption("Use Karama to buy this card for free.", "karama-buy");
             }
             if (!faction.isAutoBidTurn()) {
