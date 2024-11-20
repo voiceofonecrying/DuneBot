@@ -366,6 +366,8 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
         }
 
+        StringSelectMenu.Builder playCardMenu = StringSelectMenu.create("play-card-menu-" + faction.getName()).setPlaceholder("Play a card.").setRequiredRange(1,1).setDefaultValues("0");
+
         if (faction.hasAlly()) {
             String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
             switch (faction) {
@@ -438,7 +440,9 @@ public class ShowCommands {
             } else {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
             }
-
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama"))) {
+                playCardMenu.addOption("Use Karama to buy this card for free.", "karama-buy");
+            }
             if (!faction.isAutoBidTurn()) {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
             } else {
@@ -458,6 +462,7 @@ public class ShowCommands {
             }
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(menu.build()).build());
         }
+        if (!playCardMenu.getOptions().isEmpty()) discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(playCardMenu.build()).build());
     }
 
     private static FileUpload drawGameBoard(Game game) throws IOException {
