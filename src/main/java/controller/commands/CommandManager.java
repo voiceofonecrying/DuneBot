@@ -85,6 +85,26 @@ public class CommandManager extends ListenerAdapter {
             } catch (ChannelNotFoundException | InvalidGameStateException | IOException e) {
                 throw new RuntimeException(e);
             }
+        } else if (event.getComponentId().startsWith("play-card-menu-")) {
+            event.reply("Playing your card...").queue();
+            if (event.getInteraction().getSelectedOptions().getFirst().getValue().startsWith("karama-")) {
+                try {
+                    DiscordGame discordGame = new DiscordGame(event);
+                    Game game = discordGame.getGame();
+                    Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+                    faction.discard("Karama");
+                    if (event.getInteraction().getSelectedOptions().getFirst().getValue().split("-")[1].equals("buy")) {
+                        game.getBidding().assignAndPayForCard(game, faction.getName(), "", 0, false);
+                    }
+                    discordGame.pushGame();
+                    showFactionInfo(faction.getName(), discordGame);
+                    discordGame.sendAllMessages();
+                } catch (ChannelNotFoundException | InvalidGameStateException | IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+
         }
         CommandCompletionGuard.decrementCommandCount();
     }
