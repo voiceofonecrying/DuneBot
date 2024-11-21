@@ -32,7 +32,8 @@ public class BattleCommands {
                 new SubcommandData("karama-fremen-must-pay-spice", "Require Fremen to pay spice for full force value in the current battle."),
                 new SubcommandData("set-hms-stronghold-card", "Set the HMS Stronghold Card.").addOptions(hmsStrongoldCard),
                 new SubcommandData("set-spice-banker-support", "Set the amount of spice to be spent with Spice Banker.").addOptions(spiceBankerPayment),
-                new SubcommandData("release-duke-vidal", "Set Duke Vidal aside, not assigned to any faction.")
+                new SubcommandData("release-duke-vidal", "Set Duke Vidal aside, not assigned to any faction."),
+                new SubcommandData("mark-traitor-used", "Mark that the faction has used the traitor.").addOptions(faction, traitor)
         ));
         return commandData;
     }
@@ -52,6 +53,7 @@ public class BattleCommands {
             case "set-hms-stronghold-card" -> setHMSStrongholdCard(discordGame, game);
             case "set-spice-banker-support" -> setSpiceBankerSupport(discordGame, game);
             case "release-duke-vidal" -> releaseDukeVidal(discordGame, game);
+            case "mark-traitor-used" -> markTraitorUsed(discordGame, game);
         }
     }
 
@@ -134,6 +136,13 @@ public class BattleCommands {
             faction.removeLeader("Duke Vidal");
             game.getTurnSummary().publish("Duke Vidal is no longer in service to " + faction.getEmoji());
         }
+        discordGame.pushGame();
+    }
+
+    public static void markTraitorUsed(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        String traitorName = discordGame.required(traitor).getAsString();
+        game.getFaction(factionName).useTraitor(traitorName);
         discordGame.pushGame();
     }
 

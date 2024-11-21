@@ -1056,7 +1056,7 @@ public class Battle {
                 if (executeResolution) {
                     rihaniDeciphererFaction = faction.getName();
                     rihaniDeciphererExectedTraitors = faction.getTraitorHand().size();
-                    faction.drawTwoTraitorsAndMustDiscardTwo("Rihani Decipherer");
+                    faction.drawTwoTraitorsWithRihaniDecipherer("Rihani Decipherer");
                 } else
                     resolution += faction.getEmoji() + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
             }
@@ -1427,8 +1427,8 @@ public class Battle {
             DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
             resultsChannel.publish(resolution);
 
-            checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary);
-            checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary);
+            checkForTraitorCall(game, getAggressor(game), aggressorBattlePlan, getDefender(game), defenderBattlePlan, publishToTurnSummary, executeResolution);
+            checkForTraitorCall(game, getDefender(game), defenderBattlePlan, getAggressor(game), aggressorBattlePlan, publishToTurnSummary, executeResolution);
             if (publishToTurnSummary)
                 checkIfResolvable(game);
         }
@@ -1442,7 +1442,7 @@ public class Battle {
         printBattleResolution(game, publishToTurnSummary, true);
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary) {
+    private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary, boolean executeResolution) {
         DuneTopic modInfo = game.getModInfo();
         if (faction instanceof BTFaction) {
             if (!publishToTurnSummary)
@@ -1460,15 +1460,17 @@ public class Battle {
             return;
         }
 
-        checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentPlan, false, modInfo, publishToTurnSummary);
+        checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentPlan, false, modInfo, publishToTurnSummary, executeResolution);
         if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game, game.getFaction("Harkonnen"), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary);
+            checkForTraitorCall(game, game.getFaction("Harkonnen"), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary, executeResolution);
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary) {
+    private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary, boolean executeResolution) {
         String opponentLeader = opponentPlan.getLeaderNameForTraitor();
         String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
         if (faction.hasTraitor(opponentLeader)) {
+            if (executeResolution)
+                faction.useTraitor(opponentLeader);
             if (publishToTurnSummary) {
                 if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor()) {
                     faction.getChat().publish(opponentLeader + " has betrayed " + opponent.getEmoji() + " for you!");

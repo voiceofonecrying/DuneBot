@@ -28,6 +28,7 @@ public class Faction {
     private final List<TechToken> techTokens;
     protected final List<TreacheryCard> treacheryHand;
     protected final List<TraitorCard> traitorHand;
+    protected List<String> traitorsUsed;
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
     private StrongholdCard hmsStrongholdProxy;
@@ -91,6 +92,7 @@ public class Faction {
         this.hasMiningEquipment = false;
         this.decliningCharity = false;
         this.traitorHand = new LinkedList<>();
+        this.traitorsUsed = new ArrayList<>();
         this.leaders = new LinkedList<>();
         this.techTokens = new LinkedList<>();
         this.leaderSkillsHand = new LinkedList<>();
@@ -269,6 +271,14 @@ public class Faction {
 
     public boolean hasTraitor(String leaderName) {
         return traitorHand.stream().anyMatch(t -> t.name().equals(leaderName));
+    }
+
+    public void useTraitor(String leaderName) {
+        // Can remove this list creation after games 77, 78, 82, 83, 85, 86, and 87 end
+        if (traitorsUsed == null)
+            traitorsUsed = new ArrayList<>();
+
+        traitorsUsed.add(leaderName);
     }
 
     public List<TraitorCard> getTraitorHand() {
@@ -1100,7 +1110,7 @@ public class Faction {
                 ));
     }
 
-    public void discardTraitor(String traitorName) {
+    public void discardTraitor(String traitorName, boolean reveal) {
         TraitorCard traitor = traitorHand.stream().filter(
                         traitorCard -> traitorCard.name().toLowerCase()
                                 .contains(traitorName.toLowerCase())
@@ -1110,15 +1120,39 @@ public class Faction {
         game.getTraitorDeck().add(traitor);
         game.shuffleTraitorDeck();
         ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
-        game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
+        if (reveal)
+            game.getTurnSummary().publish(emoji + " reveals and discards the " + traitor.name() + " Traitor card.");
+        else
+            game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void drawTwoTraitorsAndMustDiscardTwo(String reason) {
+    public void drawTwoTraitorsWithRihaniDecipherer(String reason) {
+        // Can remove this list creation after games 77, 78, 82, 83, 85, 86, and 87 end
+        if (traitorsUsed == null)
+            traitorsUsed = new ArrayList<>();
+
         LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
         Collections.shuffle(traitorDeck);
-        addTraitorCard(traitorDeck.pop());
-        addTraitorCard(traitorDeck.pop());
+        List<TraitorCard> drawnTraitors = new ArrayList<>();
+        drawnTraitors.add(traitorDeck.pop());
+        drawnTraitors.add(traitorDeck.pop());
+        drawnTraitors.forEach(this::addTraitorCard);
+        chat.publish("You must discard two Traitors. " + player);
+        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-reveal-and-discard-" + t.name(), t.name(), traitorsUsed.stream().anyMatch(tu -> tu.equals(t.name())))).toList();
+        chat.publish("Reveal and discard an unused traitor:", choices);
+        choices = drawnTraitors.stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
+        chat.publish("Discard a traitor just drawn:", choices);
+        game.getTurnSummary().publish(emoji + " has drawn 2 Traitor cards for " + reason + ".");
+    }
+
+    public void drawTwoTraitorsWithHarkonnenSecretAlly(String reason) {
+        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
+        Collections.shuffle(traitorDeck);
+        List<TraitorCard> drawnTraitors = new ArrayList<>();
+        drawnTraitors.add(traitorDeck.pop());
+        drawnTraitors.add(traitorDeck.pop());
+        drawnTraitors.forEach(this::addTraitorCard);
         chat.publish("You must discard two Traitors. " + player);
         List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
         chat.publish("First discard:", choices);

@@ -2298,13 +2298,13 @@ class BattleTest extends DuneTest {
                 assertEquals(3, atreides.getTraitorHand().size());
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " has drawn 2 Traitor cards for Rihani Decipherer.")));
                 assertTrue(atreidesChat.getMessages().getFirst().contains("You must discard two Traitors."));
-                assertTrue(atreidesChat.getMessages().get(1).contains("First discard:"));
+                assertTrue(atreidesChat.getMessages().get(1).contains("Reveal and discard an unused traitor:"));
                 assertEquals(3, atreidesChat.getChoices().getFirst().size());
-                assertTrue(atreidesChat.getMessages().get(2).contains("Second discard:"));
+                assertTrue(atreidesChat.getMessages().get(2).contains("Discard a traitor just drawn:"));
                 assertEquals(3, atreidesChat.getChoices().getFirst().size());
                 assertTrue(battle.isRihaniDeciphererMustBeResolved(game));
-                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
-                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name());
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name(), true);
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name(), false);
                 assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
             }
         }
