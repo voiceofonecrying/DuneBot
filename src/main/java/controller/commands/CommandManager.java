@@ -43,8 +43,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.*;
-import static controller.commands.ShowCommands.refreshChangedInfo;
-import static controller.commands.ShowCommands.showFactionInfo;
+import static controller.commands.ShowCommands.*;
 
 public class CommandManager extends ListenerAdapter {
     public List<Member> members = new ArrayList<>();
@@ -87,23 +86,63 @@ public class CommandManager extends ListenerAdapter {
             }
         } else if (event.getComponentId().startsWith("play-card-menu-")) {
             event.reply("Playing your card...").queue();
-            if (event.getInteraction().getSelectedOptions().getFirst().getValue().startsWith("karama-")) {
-                try {
-                    DiscordGame discordGame = new DiscordGame(event);
-                    Game game = discordGame.getGame();
-                    Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-                    faction.discard("Karama");
-                    if (event.getInteraction().getSelectedOptions().getFirst().getValue().split("-")[1].equals("buy")) {
-                        game.getBidding().assignAndPayForCard(game, faction.getName(), "", 0, false);
+            String interaction = event.getInteraction().getSelectedOptions().getFirst().getValue();
+            try {
+                DiscordGame discordGame = new DiscordGame(event);
+                Game game = discordGame.getGame();
+                Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+                switch (interaction) {
+                    case "Karama-buy": {
+                        faction.discard("Karama");
+                        if (event.getInteraction().getSelectedOptions().getFirst().getValue().split("-")[1].equals("buy")) {
+                            game.getBidding().assignAndPayForCard(game, faction.getName(), "", 0, false);
+                        }
+                        break;
                     }
-                    discordGame.pushGame();
-                    showFactionInfo(faction.getName(), discordGame);
-                    discordGame.sendAllMessages();
-                } catch (ChannelNotFoundException | InvalidGameStateException | IOException e) {
-                    throw new RuntimeException(e);
+                    case "Truthtrance": {
+                        faction.discard("Truthtrance");
+                        discordGame.getGameActions().publish(faction.getEmoji() + " has played Truthtrance to ask a question:");
+                        break;
+                    }
+                    case "Amal": {
+                        faction.discard("Amal");
+                        for (Faction f : game.getFactions()) {
+                            discordGame.getTurnSummary().publish(f.getEmoji() + " loses " + Math.ceilDiv(f.getSpice(), 2) + Emojis.SPICE + " to Amal.");
+                            f.setSpice(Math.floorDiv(f.getSpice(), 2));
+                        }
+                        break;
+                    }
+                    case "Tleilaxu Ghola-forces": {
+                        faction.discard("Tleilaxu Ghola");
+                        discordGame.getGameActions().publish(faction.getEmoji() + " has played Tleilaxu Ghola to revive forces for free.");
+                        int starred = 0;
+                        int regular = game.getTleilaxuTanks().getForceStrength(faction.getName());
+                        if (faction instanceof EmperorFaction && game.getTleilaxuTanks().getForceStrength("Emperor*") >= 1) {
+                            starred = 1;
+                        } else if (faction instanceof FremenFaction && game.getTleilaxuTanks().getForceStrength("Fremen*") >= 1) {
+                            starred = 1;
+                        } else if (faction instanceof IxFaction && game.getTleilaxuTanks().getForceStrength("Ix*") >= 1) {
+                            starred = Math.min(game.getTleilaxuTanks().getForceStrength("Ix*"), 5);
+                        }
+
+                        int revive = Math.min(5 - starred, regular);
+                        game.reviveForces(faction, false, revive, starred);
+                        break;
+                    }
+            }
+                if (interaction.startsWith("Tleilaxu Ghola-leader-")) {
+                    faction.discard("Tleilaxu Ghola");
+                    faction.reviveLeader(interaction.split("-")[2], 0);
                 }
 
+                discordGame.pushGame();
+                showFactionInfo(faction.getName(), discordGame);
+                refreshFrontOfShieldInfo(discordGame, game);
+                discordGame.sendAllMessages();
+            } catch (InvalidGameStateException | ChannelNotFoundException | IOException e) {
+                throw new RuntimeException(e);
             }
+
 
         }
         CommandCompletionGuard.decrementCommandCount();
