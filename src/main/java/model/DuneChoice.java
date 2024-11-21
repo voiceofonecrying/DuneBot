@@ -20,6 +20,13 @@ public class DuneChoice {
         this.disabled = false;
     }
 
+    public DuneChoice(String id, String label, boolean disabled) {
+        this.type = "primary";
+        this.id = id;
+        this.label = label;
+        this.disabled = disabled;
+    }
+
     public String getType() {
         return type;
     }
