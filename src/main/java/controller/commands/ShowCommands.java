@@ -352,7 +352,7 @@ public class ShowCommands {
         sendInfoButtons(game, discordGame, faction);
     }
 
-    public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String infoChannelName = faction.getName().toLowerCase() + "-info";
         if (faction.isGraphicDisplay())
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("text", "Try Text mode. It's easier to read!")).build());
@@ -367,6 +367,25 @@ public class ShowCommands {
         }
 
         StringSelectMenu.Builder playCardMenu = StringSelectMenu.create("play-card-menu-" + faction.getName()).setPlaceholder("Play a card.").setRequiredRange(1,1).setDefaultValues("0");
+        if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Truthtrance"))) {
+            playCardMenu.addOption("Play Truthtrance to ask someone a yes/no question.", "Truthtrance");
+        }
+
+        if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Tleilaxu Ghola"))) {
+            playCardMenu.addOption("Play Tleilaxu Ghola to revive 5 forces for free", "Tleilaxu Ghola-forces");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                    Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
+            ));
+            for (CSVRecord csvRecord : CSVParser.parse(bufferedReader, CSVFormat.EXCEL)) {
+                if (csvRecord.get(0).equals(faction.getName()) && faction.getLeader(csvRecord.get(1)).isEmpty()) {
+                    playCardMenu.addOption("Play Tleilaxu Ghola to revive " + csvRecord.get(1) + " for free", "Tleilaxu Ghola-leader-" + csvRecord.get(1));
+                }
+            }
+        }
+
+        if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Amal"))) {
+            playCardMenu.addOption("Play Amal to halve all players' spice totals", "Amal");
+        }
 
         if (faction.hasAlly()) {
             String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
@@ -441,7 +460,7 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
             }
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
-                playCardMenu.addOption("Use Karama to buy this card for free.", "karama-buy");
+                playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
             }
             if (!faction.isAutoBidTurn()) {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
