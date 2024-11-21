@@ -1056,7 +1056,7 @@ public class Battle {
                 if (executeResolution) {
                     rihaniDeciphererFaction = faction.getName();
                     rihaniDeciphererExectedTraitors = faction.getTraitorHand().size();
-                    faction.drawTwoTraitorsAndMustDiscardTwo("Rihani Decipherer");
+                    faction.drawTwoTraitorsWithRihaniDecipherer("Rihani Decipherer");
                 } else
                     resolution += faction.getEmoji() + " may draw 2 Traitor Cards and keep one of them with Rihani Decipherer\n";
             }

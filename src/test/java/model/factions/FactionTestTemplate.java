@@ -582,12 +582,14 @@ abstract class FactionTestTemplate {
     @Test
     void testDrawTwoTraitorsAndMustDiscardTwo() {
         faction.addTraitorCard(game.getTraitorDeck().pop());
-        faction.drawTwoTraitorsAndMustDiscardTwo("testing purposes");
+        faction.drawTwoTraitorsWithRihaniDecipherer("testing purposes");
         assertEquals("You must discard two Traitors. player", chat.getMessages().getFirst());
-        assertEquals("First discard:", chat.getMessages().get(1));
-        assertEquals("Second discard:", chat.getMessages().getLast());
+        assertEquals("Reveal and discard an unused traitor:", chat.getMessages().get(1));
+        assertEquals("Discard a traitor just drawn:", chat.getMessages().getLast());
         assertEquals(3, chat.getChoices().getFirst().size());
-        assertEquals(3, chat.getChoices().getLast().size());
+        assertTrue(chat.getChoices().getFirst().getFirst().getId().startsWith("traitor-reveal-and-discard-"));
+        assertEquals(2, chat.getChoices().getLast().size());
+        assertTrue(chat.getChoices().getLast().getFirst().getId().startsWith("traitor-discard-"));
         assertEquals(faction.getEmoji() + " has drawn 2 Traitor cards for testing purposes.", turnSummary.getMessages().getLast());
     }
 

@@ -781,7 +781,7 @@ public class CommandManager extends ListenerAdapter {
         String factionName = discordGame.required(faction).getAsString();
         String cardName = discordGame.required(traitor).getAsString();
 
-        game.getFaction(factionName).discardTraitor(cardName);
+        game.getFaction(factionName).discardTraitor(cardName, false);
         discordGame.pushGame();
     }
 
