@@ -338,7 +338,8 @@ class ChoamFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testCanPayToRemoveExtortion() {
-            faction.setSpice(3);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(3, "Test");
             faction.performMentatPauseActions(true);
             assertEquals("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + faction.getPlayer(), chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().size());
@@ -347,7 +348,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testCannotPayToRemoveExtortion() {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             faction.performMentatPauseActions(true);
             assertEquals("You do not have enough spice to pay Extortion.", chat.getMessages().getFirst());
             assertEquals(1, chat.getChoices().size());

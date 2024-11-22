@@ -19,7 +19,7 @@ public class AtreidesFaction extends Faction {
     public AtreidesFaction(String player, String userName) throws IOException {
         super("Atreides", player, userName);
 
-        setSpice(10);
+        this.spice = 10;
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
         this.emoji = Emojis.ATREIDES;

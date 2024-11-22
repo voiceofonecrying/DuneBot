@@ -315,7 +315,8 @@ public class EcazFactionTest extends FactionTestTemplate {
 
         @Test
         public void testTriggerRicheseNotEnoughSpiceToBuyACard() {
-            faction.setSpice(2);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(2, "Test");
             faction.discard("Cheap Hero");
             faction.triggerAmbassador(harkonnen, "Richese");
             assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese ambassador.", chat.getMessages().getFirst());

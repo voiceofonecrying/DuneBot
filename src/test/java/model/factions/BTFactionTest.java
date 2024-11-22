@@ -204,7 +204,9 @@ class BTFactionTest extends FactionTestTemplate {
             @BeforeEach
             @Override
             public void setUp() throws InvalidGameStateException {
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), null);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -244,7 +246,9 @@ class BTFactionTest extends FactionTestTemplate {
             @BeforeEach
             @Override
             public void setUp() throws InvalidGameStateException {
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), null);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -274,7 +278,9 @@ class BTFactionTest extends FactionTestTemplate {
             @BeforeEach
             @Override
             public void setUp() throws InvalidGameStateException {
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 assertThrows(IllegalArgumentException.class, () -> faction.reviveLeader(leader.getName(), 7));
                 assertDoesNotThrow(() -> faction.reviveLeader(leader.getName(), null));
                 assertTrue(faction.getLeaders().contains(leader));

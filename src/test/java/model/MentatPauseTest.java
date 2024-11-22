@@ -74,14 +74,14 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         public void testNotDecliningNoDeclineMessage() {
-            emperor.setSpice(0);
+            emperor.subtractSpice(10, "Test");
             mentatPause.startPhase(game);
             assertEquals(0, emperorChat.getMessages().size());
         }
 
         @Test
         public void testGetsDeclineMessage() throws InvalidGameStateException {
-            emperor.setSpice(0);
+            emperor.subtractSpice(10, "Test");
             emperor.setDecliningCharity(true);
             mentatPause.startPhase(game);
             assertEquals(1, emperorChat.getMessages().size());
@@ -175,7 +175,7 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void fourthOffersToPayThenfirstPlayerPays() {
-            fremen.setSpice(0);
+            fremen.subtractSpice(3, "Test");
             mentatPause.startPhase(game);
             turnSummary.clear();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
@@ -190,7 +190,7 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void fourthPlayerPays() {
-            fremen.setSpice(0);
+            fremen.subtractSpice(3, "Test");
             mentatPause.startPhase(game);
             turnSummary.clear();
             game.getMentatPause().factionWouldPayExtortion(game, richese);
@@ -219,8 +219,8 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void allButOneDeclineMoritaniPoor() {
-            choam.setSpice(3);
-            moritani.setSpice(2);
+            choam.addSpice(1, "Test");
+            moritani.subtractSpice(10, "Test");
             mentatPause.startPhase(game);
             turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
@@ -232,7 +232,7 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void allDeclineFremenHas0Spice() {
-            fremen.setSpice(0);
+            fremen.subtractSpice(3, "Test");
             mentatPause.startPhase(game);
             turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, choam);

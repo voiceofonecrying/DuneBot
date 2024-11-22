@@ -88,10 +88,10 @@ class GameTest extends DuneTest {
 
         @Test
         public void testEmperorLacksSpiceDoesCollect() {
-            emperor.setSpice(0);
+            emperor.subtractSpice(10, "Test");
             game.choamCharity();
             assertEquals(2, emperor.getSpice());
-            emperor.setSpice(1);
+            emperor.subtractSpice(1, "Test");
             game.choamCharity();
             assertEquals(2, emperor.getSpice());
         }
@@ -101,13 +101,13 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             emperor.removeReserves(15);
             assertFalse(emperor.isHighThreshold());
-            emperor.setSpice(0);
+            emperor.subtractSpice(10, "Test");
             game.choamCharity();
             assertEquals(3, emperor.getSpice());
-            emperor.setSpice(1);
+            emperor.subtractSpice(2, "Test");
             game.choamCharity();
             assertEquals(3, emperor.getSpice());
-            emperor.setSpice(2);
+            emperor.subtractSpice(1, "Test");
             game.choamCharity();
             assertEquals(2, emperor.getSpice());
         }
@@ -115,10 +115,10 @@ class GameTest extends DuneTest {
         @Test
         public void testEmperorLacksSpiceDeclinesCharity() throws InvalidGameStateException {
             emperor.setDecliningCharity(true);
-            emperor.setSpice(0);
+            emperor.subtractSpice(10, "Test");
             game.choamCharity();
             assertEquals(0, emperor.getSpice());
-            emperor.setSpice(1);
+            emperor.addSpice(1, "Test");
             game.choamCharity();
             assertEquals(1, emperor.getSpice());
         }
@@ -143,7 +143,7 @@ class GameTest extends DuneTest {
         @Test
         public void testBGDoesNotDeclineCharity() {
             assertThrows(InvalidGameStateException.class, () -> bg.setDecliningCharity(true));
-            bg.setSpice(0);
+            bg.subtractSpice(5, "Test");
             assertEquals(0, bg.getSpice());
             game.choamCharity();
             assertEquals(2, bg.getSpice());
@@ -169,7 +169,7 @@ class GameTest extends DuneTest {
         @Test
         public void testCHOAMDoesNotDeclineCharity() {
             assertThrows(InvalidGameStateException.class, () -> choam.setDecliningCharity(true));
-            choam.setSpice(0);
+            choam.subtractSpice(2, "Test");
             assertEquals(0, choam.getSpice());
             game.choamCharity();
             assertEquals(10, choam.getSpice());

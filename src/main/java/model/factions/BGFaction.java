@@ -22,7 +22,7 @@ public class BGFaction extends Faction {
     public BGFaction(String player, String userName) throws IOException {
         super("BG", player, userName);
 
-        setSpice(5);
+        this.spice = 5;
         this.freeRevival = 1;
         this.emoji = Emojis.BG;
         this.highThreshold = 11;

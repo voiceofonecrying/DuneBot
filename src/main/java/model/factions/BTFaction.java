@@ -18,7 +18,7 @@ public class BTFaction extends Faction {
     public BTFaction(String player, String userName) throws IOException {
         super("BT", player, userName);
 
-        setSpice(5);
+        this.spice = 5;
         this.freeRevival = 2;
         this.maxRevival = 20;
         this.emoji = Emojis.BT;

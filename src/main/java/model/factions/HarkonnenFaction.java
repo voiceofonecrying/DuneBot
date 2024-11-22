@@ -15,7 +15,7 @@ public class HarkonnenFaction extends Faction {
     public HarkonnenFaction(String player, String userName) throws IOException {
         super("Harkonnen", player, userName);
 
-        setSpice(10);
+        this.spice = 10;
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
         this.emoji = Emojis.HARKONNEN;
