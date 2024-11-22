@@ -107,8 +107,9 @@ public class CommandManager extends ListenerAdapter {
                     case "Amal": {
                         faction.discard("Amal");
                         for (Faction f : game.getFactions()) {
-                            discordGame.getTurnSummary().publish(f.getEmoji() + " loses " + Math.ceilDiv(f.getSpice(), 2) + Emojis.SPICE + " to Amal.");
-                            f.setSpice(Math.floorDiv(f.getSpice(), 2));
+                            int spiceLost = Math.ceilDiv(f.getSpice(), 2);
+                            discordGame.getTurnSummary().publish(f.getEmoji() + " loses " + spiceLost + Emojis.SPICE + " to Amal.");
+                            f.subtractSpice(spiceLost, "Amal");
                         }
                         break;
                     }
