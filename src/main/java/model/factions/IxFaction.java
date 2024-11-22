@@ -16,7 +16,7 @@ public class IxFaction extends Faction {
     public IxFaction(String player, String userName) throws IOException {
         super("Ix", player, userName);
 
-        setSpice(10);
+        this.spice = 10;
         this.freeRevival = 1;
         this.emoji = Emojis.IX;
         this.highThreshold = 5;

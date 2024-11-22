@@ -21,7 +21,7 @@ public class FremenFaction extends Faction {
     public FremenFaction(String player, String userName) throws IOException {
         super("Fremen", player, userName);
 
-        setSpice(3);
+        this.spice = 3;
         this.freeRevival = 3;
         this.emoji = Emojis.FREMEN;
         this.highThreshold = 3;

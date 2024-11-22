@@ -21,7 +21,7 @@ public class EcazFaction extends Faction {
     public EcazFaction(String player, String userName) throws IOException {
         super("Ecaz", player, userName);
 
-        setSpice(12);
+        this.spice = 12;
         this.freeRevival = 2;
         this.emoji = Emojis.ECAZ;
         this.highThreshold = 7;

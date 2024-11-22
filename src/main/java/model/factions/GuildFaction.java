@@ -14,7 +14,7 @@ public class GuildFaction extends Faction {
     public GuildFaction(String player, String userName) throws IOException {
         super("Guild", player, userName);
 
-        setSpice(5);
+        this.spice = 5;
         this.freeRevival = 1;
         this.emoji = Emojis.GUILD;
         this.highThreshold = 5;

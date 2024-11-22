@@ -22,7 +22,7 @@ public class RicheseFaction extends Faction {
     public RicheseFaction(String player, String userName) throws IOException {
         super("Richese", player, userName);
 
-        setSpice(5);
+        this.spice = 5;
         this.freeRevival = 2;
         this.emoji = Emojis.RICHESE;
         this.highThreshold = 10;

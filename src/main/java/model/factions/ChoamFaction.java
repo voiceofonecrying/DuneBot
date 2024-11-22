@@ -22,7 +22,7 @@ public class ChoamFaction extends Faction {
     public ChoamFaction(String player, String userName) throws IOException {
         super("CHOAM", player, userName);
 
-        setSpice(2);
+        this.spice = 2;
         this.freeRevival = 0;
         this.maxRevival = 20;
         this.emoji = Emojis.CHOAM;

@@ -50,7 +50,8 @@ class BattleTest extends DuneTest {
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             garaKulon.addForces("BG", 1);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
-            richese.setSpice(8);
+            richese.addSpice(3, "Test");
+            assertEquals(8, richese.getSpice());
             try {
                 battle.setBattlePlan(game, richese, null, cheapHero, false, 8, false, 8, chaumas, null);
                 fail("Expected InvalidGameStateException was not thrown.");

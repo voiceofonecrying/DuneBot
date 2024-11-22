@@ -20,7 +20,7 @@ public class MoritaniFaction extends Faction {
     public MoritaniFaction(String player, String userName) throws IOException {
         super("Moritani", player, userName);
 
-        setSpice(12);
+        this.spice = 12;
         this.freeRevival = 2;
         this.emoji = Emojis.MORITANI;
         this.highThreshold = 8;

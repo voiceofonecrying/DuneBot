@@ -22,7 +22,7 @@ public class EmperorFaction extends Faction {
     public EmperorFaction(String player, String userName) throws IOException {
         super("Emperor", player, userName);
 
-        setSpice(10);
+        this.spice = 10;
         this.freeRevival = 1;
         this.emoji = Emojis.EMPEROR;
         this.highThreshold = 5;

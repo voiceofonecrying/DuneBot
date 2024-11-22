@@ -107,7 +107,7 @@ abstract class FactionTestTemplate {
 
         @Test
         public void testPaidRevivalChoicesInsufficientSpice() throws InvalidGameStateException {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             faction.setMaxRevival(5);
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.performFreeRevivals();
@@ -206,7 +206,9 @@ abstract class FactionTestTemplate {
         class PayStandardCost {
             @BeforeEach
             public void setUp() throws InvalidGameStateException {
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), null);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -237,11 +239,15 @@ abstract class FactionTestTemplate {
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
                 bt = new BTFaction("p", "u");
+                game.addFaction(bt);
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
-                bt.setSpice(0);
+                bt.subtractSpice(bt.getSpice(), "Test");
+                btLedger.clear();
                 game.addFaction(bt);
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), null);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -282,9 +288,10 @@ abstract class FactionTestTemplate {
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
                 bt = new BTFaction("p", "u");
+                game.addFaction(bt);
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
-                bt.setSpice(0);
+                bt.subtractSpice(bt.getSpice(), "Test");
                 game.addFaction(bt);
                 game.createAlliance(faction, bt);
                 ledger = new TestTopic();
@@ -293,7 +300,9 @@ abstract class FactionTestTemplate {
                 bt.setLedger(btLedger);
                 turnSummary = new TestTopic();
                 game.setTurnSummary(turnSummary);
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), null);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -334,11 +343,15 @@ abstract class FactionTestTemplate {
             @BeforeEach
             public void setUp() throws InvalidGameStateException, IOException {
                 bt = new BTFaction("p", "u");
+                game.addFaction(bt);
                 btLedger = new TestTopic();
                 bt.setLedger(btLedger);
-                bt.setSpice(0);
+                bt.subtractSpice(bt.getSpice(), "Test");
+                btLedger.clear();
                 game.addFaction(bt);
-                faction.setSpice(10);
+                faction.subtractSpice(faction.getSpice(), "Test");
+                faction.addSpice(10, "Test");
+                ledger.clear();
                 faction.reviveLeader(leader.getName(), 7);
                 assertTrue(faction.getLeaders().contains(leader));
                 assertFalse(game.getLeaderTanks().contains(leader));
@@ -372,7 +385,7 @@ abstract class FactionTestTemplate {
 
         @Test
         public void testFactionDoesNotHaveEnoughSpice() {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             assertThrows(InvalidGameStateException.class, () -> faction.reviveLeader(leader.getName(), null));
             assertFalse(faction.getLeaders().contains(leader));
             assertTrue(game.getLeaderTanks().contains(leader));
@@ -454,7 +467,8 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUpAddSpice() {
             faction = getFaction();
-            faction.setSpice(10);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(10, "Test");
             faction.setLedger(ledger);
         }
 
@@ -484,7 +498,8 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUpRemoveSpice() {
             faction = getFaction();
-            faction.setSpice(10);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(10, "Test");
             faction.setLedger(ledger);
         }
 
@@ -813,7 +828,8 @@ abstract class FactionTestTemplate {
 
         @Test
         void testCanPayToRemoveExtortion() {
-            faction.setSpice(3);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(3, "Test");
             faction.performMentatPauseActions(true);
             assertEquals("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + faction.getPlayer(), chat.getMessages().getFirst());
             assertEquals(1, chat.getChoices().size());
@@ -821,7 +837,7 @@ abstract class FactionTestTemplate {
 
         @Test
         void testCannotPayToRemoveExtortion() {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             faction.performMentatPauseActions(true);
             assertEquals("You do not have enough spice to pay Extortion.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());

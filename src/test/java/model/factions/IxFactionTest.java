@@ -155,7 +155,7 @@ class IxFactionTest extends FactionTestTemplate {
         @Test
         @Override
         public void testPaidRevivalChoicesInsufficientSpice() throws InvalidGameStateException {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);
@@ -168,7 +168,8 @@ class IxFactionTest extends FactionTestTemplate {
 
         @Test
         public void testPaidRevivalChoicesTwoSpice() throws InvalidGameStateException {
-            faction.setSpice(2);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(2, "Test");
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.performFreeRevivals();
             faction.presentPaidRevivalChoices(freeRevivals);

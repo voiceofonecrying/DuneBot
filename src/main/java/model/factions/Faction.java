@@ -330,12 +330,6 @@ public class Faction {
         return spice;
     }
 
-    public void setSpice(int spice) {
-        this.spice = spice;
-        spiceForAlly = Math.min(spiceForAlly, this.spice);
-        setUpdated(UpdateType.SPICE_BACK);
-    }
-
     public boolean hasStarredForces() {
         return false;
     }
@@ -1054,6 +1048,8 @@ public class Faction {
         this.spice += spice;
         spiceMessage(spice, message, true);
         setUpdated(UpdateType.SPICE_BACK);
+        if (game.hasGameOption(GameOption.SPICE_PUBLIC))
+            setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public void subtractSpice(int spice, String message) {
@@ -1064,6 +1060,8 @@ public class Faction {
         spiceForAlly = Math.min(spiceForAlly, this.spice);
         spiceMessage(spice, message, false);
         setUpdated(UpdateType.SPICE_BACK);
+        if (game.hasGameOption(GameOption.SPICE_PUBLIC))
+            setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     private void subtractSpiceForAlly(int spice, String message) {

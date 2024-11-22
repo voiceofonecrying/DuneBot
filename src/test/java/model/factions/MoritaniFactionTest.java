@@ -417,7 +417,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testCanPayToRemoveExtortion() {
-            faction.setSpice(3);
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(3, "Test");
             faction.performMentatPauseActions(true);
             assertEquals(1, chat.getMessages().size());
             assertFalse(chat.getMessages().getFirst().contains("Extortion token"));
@@ -426,7 +427,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testCannotPayToRemoveExtortion() {
-            faction.setSpice(0);
+            faction.subtractSpice(faction.getSpice(), "Test");
             faction.performMentatPauseActions(true);
             assertEquals(1, chat.getMessages().size());
             assertFalse(chat.getMessages().getFirst().contains("to pay Extortion"));
