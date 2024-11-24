@@ -437,7 +437,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 if (game.hasFaction("Moritani"))
                     ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
             } else if (!crossShipFrom.isEmpty()) {
-                game.removeForces(crossShipFrom, faction, force, 0, false);
+                game.removeForces(crossShipFrom, faction, force, specialForce, false);
                 CommandManager.placeForces(territory, faction, force, specialForce, true, true, true, discordGame, game, false, true);
                 discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
             } else if (force > 0 || specialForce > 0)
