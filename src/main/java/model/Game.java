@@ -1394,9 +1394,9 @@ public class Game {
         faction.setUpdated(UpdateType.MAP);
     }
 
-    public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama) {
+    public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama, boolean crossShip) {
         int baseCost = amountToShip * targetTerritory.costToShipInto();
-        if (targetFaction instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
+        if (targetFaction instanceof FremenFaction && !crossShip && !(targetTerritory instanceof HomeworldTerritory))
             return 0;
         else if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama)
             return Math.ceilDiv(baseCost, 2);
