@@ -191,7 +191,13 @@ class GameTest extends DuneTest {
         @Test
         void testFremenAlliedWithGuildShipFree() {
             game.createAlliance(guild, fremen);
-            assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false));
+            assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false, false));
+        }
+
+        @Test
+        void testFremenAlliedWithGuildPayForCrossShipOrShipToReserves() {
+            game.createAlliance(guild, fremen);
+            assertEquals(1, game.shipmentCost(fremen, 2, habbanyaSietch, false, true));
         }
 
         @Test
@@ -199,7 +205,7 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             String junction = game.getHomeworlds().get("Guild");
             assertEquals("Junction", junction);
-            assertEquals(2, game.shipmentCost(fremen, 2, game.getTerritory(junction), false));
+            assertEquals(2, game.shipmentCost(fremen, 2, game.getTerritory(junction), false, false));
         }
 
         @Test

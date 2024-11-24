@@ -431,17 +431,17 @@ public class ShipmentAndMovementButtons implements Pressable {
                 RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
                 richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
                 if (force > 0)
-                    CommandManager.placeForces(territory, faction, force, 0, true, false, discordGame, game, karama);
+                    CommandManager.placeForces(territory, faction, force, 0, true, false, discordGame, game, karama, false);
                 if (game.hasFaction("Ecaz"))
                     ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
                 if (game.hasFaction("Moritani"))
                     ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
             } else if (!crossShipFrom.isEmpty()) {
                 game.removeForces(crossShipFrom, faction, force, 0, false);
-                CommandManager.placeForces(territory, faction, force, specialForce, true, true, discordGame, game, false);
+                CommandManager.placeForces(territory, faction, force, specialForce, true, true, true, discordGame, game, false, true);
                 discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
             } else if (force > 0 || specialForce > 0)
-                CommandManager.placeForces(territory, faction, force, specialForce, !guildAmbassador, true, true, discordGame, game, karama);
+                CommandManager.placeForces(territory, faction, force, specialForce, !guildAmbassador, true, true, discordGame, game, karama, false);
         }
         game.setUpdated(UpdateType.MAP);
         shipment.clear();
@@ -454,7 +454,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         int totalForces = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
         Territory territory = game.getTerritory(faction.getShipment().getTerritoryName());
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
-        int spice = game.shipmentCost(faction, totalForces, territory, karama || guildAmbassador);
+        int spice = game.shipmentCost(faction, totalForces, territory, karama || guildAmbassador, !faction.getShipment().getCrossShipFrom().isEmpty());
         int spiceFromAlly = 0;
         if (faction.hasAlly()) {
             spiceFromAlly = game.getFaction(faction.getAlly()).getShippingSupport();
