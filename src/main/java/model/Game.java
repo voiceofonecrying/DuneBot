@@ -1374,11 +1374,11 @@ public class Game {
         faction.addSpecialReserves(starredAmount);
         faction.checkForHighThreshold();
 
-        String costString = "for free.";
+        String costString = " for free.";
         if (isPaid) {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
             faction.subtractSpice(revivalCost, "revivals");
-            costString = "for " + revivalCost + " " + Emojis.SPICE;
+            costString = " for " + revivalCost + " " + Emojis.SPICE;
             if (hasFaction("BT") && !(faction instanceof BTFaction)) {
                 Faction btFaction = getFaction("BT");
                 costString += " paid to " + Emojis.BT;
@@ -1386,9 +1386,7 @@ public class Game {
             }
         }
 
-        String forcesString = "";
-        if (regularAmount > 0) forcesString += MessageFormat.format("{0} {1} ", regularAmount, Emojis.getForceEmoji(faction.getName()));
-        if (starredAmount > 0) forcesString += MessageFormat.format("{0} {1} ", starredAmount, Emojis.getForceEmoji(faction.getName() + "*"));
+        String forcesString = faction.forcesString(regularAmount, starredAmount);
         faction.getLedger().publish(forcesString + "returned to reserves.");
         turnSummary.publish(faction.getEmoji() + " revives " + forcesString + costString);
         faction.setUpdated(UpdateType.MAP);

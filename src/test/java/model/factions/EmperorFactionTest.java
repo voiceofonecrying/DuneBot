@@ -41,6 +41,16 @@ class EmperorFactionTest extends FactionTestTemplate {
     class Revival extends FactionTestTemplate.Revival {
         @Test
         @Override
+        public void testPaidRevival() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            EmperorFaction emperor = (EmperorFaction) faction;
+            faction.removeForces(emperor.getSecondHomeworld(), 2, true, true);
+            game.reviveForces(faction, false, 2, 1);
+            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.getForceEmoji(faction.getName()) + " 1 " + Emojis.getForceEmoji("Emperor*") + " for free.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        @Override
         public void testFreeReviveStars() {
             EmperorFaction emperor = (EmperorFaction) faction;
             faction.removeForces(emperor.getSecondHomeworld(), 3, true, true);

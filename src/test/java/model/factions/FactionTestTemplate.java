@@ -121,6 +121,13 @@ abstract class FactionTestTemplate {
         }
 
         @Test
+        public void testPaidRevival() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            game.reviveForces(faction, false, 3, 0);
+            assertEquals(faction.getEmoji() + " revives 3 " + Emojis.getForceEmoji(faction.getName()) + " for free.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
         public void testPaidRevivalMessageAfter3Free() throws InvalidGameStateException {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
 //            faction.performFreeRevivals();
