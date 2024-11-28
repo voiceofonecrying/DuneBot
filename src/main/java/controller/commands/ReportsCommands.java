@@ -374,17 +374,39 @@ public class ReportsCommands {
         return playerStatsString.toString();
     }
 
+    public static String writeTopWinsAboveExpected(GRList gameResults, List<Member> members) {
+        Set<String> players = getAllPlayers(gameResults);
+        List<PlayerPerformance> allPlayerPerformance = new ArrayList<>();
+        for (String player : players) {
+            allPlayerPerformance.add(playerPerformance(gameResults, player));
+        }
+//        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
+        allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
+        StringBuilder playerStatsString = new StringBuilder("__Top 15 Wins Over Expected Based On Factions In Games [BETA]__");
+        for (PlayerPerformance pp : allPlayerPerformance) {
+            String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
+            String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
+            String player = getPlayerMention(pp.playerName, members);
+            playerStatsString.append("\n").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
+        }
+        return playerStatsString.toString();
+    }
+
     private static class PlayerPerformance {
         String playerName;
         int numGames;
         int numWins;
         float winPercentage;
+        float numExpectedWins;
+        float winsOverExpectation;
 
-        public PlayerPerformance(String playerName, int numGames, int numWins, float winPercentage) {
+        public PlayerPerformance(String playerName, int numGames, int numWins, float winPercentage, float numExpectedWins) {
             this.playerName = playerName;
             this.numGames = numGames;
             this.numWins = numWins;
             this.winPercentage = winPercentage;
+            this.numExpectedWins = numExpectedWins;
+            this.winsOverExpectation = numWins - numExpectedWins;
         }
     }
 
@@ -412,8 +434,32 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getMoritani() != null && gr.getMoritani().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
+
+        int totalWins = 0;
+        for (GameResult gr : gameResults.gameResults) {
+            for (Set<String> ss : gr.getWinningFactions()) {
+                totalWins += ss.size();
+            }
+        }
+        double overallWinPercentage = totalWins/(6.0 * gameResults.gameResults.size());
+        List<FactionPerformance> allFactionPerformance = getAllFactionPerformance(gameResults);
+        float expectedWins = 0;
+        for (GameResult gr : gameResults.gameResults) {
+            float expectedWinsThisGame = 0;
+            float totalFactionWinPercentage = 0;
+            String pf = gr.getFactionForPlayer(playerName);
+            if (pf != null) {
+                expectedWinsThisGame = factionPerformance(gameResults, pf, Emojis.getFactionEmoji(pf)).winPercentage;
+                for (String f : factionNames)
+                    for (FactionPerformance fp : allFactionPerformance)
+                        if (gr.getFieldValue(f) != null && fp.factionEmoji.equals(Emojis.getFactionEmoji(f)))
+                            totalFactionWinPercentage += fp.winPercentage;
+                expectedWins += (float) (expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+//                System.out.println(gr.getGameName() + " " + playerName + " " + expectedWins + " " + expectedWinsThisGame + " " + expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+            }
+        }
         float winPercentage = numWins/(float)numGames;
-        return new PlayerPerformance(playerName, numGames, numWins, winPercentage);
+        return new PlayerPerformance(playerName, numGames, numWins, winPercentage, expectedWins);
     }
 
     public static String listMembers(SlashCommandInteractionEvent event, List<Member> members) {
@@ -578,7 +624,7 @@ public class ReportsCommands {
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
     }
 
-    public static String writeFactionStats(Guild guild, GRList gameResults) {
+    private static List<FactionPerformance> getAllFactionPerformance(GRList gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
         allFactionPerformance.add(factionPerformance(gameResults, "atreides", Emojis.ATREIDES));
         allFactionPerformance.add(factionPerformance(gameResults, "bg", Emojis.BG));
@@ -593,6 +639,11 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "moritani", Emojis.MORITANI));
         allFactionPerformance.add(factionPerformance(gameResults, "richese", Emojis.RICHESE));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
+        return allFactionPerformance;
+    }
+
+    public static String writeFactionStats(Guild guild, GRList gameResults) {
+        List<FactionPerformance> allFactionPerformance = getAllFactionPerformance(gameResults);
         StringBuilder factionStatsString = new StringBuilder("__Factions__");
         for (FactionPerformance fs : allFactionPerformance) {
             String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
@@ -982,15 +1033,31 @@ public class ReportsCommands {
         }
         if (!playerStatsString.isEmpty())
             playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
-//        playerStatsChannel.sendMessage(writePlayerAllyPerformance(grList, members)).queue();
+
+        playerStatsString = new StringBuilder();
+        playerStatsLines = writeTopWinsAboveExpected(grList, members).split("\n");
+        int expectLines = 0;
+        for (String s : playerStatsLines) {
+            if (expectLines == 16)
+                break;
+            if (!playerStatsString.isEmpty())
+                playerStatsString.append("\n");
+            playerStatsString.append(s);
+            expectLines++;
+        }
+        if (!playerStatsString.isEmpty())
+            playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
+
+        playerStatsChannel.sendMessage(writePlayerAllyPerformance(grList, members)).queue();
 //        String factionPlays = highFactionPlays(guild, grList, members);
 //        if (!factionPlays.isEmpty())
 //            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
         playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, grList, members)).queue();
-        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, grList, members, true)).queue();
-        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
-//        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
+//        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, grList, members, true)).queue();
+        playerStatsChannel.sendMessage("__High Faction Plays__\n" + highFactionGames(guild, grList, members, false)).queue();
+//        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(

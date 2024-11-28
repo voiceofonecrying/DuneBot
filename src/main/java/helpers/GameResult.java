@@ -325,6 +325,16 @@ public class GameResult {
         else return richese != null && richese.equals(playerName);
     }
 
+    public String getFactionForPlayer(String playerName) {
+        List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
+        for (String f : factionNames) {
+            String p = getFieldValue(f);
+            if (p != null && p.equals(playerName))
+                return f;
+        }
+        return null;
+    }
+
     public boolean isFactionPlayer(String factionName, String playerName) {
         return playerName.equals(getFieldValue(factionName));
     }
