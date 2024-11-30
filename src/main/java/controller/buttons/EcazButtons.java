@@ -220,7 +220,7 @@ public class EcazButtons implements Pressable {
     private static void getDukeVidal(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction ecaz = game.getFaction("Ecaz");
         if (ecaz.getLeader("Duke Vidal").isPresent()) return;
-        ecaz.addLeader(new Leader("Duke Vidal", 6, "Ecaz", null, false));
+        ecaz.addLeader(game.getDukeVidal());
         discordGame.pushGame();
         discordGame.queueMessage("Duke Vidal has been returned to you!");
         discordGame.queueDeleteMessage();
