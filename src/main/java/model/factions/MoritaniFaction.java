@@ -200,7 +200,7 @@ public class MoritaniFaction extends Faction {
 
     public void getDukeVidal() {
         if (getLeader("Duke Vidal").isPresent()) return;
-        addLeader(new Leader("Duke Vidal", 6, "None", null, false));
+        addLeader(new Leader("Duke Vidal", 6, "Ecaz", null, false));
     }
 
     public List<String> getTerrorTokens() {

@@ -1249,7 +1249,7 @@ public class Game {
                 for (Faction faction1 : factions) {
                     faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
                 }
-                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, "None", null, false));
+                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, "Ecaz", null, false));
                 turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }

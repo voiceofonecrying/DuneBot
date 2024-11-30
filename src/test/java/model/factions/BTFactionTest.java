@@ -334,11 +334,10 @@ class BTFactionTest extends FactionTestTemplate {
                 Faction ecaz = new EcazFaction("ec", "ec");
                 ecaz.setLedger(new TestTopic());
                 game.addFaction(ecaz);
-                ecaz.addLeader(new Leader("Duke Vidal", 6, "None", null, false));
+                ecaz.addLeader(new Leader("Duke Vidal", 6, "Ecaz", null, false));
                 game.killLeader(ecaz, "Duke Vidal");
                 faction.reviveLeader("Duke Vidal", null);
-//                assertEquals(Emojis.BT + " revived " + Emojis.ECAZ + " Duke Vidal as a Ghola for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
-                assertEquals(Emojis.BT + " revived faction Duke Vidal as a Ghola for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+                assertEquals(Emojis.BT + " revived " + Emojis.ECAZ + " Duke Vidal as a Ghola for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             }
         }
     }

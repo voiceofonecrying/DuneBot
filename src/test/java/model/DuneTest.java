@@ -214,7 +214,7 @@ public class DuneTest {
         cammarPilru = ix.getLeader("Cammar Pilru").orElseThrow();
         bindikkNarvi = ecaz.getLeader("Bindikk Narvi").orElseThrow();
         ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
-        dukeVidal = new Leader("Duke Vidal", 6, "None", null, false);
+        dukeVidal = new Leader("Duke Vidal", 6, "Ecaz", null, false);
 
         arrakeen = game.getTerritory("Arrakeen");
         carthag = game.getTerritory("Carthag");
