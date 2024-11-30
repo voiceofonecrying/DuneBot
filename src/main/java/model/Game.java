@@ -49,6 +49,7 @@ public class Game {
     private final LinkedList<NexusCard> nexusDiscard;
     private final TleilaxuTanks tleilaxuTanks;
     private final LinkedList<Leader> leaderTanks;
+    private Leader dukeVidal;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
     private final List<String> hieregTokens;
@@ -119,6 +120,7 @@ public class Game {
         this.spiceDiscardB = new LinkedList<>();
         this.tleilaxuTanks = new TleilaxuTanks();
         this.leaderTanks = new LinkedList<>();
+        this.dukeVidal = null;
         this.nexusDeck = new LinkedList<>();
         this.nexusDiscard = new LinkedList<>();
         this.homeworlds = new HashMap<>();
@@ -618,6 +620,19 @@ public class Game {
         Leader leader = findLeaderInTanks(name);
         leaderTanks.remove(leader);
         return leader;
+    }
+
+    public void createDukeVidal() {
+        if (dukeVidal == null)
+            dukeVidal = new Leader("Duke Vidal", 6, "Ecaz", null, false);
+    }
+
+    public Leader getDukeVidal() {
+        // Conditional creation can be removed after games 83, 86, and 88 have created Duke Vidal
+        // Really should be created only when Ecaz or Moritani are added to the game
+        if (dukeVidal == null)
+            createDukeVidal();
+        return dukeVidal;
     }
 
     public void advanceTurn() {
@@ -1249,7 +1264,7 @@ public class Game {
                 for (Faction faction1 : factions) {
                     faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
                 }
-                getFaction("Ecaz").getOccupier().getLeaders().add(new Leader("Duke Vidal", 6, "None", null, false));
+                getFaction("Ecaz").getOccupier().getLeaders().add(getDukeVidal());
                 turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
             }
         }

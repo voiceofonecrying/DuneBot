@@ -316,6 +316,30 @@ class BTFactionTest extends FactionTestTemplate {
                 assertEquals(faction.getEmoji() + " " + leader.getName() + " was revived from the tanks for " + Math.ceilDiv(leaderValue, 2) + " " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             }
         }
+
+        @Nested
+        class BTRevivesOtherFactionLeader {
+            @Test
+            public void testReviveStilgar() throws IOException, InvalidGameStateException {
+                Faction fremen = new FremenFaction("fr", "fr");
+                fremen.setLedger(new TestTopic());
+                game.addFaction(fremen);
+                game.killLeader(fremen, "Stilgar");
+                faction.reviveLeader("Stilgar", null);
+                assertEquals(Emojis.BT + " revived " + Emojis.FREMEN + " Stilgar as a Ghola for 4 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            public void testReviveDukeVidal() throws IOException, InvalidGameStateException {
+                Faction ecaz = new EcazFaction("ec", "ec");
+                ecaz.setLedger(new TestTopic());
+                game.addFaction(ecaz);
+                ecaz.addLeader(game.getDukeVidal());
+                game.killLeader(ecaz, "Duke Vidal");
+                faction.reviveLeader("Duke Vidal", null);
+                assertEquals(Emojis.BT + " revived " + Emojis.ECAZ + " Duke Vidal as a Ghola for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            }
+        }
     }
 
     @Test

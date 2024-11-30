@@ -45,6 +45,7 @@ public class MoritaniFaction extends Faction {
         Territory grumman = game.getTerritories().addHomeworld(game, homeworld, name);
         grumman.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
+        game.createDukeVidal();
     }
 
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {
@@ -200,7 +201,7 @@ public class MoritaniFaction extends Faction {
 
     public void getDukeVidal() {
         if (getLeader("Duke Vidal").isPresent()) return;
-        addLeader(new Leader("Duke Vidal", 6, "None", null, false));
+        addLeader(game.getDukeVidal());
     }
 
     public List<String> getTerrorTokens() {

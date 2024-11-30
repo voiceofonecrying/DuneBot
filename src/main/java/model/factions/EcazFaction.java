@@ -51,6 +51,7 @@ public class EcazFaction extends Faction {
         ecaz.addForces(name, 14);
         game.getHomeworlds().put(name, homeworld);
         game.getTerritories().get("Imperial Basin (Center Sector)").addForces("Ecaz", 6);
+        game.createDukeVidal();
     }
 
     public void drawNewSupply() {

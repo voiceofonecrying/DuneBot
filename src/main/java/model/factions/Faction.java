@@ -472,8 +472,9 @@ public class Faction {
             else if (!game.hasFaction("BT"))
                 throw new IllegalArgumentException("Alternative cost cannot be set without BT in the game.");
         }
+        Leader leader = null;
         if (revivalCost == null) {
-            Leader leader = game.findLeaderInTanks(leaderToRevive);
+            leader = game.findLeaderInTanks(leaderToRevive);
             revivalCost = leader.getRevivalCost(this);
         }
         if (spice < revivalCost)
@@ -482,6 +483,8 @@ public class Faction {
         reviveLeader(leaderToRevive);
         subtractSpice(revivalCost, "revive " + leaderToRevive);
         String message = leaderToRevive + " was revived from the tanks for " + revivalCost + " " + Emojis.SPICE;
+        if (this instanceof BTFaction && leader != null && !leader.getOriginalFactionName().equals("BT"))
+            message = "revived " + Emojis.getFactionEmoji(leader.getOriginalFactionName()) + " " + leaderToRevive + " as a Ghola for " + revivalCost + " " + Emojis.SPICE;
         if (!(this instanceof BTFaction) && game.hasFaction("BT")) {
             Faction bt = game.getFaction("BT");
             message += " paid to " + Emojis.BT;
