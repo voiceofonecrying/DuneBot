@@ -53,7 +53,7 @@ public class DuneBot {
             }
 
             CommandManager commandManager = new CommandManager();
-            EventListener eventListener = new EventListener();
+            EventListener eventListener = new EventListener(jda);
             ButtonManager buttonManager = new ButtonManager();
             jda.addEventListener(eventListener, commandManager, buttonManager);
 
