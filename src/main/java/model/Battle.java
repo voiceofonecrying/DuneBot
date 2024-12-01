@@ -730,7 +730,7 @@ public class Battle {
                     }
                 }
             }
-            resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, executeResolution);
+            resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, regularForcesTotal, executeResolution);
         } else if (!callsTraitor && (regularForcesDialed > 0 || specialForcesDialed > 0)) {
             if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
                 String savedForceEmoji;
@@ -781,7 +781,7 @@ public class Battle {
                     resolution += harassAndWithdraw(game, faction, regularForcesNotDialed, specialForcesNotDialed, executeResolution);
                 }
             }
-            resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, executeResolution);
+            resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, regularForcesTotal, executeResolution);
         }
         if (hasEcazAndAlly() && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
             if (isLoser) {
@@ -800,7 +800,7 @@ public class Battle {
                         }
                     }
                 }
-                resolution += killForces(game, game.getFaction("Ecaz"), ecazForcesToKill, 0, executeResolution);
+                resolution += killForces(game, game.getFaction("Ecaz"), ecazForcesToKill, 0, 0, executeResolution);
             } else if (!callsTraitor) {
                 int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
@@ -820,7 +820,7 @@ public class Battle {
                             game.getFaction("Ecaz").withdrawForces(game, 1, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 }
-                resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, executeResolution);
+                resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, 0, executeResolution);
             }
         }
         resolution += handleReinforcements(game, faction, callsTraitor, battlePlan, executeResolution);
@@ -861,7 +861,7 @@ public class Battle {
         return resolution;
     }
 
-    private String killForces(Game game, Faction faction, int regularLeftToKill, int starredLeftToKill, boolean executeResolution) {
+    private String killForces(Game game, Faction faction, int regularLeftToKill, int starredLeftToKill, int regularTotalForIx, boolean executeResolution) {
         String resolution = "";
         if (regularLeftToKill > 0 || starredLeftToKill > 0) {
             if (executeResolution)
@@ -877,8 +877,13 @@ public class Battle {
                     if (regularToKillNow > 0 || starredToKillNow > 0)
                         game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true, true);
                 }
-            else
+            else {
                 resolution += faction.getEmoji() + " loses " + faction.forcesString(regularLeftToKill, starredLeftToKill) + " to the tanks\n";
+                if (faction instanceof IxFaction && starredLeftToKill > 0 && regularTotalForIx - regularLeftToKill > 0) {
+                    int cyborgReplacements = Math.min(starredLeftToKill, regularTotalForIx - regularLeftToKill);
+                    resolution += faction.getEmoji() + " may send " + cyborgReplacements + " " + Emojis.IX_SUBOID + " to the tanks instead of " + cyborgReplacements + " " + Emojis.IX_CYBORG;
+                }
+            }
         }
         return resolution;
     }

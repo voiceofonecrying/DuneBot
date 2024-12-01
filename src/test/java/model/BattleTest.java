@@ -3479,6 +3479,148 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#resolveIxCyborgsAndSuboids")
+    class ResolveIxCyborgsAndSuboids {
+        Territory ixHomeworld;
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ix);
+            game.addFaction(bt);
+            ixHomeworld = game.getTerritory(ix.getHomeworld());
+        }
+
+        @Nested
+        @DisplayName("#suboidsInTwoSectorsReplaced")
+        class SuboidsInTwoSectorsReplaced {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                ixHomeworld.removeForces("Ix", 3);
+                ixHomeworld.removeForces("Ix*", 4);
+                cielagoNorth_eastSector.addForces("Ix", 2);
+                cielagoNorth_eastSector.addForces("Ix*", 2);
+                cielagoNorth_eastSector.addForces("BT", 1);
+                cielagoNorth_westSector.addForces("Ix", 1);
+                cielagoNorth_westSector.addForces("Ix*", 2);
+                battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(ix, bt));
+                battle.setBattlePlan(game, ix, cammarPilru, null, false, 4, false, 0, null, null);
+                battle.setBattlePlan(game, bt, zoal, null, false, 0, false, 0, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewAnnouncesReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.IX + " loses 4 " + Emojis.IX_CYBORG + " to the tanks\n"
+                        + Emojis.IX + " may send 3 " + Emojis.IX_SUBOID + " to the tanks instead of 3 " + Emojis.IX_CYBORG));
+                assertFalse(battle.isResolved(game));
+            }
+
+            @Test
+            void testPublishAnnouncesReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.IX + " loses 4 " + Emojis.IX_CYBORG + " to the tanks\n"
+                        + Emojis.IX + " may send 3 " + Emojis.IX_SUBOID + " to the tanks instead of 3 " + Emojis.IX_CYBORG));
+                assertFalse(battle.isResolved(game));
+            }
+
+//            @Test
+//            void testResolveReplacesSuboids() throws InvalidGameStateException {
+//                battle.printBattleResolution(game, false, true);
+//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.IX_SUBOID + " in Cielago North (East Sector) were sent to the tanks.")));
+//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.IX_SUBOID + " in Cielago North (West Sector) were sent to the tanks.")));
+//                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.IX_CYBORG + " in Cielago North (West Sector) were sent to the tanks.")));
+//                assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains(Emojis.IX_CYBORG + " in Cielago North (East Sector) were sent to the tanks.")));
+//                assertTrue(battle.isResolved(game));
+//            }
+        }
+
+        @Nested
+        @DisplayName("#noSuboidsSurvived")
+        class NoSuboidsSurvived {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                ixHomeworld.removeForces("Ix", 3);
+                ixHomeworld.removeForces("Ix*", 4);
+                cielagoNorth_eastSector.addForces("Ix", 2);
+                cielagoNorth_eastSector.addForces("Ix*", 2);
+                cielagoNorth_eastSector.addForces("BT", 1);
+                cielagoNorth_westSector.addForces("Ix", 1);
+                cielagoNorth_westSector.addForces("Ix*", 2);
+                battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(ix, bt));
+                battle.setBattlePlan(game, ix, cammarPilru, null, false, 5, true, 0, null, null);
+                battle.setBattlePlan(game, bt, zoal, null, false, 0, false, 0, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.IX + " loses 3 " + Emojis.IX_SUBOID + " 4 " + Emojis.IX_CYBORG + " to the tanks"));
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.IX + " may send"));
+                assertFalse(battle.isResolved(game));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.IX + " loses 3 " + Emojis.IX_SUBOID + " 4 " + Emojis.IX_CYBORG + " to the tanks"));
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.IX + " may send"));
+                assertFalse(battle.isResolved(game));
+            }
+
+            @Test
+            void testResolveRemovesAllForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(battle.isResolved(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#noCyborgsInBattle")
+        class NoCyborgsInBattle {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                ix.addTreacheryCard(chaumas);
+                ixHomeworld.removeForces("Ix", 3);
+                cielagoNorth_eastSector.addForces("Ix", 2);
+                cielagoNorth_eastSector.addForces("BT", 1);
+                cielagoNorth_westSector.addForces("Ix", 1);
+                battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(ix, bt));
+                battle.setBattlePlan(game, ix, cammarPilru, null, false, 1, false, 0, chaumas, null);
+                battle.setBattlePlan(game, bt, zoal, null, false, 0, false, 0, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.IX + " loses 2 " + Emojis.IX_SUBOID + " to the tanks"));
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.IX + " may send"));
+                assertFalse(battle.isResolved(game));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceReplacement() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.IX + " loses 2 " + Emojis.IX_SUBOID + " to the tanks"));
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.IX + " may send"));
+                assertFalse(battle.isResolved(game));
+            }
+
+            @Test
+            void testResolveRemovesSuboids() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.IX_SUBOID + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(battle.isResolved(game));
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolutionInJacururuSietchAndKHCounteIncrease")
     class ResolutionInJacurutuSietchAndKHCounterIncrease {
         Battle battle;
