@@ -147,12 +147,15 @@ public class EventListener extends ListenerAdapter {
     private void removeEmojiFromLastMessage(MessageReceivedEvent event) {
         if (LastChannelMessageCache.hasMessage(event.getChannel().getId())) {
             Message lastMessage = LastChannelMessageCache.getMessage(event.getChannel().getId());
+            System.out.println("Message found in cache with message id: " + lastMessage.getId());
             try {
                 lastMessage = lastMessage.getChannel().retrieveMessageById(lastMessage.getId()).complete();
             } catch (Exception e) {
                 return;
             }
+            System.out.println("Message retrieved.");
             if (lastMessage.getMember() != null && event.getMember() != null && event.getMember().getId().equals(lastMessage.getMember().getId())) {
+                System.out.println("Getting reactions for the last message and deleting them.");
                 lastMessage.getReactions().forEach(r -> r.removeReaction(jda.getSelfUser()).queue());
             }
         }
