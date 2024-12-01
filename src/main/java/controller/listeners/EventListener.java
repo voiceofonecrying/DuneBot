@@ -1,11 +1,14 @@
 package controller.listeners;
 
+import caches.LastChannelMessageCache;
 import constants.Emojis;
 import controller.CommandCompletionGuard;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -22,6 +25,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EventListener extends ListenerAdapter {
+    JDA jda;
+
+    public EventListener(JDA jda) {
+        this.jda = jda;
+    }
 
     private static final Pattern cardPattern = Pattern
             .compile(":(treachery|leader|stronghold|nexus):([^:\\v]*):\\1:");
@@ -86,6 +94,9 @@ public class EventListener extends ListenerAdapter {
             event.getMessage().addReaction(discordGame.getEmoji(Emojis.MOD_EMPEROR)).queue();
         }
 
+        removeEmojiFromLastMessage(event);
+        LastChannelMessageCache.setMessage(event.getChannel().getId(), event.getMessage());
+
         Matcher mentionMatcher = mentionPattern.matcher(message);
 
         Set<String> mentionedPlayers = new HashSet<>();
@@ -122,6 +133,28 @@ public class EventListener extends ListenerAdapter {
                                 .addActionRow(buttons);
                         event.getChannel().sendMessage(response.build()).queue();
                     });
+        }
+    }
+
+    /**
+     * Removes all emoji reactions added by the bot from the last message in the channel where the event was triggered.
+     * The method verifies if the last message in the cache originated from the same member as the current event's member
+     * before attempting to remove reactions.
+     *
+     * @param event the event from which the channel and member context is obtained; provides information about
+     *              the message received and the channel it was received in.
+     */
+    private void removeEmojiFromLastMessage(MessageReceivedEvent event) {
+        if (LastChannelMessageCache.hasMessage(event.getChannel().getId())) {
+            Message lastMessage = LastChannelMessageCache.getMessage(event.getChannel().getId());
+            try {
+                lastMessage = lastMessage.getChannel().retrieveMessageById(lastMessage.getId()).complete();
+            } catch (Exception e) {
+                return;
+            }
+            if (lastMessage.getMember() != null && event.getMember() != null && event.getMember().getId().equals(lastMessage.getMember().getId())) {
+                lastMessage.getReactions().forEach(r -> r.removeReaction(jda.getSelfUser()).queue());
+            }
         }
     }
 }

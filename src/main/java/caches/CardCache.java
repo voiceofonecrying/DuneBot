@@ -27,6 +27,7 @@ public class CardCache {
     private static Map<String, Map<String, String>> getCardMap(String name) {
         return cardMaps.get(name);
     }
+
     public static Map<String, String> getCardInfo(String name, String cardName) {
         return getCardMap(name).getOrDefault(cardName.toLowerCase(), new HashMap<>());
     }
