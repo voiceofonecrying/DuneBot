@@ -154,9 +154,8 @@ public class EventListener extends ListenerAdapter {
                 return;
             }
             System.out.println("Message retrieved with ID: " + lastMessage.getId());
-            System.out.println("Message retrieved with member ID: " + Objects.requireNonNull(lastMessage.getMember()).getId());
-            System.out.println("Event had member ID: " + Objects.requireNonNull(event.getMember()).getId());
-            if (lastMessage.getMember() != null && event.getMember() != null && event.getMember().getId().equals(lastMessage.getMember().getId())) {
+            System.out.println(event.getAuthor().getId());
+            if (event.getAuthor().getIdLong() == lastMessage.getAuthor().getIdLong()) {
                 System.out.println("Getting reactions for the last message and deleting them.");
                 lastMessage.getReactions().forEach(r -> r.removeReaction(jda.getSelfUser()).queue());
             }
