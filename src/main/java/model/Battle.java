@@ -864,7 +864,12 @@ public class Battle {
     private String killForces(Game game, Faction faction, int regularLeftToKill, int starredLeftToKill, int regularTotalForIx, boolean executeResolution) {
         String resolution = "";
         if (regularLeftToKill > 0 || starredLeftToKill > 0) {
-            if (executeResolution)
+            int cyborgReplacements = Math.min(starredLeftToKill, regularTotalForIx - regularLeftToKill);
+            if (executeResolution) {
+                if (faction instanceof IxFaction) {
+                    regularLeftToKill += cyborgReplacements;
+                    starredLeftToKill -= cyborgReplacements;
+                }
                 for (Territory t : getTerritorySectors(game)) {
                     if (regularLeftToKill == 0 && starredLeftToKill == 0)
                         break;
@@ -877,12 +882,10 @@ public class Battle {
                     if (regularToKillNow > 0 || starredToKillNow > 0)
                         game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), faction, regularToKillNow, starredToKillNow, true, true);
                 }
-            else {
+            } else {
                 resolution += faction.getEmoji() + " loses " + faction.forcesString(regularLeftToKill, starredLeftToKill) + " to the tanks\n";
-                if (faction instanceof IxFaction && starredLeftToKill > 0 && regularTotalForIx - regularLeftToKill > 0) {
-                    int cyborgReplacements = Math.min(starredLeftToKill, regularTotalForIx - regularLeftToKill);
+                if (faction instanceof IxFaction && starredLeftToKill > 0 && regularTotalForIx - regularLeftToKill > 0)
                     resolution += faction.getEmoji() + " may send " + cyborgReplacements + " " + Emojis.IX_SUBOID + " to the tanks instead of " + cyborgReplacements + " " + Emojis.IX_CYBORG;
-                }
             }
         }
         return resolution;
