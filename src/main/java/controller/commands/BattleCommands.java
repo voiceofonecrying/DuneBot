@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static controller.commands.CommandOptions.*;
-import static controller.commands.CommandOptions.territory;
 
 public class BattleCommands {
     public static List<CommandData> getCommands() {
