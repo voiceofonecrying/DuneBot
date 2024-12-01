@@ -5,7 +5,6 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
-import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 

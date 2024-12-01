@@ -121,7 +121,6 @@ public class EventListener extends ListenerAdapter {
                                 .setContent("Would you like to send this message as a whisper to " + emoji + "?\n" + event.getMessage().getContentRaw())
                                 .addActionRow(buttons);
                         event.getChannel().sendMessage(response.build()).queue();
-//                        discordGame.queueMessage(response);
                     });
         }
     }
