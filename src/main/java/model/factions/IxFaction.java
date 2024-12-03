@@ -83,6 +83,7 @@ public class IxFaction extends Faction {
 
     @Override
     public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
+        paidRevivalMessage = null;
         TleilaxuTanks tanks = game.getTleilaxuTanks();
         if (tanks.getForceStrength(name + "*") == 0 || spice < revivalCost(0, 1))
             game.getRevival().setCyborgRevivalComplete(true);
