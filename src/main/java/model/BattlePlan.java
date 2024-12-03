@@ -215,6 +215,11 @@ public class BattlePlan {
         if (arrakeenStrongholdCard)
             spice += 2;
         if (specialsNegated) {
+            if (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
+                dialUsed++;
+                if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
+                specialStrengthUsed++;
+            }
             while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
                 dialUsed++;
                 if (isSpiceNeeded(game, battle, faction, false)) spiceUsed++;
@@ -284,6 +289,7 @@ public class BattlePlan {
         specialNotDialed = specialStrength - specialStrengthUsed;
 
         int swappableSpecials = specialDialed;
+        int starRegularRatio = specialsNegated ? 1 : 2;
         if (faction instanceof IxFaction) {
             swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
             if (swappableSpecials > 0 && regularStrength - regularDialed >= 1) {
@@ -302,11 +308,11 @@ public class BattlePlan {
                 faction.getChat().publish("How would you like to take troop losses?", choices);
                 dialedForcesSettled = false;
             }
-        } else if (swappableSpecials > 0 && regularStrength - regularDialed >= 2) {
+        } else if (swappableSpecials > 0 && regularStrength - regularDialed >= starRegularRatio) {
             List<DuneChoice> choices = new ArrayList<>();
             int numStarsReplaced = 0;
-            while (regularStrength - regularDialed >= numStarsReplaced * 2) {
-                int altRegularDialed = regularDialed + numStarsReplaced * 2;
+            while (regularStrength - regularDialed >= numStarsReplaced * starRegularRatio) {
+                int altRegularDialed = regularDialed + numStarsReplaced * starRegularRatio;
                 int altSpecialDialed = specialDialed - numStarsReplaced;
                 String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
                 String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
