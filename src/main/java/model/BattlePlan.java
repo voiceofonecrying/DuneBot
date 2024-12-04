@@ -449,37 +449,41 @@ public class BattlePlan {
     public String getLeaderString(boolean revealLeaderSkills) {
         String khString = kwisatzHaderach ? " + KH (2)" : "";
         String leaderString = "-";
-        if (leader != null) leaderString = MessageFormat.format("{0} ({1}){2}",
-                leader.getName(), leader.getName().equals("Zoal") ? "X" : leader.getValue(), khString);
+        String leaderName = "";
+        if (leader != null) {
+            leaderName = leader.getName();
+            leaderString = MessageFormat.format("{0} ({1}){2}",
+                    leaderName, leaderName.equals("Zoal") ? "X" : leader.getValue(), khString);
+        }
         else if (cheapHero != null) leaderString = cheapHero.name() + " (0)" + khString;
 
+        if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
+            leaderString += "\n  +3 for Killer Medic" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillInFront("Killer Medic") && isPoisonDefense())
+            leaderString += "\n  +1 for Killer Medic";
+        if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
+            leaderString += "\n  +3 for Master of Assassins" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillInFront("Master of Assassins") && isPoisonWeapon())
+            leaderString += "\n  +1 for Master of Assassins";
+        if (isSkillBehindAndLeaderAlive("Mentat"))
+            leaderString += "\n  +2 for Mentat" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
+            leaderString += "\n  +2 for Planetologist" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
+            leaderString += "\n  +3 for Prana Bindu Adept" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillInFront("Prana Bindu Adept") && isProjectileDefense())
+            leaderString += "\n  +1 for Prana Bindu Adept";
+        if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
+            leaderString += "\n  +3 for Swordmaster of Ginaz" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
+            leaderString += "\n  +1 for Swordmaster of Ginaz";
+        if (isSkillBehindAndLeaderAlive("Spice Banker"))
+            leaderString += "\n  +" + spiceBankerSupport + " for Spice Banker" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
+            leaderString += "\n  +3 for Warmaster" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
+        if (isSkillInFront("Warmaster") && hasWorthlessCard())
+            leaderString += "\n  +1 for Warmaster";
         if (revealLeaderSkills) {
-            if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
-                leaderString += "\n  +3 for Killer Medic";
-            if (isSkillInFront("Killer Medic") && isPoisonDefense())
-                leaderString += "\n  +1 for Killer Medic";
-            if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
-                leaderString += "\n  +3 for Master of Assassins";
-            if (isSkillInFront("Master of Assassins") && isPoisonWeapon())
-                leaderString += "\n  +1 for Master of Assassins";
-            if (isSkillBehindAndLeaderAlive("Mentat"))
-                leaderString += "\n  +2 for Mentat";
-            if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
-                leaderString += "\n  +2 for Planetologist";
-            if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
-                leaderString += "\n  +3 for Prana Bindu Adept";
-            if (isSkillInFront("Prana Bindu Adept") && isProjectileDefense())
-                leaderString += "\n  +1 for Prana Bindu Adept";
-            if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
-                leaderString += "\n  +3 for Swordmaster of Ginaz";
-            if (isSkillInFront("Swordmaster of Ginaz") && isProjectileWeapon())
-                leaderString += "\n  +1 for Swordmaster of Ginaz";
-            if (isSkillBehindAndLeaderAlive("Spice Banker"))
-                leaderString += "\n  +" + spiceBankerSupport + " for Spice Banker";
-            if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
-                leaderString += "\n  +3 for Warmaster";
-            if (isSkillInFront("Warmaster") && hasWorthlessCard())
-                leaderString += "\n  +1 for Warmaster";
             if (opponentHasBureaucrat && numStrongholdsOccupied > 0)
                 leaderString += "\n -" + numStrongholdsOccupied + " for opponent Bureaucrat";
         }
