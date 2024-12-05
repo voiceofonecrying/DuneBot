@@ -3,11 +3,13 @@ package model;
 import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RevivalTest extends DuneTest {
     Revival revival;
@@ -17,13 +19,13 @@ public class RevivalTest extends DuneTest {
         super.setUp();
         game.startRevival();
         revival = game.getRevival();
-        game.addFaction(bt);
-        game.addFaction(choam);
-        game.addFaction(harkonnen);
     }
 
     @Test
     void testBTCollectsForFreeRevivals() throws InvalidGameStateException {
+        game.addFaction(bt);
+        game.addFaction(choam);
+        game.addFaction(harkonnen);
         game.removeForces("Tleilax", bt, 4, 0, true);
         game.removeForces("Tupile", choam, 6, 0, true);
         game.removeForces("Giedi Prime", harkonnen, 2, 0, true);
@@ -32,5 +34,39 @@ public class RevivalTest extends DuneTest {
         assertEquals(Emojis.BT + " revives 2 " + Emojis.BT_TROOP + " for free.", turnSummary.getMessages().get(1));
         assertEquals(Emojis.HARKONNEN + " revives 2 " + Emojis.HARKONNEN_TROOP + " for free.", turnSummary.getMessages().get(2));
         assertEquals(Emojis.BT + " gain 2 " + Emojis.SPICE + " from free revivals.\n", turnSummary.getMessages().get(3));
+    }
+
+    @Nested
+    @DisplayName("#askAboutRevivalLimits")
+    class AskAboutRevivalLimits {
+        @BeforeEach
+        void setUp() {
+            game.setTurn(2);
+            game.addFaction(emperor);
+        }
+
+        @Test
+        void testBTNotInGame() {
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            assertFalse(revival.askAboutRevivalLimits(game));
+        }
+
+        @Test
+        void testBTInGameNoLimitsNeedToBeRaised() {
+            game.addFaction(bt);
+            game.removeForces("Kaitain", emperor, 2, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 4, true);
+            assertFalse(revival.askAboutRevivalLimits(game));
+            assertTrue(btChat.getMessages().getLast().contains(Emojis.EMPEROR + " has only 2 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " revivable forces."));
+        }
+
+        @Test
+        void testBTInGameLimitCanBeRaised() {
+            game.addFaction(bt);
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            assertTrue(revival.askAboutRevivalLimits(game));
+        }
     }
 }
