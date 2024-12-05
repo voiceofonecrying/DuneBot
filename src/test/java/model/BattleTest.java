@@ -3918,18 +3918,23 @@ class BattleTest extends DuneTest {
                 assertEquals(2, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
                 assertEquals(Emojis.ATREIDES + " has no " + Emojis.TREACHERY + " cards not played in the battle.", choamChat.getMessages().getLast());
+                assertEquals("You had no " + Emojis.TREACHERY + " cards not played in the battle for " + Emojis.CHOAM + " to audit.", atreidesChat.getMessages().getLast());
+                assertTrue(modInfo.getMessages().isEmpty());
             }
 
             @Test
             void testAuditedOpponentHasOneCard() throws InvalidGameStateException {
                 atreides.addTreacheryCard(shield);
                 battle.printBattleResolution(game, false, true);
+                modInfo.clear();
                 battle.cancelAudit(game, false);
                 assertFalse(battle.isAuditorMustBeResolved());
                 assertEquals(10, atreides.getSpice());
                 assertEquals(2, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
                 assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, choamChat.getMessages().getLast());
+                assertEquals(Emojis.CHOAM + " audited " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, atreidesChat.getMessages().getLast());
+                assertTrue(modInfo.getMessages().isEmpty());
             }
 
             @Test
@@ -3945,6 +3950,10 @@ class BattleTest extends DuneTest {
                 boolean lasgunAndShield = choamChat.getMessages().getLast().equals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY);
                 boolean shielsAndLasgun = choamChat.getMessages().getLast().equals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY);
                 assertTrue(lasgunAndShield || shielsAndLasgun);
+                lasgunAndShield = atreidesChat.getMessages().getLast().equals(Emojis.CHOAM + " audited " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY);
+                shielsAndLasgun = atreidesChat.getMessages().getLast().equals(Emojis.CHOAM + " audited " + Emojis.TREACHERY + " Lasgun " + Emojis.TREACHERY + " and " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY);
+                assertTrue(lasgunAndShield || shielsAndLasgun);
+                assertTrue(modInfo.getMessages().isEmpty());
             }
         }
 
@@ -4003,6 +4012,8 @@ class BattleTest extends DuneTest {
                 assertEquals(2, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
                 assertEquals(Emojis.ATREIDES + " has no " + Emojis.TREACHERY + " cards not played in the battle.", choamChat.getMessages().getLast());
+                assertEquals("You had no " + Emojis.TREACHERY + " cards not played in the battle for " + Emojis.CHOAM + " to audit.", atreidesChat.getMessages().getLast());
+                assertTrue(modInfo.getMessages().isEmpty());
             }
 
             @Test
@@ -4040,6 +4051,8 @@ class BattleTest extends DuneTest {
                 assertEquals(2, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " accepts audit from " + Emojis.CHOAM, turnSummary.getMessages().getLast());
                 assertEquals(Emojis.ATREIDES + " has " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, choamChat.getMessages().getLast());
+                assertEquals(Emojis.CHOAM + " audited " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY, atreidesChat.getMessages().getLast());
+                assertTrue(modInfo.getMessages().isEmpty());
             }
         }
     }

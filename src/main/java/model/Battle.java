@@ -2073,11 +2073,13 @@ public class Battle {
                 Collections.shuffle(cardsForAudit);
                 cardsToShow = cardsForAudit.subList(0, Math.min(auditAmount, cardsForAudit.size())).stream().map(c -> Emojis.TREACHERY + " " + c + " " + Emojis.TREACHERY).toList();
             }
-            if (cardsToShow.isEmpty())
+            if (cardsToShow.isEmpty()) {
                 choam.getChat().publish(auditedFaction.getEmoji() + " has no " + Emojis.TREACHERY + " cards not played in the battle.");
-            else
+                auditedFaction.getChat().publish("You had no " + Emojis.TREACHERY + " cards not played in the battle for " + choam.getEmoji() + " to audit.");
+            } else {
                 choam.getChat().publish(auditedFaction.getEmoji() + " has " + String.join(" and ", cardsToShow));
-            game.getModInfo().publish(auditedFaction.getEmoji() + " does not cancel the audit.\nShow " + Emojis.CHOAM + " " + auditAmount + " of " + auditedFaction.getEmoji() + " " + Emojis.TREACHERY + " cards not played in this battle. " + game.getModOrRoleMention());
+                auditedFaction.getChat().publish(choam.getEmoji() + " audited " + String.join(" and ", cardsToShow));
+            }
         }
         auditorMustBeResolved = false;
     }
