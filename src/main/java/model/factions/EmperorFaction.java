@@ -53,8 +53,8 @@ public class EmperorFaction extends Faction {
     }
 
     @Override
-    public boolean hasStarredForces() {
-        return true;
+    public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
+        return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
     }
 
     /**
