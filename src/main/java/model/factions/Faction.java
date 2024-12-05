@@ -330,10 +330,6 @@ public class Faction {
         return spice;
     }
 
-    public boolean hasStarredForces() {
-        return false;
-    }
-
     public String forcesString(int numForces, int numSpecialForces) {
         String forcesString = "";
         if (numForces > 0)
@@ -344,6 +340,10 @@ public class Faction {
         if (forcesString.isEmpty())
             forcesString = "no " + emoji + " forces";
         return forcesString;
+    }
+
+    public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
+        return numForces + " " + Emojis.getForceEmoji(name) + " ";
     }
 
     public void addReserves(int amount) {

@@ -684,10 +684,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                 spice = 0;
             if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")))
                 spice = Math.ceilDiv(spice, 2);
-            String specialForces = faction.hasStarredForces() ? " " + faction.getShipment().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
             String noFieldMessage = faction.getShipment().getNoField() >= 0 ? "\n" + faction.getShipment().getNoField() + " " + Emojis.NO_FIELD + "\n": "";
-            String currentlyShipping = "Currently shipping:\n**" + faction.getShipment().getForce() + " " + Emojis.getForceEmoji(faction.getName()) +
-                    specialForces + noFieldMessage + "** to " + territory +
+            String currentlyShipping = "Currently shipping:\n**" + faction.forcesStringWithZeroes(faction.getShipment().getForce(), faction.getShipment().getSpecialForce()) + noFieldMessage + "** to " + territory +
                     (guildAmbassador ? "" : " for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.");
             String message = "Use buttons below to add forces to your shipment. " + currentlyShipping;
 
@@ -741,12 +739,11 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (faction instanceof RicheseFaction && game.getTerritories().get(faction.getMovement().getMovingFrom()).hasRicheseNoField() && !faction.getMovement().isMovingNoField())
                 forcesButtons.add(Button.primary("richese-no-field-move", "+1 No-Field token")
                         .withDisabled(game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()));
-            String specialForces = faction.hasStarredForces() ? " " + faction.getMovement().getSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
 
             String message = "Use buttons below to add forces to your ";
             message += fremenRide ? "ride." : "movement.";
-            message += " Currently moving:\n**" + faction.getMovement().getForce() + " " + Emojis.getForceEmoji(faction.getName()) + specialForces + noField + "** to " + faction.getMovement().getMovingTo();
+            message += " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getForce(), faction.getMovement().getSpecialForce()) + noField + "** to " + faction.getMovement().getMovingTo();
             if (movement.isMovingNoField() || movement.getForce() != 0 || movement.getSpecialForce() != 0 || movement.getSecondForce() != 0 || movement.getSecondSpecialForce() != 0) {
                 if (!fremenRide && !enterDiscoveryToken && faction.hasTreacheryCard("Hajr"))
                     forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
@@ -796,10 +793,9 @@ public class ShipmentAndMovementButtons implements Pressable {
                     for (int i = 0; i < secondSpecialForcesButtonLimit; i++) {
                         secondForcesButtons.add(Button.primary("planetologist-add-special-force-" + territory.getTerritoryName() + "-" + (i + 1), "Add " + (i + 1) + " * troop"));
                     }
-                    String secondSpecialForces = faction.hasStarredForces() ? " " + faction.getMovement().getSecondSpecialForce() + " " + Emojis.getForceEmoji(faction.getName() + "*") : "";
                     String planetologistMessage = "Second group can move from " + territory.getTerritoryName() + " using Planetologist ability.";
                     planetologistMessage +=
-                            " Currently moving:\n**" + faction.getMovement().getSecondForce() + " " + Emojis.getForceEmoji(faction.getName()) + secondSpecialForces + "** from " + secondMovingFrom + " to " + faction.getMovement().getMovingTo();
+                            " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getSecondForce(), faction.getMovement().getSecondSpecialForce()) + "** from " + secondMovingFrom + " to " + faction.getMovement().getMovingTo();
                     arrangeButtonsAndSend(planetologistMessage, secondForcesButtons, discordGame);
                 }
             }

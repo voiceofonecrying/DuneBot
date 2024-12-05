@@ -76,7 +76,7 @@ public class Revival {
     public boolean askAboutRevivalLimits(Game game) {
         if (game.getTurn() > 1 && game.hasFaction("BT")) {
             BTFaction bt = (BTFaction) game.getFaction("BT");
-            bt.getChat().publish("Please set revival rates for each faction." + bt.getPlayer());
+            bt.getChat().publish("Please set revival rates for each faction. " + bt.getPlayer());
             List<String> limitsNotNeededMessages = new ArrayList<>();
             game.getFactions().stream().filter(faction -> !(faction instanceof BTFaction)).forEach(faction -> {
                 TleilaxuTanks tanks = game.getTleilaxuTanks();
@@ -94,17 +94,10 @@ public class Revival {
                     choices.add(new DuneChoice("bt-revival-rate-set-" + faction.getName() + "-5", "5" + (faction.getMaxRevival() == 5 ? " (no change)" : "")));
                     bt.getChat().publish(faction.getEmoji(), choices);
                     bt.addFactionNeedingRevivalLimit(faction.getName());
+                } else if (regularInTanks + starredInTanks == 0) {
+                    limitsNotNeededMessages.add(faction.getEmoji() + " has no forces in the tanks.");
                 } else {
-                    if (regularInTanks + starredInTanks == 0) {
-                        limitsNotNeededMessages.add(faction.getEmoji() + " has no forces in the tanks.");
-                    } else {
-                        String troopsInTanks = "";
-                        if (regularInTanks > 0)
-                            troopsInTanks += regularInTanks + " " + Emojis.getForceEmoji(faction.getName()) + " ";
-                        if (starredForRevival > 0)
-                            troopsInTanks += starredForRevival + " " + Emojis.getForceEmoji(faction.getName() + "*") + " ";
-                        limitsNotNeededMessages.add(faction.getEmoji() + " has only " + troopsInTanks + " revivable forces.");
-                    }
+                    limitsNotNeededMessages.add(faction.getEmoji() + " has only " + faction.forcesString(regularInTanks, starredForRevival) + " revivable forces.");
                 }
             });
             String leaveAllTheSameMessage = String.join("\n", limitsNotNeededMessages);

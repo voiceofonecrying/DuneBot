@@ -22,13 +22,14 @@ public class FactionView {
     protected final model.factions.Faction faction;
 
     public static FactionView factory(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
-        if (faction instanceof BTFaction btFaction) return new BTView(discordGame, btFaction);
-        else if (faction instanceof EcazFaction ecazFaction) return new EcazView(discordGame, ecazFaction);
-        else if (faction instanceof EmperorFaction emperorFaction) return new EmperorView(discordGame, emperorFaction);
-        else if (faction instanceof MoritaniFaction moritaniFaction)
-            return new MoritaniView(discordGame, moritaniFaction);
-        else if (faction instanceof RicheseFaction richeseFaction) return new RicheseView(discordGame, richeseFaction);
-        else return new FactionView(discordGame, faction);
+        return switch (faction) {
+            case BTFaction btFaction -> new BTView(discordGame, btFaction);
+            case EcazFaction ecazFaction -> new EcazView(discordGame, ecazFaction);
+            case EmperorFaction emperorFaction -> new EmperorView(discordGame, emperorFaction);
+            case MoritaniFaction moritaniFaction -> new MoritaniView(discordGame, moritaniFaction);
+            case RicheseFaction richeseFaction -> new RicheseView(discordGame, richeseFaction);
+            case null, default -> new FactionView(discordGame, faction);
+        };
     }
 
     public FactionView(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
@@ -70,10 +71,7 @@ public class FactionView {
     }
 
     public static String getTaggedReservesString(DiscordGame discordGame, Faction faction) {
-        String reservesString = faction.getReservesStrength() + " " + Emojis.getForceEmoji(faction.getName());
-        if (faction instanceof EmperorFaction || faction instanceof FremenFaction ||faction instanceof IxFaction)
-            reservesString += " " + faction.getSpecialReservesStrength() + " " + Emojis.getForceEmoji(faction.getName() + "*");
-        return discordGame.tagEmojis(reservesString);
+        return discordGame.tagEmojis(faction.forcesStringWithZeroes(faction.getReservesStrength(), faction.getSpecialReservesStrength()));
     }
 
     private MessageEmbed getSummaryEmbed() {
