@@ -382,8 +382,11 @@ public class ReportsCommands {
         }
 //        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
-        StringBuilder playerStatsString = new StringBuilder("__Top 15 Wins Over Expected Based On Factions In Games [BETA]__");
+        StringBuilder playerStatsString = new StringBuilder("__Top 20 Players With Wins Over Expected Based On Factions In Games [BETA]__");
+        playerStatsString.append("\n*Players must have played in a game that ended in 2024*");
         for (PlayerPerformance pp : allPlayerPerformance) {
+            if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.parse("2024-01-01")))
+                continue;
             String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
             String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
             String player = getPlayerMention(pp.playerName, members);
@@ -399,14 +402,16 @@ public class ReportsCommands {
         float winPercentage;
         float numExpectedWins;
         float winsOverExpectation;
+        String lastGameEnd;
 
-        public PlayerPerformance(String playerName, int numGames, int numWins, float winPercentage, float numExpectedWins) {
+        public PlayerPerformance(String playerName, int numGames, int numWins, float winPercentage, float numExpectedWins, String lastGameEnd) {
             this.playerName = playerName;
             this.numGames = numGames;
             this.numWins = numWins;
             this.winPercentage = winPercentage;
             this.numExpectedWins = numExpectedWins;
             this.winsOverExpectation = numWins - numExpectedWins;
+            this.lastGameEnd = lastGameEnd;
         }
     }
 
@@ -444,6 +449,7 @@ public class ReportsCommands {
         double overallWinPercentage = totalWins/(6.0 * gameResults.gameResults.size());
         List<FactionPerformance> allFactionPerformance = getAllFactionPerformance(gameResults);
         float expectedWins = 0;
+        String lastGameEnd = "2020-01-01";
         for (GameResult gr : gameResults.gameResults) {
             float expectedWinsThisGame = 0;
             float totalFactionWinPercentage = 0;
@@ -456,10 +462,12 @@ public class ReportsCommands {
                             totalFactionWinPercentage += fp.winPercentage;
                 expectedWins += (float) (expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
 //                System.out.println(gr.getGameName() + " " + playerName + " " + expectedWins + " " + expectedWinsThisGame + " " + expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+                if (LocalDate.parse(gr.getGameEndDate()).isAfter(LocalDate.parse(lastGameEnd)))
+                    lastGameEnd = gr.getGameEndDate();
             }
         }
         float winPercentage = numWins/(float)numGames;
-        return new PlayerPerformance(playerName, numGames, numWins, winPercentage, expectedWins);
+        return new PlayerPerformance(playerName, numGames, numWins, winPercentage, expectedWins, lastGameEnd);
     }
 
     public static String listMembers(SlashCommandInteractionEvent event, List<Member> members) {
@@ -1038,7 +1046,7 @@ public class ReportsCommands {
         playerStatsLines = writeTopWinsAboveExpected(grList, members).split("\n");
         int expectLines = 0;
         for (String s : playerStatsLines) {
-            if (expectLines == 16)
+            if (expectLines == 22)
                 break;
             if (!playerStatsString.isEmpty())
                 playerStatsString.append("\n");
