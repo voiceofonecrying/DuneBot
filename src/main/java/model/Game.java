@@ -32,6 +32,7 @@ public class Game {
     private int phase;
     private int subPhase;
     private int phaseForTracker;
+    private String modRole;
     private SpiceBlowAndNexus spiceBlowAndNexus;
     private Bidding bidding;
     private Revival revival;
@@ -60,7 +61,6 @@ public class Game {
     private int hmsRotation = 0;
     private boolean ixHMSActionRequired;
     private HashMap<Integer, List<String>> quotes;
-    private String modRole;
     private Boolean mute;
     private String phaseForWhispers;
     private Set<GameOption> gameOptions;

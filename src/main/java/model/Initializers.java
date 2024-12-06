@@ -85,7 +85,8 @@ public class Initializers {
             case "Cielago South (East Sector)" -> points.add(new Point(551, 858));
             case "Cielago East (West Sector)" -> {
                 points.add(new Point(601, 892));
-                points.add(new Point(607, 806));
+                points.add(new Point(601, 792));
+                points.add(new Point(618, 842));
             }
             case "Harg Pass (West Sector)" -> {
                 points.add(new Point(535, 616));
