@@ -58,13 +58,8 @@ public class EcazCommands {
 
     private static void assignDukeVidal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
-        Faction faction = game.getFactions().stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
-        if (faction != null) {
-            faction.removeLeader("Duke Vidal");
-            game.getTurnSummary().publish("Duke Vidal is no longer in service to " + faction.getEmoji());
-        }
-
-        faction = game.getFaction(factionName);
+        game.releaseDukeVidal();
+        Faction faction = game.getFaction(factionName);
         faction.addLeader(game.getDukeVidal());
         faction.getChat().publish("Duke Vidal has come to fight for you!");
         game.getTurnSummary().publish("Duke Vidal now works for " + faction.getEmoji());

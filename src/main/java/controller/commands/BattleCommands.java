@@ -130,11 +130,7 @@ public class BattleCommands {
     }
 
     public static void releaseDukeVidal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction faction = game.getFactions().stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
-        if (faction != null) {
-            faction.removeLeader("Duke Vidal");
-            game.getTurnSummary().publish("Duke Vidal is no longer in service to " + faction.getEmoji());
-        }
+        game.releaseDukeVidal();
         discordGame.pushGame();
     }
 

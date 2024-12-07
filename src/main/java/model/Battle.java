@@ -655,6 +655,10 @@ public class Battle {
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
             if (executeResolution)
                 game.killLeader(faction, battlePlan.getKilledLeaderString());
+        } else if (battlePlan.getLeader() != null && battlePlan.getLeader().getName().equals("Duke Vidal")) {
+            resolution += emojis + " sets Duke Vidal aside\n";
+            if (executeResolution)
+                game.releaseDukeVidal();
         }
         if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach()) {
             resolution += emojis + " loses Kwisatz Haderach to the tanks\n";
