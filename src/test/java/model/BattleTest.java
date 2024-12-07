@@ -4063,41 +4063,134 @@ class BattleTest extends DuneTest {
         Battle battle;
 
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() {
             game.addFaction(ecaz);
             game.addFaction(atreides);
-            arrakeen.addForces("Ecaz", 1);
-            ecaz.addLeader(dukeVidal);
-            battle = new Battle(game, List.of(arrakeen), List.of(atreides, ecaz));
-            battle.setBattlePlan(game, atreides, "Duncan Idaho", false, "0", 0, "None", "None");
-            battle.setBattlePlan(game, ecaz, "Duke Vidal", false, "0.5", 0, "None", "None");
-            modInfo.clear();
-            turnSummary.clear();
+            game.addFaction(bt);
         }
 
-        @Test
-        void testReviewDoesNotSetVidalAside() throws InvalidGameStateException {
-            battle.printBattleResolution(game, false, false);
-            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " sets Duke Vidal aside"));
-            assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
-            assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+        @Nested
+        @DisplayName("#ecazPlaysDukeVidal")
+        class EcazPlaysDukeVidal {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                arrakeen.addForces("Ecaz", 1);
+                ecaz.addLeader(dukeVidal);
+                battle = new Battle(game, List.of(arrakeen), List.of(atreides, ecaz));
+                battle.setBattlePlan(game, atreides, "Duncan Idaho", false, "0", 0, "None", "None");
+                battle.setBattlePlan(game, ecaz, "Duke Vidal", false, "0.5", 0, "None", "None");
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " sets Duke Vidal aside"));
+                assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testPublishDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " sets Duke Vidal aside"));
+                assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testResolveSetsVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("Duke Vidal is no longer in service to " + Emojis.ECAZ)));
+                assertFalse(ecaz.getLeader("Duke Vidal").isPresent());
+                assertFalse(game.getLeaderTanks().contains(dukeVidal));
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
         }
 
-        @Test
-        void testPublishDoesNotSetVidalAside() throws InvalidGameStateException {
-            battle.printBattleResolution(game, true, false);
-            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " sets Duke Vidal aside"));
-            assertTrue(ecaz.getLeader("Duke Vidal").isPresent());
-            assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+        @Nested
+        @DisplayName("#btPlaysDukeVidalAsAGhola")
+        class BTPlaysDukeVidalAsAGhola {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                arrakeen.addForces("BT", 1);
+                bt.addLeader(dukeVidal);
+                battle = new Battle(game, List.of(arrakeen), List.of(atreides, bt));
+                battle.setBattlePlan(game, atreides, "Duncan Idaho", false, "0", 0, "None", "None");
+                battle.setBattlePlan(game, bt, "Duke Vidal", false, "0.5", 0, "None", "None");
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(" sets Duke Vidal aside"));
+                assertTrue(bt.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testPublishDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(" sets Duke Vidal aside"));
+                assertTrue(bt.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testResolveSetsVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals("Duke Vidal is no longer in service to " + Emojis.BT)));
+                assertTrue(bt.getLeader("Duke Vidal").isPresent());
+                assertFalse(game.getLeaderTanks().contains(dukeVidal));
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
         }
 
-        @Test
-        void testResolveSetsVidalAside() throws InvalidGameStateException {
-            battle.printBattleResolution(game, false, true);
-            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("Duke Vidal is no longer in service to " + Emojis.ECAZ)));
-            assertFalse(ecaz.getLeader("Duke Vidal").isPresent());
-            assertFalse(game.getLeaderTanks().contains(dukeVidal));
-            assertNull(dukeVidal.getBattleTerritoryName());
+        @Nested
+        @DisplayName("#btPlaysDukeVidalAsAGhola")
+        class BTAlliedWithEcazPlaysDukeVidal {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.createAlliance(bt, ecaz);
+                arrakeen.addForces("BT", 1);
+                bt.addLeader(dukeVidal);
+                battle = new Battle(game, List.of(arrakeen), List.of(atreides, bt));
+                battle.setBattlePlan(game, atreides, "Duncan Idaho", false, "0", 0, "None", "None");
+                battle.setBattlePlan(game, bt, "Duke Vidal", false, "0.5", 0, "None", "None");
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.BT + " sets Duke Vidal aside"));
+                assertTrue(modInfo.getMessages().getFirst().contains("If Duke Vidal was a Ghola, he should be assigned back to " + Emojis.BT));
+                assertTrue(bt.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testPublishDoesNotSetVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.BT + " sets Duke Vidal aside"));
+                assertTrue(turnSummary.getMessages().getFirst().contains("If Duke Vidal was a Ghola, he should be assigned back to " + Emojis.BT));
+                assertTrue(bt.getLeader("Duke Vidal").isPresent());
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
+
+            @Test
+            void testResolveSetsVidalAside() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("Duke Vidal is no longer in service to " + Emojis.BT)));
+                assertTrue(modInfo.getMessages().stream().anyMatch(m -> m.equals("If Duke Vidal was a Ghola, he should be assigned back to " + Emojis.BT + " ")));
+                assertFalse(bt.getLeader("Duke Vidal").isPresent());
+                assertFalse(game.getLeaderTanks().contains(dukeVidal));
+                assertEquals("Arrakeen", dukeVidal.getBattleTerritoryName());
+            }
         }
     }
 
