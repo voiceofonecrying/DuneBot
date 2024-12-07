@@ -656,9 +656,17 @@ public class Battle {
             if (executeResolution)
                 game.killLeader(faction, battlePlan.getKilledLeaderString());
         } else if (battlePlan.getLeader() != null && battlePlan.getLeader().getName().equals("Duke Vidal")) {
-            resolution += emojis + " sets Duke Vidal aside\n";
-            if (executeResolution)
-                game.releaseDukeVidal();
+            if (!(faction instanceof BTFaction) || faction.getAlly().equals("Ecaz")) {
+                resolution += emojis + " sets Duke Vidal aside\n";
+                String btVidalMessage = "If Duke Vidal was a Ghola, he should be assigned back to " + Emojis.BT;
+                if (faction instanceof BTFaction)
+                    resolution += btVidalMessage + "\n";
+                if (executeResolution) {
+                    game.releaseDukeVidal();
+                    if (faction instanceof BTFaction)
+                        game.getModInfo().publish(btVidalMessage + " " + game.getModOrRoleMention());
+                }
+            }
         }
         if (!callsTraitor && isLasgunShieldExplosion && battlePlan.hasKwisatzHaderach()) {
             resolution += emojis + " loses Kwisatz Haderach to the tanks\n";

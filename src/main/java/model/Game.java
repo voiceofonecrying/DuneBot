@@ -640,7 +640,6 @@ public class Game {
         if (faction != null) {
             faction.removeLeader("Duke Vidal");
             turnSummary.publish("Duke Vidal is no longer in service to " + faction.getEmoji());
-            dukeVidal.setBattleTerritoryName(null);
         }
     }
 
@@ -1457,6 +1456,8 @@ public class Game {
         phaseForWhispers = "Turn " + turn + " Battle Phase\n";
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
+        if (dukeVidal != null)
+            dukeVidal.setBattleTerritoryName(null);
         // Get list of aggregate territory names with multiple factions
         battles = new Battles();
         battles.startBattlePhase(this);
@@ -1508,6 +1509,8 @@ public class Game {
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
+        if (dukeVidal != null)
+            dukeVidal.setBattleTerritoryName(null);
         getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
         getLeaderTanks().forEach(l -> l.setBattleTerritoryName(null));
         battles = null;
