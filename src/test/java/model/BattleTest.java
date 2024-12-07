@@ -4097,7 +4097,7 @@ class BattleTest extends DuneTest {
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("Duke Vidal is no longer in service to " + Emojis.ECAZ)));
             assertFalse(ecaz.getLeader("Duke Vidal").isPresent());
             assertFalse(game.getLeaderTanks().contains(dukeVidal));
-            assertEquals(null, dukeVidal.getBattleTerritoryName());
+            assertNull(dukeVidal.getBattleTerritoryName());
         }
     }
 
