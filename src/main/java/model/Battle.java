@@ -662,7 +662,7 @@ public class Battle {
                 if (faction instanceof BTFaction)
                     resolution += btVidalMessage + "\n";
                 if (executeResolution) {
-                    game.releaseDukeVidal();
+                    game.releaseDukeVidal(false);
                     if (faction instanceof BTFaction)
                         game.getModInfo().publish(btVidalMessage + " " + game.getModOrRoleMention());
                 }

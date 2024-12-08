@@ -130,7 +130,7 @@ public class BattleCommands {
     }
 
     public static void releaseDukeVidal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.releaseDukeVidal();
+        game.releaseDukeVidal(false);
         discordGame.pushGame();
     }
 

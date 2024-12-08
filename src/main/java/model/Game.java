@@ -635,11 +635,11 @@ public class Game {
         return dukeVidal;
     }
 
-    public void releaseDukeVidal() {
+    public void releaseDukeVidal(boolean justRevivedByEcaz) {
         Faction faction = factions.stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
         if (faction != null) {
             faction.removeLeader("Duke Vidal");
-            turnSummary.publish("Duke Vidal is no longer in service to " + faction.getEmoji());
+            turnSummary.publish("Duke Vidal is no longer in service to " + faction.getEmoji() + (justRevivedByEcaz ? " - what a rotten scoundrel!" : ""));
         }
     }
 
