@@ -575,14 +575,12 @@ public class ShowCommands {
 
         //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
-            if (territory.getTerritoryName().equals("Ecological Testing Station"))
-                System.out.println("Found it");
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
                     && !territory.isAftermathToken() && !territory.hasTerrorToken()
                     && territory.getDiscoveryToken() == null) continue;
-            if (territory.isDiscoveryToken()) continue;
-            if (territory instanceof HomeworldTerritory) continue;
+            if (territory.isDiscoveryToken() || territory instanceof HomeworldTerritory || territory.getTerritoryName().equals("Hidden Mobile Stronghold"))
+                continue;
             int offset = 0;
             int i = 0;
 
