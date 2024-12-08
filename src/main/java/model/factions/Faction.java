@@ -491,6 +491,9 @@ public class Faction {
             bt.addSpice(revivalCost, emoji + " revived " + leaderToRevive);
         }
         game.getTurnSummary().publish(emoji + " " + message);
+        if (this instanceof EcazFaction && leaderToRevive.equals("Duke Vidal")) {
+            game.releaseDukeVidal(true);
+        }
         game.setUpdated(UpdateType.MAP);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }

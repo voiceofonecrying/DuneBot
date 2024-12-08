@@ -109,6 +109,14 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testReviveDukeVidal() throws InvalidGameStateException {
+        faction.addLeader(game.getDukeVidal());
+        game.killLeader(faction, "Duke Vidal");
+        faction.reviveLeader("Duke Vidal", null);
+        assertEquals("Duke Vidal is no longer in service to " + Emojis.ECAZ + " - what a rotten scoundrel!", turnSummary.getMessages().getLast());
+    }
+
+    @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
     }
