@@ -4,6 +4,7 @@ import controller.DiscordGame;
 import model.DuneChoice;
 import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -34,11 +35,23 @@ public class DiscordChannel implements DuneTopic {
         List<Button> buttons = new ArrayList<>();
         for (DuneChoice choice : choices) {
             Button button;
-            switch (choice.getType()) {
-                case "secondary" -> button = Button.secondary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
-                case "danger" -> button = Button.danger(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
-                case "success" -> button = Button.success(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
-                default -> button = Button.primary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+            if (choice.getLabel() == null) {
+                Emoji emoji = Emoji.fromFormatted(discordGame.tagEmojis(choice.getEmoji()));
+                switch (choice.getType()) {
+                    case "secondary" -> button = Button.secondary(choice.getId(), emoji).withDisabled(choice.isDisabled());
+                    case "danger" -> button = Button.danger(choice.getId(), emoji).withDisabled(choice.isDisabled());
+                    case "success" -> button = Button.success(choice.getId(), emoji).withDisabled(choice.isDisabled());
+                    default -> button = Button.primary(choice.getId(), emoji).withDisabled(choice.isDisabled());
+                }
+            } else {
+                switch (choice.getType()) {
+                    case "secondary" -> button = Button.secondary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                    case "danger" -> button = Button.danger(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                    case "success" -> button = Button.success(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                    default -> button = Button.primary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
+                }
+                if (choice.getEmoji() != null)
+                    button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(choice.getEmoji())));
             }
             buttons.add(button);
         }

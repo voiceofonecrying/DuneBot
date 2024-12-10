@@ -4,6 +4,7 @@ public class DuneChoice {
     private final String type;
     private final String id;
     private final String label;
+    private String emoji;
     private boolean disabled;
 
     public DuneChoice(String type, String id, String label) {
@@ -37,6 +38,14 @@ public class DuneChoice {
 
     public String getLabel() {
         return label;
+    }
+
+    public String getEmoji() {
+        return emoji;
+    }
+
+    public void setEmoji(String emoji) {
+        this.emoji = emoji;
     }
 
     public boolean isDisabled() {
