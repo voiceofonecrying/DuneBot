@@ -5,9 +5,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
-import model.TraitorCard;
 import model.factions.BTFaction;
-import model.factions.Faction;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -16,8 +14,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import static controller.commands.CommandOptions.*;
@@ -46,34 +42,14 @@ public class BTCommands {
     }
 
     public static void swapBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (game.hasFaction("BT")) {
-            String faceDancer = discordGame.required(btFaceDancer).getAsString();
-            Faction faction = game.getFaction("BT");
-
-            List<TraitorCard> btFaceDancerHand = faction.getTraitorHand();
-            LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
-
-            TraitorCard traitorCard = btFaceDancerHand.stream()
-                    .filter(t -> t.getName().equalsIgnoreCase(faceDancer))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
-
-            faction.removeTraitorCard(traitorCard);
-
-            traitorDeck.add(traitorCard);
-            Collections.shuffle(traitorDeck);
-            TraitorCard newFD = traitorDeck.pop();
-            faction.addTraitorCard(newFD);
-            faction.getChat().publish(newFD.getEmojiNameAndStrengthString() + " is your new Face Dancer. You have swapped out " + traitorCard.getEmojiNameAndStrengthString() + ".");
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
-
-            discordGame.pushGame();
-        }
+        String faceDancer = discordGame.required(btFaceDancer).getAsString();
+        ((BTFaction) game.getFaction("BT")).swapFaceDancer(faceDancer);
+        discordGame.pushGame();
     }
 
     public static void revealBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String faceDancer = discordGame.required(btFaceDancer).getAsString();
-        ((BTFaction)game.getFaction("BT")).revealFaceDancer(faceDancer, game);
+        ((BTFaction) game.getFaction("BT")).revealFaceDancer(faceDancer, game);
         discordGame.pushGame();
     }
 

@@ -135,4 +135,22 @@ public class BTFaction extends Faction {
         super.performMentatPauseActions(extortionTokenTriggered);
         chat.publish("Would you like to swap a Face Dancer? " + player);
     }
+
+    public void swapFaceDancer(String faceDancer) {
+        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
+
+        TraitorCard traitorCard = traitorHand.stream()
+                .filter(t -> t.getName().equalsIgnoreCase(faceDancer))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
+
+        removeTraitorCard(traitorCard);
+        traitorDeck.add(traitorCard);
+        Collections.shuffle(traitorDeck);
+
+        TraitorCard newFD = traitorDeck.pop();
+        addTraitorCard(newFD);
+        chat.publish(newFD.getEmojiNameAndStrengthString() + " is your new Face Dancer. You have swapped out " + traitorCard.getEmojiNameAndStrengthString() + ".");
+        game.getTurnSummary().publish(emoji + " swapped a Face Dancer");
+    }
 }
