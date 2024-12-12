@@ -135,7 +135,4 @@ public class BTFaction extends Faction {
         super.performMentatPauseActions(extortionTokenTriggered);
         chat.publish("Would you like to swap a Face Dancer? " + player);
     }
-
-    public void swapFaceDancer() {
-    }
 }
