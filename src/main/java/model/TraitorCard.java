@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import model.factions.Faction;
 
 import java.util.Objects;
 
@@ -19,10 +20,6 @@ public final class TraitorCard {
         return name;
     }
 
-    public String factionName() {
-        return factionName;
-    }
-
     public String getNameAndStrengthString() {
         String valueString = String.valueOf(strength);
         if (name.equals("Zoal"))
@@ -30,10 +27,24 @@ public final class TraitorCard {
         return name + " (" + valueString + ")";
     }
 
+    public String getEmojiAndNameString() {
+        if (name.equals("Cheap Hero"))
+            return name;
+        return Emojis.getFactionEmoji(factionName) + " " + name;
+    }
+
     public String getEmojiNameAndStrengthString() {
         if (name.equals("Cheap Hero"))
             return getNameAndStrengthString();
         return Emojis.getFactionEmoji(factionName) + " " + getNameAndStrengthString();
+    }
+
+    public boolean canBeCalledAgainst(Faction faction) {
+        return factionName.equals(faction.getName()) || factionName.equals("Any");
+    }
+
+    public boolean isHarkonnenTraitor() {
+        return factionName.equals("Harkonnen");
     }
 
     @Override

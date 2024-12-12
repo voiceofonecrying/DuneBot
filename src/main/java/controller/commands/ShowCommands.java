@@ -977,7 +977,7 @@ public class ShowCommands {
             case AtreidesFaction atreides -> factionSpecificString.append("\n__KH Counter:__ ").append(Math.min(7, atreides.getForcesLost()));
             default -> {}
         }
-        String traitorString = (faction instanceof BTFaction) ? "\n__Face Dancers:__\n" : "\n__Traitors:__\n" +
+        String traitorString = ((faction instanceof BTFaction) ? "\n__Face Dancers:__\n" : "\n__Traitors:__\n") +
                 String.join("\n", traitors.stream().map(TraitorCard::getEmojiNameAndStrengthString).toList()) + "\n";
         String reservesString = "\n__Reserves:__ " + FactionView.getTaggedReservesString(discordGame, faction);
 

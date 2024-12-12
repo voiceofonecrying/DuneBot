@@ -101,7 +101,7 @@ public class BattlePlan {
     public void presentEarlyTraitorChoices(Game game, Faction faction, Faction opponent, boolean isHarkonnenAllyPower) {
         if (faction instanceof BTFaction)
             return;
-        List<String> eligibleTraitors = faction.getTraitorHand().stream().filter(t -> (t.factionName().equals(opponent.getName()) || t.factionName().equals("Any")) && game.getLeaderTanks().stream().noneMatch(l -> l.getName().equals(t.name()))).map(TraitorCard::name).collect(Collectors.toList());
+        List<String> eligibleTraitors = faction.getTraitorHand().stream().filter(t -> t.canBeCalledAgainst(opponent) && game.getLeaderTanks().stream().noneMatch(l -> l.getName().equals(t.name()))).map(TraitorCard::name).collect(Collectors.toList());
         if (!isHarkonnenAllyPower && faction.getAlly().equals("Harkonnen"))
             eligibleTraitors.add("one of " + Emojis.HARKONNEN + "'s traitors");
         String traitors = String.join(" or ", eligibleTraitors);

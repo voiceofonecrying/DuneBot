@@ -598,11 +598,7 @@ public class SetupCommands {
             game.drawCard("traitor deck", faction.getName());
         }
 
-        long numHarkonnenTraitors = faction.getTraitorHand().stream()
-                .map(TraitorCard::factionName)
-                .filter(f -> f.equalsIgnoreCase("Harkonnen"))
-                .count();
-
+        long numHarkonnenTraitors = faction.getTraitorHand().stream().filter(TraitorCard::isHarkonnenTraitor).count();
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             game.getModInfo().publish("Harkonnen can mulligan");
