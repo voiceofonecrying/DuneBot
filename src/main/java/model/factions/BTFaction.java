@@ -76,7 +76,7 @@ public class BTFaction extends Faction {
      */
     public void revealFaceDancer(String faceDancer, Game game) throws InvalidGameStateException {
         TraitorCard revealedFaceDancer = traitorHand.stream()
-                .filter(t -> t.name().equalsIgnoreCase(faceDancer))
+                .filter(t -> t.getName().equalsIgnoreCase(faceDancer))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
         if (!getTraitorHand().contains(revealedFaceDancer))
@@ -86,7 +86,7 @@ public class BTFaction extends Faction {
 
         getTraitorHand().remove(revealedFaceDancer);
         revealedFaceDancers.add(revealedFaceDancer);
-        game.getTurnSummary().publish(emoji + " revealed " + revealedFaceDancer.name() + " as a Face Dancer!");
+        game.getTurnSummary().publish(emoji + " revealed " + revealedFaceDancer.getEmojiAndNameString() + " as a Face Dancer!");
         if (getTraitorHand().isEmpty())
             drawFaceDancers();
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);

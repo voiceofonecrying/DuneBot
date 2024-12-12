@@ -209,7 +209,7 @@ public class ShowCommands {
 
         //Place Traitor Cards
         for (TraitorCard traitorCard : faction.getTraitorHand()) {
-            Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.name());
+            Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.getName());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);

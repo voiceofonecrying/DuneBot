@@ -615,7 +615,7 @@ public class SetupCommands {
         List<Leader> leaders = ecaz.getLeaders();
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.getFirst());
-        game.getTraitorDeck().removeIf(traitorCard -> traitorCard.name().equalsIgnoreCase(ecaz.getLoyalLeader().getName()));
+        game.getTraitorDeck().removeIf(traitorCard -> traitorCard.getName().equalsIgnoreCase(ecaz.getLoyalLeader().getName()));
         game.getTurnSummary().publish(Emojis.ECAZ + " have drawn " + ecaz.getLoyalLeader().getName() + " as their loyal leader.");
         return StepStatus.CONTINUE;
     }

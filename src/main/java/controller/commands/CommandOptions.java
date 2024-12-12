@@ -403,7 +403,7 @@ public class CommandOptions {
             faction = game.getFaction("Harkonnen");
         else
             faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
-        return faction.getTraitorHand().stream().map(TraitorCard::name)
+        return faction.getTraitorHand().stream().map(TraitorCard::getName)
                 .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(traitor -> new Command.Choice(traitor, traitor))
                 .collect(Collectors.toList());
@@ -413,7 +413,7 @@ public class CommandOptions {
         if (!game.hasFaction("BT")) return new ArrayList<>();
         else {
             return game.getFaction("BT").getTraitorHand().stream()
-                    .map(TraitorCard::name)
+                    .map(TraitorCard::getName)
                     .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(traitor -> new Command.Choice(traitor, traitor))
                     .collect(Collectors.toList());

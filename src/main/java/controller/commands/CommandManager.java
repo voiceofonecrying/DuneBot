@@ -954,7 +954,7 @@ public class CommandManager extends ListenerAdapter {
 
     private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        String assassinated = moritani.getTraitorHand().getFirst().name();
+        String assassinated = moritani.getTraitorHand().getFirst().getEmojiAndNameString();
         moritani.getAssassinationTargets().add(assassinated);
         moritani.getTraitorHand().clear();
         moritani.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);

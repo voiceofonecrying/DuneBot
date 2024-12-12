@@ -2304,8 +2304,8 @@ class BattleTest extends DuneTest {
                 assertTrue(atreidesChat.getMessages().get(2).contains("Discard a traitor just drawn:"));
                 assertEquals(3, atreidesChat.getChoices().getFirst().size());
                 assertTrue(battle.isRihaniDeciphererMustBeResolved(game));
-                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name(), true);
-                atreides.discardTraitor(atreides.getTraitorHand().getFirst().name(), false);
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().getName(), true);
+                atreides.discardTraitor(atreides.getTraitorHand().getFirst().getName(), false);
                 assertFalse(battle.isRihaniDeciphererMustBeResolved(game));
             }
         }

@@ -391,16 +391,16 @@ class BTFactionTest extends FactionTestTemplate {
         @Test
         public void testDrawFDsWhenNotAllRevealed() throws InvalidGameStateException {
             assertThrows(InvalidGameStateException.class, () -> faction.drawFaceDancers());
-            faction.revealFaceDancer(faction.getTraitorHand().getFirst().name(), game);
-            faction.revealFaceDancer(faction.getTraitorHand().getFirst().name(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
             assertThrows(InvalidGameStateException.class, () -> faction.drawFaceDancers());
         }
 
         @Test
         public void testFaceDancerRevealMovesFDOutOfTraitorHand() throws InvalidGameStateException {
             TraitorCard revealedTraitor = faction.getTraitorHand().getFirst();
-            faction.revealFaceDancer(revealedTraitor.name(), game);
-            assertEquals(Emojis.BT + " revealed " + revealedTraitor.name() + " as a Face Dancer!", turnSummary.getMessages().get(1));
+            faction.revealFaceDancer(revealedTraitor.getName(), game);
+            assertEquals(Emojis.BT + " revealed " + revealedTraitor.getEmojiAndNameString() + " as a Face Dancer!", turnSummary.getMessages().get(1));
             assertEquals(1, faction.getRevealedFaceDancers().size());
             assertEquals(revealedTraitor, faction.getRevealedFaceDancers().stream().toList().getFirst());
             assertEquals(2, faction.getTraitorHand().size());
@@ -411,17 +411,17 @@ class BTFactionTest extends FactionTestTemplate {
         @Test
         public void testInvalidFaceDancerRevealFDNotInBTHand() {
             TraitorCard revealedTraitor = game.getTraitorDeck().getFirst();
-            assertThrows(IllegalArgumentException.class, () -> faction.revealFaceDancer(revealedTraitor.name(), game));
+            assertThrows(IllegalArgumentException.class, () -> faction.revealFaceDancer(revealedTraitor.getName(), game));
         }
 
         @Test
         public void testThirdFaceDancerRevealed() throws InvalidGameStateException {
             assertEquals(3, faction.getTraitorHand().size());
-            faction.revealFaceDancer(faction.getTraitorHand().getFirst().name(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
             assertEquals(2, faction.getTraitorHand().size());
-            faction.revealFaceDancer(faction.getTraitorHand().getFirst().name(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
             assertEquals(1, faction.getTraitorHand().size());
-            faction.revealFaceDancer(faction.getTraitorHand().getFirst().name(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
             assertEquals(3, faction.getTraitorHand().size());
             assertEquals( Emojis.BT + " revealed all of their Face Dancers and drew a new set of 3.", turnSummary.getMessages().get(4));
         }

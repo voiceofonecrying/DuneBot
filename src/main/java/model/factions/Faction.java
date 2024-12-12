@@ -270,7 +270,7 @@ public class Faction {
     }
 
     public boolean hasTraitor(String leaderName) {
-        return traitorHand.stream().anyMatch(t -> t.name().equals(leaderName));
+        return traitorHand.stream().anyMatch(t -> t.getName().equals(leaderName));
     }
 
     public void useTraitor(String leaderName) {
@@ -286,7 +286,7 @@ public class Faction {
     }
 
     public void presentTraitorSelection() {
-        List<DuneChoice> traitors = traitorHand.stream().map(t -> new DuneChoice("traitor-selection-" + t.name(), t.name())).toList();
+        List<DuneChoice> traitors = traitorHand.stream().map(t -> new DuneChoice("traitor-selection-" + t.getName(), t.getName())).toList();
         chat.publish("Please select your traitor " + player, traitors);
     }
 
@@ -1093,14 +1093,14 @@ public class Faction {
 
     public void selectTraitor(String traitorName) {
         TraitorCard traitor = traitorHand.stream().filter(
-                        traitorCard -> traitorCard.name().toLowerCase()
+                        traitorCard -> traitorCard.getName().toLowerCase()
                                 .contains(traitorName.toLowerCase())
                 ).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         for (TraitorCard card : traitorHand) {
             if (card.equals(traitor)) continue;
             game.getTraitorDeck().add(card);
-            ledger.publish(card.name() + " was sent back to the Traitor Deck.");
+            ledger.publish(card.getEmojiNameAndStrengthString() + " was sent back to the Traitor Deck.");
         }
         traitorHand.clear();
         addTraitorCard(traitor);
@@ -1110,22 +1110,22 @@ public class Faction {
         ledger.publish(
                 MessageFormat.format(
                         "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
-                        traitor.name()
+                        traitor.getEmojiNameAndStrengthString()
                 ));
     }
 
     public void discardTraitor(String traitorName, boolean reveal) {
         TraitorCard traitor = traitorHand.stream().filter(
-                        traitorCard -> traitorCard.name().toLowerCase()
+                        traitorCard -> traitorCard.getName().toLowerCase()
                                 .contains(traitorName.toLowerCase())
                 ).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Traitor not found"));
         traitorHand.remove(traitor);
         game.getTraitorDeck().add(traitor);
         game.shuffleTraitorDeck();
-        ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
+        ledger.publish(traitor.getEmojiNameAndStrengthString() + " was sent back to the Traitor Deck.");
         if (reveal)
-            game.getTurnSummary().publish(emoji + " reveals and discards the " + traitor.name() + " Traitor card.");
+            game.getTurnSummary().publish(emoji + " reveals and discards the " + traitor.getEmojiNameAndStrengthString() + " Traitor card.");
         else
             game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -1143,9 +1143,9 @@ public class Faction {
         drawnTraitors.add(traitorDeck.pop());
         drawnTraitors.forEach(this::addTraitorCard);
         chat.publish("You must discard two Traitors. " + player);
-        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-reveal-and-discard-" + t.name(), t.name(), traitorsUsed.stream().anyMatch(tu -> tu.equals(t.name())))).toList();
+        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-reveal-and-discard-" + t.getName(), t.getName(), traitorsUsed.stream().anyMatch(tu -> tu.equals(t.getName())))).toList();
         chat.publish("Reveal and discard an unused traitor:", choices);
-        choices = drawnTraitors.stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
+        choices = drawnTraitors.stream().map(t -> new DuneChoice("traitor-discard-" + t.getName(), t.getName())).toList();
         chat.publish("Discard a traitor just drawn:", choices);
         game.getTurnSummary().publish(emoji + " has drawn 2 Traitor cards for " + reason + ".");
     }
@@ -1158,7 +1158,7 @@ public class Faction {
         drawnTraitors.add(traitorDeck.pop());
         drawnTraitors.forEach(this::addTraitorCard);
         chat.publish("You must discard two Traitors. " + player);
-        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-discard-" + t.name(), t.name())).toList();
+        List<DuneChoice> choices = traitorHand.stream().map(t -> new DuneChoice("traitor-discard-" + t.getName(), t.getName())).toList();
         chat.publish("First discard:", choices);
         chat.publish("Second discard:", choices);
         game.getTurnSummary().publish(emoji + " has drawn 2 Traitor cards for " + reason + ".");
