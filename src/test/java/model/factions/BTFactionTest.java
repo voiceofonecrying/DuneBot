@@ -400,7 +400,7 @@ class BTFactionTest extends FactionTestTemplate {
         public void testFaceDancerRevealMovesFDOutOfTraitorHand() throws InvalidGameStateException {
             TraitorCard revealedTraitor = faction.getTraitorHand().getFirst();
             faction.revealFaceDancer(revealedTraitor.name(), game);
-            assertEquals(Emojis.BT + " revealed " + revealedTraitor.name() + " as a Face Dancer!", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.BT + " revealed " + revealedTraitor.getEmojiAndNameString() + " as a Face Dancer!", turnSummary.getMessages().get(1));
             assertEquals(1, faction.getRevealedFaceDancers().size());
             assertEquals(revealedTraitor, faction.getRevealedFaceDancers().stream().toList().getFirst());
             assertEquals(2, faction.getTraitorHand().size());

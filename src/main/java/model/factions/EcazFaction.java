@@ -94,7 +94,7 @@ public class EcazFaction extends Faction {
             case "Fremen" -> presentFremenAmbassadorRideFromChoices();
             case "Guild" -> presentGuildAmbassadorDestinationChoices();
             case "Harkonnen" ->
-                    chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().name() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
+                    chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
             case "Ix" -> presentIxAmbassadorDiscardChoices();
             case "Richese" -> presentRicheseAmbassadorChoices();
             case "BT" -> presentBTAmbassadorChoices();

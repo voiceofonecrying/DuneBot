@@ -1100,7 +1100,7 @@ public class Faction {
         for (TraitorCard card : traitorHand) {
             if (card.equals(traitor)) continue;
             game.getTraitorDeck().add(card);
-            ledger.publish(card.name() + " was sent back to the Traitor Deck.");
+            ledger.publish(card.getEmojiNameAndStrengthString() + " was sent back to the Traitor Deck.");
         }
         traitorHand.clear();
         addTraitorCard(traitor);
@@ -1110,7 +1110,7 @@ public class Faction {
         ledger.publish(
                 MessageFormat.format(
                         "{0} is in debt to you.  I'm sure they'll find a way to pay you back...",
-                        traitor.name()
+                        traitor.getEmojiNameAndStrengthString()
                 ));
     }
 
@@ -1123,9 +1123,9 @@ public class Faction {
         traitorHand.remove(traitor);
         game.getTraitorDeck().add(traitor);
         game.shuffleTraitorDeck();
-        ledger.publish(traitor.name() + " was sent back to the Traitor Deck.");
+        ledger.publish(traitor.getEmojiNameAndStrengthString() + " was sent back to the Traitor Deck.");
         if (reveal)
-            game.getTurnSummary().publish(emoji + " reveals and discards the " + traitor.name() + " Traitor card.");
+            game.getTurnSummary().publish(emoji + " reveals and discards the " + traitor.getEmojiNameAndStrengthString() + " Traitor card.");
         else
             game.getTurnSummary().publish(emoji + " has discarded a Traitor card.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);

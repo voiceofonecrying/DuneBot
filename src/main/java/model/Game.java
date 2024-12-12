@@ -751,7 +751,7 @@ public class Game {
         assert traitor != null;
 
         faction.addTraitorCard(traitor);
-        faction.getLedger().publish(traitor.name() + " drawn from traitor deck.");
+        faction.getLedger().publish(traitor.getEmojiNameAndStrengthString() + " drawn from traitor deck.");
         turnSummary.publish(faction.getEmoji() + " draws a card from the traitor deck." );
     }
 

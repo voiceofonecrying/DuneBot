@@ -59,7 +59,7 @@ public class HarkonnenFaction extends Faction {
         if (traitorHand.size() == 3) {
             TraitorCard newTraitor = game.getTraitorDeck().pop();
             addTraitorCard(newTraitor);
-            ledger.publish(newTraitor.name() + " is your new Traitor.");
+            ledger.publish(newTraitor.getEmojiNameAndStrengthString() + " is your new Traitor.");
             game.getTurnSummary().publish(Emojis.HARKONNEN + " has drawn a new Traitor.");
         }
     }
