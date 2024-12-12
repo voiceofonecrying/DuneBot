@@ -98,7 +98,7 @@ public class HarkCommands {
         Faction faction = game.getFaction("Harkonnen");
         LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
         TraitorCard traitorCard = faction.getTraitorHand().stream()
-                .filter(t -> t.name().equalsIgnoreCase(traitorName))
+                .filter(t -> t.getName().equalsIgnoreCase(traitorName))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Traitor: " + traitorName));
         faction.removeTraitorCard(traitorCard);

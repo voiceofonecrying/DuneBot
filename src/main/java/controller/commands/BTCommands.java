@@ -54,7 +54,7 @@ public class BTCommands {
             LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
 
             TraitorCard traitorCard = btFaceDancerHand.stream()
-                    .filter(t -> t.name().equalsIgnoreCase(faceDancer))
+                    .filter(t -> t.getName().equalsIgnoreCase(faceDancer))
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
 

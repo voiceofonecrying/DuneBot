@@ -76,7 +76,7 @@ public class BTFaction extends Faction {
      */
     public void revealFaceDancer(String faceDancer, Game game) throws InvalidGameStateException {
         TraitorCard revealedFaceDancer = traitorHand.stream()
-                .filter(t -> t.name().equalsIgnoreCase(faceDancer))
+                .filter(t -> t.getName().equalsIgnoreCase(faceDancer))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Face Dancer: " + faceDancer));
         if (!getTraitorHand().contains(revealedFaceDancer))

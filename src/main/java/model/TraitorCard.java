@@ -16,7 +16,7 @@ public final class TraitorCard {
         this.strength = strength;
     }
 
-    public String name() {
+    public String getName() {
         return name;
     }
 
@@ -69,5 +69,4 @@ public final class TraitorCard {
                 "factionName=" + factionName + ", " +
                 "strength=" + strength + ']';
     }
-
 }
