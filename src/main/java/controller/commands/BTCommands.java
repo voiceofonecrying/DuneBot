@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -65,17 +64,10 @@ public class BTCommands {
             Collections.shuffle(traitorDeck);
             TraitorCard newFD = traitorDeck.pop();
             faction.addTraitorCard(newFD);
+            faction.getChat().publish(newFD.getEmojiNameAndStrengthString() + " is your new Face Dancer. You have swapped out " + traitorCard.getEmojiNameAndStrengthString() + ".");
+            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
 
             discordGame.pushGame();
-            String newFDEmoji = newFD.name().equals("Cheap Hero") ? "" : game.getFaction(newFD.factionName()).getEmoji() + " ";
-            String oldFDEmoji = traitorCard.name().equals("Cheap Hero") ? "" : game.getFaction(traitorCard.factionName()).getEmoji() + " ";
-            faction.getChat().publish(
-                    MessageFormat.format(
-                            "{0}{1} is your new Face Dancer. You have swapped out {2}{3}.",
-                            newFDEmoji, newFD.name(), oldFDEmoji, traitorCard.name()
-                    )
-            );
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " swapped a Face Dancer");
         }
     }
 

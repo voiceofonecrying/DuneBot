@@ -1062,13 +1062,9 @@ public class Battle {
             if (battlePlan.isSkillInFront("Rihani Decipherer")) {
                 if (executeResolution) {
                     Collections.shuffle(traitorDeck);
-                    TraitorCard traitorCard1 = traitorDeck.getFirst();
-                    String faction1 = traitorCard1.factionName();
-                    String traitor1 = (faction1.equals("Any") ? "" : Emojis.getFactionEmoji(faction1) + " ") + traitorCard1.name();
-                    TraitorCard traitorCard2 = traitorDeck.get(1);
-                    String faction2 = traitorCard2.factionName();
-                    String traitor2 = (faction2.equals("Any") ? "" : Emojis.getFactionEmoji(faction2) + " ") + traitorCard2.name();
-                    faction.getChat().publish(traitor1 + " and " + traitor2 + " are in the Traitor deck.");
+                    TraitorCard traitor1 = traitorDeck.getFirst();
+                    TraitorCard traitor2 = traitorDeck.get(1);
+                    faction.getChat().publish(traitor1.getEmojiNameAndStrengthString() + " and " + traitor2.getEmojiNameAndStrengthString() + " are in the Traitor deck.");
                     game.getTurnSummary().publish(faction.getEmoji() + " has been shown 2 Traitor cards for Rihani Decipherer.");
                 } else
                     resolution += faction.getEmoji() + " may peek at 2 random cards in the Traitor Deck with Rihani Decipherer\n";

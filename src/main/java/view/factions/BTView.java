@@ -7,7 +7,6 @@ import model.factions.BTFaction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,29 +22,11 @@ public class BTView extends FactionView {
     protected List<MessageEmbed> additionalEmbedsTop() {
         if (!faction.getRevealedFaceDancers().isEmpty()) {
             EmbedBuilder faceDancerBuilder = new EmbedBuilder()
-                    .setTitle("Revealed Face Dancers")
                     .setColor(faction.getColor());
-
-            faction.getRevealedFaceDancers().stream()
-                    .map(this::getFaceDancerField)
-                    .forEach(faceDancerBuilder::addField);
-
+            List<String> revealedFDs = faction.getRevealedFaceDancers().stream().map(TraitorCard::getEmojiAndNameString).toList();
+            faceDancerBuilder.addField("Revealed Face Dancers", discordGame.tagEmojis(String.join("\n", revealedFDs)), false);
             return Collections.singletonList(faceDancerBuilder.build());
         }
-
         return new ArrayList<>();
-    }
-
-    private MessageEmbed.Field getFaceDancerField(TraitorCard faceDancer) {
-        return new MessageEmbed.Field(
-                discordGame.tagEmojis(
-                        MessageFormat.format(
-                                "{0} {1}",
-                                game.getFaction(faceDancer.factionName()).getEmoji(), faceDancer.name()
-                        )
-                ),
-                "",
-                false
-        );
     }
 }

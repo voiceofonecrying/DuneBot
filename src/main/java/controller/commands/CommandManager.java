@@ -1013,16 +1013,12 @@ public class CommandManager extends ListenerAdapter {
         return t.getName() + " (" + t.getValue() + ")";
     }
 
-    private String traitorFactionNameAndStrength(TraitorCard t) {
-        return Emojis.getFactionEmoji(t.factionName()) + " " + t.name() + " (" + t.strength() + ")";
-    }
-
     private String getFactionDisplayString(Faction faction) {
         String message = faction.getEmoji() + " ** " + faction.getName() + " ** " + faction.getEmoji() + " - " + faction.getUserName() + "\n" +
                 faction.getSpice() + " " + Emojis.SPICE + "    " + Emojis.TREACHERY + " ";
         message += String.join(", " + Emojis.TREACHERY + " ", faction.getTreacheryHand().stream().map(TreacheryCard::name).toList());
         message += "\nTraitors: ";
-        message += String.join(", ", faction.getTraitorHand().stream().map(this::traitorFactionNameAndStrength).toList());
+        message += String.join(", ", faction.getTraitorHand().stream().map(TraitorCard::getEmojiNameAndStrengthString).toList());
         message += "\nLeaders: ";
         message += String.join(", ", faction.getLeaders().stream().map(this::leaderFactionNameAndStrength).toList());
         switch (faction) {
@@ -1030,7 +1026,7 @@ public class CommandManager extends ListenerAdapter {
                 int khCount = atreides.getForcesLost();
                 message += "\nKH count " + khCount + (khCount < 7 ? "" : "   The Sleeper has awoken!");
             }
-            case BTFaction bt -> message += "\nRevealed Face Dancers: " + String.join(" ", bt.getRevealedFaceDancers().stream().map(this::traitorFactionNameAndStrength).toList());
+            case BTFaction bt -> message += "\nRevealed Face Dancers: " + String.join(" ", bt.getRevealedFaceDancers().stream().map(TraitorCard::getEmojiNameAndStrengthString).toList());
             case EcazFaction ecaz -> message += "\nAmbassador Supply: " + String.join(" ", ecaz.getAmbassadorSupply().stream().map(Emojis::getFactionEmoji).toList());
             case MoritaniFaction moritani -> message += "\nTerror Token Supply: " + String.join(", ", moritani.getTerrorTokens());
             default -> {}
@@ -1096,7 +1092,7 @@ public class CommandManager extends ListenerAdapter {
             }
             case "dnd" -> {
                 String state = "Traitor Deck: ";
-                state += String.join(", ", game.getTraitorDeck().stream().map(this::traitorFactionNameAndStrength).toList());
+                state += String.join(", ", game.getTraitorDeck().stream().map(TraitorCard::getEmojiNameAndStrengthString).toList());
                 if (game.hasGameOption(GameOption.LEADER_SKILLS))
                     state += "\n\nLeader Skills Deck:\n" + String.join(", ", game.getLeaderSkillDeck().stream().map(LeaderSkillCard::name).toList().reversed());
                 state += "\n\nNexus Deck:\n" + String.join(", ", game.getNexusDeck().stream().map(NexusCard::name).toList());
