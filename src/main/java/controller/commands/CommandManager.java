@@ -1009,10 +1009,6 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    private String leaderFactionNameAndStrength(Leader t) {
-        return t.getName() + " (" + t.getValue() + ")";
-    }
-
     private String getFactionDisplayString(Faction faction) {
         String message = faction.getEmoji() + " ** " + faction.getName() + " ** " + faction.getEmoji() + " - " + faction.getUserName() + "\n" +
                 faction.getSpice() + " " + Emojis.SPICE + "    " + Emojis.TREACHERY + " ";
@@ -1020,7 +1016,7 @@ public class CommandManager extends ListenerAdapter {
         message += "\nTraitors: ";
         message += String.join(", ", faction.getTraitorHand().stream().map(TraitorCard::getEmojiNameAndStrengthString).toList());
         message += "\nLeaders: ";
-        message += String.join(", ", faction.getLeaders().stream().map(this::leaderFactionNameAndStrength).toList());
+        message += String.join(", ", faction.getLeaders().stream().map(Leader::getNameAndValueString).toList());
         switch (faction) {
             case AtreidesFaction atreides -> {
                 int khCount = atreides.getForcesLost();
@@ -1061,8 +1057,10 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.getModInfo().queueMessage("**Other territories**");
                 publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> !t.isStronghold() && !(t instanceof HomeworldTerritory)).toList());
                 discordGame.getModInfo().queueMessage("**Bene Tleilaxu Tanks**");
-                discordGame.getModInfo().queueMessage(String.join(" ", game.getTleilaxuTanks().getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList()));
-                discordGame.getModInfo().queueMessage(String.join(", ", game.getLeaderTanks().stream().map(this::leaderFactionNameAndStrength).toList()));
+                if (!game.getTleilaxuTanks().getForces().isEmpty())
+                    discordGame.getModInfo().queueMessage(String.join(" ", game.getTleilaxuTanks().getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList()));
+                if (!game.getLeaderTanks().isEmpty())
+                    discordGame.getModInfo().queueMessage(String.join(", ", game.getLeaderTanks().stream().map(Leader::getEmoiNameAndValueString).toList()));
             }
             case "treachery" -> {
                 String state = Emojis.TREACHERY + " Deck:\n";
