@@ -1,5 +1,6 @@
 package model;
 
+import constants.Emojis;
 import exceptions.InvalidGameStateException;
 import model.factions.BTFaction;
 import model.factions.Faction;
@@ -44,6 +45,10 @@ public class Leader {
         if (name.equals("Zoal"))
             valueString = "X";
         return name + " (" + valueString + ")";
+    }
+
+    public String getEmoiNameAndValueString() {
+        return Emojis.getFactionEmoji(originalFactionName) + " " + getNameAndValueString();
     }
 
     public int getAssassinationValue() {
