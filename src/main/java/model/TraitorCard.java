@@ -23,10 +23,6 @@ public final class TraitorCard {
         return factionName;
     }
 
-    public int strength() {
-        return strength;
-    }
-
     public String getNameAndStrengthString() {
         String valueString = String.valueOf(strength);
         if (name.equals("Zoal"))

@@ -977,18 +977,8 @@ public class ShowCommands {
             case AtreidesFaction atreides -> factionSpecificString.append("\n__KH Counter:__ ").append(Math.min(7, atreides.getForcesLost()));
             default -> {}
         }
-        StringBuilder traitorString = new StringBuilder();
-        if (faction instanceof BTFaction) traitorString.append("\n__Face Dancers:__\n");
-        else traitorString.append("\n__Traitors:__\n");
-        for (TraitorCard traitor : traitors) {
-            if (traitor.name().equals("Cheap Hero")) {
-                traitorString.append("Cheap Hero (0)\n");
-                continue;
-            }
-            String traitorEmoji = discordGame.getGame().getFaction(traitor.factionName()).getEmoji();
-            traitorString.append(traitorEmoji).append(" ").append(traitor.name()).append("(").append(traitor.strength()).append(")");
-            traitorString.append("\n");
-        }
+        String traitorString = (faction instanceof BTFaction) ? "\n__Face Dancers:__\n" : "\n__Traitors:__\n" +
+                String.join("\n", traitors.stream().map(TraitorCard::getEmojiNameAndStrengthString).toList()) + "\n";
         String reservesString = "\n__Reserves:__ " + FactionView.getTaggedReservesString(discordGame, faction);
 
         StringBuilder ornithopter = new StringBuilder();
