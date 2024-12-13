@@ -616,6 +616,35 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#discard")
+    class Discard {
+        Faction faction;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            faction.addTreacheryCard(new TreacheryCard("Recruits"));
+        }
+
+        @Test
+        void testFactionDoesNotHaveCard() {
+            assertThrows(IllegalArgumentException.class, () -> faction.discard("Kulon"));
+        }
+
+        @Test
+        void testNoReasonGiven() {
+            faction.discard("Recruits");
+            assertEquals(faction.getEmoji() + " discards Recruits.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testDiscardWithReason() {
+            faction.discard("Recruits", "to raise all revival limits to 7");
+            assertEquals(faction.getEmoji() + " discards Recruits to raise all revival limits to 7.", turnSummary.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#removeForces")
     class RemoveForces {
         Faction faction;

@@ -65,9 +65,8 @@ public class RevivalButtons implements Pressable {
         game.getRevival().playRecruits();
 
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Recruits"));
         // Maybe do the following in game.setRecruitsInPlay(true);
-        game.getTurnSummary().publish(faction.getName() + " plays Recruits to raise all revival limits to 7!");
+        faction.discard("Recruits", "to raise all revival limits to 7");
         try {
             Faction bt = game.getFaction("BT");
             bt.getChat().publish("Recruits has been played. All revival limits are set to 7.");

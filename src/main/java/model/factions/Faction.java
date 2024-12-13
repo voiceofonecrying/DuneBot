@@ -225,10 +225,26 @@ public class Faction {
         setUpdated(UpdateType.TREACHERY_CARDS);
     }
 
+    /**
+     * Remove card from faction, put it in discard, and publish to turn summary.
+     * Allow simple call for discards that don't require a reason.
+     *
+     * @param cardName the name of the card to discard
+     */
     public void discard(String cardName) {
-        TreacheryCard treacheryCard = removeTreacheryCard(cardName);
+        discard(cardName, "");
+    }
+
+    /**
+     * Remove card from faction, put it in discard, and publish to turn summary.
+     *
+     * @param cardName the name of the card to discard
+     * @param reason optional reason for the discard
+     */
+    public void discard(String cardName, String reason) {
+        TreacheryCard treacheryCard = removeTreacheryCardWithoutDiscard(cardName);
         game.getTreacheryDiscard().add(treacheryCard);
-        game.getTurnSummary().publish(emoji + " discards " + cardName);
+        game.getTurnSummary().publish(emoji + " discards " + cardName + (reason.isEmpty() ? "" : " " + reason) + ".");
         ledger.publish(cardName + " discarded from hand.");
 
         if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
@@ -238,18 +254,26 @@ public class Faction {
     }
 
     /**
-     * Gets the most recently added treachery card from the Faction's hand.
-     * @return Treachery Card
+     * Remove card from faction. Do not put in discard, and do not publish to turn summary.
+     * Whenever the card would go to the discard pile, a discard() method should be used.
+     *
+     * @param name the name of the card to discard
+     *
+     * @return The TreacheryCard that was removed
      */
-    public TreacheryCard getLastTreacheryCard() {
-        return treacheryHand.getLast();
+    public TreacheryCard removeTreacheryCardWithoutDiscard(String name) {
+        return removeTreacheryCardWithoutDiscard(getTreacheryCard(name));
     }
 
-    public TreacheryCard removeTreacheryCard(String name) {
-        return removeTreacheryCard(getTreacheryCard(name));
-    }
-
-    public TreacheryCard removeTreacheryCard(TreacheryCard card) {
+    /**
+     * Remove card from faction. Do not put in discard, and do not publish to turn summary.
+     * Whenever the card would go to the discard pile, a discard() method should be used.
+     *
+     * @param card the card to discard. If faction does not have this card, the treacheryHand is left unchanged.
+     *
+     * @return The TreacheryCard that was requested to be removed
+     */
+    public TreacheryCard removeTreacheryCardWithoutDiscard(TreacheryCard card) {
         treacheryHand.remove(card);
         setUpdated(UpdateType.TREACHERY_CARDS);
         return card;
@@ -257,6 +281,14 @@ public class Faction {
 
     public boolean hasTreacheryCard(String cardName) {
         return treacheryHand.stream().anyMatch(c -> c.name().equals(cardName));
+    }
+
+    /**
+     * Gets the most recently added treachery card from the Faction's hand.
+     * @return Treachery Card
+     */
+    public TreacheryCard getLastTreacheryCard() {
+        return treacheryHand.getLast();
     }
 
     public void addTraitorCard(TraitorCard card) {

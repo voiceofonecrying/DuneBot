@@ -535,7 +535,7 @@ public class Bidding {
         } else if (market.isEmpty()) {
             throw new InvalidGameStateException("There are no cards in the bidding market.");
         }
-        TreacheryCard cardFromIx = faction.removeTreacheryCard(cardName);
+        TreacheryCard cardFromIx = faction.removeTreacheryCardWithoutDiscard(cardName);
         TreacheryCard newCard = market.removeFirst();
         faction.addTreacheryCard(newCard);
         market.addFirst(cardFromIx);
@@ -577,7 +577,7 @@ public class Bidding {
             Collections.shuffle(treacheryDeck);
             treacheryDiscard.clear();
         }
-        TreacheryCard cardToSwap = ally.removeTreacheryCard(previousCard);
+        TreacheryCard cardToSwap = ally.removeTreacheryCardWithoutDiscard(previousCard);
         TreacheryCard newCard = treacheryDeck.pollLast();
         if (newCard == null)
             throw new InvalidGameStateException("There is no card in the treachery deck to swap for.");

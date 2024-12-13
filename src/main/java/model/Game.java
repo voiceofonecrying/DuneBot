@@ -703,11 +703,11 @@ public class Game {
         territories.get("Arrakeen").setRock(false);
 
         String message = factionWithAtomics.getEmoji() + " discards Family Atomics. The Shield Wall has been destroyed.\n";
-        TreacheryCard familyAtomics = factionWithAtomics.removeTreacheryCard("Family Atomics");
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
-            getTreacheryDiscard().add(familyAtomics);
+            factionWithAtomics.discard("Family Atomics");
             message += "Family Atomics has been moved to the discard pile.\n";
         } else {
+            factionWithAtomics.removeTreacheryCardWithoutDiscard("Family Atomics");
             message += "Family Atomics has been removed from the game.\n";
         }
         return message;
@@ -810,7 +810,7 @@ public class Game {
     }
 
     public void transferCard(Faction giver, Faction receiver, TreacheryCard card) {
-        receiver.addTreacheryCard(giver.removeTreacheryCard(card));
+        receiver.addTreacheryCard(giver.removeTreacheryCardWithoutDiscard(card));
         receiver.getLedger().publish("Received " + card.name() + " from " + giver.getEmoji());
         giver.getLedger().publish("Sent " + card.name() + " to " + receiver.getEmoji());
     }

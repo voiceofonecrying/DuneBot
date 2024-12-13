@@ -213,13 +213,8 @@ public class EmperorFaction extends Faction {
     }
 
     public void kaitainHighDiscard(String cardName) {
-        getGame().getTreacheryDiscard().add(removeTreacheryCard(cardName));
-        getLedger().publish(cardName + " discarded");
+        discard(cardName, "and paid 2 " + Emojis.SPICE + " with Kaitain High Threshold ability");
         subtractSpice(2, " paid to discard");
-        getGame().getTurnSummary().publish(MessageFormat.format(
-                "{0} paid 2 {1} to discard {2} (Kaitain High Threshold ability)",
-                Emojis.EMPEROR, Emojis.SPICE, cardName.trim()
-        ));
     }
 
     @Override
