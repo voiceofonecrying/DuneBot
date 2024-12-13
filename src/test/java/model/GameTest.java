@@ -380,65 +380,63 @@ class GameTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("#getFactionWithAtomics")
-    class GetFactionWithAtomics {
-        @Test
-        void noFactionHoldsAtomics() {
-            assertThrows(Exception.class, () -> game.getFactionWithAtomics());
-        }
-
-        @Test
-        void atreidesHoldsAtomics() throws NullPointerException {
-            game.addFaction(atreides);
-            atreides.addTreacheryCard(familyAtomics);
-            assertEquals(game.getFactionWithAtomics().getName(), "Atreides");
-        }
-    }
-
-    @Nested
-    @DisplayName("#breakShieldWall")
-    class BreakShieldWall {
+    @DisplayName("#destroyShieldWall")
+    class DestroyShieldWall {
         @BeforeEach
         void setUp() throws IOException {
-            game.addFaction(atreides);
-            atreides.addTreacheryCard(familyAtomics);
-        }
-
-        @Test
-        void atomicsRemovedFromGame() {
+            game.addFaction(ecaz);
+            ecaz.addTreacheryCard(familyAtomics);
             assertTrue(game.getTerritory("Carthag").isRock());
             assertTrue(game.getTerritory("Imperial Basin (Center Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertNotNull(familyAtomics);
-            game.breakShieldWall(atreides);
+        }
+
+        @Test
+        void testTerritoriesNoLongerRock() throws InvalidGameStateException {
+            game.destroyShieldWall();
             assertFalse(game.getTerritory("Carthag").isRock());
             assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (East Sector)").isRock());
             assertFalse(game.getTerritory("Imperial Basin (West Sector)").isRock());
             assertFalse(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atreides.getTreacheryHand().contains(familyAtomics));
+        }
+
+        @Test
+        void testAtomicsRemovedFromGame() throws InvalidGameStateException {
+            game.destroyShieldWall();
+            assertFalse(ecaz.getTreacheryHand().contains(familyAtomics));
             assertFalse(game.getTreacheryDiscard().contains(familyAtomics));
         }
 
         @Test
-        void atomicsMovedToDiscard() {
+        void testAtomicsMovedToDiscard() throws InvalidGameStateException {
             game.addGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD);
-            assertTrue(game.getTerritory("Carthag").isRock());
-            assertTrue(game.getTerritory("Imperial Basin (Center Sector)").isRock());
-            assertTrue(game.getTerritory("Imperial Basin (East Sector)").isRock());
-            assertTrue(game.getTerritory("Imperial Basin (West Sector)").isRock());
-            assertTrue(game.getTerritory("Arrakeen").isRock());
-            assertNotNull(familyAtomics);
-            game.breakShieldWall(atreides);
-            assertFalse(game.getTerritory("Carthag").isRock());
-            assertFalse(game.getTerritory("Imperial Basin (Center Sector)").isRock());
-            assertFalse(game.getTerritory("Imperial Basin (East Sector)").isRock());
-            assertFalse(game.getTerritory("Imperial Basin (West Sector)").isRock());
-            assertFalse(game.getTerritory("Arrakeen").isRock());
-            assertFalse(atreides.getTreacheryHand().contains(familyAtomics));
+            game.destroyShieldWall();
+            assertFalse(ecaz.getTreacheryHand().contains(familyAtomics));
             assertTrue(game.getTreacheryDiscard().contains(familyAtomics));
+        }
+
+        @Test
+        void testForcesOnShieldWallKilled() throws InvalidGameStateException {
+            game.addFaction(atreides);
+            Territory shieldWallWest = game.getTerritory("Shield Wall (North Sector)");
+            shieldWallWest.addForces("Atreides", 1);
+            game.destroyShieldWall();
+            assertEquals(1, game.getTleilaxuTanks().getForce("Atreides").getStrength());
+        }
+
+        @Test
+        void testNoFactionHasAtomics() {
+            ecaz.removeTreacheryCardWithoutDiscard(familyAtomics);
+            assertThrows(InvalidGameStateException.class, () -> game.destroyShieldWall());
+        }
+
+        @Test
+        void testNoFactionInPositionToUseAtomics() {
+            game.getTerritory("Imperial Basin (Center Sector)").removeForce("Ecaz");
+            assertThrows(InvalidGameStateException.class, () -> game.destroyShieldWall());
         }
     }
 

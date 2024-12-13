@@ -673,17 +673,6 @@ public class Game {
         setStorm(getStorm() + movement);
     }
 
-    public Faction getFactionWithAtomics() {
-        for (Faction faction : getFactions()) {
-            try {
-                faction.getTreacheryCard("Family Atomics");
-                return faction;
-            } catch (IllegalArgumentException ignored) {}
-        }
-
-        throw new NoSuchElementException("No faction holds Atomics");
-    }
-
     public Faction getFactionWithHarvester() {
         for (Faction faction : getFactions()) {
             try {
@@ -695,25 +684,12 @@ public class Game {
     }
 
     public void destroyShieldWall() throws InvalidGameStateException {
-        Faction factionWithAtomics;
-        try {
-            factionWithAtomics = getFactionWithAtomics();
-        } catch (NoSuchElementException e) {
+        Faction factionWithAtomics = factions.stream().filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
+        if (factionWithAtomics == null)
             throw new InvalidGameStateException("No faction holds Family Atomics.");
-        }
-
         if (!factionWithAtomics.isNearShieldWall())
             throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
 
-        String message = breakShieldWall(factionWithAtomics) +
-                getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
-                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
-
-        turnSummary.publish(message);
-        setUpdated(UpdateType.MAP);
-    }
-
-    public String breakShieldWall(Faction factionWithAtomics) {
         shieldWallDestroyed = true;
         territories.get("Carthag").setRock(false);
         territories.get("Imperial Basin (Center Sector)").setRock(false);
@@ -729,7 +705,11 @@ public class Game {
             factionWithAtomics.removeTreacheryCardWithoutDiscard("Family Atomics");
             message += "Family Atomics has been removed from the game.\n";
         }
-        return message;
+        message += getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
+                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
+
+        turnSummary.publish(message);
+        setUpdated(UpdateType.MAP);
     }
 
     public boolean isShieldWallDestroyed() {
