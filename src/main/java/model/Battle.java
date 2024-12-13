@@ -1411,8 +1411,8 @@ public class Battle {
         resolution += factionBattleResults(game, true, executeResolution);
         resolution += factionBattleResults(game, false, executeResolution);
         resolution += lasgunShieldCarnage(game, executeResolution);
-        resolution += checkAuditor(aggressorBattlePlan, defender, executeResolution);
-        resolution += checkAuditor(defenderBattlePlan, aggressor, executeResolution);
+        resolution += checkAuditor(game, aggressorBattlePlan, defender, executeResolution);
+        resolution += checkAuditor(game, defenderBattlePlan, aggressor, executeResolution);
 
         if (isSpiceBankerDecisionOpen() && !publishToTurnSummary)
             resolution += "\nBattle cannot be resolved yet.\n" + spiceBankerFactionEmoji + " must decide on Spice Banker\n";
@@ -1661,19 +1661,26 @@ public class Battle {
         return carnage;
     }
 
-    private String checkAuditor(BattlePlan battlePlan, Faction opponent, boolean executeResolution) {
+    private String checkAuditor(Game game, BattlePlan battlePlan, Faction opponent, boolean executeResolution) {
         String resolution = "";
-        String auditorString = battlePlan.checkAuditor(opponent.getEmoji());
-        // Yuck! Checking empty string coming back from BattlePlan. Probably should move that logic here into Battle.
-        if (executeResolution && !auditorString.isEmpty()) {
-            int spice = battlePlan.isLeaderAlive() ? 2 : 1;
-            List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("battle-cancel-audit-yes", "Yes"));
-            choices.add(new DuneChoice("battle-cancel-audit-no", "No"));
-            opponent.getChat().publish("Will you pay " + spice + " " + Emojis.SPICE + " to cancel the audit? " + opponent.getPlayer(), choices);
-            auditorMustBeResolved = true;
-        } else
-            resolution += auditorString;
+        if (battlePlan.getLeader() != null && battlePlan.getLeader().getName().equals("Auditor")) {
+            int numCards = battlePlan.isLeaderAlive() ? 2 : 1;
+            if (executeResolution) {
+                int spice = Math.min(numCards, cardsForAudit.size());
+                if (spice == 0) {
+                    game.getTurnSummary().publish(opponent.getEmoji() + " has no cards that can be audited.");
+                } else {
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("battle-cancel-audit-yes", "Yes"));
+                    choices.add(new DuneChoice("battle-cancel-audit-no", "No"));
+                    opponent.getChat().publish("Will you pay " + spice + " " + Emojis.SPICE + " to cancel the audit? " + opponent.getPlayer(), choices);
+                    auditorMustBeResolved = true;
+                }
+            } else
+                resolution += MessageFormat.format(
+                        "{0} may audit {1} {2} cards not used in the battle unless {3} pays to cancel the audit.\n",
+                        Emojis.CHOAM, numCards, Emojis.TREACHERY, opponent.getEmoji());
+        }
         return resolution;
     }
 

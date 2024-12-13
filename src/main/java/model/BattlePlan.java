@@ -751,18 +751,6 @@ public class BattlePlan {
         }
     }
 
-    public String checkAuditor(String opponentEmoji) {
-        String message = "";
-        if (getLeader() != null && getLeader().getName().equals("Auditor")) {
-            int numCards = isLeaderAlive() ? 2 : 1;
-            message = MessageFormat.format(
-                    "{0} may audit {1} {2} cards not used in the battle unless {3} cancels the audit for {1} {4}\n",
-                    Emojis.CHOAM, numCards, Emojis.TREACHERY, opponentEmoji, Emojis.SPICE);
-            // When automatic resolution is supported, give opponent buttons for their choice here.
-        }
-        return message;
-    }
-
     private int getNumForcesInReserve(Game game, Faction faction) {
         int numForcesInReserve = faction.getTotalReservesStrength();
         Territory territoryWithNoField = game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
