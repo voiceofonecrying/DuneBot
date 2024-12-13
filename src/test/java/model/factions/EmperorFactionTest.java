@@ -368,7 +368,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
         assertEquals(8, faction.getSpice());
         assertFalse(faction.hasTreacheryCard("Kulon"));
-        assertEquals(Emojis.EMPEROR + " paid 2 " + Emojis.SPICE + " to discard Kulon (Kaitain High Threshold ability)",
+        assertEquals(Emojis.EMPEROR + " discards Kulon and paid 2 " + Emojis.SPICE + " with Kaitain High Threshold ability.",
                 turnSummary.getMessages().getFirst()
         );
     }

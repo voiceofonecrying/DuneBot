@@ -130,8 +130,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Karama"));
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards Karama to ship at " + Emojis.GUILD + " rates.");
+        faction.discard("Karama", "to ship at " + Emojis.GUILD + " rates");
         executeShipment(event, game, discordGame, true);
     }
 
@@ -142,8 +141,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter Discovery Token to move 3 spaces with their move.");
 
         } else {
-            game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
-            discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " use Ornithopter " + Emojis.TREACHERY + " to move 3 spaces with their move.");
+            faction.discard("Ornithopter", "to move 3 spaces with their move");
         }
         queueMovableTerritories(event, game, discordGame, true);
         discordGame.pushGame();
@@ -175,10 +173,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (hajr) game.getTreacheryDiscard().add(faction.removeTreacheryCard("Hajr"));
-        else game.getTreacheryDiscard().add(faction.removeTreacheryCard("Ornithopter"));
-        String hajrOrOrnithopter = hajr ? "Hajr" : "Ornithopter";
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " discards " + hajrOrOrnithopter + " to move again.");
+        faction.discard(hajr ? "Hajr" : "Ornithopter", "to move again");
         game.executeFactionMovement(faction);
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
@@ -279,9 +274,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         } else {
             game.getTurnOrder().addFirst(faction.getName());
         }
-        game.getTreacheryDiscard().add(faction.removeTreacheryCard("Juice of Sapho"));
+        faction.discard("Juice of Sapho", "to ship and move " + lastFirst + " this turn");
         discordGame.queueMessage("You will go " + lastFirst + " this turn.");
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " plays Juice of Sapho to ship and move " + lastFirst + " this turn.");
         if (last && game.hasFaction("Guild") && !(faction instanceof GuildFaction)) {
             game.getTurnOrder().addFirst("Guild");
             queueGuildTurnOrderButtons(game);

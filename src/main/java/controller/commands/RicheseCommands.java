@@ -115,18 +115,11 @@ public class RicheseCommands {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have 3 spice for this action.");
         }
         String cardName = discordGame.required(richeseCard).getAsString();
-        TreacheryCard karama;
-        try {
-            karama = faction.removeTreacheryCard("Karama");
-            game.getTreacheryDiscard().add(karama);
-        } catch (Exception e) {
-            throw new InvalidGameStateException(faction.getEmoji() + " does not have a Karama.");
-        }
+        faction.discard("Karama", "and paid 3 spice to take a " + Emojis.RICHESE + " cache card.");
         TreacheryCard cacheCard = faction.removeTreacheryCardFromCache(faction.getTreacheryCardFromCache(cardName));
         faction.addTreacheryCard(cacheCard);
         faction.subtractSpice(3, "one time Karama ability to purchase a " + faction.getEmoji() + " cache card.");
         faction.setSpecialKaramaPowerUsed(true);
-        discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " played Karama and paid 3 spice to take a " + faction.getEmoji() + " cache card.");
         discordGame.pushGame();
     }
 
@@ -138,20 +131,10 @@ public class RicheseCommands {
         if (bidCardNumber > 1 || bidCardNumber == 1 && !bidding.isBlackMarketCard()) {
             throw new InvalidGameStateException("It is too late to Karama the " + Emojis.RICHESE + " card.");
         }
-        TreacheryCard karama;
-        try {
-            karama = karamaFaction.removeTreacheryCard("Karama");
-        } catch (Exception e) {
-            throw new InvalidGameStateException(karamaFaction.getEmoji() + " does not have a Karama.");
-        }
-        game.getTreacheryDiscard().add(karama);
+        karamaFaction.discard("Karama", "to block " + Emojis.RICHESE + " from selling their cache card");
         discordGame.getModInfo().queueMessage(MessageFormat.format(
                 "The Karama has been discarded from {0} hand.",
                 karamaFaction.getEmoji()
-        ));
-        discordGame.getTurnSummary().queueMessage(MessageFormat.format(
-                "{0} played Karama to block the {1} from selling their cache card.",
-                karamaFaction.getEmoji(), Emojis.RICHESE
         ));
         bidding.setRicheseCacheCardOutstanding(false);
         discordGame.pushGame();

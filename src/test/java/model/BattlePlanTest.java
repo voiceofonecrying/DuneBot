@@ -298,7 +298,6 @@ public class BattlePlanTest extends DuneTest {
 
     @Test
     void testKHRequiresLeaderOrCheapHero() {
-        atreides.removeTreacheryCard(cheapHero);
         atreides.getLeaders().removeAll(atreides.getLeaders());
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, null, null, true, null, null, 0, false, 0));
     }
@@ -1142,7 +1141,7 @@ public class BattlePlanTest extends DuneTest {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
         duncanIdaho.setPulledBehindShield(false);
-        atreides.removeTreacheryCard("Poison Tooth");
+        atreides.discard("Poison Tooth");
         atreides.addTreacheryCard(crysknife);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, crysknife, shield, 0, false, 0);
         assertEquals(6, battlePlan.getDoubleBattleStrength());
@@ -1153,7 +1152,7 @@ public class BattlePlanTest extends DuneTest {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
         duncanIdaho.setPulledBehindShield(false);
-        atreides.removeTreacheryCard("Poison Tooth");
+        atreides.discard("Poison Tooth");
         atreides.addTreacheryCard(crysknife);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, crysknife, shield, 0, false, 0);
         battlePlan.revealOpponentBattlePlan(poisonBladePlan);
@@ -1174,7 +1173,7 @@ public class BattlePlanTest extends DuneTest {
         duncanIdaho.setPulledBehindShield(true);
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
-        atreides.removeTreacheryCard("Poison Tooth");
+        atreides.discard("Poison Tooth");
         atreides.addTreacheryCard(crysknife);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, crysknife, shield, 0, false, 0);
         assertEquals(10, battlePlan.getDoubleBattleStrength());
@@ -1185,7 +1184,7 @@ public class BattlePlanTest extends DuneTest {
         duncanIdaho.setPulledBehindShield(true);
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
-        atreides.removeTreacheryCard("Poison Tooth");
+        atreides.discard("Poison Tooth");
         atreides.addTreacheryCard(crysknife);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 0, false, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
