@@ -694,6 +694,25 @@ public class Game {
         return null;
     }
 
+    public void destroyShieldWall() throws InvalidGameStateException {
+        Faction factionWithAtomics;
+        try {
+            factionWithAtomics = getFactionWithAtomics();
+        } catch (NoSuchElementException e) {
+            throw new InvalidGameStateException("No faction holds Family Atomics.");
+        }
+
+        if (!factionWithAtomics.isNearShieldWall())
+            throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
+
+        String message = breakShieldWall(factionWithAtomics) +
+                getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
+                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
+
+        turnSummary.publish(message);
+        setUpdated(UpdateType.MAP);
+    }
+
     public String breakShieldWall(Faction factionWithAtomics) {
         shieldWallDestroyed = true;
         territories.get("Carthag").setRock(false);
