@@ -673,17 +673,6 @@ public class Game {
         setStorm(getStorm() + movement);
     }
 
-    public Faction getFactionWithAtomics() {
-        for (Faction faction : getFactions()) {
-            try {
-                faction.getTreacheryCard("Family Atomics");
-                return faction;
-            } catch (IllegalArgumentException ignored) {}
-        }
-
-        throw new NoSuchElementException("No faction holds Atomics");
-    }
-
     public Faction getFactionWithHarvester() {
         for (Faction faction : getFactions()) {
             try {
@@ -694,7 +683,13 @@ public class Game {
         return null;
     }
 
-    public String breakShieldWall(Faction factionWithAtomics) {
+    public void destroyShieldWall() throws InvalidGameStateException {
+        Faction factionWithAtomics = factions.stream().filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
+        if (factionWithAtomics == null)
+            throw new InvalidGameStateException("No faction holds Family Atomics.");
+        if (!factionWithAtomics.isNearShieldWall())
+            throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
+
         shieldWallDestroyed = true;
         territories.get("Carthag").setRock(false);
         territories.get("Imperial Basin (Center Sector)").setRock(false);
@@ -702,15 +697,19 @@ public class Game {
         territories.get("Imperial Basin (West Sector)").setRock(false);
         territories.get("Arrakeen").setRock(false);
 
-        String message = factionWithAtomics.getEmoji() + " discards Family Atomics. The Shield Wall has been destroyed.\n";
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             factionWithAtomics.discard("Family Atomics");
-            message += "Family Atomics has been moved to the discard pile.\n";
+            turnSummary.publish("The Shield Wall has been destroyed!\nFamily Atomics is in the discard pile.");
         } else {
             factionWithAtomics.removeTreacheryCardWithoutDiscard("Family Atomics");
-            message += "Family Atomics has been removed from the game.\n";
+            turnSummary.publish(factionWithAtomics.getEmoji() + " plays Family Atomics.");
+            turnSummary.publish("The Shield Wall has been destroyed!\nFamily Atomics has been removed from the game.");
         }
-        return message;
+
+        String message = getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
+                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
+        turnSummary.publish(message);
+        setUpdated(UpdateType.MAP);
     }
 
     public boolean isShieldWallDestroyed() {

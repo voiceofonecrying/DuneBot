@@ -1152,24 +1152,8 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void destroyShieldWall(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        Faction factionWithAtomics;
-        try {
-            factionWithAtomics = game.getFactionWithAtomics();
-        } catch (NoSuchElementException e) {
-            throw new InvalidGameStateException("No faction holds Family Atomics.");
-        }
-
-        if (!factionWithAtomics.isNearShieldWall()) {
-            throw new InvalidGameStateException(factionWithAtomics.getEmoji() + " is not in position to use Family Atomics.");
-        } else {
-            String message = game.breakShieldWall(factionWithAtomics) +
-                    game.getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(game) +
-                    game.getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(game);
-
-            discordGame.getTurnSummary().queueMessage(message);
-            game.setUpdated(UpdateType.MAP);
-            discordGame.pushGame();
-        }
+        game.destroyShieldWall();
+        discordGame.pushGame();
     }
 
     public void reassignFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
