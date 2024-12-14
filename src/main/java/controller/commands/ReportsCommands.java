@@ -85,9 +85,9 @@ public class ReportsCommands {
             case "solo-victories" -> responseMessage = soloVictories(event.getGuild(), grList, members);
             case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), grList, members, false);
             case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), grList, members, true);
-            case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(grList, members);
-            case "longest-games" -> responseMessage = longestGames(grList, members);
-            case "fastest-games" -> responseMessage = fastestGames(grList, members);
+            case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(event.getGuild(), grList, members);
+            case "longest-games" -> responseMessage = longestGames(event.getGuild(), grList, members);
+            case "fastest-games" -> responseMessage = fastestGames(event.getGuild(), grList, members);
         }
         return responseMessage;
     }
@@ -135,14 +135,28 @@ public class ReportsCommands {
         }
     }
 
-    private static String getPlayerMention(String playerName, List<Member> members) {
+    private static String getTaggedPlayer(String playerName, List<Member> members) {
         return members.stream().filter(member -> playerName.equals("@" + member.getUser().getName())).findFirst().map(member -> member.getUser().getAsMention()).orElse(playerName);
     }
 
-    private static void addRecentlyFinishedPlayers(List<Member> members, GameResults gameResults, HashMap<String, List<String>> playerGamesMap, int monthsAgo) {
+    private static String getPlayerString(Guild guild, String playerName, List<Member> members) {
+        boolean leftServer = true;
+        if (playerName.equals("@Moderators"))
+            return "Moderators";
+        for (Member member1 : members) {
+            if (member1.getGuild() == guild && playerName.equals("@" + member1.getUser().getName())) {
+                leftServer = false;
+                if (member1.getRoles().stream().noneMatch(r -> r.getName().equals("NoTagInStats")))
+                    return member1.getUser().getAsMention();
+            }
+        }
+        return playerName.replace("_", "\\_").replace("*", "\\*").replace("@", "") + (leftServer ? " (Left server)" : "");
+    }
+
+    private static void addRecentlyFinishedPlayers(Guild guild, List<Member> members, GameResults gameResults, HashMap<String, List<String>> playerGamesMap, int monthsAgo) {
         HashSet<String> filteredPlayers = getAllPlayers(gameResults.grList, monthsAgo);
         for (String player : filteredPlayers) {
-            String playerTag = getPlayerMention(player, members);
+            String playerTag = getPlayerString(guild, player, members);
             List<String> games = playerGamesMap.computeIfAbsent(playerTag, k -> new ArrayList<>());
             if (games.isEmpty()) {
                 games.add("recently-finished");
@@ -212,7 +226,7 @@ public class ReportsCommands {
             if (categoryName.equalsIgnoreCase("staging area")) {
                 addWaitingListPlayers(playerGamesMap, category);
             } else if (categoryName.equalsIgnoreCase("dune statistics")) {
-                addRecentlyFinishedPlayers(members, gatherGameResults(guild), playerGamesMap, monthsAgo);
+                addRecentlyFinishedPlayers(guild, members, gatherGameResults(guild), playerGamesMap, monthsAgo);
             } else {
                 addGamePlayers(playerGamesMap, category, categoryName);
             }
@@ -355,7 +369,7 @@ public class ReportsCommands {
         return players;
     }
 
-    public static String writePlayerStats(GRList gameResults, List<Member> members) {
+    public static String writePlayerStats(Guild guild, GRList gameResults, List<Member> members) {
         Set<String> players = getAllPlayers(gameResults);
         List<PlayerPerformance> allPlayerPerformance = new ArrayList<>();
         for (String player : players) {
@@ -368,13 +382,13 @@ public class ReportsCommands {
             int tensDigit = pp.numWins % 100 / 10;
             String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
             int onesDigit = pp.numWins % 10;
-            String player = getPlayerMention(pp.playerName, members);
+            String player = getPlayerString(guild, pp.playerName, members);
             playerStatsString.append("\n").append(tensEmoji).append(numberBoxes.get(onesDigit)).append(" - ").append(player).append(" - ").append(winPercentage).append(" (").append(pp.numWins).append("/").append(pp.numGames).append(")");
         }
         return playerStatsString.toString();
     }
 
-    public static String writeTopWinsAboveExpected(GRList gameResults, List<Member> members) {
+    public static String writeTopWinsAboveExpected(Guild guild, GRList gameResults, List<Member> members) {
         Set<String> players = getAllPlayers(gameResults);
         List<PlayerPerformance> allPlayerPerformance = new ArrayList<>();
         for (String player : players) {
@@ -389,7 +403,7 @@ public class ReportsCommands {
                 continue;
             String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
             String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
-            String player = getPlayerMention(pp.playerName, members);
+            String player = getPlayerString(guild, pp.playerName, members);
             playerStatsString.append("\n").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
         }
         return playerStatsString.toString();
@@ -487,7 +501,7 @@ public class ReportsCommands {
         modAndNumGames.sort((a, b) -> Integer.compare(b.getRight().size(), a.getRight().size()));
         StringBuilder moderatorsString = new StringBuilder("__Moderators__");
         for (Pair<String, List<GameResult>> p : modAndNumGames) {
-            String moderator = getPlayerMention(p.getLeft(), members);
+            String moderator = getPlayerString(guild, p.getLeft(), members);
             int totalTurns = p.getRight().stream().mapToInt(GameResult::getTurn).sum();
             float averageTurns = (float) totalTurns / p.getRight().size();
             modAndAverageTurns.add(new ImmutablePair<>(moderator, averageTurns));
@@ -514,7 +528,7 @@ public class ReportsCommands {
         assisters.forEach(m -> assistersAndNumGames.add(new ImmutablePair<>(m, gameResults.gameResults.stream().filter(gr -> gr.getAssistantModerators() != null && gr.getAssistantModerators().contains(m)).toList())));
         assistersAndNumGames.sort((a, b) -> Integer.compare(b.getRight().size(), a.getRight().size()));
         for (Pair<String, List<GameResult>> p : assistersAndNumGames) {
-            String assiter = getPlayerMention(p.getLeft(), members);
+            String assiter = getPlayerString(guild, p.getLeft(), members);
             moderatorsString.append("\n").append(p.getRight().size()).append(" - ").append(assiter);
         }
 
@@ -532,14 +546,14 @@ public class ReportsCommands {
         return Integer.compare(bDuration, aDuration);
     }
 
-    public static String longestGames(GRList gameResults, List<Member> members) {
+    public static String longestGames(Guild guild, GRList gameResults, List<Member> members) {
         List<GameResult> longestGames = gameResults.gameResults.stream().filter(gr -> !gr.getStartingForum().equals("BGG")).sorted(ReportsCommands::longerGame).toList();
         StringBuilder longestGamesString = new StringBuilder("__Longest games__ (The tortured mod stat! :grin:)");
         for (int i = 0; i < 10; i++) {
             GameResult result = longestGames.get(i);
             longestGamesString.append("\n").append(result.getGameDuration()).append(" days, ");
             longestGamesString.append(result.getGameName()).append(", ");
-            String moderator = getPlayerMention(result.getModerator(), members);
+            String moderator = getPlayerString(guild, result.getModerator(), members);
             longestGamesString.append(moderator);
         }
         return longestGamesString.toString();
@@ -551,7 +565,7 @@ public class ReportsCommands {
         return Float.compare(aDaysPerTurn, bDaysPerTurn);
     }
 
-    public static String fastestGames(GRList gameResults, List<Member> members) {
+    public static String fastestGames(Guild guild, GRList gameResults, List<Member> members) {
         List<GameResult> longestGames = gameResults.gameResults.stream().sorted(ReportsCommands::fasterGame).toList();
         StringBuilder longestGamesString = new StringBuilder("__Fastest games__");
         for (int i = 0; i < 30; i++) {
@@ -560,7 +574,7 @@ public class ReportsCommands {
             longestGamesString.append("\n").append(daysPerTurn).append(" days per turn, ");
             longestGamesString.append(a.getTurn()).append(" turns, ");
             longestGamesString.append(a.getGameName()).append(", ");
-            String moderator = getPlayerMention(a.getModerator(), members);
+            String moderator = getPlayerString(guild, a.getModerator(), members);
             longestGamesString.append(moderator);
         }
         return longestGamesString.toString();
@@ -1025,7 +1039,7 @@ public class ReportsCommands {
         messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
         StringBuilder playerStatsString = new StringBuilder();
-        String[] playerStatsLines = writePlayerStats(grList, members).split("\n");
+        String[] playerStatsLines = writePlayerStats(guild, grList, members).split("\n");
         int mentions = 0;
         for (String s : playerStatsLines) {
             if (playerStatsString.length() + 1 + s.length() > 2000 || mentions == 20) {
@@ -1043,7 +1057,7 @@ public class ReportsCommands {
             playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
 
         playerStatsString = new StringBuilder();
-        playerStatsLines = writeTopWinsAboveExpected(grList, members).split("\n");
+        playerStatsLines = writeTopWinsAboveExpected(guild, grList, members).split("\n");
         int expectLines = 0;
         for (String s : playerStatsLines) {
             if (expectLines == 22)
@@ -1056,7 +1070,7 @@ public class ReportsCommands {
         if (!playerStatsString.isEmpty())
             playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
 
-        playerStatsChannel.sendMessage(writePlayerAllyPerformance(grList, members)).queue();
+        playerStatsChannel.sendMessage(writePlayerAllyPerformance(guild, grList, members)).queue();
 //        String factionPlays = highFactionPlays(guild, grList, members);
 //        if (!factionPlays.isEmpty())
 //            playerStatsChannel.sendMessage("__High Faction Plays__\n" + factionPlays).queue();
@@ -1477,7 +1491,7 @@ public class ReportsCommands {
                     missedFactionEmojis.append(Emojis.getFactionEmoji(factionName)).append(" ");
             });
 
-            String playerTag = getPlayerMention(playerName, members);
+            String playerTag = getPlayerString(guild, playerName, members);
             if (factionsPlayed == listSize)
                 playedAll.append(playerTag).append(" has played all ").append(listSize).append(".\n");
             else if (listSize > 1 && factionsPlayed == listSize - 1)
@@ -1514,7 +1528,7 @@ public class ReportsCommands {
                     missedFactionEmojis.append(Emojis.getFactionEmoji(factionName)).append(" ");
             });
 
-            String playerTag = getPlayerMention(playerName, members);
+            String playerTag = getPlayerString(guild, playerName, members);
             if (factionsPlayed == listSize)
                 playedAll.append(playerTag).append(" has won as all ").append(listSize).append(".\n");
             else if (listSize > 1 && factionsPlayed == listSize - 1)
@@ -1542,7 +1556,7 @@ public class ReportsCommands {
                 maxFactionsPlayed = factionsPlayed;
                 playedMax = new StringBuilder();
             }
-            String playerTag = getPlayerMention(playerName, members);
+            String playerTag = getPlayerString(guild, playerName, members);
             if (factionsPlayed == maxFactionsPlayed)
                 playedMax.append(maxFactionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
         }
@@ -1558,7 +1572,7 @@ public class ReportsCommands {
     private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
     private static final List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
 
-    public static String writePlayerAllyPerformance(GRList gameResults, List<Member> members) {
+    public static String writePlayerAllyPerformance(Guild guild, GRList gameResults, List<Member> members) {
         List<MutableTriple<String, String, Integer>> playerAllyWinsTriple = new ArrayList<>();
         List<String> playerNames = getAllPlayers(gameResults).stream().toList();
         List<String> playerNames2 = new ArrayList<>(getAllPlayers(gameResults).stream().toList());
@@ -1578,8 +1592,8 @@ public class ReportsCommands {
         for (MutableTriple<String, String, Integer> pawt : playerAllyWinsTriple) {
             if (pawt.getRight() < 2)
                 break;
-            String tag1 = getPlayerMention(pawt.getLeft(), members);
-            String tag2 = getPlayerMention(pawt.getMiddle(), members);
+            String tag1 = getPlayerString(guild, pawt.getLeft(), members);
+            String tag2 = getPlayerString(guild, pawt.getMiddle(), members);
             result.append(pawt.getRight()).append(" - ").append(tag1).append(" ").append(tag2).append("\n");
         }
         return result.toString();
@@ -1595,7 +1609,7 @@ public class ReportsCommands {
         playerFactionCounts.forEach(t -> {
             String punct = t.right == maxGames ? "!" : "";
             if (t.right != 0) {
-                String playerTag = getPlayerMention(t.left, members);
+                String playerTag = getPlayerString(guild, t.left, members);
                 highFactionPlays.get(t.right - 1).append(Emojis.getFactionEmoji(t.middle)).append(" ").append(t.right).append(" times").append(punct).append(" - ").append(playerTag).append("\n");
             }
         });
@@ -1635,7 +1649,7 @@ public class ReportsCommands {
                 if (factionWins > 0)
                     factionCounts.append(factionWins).append(" ").append(tagEmojis(guild, Emojis.getFactionEmoji(factionName))).append(" ");
             });
-            response.append("\n").append(fsw.getRight()).append(" - ").append(tagEmojis(guild, getPlayerMention(fsw.getLeft(), members))).append(" - ").append(factionCounts);
+            response.append("\n").append(fsw.getRight()).append(" - ").append(tagEmojis(guild, getPlayerString(guild, fsw.getLeft(), members))).append(" - ").append(factionCounts);
         }
         return response.toString();
     }
