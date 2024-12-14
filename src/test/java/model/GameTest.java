@@ -408,6 +408,8 @@ class GameTest extends DuneTest {
             game.destroyShieldWall();
             assertFalse(ecaz.getTreacheryHand().contains(familyAtomics));
             assertFalse(game.getTreacheryDiscard().contains(familyAtomics));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.contains(Emojis.ECAZ + " plays Family Atomics.")));
+            assertEquals("The Shield Wall has been destroyed!\nFamily Atomics has been removed from the game.", turnSummary.getMessages().get(1));
         }
 
         @Test
@@ -416,6 +418,8 @@ class GameTest extends DuneTest {
             game.destroyShieldWall();
             assertFalse(ecaz.getTreacheryHand().contains(familyAtomics));
             assertTrue(game.getTreacheryDiscard().contains(familyAtomics));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.contains(Emojis.ECAZ + " discards Family Atomics.")));
+            assertEquals("The Shield Wall has been destroyed!\nFamily Atomics is in the discard pile.", turnSummary.getMessages().get(1));
         }
 
         @Test

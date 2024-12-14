@@ -697,17 +697,17 @@ public class Game {
         territories.get("Imperial Basin (West Sector)").setRock(false);
         territories.get("Arrakeen").setRock(false);
 
-        String message = factionWithAtomics.getEmoji() + " discards Family Atomics. The Shield Wall has been destroyed.\n";
         if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             factionWithAtomics.discard("Family Atomics");
-            message += "Family Atomics has been moved to the discard pile.\n";
+            turnSummary.publish("The Shield Wall has been destroyed!\nFamily Atomics is in the discard pile.");
         } else {
             factionWithAtomics.removeTreacheryCardWithoutDiscard("Family Atomics");
-            message += "Family Atomics has been removed from the game.\n";
+            turnSummary.publish(factionWithAtomics.getEmoji() + " plays Family Atomics.");
+            turnSummary.publish("The Shield Wall has been destroyed!\nFamily Atomics has been removed from the game.");
         }
-        message += getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
-                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
 
+        String message = getTerritory("Shield Wall (North Sector)").shieldWallRemoveTroops(this) +
+                getTerritory("Shield Wall (South Sector)").shieldWallRemoveTroops(this);
         turnSummary.publish(message);
         setUpdated(UpdateType.MAP);
     }
