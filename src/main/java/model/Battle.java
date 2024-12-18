@@ -864,8 +864,16 @@ public class Battle {
         resolution += handleHarkonnenLeaderCapture(game, winner, loser, loserLeader, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
-                    && regularForcesTotal - regularForcesDialed > 0 && (atreides.getReservesStrength() > 0 || regularForcesDialed > 0)) {
-                resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
+                    && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
+                if (executeResolution) {
+                    Territory caladan = game.getTerritory("Caladan");
+                    caladan.removeForces("Atreides", 1);
+                    Territory territoryWithAtreidesForce = territorySectors.stream().filter(s -> s.getForceStrength("Atreides") > 0).findAny().orElseThrow();
+                    territoryWithAtreidesForce.addForces("Atreides", 1);
+                    atreides.getChat().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. " + atreides.getPlayer());
+                } else {
+                    resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
+                }
             }
         }
 
@@ -1800,7 +1808,7 @@ public class Battle {
         game.getTurnSummary().publish(turnSummaryString);
     }
 
-    public void juiceOfSaphoDontAdd(Game game) throws InvalidGameStateException {
+    public void juiceOfSaphoDontAdd(Game game) {
         juiceOfSaphoTBD = DecisionStatus.CLOSED;
         checkIfResolvable(game);
     }
@@ -1827,7 +1835,7 @@ public class Battle {
         game.getTurnSummary().publish(turnSummaryString);
     }
 
-    public void portableSnooperDontAdd(Game game) throws InvalidGameStateException {
+    public void portableSnooperDontAdd(Game game) {
         portableSnooperTBD = DecisionStatus.CLOSED;
         checkIfResolvable(game);
     }
@@ -1882,7 +1890,7 @@ public class Battle {
         game.getTurnSummary().publish(turnSummaryString);
     }
 
-    public void stoneBurnerKill(Game game, Faction faction) throws InvalidGameStateException {
+    public void stoneBurnerKill(Game game, Faction faction) {
         game.getTurnSummary().publish(faction.getEmoji() + " kills both leaders.");
         stoneBurnerTBD = DecisionStatus.CLOSED;
         mirrorWeaponStoneBurnerTBD = DecisionStatus.CLOSED;
@@ -1911,7 +1919,7 @@ public class Battle {
         game.getTurnSummary().publish(turnSummaryString);
     }
 
-    public void keepPoisonTooth(Game game, Faction faction) throws InvalidGameStateException {
+    public void keepPoisonTooth(Game game, Faction faction) {
         game.getTurnSummary().publish(faction.getEmoji() + " will use Poison Tooth.");
         poisonToothTBD = DecisionStatus.CLOSED;
         checkIfResolvable(game);
@@ -1941,7 +1949,7 @@ public class Battle {
         return changes;
     }
 
-    public void checkIfResolvable(Game game) throws InvalidGameStateException {
+    public void checkIfResolvable(Game game) {
         List<String> openIssues = new ArrayList<>();
         if (juiceOfSaphoTBD == DecisionStatus.OPEN)
             openIssues.add("Juice of Sapho");
@@ -1967,14 +1975,7 @@ public class Battle {
 
         if (openIssues.isEmpty() || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
-            String manualResolutions = "";
-            Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
-            if (game.hasGameOption(GameOption.HOMEWORLDS) && winner instanceof AtreidesFaction)
-                manualResolutions += "\n- Caladan homeworld advantage";
-            if (!manualResolutions.isEmpty())
-                resolveString += "\nThe following still must be executed manually:" + manualResolutions;
-            else
-                resolveString += "\nThe bot can resolve all aspects of this battle.";
+            resolveString += "\nThe bot can resolve all aspects of this battle.";
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("battle-resolve-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
             choices.add(new DuneChoice("secondary", "battle-dont-resolve", "No"));

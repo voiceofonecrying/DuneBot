@@ -3680,6 +3680,185 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#resolutionWithCaladanHighThreshold")
+    class ResolutionWithCaladanHighThreshold {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            harkonnen.addTreacheryCard(cheapHero);
+            carthag.addForces("Atreides", 1);
+            battle = new Battle(game, List.of(carthag), List.of(atreides, harkonnen));
+        }
+
+        @Nested
+        @DisplayName("#atreidesWinsAtHighThreshold")
+        class AtreidesWinsAtHighThreshold {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+                modInfo.clear();
+                atreidesChat.clear();
+                assertTrue(battle.isAggressorWin(game));
+            }
+
+            @Test
+            void testReviewDoesNotGiveChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testPublishDoesNotGiveChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testResolveGivesChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in Carthag with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. at", atreidesChat.getMessages().getFirst());
+                assertEquals(2, carthag.getForceStrength("Atreides"));
+            }
+        }
+
+        @Nested
+        @DisplayName("#atreidesWinsAtHighThresholdNoForcesLeft")
+        class AtreidesWinsAtHighThresholNoForcesLeft {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+                modInfo.clear();
+                atreidesChat.clear();
+                assertTrue(battle.isAggressorWin(game));
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testResolveDoesNotAddForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, carthag.getForceStrength("Atreides"));
+                assertEquals(0, atreidesChat.getMessages().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("#atreidesLosesAtHighThreshold")
+        class AtreidesLosesAtHighThreshold {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
+                battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+                modInfo.clear();
+                atreidesChat.clear();
+                assertFalse(battle.isAggressorWin(game));
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testResolveDoesNotAddForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, carthag.getForceStrength("Atreides"));
+                assertEquals(0, atreidesChat.getMessages().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("#atreidesWinsAtLowThreshold")
+        class AtreidesWinsAtLowThreshold {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.removeReserves(5);
+                assertFalse(atreides.isHighThreshold());
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+                modInfo.clear();
+                atreidesChat.clear();
+                assertTrue(battle.isAggressorWin(game));
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testResolveDoesNotAddForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(1, carthag.getForceStrength("Atreides"));
+                assertEquals(0, atreidesChat.getMessages().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("#atreidesWinsNonHomeworldsGame")
+        class AtreidesWinsNonHomewoldsGame {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.removeGameOption(GameOption.HOMEWORLDS);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+                modInfo.clear();
+                atreidesChat.clear();
+                assertTrue(battle.isAggressorWin(game));
+            }
+
+            @Test
+            void testReviewDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testPublishDoesNotAnnounceCaladan() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to Carthag with Caladan High Threshold\n"));
+            }
+
+            @Test
+            void testResolveDoesNotAddForce() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(1, carthag.getForceStrength("Atreides"));
+                assertEquals(0, atreidesChat.getMessages().size());
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#resolutionWithStrongholdCards")
     class ResolutionWithStrongholdCards {
         Battle battle;
