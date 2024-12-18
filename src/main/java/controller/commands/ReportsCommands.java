@@ -1784,4 +1784,44 @@ public class ReportsCommands {
             throw new IllegalStateException("The DUNE STATISTICS category was not found.");
         return category;
     }
+
+    public static void saveGameBotData(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, ExecutionException, InterruptedException, IOException {
+        TextChannel botDataChannel = discordGame.getBotDataChannel();
+
+        StringBuilder allBotData = new StringBuilder();
+
+        String lastMessageId = null;
+
+        while (true) {
+            List<Message> messages = (lastMessageId == null)
+                    ? botDataChannel.getHistory().retrievePast(100).complete() // First batch
+                    : botDataChannel.getHistoryBefore(lastMessageId, 100).complete().getRetrievedHistory();
+
+            if (messages.isEmpty()) {
+                break;
+            }
+
+            for (Message message : messages) {
+                String botData = new String(message.getAttachments().getFirst().getProxy().download().get().readAllBytes(), StandardCharsets.UTF_8);
+                String messageTimestamp = message.getTimeCreated().toString();
+                String messageText = message.getContentRaw();
+                String user = message.getAuthor().getName();
+
+                String botDataBase64 = Base64.getEncoder().encodeToString(botData.getBytes());
+
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty("user", user);
+                jsonObject.addProperty("timestamp", messageTimestamp);
+                jsonObject.addProperty("text", messageText);
+                jsonObject.addProperty("botDataBase64", botDataBase64);
+
+                allBotData.append(jsonObject);
+                allBotData.append("\n");
+            }
+
+            lastMessageId = messages.getLast().getId();
+        }
+
+        System.out.println("The string is this many chars long: " + allBotData.toString().length());
+    }
 }
