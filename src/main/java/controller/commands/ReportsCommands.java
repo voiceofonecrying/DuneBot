@@ -28,8 +28,10 @@ import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
 import net.dv8tion.jda.internal.utils.tuple.MutableTriple;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.*;
@@ -40,6 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.zip.GZIPOutputStream;
 
 import static controller.commands.CommandOptions.*;
 
@@ -1802,7 +1805,10 @@ public class ReportsCommands {
             }
 
             for (Message message : messages) {
-                String botData = new String(message.getAttachments().getFirst().getProxy().download().get().readAllBytes(), StandardCharsets.UTF_8);
+                CompletableFuture<InputStream> future = message.getAttachments().getFirst().getProxy().download();
+                String botData = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+                future.get().close();
+
                 String messageTimestamp = message.getTimeCreated().toString();
                 String messageText = message.getContentRaw();
                 String user = message.getAuthor().getName();
@@ -1823,5 +1829,11 @@ public class ReportsCommands {
         }
 
         System.out.println("The string is this many chars long: " + allBotData.toString().length());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStream gzip = new GZIPOutputStream(baos);
+
+        gzip.write(allBotData.toString().getBytes(StandardCharsets.UTF_8));
+        System.out.println("The compressed string is this many chars long: " + baos.toByteArray().length);
     }
 }
