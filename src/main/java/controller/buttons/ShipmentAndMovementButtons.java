@@ -2,7 +2,6 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
-import controller.commands.CommandManager;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -425,17 +424,17 @@ public class ShipmentAndMovementButtons implements Pressable {
                 RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
                 richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
                 if (force > 0)
-                    faction.placeForces(territory, force, 0, true, false, discordGame, game, karama, false);
+                    faction.placeForces(territory, force, 0, true, false, game, karama, false);
                 if (game.hasFaction("Ecaz"))
                     ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
                 if (game.hasFaction("Moritani"))
                     ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
             } else if (!crossShipFrom.isEmpty()) {
                 game.removeForces(crossShipFrom, faction, force, specialForce, false);
-                faction.placeForces(territory, force, specialForce, true, true, true, discordGame, game, false, true);
+                faction.placeForces(territory, force, specialForce, true, true, true, game, false, true);
                 discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
             } else if (force > 0 || specialForce > 0)
-                faction.placeForces(territory, force, specialForce, !guildAmbassador, true, true, discordGame, game, karama, false);
+                faction.placeForces(territory, force, specialForce, !guildAmbassador, true, true, game, karama, false);
         }
         game.setUpdated(UpdateType.MAP);
         shipment.clear();
