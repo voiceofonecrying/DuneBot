@@ -160,6 +160,15 @@ public class BGFaction extends Faction {
         }
     }
 
+    /**
+     * Places advisors from reserves into this territory.
+     * Temporarily flips advisors to fighters so Faction::placeForceFromReserves creates a consistent force.
+     * Leave the force as fighters if the territory is Polar Sink
+     *
+     * @param game      The Game instance.
+     * @param territory The territory to place the advisor in.
+     * @param amount    The number of advisors to place.
+     */
     public void advise(Game game, Territory territory, int amount) throws InvalidGameStateException {
         boolean isPolarSink = territory.getTerritoryName().equals("Polar Sink");
         if (!isPolarSink) {
@@ -168,13 +177,19 @@ public class BGFaction extends Faction {
             if (territory.hasForce("BG"))
                 throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
         }
+
+        if (territory.hasForce("Advisor")) {
+            int advisors = territory.getForceStrength("Advisor");
+            territory.addForces("BG", advisors);
+            territory.removeForce("Advisor");
+        }
         placeForceFromReserves(game, territory, amount, false);
         if (!isPolarSink) {
-            // placeForcesFromReserves flipped advisors to fighters, so flip them back
             int fighters = territory.getForceStrength("BG");
             territory.getForces().removeIf(force -> force.getName().equals("BG"));
             territory.addForces("Advisor", fighters);
         }
+
         game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         if (game.hasFaction("Moritani"))
             ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, this, amount);
