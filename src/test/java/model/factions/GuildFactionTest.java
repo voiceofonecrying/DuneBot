@@ -6,6 +6,8 @@ import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -107,6 +109,17 @@ class GuildFactionTest extends FactionTestTemplate {
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
+    }
+
+    @Nested
+    @DisplayName("#placeForces")
+    class PlaceForces extends FactionTestTemplate.PlaceForces {
+        @Test
+        @Override
+        void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.GUILD_TROOP + " placed on The Great Flat for 1 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+        }
     }
 
     @Test
