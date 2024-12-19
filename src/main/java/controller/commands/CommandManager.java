@@ -5,7 +5,6 @@ import controller.Alliance;
 import controller.CommandCompletionGuard;
 import controller.DiscordGame;
 import controller.Queue;
-import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -303,62 +302,6 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
-        }
-    }
-
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
-        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama, crossShip);
-    }
-
-    public static void placeForces(Territory targetTerritory, Faction targetFaction, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-
-        if (amountValue > 0)
-            targetTerritory.placeForceFromReserves(game, targetFaction, amountValue, false);
-        if (starredAmountValue > 0)
-            targetTerritory.placeForceFromReserves(game, targetFaction, starredAmountValue, true);
-
-        StringBuilder message = new StringBuilder();
-        message.append(targetFaction.getEmoji())
-                .append(": ");
-        if (amountValue > 0)
-            message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(targetFaction.getName())));
-        if (starredAmountValue > 0)
-            message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")));
-
-        message.append(
-                MessageFormat.format("placed on {0}",
-                        targetTerritory.getTerritoryName()
-                )
-        );
-
-        if (isShipment) {
-            targetFaction.getShipment().setShipped(true);
-            int cost = game.shipmentCost(targetFaction, amountValue + starredAmountValue, targetTerritory, karama, crossShip);
-
-            if (cost > 0)
-                message.append(targetFaction.payForShipment(game, cost, targetTerritory, karama, false));
-
-            if (!(targetFaction instanceof GuildFaction)
-                    && !(targetFaction instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
-                    && game.hasGameOption(GameOption.TECH_TOKENS))
-                TechToken.addSpice(game, TechToken.HEIGHLINERS);
-        }
-
-        if (isIntrusion && game.hasFaction("BG")) {
-            if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(targetFaction instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
-            if (targetFaction.getShipment().getCrossShipFrom().isEmpty())
-                ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, targetFaction, targetTerritory);
-        }
-
-        turnSummary.queueMessage(message.toString());
-
-        if (canTrigger) {
-            if (game.hasFaction("Ecaz"))
-                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(targetTerritory, targetFaction);
-            if (game.hasFaction("Moritani"))
-                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(targetTerritory, targetFaction, amountValue + starredAmountValue);
         }
     }
 
@@ -907,7 +850,7 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
         boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
         boolean canTrigger = discordGame.required(CommandOptions.canTrigger).getAsBoolean();
-        placeForces(targetTerritory, targetFaction, amountValue, starredAmountValue, isShipment, canTrigger, discordGame, game, false, false);
+        targetFaction.placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, canTrigger, discordGame, game, false, false);
         discordGame.pushGame();
     }
 

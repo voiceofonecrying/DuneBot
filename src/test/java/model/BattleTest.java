@@ -44,7 +44,7 @@ class BattleTest extends DuneTest {
             garaKulon.setRicheseNoField(3);
             Territory richeseHomeworld = game.getTerritory("Richese");
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
-            garaKulon.placeForceFromReserves(game, richese, 5, false);
+            richese.placeForceFromReserves(game, garaKulon, 5, false);
             assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
             richeseHomeworld.removeForces("Richese", 13);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));

@@ -119,13 +119,13 @@ public class RicheseFaction extends Faction {
 
             int numForces = Math.min(noField, numReserves);
             if (numForces > 0)
-                territory.placeForceFromReserves(game, factionShippedWithNoField, numForces, false);
+                factionShippedWithNoField.placeForceFromReserves(game, territory, numForces, false);
 
             int numSpecialForces = 0;
             int noFieldStrengthRemaining = noField - numForces;
             if (noFieldStrengthRemaining > 0 && specialStrength > 0) {
                 numSpecialForces = Math.min(noFieldStrengthRemaining, specialStrength);
-                territory.placeForceFromReserves(game, factionShippedWithNoField, numSpecialForces, true);
+                factionShippedWithNoField.placeForceFromReserves(game, territory, numSpecialForces, true);
             }
 
             String forcesString = factionShippedWithNoField.forcesString(numForces, numSpecialForces);

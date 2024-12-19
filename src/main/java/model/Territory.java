@@ -209,37 +209,6 @@ public class Territory {
         setForceStrength(forceName, forceStrength - amount);
     }
 
-    /**
-     * Places a force from reserves into this territory.
-     * Reports removal from reserves to ledger.
-     * Switches homeworld to low threshold if applicable.
-     *
-     * @param game      The Game instance.
-     * @param faction   The faction that owns the force.
-     * @param amount    The number of forces to place.
-     * @param special   Whether the force is a special reserve.
-     */
-    public void placeForceFromReserves(Game game, Faction faction, int amount, boolean special) {
-        String forceName;
-        if (special) {
-            faction.removeSpecialReserves(amount);
-            forceName = faction.getName() + "*";
-        } else {
-            faction.removeReserves(amount);
-            forceName = faction.getName();
-            if (faction instanceof BGFaction && hasForce("Advisor")) {
-                int advisors = getForceStrength("Advisor");
-                addForces("BG", advisors);
-                removeForce("Advisor");
-            }
-        }
-        faction.getLedger().publish(
-                MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(faction.getName() + (special ? "*" : ""))));
-        addForces(forceName, amount);
-        faction.checkForLowThreshold();
-        game.setUpdated(UpdateType.MAP);
-    }
-
     public void addSpice(Game game, Integer spice) {
         this.spice += spice;
         game.setUpdated(UpdateType.MAP);
