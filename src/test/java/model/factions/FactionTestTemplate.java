@@ -645,6 +645,31 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#placeForces")
+    class PlaceForces {
+        Faction faction;
+        Territory territory;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            territory = game.getTerritories().get("The Great Flat");
+        }
+
+        @Test
+        void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 3, 0, false, false, false, game, false, false);
+            assertEquals(faction.getEmoji() + ": 3 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#removeForces")
     class RemoveForces {
         Faction faction;

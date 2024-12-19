@@ -35,6 +35,24 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#placeForces")
+    class PlaceForces extends FactionTestTemplate.PlaceForces {
+        @Test
+        @Override
+        void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 3, 2, false, false, false, game, false, false);
+            assertEquals(faction.getEmoji() + ": 3 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        @Override
+        void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.FREMEN_TROOP + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#revival")
     class Revival extends FactionTestTemplate.Revival {
         @Test

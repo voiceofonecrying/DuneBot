@@ -388,25 +388,14 @@ public class Faction {
         if (starredAmountValue > 0)
             placeForceFromReserves(game, targetTerritory, starredAmountValue, true);
 
-        StringBuilder message = new StringBuilder();
-        message.append(emoji).append(": ");
-        if (amountValue > 0)
-            message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(name)));
-        if (starredAmountValue > 0)
-            message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(name + "*")));
-
-        message.append(
-                MessageFormat.format("placed on {0}",
-                        targetTerritory.getTerritoryName()
-                )
-        );
+        String forcesPlaced = emoji + ": " + forcesString(amountValue, starredAmountValue) + " placed on " + targetTerritory.getTerritoryName();
 
         if (isShipment) {
             getShipment().setShipped(true);
             int cost = game.shipmentCost(this, amountValue + starredAmountValue, targetTerritory, karama, crossShip);
 
             if (cost > 0)
-                message.append(payForShipment(game, cost, targetTerritory, karama, false));
+                forcesPlaced += payForShipment(game, cost, targetTerritory, karama, false);
 
             if (!(this instanceof GuildFaction)
                     && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
@@ -421,7 +410,7 @@ public class Faction {
                 ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, this, targetTerritory);
         }
 
-        game.getTurnSummary().publish(message.toString());
+        game.getTurnSummary().publish(forcesPlaced);
 
         if (canTrigger) {
             if (game.hasFaction("Ecaz"))
