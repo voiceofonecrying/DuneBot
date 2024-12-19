@@ -2,11 +2,8 @@ package model.factions;
 
 import constants.Colors;
 import constants.Emojis;
-import controller.DiscordGame;
-import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
-import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.*;
@@ -381,13 +378,11 @@ public class Faction {
         return numForces + " " + Emojis.getForceEmoji(name) + " ";
     }
 
-    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
-        placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama, crossShip);
+    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, Game game, boolean karama, boolean crossShip) throws InvalidGameStateException {
+        placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, game, karama, crossShip);
     }
 
-    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
-        TurnSummary turnSummary = discordGame.getTurnSummary();
-
+    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, Game game, boolean karama, boolean crossShip) throws InvalidGameStateException {
         if (amountValue > 0)
             placeForceFromReserves(game, targetTerritory, amountValue, false);
         if (starredAmountValue > 0)
@@ -426,7 +421,7 @@ public class Faction {
                 ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, this, targetTerritory);
         }
 
-        turnSummary.queueMessage(message.toString());
+        game.getTurnSummary().publish(message.toString());
 
         if (canTrigger) {
             if (game.hasFaction("Ecaz"))
