@@ -168,7 +168,7 @@ public class BGFaction extends Faction {
             if (territory.hasForce("BG"))
                 throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
         }
-        territory.placeForceFromReserves(game, this, amount, false);
+        placeForceFromReserves(game, territory, amount, false);
         if (!isPolarSink) {
             // placeForcesFromReserves flipped advisors to fighters, so flip them back
             int fighters = territory.getForceStrength("BG");

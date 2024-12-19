@@ -2,7 +2,6 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.Alliance;
-import controller.commands.CommandManager;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
@@ -268,7 +267,7 @@ public class MoritaniButtons implements Pressable {
         Territory territory = game.getTerritory(strongholdName);
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You placed " + amount + " " + Emojis.MORITANI_TROOP + " in " + strongholdName + " with Sneak Attack.");
-        CommandManager.placeForces(territory, faction, amount, 0, false, true, discordGame, game, false, false);
+        faction.placeForces(territory, amount, 0, false, true, discordGame, game, false, false);
         game.getTurnSummary().publish(amount + " " + Emojis.MORITANI_TROOP + " placed in " + strongholdName + " with Sneak Attack.");
         discordGame.pushGame();
     }

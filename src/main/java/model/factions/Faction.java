@@ -2,8 +2,11 @@ package model.factions;
 
 import constants.Colors;
 import constants.Emojis;
+import controller.DiscordGame;
+import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
+import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.*;
@@ -376,6 +379,90 @@ public class Faction {
 
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
         return numForces + " " + Emojis.getForceEmoji(name) + " ";
+    }
+
+    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
+        placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, discordGame, game, karama, crossShip);
+    }
+
+    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, DiscordGame discordGame, Game game, boolean karama, boolean crossShip) throws ChannelNotFoundException, InvalidGameStateException {
+        TurnSummary turnSummary = discordGame.getTurnSummary();
+
+        if (amountValue > 0)
+            placeForceFromReserves(game, targetTerritory, amountValue, false);
+        if (starredAmountValue > 0)
+            placeForceFromReserves(game, targetTerritory, starredAmountValue, true);
+
+        StringBuilder message = new StringBuilder();
+        message.append(emoji).append(": ");
+        if (amountValue > 0)
+            message.append(MessageFormat.format("{0} {1} ", amountValue, Emojis.getForceEmoji(name)));
+        if (starredAmountValue > 0)
+            message.append(MessageFormat.format("{0} {1} ", starredAmountValue, Emojis.getForceEmoji(name + "*")));
+
+        message.append(
+                MessageFormat.format("placed on {0}",
+                        targetTerritory.getTerritoryName()
+                )
+        );
+
+        if (isShipment) {
+            getShipment().setShipped(true);
+            int cost = game.shipmentCost(this, amountValue + starredAmountValue, targetTerritory, karama, crossShip);
+
+            if (cost > 0)
+                message.append(payForShipment(game, cost, targetTerritory, karama, false));
+
+            if (!(this instanceof GuildFaction)
+                    && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
+                    && game.hasGameOption(GameOption.TECH_TOKENS))
+                TechToken.addSpice(game, TechToken.HEIGHLINERS);
+        }
+
+        if (isIntrusion && game.hasFaction("BG")) {
+            if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(this instanceof BGFaction))
+                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
+            if (getShipment().getCrossShipFrom().isEmpty())
+                ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, this, targetTerritory);
+        }
+
+        turnSummary.queueMessage(message.toString());
+
+        if (canTrigger) {
+            if (game.hasFaction("Ecaz"))
+                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(targetTerritory, this);
+            if (game.hasFaction("Moritani"))
+                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(targetTerritory, this, amountValue + starredAmountValue);
+        }
+    }
+
+    /**
+     * Places a force from reserves into this territory.
+     * Reports removal from reserves to ledger.
+     * Switches homeworld to low threshold if applicable.
+     *
+     * @param game      The Game instance.
+     * @param territory The territory to place the force in.
+     * @param amount    The number of forces to place.
+     * @param special   Whether the force is a special reserve.
+     */
+    public void placeForceFromReserves(Game game, Territory territory, int amount, boolean special) {
+        String forceName = name + (special ? "*" : "");
+        if (special)
+            removeSpecialReserves(amount);
+        else
+            removeReserves(amount);
+
+        if (this instanceof BGFaction && territory.hasForce("Advisor")) {
+            int advisors = territory.getForceStrength("Advisor");
+            territory.addForces("BG", advisors);
+            territory.removeForce("Advisor");
+        }
+
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
+        territory.addForces(forceName, amount);
+        checkForLowThreshold();
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void addReserves(int amount) {
