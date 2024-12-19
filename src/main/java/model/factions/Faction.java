@@ -452,13 +452,6 @@ public class Faction {
             removeSpecialReserves(amount);
         else
             removeReserves(amount);
-
-        if (this instanceof BGFaction && territory.hasForce("Advisor")) {
-            int advisors = territory.getForceStrength("Advisor");
-            territory.addForces("BG", advisors);
-            territory.removeForce("Advisor");
-        }
-
         ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
         territory.addForces(forceName, amount);
         checkForLowThreshold();

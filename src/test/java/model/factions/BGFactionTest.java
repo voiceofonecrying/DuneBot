@@ -215,29 +215,17 @@ class BGFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testAdvisorSentToTerritoryRemainsAdvisor() throws InvalidGameStateException {
+        public void testAdvisorSentToTerritoryRemainsAdvisor() {
             carthag.addForces("Advisor", 1);
-            faction.advise(game, carthag, 1);
+            assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
             assertEquals(2, carthag.getForceStrength("Advisor"));
             assertEquals(0, carthag.getForceStrength("BG"));
         }
 
         @Test
-        public void testAdvisorSentToTerritoryWithBGAdvisors() {
-            carthag.addForces("Advisor", 1);
-            assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
-        }
-
-        @Test
-        public void testAdvisorCanBeSentToPolarSinkWithBGFightersPresent() {
+        public void testAdvisorSentToPolarSinkBecomesFighter() {
             polarSink.addForces("BG", 1);
             assertDoesNotThrow(() -> faction.advise(game, polarSink, 1));
-        }
-
-        @Test
-        public void testAdvisorSentToPolarSinkBecomesFighter() throws InvalidGameStateException {
-            polarSink.addForces("BG", 1);
-            faction.advise(game, polarSink, 1);
             assertEquals(2, polarSink.getForceStrength("BG"));
             assertEquals(0, polarSink.getForceStrength("Advisor"));
         }
