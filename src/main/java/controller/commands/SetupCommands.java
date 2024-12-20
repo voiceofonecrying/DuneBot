@@ -56,8 +56,8 @@ public class SetupCommands {
                         new SubcommandData("leader-skill", "Add leader skill to faction")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand"),
-                        new SubcommandData("bg-prediction", "Set BG prediction")
-                                .addOptions(faction, turn)
+                        new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
+                        new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition)
                 )
         );
 
@@ -81,6 +81,7 @@ public class SetupCommands {
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
+            case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
         }
     }
 
@@ -88,6 +89,15 @@ public class SetupCommands {
         BGFaction bg = (BGFaction) game.getFaction("BG");
         bg.setPredictionRound(discordGame.required(turn).getAsInt());
         bg.setPredictionFactionName(discordGame.required(faction).getAsString());
+        discordGame.pushGame();
+    }
+
+    private static void setFactionBoardPosition(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String factionName = discordGame.required(faction).getAsString();
+        int position = discordGame.required(dotPosition).getAsInt();
+        if (position < 1 || position > 6)
+            throw new IllegalArgumentException("dotPosition must be a value from 1 to 6.");
+        game.setDotPosition(factionName, position);
         discordGame.pushGame();
     }
 

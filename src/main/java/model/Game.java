@@ -283,6 +283,21 @@ public class Game {
         this.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD));
     }
 
+    public void setDotPosition(String factionName, int dotPosition) throws InvalidGameStateException {
+        if (setupFinished && mentatPause == null)
+            throw new InvalidGameStateException("Faction positions can only be changed during Setup or in Mentat Pause.");
+        Faction faction = getFaction(factionName);
+        int newPosition = dotPosition - 1;
+        String orderBefore = String.join(" ", factions.stream().map(Faction::getEmoji).toList());
+        int currentPosition = factions.indexOf(faction);
+        factions.set(currentPosition, factions.get(newPosition));
+        factions.set(newPosition, faction);
+        String orderAfter = String.join(" ", factions.stream().map(Faction::getEmoji).toList());
+        modInfo.publish("Moving " + Emojis.getFactionEmoji(factionName) + " to position " + dotPosition + ".\n"
+                + "Order before: " + orderBefore + "\n" + "Order after: " + orderAfter);
+        setUpdated(UpdateType.MAP);
+    }
+
     public void setUpdated(UpdateType updateType) {
         if (this.updateTypes == null) this.updateTypes = new HashSet<>();
         this.updateTypes.add(updateType);
