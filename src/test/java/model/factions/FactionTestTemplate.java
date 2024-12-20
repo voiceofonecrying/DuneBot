@@ -667,6 +667,16 @@ abstract class FactionTestTemplate {
             faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
         }
+
+        @Test
+        void testHeighlinersMessageAfterFirstShipmentMessage() throws InvalidGameStateException {
+            game.addGameOption(GameOption.TECH_TOKENS);
+            faction.addTechToken("Heighliners");
+            faction.addTechToken("Axlotl Tanks");
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals("2 " + Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS, turnSummary.getMessages().getLast());
+        }
     }
 
     @Nested

@@ -50,6 +50,17 @@ class FremenFactionTest extends FactionTestTemplate {
             faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.FREMEN_TROOP + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
+
+        @Test
+        @Override
+        void testHeighlinersMessageAfterFirstShipmentMessage() throws InvalidGameStateException {
+            game.addGameOption(GameOption.TECH_TOKENS);
+            faction.addTechToken("Heighliners");
+            faction.addTechToken("Axlotl Tanks");
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.FREMEN_TROOP + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+            assertFalse(turnSummary.getMessages().getLast().contains(Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS));
+        }
     }
 
     @Nested
