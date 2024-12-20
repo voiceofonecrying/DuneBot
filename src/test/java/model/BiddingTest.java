@@ -390,6 +390,7 @@ class BiddingTest extends DuneTest {
         public class NormalBidding {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
+                bidding.setCacheCardDecisionInProgress(false);
                 bidding.auctionNextCard(game, false);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -450,6 +451,7 @@ class BiddingTest extends DuneTest {
         public class NormalBiddingAllPass {
             @BeforeEach
             public void setUp() throws IOException, InvalidGameStateException {
+                bidding.setCacheCardDecisionInProgress(false);
                 bidding.auctionNextCard(game, false);
                 assertEquals(6, bidding.getEligibleBidOrder(game).size());
 
@@ -928,6 +930,7 @@ class BiddingTest extends DuneTest {
 
             @Test
             public void testNextCardIsC1() {
+                bidding.setCacheCardDecisionInProgress(false);
                 biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
@@ -1080,6 +1083,7 @@ class BiddingTest extends DuneTest {
 
             @Test
             public void testNextCardIsC1() {
+                bidding.setCacheCardDecisionInProgress(false);
                 biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
@@ -1232,6 +1236,7 @@ class BiddingTest extends DuneTest {
 
             @Test
             public void testNextCardIsC1() {
+                bidding.setCacheCardDecisionInProgress(false);
                 biddingPhase.clear();
                 assertDoesNotThrow(() -> bidding.auctionNextCard(game, false));
                 assertEquals(" You may now place your bids for R0:C1.", biddingPhase.getMessages().getFirst());
@@ -1320,6 +1325,7 @@ class BiddingTest extends DuneTest {
             bidding.cardCountsInBiddingPhase(game);
             assertEquals(2, bidding.getNumCardsForBid());
             assertEquals(1, bidding.getMarket().size());
+            bidding.setCacheCardDecisionInProgress(false);
             bidding.auctionNextCard(game, false);
             bidding.pass(game, bg);
             bidding.bid(game, harkonnen, true, 1, null, null);
@@ -1361,6 +1367,7 @@ class BiddingTest extends DuneTest {
 
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
+            bidding.setCacheCardDecisionInProgress(false);
             bidding.auctionNextCard(game, false);
             bidding.setAutoPassEntireTurn(game, atreides, true);
             assertEquals(6, bidding.getEligibleBidOrder(game).size());
@@ -1422,6 +1429,7 @@ class BiddingTest extends DuneTest {
         @Test
         public void testNormalBidding() throws InvalidGameStateException {
             assertTrue(atreides.isAutoBidTurn());
+            bidding.setCacheCardDecisionInProgress(false);
             bidding.auctionNextCard(game, false);
             assertFalse(atreides.isAutoBidTurn());
             assertEquals(6, bidding.getEligibleBidOrder(game).size());

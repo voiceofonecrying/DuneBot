@@ -407,7 +407,7 @@ public class DiscordGame {
         for (Faction f : game.getFactions()) {
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
-            if (f instanceof AtreidesFaction && f.hasAlly())
+            if (f instanceof AtreidesFaction atreides && atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
                 f.setAllianceThread(getAllianceThread(f, f.getAlly()));
         }
 

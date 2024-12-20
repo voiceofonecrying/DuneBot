@@ -352,6 +352,8 @@ public class Bidding {
     public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
         if (bidCard != null) {
             throw new InvalidGameStateException("There is already a card up for bid.");
+        } else if (cacheCardDecisionInProgress) {
+            throw new InvalidGameStateException("Richese must decide on their cache card.");
         } else if (numCardsForBid == 0) {
             throw new InvalidGameStateException("Use /run advance.");
         } else if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
