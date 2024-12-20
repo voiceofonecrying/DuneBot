@@ -267,7 +267,7 @@ public class MoritaniButtons implements Pressable {
         Territory territory = game.getTerritory(strongholdName);
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You placed " + amount + " " + Emojis.MORITANI_TROOP + " in " + strongholdName + " with Sneak Attack.");
-        faction.placeForces(territory, amount, 0, false, true, game, false, false);
+        faction.placeForces(territory, amount, 0, false, true, true, game, false, false);
         game.getTurnSummary().publish(amount + " " + Emojis.MORITANI_TROOP + " placed in " + strongholdName + " with Sneak Attack.");
         discordGame.pushGame();
     }

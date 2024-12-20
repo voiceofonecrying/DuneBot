@@ -850,7 +850,7 @@ public class CommandManager extends ListenerAdapter {
         int starredAmountValue = discordGame.required(starredAmount).getAsInt();
         boolean isShipment = discordGame.required(CommandOptions.isShipment).getAsBoolean();
         boolean canTrigger = discordGame.required(CommandOptions.canTrigger).getAsBoolean();
-        targetFaction.placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, canTrigger, game, false, false);
+        targetFaction.placeForces(targetTerritory, amountValue, starredAmountValue, isShipment, isShipment, canTrigger, game, false, false);
         discordGame.pushGame();
     }
 

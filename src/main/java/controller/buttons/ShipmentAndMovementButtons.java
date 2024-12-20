@@ -424,7 +424,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
                 richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
                 if (force > 0)
-                    faction.placeForces(territory, force, 0, true, false, game, karama, false);
+                    faction.placeForces(territory, force, 0, true, true, false, game, karama, false);
                 if (game.hasFaction("Ecaz"))
                     ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
                 if (game.hasFaction("Moritani"))
