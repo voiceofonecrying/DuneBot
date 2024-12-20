@@ -8,7 +8,6 @@ import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -281,6 +280,7 @@ public class EmperorFaction extends Faction {
             if (revivableForces == 0) {
                 chat.publish(allyFaction.getEmoji() + " has no revivable forces.");
             } else {
+                paidRevivalTBD = true;
                 List<DuneChoice> choices = new ArrayList<>();
                 IntStream.rangeClosed(0, 3).forEachOrdered(i -> {
                     DuneChoice choice = new DuneChoice("revive-emp-ally-" + i, "" + i);
@@ -293,9 +293,14 @@ public class EmperorFaction extends Faction {
     }
 
     public void reviveAllyForces(int numForces) throws InvalidGameStateException {
+        paidRevivalTBD = false;
         if (!hasAlly())
             throw new InvalidGameStateException("Emperor does not have an ally.");
         Faction allyFaction = game.getFaction(ally);
+        if (numForces == 0) {
+            game.getTurnSummary().publish(Emojis.EMPEROR + " does not purchase extra revivals for " + allyFaction.getEmoji());
+            return;
+        }
         int cost;
         String revivalString;
         if (allyFaction instanceof IxFaction) {

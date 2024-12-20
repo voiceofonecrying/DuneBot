@@ -81,9 +81,16 @@ public class IxFaction extends Faction {
         return regular * 2 + starred * 3;
     }
 
+    /**
+     * Give player choices for number of pad revivals
+     *
+     * @param numRevived  The number revived for free.
+     * @return True if the faction can buy more revivals, false if not.
+     */
     @Override
-    public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
+    public boolean presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
         paidRevivalMessage = null;
+        paidRevivalTBD = false;
         TleilaxuTanks tanks = game.getTleilaxuTanks();
         if (tanks.getForceStrength(name + "*") == 0 || spice < revivalCost(0, 1))
             game.getRevival().setCyborgRevivalComplete(true);
@@ -118,11 +125,13 @@ public class IxFaction extends Faction {
                     choices.add(choice);
                 }
                 chat.publish(chatMessage, choices);
+                paidRevivalTBD = true;
             } else {
                 paidRevivalMessage = getNoRevivableForcesMessage();
             }
         } else {
             paidRevivalMessage = emoji + " has revived their maximum";
         }
+        return paidRevivalTBD;
     }
 }

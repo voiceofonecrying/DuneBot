@@ -40,6 +40,7 @@ public class Faction {
     protected int maxRevival;
     protected boolean starRevived;
     protected String paidRevivalMessage;
+    protected boolean paidRevivalTBD;
     protected boolean hasMiningEquipment;
     protected boolean decliningCharity;
     protected int highThreshold;
@@ -111,6 +112,7 @@ public class Faction {
         this.nexusCard = null;
         this.maxRevival = 3;
         this.starRevived = false;
+        this.paidRevivalTBD = false;
         this.isHighThreshold = true;
         this.ornithoperToken = false;
 
@@ -832,7 +834,6 @@ public class Faction {
         return false;
     }
 
-
     /**
      * Adds forces from a Territory to the reserves or tanks
      *
@@ -999,6 +1000,10 @@ public class Faction {
 
     public void setStarRevived(boolean starRevived) {
         this.starRevived = starRevived;
+    }
+
+    public boolean isPaidRevivalTBD() {
+        return paidRevivalTBD;
     }
 
     public int getOccupiedIncome() {
@@ -1299,11 +1304,19 @@ public class Faction {
         return "Would you like to purchase additional revivals? " + player;
     }
 
-    public void presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
+    /**
+     * Give player choices for number of pad revivals
+     *
+     * @param numRevived  The number revived for free.
+     * @return True if the faction can buy more revivals, false if not.
+     */
+    public boolean presentPaidRevivalChoices(int numRevived) throws InvalidGameStateException {
         paidRevivalMessage = null;
+        paidRevivalTBD = false;
         if (getMaxRevival() > numRevived) {
             int revivableForces = getRevivableForces();
             if (revivableForces > 0) {
+                paidRevivalTBD = true;
                 List<DuneChoice> choices = new ArrayList<>();
                 int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
                 for (int i = 0; i <= maxButton; i++) {
@@ -1317,8 +1330,8 @@ public class Faction {
             }
         } else {
             paidRevivalMessage = emoji + " has revived their maximum";
-//            game.getTurnSummary().publish(emoji + " has revived their maximum");
         }
+        return paidRevivalTBD;
     }
 
     public String getNoRevivableForcesMessage() {
@@ -1336,6 +1349,7 @@ public class Faction {
      * @param numForces the number of forces to revive
      */
     public void reviveForces(boolean isPaid, int numForces) {
+        paidRevivalTBD = false;
         if (numForces == 0)
             game.getTurnSummary().publish(emoji + " does not purchase additional revivals.");
         else

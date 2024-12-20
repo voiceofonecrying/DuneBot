@@ -220,6 +220,9 @@ public class Game {
     }
 
     public boolean endRevival(Game game) throws InvalidGameStateException {
+        String factionsStillToRevive = String.join(", ", factions.stream().filter(Faction::isPaidRevivalTBD).map(Faction::getName).toList());
+        if (!factionsStillToRevive.isEmpty())
+            throw new InvalidGameStateException(factionsStillToRevive + " must decide on paid revivals before the game can advance.");
         if (revival.isEcazAmbassadorsToBePlaced())
             throw new InvalidGameStateException("Ecaz must finish placing ambassadors before the game can advance.");
         if (!revival.isEcazAskedAboutAmbassadors() && revival.ecazAmbassadorPlacement(game))
