@@ -103,7 +103,7 @@ public class Initializers {
                 points.add(new Point(645, 803));
             }
             case "South Mesa (South Sector)" -> {
-                points.add(new Point(552, 800));
+                points.add(new Point(752, 800));
                 points.add(new Point(731, 832));
 
             }
