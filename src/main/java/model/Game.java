@@ -219,8 +219,13 @@ public class Game {
             return revival.isRecruitsInPlay();
     }
 
-    public void endRevival() {
+    public boolean endRevival(Game game) throws InvalidGameStateException {
+        if (revival.isEcazAmbassadorsToBePlaced())
+            throw new InvalidGameStateException("Ecaz must finish placing ambassadors before the game can advance.");
+        if (!revival.isEcazAskedAboutAmbassadors() && revival.ecazAmbassadorPlacement(game))
+            return false;
         revival = null;
+        return true;
     }
 
     public Set<GameOption> getGameOptions() {

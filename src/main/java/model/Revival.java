@@ -18,6 +18,8 @@ public class Revival {
     private boolean recruitsInPlay;
     private boolean btAskedAboutLimits;
     private boolean cyborgRevivalComplete;
+    private boolean ecazAskedAboutAmbassadors;
+    private boolean ecazAmbassadorsToBePlaced;
 
     public Revival(Game game) throws InvalidGameStateException {
         List<Faction> factions = game.getFactionsWithTreacheryCard("Recruits");
@@ -26,6 +28,8 @@ public class Revival {
         recruitsInPlay = false;
         btAskedAboutLimits = false;
         cyborgRevivalComplete = false;
+        ecazAskedAboutAmbassadors = false;
+        ecazAmbassadorsToBePlaced = false;
         if (!factions.isEmpty()) {
             recruitsHolder = factions.getFirst().getName();
             askAboutRecruits(game);
@@ -182,12 +186,29 @@ public class Revival {
                 turnSummary.publish(faction.getPaidRevivalMessage());
         }
 
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public boolean ecazAmbassadorPlacement(Game game) {
         if (game.hasFaction("Ecaz")) {
             EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
             ecaz.sendAmbassadorLocationMessage(1);
+            ecazAskedAboutAmbassadors = true;
+            ecazAmbassadorsToBePlaced = true;
         }
+        return ecazAmbassadorsToBePlaced;
+    }
 
-        game.setUpdated(UpdateType.MAP);
+    public void ecazAmbassadorsComplete() {
+        ecazAmbassadorsToBePlaced = false;
+    }
+
+    public boolean isEcazAskedAboutAmbassadors() {
+        return ecazAskedAboutAmbassadors;
+    }
+
+    public boolean isEcazAmbassadorsToBePlaced() {
+        return ecazAmbassadorsToBePlaced;
     }
 
     public boolean isCyborgRevivalComplete() {
