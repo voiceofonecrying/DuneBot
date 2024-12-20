@@ -394,11 +394,6 @@ public class Faction {
 
             if (cost > 0)
                 forcesPlaced += payForShipment(game, cost, targetTerritory, karama, false);
-
-            if (!(this instanceof GuildFaction)
-                    && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
-                    && game.hasGameOption(GameOption.TECH_TOKENS))
-                TechToken.addSpice(game, TechToken.HEIGHLINERS);
         }
 
         if (isIntrusion && game.hasFaction("BG")) {
@@ -409,6 +404,11 @@ public class Faction {
         }
 
         game.getTurnSummary().publish(forcesPlaced);
+
+        if (isShipment && !(this instanceof GuildFaction)
+                && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
+                && game.hasGameOption(GameOption.TECH_TOKENS))
+            TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
         if (canTrigger) {
             if (game.hasFaction("Ecaz"))
