@@ -24,25 +24,23 @@ public class RevivalButtons implements Pressable {
     private static void reviveEmperorAlly(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         int numForces = Integer.parseInt(event.getComponentId().replace("revive-emp-ally-", ""));
         EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
-        if (numForces == 0) {
+        emperor.reviveAllyForces(numForces);
+        if (numForces == 0)
             discordGame.queueMessage("You will not revive any extra forces for your ally.");
-        } else {
-            emperor.reviveAllyForces(numForces);
+        else
             discordGame.queueMessage("Your revival request for your ally has been submitted to the " + Emojis.BT);
-            discordGame.pushGame();
-        }
+        discordGame.pushGame();
     }
 
     private static void revive(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int numForces = Integer.parseInt(event.getComponentId().replace("revive-", ""));
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.reviveForces(true, numForces);
-        if (numForces == 0) {
+        if (numForces == 0)
             discordGame.queueMessage("You will not revive any extra forces.");
-        } else {
+        else
             discordGame.queueMessage("Your revival request has been submitted to the " + Emojis.BT);
-            discordGame.pushGame();
-        }
+        discordGame.pushGame();
     }
 
     private static void reviveCyborgs(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

@@ -2,8 +2,10 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.Alliance;
+import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
 import model.Territory;
@@ -18,7 +20,7 @@ import java.util.List;
 public class EcazButtons implements Pressable {
 
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame, game);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-choam-discard-")) choamDiscard(event, game, discordGame);
@@ -38,7 +40,7 @@ public class EcazButtons implements Pressable {
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
             case "ecaz-deny-offer" -> denyAlliance(discordGame, game);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
-            case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(discordGame);
+            case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(discordGame, game);
             case "ecaz-reset-ambassadors" -> resetAmbassadors(discordGame);
         }
 
@@ -49,9 +51,12 @@ public class EcazButtons implements Pressable {
         ecazFaction.sendAmbassadorLocationMessage(1);
     }
 
-    private static void noMoreAmbassadors(DiscordGame discordGame) {
+    private static void noMoreAmbassadors(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException, IOException {
         discordGame.queueMessage("Finished sending ambassadors.");
+        game.getRevival().ecazAmbassadorsComplete();
+        RunCommands.advance(discordGame, game);
         discordGame.queueDeleteMessage();
+        discordGame.pushGame();
     }
 
     private static void dontTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -87,7 +92,7 @@ public class EcazButtons implements Pressable {
         }
         ecazFaction.subtractSpice(cost, " ambassador to " + territory.getTerritoryName());
         ecazFaction.placeAmbassador(territory, ambassador);
-        discordGame.getTurnSummary().queueMessage("An " + Emojis.ECAZ + " Ambassador has been sent to " + territory.getTerritoryName());
+        game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + territory.getTerritoryName() + ".");
         discordGame.pushGame();
         discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
         ecazFaction.sendAmbassadorLocationMessage(cost + 1);

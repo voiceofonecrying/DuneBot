@@ -145,9 +145,10 @@ public class RunCommands {
                 game.advanceSubPhase();
             }
         } else if (phase == 5 && subPhase == 3) {
-            game.endRevival();
-            discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement. " + game.getModOrRoleMention());
-            game.advancePhase();
+            if (game.endRevival(game)) {
+                discordGame.getModInfo().queueMessage("Revival phase has ended. Run advance to start shipment and movement. " + game.getModOrRoleMention());
+                game.advancePhase();
+            }
         } else if (phase == 6) {
             startShipmentPhase(discordGame, game);
             game.advancePhase();

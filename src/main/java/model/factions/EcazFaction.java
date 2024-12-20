@@ -239,7 +239,7 @@ public class EcazFaction extends Faction {
             choices.add(stronghold);
         }
         choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more ambassadors."));
-        chat.publish("Use these buttons to place Ambassador tokens from your supply for " + cost + " " + Emojis.SPICE + "." + getPlayer(), choices);
+        chat.publish("Would you like to place an Ambassador for " + cost + " " + Emojis.SPICE + "? " + getPlayer(), choices);
     }
 
     public void sendAmbassadorMessage(String territory, int cost) {
