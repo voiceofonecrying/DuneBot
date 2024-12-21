@@ -1352,6 +1352,58 @@ public class Faction {
             game.reviveForces(this, isPaid, numForces, 0);
     }
 
+    /**
+     * Execute shipping as described in the faction's shipment object
+     *
+     * @param game            The game instance
+     * @param karama          True if faction is playing karama for Guild shipping rate
+     * @param guildAmbassador True if Ecaz or ally is placing forces with Guild ambassador
+     */
+    public void executeShipment(Game game, boolean karama, boolean guildAmbassador) throws InvalidGameStateException {
+        int totalForces = shipment.getForce() + shipment.getSpecialForce();
+        String territoryName = shipment.getTerritoryName();
+        Territory territory = game.getTerritory(territoryName);
+        int spiceNeeded = game.shipmentCost(this, totalForces, territory, karama || guildAmbassador, !shipment.getCrossShipFrom().isEmpty());
+        int spiceFromAlly = hasAlly() ? game.getFaction(ally).getShippingSupport() : 0;
+        if (spiceNeeded > spice + spiceFromAlly)
+            throw new InvalidGameStateException("You cannot afford this shipment.");
+
+        int noField = shipment.getNoField();
+        int force = shipment.getForce();
+        int specialForce = shipment.getSpecialForce();
+        String crossShipFrom = shipment.getCrossShipFrom();
+        if (shipment.isToReserves()) {
+            game.removeForces(territoryName, this, force, specialForce, false);
+            int spice = Math.ceilDiv(force, 2);
+            subtractSpice(spice, "shipment from " + territoryName + " back to reserves");
+            game.getTurnSummary().publish(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+        } else {
+            if (territory.factionMustMoveOut(game, this))
+                movement.setMustMoveOutOf(territoryName);
+            if (noField >= 0) {
+                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                richese.shipNoField(this, territory, noField, karama, !crossShipFrom.isEmpty(), force);
+                if (force > 0)
+                    placeForces(territory, force, 0, true, true, false, game, karama, false);
+                if (game.hasFaction("Ecaz"))
+                    ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, this);
+                if (game.hasFaction("Moritani"))
+                    ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, this, force + specialForce + 1);
+            } else if (!crossShipFrom.isEmpty()) {
+                game.removeForces(crossShipFrom, this, force, specialForce, false);
+                placeForces(territory, force, specialForce, true, true, true, game, false, true);
+                game.getTurnSummary().publish(emoji + " cross shipped from " + crossShipFrom + " to " + territoryName);
+            } else if (force > 0 || specialForce > 0)
+                placeForces(territory, force, specialForce, !guildAmbassador, true, true, game, karama, false);
+        }
+        game.setUpdated(UpdateType.MAP);
+        shipment.clear();
+        if (guildAmbassador)
+            shipment.setShipped(false);
+        else
+            resetAllySpiceSupportAfterShipping(game);
+    }
+
     public void withdrawForces(Game game, int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom, String reason) {
         int regularLeftToWithdraw = regularForces;
         int starredLeftToWithdraw = starredForces;

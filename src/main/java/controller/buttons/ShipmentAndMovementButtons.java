@@ -404,62 +404,14 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
-    public static void executeFactionShipment(DiscordGame discordGame, Game game, Faction faction, boolean karama, boolean guildAmbassador) throws ChannelNotFoundException, InvalidGameStateException {
-        Shipment shipment = faction.getShipment();
-        String territoryName = shipment.getTerritoryName();
-        int noField = shipment.getNoField();
-        int force = shipment.getForce();
-        int specialForce = shipment.getSpecialForce();
-        String crossShipFrom = shipment.getCrossShipFrom();
-        Territory territory = game.getTerritory(territoryName);
-        if (shipment.isToReserves()) {
-            game.removeForces(territoryName, faction, force, specialForce, false);
-            int spice = Math.ceilDiv(force, 2);
-            faction.subtractSpice(spice, "shipment from " + territory.getTerritoryName() + " back to reserves");
-            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
-        } else {
-            if (territory.factionMustMoveOut(game, faction))
-                faction.getMovement().setMustMoveOutOf(territoryName);
-            if (noField >= 0) {
-                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-                richese.shipNoField(faction, territory, noField, karama, !crossShipFrom.isEmpty(), force);
-                if (force > 0)
-                    faction.placeForces(territory, force, 0, true, true, false, game, karama, false);
-                if (game.hasFaction("Ecaz"))
-                    ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, faction);
-                if (game.hasFaction("Moritani"))
-                    ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
-            } else if (!crossShipFrom.isEmpty()) {
-                game.removeForces(crossShipFrom, faction, force, specialForce, false);
-                faction.placeForces(territory, force, specialForce, true, true, true, game, false, true);
-                discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " cross shipped from " + crossShipFrom + " to " + territoryName);
-            } else if (force > 0 || specialForce > 0)
-                faction.placeForces(territory, force, specialForce, !guildAmbassador, true, true, game, karama, false);
-        }
-        game.setUpdated(UpdateType.MAP);
-        shipment.clear();
-        if (guildAmbassador)
-            shipment.setShipped(false);
-    }
-
     private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        int totalForces = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
-        Territory territory = game.getTerritory(faction.getShipment().getTerritoryName());
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
-        int spice = game.shipmentCost(faction, totalForces, territory, karama || guildAmbassador, !faction.getShipment().getCrossShipFrom().isEmpty());
-        int spiceFromAlly = 0;
-        if (faction.hasAlly()) {
-            spiceFromAlly = game.getFaction(faction.getAlly()).getShippingSupport();
-        }
-        if (spice > faction.getSpice() + spiceFromAlly)
-            throw new InvalidGameStateException("You cannot afford this shipment.");
-        executeFactionShipment(discordGame, game, faction, karama, guildAmbassador);
+        faction.executeShipment(game, karama, guildAmbassador);
         if (guildAmbassador) {
             discordGame.queueMessage("Shipment with Guild ambassador complete.");
         } else {
             discordGame.queueMessage("Shipment complete.");
-            faction.resetAllySpiceSupportAfterShipping(game);
             queueMovementButtons(game, faction, discordGame);
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
