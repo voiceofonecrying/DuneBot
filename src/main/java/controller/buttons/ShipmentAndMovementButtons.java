@@ -45,6 +45,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("add-force-shipment-")) addForces(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("add-special-force-shipment-"))
             addSpecialForces(event, game, discordGame, true);
+        else if (event.getComponentId().startsWith("execute-movement-fremen-ride")) executeFremenRide(event, game, discordGame);
+        else if (event.getComponentId().startsWith("execute-movement-enter-discovery-token")) executeEnterDiscoveryToken(event, game, discordGame);
         else if (event.getComponentId().startsWith("execute-movement")) executeMovement(event, game, discordGame);
         else if (event.getComponentId().startsWith("add-force-movement-")) addForces(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("add-special-force-movement-"))
@@ -173,7 +175,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.discard(hajr ? "Hajr" : "Ornithopter", "to move again");
-        game.executeFactionMovement(faction);
+        faction.executeMovement(game);
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
         faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -322,37 +324,47 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.executeFactionMovement(faction);
-        if (event.getComponentId().contains("-fremen-ride")) {
-            if (faction instanceof EcazFaction)
-                discordGame.queueMessage("Movement with Fremen ambasssador complete.");
-            else if (faction instanceof FremenFaction fremen){
-                discordGame.queueMessage("Fremen ride complete.");
-                fremen.setWormRideActive(false);
-            }
-        } else if (event.getComponentId().contains("-enter-discovery-token")) {
-            discordGame.queueMessage("Movement into Discovery Token complete.");
+        faction.executeMovement(game);
+        game.getTurnOrder().pollFirst();
+        if (game.getTurnOrder().size() == 1 && game.getTurnOrder().getFirst().equals("juice-of-sapho-last"))
+            game.getTurnOrder().removeFirst();
+        if (isGuildNeedsToShip(game)) {
+            game.getTurnOrder().addFirst("Guild");
+            queueGuildTurnOrderButtons(game);
+        } else if (!game.getTurnOrder().isEmpty()) {
+            sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
         } else {
-            game.getTurnOrder().pollFirst();
-            if (game.getTurnOrder().size() == 1 && game.getTurnOrder().getFirst().equals("juice-of-sapho-last"))
-                game.getTurnOrder().removeFirst();
-            if (isGuildNeedsToShip(game)) {
-                game.getTurnOrder().addFirst("Guild");
-                queueGuildTurnOrderButtons(game);
-            } else if (!game.getTurnOrder().isEmpty()) {
-                sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
-            } else {
 //                RunCommands.advance(discordGame, game);
 //                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
-                discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
-                discordGame.pushGame();
-                return;
-            }
-            if (!game.getTurnOrder().isEmpty() && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild") && game.getTurnOrder().size() > 1) {
-                discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time");
-            }
-            discordGame.queueMessage("Shipment and movement complete.");
+            discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
+            discordGame.pushGame();
+            return;
         }
+        if (!game.getTurnOrder().isEmpty() && Objects.requireNonNull(game.getTurnOrder().peekLast()).equals("Guild") && game.getTurnOrder().size() > 1) {
+            discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " does not ship at this time");
+        }
+        discordGame.queueMessage("Shipment and movement complete.");
+        deleteShipMoveButtonsInChannel(event.getMessageChannel());
+        discordGame.pushGame();
+    }
+
+    private static void executeFremenRide(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.executeMovement(game);
+        if (faction instanceof EcazFaction) {
+            discordGame.queueMessage("Movement with Fremen ambasssador complete.");
+        } else if (faction instanceof FremenFaction fremen) {
+            discordGame.queueMessage("Fremen ride complete.");
+            fremen.setWormRideActive(false);
+        }
+        deleteShipMoveButtonsInChannel(event.getMessageChannel());
+        discordGame.pushGame();
+    }
+
+    private static void executeEnterDiscoveryToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.executeMovement(game);
+        discordGame.queueMessage("Movement into Discovery Token complete.");
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
     }

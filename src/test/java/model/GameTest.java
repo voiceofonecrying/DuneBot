@@ -328,13 +328,13 @@ class GameTest extends DuneTest {
 
         @Test
         void testPlanetologistIsSingleMoveForTerrorTokens() {
-            game.executeFactionMovement(ecaz);
+            ecaz.executeMovement(game);
             assertEquals("Will you trigger your Terror Token in Carthag? mo", moritaniChat.getMessages().getFirst());
         }
 
         @Test
         void testPlanetologistWithNoFieldIsSingleMoveForTerrorTokens() {
-            game.executeFactionMovement(richese);
+            richese.executeMovement(game);
             assertEquals("Will you trigger your Terror Token in Carthag? mo", moritaniChat.getMessages().getFirst());
         }
     }
