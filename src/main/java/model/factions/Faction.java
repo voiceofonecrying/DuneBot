@@ -1404,6 +1404,31 @@ public class Faction {
             resetAllySpiceSupportAfterShipping(game);
     }
 
+    public void executeMovement(Game game) {
+        String movingFrom = movement.getMovingFrom();
+        String movingTo = movement.getMovingTo();
+        boolean movingNoField = movement.isMovingNoField();
+        int force = movement.getForce();
+        int specialForce = movement.getSpecialForce();
+        int secondForce = movement.getSecondForce();
+        int secondSpecialForce = movement.getSecondSpecialForce();
+        String secondMovingFrom = movement.getSecondMovingFrom();
+        Territory from = game.getTerritory(movingFrom);
+        Territory to = game.getTerritory(movingTo);
+        if (movingNoField) {
+            to.setRicheseNoField(from.getRicheseNoField());
+            from.setRicheseNoField(null);
+            game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
+            if (to.hasActiveFaction("BG") && !(this instanceof BGFaction))
+                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, to.getTerritoryName());
+            game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
+        } else {
+            game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
+        }
+        movement.clear();
+        setUpdated(UpdateType.MAP);
+    }
+
     public void withdrawForces(Game game, int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom, String reason) {
         int regularLeftToWithdraw = regularForces;
         int starredLeftToWithdraw = starredForces;

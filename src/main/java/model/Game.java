@@ -1185,32 +1185,6 @@ public class Game {
         turnSummary.publish(message);
     }
 
-    public void executeFactionMovement(Faction faction) {
-        Movement movement = faction.getMovement();
-        String movingFrom = movement.getMovingFrom();
-        String movingTo = movement.getMovingTo();
-        boolean movingNoField = movement.isMovingNoField();
-        int force = movement.getForce();
-        int specialForce = movement.getSpecialForce();
-        int secondForce = movement.getSecondForce();
-        int secondSpecialForce = movement.getSecondSpecialForce();
-        String secondMovingFrom = movement.getSecondMovingFrom();
-        Territory from = getTerritory(movingFrom);
-        Territory to = getTerritory(movingTo);
-        if (movingNoField) {
-            to.setRicheseNoField(from.getRicheseNoField());
-            from.setRicheseNoField(null);
-            turnSummary.publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
-            if (to.hasActiveFaction("BG") && !(faction instanceof BGFaction))
-                ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
-            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
-        } else {
-            moveForces(faction, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
-        }
-        movement.clear();
-        setUpdated(UpdateType.MAP);
-    }
-
     public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
         if (force != 0 || specialForce != 0)
             moveForces(faction, from, to, force, specialForce, false);
