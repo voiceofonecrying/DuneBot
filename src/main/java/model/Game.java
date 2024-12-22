@@ -1185,6 +1185,50 @@ public class Game {
         turnSummary.publish(message);
     }
 
+    public void promptGuildShippingDecision() {
+        turnOrder.addFirst("Guild");
+
+        DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
+        DuneChoice defer = new DuneChoice("guild-defer", "Defer turn.");
+        DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
+        if (turnOrder.size() == 1) {
+            defer.setDisabled(true);
+            last.setDisabled(true);
+        }
+
+        if (turnOrder.getLast().equals("juice-of-sapho-last")) {
+            last.setDisabled(true);
+            if (turnOrder.size() == 3)
+                defer.setDisabled(true);
+        }
+
+        List<DuneChoice> choices = List.of(takeTurn, defer, last);
+        Faction guild = getFaction("Guild");
+        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), choices);
+    }
+
+    public boolean isGuildNeedsToShip() {
+        return hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild");
+    }
+
+    public void promptFactionToShip(String factionName) {
+        Faction faction = getFaction(factionName);
+        if (faction.getReservesStrength() == 0 && faction.getSpecialReservesStrength() == 0 && !(faction instanceof RicheseFaction) && !faction.getAlly().equals("Richese") && !(faction instanceof GuildFaction) && !faction.getAlly().equals("Guild")) {
+            faction.getChat().publish("You have no troops in reserves to ship.", List.of(new DuneChoice("danger", "pass-shipment", "Pass shipment")));
+            return;
+        }
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("shipment", "Begin a ship action"));
+        choices.add(new DuneChoice("danger", "pass-shipment", "Pass shipment"));
+        boolean lastFaction = turnOrder.size() == 1 && !isGuildNeedsToShip();
+        if (faction.getShipment().isMayPlaySapho()) {
+            DuneChoice choice = new DuneChoice("secondary", "juice-of-sapho-last", "Play Juice of Sapho to go last");
+            choice.setDisabled(lastFaction);
+            choices.add(choice);
+        }
+        faction.getChat().publish("Use buttons to perform Shipment and Movement actions on your turn." + " " + faction.getPlayer(), choices);
+    }
+
     public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
         if (force != 0 || specialForce != 0)
             moveForces(faction, from, to, force, specialForce, false);

@@ -3,7 +3,6 @@ package controller.commands;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.buttons.IxButtons;
-import controller.buttons.ShipmentAndMovementButtons;
 import controller.channels.TurnSummary;
 import enums.GameOption;
 import enums.UpdateType;
@@ -292,10 +291,9 @@ public class RunCommands {
             saphoFaction.getChat().publish(message, choices);
             game.getTurnOrder().addFirst("juice-of-sapho-hold");
         } else if (game.hasFaction("Guild")) {
-            game.getTurnOrder().addFirst("Guild");
-            ShipmentAndMovementButtons.queueGuildTurnOrderButtons(game);
+            game.promptGuildShippingDecision();
         } else
-            ShipmentAndMovementButtons.sendShipmentMessage(game.getTurnOrder().peekFirst(), game);
+            game.promptFactionToShip(game.getTurnOrder().peekFirst());
 
         if (game.hasFaction("Atreides"))
             ((AtreidesFaction) game.getFaction("Atreides")).giveSpiceDeckPrescience();
