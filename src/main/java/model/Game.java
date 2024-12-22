@@ -1185,6 +1185,77 @@ public class Game {
         turnSummary.publish(message);
     }
 
+    public void startShipmentPhase() {
+        if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.AXLOTL_TANKS);
+
+        turnSummary.publish("**Turn " + turn + " Shipment and Movement Phase**");
+        setPhaseForWhispers("Turn " + turn + " Shipment and Movement Phase\n");
+        turnOrder.clear();
+        for (Faction faction : factions) {
+            turnOrder.add(faction.getName());
+            faction.getShipment().clear();
+            faction.getMovement().clear();
+            faction.getShipment().setShipped(false);
+            faction.getMovement().setMoved(false);
+        }
+        while (getFactionTurnIndex(turnOrder.getFirst()) != 0)
+            turnOrder.addFirst(turnOrder.pollLast());
+        turnOrder.removeIf(name -> name.equals("Guild"));
+        List<Faction> factions = getFactionsWithTreacheryCard("Juice of Sapho");
+        Faction saphoFaction = null;
+        if (!factions.isEmpty()) {
+            saphoFaction = factions.getFirst();
+            saphoFaction.getShipment().setMayPlaySapho(true);
+        }
+        boolean hasGuild = hasFaction("Guild");
+        if (saphoFaction != null &&
+                (!turnOrder.getFirst().equals(factions.getFirst().getName()) || hasGuild)) {
+            String message = "Do you want to play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
+            if (!turnOrder.getLast().equals(saphoFaction.getName()))
+                message += "\nIf not, you will have the option to play it to go last on your turn.";
+            else if (hasGuild)
+                message += "\nIf not, you will have the option to play it to go last if " + Emojis.GUILD + " defers to you.";
+            List<DuneChoice> choices = List.of(
+                    new DuneChoice("juice-of-sapho-first", "Yes, go first"),
+                    new DuneChoice("secondary", "juice-of-sapho-don't-play", "No"));
+            saphoFaction.getChat().publish(message, choices);
+            turnOrder.addFirst("juice-of-sapho-hold");
+        } else if (hasGuild) {
+            promptGuildShippingDecision();
+        } else
+            promptFactionToShip(turnOrder.peekFirst());
+
+        if (hasFaction("Atreides"))
+            ((AtreidesFaction) getFaction("Atreides")).giveSpiceDeckPrescience();
+        if (hasFaction("BG")) {
+            Faction bgFaction = getFaction("BG");
+            String bgPlayer = bgFaction.getPlayer();
+            for (Territory territory : territories.values()) {
+                territory.flipAdvisorsIfAlone(this);
+                if (territory.getTerritoryName().equals("Polar Sink")) continue;
+                if (territory.getForceStrength("Advisor") > 0) {
+                    String bgAllyName = bgFaction.getAlly();
+                    if (!bgAllyName.isEmpty()) {
+                        Faction bgAlly = getFaction(bgAllyName);
+                        if (territory.getTotalForceCount(bgAlly) > 0 && !bgAllyName.equals("Ecaz"))
+                            continue;
+                    }
+                    if (territory.getSector() == storm) {
+                        bgFaction.getChat().publish(territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
+                        continue;
+                    }
+                    turnSummary.publish(bgFaction.getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
+                    List<DuneChoice> choices = List.of(
+                            new DuneChoice("bg-flip-" + territory.getTerritoryName(), "Flip"),
+                            new DuneChoice("secondary", "bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")
+                    );
+                    bgFaction.getChat().publish("Will you flip to fighters in " + territory.getTerritoryName() + "? " + bgPlayer, choices);
+                }
+            }
+        }
+        setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
+    }
+
     public void promptGuildShippingDecision() {
         turnOrder.addFirst("Guild");
 

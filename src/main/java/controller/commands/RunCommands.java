@@ -4,7 +4,6 @@ import constants.Emojis;
 import controller.DiscordGame;
 import controller.buttons.IxButtons;
 import controller.channels.TurnSummary;
-import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -149,7 +148,7 @@ public class RunCommands {
                 game.advancePhase();
             }
         } else if (phase == 6) {
-            startShipmentPhase(discordGame, game);
+            game.startShipmentPhase();
             game.advancePhase();
         } else if (phase == 7) {
             game.startBattlePhase();
@@ -254,76 +253,6 @@ public class RunCommands {
         boolean prescienceBlocked = discordGame.optional(atreidesKaramad) != null && discordGame.required(atreidesKaramad).getAsBoolean();
         game.getBidding().auctionNextCard(game, prescienceBlocked);
         discordGame.pushGame();
-    }
-
-    public static void startShipmentPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (game.hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(game, TechToken.AXLOTL_TANKS);
-
-        discordGame.getTurnSummary().queueMessage("**Turn " + game.getTurn() + " Shipment and Movement Phase**");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Shipment and Movement Phase\n");
-        game.getTurnOrder().clear();
-        for (Faction faction : game.getFactions()) {
-            game.getTurnOrder().add(faction.getName());
-            faction.getShipment().clear();
-            faction.getMovement().clear();
-            faction.getShipment().setShipped(false);
-            faction.getMovement().setMoved(false);
-        }
-        while (game.getFactionTurnIndex(game.getTurnOrder().getFirst()) != 0)
-            game.getTurnOrder().addFirst(game.getTurnOrder().pollLast());
-        game.getTurnOrder().removeIf(name -> name.equals("Guild"));
-        List<Faction> factions = game.getFactionsWithTreacheryCard("Juice of Sapho");
-        Faction saphoFaction = null;
-        if (!factions.isEmpty()) {
-            saphoFaction = factions.getFirst();
-            saphoFaction.getShipment().setMayPlaySapho(true);
-        }
-        if (saphoFaction != null &&
-                (!game.getTurnOrder().getFirst().equals(factions.getFirst().getName()) || game.hasFaction("Guild"))) {
-            String message = "Do you want to play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
-            if (!game.getTurnOrder().getLast().equals(saphoFaction.getName()))
-                message += "\nIf not, you will have the option to play it to go last on your turn.";
-            else if (game.hasFaction("Guild"))
-                message += "\nIf not, you will have the option to play it to go last if " + Emojis.GUILD + " defers to you.";
-            List<DuneChoice> choices = List.of(
-                    new DuneChoice("juice-of-sapho-first", "Yes, go first"),
-                    new DuneChoice("secondary", "juice-of-sapho-don't-play", "No"));
-            saphoFaction.getChat().publish(message, choices);
-            game.getTurnOrder().addFirst("juice-of-sapho-hold");
-        } else if (game.hasFaction("Guild")) {
-            game.promptGuildShippingDecision();
-        } else
-            game.promptFactionToShip(game.getTurnOrder().peekFirst());
-
-        if (game.hasFaction("Atreides"))
-            ((AtreidesFaction) game.getFaction("Atreides")).giveSpiceDeckPrescience();
-        if (game.hasFaction("BG")) {
-            Faction bgFaction = game.getFaction("BG");
-            String bgPlayer = bgFaction.getPlayer();
-            for (Territory territory : game.getTerritories().values()) {
-                territory.flipAdvisorsIfAlone(game);
-                if (territory.getTerritoryName().equals("Polar Sink")) continue;
-                if (territory.getForceStrength("Advisor") > 0) {
-                    String bgAllyName = bgFaction.getAlly();
-                    if (!bgAllyName.isEmpty()) {
-                        Faction bgAlly = game.getFaction(bgAllyName);
-                        if (territory.getTotalForceCount(bgAlly) > 0 && !bgAllyName.equals("Ecaz"))
-                            continue;
-                    }
-                    if (territory.getSector() == game.getStorm()) {
-                        bgFaction.getChat().publish(territory.getTerritoryName() + " is under the storm. Ask the mod to flip for you if the game allows it. " + bgPlayer);
-                        continue;
-                    }
-                    game.getTurnSummary().publish(game.getFaction("BG").getEmoji() + " to decide whether to flip their advisors in " + territory.getTerritoryName());
-                    List<DuneChoice> choices = List.of(
-                            new DuneChoice("bg-flip-" + territory.getTerritoryName(), "Flip"),
-                            new DuneChoice("secondary", "bg-dont-flip-" + territory.getTerritoryName(), "Don't flip")
-                    );
-                    bgFaction.getChat().publish("Will you flip to fighters in " + territory.getTerritoryName() + "? " + bgPlayer, choices);
-                }
-            }
-        }
-        game.setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
     public static void updateStrongholdSkillsCommand(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
