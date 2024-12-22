@@ -186,6 +186,13 @@ class GameTest extends DuneTest {
             game.addFaction(richese);
             game.addFaction(fremen);
             game.addFaction(atreides);
+            game.addFaction(bg);
+            game.startShipmentPhase();
+        }
+
+        @Test
+        void testGuildIsToldWhichFactionTheyWouldDeferTo() {
+            assertEquals("Defer to Emperor.", guildChat.getChoices().getFirst().get(1).getLabel());
         }
 
         @Test

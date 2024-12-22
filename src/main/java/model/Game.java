@@ -1257,25 +1257,23 @@ public class Game {
     }
 
     public void promptGuildShippingDecision() {
-        turnOrder.addFirst("Guild");
-
-        DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
-        DuneChoice defer = new DuneChoice("guild-defer", "Defer turn.");
-        DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
-        if (turnOrder.size() == 1) {
-            defer.setDisabled(true);
-            last.setDisabled(true);
+        if (turnOrder.isEmpty()) {
+            promptFactionToShip("Guild");
+            return;
         }
 
+        String nextToShip = turnOrder.peekFirst();
+        turnOrder.addFirst("Guild");
+        DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
+        DuneChoice defer = new DuneChoice("guild-defer", "Defer to " + nextToShip + ".");
+        DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
         if (turnOrder.getLast().equals("juice-of-sapho-last")) {
             last.setDisabled(true);
             if (turnOrder.size() == 3)
                 defer.setDisabled(true);
         }
-
-        List<DuneChoice> choices = List.of(takeTurn, defer, last);
         Faction guild = getFaction("Guild");
-        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), choices);
+        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, last));
     }
 
     public boolean isGuildNeedsToShip() {
