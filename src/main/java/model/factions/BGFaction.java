@@ -196,6 +196,8 @@ public class BGFaction extends Faction {
     }
 
     public void bgFlipMessageAndButtons(Game game, String territoryName) {
+        if (territoryName.equals("Polar Sink"))
+            return;
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("bg-flip-" + territoryName, "Flip"));
         choices.add(new DuneChoice("secondary", "bg-dont-flip-" + territoryName, "Don't Flip"));
