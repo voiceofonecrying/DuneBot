@@ -1277,6 +1277,16 @@ public class Game {
         guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, last));
     }
 
+    public String guildDefer() throws InvalidGameStateException {
+        turnOrder.pollFirst();
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        String factionToDeferTo = turnOrder.peekFirst();
+        if (factionToDeferTo == null)
+            throw new InvalidGameStateException("There is no faction to defer to.");
+        promptFactionToShip(factionToDeferTo);
+        return factionToDeferTo;
+    }
+
     public boolean isGuildNeedsToShip() {
         return hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild");
     }
@@ -1297,6 +1307,24 @@ public class Game {
             choices.add(choice);
         }
         faction.getChat().publish("Use buttons to perform Shipment and Movement actions on your turn." + " " + faction.getPlayer(), choices);
+    }
+
+    public void completeCurrentFactionMovement() {
+        turnOrder.pollFirst();
+        if (turnOrder.size() == 1 && turnOrder.getFirst().equals("juice-of-sapho-last"))
+            turnOrder.removeFirst();
+
+        if (isGuildNeedsToShip())
+            promptGuildShippingDecision();
+        else if (!turnOrder.isEmpty())
+            promptFactionToShip(turnOrder.peekFirst());
+
+        if (!turnOrder.isEmpty() && Objects.requireNonNull(turnOrder.peekLast()).equals("Guild") && turnOrder.size() > 1)
+            turnSummary.publish(Emojis.GUILD + " does not ship at this time");
+    }
+
+    public boolean allFactionsHaveMoved() {
+        return turnOrder.isEmpty();
     }
 
     public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
