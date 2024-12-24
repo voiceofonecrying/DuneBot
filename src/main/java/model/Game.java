@@ -1210,7 +1210,7 @@ public class Game {
         boolean hasGuild = hasFaction("Guild");
         if (saphoFaction != null &&
                 (!turnOrder.getFirst().equals(factions.getFirst().getName()) || hasGuild)) {
-            String message = "Do you want to play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
+            String message = "Will you play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
             if (!turnOrder.getLast().equals(saphoFaction.getName()))
                 message += "\nIf not, you will have the option to play it to go last on your turn.";
             else if (hasGuild)
@@ -1219,7 +1219,6 @@ public class Game {
                     new DuneChoice("juice-of-sapho-first", "Yes, go first"),
                     new DuneChoice("secondary", "juice-of-sapho-don't-play", "No"));
             saphoFaction.getChat().publish(message, choices);
-            turnOrder.addFirst("juice-of-sapho-hold");
         } else if (hasGuild) {
             promptGuildShippingDecision();
         } else
@@ -1305,7 +1304,6 @@ public class Game {
         if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
             throw new InvalidGameStateException("You do not have Juice of Sapho.");
         faction.getShipment().setMayPlaySapho(true);
-        turnOrder.pollFirst();
         if (hasFaction("Guild"))
             promptGuildShippingDecision();
         else
@@ -1316,7 +1314,6 @@ public class Game {
         if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
             throw new InvalidGameStateException("You do not have Juice of Sapho.");
         faction.getShipment().setMayPlaySapho(false);
-        turnOrder.pollFirst();
         turnOrder.remove(faction.getName());
         if (last) {
             turnOrder.addLast(faction.getName());
@@ -1325,7 +1322,7 @@ public class Game {
             turnOrder.addFirst(faction.getName());
         }
         faction.discard("Juice of Sapho", "to ship and move " + (last ? "last" : "first") + " this turn");
-        if (last && hasFaction("Guild") && !(faction instanceof GuildFaction))
+        if (last && isGuildNeedsToShip())
             promptGuildShippingDecision();
         else
             promptFactionToShip(turnOrder.peekFirst());
