@@ -169,6 +169,17 @@ class BGFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testNoFlipMessageInPolarSink() throws IOException {
+        Territory polarSink = game.getTerritory("Polar Sink");
+        AtreidesFaction atreides = new AtreidesFaction("at", "at");
+        game.addFaction(atreides);
+        faction.placeForceFromReserves(game, polarSink, 1, false);
+        game.moveForces(atreides, game.getTerritory("Arrakeen"), polarSink, 1, 0, false);
+        assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains(Emojis.BG + " to decide whether they want to flip")));
+        assertTrue(chat.getMessages().isEmpty());
+    }
+
+    @Test
     public void testFlipForces() {
         Territory carthag = game.getTerritory("Carthag");
         carthag.addForces("BG", 1);
