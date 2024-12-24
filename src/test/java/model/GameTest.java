@@ -187,17 +187,21 @@ class GameTest extends DuneTest {
             game.addFaction(fremen);
             game.addFaction(atreides);
             game.addFaction(bg);
-            game.startShipmentPhase();
-        }
-
-        @Test
-        void testGuildIsToldWhichFactionTheyWouldDeferTo() {
-            assertEquals("Defer to Emperor.", guildChat.getChoices().getFirst().get(1).getLabel());
         }
 
         @Nested
         @DisplayName("#guildDefer")
         class GuildDefer {
+            @BeforeEach
+            void setUp() {
+                game.startShipmentPhase();
+            }
+
+            @Test
+            void testGuildIsToldWhichFactionTheyWouldDeferTo() {
+                assertEquals("Defer to Emperor.", guildChat.getChoices().getFirst().get(1).getLabel());
+            }
+
             @Test
             void testDeferOnce() throws InvalidGameStateException {
                 game.guildDefer();
@@ -222,6 +226,49 @@ class GameTest extends DuneTest {
                 game.guildWaitLast();
                 assertNotEquals("Guild", game.getTurnOrder().getFirst());
                 assertEquals("Guild", game.getTurnOrder().getLast());
+            }
+        }
+
+        @Nested
+        @DisplayName("#juiceOfSapho")
+        class JuiceOfSapho {
+            @BeforeEach
+            void setUp() {
+                atreides.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+                game.startShipmentPhase();
+            }
+
+            @Test
+            void testPlayJuiceToGoFirst() throws InvalidGameStateException {
+                assertTrue(guildChat.getMessages().isEmpty());
+                assertTrue(atreidesChat.getMessages().getFirst().contains("Will you play Juice of Sapho to ship and move first? at"));
+                game.playJuiceOfSapho(atreides, false);
+                assertEquals("Atreides", game.getTurnOrder().getFirst());
+            }
+
+            @Test
+            void testDontPlayJuiceToGoFirst() throws InvalidGameStateException {
+                assertTrue(guildChat.getMessages().isEmpty());
+                assertTrue(atreidesChat.getMessages().getFirst().contains("Will you play Juice of Sapho to ship and move first? at"));
+                game.juiceOfSaphoDontPlay(atreides);
+                assertEquals("Guild", game.getTurnOrder().getFirst());
+            }
+
+            @Test
+            void testPlayJuiceToGoLast() throws InvalidGameStateException {
+                game.juiceOfSaphoDontPlay(atreides);
+                game.guildWaitLast();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                assertEquals("Atreides", game.getTurnOrder().getFirst());
+                assertEquals("Play Juice of Sapho to go last", atreidesChat.getChoices().getLast().getLast().getLabel());
+                assertFalse(atreidesChat.getChoices().getLast().getLast().isDisabled());
+                game.playJuiceOfSapho(atreides, true);
+                assertEquals("juice-of-sapho-last", game.getTurnOrder().getLast());
+                assertNotEquals("Atreides", game.getTurnOrder().getFirst());
+                assertTrue(game.getTurnOrder().contains("Atreides"));
+                assertEquals("BG", game.getTurnOrder().getFirst());
             }
         }
 
