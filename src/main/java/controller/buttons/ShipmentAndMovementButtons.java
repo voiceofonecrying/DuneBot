@@ -236,19 +236,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void juiceOfSaphoDontPlay(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void juiceOfSaphoDontPlay(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
-            discordGame.queueMessageToEphemeral("These buttons were not intended for you");
-            return;
-        }
-        faction.getShipment().setMayPlaySapho(true);
         discordGame.queueMessage("You will not play Juice of Sapho to go first.");
-        game.getTurnOrder().pollFirst();
-        if (game.hasFaction("Guild"))
-            game.promptGuildShippingDecision();
-        else
-            game.promptFactionToShip(game.getTurnOrder().peekFirst());
+        game.juiceOfSaphoDontPlay(faction);
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }

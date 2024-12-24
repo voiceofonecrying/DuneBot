@@ -1294,6 +1294,17 @@ public class Game {
         promptFactionToShip(turnOrder.peekFirst());
     }
 
+    public void juiceOfSaphoDontPlay(Faction faction) throws InvalidGameStateException {
+        if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
+            throw new InvalidGameStateException("You do not have Juice of Sapho.");
+        faction.getShipment().setMayPlaySapho(true);
+        turnOrder.pollFirst();
+        if (hasFaction("Guild"))
+            promptGuildShippingDecision();
+        else
+            promptFactionToShip(turnOrder.peekFirst());
+    }
+
     public boolean isGuildNeedsToShip() {
         return hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild");
     }
