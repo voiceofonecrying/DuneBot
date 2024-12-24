@@ -287,10 +287,7 @@ public class ReportsCommands {
                 Bidding bidding = game.getBidding();
                 response.append(", Card ").append(bidding.getBidCardNumber()).append(" of ").append(bidding.getNumCardsForBid());
             } else if (phase == 6) {
-                int factionsLeftToGo = game.getTurnOrder().size();
-                if (game.hasFaction("Guild") && !game.getFaction("Guild").getShipment().hasShipped() && !game.getTurnOrder().contains("Guild"))
-                    factionsLeftToGo++;
-                response.append(", ").append(factionsLeftToGo).append(" factions remaining");
+                response.append(", ").append(game.numFactionsLeftToMove()).append(" factions remaining");
             }
         }
         response.append("\nMod: ").append(game.getMod());

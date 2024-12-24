@@ -1256,6 +1256,13 @@ public class Game {
         setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
+    public int numFactionsLeftToMove() {
+        int factionsLeftToGo = turnOrder.size();
+        if (hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild"))
+            factionsLeftToGo++;
+        return factionsLeftToGo;
+    }
+
     public void promptGuildShippingDecision() {
         if (turnOrder.isEmpty()) {
             turnOrder.addFirst("Guild");
