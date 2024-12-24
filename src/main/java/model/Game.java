@@ -796,7 +796,7 @@ public class Game {
         return adjacencyList;
     }
 
-    public Deque<String> getTurnOrder() {
+    protected Deque<String> getTurnOrder() {
         return turnOrder;
     }
 
