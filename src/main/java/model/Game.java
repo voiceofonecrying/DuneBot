@@ -1257,12 +1257,14 @@ public class Game {
     }
 
     public void promptGuildShippingDecision() {
-        turnOrder.addFirst("Guild");
-        if (turnOrder.size() == 1) {
+        if (turnOrder.isEmpty()) {
+            turnOrder.addFirst("Guild");
             promptFactionToShip("Guild");
             return;
         }
+
         String nextToShip = turnOrder.peekFirst();
+        turnOrder.addFirst("Guild");
         DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
         DuneChoice defer = new DuneChoice("guild-defer", "Defer to " + nextToShip + ".");
         DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
