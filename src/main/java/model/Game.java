@@ -1287,6 +1287,13 @@ public class Game {
         return factionToDeferTo;
     }
 
+    public void guildWaitLast() {
+        turnOrder.addLast("Guild");
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        turnOrder.pollFirst();
+        promptFactionToShip(turnOrder.peekFirst());
+    }
+
     public boolean isGuildNeedsToShip() {
         return hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild");
     }

@@ -216,6 +216,13 @@ class GameTest extends DuneTest {
                 assertFalse(game.getTurnOrder().contains("Emperor"));
                 assertEquals("Guild", game.getTurnOrder().getFirst());
             }
+
+            @Test
+            void testGuildGoesLast() {
+                game.guildWaitLast();
+                assertNotEquals("Guild", game.getTurnOrder().getFirst());
+                assertEquals("Guild", game.getTurnOrder().getLast());
+            }
         }
 
         @Test
