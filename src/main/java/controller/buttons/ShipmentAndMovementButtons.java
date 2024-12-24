@@ -244,29 +244,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void playJuiceOfSapho(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean last) throws ChannelNotFoundException {
+    private static void playJuiceOfSapho(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean last) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho"))) {
-            discordGame.queueMessageToEphemeral("These buttons were not intended for you");
-            return;
-        }
-        faction.getShipment().setMayPlaySapho(false);
-        game.getTurnOrder().pollFirst();
-        String lastFirst = last ? "last" : "first";
-        game.getTurnOrder().remove(faction.getName());
-        if (last) {
-            game.getTurnOrder().addLast(faction.getName());
-            game.getTurnOrder().addLast("juice-of-sapho-last");
-
-        } else {
-            game.getTurnOrder().addFirst(faction.getName());
-        }
-        faction.discard("Juice of Sapho", "to ship and move " + lastFirst + " this turn");
-        discordGame.queueMessage("You will go " + lastFirst + " this turn.");
-        if (last && game.hasFaction("Guild") && !(faction instanceof GuildFaction))
-            game.promptGuildShippingDecision();
-        else
-            game.promptFactionToShip(game.getTurnOrder().peekFirst());
+        game.playJuiceOfSapho(faction, last);
+        discordGame.queueMessage("You will go " + (last ? "last" : "first") + " this turn.");
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
