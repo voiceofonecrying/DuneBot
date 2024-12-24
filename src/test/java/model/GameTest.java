@@ -214,11 +214,31 @@ class GameTest extends DuneTest {
             @Test
             void testDeferThenEmperorPasses() throws InvalidGameStateException {
                 game.guildDefer();
-                turnSummary.publish(emperor.getEmoji() + " does not move.");
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
                 assertFalse(game.getTurnOrder().contains("Emperor"));
+                assertEquals("Use buttons to take your turn out of order. gu", guildChat.getMessages().getLast());
+            }
+
+            @Test
+            void testDeferThenGo() throws InvalidGameStateException {
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildTakeTurn();
                 assertEquals("Guild", game.getTurnOrder().getFirst());
+            }
+
+            @Test
+            void testDeferUntilAfterFremen() throws InvalidGameStateException {
+                assertEquals(List.of("AskGuild", "Emperor", "Richese", "Fremen", "Atreides", "BG"), game.getTurnOrder());
+                game.guildDeferUntilAfter("Fremen");
+                guildChat.clear();
+                assertEquals(List.of("Emperor", "Richese", "Fremen", "AskGuild", "Atreides", "BG"), game.getTurnOrder());
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                assertTrue(guildChat.getMessages().isEmpty());
+                game.completeCurrentFactionMovement();
+                assertEquals("Use buttons to take your turn out of order. gu", guildChat.getMessages().getLast());
             }
 
             @Test
@@ -251,7 +271,7 @@ class GameTest extends DuneTest {
                 assertTrue(guildChat.getMessages().isEmpty());
                 assertTrue(atreidesChat.getMessages().getFirst().contains("Will you play Juice of Sapho to ship and move first? at"));
                 game.juiceOfSaphoDontPlay(atreides);
-                assertEquals("Guild", game.getTurnOrder().getFirst());
+                assertEquals("AskGuild", game.getTurnOrder().getFirst());
             }
 
             @Test

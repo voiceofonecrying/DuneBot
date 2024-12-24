@@ -1199,15 +1199,18 @@ public class Game {
             faction.getMovement().setMoved(false);
         }
         while (getFactionTurnIndex(turnOrder.getFirst()) != 0)
-            turnOrder.addFirst(turnOrder.pollLast());
-        turnOrder.removeIf(name -> name.equals("Guild"));
+            turnOrder.addFirst(turnOrder.pollLast());turnOrder.removeIf(name -> name.equals("Guild"));
+        boolean hasGuild = hasFaction("Guild");
+        if (hasGuild) {
+            turnOrder.remove("Guild");
+            turnOrder.addFirst("AskGuild");
+        }
         List<Faction> factions = getFactionsWithTreacheryCard("Juice of Sapho");
         Faction saphoFaction = null;
         if (!factions.isEmpty()) {
             saphoFaction = factions.getFirst();
             saphoFaction.getShipment().setMayPlaySapho(true);
         }
-        boolean hasGuild = hasFaction("Guild");
         if (saphoFaction != null &&
                 (!turnOrder.getFirst().equals(factions.getFirst().getName()) || hasGuild)) {
             String message = "Will you play Juice of Sapho to ship and move first? " + saphoFaction.getPlayer();
@@ -1263,14 +1266,14 @@ public class Game {
     }
 
     public void promptGuildShippingDecision() {
-        if (turnOrder.isEmpty()) {
-            turnOrder.addFirst("Guild");
+        if (turnOrder.size() == 1) {
             promptFactionToShip("Guild");
             return;
         }
 
+        turnOrder.pollFirst();
         String nextToShip = turnOrder.peekFirst();
-        turnOrder.addFirst("Guild");
+        turnOrder.addFirst("AskGuild");
         DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
         DuneChoice defer = new DuneChoice("guild-defer", "Defer to " + nextToShip + ".");
         DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
@@ -1285,12 +1288,32 @@ public class Game {
 
     public String guildDefer() throws InvalidGameStateException {
         turnOrder.pollFirst();
-        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
-        String factionToDeferTo = turnOrder.peekFirst();
+        String factionToDeferTo = turnOrder.pollFirst();
         if (factionToDeferTo == null)
             throw new InvalidGameStateException("There is no faction to defer to.");
-        promptFactionToShip(factionToDeferTo);
+        turnOrder.addFirst("AskGuild");
+        turnOrder.addFirst(factionToDeferTo);
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        promptFactionToShip(turnOrder.peekFirst());
         return factionToDeferTo;
+    }
+
+    public void guildDeferUntilAfter(String factionToDeferTo) throws InvalidGameStateException {
+        turnOrder.pollFirst();
+        Deque<String> earlyFactions = new LinkedList<>();
+        boolean notFound = true;
+        while (notFound && !turnOrder.isEmpty()) {
+            String nextFaction = turnOrder.pollFirst();
+            earlyFactions.addLast(nextFaction);
+            notFound = !nextFaction.equals(factionToDeferTo);
+        }
+        if (notFound)
+            throw new InvalidGameStateException("Faction to defer to not found.");
+        turnOrder.addFirst("AskGuild");
+        while (!earlyFactions.isEmpty())
+            turnOrder.addFirst(earlyFactions.pollLast());
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        promptFactionToShip(turnOrder.peekFirst());
     }
 
     public void guildWaitLast() {
@@ -1300,11 +1323,18 @@ public class Game {
         promptFactionToShip(turnOrder.peekFirst());
     }
 
+    public void guildTakeTurn() {
+        turnOrder.pollFirst();
+        turnOrder.addFirst("Guild");
+        promptFactionToShip("Guild");
+        getTurnSummary().publish(Emojis.GUILD + " will take their turn next.");
+    }
+
     public void juiceOfSaphoDontPlay(Faction faction) throws InvalidGameStateException {
         if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
             throw new InvalidGameStateException("You do not have Juice of Sapho.");
         faction.getShipment().setMayPlaySapho(true);
-        if (hasFaction("Guild"))
+        if (!turnOrder.isEmpty() && turnOrder.peekFirst().equals("AskGuild"))
             promptGuildShippingDecision();
         else
             promptFactionToShip(turnOrder.peekFirst());
@@ -1322,7 +1352,7 @@ public class Game {
             turnOrder.addFirst(faction.getName());
         }
         faction.discard("Juice of Sapho", "to ship and move " + (last ? "last" : "first") + " this turn");
-        if (last && isGuildNeedsToShip())
+        if (last && !turnOrder.isEmpty() && turnOrder.peekFirst().equals("AskGuild"))
             promptGuildShippingDecision();
         else
             promptFactionToShip(turnOrder.peekFirst());
@@ -1355,7 +1385,7 @@ public class Game {
         if (turnOrder.size() == 1 && turnOrder.getFirst().equals("juice-of-sapho-last"))
             turnOrder.removeFirst();
 
-        if (isGuildNeedsToShip())
+        if (!turnOrder.isEmpty() && turnOrder.peekFirst().equals("AskGuild"))
             promptGuildShippingDecision();
         else if (!turnOrder.isEmpty())
             promptFactionToShip(turnOrder.peekFirst());

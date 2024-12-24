@@ -230,8 +230,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void guildTakeTurn(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("You will take your turn now.");
-        game.promptFactionToShip("Guild");
-        discordGame.getTurnSummary().queueMessage(Emojis.GUILD + " will take their turn next.");
+        game.guildTakeTurn();
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
