@@ -195,6 +195,36 @@ class GameTest extends DuneTest {
             assertEquals("Defer to Emperor.", guildChat.getChoices().getFirst().get(1).getLabel());
         }
 
+        @Nested
+        @DisplayName("#guildDefer")
+        class GuildDefer {
+            @Test
+            void testDeferOnce() throws InvalidGameStateException {
+                game.guildDefer();
+                assertFalse(game.getTurnOrder().contains("Guild"));
+                assertEquals(1, emperorChat.getMessages().size());
+                assertEquals("Use buttons to perform Shipment and Movement actions on your turn. em", emperorChat.getMessages().getFirst());
+                assertFalse(emperorChat.getChoices().isEmpty());
+            }
+
+            @Test
+            void testDeferThenEmperorPasses() throws InvalidGameStateException {
+                game.guildDefer();
+                turnSummary.publish(emperor.getEmoji() + " does not move.");
+                game.completeCurrentFactionMovement();
+                assertFalse(game.allFactionsHaveMoved());
+                assertFalse(game.getTurnOrder().contains("Emperor"));
+                assertEquals("Guild", game.getTurnOrder().getFirst());
+            }
+
+            @Test
+            void testGuildGoesLast() {
+                game.guildWaitLast();
+                assertNotEquals("Guild", game.getTurnOrder().getFirst());
+                assertEquals("Guild", game.getTurnOrder().getLast());
+            }
+        }
+
         @Test
         void testFremenAlliedWithGuildShipFree() {
             game.createAlliance(guild, fremen);

@@ -796,7 +796,7 @@ public class Game {
         return adjacencyList;
     }
 
-    public Deque<String> getTurnOrder() {
+    protected Deque<String> getTurnOrder() {
         return turnOrder;
     }
 
@@ -1256,6 +1256,13 @@ public class Game {
         setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
+    public int numFactionsLeftToMove() {
+        int factionsLeftToGo = turnOrder.size();
+        if (hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild"))
+            factionsLeftToGo++;
+        return factionsLeftToGo;
+    }
+
     public void promptGuildShippingDecision() {
         if (turnOrder.isEmpty()) {
             turnOrder.addFirst("Guild");
@@ -1275,6 +1282,53 @@ public class Game {
         }
         Faction guild = getFaction("Guild");
         guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, last));
+    }
+
+    public String guildDefer() throws InvalidGameStateException {
+        turnOrder.pollFirst();
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        String factionToDeferTo = turnOrder.peekFirst();
+        if (factionToDeferTo == null)
+            throw new InvalidGameStateException("There is no faction to defer to.");
+        promptFactionToShip(factionToDeferTo);
+        return factionToDeferTo;
+    }
+
+    public void guildWaitLast() {
+        turnOrder.addLast("Guild");
+        turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
+        turnOrder.pollFirst();
+        promptFactionToShip(turnOrder.peekFirst());
+    }
+
+    public void juiceOfSaphoDontPlay(Faction faction) throws InvalidGameStateException {
+        if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
+            throw new InvalidGameStateException("You do not have Juice of Sapho.");
+        faction.getShipment().setMayPlaySapho(true);
+        turnOrder.pollFirst();
+        if (hasFaction("Guild"))
+            promptGuildShippingDecision();
+        else
+            promptFactionToShip(turnOrder.peekFirst());
+    }
+    
+    public void playJuiceOfSapho(Faction faction, boolean last) throws InvalidGameStateException {
+        if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
+            throw new InvalidGameStateException("You do not have Juice of Sapho.");
+        faction.getShipment().setMayPlaySapho(false);
+        turnOrder.pollFirst();
+        turnOrder.remove(faction.getName());
+        if (last) {
+            turnOrder.addLast(faction.getName());
+            turnOrder.addLast("juice-of-sapho-last");
+        } else {
+            turnOrder.addFirst(faction.getName());
+        }
+        faction.discard("Juice of Sapho", "to ship and move " + (last ? "last" : "first") + " this turn");
+        if (last && hasFaction("Guild") && !(faction instanceof GuildFaction))
+            promptGuildShippingDecision();
+        else
+            promptFactionToShip(turnOrder.peekFirst());
     }
 
     public boolean isGuildNeedsToShip() {
@@ -1297,6 +1351,24 @@ public class Game {
             choices.add(choice);
         }
         faction.getChat().publish("Use buttons to perform Shipment and Movement actions on your turn." + " " + faction.getPlayer(), choices);
+    }
+
+    public void completeCurrentFactionMovement() {
+        turnOrder.pollFirst();
+        if (turnOrder.size() == 1 && turnOrder.getFirst().equals("juice-of-sapho-last"))
+            turnOrder.removeFirst();
+
+        if (isGuildNeedsToShip())
+            promptGuildShippingDecision();
+        else if (!turnOrder.isEmpty())
+            promptFactionToShip(turnOrder.peekFirst());
+
+        if (!turnOrder.isEmpty() && Objects.requireNonNull(turnOrder.peekLast()).equals("Guild") && turnOrder.size() > 1)
+            turnSummary.publish(Emojis.GUILD + " does not ship at this time");
+    }
+
+    public boolean allFactionsHaveMoved() {
+        return turnOrder.isEmpty();
     }
 
     public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
