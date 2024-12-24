@@ -69,6 +69,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             richeseNoFieldShip(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("support-")) refreshInfo(event, game, discordGame);
         else if (event.getComponentId().startsWith("bid-support-")) refreshInfo(event, game, discordGame);
+        else if (event.getComponentId().startsWith("guild-defer-to-")) guildDeferTo(event, game, discordGame);
         switch (event.getComponentId()) {
             case "shipment" -> queueShippingButtons(event, game, discordGame);
             case "homeworlds" -> queueHomeworldShippingButtons(event, game, discordGame);
@@ -79,6 +80,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "guild-take-turn" -> guildTakeTurn(game, discordGame);
             case "guild-wait-last" -> guildWaitLast(game, discordGame);
             case "guild-defer" -> guildDefer(game, discordGame);
+            case "guild-select" -> guildSelect(game, discordGame);
             case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
             case "guild-cross-ship" -> crossShip(event, game, discordGame);
             case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
@@ -218,6 +220,20 @@ public class ShipmentAndMovementButtons implements Pressable {
         String factionToDeferTo = game.guildDefer();
         discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
         discordGame.pushGame();
+        discordGame.queueDeleteMessage();
+    }
+
+    private static void guildDeferTo(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        String factionToDeferTo = event.getComponentId().replace("guild-defer-to-", "");
+        game.guildDeferUntilAfter(factionToDeferTo);
+        discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
+        discordGame.pushGame();
+        discordGame.queueDeleteMessage();
+    }
+
+    private static void guildSelect(Game game, DiscordGame discordGame) {
+        game.promptGuildToSelectFactionToDeferTo();
+        discordGame.queueMessage("You will select a faction to defer to.");
         discordGame.queueDeleteMessage();
     }
 

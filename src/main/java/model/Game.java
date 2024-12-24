@@ -1276,14 +1276,32 @@ public class Game {
         turnOrder.addFirst("AskGuild");
         DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
         DuneChoice defer = new DuneChoice("guild-defer", "Defer to " + nextToShip + ".");
+        DuneChoice select = new DuneChoice("guild-select", "Defer to another faction.");
         DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
         if (turnOrder.getLast().equals("juice-of-sapho-last")) {
             last.setDisabled(true);
-            if (turnOrder.size() == 3)
-                defer.setDisabled(true);
-        }
+            defer.setDisabled(turnOrder.size() == 3);
+            select.setDisabled(turnOrder.size() == 3);
+        } else
+            select.setDisabled(turnOrder.size() == 2);
         Faction guild = getFaction("Guild");
-        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, last));
+        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, select, last));
+    }
+
+    public void promptGuildToSelectFactionToDeferTo() {
+        List<String> factionsToShip = new ArrayList<>(turnOrder);
+        factionsToShip.removeFirst();
+        boolean juiceOfSaphoLast = false;
+        if (factionsToShip.getLast().equals("juice-of-sapho-last")) {
+            factionsToShip.removeLast();
+            juiceOfSaphoLast = true;
+        }
+        List<DuneChoice> choices = new ArrayList<>(factionsToShip.stream().map(f -> new DuneChoice("primary", "guild-defer-to-" + f, null, Emojis.getFactionEmoji(f), false)).toList());
+        if (juiceOfSaphoLast)
+            choices.getLast().setDisabled(true);
+        choices.add(new DuneChoice("secondary", "guild-take-turn", "Take turn next."));
+        Faction guild = getFaction("Guild");
+        guild.getChat().publish("Which faction would you like to defer to? " + guild.getPlayer(), choices);
     }
 
     public String guildDefer() throws InvalidGameStateException {
