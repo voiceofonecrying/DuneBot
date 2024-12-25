@@ -32,6 +32,20 @@ public class DiscordChannel implements DuneTopic {
 
     @Override
     public void publish(String message, List<DuneChoice> choices) {
+        queueMessage(message, convertChoicesToButtons(choices));
+    }
+
+    @Override
+    public void reply(String message) {
+        queueReplyMessage(message);
+    }
+
+    @Override
+    public void reply(String message, List<DuneChoice> choices) {
+        queueReplyMessage(message, convertChoicesToButtons(choices));
+    }
+
+    private List<Button> convertChoicesToButtons(List<DuneChoice> choices) {
         List<Button> buttons = new ArrayList<>();
         for (DuneChoice choice : choices) {
             Button button;
@@ -55,7 +69,7 @@ public class DiscordChannel implements DuneTopic {
             }
             buttons.add(button);
         }
-        queueMessage(message, buttons);
+        return buttons;
     }
 
     public void queueMessage(String message) {
@@ -63,16 +77,7 @@ public class DiscordChannel implements DuneTopic {
     }
 
     public void queueMessage(String message, List<Button> buttons) {
-        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
-                .addContent(message);
-        int i = 0;
-        while (i + 5 < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
-            i += 5;
-        }
-        if (i < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
-        }
+        MessageCreateBuilder messageCreateBuilder = arrangeButtons(message, buttons);
         discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
     }
 
@@ -88,6 +93,25 @@ public class DiscordChannel implements DuneTopic {
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                 .addFiles(fileUpload);
         discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
+    }
 
+    public void queueReplyMessage(String message) {
+        discordGame.queueMessage(message);
+    }
+
+    public void queueReplyMessage(String message, List<Button> buttons) {
+        discordGame.queueMessage(arrangeButtons(message, buttons));
+    }
+
+    private MessageCreateBuilder arrangeButtons(String message, List<Button> buttons) {
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder().addContent(message);
+        int i = 0;
+        while (i + 5 < buttons.size()) {
+            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
+            i += 5;
+        }
+        if (i < buttons.size())
+            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
+        return messageCreateBuilder;
     }
 }

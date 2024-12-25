@@ -217,8 +217,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     private static void guildDefer(Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
-        String factionToDeferTo = game.guildDefer();
-        discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
+        game.guildDefer();
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
@@ -226,26 +225,22 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void guildDeferTo(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String factionToDeferTo = event.getComponentId().replace("guild-defer-to-", "");
         game.guildDeferUntilAfter(factionToDeferTo);
-        discordGame.queueMessage("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
 
     private static void guildSelect(Game game, DiscordGame discordGame) {
         game.promptGuildToSelectFactionToDeferTo();
-        discordGame.queueMessage("You will select a faction to defer to.");
         discordGame.queueDeleteMessage();
     }
 
     private static void guildWaitLast(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.queueMessage("You will take your turn last.");
         game.guildWaitLast();
         discordGame.pushGame();
         discordGame.queueDeleteMessage();
     }
 
     private static void guildTakeTurn(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.queueMessage("You will take your turn now.");
         game.guildTakeTurn();
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
