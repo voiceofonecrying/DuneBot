@@ -1785,6 +1785,17 @@ public class ReportsCommands {
         return category;
     }
 
+    /**
+     * Saves game-related bot data from Discord into a compressed JSONL format and uploads it to a Discord thread.
+     *
+     * @param event the SlashCommandInteractionEvent associated with the command execution
+     * @param discordGame the DiscordGame instance containing details about the game, channels, and relevant operations
+     * @param game the Game object representing the state or context of the game for which the data is being saved
+     * @throws ChannelNotFoundException if the required Discord channel cannot be found
+     * @throws ExecutionException if an error occurs during asynchronous operation execution
+     * @throws InterruptedException if the operation is interrupted while waiting for completion
+     * @throws IOException if an I/O error occurs during data processing or compression
+     */
     public static void saveGameBotData(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, ExecutionException, InterruptedException, IOException {
         TextChannel botDataChannel = discordGame.getBotDataChannel();
 
@@ -1818,19 +1829,25 @@ public class ReportsCommands {
                 jsonObject.addProperty("text", messageText);
                 jsonObject.addProperty("botDataBase64", botDataBase64);
 
-                allBotData.append(jsonObject);
+                allBotData.append(jsonObject.toString().replaceAll("\\n", ""));
                 allBotData.append("\n");
             }
 
             lastMessageId = messages.getLast().getId();
         }
 
-        System.out.println("The string is this many chars long: " + allBotData.toString().length());
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStream gzip = new GZIPOutputStream(baos);
 
         gzip.write(allBotData.toString().getBytes(StandardCharsets.UTF_8));
-        System.out.println("The compressed string is this many chars long: " + baos.toByteArray().length);
+        gzip.close();
+        FileUpload fileUpload = FileUpload.fromData(baos.toByteArray(), "gamestate-aggregate.jsonl.gz");
+
+        TextChannel frontOfShield = discordGame.getTextChannel("front-of-shield");
+        discordGame.createPublicThread(frontOfShield, "bot-data", null);
+
+        ThreadChannel channel = discordGame.getThreadChannel("front-of-shield", "bot-data");
+
+        channel.sendMessage(LocalDateTime.now().toString()).addFiles(fileUpload).complete();
     }
 }

@@ -757,6 +757,7 @@ public class DiscordGame {
      * @param userIds       The ids of the users to add to the thread.  All non-numeric characters will be removed.
      */
     public void createPublicThread(TextChannel parentChannel, String threadName, List<String> userIds) {
+        if (userIds == null) userIds = new ArrayList<>();
         ThreadChannel threadChannel = parentChannel.createThreadChannel(threadName, false)
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.TIME_1_WEEK)
                 .complete();
