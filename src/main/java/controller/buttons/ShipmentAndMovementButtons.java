@@ -737,18 +737,20 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonSuffix = "-place-great-maker";
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
         if (guildAmbassador)
-            buttonSuffix += "-guild-ambassador";
+            buttonSuffix = "-guild-ambassador";
         String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        List<Territory> territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(
-                event.getComponentId().replace(shipmentOrMovement, "")
-                        .replace("fremen-ride-", "")
-                        .replace("place-shai-hulud-", "")
-                        .replace("place-great-maker-", "")
-                        .replace("guild-ambassador-", "")
-                        .replace("-", " ")
-                )
-        ).toList();
+        String aggregateTerritoryName = event.getComponentId().replace(shipmentOrMovement, "")
+                .replace("fremen-ride-", "")
+                .replace("place-shai-hulud-", "")
+                .replace("place-great-maker-", "")
+                .replace("guild-ambassador-", "")
+                .replace("-", " ");
+        List<Territory> territory = new ArrayList<>(game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(aggregateTerritoryName)).toList());
+        territory.sort(Comparator.comparingInt(Territory::getSector));
+        if (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian")) {
+            territory.addFirst(territory.removeLast());
+        }
 
         if (territory.size() == 1) {
             if (shaiHuludPlacement || greatMakerPlacement) {
@@ -771,17 +773,18 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<Button> buttons = new LinkedList<>();
 
         for (Territory sector : territory) {
+            int sectorNameStart = sector.getTerritoryName().indexOf("(");
+            String sectorName = sector.getTerritoryName().substring(sectorNameStart + 1, sector.getTerritoryName().length() - 1);
             if (sector.getSpice() > 0)
-                buttons.add(Button.primary(shipmentOrMovement + "sector" + buttonSuffix + "-" + sector.getTerritoryName(), sector.getSector() + " (spice sector)"));
+                buttons.add(Button.primary(shipmentOrMovement + "sector" + buttonSuffix + "-" + sector.getTerritoryName(), sector.getSector() + " - " + sectorName + " (" + sector.getSpice() + " spice)"));
             else
-                buttons.add(Button.primary(shipmentOrMovement + "sector" + buttonSuffix + "-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
+                buttons.add(Button.primary(shipmentOrMovement + "sector" + buttonSuffix + "-" + sector.getTerritoryName(), sector.getSector() + " - " + sectorName));
         }
-        buttons.sort(getButtonComparator());
         String backButtonId = isShipment ? "reset-shipment" : "reset-movement";
 
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage(new MessageCreateBuilder()
-                .setContent("Which sector?")
+                .setContent("Which sector of " + aggregateTerritoryName + "?")
                 .addActionRow(buttons)
                 .addActionRow(Button.secondary(backButtonId + buttonSuffix, "Start over"))
         );
@@ -1114,7 +1117,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             labelo2 = labelo2.replaceAll("[^0-9]", "").isEmpty() ? "999" : labelo2.replaceAll("[^0-9]", "");
             int o1int = Integer.parseInt(labelo1);
             int o2int = Integer.parseInt(labelo2);
-            if (o1int - o2int == 0) return 1;
             return o1int - o2int;
         };
     }
