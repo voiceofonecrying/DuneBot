@@ -5,6 +5,7 @@ import model.DuneChoice;
 import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -37,12 +38,18 @@ public class DiscordChannel implements DuneTopic {
 
     @Override
     public void reply(String message) {
-        queueReplyMessage(message);
+        if (discordGame.getEvent().getChannel() == messageChannel && discordGame.getEvent() instanceof ButtonInteractionEvent)
+            queueReplyMessage(message);
+        else
+            publish(message);
     }
 
     @Override
     public void reply(String message, List<DuneChoice> choices) {
-        queueReplyMessage(message, convertChoicesToButtons(choices));
+        if (discordGame.getEvent().getChannel() == messageChannel && discordGame.getEvent() instanceof ButtonInteractionEvent)
+            queueReplyMessage(message, convertChoicesToButtons(choices));
+        else
+            publish(message, choices);
     }
 
     private List<Button> convertChoicesToButtons(List<DuneChoice> choices) {
