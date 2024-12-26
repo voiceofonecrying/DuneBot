@@ -21,7 +21,8 @@ import java.util.List;
 public class MoritaniButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-
+        // Buttons handled by this class must begin with "moritani"
+        // And any button that begins with "moritani" must be handled by this class
         if (event.getComponentId().startsWith("moritani-offer-alliance-")) offerAlliance(event, discordGame, game);
         else if (event.getComponentId().startsWith("moritani-place-terror-"))
             queueTerrorButtons(event, game, discordGame);

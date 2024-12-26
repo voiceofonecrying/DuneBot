@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 
 public class EmperorButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-
+        // Buttons handled by this class must begin with "bt"
+        // And any button that begins with "bt" must be handled by this class
         if (event.getComponentId().startsWith("emperor-discard-")) discardCard(event, game, discordGame);
         if (event.getComponentId().equals("emperor-finished-discarding")) finishedDiscarding(discordGame);
 
