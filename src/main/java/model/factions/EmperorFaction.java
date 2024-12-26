@@ -278,7 +278,7 @@ public class EmperorFaction extends Faction {
             Faction allyFaction = game.getFaction(ally);
             int revivableForces = allyFaction.getRevivableForces();
             if (revivableForces == 0) {
-                chat.publish(allyFaction.getEmoji() + " has no revivable forces.");
+                chat.publish("Your ally " + allyFaction.getEmoji() + " has no revivable forces for you to pay for.");
             } else {
                 paidRevivalTBD = true;
                 List<DuneChoice> choices = new ArrayList<>();
