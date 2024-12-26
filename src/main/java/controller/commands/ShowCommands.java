@@ -819,6 +819,17 @@ public class ShowCommands {
             }
         }
 
+        if (game.hasFaction("Ecaz") || game.hasFaction("Moritani")) {
+            Leader dukeVidal = game.getDukeVidal();
+            boolean someoneHasVidal = game.getFactions().stream().anyMatch(f -> f.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            boolean vidalIsInTheTanks = game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal"));
+            if (!someoneHasVidal && !vidalIsInTheTanks) {
+                BufferedImage leaderImage = getResourceImage(dukeVidal.getName());
+                leaderImage = resize(leaderImage, 70, 70);
+                board = overlay(board, leaderImage, new Point(904, 46), 1);
+            }
+        }
+
         ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
         ImageIO.write(board, "png", boardOutputStream);
 
