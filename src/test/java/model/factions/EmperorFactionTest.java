@@ -99,7 +99,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         @Test
         public void testNoAllyForcesInTanks() {
             faction.presentAllyRevivalChoices();
-            assertEquals(Emojis.FREMEN + " has no revivable forces.", chat.getMessages().getLast());
+            assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
             assertEquals(0, turnSummary.getChoices().size());
         }
 
@@ -107,7 +107,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         public void testOnlyFedaykinInTanks() {
             fremen.removeForces("Southern Hemisphere", 2, true, true);
             faction.presentAllyRevivalChoices();
-            assertEquals(Emojis.FREMEN + " has no revivable forces.", chat.getMessages().getLast());
+            assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
         }
 
         @Test
