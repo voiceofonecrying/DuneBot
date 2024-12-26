@@ -19,7 +19,8 @@ import java.util.List;
 public class BTButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-
+        // Buttons handled by this class must begin with "bt"
+        // And any button that begins with "bt" must be handled by this class
         if (event.getComponentId().startsWith("bt-revival-rate-set-")) {
             btRevivalRateSet(event, game, discordGame);
         } else if (event.getComponentId().equals("bt-revival-rate-no-change")) {

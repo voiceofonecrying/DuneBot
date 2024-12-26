@@ -7,6 +7,8 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public class StormButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        // Buttons handled by this class must begin with "storm"
+        // And any button that begins with "storm" must be handled by this class
         if (!event.getComponentId().startsWith("storm")) return;
         int stormAdjustment = Integer.parseInt(event.getComponentId().replace("storm", ""));
         game.setStormMovement(game.getStormMovement() + stormAdjustment);

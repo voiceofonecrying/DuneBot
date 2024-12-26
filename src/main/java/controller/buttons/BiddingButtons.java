@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 public class BiddingButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        // Buttons handled by this class must begin with "bidding"
+        // And any button that begins with "bidding" must be handled by this class
         if (event.getComponentId().startsWith("bidding-auto-pass")) toggleAutoPass(event, discordGame, game);
         else if (event.getComponentId().startsWith("bidding-turn-pass")) toggleAutoPassTurn(event, discordGame, game);
         else if (event.getComponentId().startsWith("bidding-pass")) passOnce(event, discordGame, game);

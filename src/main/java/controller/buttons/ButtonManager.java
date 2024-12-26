@@ -91,69 +91,79 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
-            MoritaniButtons.press(event, game, discordGame);
-            StormButtons.press(event, game, discordGame);
-            ShipmentAndMovementButtons.press(event, game, discordGame);
-            BattleButtons.press(event, game, discordGame);
-            SpiceCollectionButtons.press(event, game, discordGame);
-            RevivalButtons.press(event, game, discordGame);
-            FactionButtons.press(event, game, discordGame);
-            FremenButtons.press(event, game, discordGame);
-            EmperorButtons.press(event, game, discordGame);
-            IxButtons.press(event, game, discordGame);
-            BTButtons.press(event, game, discordGame);
-            RicheseButtons.press(event, game, discordGame);
-            EcazButtons.press(event, game, discordGame);
-            BGButtons.press(event, game, discordGame);
-            ChoamButtons.press(event, game, discordGame);
-            BiddingButtons.press(event, game, discordGame);
-            switch (event.getComponentId()) {
-                case "graphic" -> {
-                    getButtonPresser(event, game).setGraphicDisplay(true);
-                    discordGame.queueMessage("Graphic mode active");
-                    discordGame.pushGame();
-                    ShowCommands.drawFactionInfo(discordGame, game, getButtonPresser(event, game).getName());
-                }
-                case "text" -> {
-                    getButtonPresser(event, game).setGraphicDisplay(false);
-                    discordGame.queueMessage("Text mode active");
-                    discordGame.pushGame();
-                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
-                }
-                case "charity-accept" -> {
-                    getButtonPresser(event, game).setDecliningCharity(false);
-                    discordGame.queueMessage("You will receive CHOAM charity if you have less than 2 " + Emojis.SPICE + ".");
-                    discordGame.pushGame();
-                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
-                }
-                case "charity-decline" -> {
-                    getButtonPresser(event, game).setDecliningCharity(true);
-                    discordGame.queueMessage("You will not receive CHOAM charity even if you have less than 2 " + Emojis.SPICE + ".");
-                    discordGame.pushGame();
-                    ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
-                }
-                case "extortion-pay" -> {
-                    MentatPause mentatPause = game.getMentatPause();
-                    if (mentatPause == null || mentatPause.isExtortionInactive())
-                        discordGame.queueMessage("Extortion has already been resolved. You were willing to pay.");
-                    else if (getButtonPresser(event, game).getSpice() >= 3) {
-                        game.getMentatPause().factionWouldPayExtortion(game, getButtonPresser(event, game));
-                        discordGame.queueMessage("You are willing to pay Extortion.");
+            if (event.getComponentId().startsWith("bg"))
+                BGButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("bt"))
+                BTButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("emperor"))
+                EmperorButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("ecaz"))
+                EcazButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("fremen"))
+                FremenButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("moritani"))
+                MoritaniButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("storm"))
+                StormButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("bidding"))
+                BiddingButtons.press(event, game, discordGame);
+            else {
+                ShipmentAndMovementButtons.press(event, game, discordGame);
+                BattleButtons.press(event, game, discordGame);
+                SpiceCollectionButtons.press(event, game, discordGame);
+                RevivalButtons.press(event, game, discordGame);
+                FactionButtons.press(event, game, discordGame);
+                IxButtons.press(event, game, discordGame);
+                RicheseButtons.press(event, game, discordGame);
+                ChoamButtons.press(event, game, discordGame);
+                switch (event.getComponentId()) {
+                    case "graphic" -> {
+                        getButtonPresser(event, game).setGraphicDisplay(true);
+                        discordGame.queueMessage("Graphic mode active");
                         discordGame.pushGame();
-                    } else {
-                        game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
-                        discordGame.queueMessage("You are willing to pay Extortion but do not have enough spice.");
-                        discordGame.pushGame();
+                        ShowCommands.drawFactionInfo(discordGame, game, getButtonPresser(event, game).getName());
                     }
-                }
-                case "extortion-dont-pay" -> {
-                    MentatPause mentatPause = game.getMentatPause();
-                    if (mentatPause == null || mentatPause.isExtortionInactive())
-                        discordGame.queueMessage("Extortion has already been resolved. You were not willing to pay.");
-                    else {
-                        game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
-                        discordGame.queueMessage("You will not pay Extortion.");
+                    case "text" -> {
+                        getButtonPresser(event, game).setGraphicDisplay(false);
+                        discordGame.queueMessage("Text mode active");
                         discordGame.pushGame();
+                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    }
+                    case "charity-accept" -> {
+                        getButtonPresser(event, game).setDecliningCharity(false);
+                        discordGame.queueMessage("You will receive CHOAM charity if you have less than 2 " + Emojis.SPICE + ".");
+                        discordGame.pushGame();
+                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    }
+                    case "charity-decline" -> {
+                        getButtonPresser(event, game).setDecliningCharity(true);
+                        discordGame.queueMessage("You will not receive CHOAM charity even if you have less than 2 " + Emojis.SPICE + ".");
+                        discordGame.pushGame();
+                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                    }
+                    case "extortion-pay" -> {
+                        MentatPause mentatPause = game.getMentatPause();
+                        if (mentatPause == null || mentatPause.isExtortionInactive())
+                            discordGame.queueMessage("Extortion has already been resolved. You were willing to pay.");
+                        else if (getButtonPresser(event, game).getSpice() >= 3) {
+                            game.getMentatPause().factionWouldPayExtortion(game, getButtonPresser(event, game));
+                            discordGame.queueMessage("You are willing to pay Extortion.");
+                            discordGame.pushGame();
+                        } else {
+                            game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
+                            discordGame.queueMessage("You are willing to pay Extortion but do not have enough spice.");
+                            discordGame.pushGame();
+                        }
+                    }
+                    case "extortion-dont-pay" -> {
+                        MentatPause mentatPause = game.getMentatPause();
+                        if (mentatPause == null || mentatPause.isExtortionInactive())
+                            discordGame.queueMessage("Extortion has already been resolved. You were not willing to pay.");
+                        else {
+                            game.getMentatPause().factionDeclinesExtortion(game, getButtonPresser(event, game));
+                            discordGame.queueMessage("You will not pay Extortion.");
+                            discordGame.pushGame();
+                        }
                     }
                 }
             }

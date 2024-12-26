@@ -16,11 +16,8 @@ import static controller.commands.BGCommands.flip;
 public class BGButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        if (event.getComponentId().startsWith("bg") && !(ButtonManager.getButtonPresser(event, game) instanceof BGFaction)) {
-            discordGame.queueMessageToEphemeral("You are not the " + Emojis.BG);
-            return;
-        }
-
+        // Buttons handled by this class must begin with "bg"
+        // And any button that begins with "bg" must be handled by this class
         if (event.getComponentId().startsWith("bg-advise-")) advise(discordGame, game, game.getTerritory(event.getComponentId().split("-")[2]), 1);
         else if (event.getComponentId().startsWith("bg-dont-advise-")) dontAdvise(event, discordGame);
         else if (event.getComponentId().startsWith("bg-flip-")) bgFlip(event, game, discordGame);
