@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
@@ -47,12 +48,16 @@ import java.util.zip.GZIPOutputStream;
 import static controller.commands.CommandOptions.*;
 
 public class ReportsCommands {
+    private static final OptionData optionalAllFactions = new OptionData(allFactions.getType(), allFactions.getName(), "Limit to games with this faction", false);
+
     public static List<CommandData> getCommands() {
+        if (optionalAllFactions.getChoices().isEmpty())
+            optionalAllFactions.addChoices(allFactions.getChoices());
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
-                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions),
+                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions, optionalAllFactions),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
                 new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
                 new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
@@ -291,23 +296,16 @@ public class ReportsCommands {
             }
         }
         response.append("\nMod: ").append(game.getMod());
-        if (showFactionsinGames) {
-            response.append("\nFactions: ");
-            for (Faction f: game.getFactions()) {
-                String factionEmojiName = f.getEmoji().substring(1, f.getEmoji().length() - 1);
-                RichCustomEmoji emoji = guild.getEmojis().stream().filter(e -> e.getName().equals(factionEmojiName)).findFirst().orElse(null);
-                if (emoji == null)
-                    response.append(f.getEmoji());
-                else
-                    response.append("<").append(f.getEmoji()).append(emoji.getId()).append(">");
-            }
-        }
+        if (showFactionsinGames)
+            response.append("\nFactions: ").append(String.join(", ", game.getFactions().stream().map(Faction::getName).toList()));
         return response.toString();
     }
 
     public static String activeGames(SlashCommandInteractionEvent event) {
         OptionMapping optionMapping = event.getOption(showFactions.getName());
         boolean showFactionsinGames = (optionMapping != null && optionMapping.getAsBoolean());
+        optionMapping = event.getOption(optionalAllFactions.getName());
+        String selectedFaction = (optionMapping == null) ? null : optionMapping.getAsString();
         StringBuilder response = new StringBuilder();
         List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         for (Category category : categories) {
@@ -315,8 +313,10 @@ public class ReportsCommands {
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
-                response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames));
-                response.append("\n\n");
+                if (selectedFaction == null || game.hasFaction(selectedFaction)) {
+                    response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames));
+                    response.append("\n\n");
+                }
             } catch (Exception e) {
                 // category is not a Dune game
             }
