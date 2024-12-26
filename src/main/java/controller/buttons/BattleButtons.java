@@ -248,7 +248,6 @@ public class BattleButtons implements Pressable {
         game.getBattles().getCurrentBattle().printBattleResolution(game, true, turn, wholeTerritoryName);
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
-        discordGame.queueMessage("Published to turn summary");
         discordGame.pushGame();
     }
 
