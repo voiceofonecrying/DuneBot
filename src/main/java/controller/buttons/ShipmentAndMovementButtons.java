@@ -1008,30 +1008,20 @@ public class ShipmentAndMovementButtons implements Pressable {
     public static void queueShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean fremenRide) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String buttonSuffix = fremenRide ? "-fremen-ride" : "";
-        List<Button> buttons = new LinkedList<>();
-        buttons.add(Button.primary("stronghold" + buttonSuffix, "Stronghold"));
-        buttons.add(Button.primary("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        buttons.add(Button.primary("rock" + buttonSuffix, "Rock Territories"));
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
         if (game.hasGameOption(GameOption.HOMEWORLDS) && !fremenRide)
-            buttons.add(Button.primary("homeworlds", "Homeworlds"));
+            choices.add(new DuneChoice("homeworlds", "Homeworlds"));
         boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap) buttons.add(Button.primary("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
-        buttons.add(Button.primary("other" + buttonSuffix, "Somewhere else"));
-        buttons.add(Button.danger("pass-shipment" + buttonSuffix, fremenRide ? "No ride" : "I don't want to ship."));
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, fremenRide ? "No ride" : "I don't want to ship."));
+        faction.getChat().reply(fremenRide ? "Where would you like to ride to?" : "Where would you like to ship to?", choices);
 
-        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
-                .setContent(fremenRide ? "Where would you like to ride to?" : "What part of Arrakis would you like to ship to?");
-        int i = 0;
-        while (i + 5 < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
-            i += 5;
-        }
-        if (i < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
-        }
-        discordGame.queueMessage(messageCreateBuilder);
-
-        List<DuneChoice> choices = new ArrayList<>();
+        choices = new ArrayList<>();
         if (faction instanceof GuildFaction && faction.getShipment().getCrossShipFrom().isEmpty()) {
             choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
             choices.add(new DuneChoice("guild-ship-to-reserves", "Ship to reserves"));
