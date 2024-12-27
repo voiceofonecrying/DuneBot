@@ -1027,7 +1027,7 @@ public class Game {
         }
     }
 
-    public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException {
+    public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException, IOException {
         if (spiceBlowAndNexus != null)
             throw new InvalidGameStateException("Spice Blow and Nexus Phase is already in progress.");
         spiceBlowAndNexus = new SpiceBlowAndNexus(this);
@@ -1043,7 +1043,7 @@ public class Game {
      *
      * @return true if the Spice Blow and NexusPhase has ended
      */
-    public boolean spiceBlowPhaseNextStep() throws InvalidGameStateException {
+    public boolean spiceBlowPhaseNextStep() throws InvalidGameStateException, IOException {
         if (spiceBlowAndNexus == null)
             throw new InvalidGameStateException("Spice Blow and Nexus Phase has not started.");
         int wormsToPlace = 0;

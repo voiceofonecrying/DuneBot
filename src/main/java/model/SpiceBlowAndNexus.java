@@ -6,7 +6,9 @@ import model.factions.Faction;
 import model.factions.FremenFaction;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SpiceBlowAndNexus {
@@ -16,14 +18,12 @@ public class SpiceBlowAndNexus {
     private boolean thumperResolved = true;
     private boolean thumperWasPlayed;
 
-    SpiceBlowAndNexus(Game game) {
-        game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
+    SpiceBlowAndNexus(Game game) throws IOException {
         checkOnThumper(game, "A");
         nextStep(game);
     }
 
-    public boolean nextStep(Game game) {
+    public boolean nextStep(Game game) throws IOException {
         FremenFaction fremen = null;
         fremenRidesComplete = true;
         if (game.hasFaction("Fremen")) {
@@ -34,6 +34,10 @@ public class SpiceBlowAndNexus {
             }
         }
         if (numDecksDrawn == 0 && thumperResolved) {
+            Collections.shuffle(game.getQuotes().get(2));
+            game.getTurnSummary().publish(game.getQuotes().get(2).removeFirst());
+            game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
+            game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
             Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A", thumperWasPlayed);
             thumperWasPlayed = false;
             numDecksDrawn++;
