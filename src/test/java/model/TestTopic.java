@@ -37,4 +37,14 @@ public class TestTopic implements DuneTopic {
         messages.add(message);
         choices.add(messageChoices);
     }
+
+    @Override
+    public void reply(String message) {
+        publish(message);
+    }
+
+    @Override
+    public void reply(String message, List<DuneChoice> messageChoices) {
+        publish(message, messageChoices);
+    }
 }

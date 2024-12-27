@@ -1965,21 +1965,14 @@ public class Battle {
         if (defenderBattlePlan.isCanCallTraitor() || defenderBattlePlan.isHarkCanCallTraitor())
             openIssues.add("Defender Traitor Call");
 
-        if (openIssues.isEmpty())
-            game.getModInfo().publish("The battle can be resolved.");
-        else if (overrideDecisions)
-            game.getModInfo().publish("The battle can be resolved with your override.");
-        else
-            game.getModInfo().publish("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
-
         if (openIssues.isEmpty() || overrideDecisions) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
-            resolveString += "\nThe bot can resolve all aspects of this battle.";
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("battle-resolve-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
             choices.add(new DuneChoice("secondary", "battle-dont-resolve", "No"));
-            game.getModInfo().publish(resolveString, choices);
-        }
+            game.getModInfo().reply(resolveString, choices);
+        } else
+            game.getModInfo().reply("The following must be decided before the battle can be resolved:\n  " + String.join(", ", openIssues));
     }
 
     public boolean isDiplomatMustBeResolved() {

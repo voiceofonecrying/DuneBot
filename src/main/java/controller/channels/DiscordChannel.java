@@ -5,6 +5,7 @@ import model.DuneChoice;
 import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -32,6 +33,26 @@ public class DiscordChannel implements DuneTopic {
 
     @Override
     public void publish(String message, List<DuneChoice> choices) {
+        queueMessage(message, convertChoicesToButtons(choices));
+    }
+
+    @Override
+    public void reply(String message) {
+        if (discordGame.getEvent().getChannel() == messageChannel && discordGame.getEvent() instanceof ButtonInteractionEvent)
+            queueReplyMessage(message);
+        else
+            publish(message);
+    }
+
+    @Override
+    public void reply(String message, List<DuneChoice> choices) {
+        if (discordGame.getEvent().getChannel() == messageChannel && discordGame.getEvent() instanceof ButtonInteractionEvent)
+            queueReplyMessage(message, convertChoicesToButtons(choices));
+        else
+            publish(message, choices);
+    }
+
+    private List<Button> convertChoicesToButtons(List<DuneChoice> choices) {
         List<Button> buttons = new ArrayList<>();
         for (DuneChoice choice : choices) {
             Button button;
@@ -55,7 +76,7 @@ public class DiscordChannel implements DuneTopic {
             }
             buttons.add(button);
         }
-        queueMessage(message, buttons);
+        return buttons;
     }
 
     public void queueMessage(String message) {
@@ -63,16 +84,7 @@ public class DiscordChannel implements DuneTopic {
     }
 
     public void queueMessage(String message, List<Button> buttons) {
-        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
-                .addContent(message);
-        int i = 0;
-        while (i + 5 < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
-            i += 5;
-        }
-        if (i < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
-        }
+        MessageCreateBuilder messageCreateBuilder = arrangeButtons(message, buttons);
         discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
     }
 
@@ -88,6 +100,25 @@ public class DiscordChannel implements DuneTopic {
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                 .addFiles(fileUpload);
         discordGame.queueMessage(messageChannel.sendMessage(messageCreateBuilder.build()));
+    }
 
+    public void queueReplyMessage(String message) {
+        discordGame.queueMessage(message);
+    }
+
+    public void queueReplyMessage(String message, List<Button> buttons) {
+        discordGame.queueMessage(arrangeButtons(message, buttons));
+    }
+
+    private MessageCreateBuilder arrangeButtons(String message, List<Button> buttons) {
+        MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder().addContent(message);
+        int i = 0;
+        while (i + 5 < buttons.size()) {
+            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
+            i += 5;
+        }
+        if (i < buttons.size())
+            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
+        return messageCreateBuilder;
     }
 }
