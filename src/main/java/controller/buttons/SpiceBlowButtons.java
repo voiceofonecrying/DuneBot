@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import controller.DiscordGame;
+import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -16,7 +17,7 @@ public class SpiceBlowButtons implements Pressable {
         if (event.getComponentId().startsWith("spiceblow-thumper-")) thumper(event, discordGame, game);
     }
 
-    private static void thumper(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void thumper(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueDeleteMessage();
         String playIt = event.getComponentId().split("-")[2];
@@ -34,6 +35,6 @@ public class SpiceBlowButtons implements Pressable {
             game.getSpiceBlowAndNexus().resolveThumper(false);
             discordGame.queueMessage("You will not play Thumper");
         }
-        discordGame.pushGame();
+        RunCommands.advance(discordGame, game);
     }
 }
