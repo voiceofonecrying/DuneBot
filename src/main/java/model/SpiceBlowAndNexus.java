@@ -97,9 +97,19 @@ public class SpiceBlowAndNexus {
         return !thumperResolved;
     }
 
-    public void resolveThumper(boolean thumperWasPlayed) {
-        this.thumperWasPlayed = thumperWasPlayed;
-        this.thumperResolved = true;
+    public void playThumper(Game game, Faction faction, String deck) {
+        thumperWasPlayed = true;
+        thumperResolved = true;
+        faction.discard("Thumper", "to summon Shai-Hulud");
+        String territoryName = game.getSpiceDiscardA().getLast().name();
+        if (deck.equals("B"))
+            territoryName = game.getSpiceDiscardB().getLast().name();
+        game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
+    }
+
+    public void declineThumper() {
+        thumperWasPlayed = false;
+        thumperResolved = true;
     }
 
     public boolean isPhaseComplete() {

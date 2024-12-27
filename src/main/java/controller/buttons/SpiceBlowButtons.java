@@ -14,26 +14,23 @@ public class SpiceBlowButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         // Buttons handled by this class must begin with "spiceblow"
         // And any button that begins with "spiceblow" must be handled by this class
-        if (event.getComponentId().startsWith("spiceblow-thumper-")) thumper(event, discordGame, game);
+        if (event.getComponentId().startsWith("spiceblow-thumper-yes-")) playThumper(event, discordGame, game);
+        else if (event.getComponentId().equals("spiceblow-thumper-no")) declineThumper(discordGame, game);
     }
 
-    private static void thumper(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    private static void playThumper(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         discordGame.queueDeleteMessage();
-        String playIt = event.getComponentId().split("-")[2];
-        if (playIt.equals("yes")) {
-            game.getSpiceBlowAndNexus().resolveThumper(true);
-            String deck = event.getComponentId().split("-")[3];
-            discordGame.queueMessage("You will play Thumper.");
-            faction.discard("Thumper", "to summon Shai-Hulud");
-            String territoryName = game.getSpiceDiscardA().getLast().name();
-            if (deck.equals("B"))
-                territoryName = game.getSpiceDiscardB().getLast().name();
-            game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
-        } else {
-            game.getSpiceBlowAndNexus().resolveThumper(false);
-            discordGame.queueMessage("You will not play Thumper");
-        }
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String deck = event.getComponentId().split("-")[3];
+        game.getSpiceBlowAndNexus().playThumper(game, faction, deck);
+        discordGame.queueMessage("You will play Thumper.");
+        RunCommands.advance(discordGame, game);
+    }
+
+    private static void declineThumper(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        discordGame.queueDeleteMessage();
+        game.getSpiceBlowAndNexus().declineThumper();
+        discordGame.queueMessage("You will not play Thumper.");
         RunCommands.advance(discordGame, game);
     }
 }

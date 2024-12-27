@@ -49,14 +49,14 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         @Test
         void testFremenPlaysThumperAndSpiceBlowCanBeDrawn() {
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
-            spiceBlowAndNexus.resolveThumper(true);
+            spiceBlowAndNexus.playThumper(game, fremen, "A");
             assertDoesNotThrow(() -> spiceBlowAndNexus.nextStep(game));
             assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
         }
 
         @Test
         void testNexusIsAnnounced() {
-            spiceBlowAndNexus.resolveThumper(true);
+            spiceBlowAndNexus.playThumper(game, fremen, "A");
             spiceBlowAndNexus.nextStep(game);
             assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
         }
@@ -64,7 +64,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         @Test
         void testFremenDeclinesThumperOnDeckA() {
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
-            spiceBlowAndNexus.resolveThumper(false);
+            spiceBlowAndNexus.declineThumper();
             spiceBlowAndNexus.nextStep(game);
             assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
             spiceBlowAndNexus.nextStep(game);
@@ -75,7 +75,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         void testFremenDeclinesThumperOnDeckAThumperAllowedOnDeckB() {
             game.addGameOption(GameOption.THUMPER_ON_DECK_B);
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
-            spiceBlowAndNexus.resolveThumper(false);
+            spiceBlowAndNexus.declineThumper();
             spiceBlowAndNexus.nextStep(game);
             assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
             fremenChat.clear();
