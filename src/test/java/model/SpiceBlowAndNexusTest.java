@@ -100,12 +100,12 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 
         @Test
         void testPhaseIsAnnounced() {
-            assertEquals("**Turn 0 Spice Blow Phase**", turnSummary.getMessages().getFirst());
+            assertEquals("**Turn 0 Spice Blow Phase**", turnSummary.getMessages().get(1));
         }
 
         @Test
         void testDeckAIsDrawnAutomatically() {
-            assertTrue(turnSummary.getMessages().get(1).startsWith("**Spice Deck A**"));
+            assertTrue(turnSummary.getMessages().get(2).startsWith("**Spice Deck A**"));
         }
 
         @Test
@@ -137,8 +137,8 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 
         @Test
         void testShaiHuludDoesNotGiveFremenButtonsYet() {
-            assertTrue(turnSummary.getMessages().get(1).contains(Emojis.WORM + " Shai-Hulud has been spotted in Funeral Plain!\n"));
-            assertTrue(turnSummary.getMessages().get(1).contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
+            assertTrue(turnSummary.getMessages().get(2).contains(Emojis.WORM + " Shai-Hulud has been spotted in Funeral Plain!\n"));
+            assertTrue(turnSummary.getMessages().get(2).contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
             assertTrue(fremenChat.getMessages().isEmpty());
             assertTrue(fremenChat.getChoices().isEmpty());
         }
@@ -148,7 +148,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
-            assertTrue(turnSummary.getMessages().get(2).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
+            assertTrue(turnSummary.getMessages().get(3).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
             assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
             assertEquals(5, fremenChat.getChoices().getFirst().size());
         }
