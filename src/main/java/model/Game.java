@@ -706,6 +706,16 @@ public class Game {
         return null;
     }
 
+    public Faction getFactionWithThumper() {
+        for (Faction faction : getFactions()) {
+            try {
+                faction.getTreacheryCard("Thumper");
+                return faction;
+            } catch (IllegalArgumentException ignored) {}
+        }
+        return null;
+    }
+
     public void destroyShieldWall() throws InvalidGameStateException {
         Faction factionWithAtomics = factions.stream().filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
         if (factionWithAtomics == null)
@@ -1049,6 +1059,8 @@ public class Game {
             throw new InvalidGameStateException("Fremen must decide whether to ride the worm before the game can advance.");
         if (spiceBlowAndNexus.isHarvesterActive())
             throw new InvalidGameStateException(getFactionWithHarvester().getName() + " must decide if they will play Harvester before the game can advance.");
+        if (spiceBlowAndNexus.isThumperActive())
+            throw new InvalidGameStateException(getFactionWithThumper().getName() + " must decide if they will play Thumper before the game can advance.");
 
         if (spiceBlowAndNexus.nextStep(this))
             spiceBlowAndNexus = null;
@@ -1056,6 +1068,10 @@ public class Game {
     }
 
     public Pair<SpiceCard, Integer> drawSpiceBlow(String spiceBlowDeckName) {
+        return drawSpiceBlow(spiceBlowDeckName, false);
+    }
+
+    public Pair<SpiceCard, Integer> drawSpiceBlow(String spiceBlowDeckName, boolean afterThumper) {
         LinkedList<SpiceCard> discard = spiceBlowDeckName.equalsIgnoreCase("A") ?
                 spiceDiscardA : spiceDiscardB;
         SpiceCard lastCard = null;
@@ -1070,7 +1086,7 @@ public class Game {
         message.append("**Spice Deck ").append(spiceBlowDeckName).append("**\n");
 
         boolean shaiHuludSpotted = false;
-        boolean nexus = false;
+        boolean nexus = afterThumper;
         boolean greatMaker = false;
         int spiceMultiplier = 1;
 

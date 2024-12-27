@@ -21,6 +21,45 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#thumper")
+    class Thumper {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.setTurn(2);
+            fremen.addTreacheryCard(new TreacheryCard("Thumper"));
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
+            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            spiceBlowAndNexus = game.startSpiceBlowPhase();
+        }
+
+        @Test
+        void testSpiceCardNotDrawn() {
+            assertEquals("Funeral Plain", game.getSpiceDiscardA().getLast().name());
+        }
+
+        @Test
+        void testFremenAskedAboutThumper() {
+            assertEquals("Would you like to play Thumper in Funeral Plain? fr", fremenChat.getMessages().getFirst());
+            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+        }
+
+        @Test
+        void testFremenPlaysThumperAndSpiceBlowCanBeDrawn() {
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.resolveThumper(true);
+            assertDoesNotThrow(() -> spiceBlowAndNexus.nextStep(game));
+            assertEquals("Sihaya Ridge", game.getSpiceDiscardA().getLast().name());
+        }
+
+        @Test
+        void testNexusIsAnnounced() {
+            spiceBlowAndNexus.resolveThumper(true);
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#noWorms")
     class NoWorms {
         @BeforeEach

@@ -105,6 +105,8 @@ public class ButtonManager extends ListenerAdapter {
                 MoritaniButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("storm"))
                 StormButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("spiceblow"))
+                SpiceBlowButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("bidding"))
                 BiddingButtons.press(event, game, discordGame);
             else {

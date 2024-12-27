@@ -9,17 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpiceBlowAndNexus {
-    private boolean bothDecksDrawn;
+    private int numDecksDrawn;
     private boolean fremenRidesComplete = true;
     private boolean harvesterResolved = true;
+    private boolean thumperResolved = true;
+    private boolean thumperWasPlayed;
 
     SpiceBlowAndNexus(Game game) {
         game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
-        Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A");
-        checkOnHarvester(game, spiceBlow);
-        if (game.hasFaction("Fremen"))
-            fremenRidesComplete = !((FremenFaction) game.getFaction("Fremen")).hasRidesRemaining();
+        checkOnThumper(game);
+        nextStep(game);
     }
 
     public boolean nextStep(Game game) {
@@ -32,13 +32,19 @@ public class SpiceBlowAndNexus {
                 fremen.presentNextWormRideChoices();
             }
         }
-        if (!bothDecksDrawn && fremenRidesComplete && harvesterResolved) {
-            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B");
+        if (numDecksDrawn == 0 && thumperResolved) {
+            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A", thumperWasPlayed);
+            thumperWasPlayed = false;
+            numDecksDrawn++;
             checkOnHarvester(game, spiceBlow);
-            bothDecksDrawn = true;
+            fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+        } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
+            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B");
+            numDecksDrawn++;
+            checkOnHarvester(game, spiceBlow);
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
         }
-        return bothDecksDrawn && fremenRidesComplete && harvesterResolved;
+        return isPhaseComplete();
     }
 
     public void checkOnHarvester(Game game, Pair<SpiceCard, Integer> spiceBlow) {
@@ -65,7 +71,31 @@ public class SpiceBlowAndNexus {
         this.harvesterResolved = true;
     }
 
+    public void checkOnThumper(Game game) {
+        if (game.getTurn() >= 2) {
+            for (Faction faction : game.getFactions()) {
+                if (faction.hasTreacheryCard("Thumper")) {
+                    thumperResolved = false;
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + "A", "Yes"));
+                    choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
+                    String territoryName = game.getSpiceDiscardA().getLast().name();
+                    faction.getChat().publish("Would you like to play Thumper in " + territoryName + "? " + faction.getPlayer(), choices);
+                }
+            }
+        }
+    }
+
+    public boolean isThumperActive() {
+        return !thumperResolved;
+    }
+
+    public void resolveThumper(boolean thumperWasPlayed) {
+        this.thumperWasPlayed = thumperWasPlayed;
+        this.thumperResolved = true;
+    }
+
     public boolean isPhaseComplete() {
-        return bothDecksDrawn && fremenRidesComplete && harvesterResolved;
+        return numDecksDrawn == 2 && fremenRidesComplete && harvesterResolved;
     }
 }
