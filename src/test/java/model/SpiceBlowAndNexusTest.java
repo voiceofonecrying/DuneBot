@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +29,9 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             game.setTurn(2);
             fremen.addTreacheryCard(new TreacheryCard("Thumper"));
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
             game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDiscardB().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
             spiceBlowAndNexus = game.startSpiceBlowPhase();
         }
 
@@ -48,7 +51,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
             spiceBlowAndNexus.resolveThumper(true);
             assertDoesNotThrow(() -> spiceBlowAndNexus.nextStep(game));
-            assertEquals("Sihaya Ridge", game.getSpiceDiscardA().getLast().name());
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
         }
 
         @Test
@@ -56,6 +59,30 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             spiceBlowAndNexus.resolveThumper(true);
             spiceBlowAndNexus.nextStep(game);
             assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
+        }
+
+        @Test
+        void testFremenDeclinesThumperOnDeckA() {
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.resolveThumper(false);
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Sihaya Ridge", game.getSpiceDiscardB().getLast().name());
+        }
+
+        @Test
+        void testFremenDeclinesThumperOnDeckAThumperAllowedOnDeckB() {
+            game.addGameOption(GameOption.THUMPER_ON_DECK_B);
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.resolveThumper(false);
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            fremenChat.clear();
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Would you like to play Thumper in The Great Flat? fr", fremenChat.getMessages().getFirst());
+            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+            assertEquals("The Great Flat", game.getSpiceDiscardB().getLast().name());
         }
     }
 

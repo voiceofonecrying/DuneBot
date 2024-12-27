@@ -26,7 +26,10 @@ public class SpiceBlowButtons implements Pressable {
             discordGame.queueMessage("You will play Thumper.");
             faction.discard("Thumper");
             game.getTurnSummary().publish(faction.getEmoji() + " plays Thumper to summon Shai-Hulud!");
-            game.getTurnSummary().publish(game.getTerritory(game.getSpiceDiscardA().getLast().name()).shaiHuludAppears(game, "Shai-Hulud", true));
+            String territoryName = game.getSpiceDiscardA().getLast().name();
+            if (deck.equals("B"))
+                territoryName = game.getSpiceDiscardB().getLast().name();
+            game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
         } else {
             game.getSpiceBlowAndNexus().resolveThumper(false);
             discordGame.queueMessage("You will not play Thumper");

@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import model.factions.Faction;
 import model.factions.FremenFaction;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
@@ -18,7 +19,7 @@ public class SpiceBlowAndNexus {
     SpiceBlowAndNexus(Game game) {
         game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
-        checkOnThumper(game);
+        checkOnThumper(game, "A");
         nextStep(game);
     }
 
@@ -39,10 +40,14 @@ public class SpiceBlowAndNexus {
             checkOnHarvester(game, spiceBlow);
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
         } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
-            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B");
-            numDecksDrawn++;
-            checkOnHarvester(game, spiceBlow);
-            fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+            if (game.hasGameOption(GameOption.THUMPER_ON_DECK_B))
+                checkOnThumper(game, "B");
+            if (thumperResolved) {
+                Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B", thumperWasPlayed);
+                numDecksDrawn++;
+                checkOnHarvester(game, spiceBlow);
+                fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+            }
         }
         return isPhaseComplete();
     }
@@ -71,15 +76,17 @@ public class SpiceBlowAndNexus {
         this.harvesterResolved = true;
     }
 
-    public void checkOnThumper(Game game) {
+    public void checkOnThumper(Game game, String deck) {
         if (game.getTurn() >= 2) {
             for (Faction faction : game.getFactions()) {
                 if (faction.hasTreacheryCard("Thumper")) {
                     thumperResolved = false;
                     List<DuneChoice> choices = new ArrayList<>();
-                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + "A", "Yes"));
+                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + deck, "Yes"));
                     choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
                     String territoryName = game.getSpiceDiscardA().getLast().name();
+                    if (deck.equals("B"))
+                        territoryName = game.getSpiceDiscardB().getLast().name();
                     faction.getChat().publish("Would you like to play Thumper in " + territoryName + "? " + faction.getPlayer(), choices);
                 }
             }
