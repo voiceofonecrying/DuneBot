@@ -1,28 +1,29 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import model.factions.Faction;
 import model.factions.FremenFaction;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SpiceBlowAndNexus {
-    private boolean bothDecksDrawn;
+    private int numDecksDrawn;
     private boolean fremenRidesComplete = true;
     private boolean harvesterResolved = true;
+    private boolean thumperResolved = true;
+    private boolean thumperWasPlayed;
 
-    SpiceBlowAndNexus(Game game) {
-        game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
-        game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
-        Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A");
-        checkOnHarvester(game, spiceBlow);
-        if (game.hasFaction("Fremen"))
-            fremenRidesComplete = !((FremenFaction) game.getFaction("Fremen")).hasRidesRemaining();
+    SpiceBlowAndNexus(Game game) throws IOException {
+        checkOnThumper(game, "A");
+        nextStep(game);
     }
 
-    public boolean nextStep(Game game) {
+    public boolean nextStep(Game game) throws IOException {
         FremenFaction fremen = null;
         fremenRidesComplete = true;
         if (game.hasFaction("Fremen")) {
@@ -32,13 +33,27 @@ public class SpiceBlowAndNexus {
                 fremen.presentNextWormRideChoices();
             }
         }
-        if (!bothDecksDrawn && fremenRidesComplete && harvesterResolved) {
-            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B");
+        if (numDecksDrawn == 0 && thumperResolved) {
+            Collections.shuffle(game.getQuotes().get(2));
+            game.getTurnSummary().publish(game.getQuotes().get(2).removeFirst());
+            game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
+            game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
+            Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A", thumperWasPlayed);
+            thumperWasPlayed = false;
+            numDecksDrawn++;
             checkOnHarvester(game, spiceBlow);
-            bothDecksDrawn = true;
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+        } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
+            if (game.hasGameOption(GameOption.THUMPER_ON_DECK_B))
+                checkOnThumper(game, "B");
+            if (thumperResolved) {
+                Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B", thumperWasPlayed);
+                numDecksDrawn++;
+                checkOnHarvester(game, spiceBlow);
+                fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+            }
         }
-        return bothDecksDrawn && fremenRidesComplete && harvesterResolved;
+        return isPhaseComplete();
     }
 
     public void checkOnHarvester(Game game, Pair<SpiceCard, Integer> spiceBlow) {
@@ -65,7 +80,43 @@ public class SpiceBlowAndNexus {
         this.harvesterResolved = true;
     }
 
+    public void checkOnThumper(Game game, String deck) {
+        if (game.getTurn() >= 2) {
+            for (Faction faction : game.getFactions()) {
+                if (faction.hasTreacheryCard("Thumper")) {
+                    thumperResolved = false;
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + deck, "Yes"));
+                    choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
+                    String territoryName = game.getSpiceDiscardA().getLast().name();
+                    if (deck.equals("B"))
+                        territoryName = game.getSpiceDiscardB().getLast().name();
+                    faction.getChat().publish("Would you like to play Thumper in " + territoryName + "? " + faction.getPlayer(), choices);
+                }
+            }
+        }
+    }
+
+    public boolean isThumperActive() {
+        return !thumperResolved;
+    }
+
+    public void playThumper(Game game, Faction faction, String deck) {
+        thumperWasPlayed = true;
+        thumperResolved = true;
+        faction.discard("Thumper", "to summon Shai-Hulud");
+        String territoryName = game.getSpiceDiscardA().getLast().name();
+        if (deck.equals("B"))
+            territoryName = game.getSpiceDiscardB().getLast().name();
+        game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
+    }
+
+    public void declineThumper() {
+        thumperWasPlayed = false;
+        thumperResolved = true;
+    }
+
     public boolean isPhaseComplete() {
-        return bothDecksDrawn && fremenRidesComplete && harvesterResolved;
+        return numDecksDrawn == 2 && fremenRidesComplete && harvesterResolved;
     }
 }

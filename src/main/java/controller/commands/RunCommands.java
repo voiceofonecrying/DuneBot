@@ -166,6 +166,7 @@ public class RunCommands {
 
     private static void sendQuote(DiscordGame discordGame, Game game, int phase) throws IOException, ChannelNotFoundException {
         if (game.getSubPhase() != 1) return;
+        if (game.getPhase() == 2) return; // SpiceBlowAndNexus will send its own quote
         if (game.getQuotes().get(phase).isEmpty()) return;
         Collections.shuffle(game.getQuotes().get(phase));
         discordGame.getTurnSummary().queueMessage(game.getQuotes().get(phase).removeFirst());

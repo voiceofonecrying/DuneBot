@@ -20,4 +20,5 @@ public enum GameOption {
     TREACHERY_CARD_COUNT_PUBLIC,
     SPICE_PUBLIC,
     IX_ONLY_1_CARD_PER_FACTION,
+    THUMPER_ON_DECK_B,
 }

@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,10 +22,75 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#thumper")
+    class Thumper {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException, IOException {
+            game.setTurn(2);
+            fremen.addTreacheryCard(new TreacheryCard("Thumper"));
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
+            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDiscardB().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
+            spiceBlowAndNexus = game.startSpiceBlowPhase();
+        }
+
+        @Test
+        void testSpiceCardNotDrawn() {
+            assertEquals("Funeral Plain", game.getSpiceDiscardA().getLast().name());
+        }
+
+        @Test
+        void testFremenAskedAboutThumper() {
+            assertEquals("Would you like to play Thumper in Funeral Plain? fr", fremenChat.getMessages().getFirst());
+            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+        }
+
+        @Test
+        void testFremenPlaysThumperAndSpiceBlowCanBeDrawn() {
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.playThumper(game, fremen, "A");
+            assertDoesNotThrow(() -> spiceBlowAndNexus.nextStep(game));
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+        }
+
+        @Test
+        void testNexusIsAnnounced() throws IOException {
+            spiceBlowAndNexus.playThumper(game, fremen, "A");
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
+        }
+
+        @Test
+        void testFremenDeclinesThumperOnDeckA() throws IOException {
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.declineThumper();
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Sihaya Ridge", game.getSpiceDiscardB().getLast().name());
+        }
+
+        @Test
+        void testFremenDeclinesThumperOnDeckAThumperAllowedOnDeckB() throws IOException {
+            game.addGameOption(GameOption.THUMPER_ON_DECK_B);
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.declineThumper();
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            fremenChat.clear();
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Would you like to play Thumper in The Great Flat? fr", fremenChat.getMessages().getFirst());
+            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+            assertEquals("The Great Flat", game.getSpiceDiscardB().getLast().name());
+        }
+    }
+
+    @Nested
     @DisplayName("#noWorms")
     class NoWorms {
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() throws InvalidGameStateException, IOException {
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
             assertNotEquals("Shai-Hulud", game.getSpiceDeck().getFirst().name());
@@ -34,16 +100,16 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 
         @Test
         void testPhaseIsAnnounced() {
-            assertEquals("**Turn 0 Spice Blow Phase**", turnSummary.getMessages().getFirst());
+            assertEquals("**Turn 0 Spice Blow Phase**", turnSummary.getMessages().get(1));
         }
 
         @Test
         void testDeckAIsDrawnAutomatically() {
-            assertTrue(turnSummary.getMessages().get(1).startsWith("**Spice Deck A**"));
+            assertTrue(turnSummary.getMessages().get(2).startsWith("**Spice Deck A**"));
         }
 
         @Test
-        void testNextStepDrawsSpiceBlowB() {
+        void testNextStepDrawsSpiceBlowB() throws IOException {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             assertTrue(spiceBlowAndNexus.nextStep(game));
@@ -55,7 +121,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     @DisplayName("#shaiHuludOnDeckA")
     class ShaiHuludOnDeckA {
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() throws InvalidGameStateException, IOException {
             game.setTurn(2);
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
@@ -71,24 +137,24 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 
         @Test
         void testShaiHuludDoesNotGiveFremenButtonsYet() {
-            assertTrue(turnSummary.getMessages().get(1).contains(Emojis.WORM + " Shai-Hulud has been spotted in Funeral Plain!\n"));
-            assertTrue(turnSummary.getMessages().get(1).contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
+            assertTrue(turnSummary.getMessages().get(2).contains(Emojis.WORM + " Shai-Hulud has been spotted in Funeral Plain!\n"));
+            assertTrue(turnSummary.getMessages().get(2).contains("After the Nexus, 5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud!"));
             assertTrue(fremenChat.getMessages().isEmpty());
             assertTrue(fremenChat.getChoices().isEmpty());
         }
 
         @Test
-        void testNextStepGivesFremenButtons() {
+        void testNextStepGivesFremenButtons() throws IOException {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
-            assertTrue(turnSummary.getMessages().get(2).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
+            assertTrue(turnSummary.getMessages().get(3).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
             assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
             assertEquals(5, fremenChat.getChoices().getFirst().size());
         }
 
         @Test
-        void testSecondNextStepDrawsToDeckBAndEndsPhase() {
+        void testSecondNextStepDrawsToDeckBAndEndsPhase() throws IOException {
             spiceBlowAndNexus.nextStep(game);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(turnSummary.getMessages().getLast().contains(Emojis.SPICE + " has been spotted in Sihaya Ridge!"));
@@ -100,7 +166,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     @DisplayName("#twoShaiHuludOnDeckB")
     class TwoShaiHuludOnDeckB {
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() throws InvalidGameStateException, IOException {
             game.setTurn(2);
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
@@ -127,7 +193,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testSecondNextStepGivesFremenButtons() {
+        void testSecondNextStepGivesFremenButtons() throws IOException {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
@@ -145,7 +211,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testFremenPlacesSecondShaiHuludInFuneralPlainAndThirdNextStepGetsNewRideButtons() {
+        void testFremenPlacesSecondShaiHuludInFuneralPlainAndThirdNextStepGetsNewRideButtons() throws IOException {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false);
@@ -156,7 +222,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testFourthNextStepEndsPhase() {
+        void testFourthNextStepEndsPhase() throws IOException {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
@@ -171,7 +237,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     @DisplayName("#harvester")
     class Harvester {
         @BeforeEach
-        void setUp() throws InvalidGameStateException {
+        void setUp() throws InvalidGameStateException, IOException {
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
             assertNotEquals("Shai-Hulud", game.getSpiceDeck().getFirst().name());
@@ -186,7 +252,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testSecondBlowDoesNotEndPhase() {
+        void testSecondBlowDoesNotEndPhase() throws IOException {
             spiceBlowAndNexus.resolveHarvester();
             assertFalse(spiceBlowAndNexus.nextStep(game));
             spiceBlowAndNexus.resolveHarvester();
