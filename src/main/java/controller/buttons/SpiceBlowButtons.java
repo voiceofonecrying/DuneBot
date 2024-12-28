@@ -16,6 +16,8 @@ public class SpiceBlowButtons implements Pressable {
         // And any button that begins with "spiceblow" must be handled by this class
         if (event.getComponentId().equals("spiceblow-thumper-yes")) playThumper(event, discordGame, game);
         else if (event.getComponentId().equals("spiceblow-thumper-no")) declineThumper(event, discordGame, game);
+        else if (event.getComponentId().startsWith("spiceblow-harvester-yes")) playHarvester(event, game, discordGame);
+        else if (event.getComponentId().equals("spiceblow-harvester-no")) declineHarvester(event, game, discordGame);
     }
 
     private static void playThumper(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
@@ -30,5 +32,20 @@ public class SpiceBlowButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getSpiceBlowAndNexus().declineThumper(game, faction);
         RunCommands.advance(discordGame, game);
+    }
+
+    private static void playHarvester(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        discordGame.queueDeleteMessage();
+        int spiceMultiplier = Integer.parseInt(event.getComponentId().split("-")[3]);
+        game.getSpiceBlowAndNexus().playHarvester(game, faction, spiceMultiplier);
+        discordGame.pushGame();
+    }
+
+    private static void declineHarvester(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getSpiceBlowAndNexus().declineHarvester(faction);
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
     }
 }

@@ -255,9 +255,9 @@ public class SpiceBlowAndNexusTest extends DuneTest {
 
         @Test
         void testSecondBlowDoesNotEndPhase() throws IOException {
-            spiceBlowAndNexus.resolveHarvester();
+            spiceBlowAndNexus.declineHarvester(fremen);
             assertFalse(spiceBlowAndNexus.nextStep(game));
-            spiceBlowAndNexus.resolveHarvester();
+            spiceBlowAndNexus.declineHarvester(fremen);
             assertTrue(spiceBlowAndNexus.nextStep(game));
         }
     }
