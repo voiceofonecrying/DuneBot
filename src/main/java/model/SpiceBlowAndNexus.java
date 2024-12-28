@@ -65,8 +65,8 @@ public class SpiceBlowAndNexus {
             if (faction.hasTreacheryCard("Harvester")) {
                 harvesterResolved = false;
                 List<DuneChoice> choices = new ArrayList<>();
-                choices.add(new DuneChoice("play-harvester-yes-" + spiceCard.spice() + "-" + spiceMultiplier + "-" + spiceCard.name(), "Yes"));
-                choices.add(new DuneChoice("secondary", "play-harvester-no", "No"));
+                choices.add(new DuneChoice("spiceblow-harvester-yes-" + spiceMultiplier, "Yes"));
+                choices.add(new DuneChoice("secondary", "spiceblow-harvester-no", "No"));
                 faction.getChat().publish("Would you like to play Harvester to double the " + Emojis.SPICE + " Blow? " + faction.getPlayer(), choices);
             }
         }
@@ -76,8 +76,22 @@ public class SpiceBlowAndNexus {
         return !harvesterResolved;
     }
 
-    public void resolveHarvester() {
+    public void playHarvester(Game game, Faction faction, int spiceMultiplier) {
         this.harvesterResolved = true;
+        String territoryName = game.getSpiceDiscardA().getLast().name();
+        int spice = game.getSpiceDiscardA().getLast().spice();
+        if (numDecksDrawn == 2) {
+            territoryName = game.getSpiceDiscardB().getLast().name();
+            spice = game.getSpiceDiscardB().getLast().spice();
+        }
+        faction.discard("Harvester", "in " + territoryName + " to double the " + Emojis.SPICE + " Blow");
+        game.getTerritories().get(territoryName).addSpice(game, spice * spiceMultiplier);
+        faction.getChat().publish("You will play Harvester in " + territoryName);
+    }
+
+    public void declineHarvester(Faction faction) {
+        this.harvesterResolved = true;
+        faction.getChat().publish("You will not play Harvester");
     }
 
     public void checkOnThumper(Game game, String deck) {
@@ -86,7 +100,7 @@ public class SpiceBlowAndNexus {
                 if (faction.hasTreacheryCard("Thumper")) {
                     thumperResolved = false;
                     List<DuneChoice> choices = new ArrayList<>();
-                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + deck, "Yes"));
+                    choices.add(new DuneChoice("spiceblow-thumper-yes", "Yes"));
                     choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
                     String territoryName = game.getSpiceDiscardA().getLast().name();
                     if (deck.equals("B"))
@@ -101,19 +115,24 @@ public class SpiceBlowAndNexus {
         return !thumperResolved;
     }
 
-    public void playThumper(Game game, Faction faction, String deck) {
+    public void playThumper(Game game, Faction faction) {
         thumperWasPlayed = true;
         thumperResolved = true;
         faction.discard("Thumper", "to summon Shai-Hulud");
         String territoryName = game.getSpiceDiscardA().getLast().name();
-        if (deck.equals("B"))
+        if (numDecksDrawn == 1)
             territoryName = game.getSpiceDiscardB().getLast().name();
         game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
+        faction.getChat().reply("You will play Thumper in " + territoryName + ".");
     }
 
-    public void declineThumper() {
+    public void declineThumper(Game game, Faction faction) {
         thumperWasPlayed = false;
         thumperResolved = true;
+        String territoryName = game.getSpiceDiscardA().getLast().name();
+        if (numDecksDrawn == 1)
+            territoryName = game.getSpiceDiscardB().getLast().name();
+        faction.getChat().reply("You will not play Thumper in " + territoryName + ".");
     }
 
     public boolean isPhaseComplete() {

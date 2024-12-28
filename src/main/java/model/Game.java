@@ -696,26 +696,6 @@ public class Game {
         setStorm(getStorm() + movement);
     }
 
-    public Faction getFactionWithHarvester() {
-        for (Faction faction : getFactions()) {
-            try {
-                faction.getTreacheryCard("Harvester");
-                return faction;
-            } catch (IllegalArgumentException ignored) {}
-        }
-        return null;
-    }
-
-    public Faction getFactionWithThumper() {
-        for (Faction faction : getFactions()) {
-            try {
-                faction.getTreacheryCard("Thumper");
-                return faction;
-            } catch (IllegalArgumentException ignored) {}
-        }
-        return null;
-    }
-
     public void destroyShieldWall() throws InvalidGameStateException {
         Faction factionWithAtomics = factions.stream().filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
         if (factionWithAtomics == null)
@@ -915,6 +895,14 @@ public class Game {
                 .collect(Collectors.toList());
     }
 
+    public Faction getFirstFactionWithTreacheryCard(String cardName) {
+        Faction faction = null;
+        List<Faction> factions = getFactionsWithTreacheryCard(cardName);
+        if (!factions.isEmpty())
+            faction = factions.getFirst();
+        return faction;
+    }
+
     public List<Faction> getFactionsInStormOrder() {
         int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
         List<Faction> stormOrderFactions = new ArrayList<>();
@@ -993,21 +981,13 @@ public class Game {
             newDiscovery.setJustDiscovered(false);
         }
 
-        Faction factionWithAtomics = null;
-        try {
-            factionWithAtomics = getFactionsWithTreacheryCard("Family Atomics").getFirst();
-        } catch (NoSuchElementException ignore) {}
-        if (factionWithAtomics != null && factionWithAtomics.isNearShieldWall()) {
+        Faction factionWithAtomics = getFirstFactionWithTreacheryCard("Family Atomics");
+        if (factionWithAtomics != null && factionWithAtomics.isNearShieldWall())
             factionWithAtomics.getChat().publish(factionWithAtomics.getPlayer() + " will you play Family Atomics?");
-        }
 
-        Faction factionWithWeatherControl = null;
-        try {
-            factionWithWeatherControl = getFactionsWithTreacheryCard("Weather Control").getFirst();
-        } catch (NoSuchElementException ignore) {}
-        if (factionWithWeatherControl != null && turn != 1) {
+        Faction factionWithWeatherControl = getFirstFactionWithTreacheryCard("Weather Control");
+        if (factionWithWeatherControl != null && turn != 1)
             factionWithWeatherControl.getChat().publish(factionWithWeatherControl.getPlayer() + " will you play Weather Control?");
-        }
 
         boolean atomicsEligible = factions.stream().anyMatch(Faction::isNearShieldWall);
         if (atomicsEligible && factionWithAtomics == null) {
@@ -1058,9 +1038,9 @@ public class Game {
         if (wormToRide)
             throw new InvalidGameStateException("Fremen must decide whether to ride the worm before the game can advance.");
         if (spiceBlowAndNexus.isHarvesterActive())
-            throw new InvalidGameStateException(getFactionWithHarvester().getName() + " must decide if they will play Harvester before the game can advance.");
+            throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Harvester").getName() + " must decide if they will play Harvester before the game can advance.");
         if (spiceBlowAndNexus.isThumperActive())
-            throw new InvalidGameStateException(getFactionWithThumper().getName() + " must decide if they will play Thumper before the game can advance.");
+            throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Thumper").getName() + " must decide if they will play Thumper before the game can advance.");
 
         if (spiceBlowAndNexus.nextStep(this))
             spiceBlowAndNexus = null;

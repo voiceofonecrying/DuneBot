@@ -31,7 +31,6 @@ public class FactionButtons {
         else if (event.getComponentId().startsWith("traitor-discard-")) discardTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("traitor-reveal-and-discard-")) revealAndDiscardTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
-        else if (event.getComponentId().startsWith("play-harvester-")) harvester(event, game, discordGame);
         else if (event.getComponentId().startsWith("atreides-ally-battle-prescience-")) allyBattlePrescience(event, game, discordGame);
         else if (event.getComponentId().startsWith("atreides-ally-treachery-prescience-")) allyTreacheryCardPrescience(event, game, discordGame);
         else if (event.getComponentId().startsWith("whisper-")) whisper(event, game, discordGame);
@@ -165,24 +164,6 @@ public class FactionButtons {
             }
         }
         ShowCommands.showFactionInfo(ally, discordGame);
-        discordGame.pushGame();
-    }
-
-    private static void harvester(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getSpiceBlowAndNexus().resolveHarvester();
-        discordGame.queueDeleteMessage();
-        String playIt = event.getComponentId().split("-")[2];
-        if (playIt.equals("yes")) {
-            int spice = Integer.parseInt(event.getComponentId().split("-")[3]);
-            int spiceMultiplier = Integer.parseInt(event.getComponentId().split("-")[4]);
-            String spiceBlowTerritory = event.getComponentId().replace("play-harvester-yes-" + spice + "-" + spiceMultiplier + "-", "");
-            discordGame.queueMessage("You will play Harvester in " + spiceBlowTerritory);
-            game.getTurnSummary().publish(faction.getEmoji() + " plays Harvester in " + spiceBlowTerritory + " to double the " + Emojis.SPICE + " Blow!");
-            game.getTerritories().get(spiceBlowTerritory).addSpice(game, spice * spiceMultiplier);
-            faction.discard("Harvester");
-        } else
-            discordGame.queueMessage("You will not play Harvester");
         discordGame.pushGame();
     }
 
