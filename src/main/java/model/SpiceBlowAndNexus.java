@@ -67,7 +67,7 @@ public class SpiceBlowAndNexus {
                 List<DuneChoice> choices = new ArrayList<>();
                 choices.add(new DuneChoice("spiceblow-harvester-yes-" + spiceMultiplier, "Yes"));
                 choices.add(new DuneChoice("secondary", "spiceblow-harvester-no", "No"));
-                faction.getChat().publish("Would you like to play Harvester to double the " + Emojis.SPICE + " Blow? " + faction.getPlayer(), choices);
+                faction.getChat().publish("Would you like to play Harvester to double the " + spiceCard.spice() * spiceMultiplier + " " + Emojis.SPICE + " Blow in " + spiceCard.name() + "? " + faction.getPlayer(), choices);
             }
         }
     }
@@ -84,14 +84,16 @@ public class SpiceBlowAndNexus {
             territoryName = game.getSpiceDiscardB().getLast().name();
             spice = game.getSpiceDiscardB().getLast().spice();
         }
-        faction.discard("Harvester", "in " + territoryName + " to double the " + Emojis.SPICE + " Blow");
-        game.getTerritories().get(territoryName).addSpice(game, spice * spiceMultiplier);
-        faction.getChat().publish("You will play Harvester in " + territoryName);
+        int blowSize = spice * spiceMultiplier;
+        faction.discard("Harvester", "in " + territoryName + " to double the " + Emojis.SPICE + " Blow in " + territoryName);
+        game.getTerritories().get(territoryName).addSpice(game, blowSize);
+        game.getTurnSummary().publish(blowSize + " more " + Emojis.SPICE + " has been spotted in " + territoryName);
+        faction.getChat().reply("You will play Harvester in " + territoryName);
     }
 
     public void declineHarvester(Faction faction) {
         this.harvesterResolved = true;
-        faction.getChat().publish("You will not play Harvester");
+        faction.getChat().reply("You will not play Harvester");
     }
 
     public void checkOnThumper(Game game, String deck) {
