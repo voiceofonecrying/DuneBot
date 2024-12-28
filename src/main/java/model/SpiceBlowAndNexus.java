@@ -124,7 +124,6 @@ public class SpiceBlowAndNexus {
         String territoryName = game.getSpiceDiscardA().getLast().name();
         if (numDecksDrawn == 1)
             territoryName = game.getSpiceDiscardB().getLast().name();
-        game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
         faction.getChat().reply("You will play Thumper in " + territoryName + ".");
     }
 

@@ -1066,7 +1066,7 @@ public class Game {
         message.append("**Spice Deck ").append(spiceBlowDeckName).append("**\n");
 
         boolean shaiHuludSpotted = false;
-        boolean nexus = afterThumper;
+        boolean nexus = false;
         boolean greatMaker = false;
         int spiceMultiplier = 1;
 
@@ -1080,7 +1080,13 @@ public class Game {
                 message.append("The Spice Deck is empty, and will be recreated from the Discard piles.\n");
             }
 
-            drawn = spiceDeck.pop();
+            String spotted = "spotted";
+            if (afterThumper) {
+                drawn = new SpiceCard("Shai-Hulud", 0, 0, null, null);
+                spotted = "summoned";
+            } else
+                drawn = spiceDeck.pop();
+            afterThumper = false;
             boolean saveWormForReshuffle = false;
             boolean cardIsGreatMaker = drawn.name().equalsIgnoreCase("Great Maker");
             if (drawn.name().equalsIgnoreCase("Shai-Hulud") || cardIsGreatMaker) {
@@ -1094,7 +1100,7 @@ public class Game {
                     if (sandtroutInPlay) {
                         spiceMultiplier = 2;
                         sandtroutInPlay = false;
-                        message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted! The next Shai-Hulud will cause a Nexus!\n");
+                        message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been ").append(spotted).append("! The next Shai-Hulud will cause a Nexus!\n");
                     } else {
                         message.append(getTerritory(Objects.requireNonNull(lastCard).name()).shaiHuludAppears(this, drawn.name(), true));
                         nexus = true;
@@ -1106,7 +1112,7 @@ public class Game {
                     FremenFaction fremen = null;
                     if (hasFaction("Fremen"))
                         fremen = (FremenFaction) getFaction("Fremen");
-                    message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been spotted!");
+                    message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been ").append(spotted).append("!");
                     nexus = true;
                     if (cardIsGreatMaker)
                         greatMaker = true;

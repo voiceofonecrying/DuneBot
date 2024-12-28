@@ -89,6 +89,59 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#thumperWithSandtroutActive")
+    class ThumperWithSandtroutActive {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException, IOException {
+            game.setTurn(2);
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(new SpiceCard("Sandtrout", -1, 0, null, null));
+            game.drawSpiceBlow("A", false);
+            fremen.addTreacheryCard(new TreacheryCard("Thumper"));
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
+//            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDiscardB().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
+            spiceBlowAndNexus = game.startSpiceBlowPhase();
+        }
+
+        @Test
+        void testSpiceCardNotDrawn() {
+            assertEquals("Funeral Plain", game.getSpiceDiscardA().getLast().name());
+        }
+
+        @Test
+        void testFremenAskedAboutThumper() {
+            assertEquals("Would you like to play Thumper in Funeral Plain? fr", fremenChat.getMessages().getFirst());
+            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+        }
+
+        @Test
+        void testFremenPlaysThumperAndSpiceBlowCanBeDrawn() {
+            assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
+            spiceBlowAndNexus.playThumper(game, fremen);
+            assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            assertEquals("You will play Thumper in Funeral Plain.", fremenChat.getMessages().getLast());
+        }
+
+        @Test
+        void testFremenPlaysThumperAndSpiceBlowIsDoubled() {
+            assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
+            spiceBlowAndNexus.playThumper(game, fremen);
+            assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
+            assertEquals(16, game.getTerritory("Red Chasm").getSpice());
+        }
+
+        @Test
+        void testNoNexus() throws IOException {
+            spiceBlowAndNexus.playThumper(game, fremen);
+            spiceBlowAndNexus.nextStep(game);
+            assertTrue(gameActions.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("#noWorms")
     class NoWorms {
         @BeforeEach
