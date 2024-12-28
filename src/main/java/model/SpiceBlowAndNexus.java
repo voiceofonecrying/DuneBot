@@ -86,7 +86,7 @@ public class SpiceBlowAndNexus {
                 if (faction.hasTreacheryCard("Thumper")) {
                     thumperResolved = false;
                     List<DuneChoice> choices = new ArrayList<>();
-                    choices.add(new DuneChoice("spiceblow-thumper-yes-" + deck, "Yes"));
+                    choices.add(new DuneChoice("spiceblow-thumper-yes", "Yes"));
                     choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
                     String territoryName = game.getSpiceDiscardA().getLast().name();
                     if (deck.equals("B"))
@@ -101,19 +101,24 @@ public class SpiceBlowAndNexus {
         return !thumperResolved;
     }
 
-    public void playThumper(Game game, Faction faction, String deck) {
+    public void playThumper(Game game, Faction faction) {
         thumperWasPlayed = true;
         thumperResolved = true;
         faction.discard("Thumper", "to summon Shai-Hulud");
         String territoryName = game.getSpiceDiscardA().getLast().name();
-        if (deck.equals("B"))
+        if (numDecksDrawn == 1)
             territoryName = game.getSpiceDiscardB().getLast().name();
         game.getTurnSummary().publish(game.getTerritory(territoryName).shaiHuludAppears(game, "Shai-Hulud", true));
+        faction.getChat().reply("You will play Thumper in " + territoryName + ".");
     }
 
-    public void declineThumper() {
+    public void declineThumper(Game game, Faction faction) {
         thumperWasPlayed = false;
         thumperResolved = true;
+        String territoryName = game.getSpiceDiscardA().getLast().name();
+        if (numDecksDrawn == 1)
+            territoryName = game.getSpiceDiscardB().getLast().name();
+        faction.getChat().reply("You will not play Thumper in " + territoryName + ".");
     }
 
     public boolean isPhaseComplete() {
