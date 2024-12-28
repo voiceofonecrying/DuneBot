@@ -17,6 +17,8 @@ public class SpiceBlowAndNexus {
     private boolean harvesterResolved = true;
     private boolean thumperResolved = true;
     private boolean thumperWasPlayed;
+    private SpiceCard spiceCard;
+    private int spiceMultiplier;
 
     SpiceBlowAndNexus(Game game) throws IOException {
         checkOnThumper(game, "A");
@@ -39,33 +41,35 @@ public class SpiceBlowAndNexus {
             game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
             game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
             Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A", thumperWasPlayed);
+            spiceCard = spiceBlow.getLeft();
+            spiceMultiplier = spiceBlow.getRight();
             thumperWasPlayed = false;
             numDecksDrawn++;
-            checkOnHarvester(game, spiceBlow);
+            checkOnHarvester(game);
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
         } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
             if (game.hasGameOption(GameOption.THUMPER_ON_DECK_B))
                 checkOnThumper(game, "B");
             if (thumperResolved) {
                 Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B", thumperWasPlayed);
+                spiceCard = spiceBlow.getLeft();
+                spiceMultiplier = spiceBlow.getRight();
                 numDecksDrawn++;
-                checkOnHarvester(game, spiceBlow);
+                checkOnHarvester(game);
                 fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
             }
         }
         return isPhaseComplete();
     }
 
-    public void checkOnHarvester(Game game, Pair<SpiceCard, Integer> spiceBlow) {
-        SpiceCard spiceCard = spiceBlow.getLeft();
-        int spiceMultiplier = spiceBlow.getRight();
+    public void checkOnHarvester(Game game) {
         if (game.getStorm() == spiceCard.sector())
             return;
         for (Faction faction : game.getFactions()) {
             if (faction.hasTreacheryCard("Harvester")) {
                 harvesterResolved = false;
                 List<DuneChoice> choices = new ArrayList<>();
-                choices.add(new DuneChoice("spiceblow-harvester-yes-" + spiceMultiplier, "Yes"));
+                choices.add(new DuneChoice("spiceblow-harvester-yes", "Yes"));
                 choices.add(new DuneChoice("secondary", "spiceblow-harvester-no", "No"));
                 faction.getChat().publish("Would you like to play Harvester to double the " + spiceCard.spice() * spiceMultiplier + " " + Emojis.SPICE + " Blow in " + spiceCard.name() + "? " + faction.getPlayer(), choices);
             }
@@ -76,14 +80,10 @@ public class SpiceBlowAndNexus {
         return !harvesterResolved;
     }
 
-    public void playHarvester(Game game, Faction faction, int spiceMultiplier) {
+    public void playHarvester(Game game, Faction faction) {
         this.harvesterResolved = true;
-        String territoryName = game.getSpiceDiscardA().getLast().name();
-        int spice = game.getSpiceDiscardA().getLast().spice();
-        if (numDecksDrawn == 2) {
-            territoryName = game.getSpiceDiscardB().getLast().name();
-            spice = game.getSpiceDiscardB().getLast().spice();
-        }
+        String territoryName = spiceCard.name();
+        int spice = spiceCard.spice();
         int blowSize = spice * spiceMultiplier;
         faction.discard("Harvester", "in " + territoryName + " to double the " + Emojis.SPICE + " Blow in " + territoryName);
         game.getTerritories().get(territoryName).addSpice(game, blowSize);
