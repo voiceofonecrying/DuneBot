@@ -1086,7 +1086,6 @@ public class Game {
                 spotted = "summoned";
             } else
                 drawn = spiceDeck.pop();
-            afterThumper = false;
             boolean saveWormForReshuffle = false;
             boolean cardIsGreatMaker = drawn.name().equalsIgnoreCase("Great Maker");
             if (drawn.name().equalsIgnoreCase("Shai-Hulud") || cardIsGreatMaker) {
@@ -1139,9 +1138,10 @@ public class Game {
             }
             if (saveWormForReshuffle) {
                 wormsToReshuffle.add(drawn);
-            } else if (!drawn.name().equalsIgnoreCase("Sandtrout")) {
+            } else if (!afterThumper && !drawn.name().equalsIgnoreCase("Sandtrout")) {
                 discard.add(drawn);
             }
+            afterThumper = false;
         } while (drawn.name().equalsIgnoreCase("Shai-Hulud") ||
                 drawn.name().equalsIgnoreCase("Great Maker") ||
                 drawn.name().equalsIgnoreCase("Sandtrout"));
