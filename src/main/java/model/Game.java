@@ -1123,7 +1123,7 @@ public class Game {
                 factions.forEach(Faction::removeAlly);
                 sandtroutInPlay = true;
             } else {
-                String spiceMessage = drawn.spice() + " " + Emojis.SPICE + " has been spotted in " + drawn.name();
+                String spiceMessage = drawn.spice() * spiceMultiplier + " " + Emojis.SPICE + " has been spotted in " + drawn.name();
                 message.append(spiceMessage);
                 message.append(drawn.sector() == storm ? " - blown away by the storm" : "").append("!\n");
                 if (greatMaker)
