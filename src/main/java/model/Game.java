@@ -1123,7 +1123,8 @@ public class Game {
                 factions.forEach(Faction::removeAlly);
                 sandtroutInPlay = true;
             } else {
-                message.append(Emojis.SPICE + " has been spotted in ").append(drawn.name());
+                String spiceMessage = drawn.spice() + " " + Emojis.SPICE + " has been spotted in " + drawn.name();
+                message.append(spiceMessage);
                 message.append(drawn.sector() == storm ? " - blown away by the storm" : "").append("!\n");
                 if (greatMaker)
                     gameActions.publish(gameRoleMention + " Please vote whether you want a Nexus. A majority is required to have one.");
