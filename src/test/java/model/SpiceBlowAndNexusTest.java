@@ -100,7 +100,6 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             fremen.addTreacheryCard(new TreacheryCard("Thumper"));
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow());
             game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Red Chasm")).findFirst().orElseThrow());
-//            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
             game.getSpiceDiscardB().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
             spiceBlowAndNexus = game.startSpiceBlowPhase();
         }
