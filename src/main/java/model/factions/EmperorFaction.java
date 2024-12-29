@@ -283,7 +283,7 @@ public class EmperorFaction extends Faction {
                 paidRevivalTBD = true;
                 List<DuneChoice> choices = new ArrayList<>();
                 IntStream.rangeClosed(0, 3).forEachOrdered(i -> {
-                    DuneChoice choice = new DuneChoice("revive-emp-ally-" + i, "" + i);
+                    DuneChoice choice = new DuneChoice("revival-emp-ally-" + i, "" + i);
                     choice.setDisabled(spice < 2 * i || i > revivableForces);
                     choices.add(choice);
                 });

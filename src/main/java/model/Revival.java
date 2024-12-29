@@ -66,8 +66,8 @@ public class Revival {
             throw new InvalidGameStateException("No faction holds Recruits. Noboday can be asked about playing it.");
         factionWithRecruits = game.getFaction(recruitsHolder);
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("recruits-yes", "Yes"));
-        choices.add(new DuneChoice("recruits-no", "No"));
+        choices.add(new DuneChoice("revival-recruits-yes", "Yes"));
+        choices.add(new DuneChoice("revival-recruits-no", "No"));
         factionWithRecruits.getChat().publish("Will you play Recruits? " + factionWithRecruits.getPlayer(), choices);
         recruitsAsked = true;
     }
