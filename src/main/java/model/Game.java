@@ -1856,8 +1856,8 @@ public class Game {
                         if (territory.countActiveFactions() == 0) continue;
                         Faction faction = territory.getActiveFactions(this).getFirst();
                         List<DuneChoice> choices = new ArrayList<>();
-                        choices.add(new DuneChoice("reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
-                        choices.add(new DuneChoice("danger", "don't-reveal-discovery-token", "No"));
+                        choices.add(new DuneChoice("spicecollection-reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
+                        choices.add(new DuneChoice("danger", "spicecollection-don't-reveal-discovery-token", "No"));
                         faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + discoveryTerritoryName + "? (" + discoveryTokenName + ")", choices);
                     }
                 }
