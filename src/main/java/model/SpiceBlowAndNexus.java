@@ -36,8 +36,11 @@ public class SpiceBlowAndNexus {
             }
         }
         if (numDecksDrawn == 0 && thumperResolved) {
-            Collections.shuffle(game.getQuotes().get(2));
-            game.getTurnSummary().publish(game.getQuotes().get(2).removeFirst());
+            List<String> spiceBlowQuotes = game.getQuotes().get(2);
+            if (!spiceBlowQuotes.isEmpty()) {
+                Collections.shuffle(spiceBlowQuotes);
+                game.getTurnSummary().publish(spiceBlowQuotes.removeFirst());
+            }
             game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
             game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
             Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("A", thumperWasPlayed);
