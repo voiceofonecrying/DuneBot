@@ -115,9 +115,10 @@ public class ButtonManager extends ListenerAdapter {
                 RevivalButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("battle"))
                 BattleButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("spicecollection"))
+                SpiceCollectionButtons.press(event, game, discordGame);
             else {
                 ShipmentAndMovementButtons.press(event, game, discordGame);
-                SpiceCollectionButtons.press(event, game, discordGame);
                 FactionButtons.press(event, game, discordGame);
                 IxButtons.press(event, game, discordGame);
                 RicheseButtons.press(event, game, discordGame);

@@ -14,13 +14,11 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import java.util.Objects;
 
 public class SpiceCollectionButtons  implements Pressable{
-
         public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-
-            if (event.getComponentId().startsWith("reveal-discovery-token-")) revealDiscoveryToken(event, game, discordGame);
-            else if (event.getComponentId().equals("don't-reveal-discovery-token")) dontRevealDiscoveryToken(discordGame);
-
-
+            // Buttons handled by this class must begin with "spicecollection"
+            // And any button that begins with "spicecollection" must be handled by this class
+            if (event.getComponentId().startsWith("spicecollection-reveal-discovery-token-")) revealDiscoveryToken(event, game, discordGame);
+            else if (event.getComponentId().equals("spicecollection-don't-reveal-discovery-token")) dontRevealDiscoveryToken(discordGame);
         }
 
     private static void dontRevealDiscoveryToken(DiscordGame discordGame) {
@@ -30,7 +28,7 @@ public class SpiceCollectionButtons  implements Pressable{
 
     private static void revealDiscoveryToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
             Faction faction = ButtonManager.getButtonPresser(event, game);
-            Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
+            Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
             String token = territory.getDiscoveryToken();
 
             Territories territories = game.getTerritories();
