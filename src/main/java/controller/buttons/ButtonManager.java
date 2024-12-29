@@ -95,6 +95,8 @@ public class ButtonManager extends ListenerAdapter {
                 BGButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("bt"))
                 BTButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("choam"))
+                ChoamButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("emperor"))
                 EmperorButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("ecaz"))
@@ -118,7 +120,6 @@ public class ButtonManager extends ListenerAdapter {
                 FactionButtons.press(event, game, discordGame);
                 IxButtons.press(event, game, discordGame);
                 RicheseButtons.press(event, game, discordGame);
-                ChoamButtons.press(event, game, discordGame);
                 switch (event.getComponentId()) {
                     case "graphic" -> {
                         getButtonPresser(event, game).setGraphicDisplay(true);

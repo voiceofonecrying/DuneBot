@@ -181,9 +181,9 @@ public class ChoamFaction extends Faction {
         super.performMentatPauseActions(extortionTokenTriggered);
         if (firstInflationRound == 0) {
             List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("inflation-double", "Yes, Double side up"));
-            choices.add(new DuneChoice("inflation-cancel", "Yes, Cancel side up"));
-            choices.add(new DuneChoice("inflation-not-yet", "No"));
+            choices.add(new DuneChoice("choam-inflation-double", "Yes, Double side up"));
+            choices.add(new DuneChoice("choam-inflation-cancel", "Yes, Cancel side up"));
+            choices.add(new DuneChoice("choam-inflation-not-yet", "No"));
             chat.publish("Would you like to set Inflation? " + player, choices);
         } else {
             int doubleRound = firstInflationRound;
