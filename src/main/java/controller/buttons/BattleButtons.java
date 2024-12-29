@@ -17,6 +17,8 @@ import java.util.List;
 
 public class BattleButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        // Buttons handled by this class must begin with "battle"
+        // And any button that begins with "battle" must be handled by this class
         if (event.getComponentId().startsWith("battle-choose-territory")) chooseTerritory(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-choose-opponent")) chooseOpponent(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-choose-combatant")) ecazChooseCombatant(event, discordGame, game);
