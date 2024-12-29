@@ -17,13 +17,13 @@ import java.util.List;
 
 public class BattleButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
-        if (event.getComponentId().startsWith("chooseterritory")) chooseTerritory(event, discordGame, game);
-        else if (event.getComponentId().startsWith("chooseopponent")) chooseOpponent(event, discordGame, game);
-        else if (event.getComponentId().startsWith("choosecombatant")) ecazChooseCombatant(event, discordGame, game);
-        else if (event.getComponentId().startsWith("hmsstrongholdpower-")) hmsStrongholdPower(event, discordGame, game);
-        else if (event.getComponentId().startsWith("spicebanker-")) spiceBanker(event, discordGame, game);
-        else if (event.getComponentId().startsWith("pullleader-")) pullLeader(event, discordGame, game);
-        else if (event.getComponentId().startsWith("forcesdialed-")) forcesDialed(event, discordGame, game);
+        if (event.getComponentId().startsWith("battle-choose-territory")) chooseTerritory(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-choose-opponent")) chooseOpponent(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-choose-combatant")) ecazChooseCombatant(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-hms-stronghold-power-")) hmsStrongholdPower(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-spice-banker-")) spiceBanker(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-pull-leader-")) pullLeader(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-forces-dialed-")) forcesDialed(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-juice-of-sapho")) juiceOfSaphoDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-portable-snooper")) portableSnooperDecision(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-stone-burner")) stoneBurnerDecision(event, discordGame, game);
@@ -41,7 +41,7 @@ public class BattleButtons implements Pressable {
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Battles battles = game.getBattles();
-        int battleIndex = Integer.parseInt(event.getComponentId().split("-")[1]);
+        int battleIndex = Integer.parseInt(event.getComponentId().split("-")[3]);
         String territory = battles.getBattles(game).get(battleIndex).getWholeTerritoryName();
         discordGame.queueMessage("You selected " + territory + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle in " + territory + ".");
@@ -52,7 +52,7 @@ public class BattleButtons implements Pressable {
     private static void chooseOpponent(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Battles battles = game.getBattles();
-        String opponent = event.getComponentId().split("-")[1];
+        String opponent = event.getComponentId().split("-")[3];
         discordGame.queueMessage("You selected " + opponent + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
         int space = opponent.indexOf(" ");
@@ -67,7 +67,7 @@ public class BattleButtons implements Pressable {
     private static void ecazChooseCombatant(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Battles battles = game.getBattles();
-        String battleFaction = event.getComponentId().split("-")[1];
+        String battleFaction = event.getComponentId().split("-")[3];
         discordGame.queueMessage("You selected " + battleFaction + ".");
         discordGame.getTurnSummary().queueMessage(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
         battles.getCurrentBattle().setEcazCombatant(game, battleFaction);
@@ -78,7 +78,7 @@ public class BattleButtons implements Pressable {
     private static void hmsStrongholdPower(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String strongholdName = event.getComponentId().split("-")[1];
+        String strongholdName = event.getComponentId().split("-")[4];
         discordGame.queueMessage("You selected " + strongholdName + " Stronghold Card.");
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " selected " + strongholdName + " Stronghold Card for HMS battle.");
         faction.setHmsStrongholdProxy(new StrongholdCard(strongholdName));
@@ -92,7 +92,7 @@ public class BattleButtons implements Pressable {
     private static void spiceBanker(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        int spice = Integer.parseInt(event.getComponentId().split("-")[1]);
+        int spice = Integer.parseInt(event.getComponentId().split("-")[3]);
         discordGame.queueMessage("You will spend " + spice + " " + Emojis.SPICE + " with Spice Banker to increase your leader strength.");
         discordGame.getModInfo().queueMessage(faction.getEmoji() + " will spend " + spice + " " + Emojis.SPICE + " with Spice Banker.");
         Battle currentBattle = game.getBattles().getCurrentBattle();
@@ -108,9 +108,9 @@ public class BattleButtons implements Pressable {
 
     private static void pullLeader(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         discordGame.queueDeleteMessage();
-        String factionName = event.getComponentId().split("-")[1];
-        String leaderName = event.getComponentId().split("-")[2];
-        String yesOrNo = event.getComponentId().split("-")[3];
+        String factionName = event.getComponentId().split("-")[3];
+        String leaderName = event.getComponentId().split("-")[4];
+        String yesOrNo = event.getComponentId().split("-")[5];
         Faction faction = game.getFaction(factionName);
         Leader leader = faction.getSkilledLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
         if (yesOrNo.equals("yes")) {
@@ -135,9 +135,9 @@ public class BattleButtons implements Pressable {
 
     private static void forcesDialed(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
-        String factionName = event.getComponentId().split("-")[1];
-        int regularDialed = Integer.parseInt(event.getComponentId().split("-")[2]);
-        int specialDialed = Integer.parseInt(event.getComponentId().split("-")[3]);
+        String factionName = event.getComponentId().split("-")[3];
+        int regularDialed = Integer.parseInt(event.getComponentId().split("-")[4]);
+        int specialDialed = Integer.parseInt(event.getComponentId().split("-")[5]);
         Battle battle = game.getBattles().getCurrentBattle();
         discordGame.queueMessage(battle.updateTroopsDialed(game, factionName, regularDialed, specialDialed));
         discordGame.pushGame();

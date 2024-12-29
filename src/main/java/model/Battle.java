@@ -438,7 +438,7 @@ public class Battle {
                     battlePlan.addCarthagStrongholdPower();
             } else if (strongholdNames.size() >= 2) {
                 game.getModInfo().publish(faction.getEmoji() + " must select which Stronghold Card they want to apply in the HMS. Please wait to resolve the battle.");
-                List<DuneChoice> choices = strongholdNames.stream().map(strongholdName -> new DuneChoice("hmsstrongholdpower-" + strongholdName, strongholdName)).collect(Collectors.toList());
+                List<DuneChoice> choices = strongholdNames.stream().map(strongholdName -> new DuneChoice("battle-hms-stronghold-power-" + strongholdName, strongholdName)).collect(Collectors.toList());
                 faction.getChat().publish("Which Stronghold Card would you like to use in the HMS battle?", choices);
                 hmsStrongholdCardFactionEmoji = faction.getEmoji();
                 hmsStrongholdCardTBD = DecisionStatus.OPEN;
@@ -475,7 +475,7 @@ public class Battle {
             game.getModInfo().publish(faction.getEmoji() + " may spend spice to increase leader value with Spice Banker. Please wait to resolve the battle.");
             List<DuneChoice> choices = new ArrayList<>();
             IntStream.range(0, 4).forEachOrdered(i -> {
-                DuneChoice choice = new DuneChoice("spicebanker-" + i, Integer.toString(i));
+                DuneChoice choice = new DuneChoice("battle-spice-banker-" + i, Integer.toString(i));
                 choice.setDisabled(availableSpice < i);
                 choices.add(choice);
             });

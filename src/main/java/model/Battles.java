@@ -148,8 +148,8 @@ public class Battles {
     private void presentSkilledLeaderChoices(Faction faction) {
         for (Leader leader : faction.getSkilledLeaders()) {
             List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
-            choices.add(new DuneChoice("pullleader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
+            choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
+            choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
             faction.getChat().publish(
                     "Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield? " + faction.getPlayer(),
                     choices
