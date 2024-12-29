@@ -152,7 +152,7 @@ class IxFactionTest extends FactionTestTemplate {
             assertNotEquals(-1, chat.getMessages().getFirst().indexOf("\n" + Emojis.IX_SUBOID + " revivals if possible would be the next step."));
             assertEquals(1, chat.getChoices().size());
             assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
-            assertEquals("revive*-1-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("revival-cyborgs-1-1", chat.getChoices().getFirst().get(1).getId());
             assertEquals("1 Cyborg", chat.getChoices().getFirst().get(1).getLabel());
         }
 
@@ -168,7 +168,7 @@ class IxFactionTest extends FactionTestTemplate {
             assertNotEquals(-1, chat.getMessages().getFirst().indexOf("\nThere are no " + Emojis.IX_SUBOID + " in the tanks."));
             assertEquals(1, chat.getChoices().size());
             assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
-            assertEquals("revive*-1-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("revival-cyborgs-1-1", chat.getChoices().getFirst().get(1).getId());
             assertEquals("1 Cyborg", chat.getChoices().getFirst().get(1).getLabel());
         }
 

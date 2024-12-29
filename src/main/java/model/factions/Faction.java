@@ -1316,7 +1316,7 @@ public class Faction {
                 List<DuneChoice> choices = new ArrayList<>();
                 int maxButton = Math.min(revivableForces, getMaxRevival() - numRevived);
                 for (int i = 0; i <= maxButton; i++) {
-                    DuneChoice choice = new DuneChoice("revive-" + i, Integer.toString(i));
+                    DuneChoice choice = new DuneChoice("revival-forces-" + i, Integer.toString(i));
                     choice.setDisabled(spice < revivalCost(i, 0));
                     choices.add(choice);
                 }

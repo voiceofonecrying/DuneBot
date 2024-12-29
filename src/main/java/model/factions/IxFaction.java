@@ -100,12 +100,12 @@ public class IxFaction extends Faction {
         String labelSuffix;
         String chatMessage;
         if (cyborgRevivalComplete) {
-            idPrefix = "revive-";
+            idPrefix = "revival-forces-";
             idSuffix = "";
             labelSuffix = " Suboid";
             chatMessage = "Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? " + player;
         } else {
-            idPrefix = "revive*-";
+            idPrefix = "revival-cyborgs-";
             idSuffix = "-" + numRevived;
             labelSuffix = " Cyborg";
             chatMessage = "Would you like to purchase additional " + Emojis.IX_CYBORG + " revivals? " + player;

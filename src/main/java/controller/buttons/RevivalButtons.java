@@ -14,15 +14,17 @@ import java.io.IOException;
 
 public class RevivalButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        if (event.getComponentId().startsWith("revive-emp-ally-")) reviveEmperorAlly(event, discordGame, game);
-        else if (event.getComponentId().startsWith("revive-")) revive(event, discordGame, game);
-        else if (event.getComponentId().startsWith("revive*-")) reviveCyborgs(event, discordGame, game);
-        else if (event.getComponentId().startsWith("recruits-yes")) playRecruits(event, discordGame, game);
-        else if (event.getComponentId().startsWith("recruits-no")) dontPlayRecruits(discordGame, game);
+        // Buttons handled by this class must begin with "revival"
+        // And any button that begins with "revival" must be handled by this class
+        if (event.getComponentId().startsWith("revival-emp-ally-")) reviveEmperorAlly(event, discordGame, game);
+        else if (event.getComponentId().startsWith("revival-forces-")) revive(event, discordGame, game);
+        else if (event.getComponentId().startsWith("revival-cyborgs-")) reviveCyborgs(event, discordGame, game);
+        else if (event.getComponentId().equals("revival-recruits-yes")) playRecruits(event, discordGame, game);
+        else if (event.getComponentId().equals("revival-recruits-no")) dontPlayRecruits(discordGame, game);
     }
 
     private static void reviveEmperorAlly(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        int numForces = Integer.parseInt(event.getComponentId().replace("revive-emp-ally-", ""));
+        int numForces = Integer.parseInt(event.getComponentId().replace("revival-emp-ally-", ""));
         EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
         emperor.reviveAllyForces(numForces);
         if (numForces == 0)
@@ -33,7 +35,7 @@ public class RevivalButtons implements Pressable {
     }
 
     private static void revive(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        int numForces = Integer.parseInt(event.getComponentId().replace("revive-", ""));
+        int numForces = Integer.parseInt(event.getComponentId().replace("revival-forces-", ""));
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.reviveForces(true, numForces);
         if (numForces == 0)
@@ -44,8 +46,8 @@ public class RevivalButtons implements Pressable {
     }
 
     private static void reviveCyborgs(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        int revival = Integer.parseInt(event.getComponentId().split("-")[1]);
-        int freeRevived = Integer.parseInt(event.getComponentId().split("-")[2]);
+        int revival = Integer.parseInt(event.getComponentId().split("-")[2]);
+        int freeRevived = Integer.parseInt(event.getComponentId().split("-")[3]);
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (revival == 0) {
             discordGame.queueMessage("You will not revive any extra " + Emojis.IX_CYBORG + ".");
