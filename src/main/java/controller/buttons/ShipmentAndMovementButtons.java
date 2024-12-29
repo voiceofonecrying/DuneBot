@@ -1102,6 +1102,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             labelo2 = labelo2.replaceAll("[^0-9]", "").isEmpty() ? "999" : labelo2.replaceAll("[^0-9]", "");
             int o1int = Integer.parseInt(labelo1);
             int o2int = Integer.parseInt(labelo2);
+            if (o1int - o2int == 0) return 1;
             return o1int - o2int;
         };
     }
