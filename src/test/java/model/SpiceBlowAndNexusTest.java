@@ -22,6 +22,40 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#shaiHuludAfterDeckReshuffled")
+    class ShaiHuludAfterDeckReshuffled {
+        SpiceCard shaiHulud;
+        SpiceCard sihayaRidge;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException, IOException {
+            shaiHulud = game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow();
+            sihayaRidge = game.getSpiceDeck().stream().filter(c -> c.name().equals("Sihaya Ridge")).findFirst().orElseThrow();
+            game.getSpiceDeck().removeIf(c -> c.name().equals("Shai-Hulud"));
+            for (int i = 0; i < 7; i++) {
+                game.advanceTurn();
+                game.startSpiceBlowPhase();
+                game.spiceBlowPhaseNextStep();
+            }
+            assertEquals(7, game.getTurn());
+            game.advanceTurn();
+            game.startSpiceBlowPhase();
+            assertTrue(game.getSpiceDeck().isEmpty());
+        }
+
+        @Test
+        void testDraw() {
+            game.getSpiceDiscardA().clear();
+            game.getSpiceDiscardB().clear();
+            for (int i = 0; i < 100; i++)
+                game.getSpiceDiscardA().add(shaiHulud);
+            game.getSpiceDiscardB().add(sihayaRidge);
+            // There is a 1% chance Sihaya Ridge will be on top, but generally this would catch a failure.
+            assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
+        }
+    }
+
+    @Nested
     @DisplayName("#thumper")
     class Thumper {
         @BeforeEach
