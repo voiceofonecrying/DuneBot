@@ -101,7 +101,7 @@ class IxFactionTest extends FactionTestTemplate {
             assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? "));
             assertEquals(1, chat.getChoices().size());
             assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
-            assertEquals("revive-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("revival-forces-1", chat.getChoices().getFirst().get(1).getId());
             assertEquals("1 Suboid", chat.getChoices().getFirst().get(1).getLabel());
         }
 
@@ -116,7 +116,7 @@ class IxFactionTest extends FactionTestTemplate {
             assertNotEquals(-1, chat.getMessages().getFirst().indexOf("Would you like to purchase additional " + Emojis.IX_SUBOID + " revivals? "));
             assertEquals(1, chat.getChoices().size());
             assertEquals(3 - freeRevivals + 1, chat.getChoices().getFirst().size());
-            assertEquals("revive-1", chat.getChoices().getFirst().get(1).getId());
+            assertEquals("revival-forces-1", chat.getChoices().getFirst().get(1).getId());
             assertEquals("1 Suboid", chat.getChoices().getFirst().get(1).getLabel());
         }
 
