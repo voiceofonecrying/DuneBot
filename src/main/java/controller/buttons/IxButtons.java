@@ -32,12 +32,12 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().startsWith("ix-confirm-reject-reset")) chooseDifferentCard(discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-technology-")) sendCardBackAndRequestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
-        else if (event.getComponentId().startsWith("hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
-        else if (event.getComponentId().startsWith("hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
-        else if (event.getComponentId().startsWith("hms-move-")) queueSectorButtons(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ix-hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ix-hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ix-hms-move-")) queueSectorButtons(event, game, discordGame);
         switch (event.getComponentId()) {
-            case "hms-pass-movement" -> hmsPassMovement(event, game, discordGame);
-            case "hms-reset-movement" -> hmsResetShipmentMovement(game, discordGame);
+            case "ix-hms-pass-movement" -> hmsPassMovement(event, game, discordGame);
+            case "ix-hms-reset-movement" -> hmsResetShipmentMovement(game, discordGame);
         }
     }
 
@@ -86,28 +86,28 @@ public class IxButtons implements Pressable {
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
                 .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
         TreeSet<DuneChoice> moveToChoices = new TreeSet<>(Comparator.comparing(DuneChoice::getLabel));
-        moveableTerritories.stream().map(t -> new DuneChoice("hms-move-" + t, t)).forEach(moveToChoices::add);
+        moveableTerritories.stream().map(t -> new DuneChoice("ix-hms-move-" + t, t)).forEach(moveToChoices::add);
 
         List<DuneChoice> choices = new ArrayList<>();
         int maxButtons = 24;
         if (moveToChoices.size() - startingIndex > maxButtons) {
             int nextStartingIndex = startingIndex + maxButtons - 1; // Take one out for the "More choices" button
             choices.addAll(moveToChoices.stream().toList().subList(startingIndex, nextStartingIndex));
-            String buttonId = "hms-move-more-choices-" + nextStartingIndex;
+            String buttonId = "ix-hms-move-more-choices-" + nextStartingIndex;
             choices.add(new DuneChoice("secondary", buttonId, "More choices"));
         } else {
             choices.addAll(moveToChoices.stream().toList().subList(startingIndex, moveToChoices.size()));
         }
         if (startingIndex == 0)
-            choices.add(new DuneChoice("danger", "hms-pass-movement", "No move"));
+            choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "No move"));
         else
-            choices.add(new DuneChoice("secondary", "hms-reset-movement", "Start over"));
+            choices.add(new DuneChoice("secondary", "ix-hms-reset-movement", "Start over"));
         faction.getChat().publish("Where will you move the HMS? " + game.getFaction("Ix").getPlayer(), choices);
     }
 
 
     private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        String moreChoices = "hms-move-more-choices-";
+        String moreChoices = "ix-hms-move-more-choices-";
         int startingIndex = Integer.parseInt(event.getComponentId().replace(moreChoices, "").replace("-", " "));
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("Getting more choices");
@@ -115,7 +115,7 @@ public class IxButtons implements Pressable {
     }
 
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String hmsMoveString = "hms-move-";
+        String hmsMoveString = "ix-hms-move-";
         String territoryName = event.getComponentId().replace(hmsMoveString, "").replace("-", " ");
         discordGame.queueMessage("You selected " + territoryName);
         Faction faction = game.getFaction("Ix");
@@ -141,7 +141,7 @@ public class IxButtons implements Pressable {
                 buttons.add(Button.primary(hmsMoveString + "sector-" + sector.getTerritoryName(), String.valueOf(sector.getSector())));
         }
         buttons.sort(ShipmentAndMovementButtons.getButtonComparator());
-        String backButtonId = "hms-reset-movement";
+        String backButtonId = "ix-hms-reset-movement";
 
         discordGame.queueMessage(new MessageCreateBuilder()
                 .setContent("Which sector?")
@@ -151,7 +151,7 @@ public class IxButtons implements Pressable {
     }
 
     private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String hmsMoveString = "hms-move-";
+        String hmsMoveString = "ix-hms-move-";
         String sector = event.getComponentId().replace(hmsMoveString + "sector-", "").replace("-", " ");
         discordGame.queueMessage("You selected sector " + sector);
         Faction faction = game.getFaction("Ix");

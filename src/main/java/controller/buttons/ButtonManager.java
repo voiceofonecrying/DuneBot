@@ -103,6 +103,8 @@ public class ButtonManager extends ListenerAdapter {
                 EcazButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("fremen"))
                 FremenButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("ix"))
+                IxButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("moritani"))
                 MoritaniButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("storm"))
@@ -120,7 +122,6 @@ public class ButtonManager extends ListenerAdapter {
             else {
                 ShipmentAndMovementButtons.press(event, game, discordGame);
                 FactionButtons.press(event, game, discordGame);
-                IxButtons.press(event, game, discordGame);
                 RicheseButtons.press(event, game, discordGame);
                 switch (event.getComponentId()) {
                     case "graphic" -> {
