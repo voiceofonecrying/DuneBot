@@ -154,7 +154,7 @@ public class BattleCommands {
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
         for (Battle battle : battles.getDefaultAggressorsBattles())
-            choices.add(new DuneChoice("chooseterritory-" + i++, battle.getWholeTerritoryName()));
+            choices.add(new DuneChoice("battle-choose-territory-" + i++, battle.getWholeTerritoryName()));
         aggressor.getChat().publish("Where would you like to battle? " + aggressor.getPlayer(), choices);
     }
 
@@ -179,7 +179,7 @@ public class BattleCommands {
                 ecazAndAllyIdentified = true;
                 opponentName = faction.getName() + " and " + faction.getAlly();
             }
-            choices.add(new DuneChoice("chooseopponent-" + opponentName, opponentName));
+            choices.add(new DuneChoice("battle-choose-opponent-" + opponentName, opponentName));
         }
         aggressor.getChat().publish("Whom would you like to battle first? " + aggressor.getPlayer(), choices);
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
@@ -188,8 +188,8 @@ public class BattleCommands {
     public static void ecazAllyButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         Faction ecaz = game.getFaction("Ecaz");
         List<DuneChoice> choices = List.of(
-                new DuneChoice("choosecombatant-Ecaz", "You - Ecaz"),
-                new DuneChoice("choosecombatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly())
+                new DuneChoice("battle-choose-combatant-Ecaz", "You - Ecaz"),
+                new DuneChoice("battle-choose-combatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly())
         );
         ecaz.getChat().publish("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), choices);
         discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " must choose who will fight for their alliance.");

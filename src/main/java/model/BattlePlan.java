@@ -298,7 +298,7 @@ public class BattlePlan {
                 while (regularStrength - regularDialed >= numStarsReplaced) {
                     int altRegularDialed = regularDialed + numStarsReplaced;
                     int altSpecialDialed = specialDialed - numStarsReplaced;
-                    String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
+                    String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
                     String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
                     choices.add(new DuneChoice(id, label));
                     numStarsReplaced++;
@@ -314,7 +314,7 @@ public class BattlePlan {
             while (regularStrength - regularDialed >= numStarsReplaced * starRegularRatio) {
                 int altRegularDialed = regularDialed + numStarsReplaced * starRegularRatio;
                 int altSpecialDialed = specialDialed - numStarsReplaced;
-                String id = "forcesdialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
+                String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
                 String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
                 choices.add(new DuneChoice(id, label));
                 numStarsReplaced++;
