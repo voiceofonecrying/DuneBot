@@ -99,7 +99,8 @@ public class FremenFaction extends Faction {
         choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
         choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
         boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap) choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
         choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
         choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "No ride"));
         chat.publish("Where would you like to ride to from " + territoryName + "? " + player, choices);

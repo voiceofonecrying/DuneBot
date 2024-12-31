@@ -1,11 +1,10 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
-import model.Game;
-import model.Territory;
-import model.TraitorCard;
+import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -14,6 +13,8 @@ import java.util.*;
 public class BTFaction extends Faction {
     private Set<TraitorCard> revealedFaceDancers;
     private List<String> factionsNeedingRevivalLimit;
+    private boolean btHTActive;
+    private int numFreeRevivals;
 
     public BTFaction(String player, String userName) throws IOException {
         super("BT", player, userName);
@@ -126,6 +127,21 @@ public class BTFaction extends Faction {
     }
 
     @Override
+    public int performFreeRevivals() {
+        int numStarRevived = countFreeStarredRevival();
+        starRevived = numStarRevived > 0;
+        TleilaxuTanks tanks = game.getTleilaxuTanks();
+        boolean wasHighThreshold = game.hasGameOption(GameOption.HOMEWORLDS) && isHighThreshold();
+        numFreeRevivals = Math.min(getFreeRevival(), tanks.getForceStrength(name));
+        if (numFreeRevivals + numStarRevived > 0) {
+            if (wasHighThreshold)
+                presentHTChoices();
+            game.reviveForces(this, false, numFreeRevivals, numStarRevived);
+        }
+        return numFreeRevivals;
+    }
+
+    @Override
     public int baseRevivalCost(int regular, int starred) {
         return regular + starred;
     }
@@ -134,6 +150,40 @@ public class BTFaction extends Faction {
     public void performMentatPauseActions(boolean extortionTokenTriggered) {
         super.performMentatPauseActions(extortionTokenTriggered);
         chat.publish("Would you like to swap a Face Dancer? " + player);
+    }
+
+    public void presentHTChoices() {
+        game.getTurnSummary().publish(emoji + " may place " + numFreeRevivals + " free revived " + Emojis.getForceEmoji(name) + " in any territory or homeworld.");
+        String buttonSuffix = "-bt-ht";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("homeworlds" + buttonSuffix, "Homeworlds"));
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "Leave them on Tleilaxu"));
+        chat.publish("Where would you like to place your " + numFreeRevivals + " " + Emojis.getForceEmoji(name) + " free revivals? " + player, choices);
+        btHTActive = true;
+    }
+
+    public void presentHTExecutionChoices() {
+        shipment.setForce(numFreeRevivals);
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("execute-shipment-bt-ht", "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment-bt-ht", "Start over"));
+        choices.add(new DuneChoice("danger", "pass-shipment-bt-ht", "Leave them on Tleilaxu"));
+        chat.reply("Sending **" + forcesString(numFreeRevivals, 0) + "** free revivals to " + shipment.getTerritoryName(), choices);
+    }
+
+    public boolean isBtHTActive() {
+        return btHTActive;
+    }
+
+    public void setBtHTActive(boolean btHTActive) {
+        this.btHTActive = btHTActive;
     }
 
     public void swapFaceDancer(String faceDancer) {
