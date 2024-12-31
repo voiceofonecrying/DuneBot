@@ -225,6 +225,8 @@ public class Game {
             throw new InvalidGameStateException(factionsStillToRevive + " must decide on paid revivals before the game can advance.");
         if (revival.isEcazAmbassadorsToBePlaced())
             throw new InvalidGameStateException("Ecaz must finish placing ambassadors before the game can advance.");
+        if (game.hasFaction("BT") && ((BTFaction) game.getFaction("BT")).isBtHTActive())
+            throw new InvalidGameStateException("BT must decide on High Threshold free revival placement before the game can advance.");
         if (!revival.isEcazAskedAboutAmbassadors() && revival.ecazAmbassadorPlacement(game))
             return false;
         revival = null;

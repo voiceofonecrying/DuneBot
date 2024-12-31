@@ -62,7 +62,7 @@ public class Faction {
     private boolean outbidAlly;
     private boolean specialKaramaPowerUsed;
     private NexusCard nexusCard;
-    private Shipment shipment;
+    protected Shipment shipment;
     private Movement movement;
     private int spiceForAlly;
     private boolean allySpiceFinishedForTurn;
@@ -1269,15 +1269,9 @@ public class Faction {
         int numStarRevived = countFreeStarredRevival();
         starRevived = numStarRevived > 0;
         TleilaxuTanks tanks = game.getTleilaxuTanks();
-        boolean btWasHighThreshold = this instanceof BTFaction btFaction && game.hasGameOption(GameOption.HOMEWORLDS) && btFaction.isHighThreshold();
         int numRegularRevived = Math.min(getFreeRevival() - numStarRevived, tanks.getForceStrength(name));
-        if (numRegularRevived + numStarRevived > 0) {
-            if (this instanceof BTFaction btFaction) {
-                if (btWasHighThreshold)
-                    chat.publish("You are at high threshold, you may place your revived " + Emojis.BT_TROOP + " anywhere on Arrakis or on any homeworld. " + btFaction.getPlayer());
-            }
+        if (numRegularRevived + numStarRevived > 0)
             game.reviveForces(this, false, numRegularRevived, numStarRevived);
-        }
         return numRegularRevived + numStarRevived;
     }
 
