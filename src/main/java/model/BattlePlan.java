@@ -859,6 +859,7 @@ public class BattlePlan {
 
     public void setWillCallTraitor(boolean willCallTraitor) {
         this.willCallTraitor = willCallTraitor;
+        canCallTraitor = false;
     }
 
     public boolean isHarkCanCallTraitor() {
@@ -883,5 +884,6 @@ public class BattlePlan {
 
     public void setHarkWillCallTraitor(boolean harkWillCallTraitor) {
         this.harkWillCallTraitor = harkWillCallTraitor;
+        harkCanCallTraitor = false;
     }
 }

@@ -1512,7 +1512,10 @@ public class Battle {
                 modInfo.publish(faction.getEmoji() + " declined Traitor call in " + wholeTerritoryName + ".");
             } else {
                 modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
-                battlePlan.setCanCallTraitor(true);
+                if (isHarkonnenAllyPower)
+                    battlePlan.setHarkCanCallTraitor(true);
+                else
+                    battlePlan.setCanCallTraitor(true);
             }
         } else if (!publishToTurnSummary) {
             modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
@@ -1536,6 +1539,7 @@ public class Battle {
         BattlePlan plan;
         BattlePlan opponentPlan;
         Faction opponent;
+        boolean resolutionChecked = false;
         if (faction == getAggressor(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getAggressorName())) {
             plan = aggressorBattlePlan;
             opponentPlan = defenderBattlePlan;
@@ -1555,6 +1559,7 @@ public class Battle {
                     game.getModInfo().publish(faction.getEmoji() + " calls Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + "!");
                     plan.setHarkWillCallTraitor(true);
                     printBattleResolution(game, true);
+                    resolutionChecked = true;
                 } else if (!resolutionPublished && plan.isHarkCanCallTraitor()) {
                     plan.setHarkWillCallTraitor(true);
                     game.getModInfo().publish(faction.getEmoji() + " will call Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + " if possible.");
@@ -1572,6 +1577,7 @@ public class Battle {
                 game.getModInfo().publish(faction.getEmoji() + " calls Traitor in " + wholeTerritoryName + "!");
                 plan.setWillCallTraitor(true);
                 printBattleResolution(game, true);
+                resolutionChecked = true;
             } else if (!resolutionPublished && plan.isCanCallTraitor()) {
                 plan.setWillCallTraitor(true);
                 game.getModInfo().publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + " if possible.");
@@ -1589,7 +1595,7 @@ public class Battle {
             game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
             plan.setCanCallTraitor(false);
         }
-        if (resolutionPublished)
+        if (resolutionPublished && !resolutionChecked)
             checkIfResolvable(game);
     }
 
