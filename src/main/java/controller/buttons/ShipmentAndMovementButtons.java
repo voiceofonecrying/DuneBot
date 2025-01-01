@@ -1079,7 +1079,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Territory territory : game.getTerritories().values()) {
             String territoryName = territory.getTerritoryName();
             if (territory instanceof HomeworldTerritory &&
-                    (!(faction instanceof EmperorFaction) || !territoryName.equals("Kaitain") && !territoryName.equals("Salusa Secundus")))
+                    (!game.hasGameOption(GameOption.HOMEWORLDS) || !(faction instanceof EmperorFaction) || !territoryName.equals("Kaitain") && !territoryName.equals("Salusa Secundus")))
                 continue;
             int count = territory.getTotalForceCount(faction);
             if (game.hasGameOption(GameOption.HOMEWORLDS) && territory.hasRicheseNoField() && faction instanceof RicheseFaction && !faction.isHighThreshold())
