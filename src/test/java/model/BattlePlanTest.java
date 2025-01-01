@@ -786,7 +786,7 @@ public class BattlePlanTest extends DuneTest {
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, poisonTooth, snooper, 0, false, 0);
         assertTrue(battlePlan.revokePoisonTooth());
         assertNotNull(battlePlan.getWeapon());
-        assertEquals("Weapon: ~~Poison Tooth~~ (removed from plan)", battlePlan.getWeaponString());
+        assertEquals("Weapon: ~~Poison Tooth~~ (not used)", battlePlan.getWeaponString());
         assertTrue(battlePlan.isInactivePoisonTooth());
         assertTrue(battlePlan.isLeaderAlive());
     }
@@ -799,7 +799,7 @@ public class BattlePlanTest extends DuneTest {
         assertTrue(opponentBattlePlan.revokePoisonTooth());
         opponentBattlePlan.revealOpponentBattlePlan(battlePlan);
         battlePlan.revealOpponentBattlePlan(opponentBattlePlan);
-        assertEquals("Weapon: ~~Poison Tooth~~ (removed from plan)", opponentBattlePlan.getWeaponString());
+        assertEquals("Weapon: ~~Poison Tooth~~ (not used)", opponentBattlePlan.getWeaponString());
         assertTrue(opponentBattlePlan.isInactivePoisonTooth());
         assertTrue(battlePlan.isLeaderAlive());
     }
