@@ -249,6 +249,7 @@ public class CommandManager extends ListenerAdapter {
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
                 case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
+                case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(discordGame, game);
                 case "draw-treachery-card" -> drawTreacheryCard(discordGame, game);
                 case "draw-traitor-card" -> drawTraitorCard(discordGame, game);
                 case "shuffle-treachery-deck" -> shuffleTreacheryDeck(discordGame, game);
@@ -387,6 +388,7 @@ public class CommandManager extends ListenerAdapter {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
+        commandData.add(Commands.slash("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck."));
         commandData.add(Commands.slash("draw-treachery-card", "Draw a card from the top of a deck.").addOptions(faction));
         commandData.add(Commands.slash("draw-traitor-card", "Draw a card from the top of the traitor deck.").addOptions(faction));
         commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
@@ -709,6 +711,20 @@ public class CommandManager extends ListenerAdapter {
     private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         discardNexusCard(discordGame, game, faction);
+    }
+
+    public void removeDoublePoweredBattleCards(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        try {
+            game.removeTreacheryCard("Poison Blade");
+        } catch (Exception e) {
+            game.getModInfo().publish("Treacher deck does not have Poison Blade.");
+        }
+        try {
+            game.removeTreacheryCard("Shield Snooper");
+        } catch (Exception e) {
+            game.getModInfo().publish("Treacher deck does not have Shield Snooper.");
+        }
+        discordGame.pushGame();
     }
 
     public void drawTreacheryCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
