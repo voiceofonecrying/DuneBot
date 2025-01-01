@@ -620,7 +620,7 @@ public class BattlePlan {
 
     public String getWeaponString() {
         if (inactivePoisonTooth)
-            return "Weapon: ~~" + weapon.name() + "~~ (removed from plan)";
+            return "Weapon: ~~" + weapon.name() + "~~ (not used)";
         return "Weapon: " + (weapon == null ? "-"
                 : weapon.name()) + (stoneBurnerNoKill ? " (leaders not killed)" : "");
     }
