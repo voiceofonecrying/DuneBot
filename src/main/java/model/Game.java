@@ -776,6 +776,13 @@ public class Game {
         }
     }
 
+    public void removeTreacheryCard(String cardName) {
+        TreacheryCard cardToRemove = treacheryDeck.stream().filter(c -> c.name().equals(cardName)).findFirst().orElseThrow();
+        treacheryDeck.remove(cardToRemove);
+        turnSummary.publish(cardName + " was permanently removed from the " + Emojis.TREACHERY + " deck.");
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+    }
+
     public void shuffleTreacheryDeck() {
         Collections.shuffle(getTreacheryDeck());
     }
