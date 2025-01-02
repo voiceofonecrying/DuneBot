@@ -1699,8 +1699,6 @@ public class Game {
     public Battles startBattlePhase() {
         getFactions().forEach(f -> f.resetAllySpiceSupportAfterShipping(this));
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
-        turnSummary.publish("**Turn " + turn + " Battle Phase**");
-        phaseForWhispers = "Turn " + turn + " Battle Phase\n";
 
         getFactions().forEach(f -> f.getLeaders().forEach(l -> { l.setBattleTerritoryName(null); l.setPulledBehindShield(false); } ));
         if (dukeVidal != null)
@@ -1721,8 +1719,11 @@ public class Game {
             }
             ((MoritaniFaction) getFaction("Moritani")).getDukeVidal();
             getFaction("Moritani").getChat().publish("Duke Vidal has come to fight for you!");
+            turnSummary.publish("Duke Vidal now works for " + Emojis.MORITANI);
         }
 
+        turnSummary.publish("**Turn " + turn + " Battle Phase**");
+        phaseForWhispers = "Turn " + turn + " Battle Phase\n";
         List<Battle> battleTerritories = battles.getBattles(this);
         if (!battleTerritories.isEmpty()) {
             String battleMessages = battleTerritories.stream()
