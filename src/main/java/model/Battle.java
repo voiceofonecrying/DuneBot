@@ -14,8 +14,7 @@ import java.util.stream.IntStream;
 
 public class Battle {
     private final String wholeTerritoryName;
-    private List<String> sectorNames;
-    private List<Territory> territorySectors;
+    private final List<String> sectorNames;
     private final List<String> factionNames;
     private final List<Force> forces;
     private final String ecazAllyName;
@@ -55,7 +54,6 @@ public class Battle {
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
         this.sectorNames = territorySectors.stream().map(Territory::getTerritoryName).toList();
-        this.territorySectors = territorySectors;
         this.factionNames = new ArrayList<>();
         battleFactionsInStormOrder.forEach(f -> factionNames.add(f.getName()));
         this.ecazAllyName = battleFactionsInStormOrder.stream().filter(f -> f instanceof EcazFaction).map(Faction::getAlly).findFirst().orElse(null);
@@ -107,10 +105,6 @@ public class Battle {
     }
 
     public List<Territory> getTerritorySectors(Game game) {
-        if (sectorNames == null) {
-            sectorNames = territorySectors.stream().map(Territory::getTerritoryName).toList();
-            territorySectors = null;
-        }
         return sectorNames.stream().map(game::getTerritory).toList();
     }
 
@@ -866,8 +860,7 @@ public class Battle {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
                 if (executeResolution) {
-                    String territoryNameWithAtreidesForce = territorySectors.stream().filter(s -> s.getForceStrength("Atreides") > 0).map(Territory::getTerritoryName).findAny().orElseThrow();
-                    Territory territoryWithAtreidesForce = game.getTerritory(territoryNameWithAtreidesForce);
+                    Territory territoryWithAtreidesForce = getTerritorySectors(game).stream().filter(s -> s.getForceStrength("Atreides") > 0).findAny().orElseThrow();
                     atreides.placeForceFromReserves(game, territoryWithAtreidesForce, 1, false);
                     atreides.getChat().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. " + atreides.getPlayer());
                     game.getTurnSummary().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold. " + Emojis.ATREIDES + " may choose to return it to reserves.");
