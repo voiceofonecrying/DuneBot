@@ -866,7 +866,8 @@ public class Battle {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
                 if (executeResolution) {
-                    Territory territoryWithAtreidesForce = territorySectors.stream().filter(s -> s.getForceStrength("Atreides") > 0).findAny().orElseThrow();
+                    String territoryNameWithAtreidesForce = territorySectors.stream().filter(s -> s.getForceStrength("Atreides") > 0).map(Territory::getTerritoryName).findAny().orElseThrow();
+                    Territory territoryWithAtreidesForce = game.getTerritory(territoryNameWithAtreidesForce);
                     atreides.placeForceFromReserves(game, territoryWithAtreidesForce, 1, false);
                     atreides.getChat().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. " + atreides.getPlayer());
                     game.getTurnSummary().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold. " + Emojis.ATREIDES + " may choose to return it to reserves.");
