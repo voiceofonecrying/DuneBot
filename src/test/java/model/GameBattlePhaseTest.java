@@ -142,6 +142,7 @@ public class GameBattlePhaseTest extends DuneTest {
 
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
             assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
+            assertEquals("Duke Vidal now works for " + Emojis.MORITANI, turnSummary.getMessages().getFirst());
         }
 
         @Test

@@ -717,12 +717,12 @@ public class CommandManager extends ListenerAdapter {
         try {
             game.removeTreacheryCard("Poison Blade");
         } catch (Exception e) {
-            game.getModInfo().publish("Treacher deck does not have Poison Blade.");
+            game.getModInfo().publish("Treachery deck does not have Poison Blade.");
         }
         try {
             game.removeTreacheryCard("Shield Snooper");
         } catch (Exception e) {
-            game.getModInfo().publish("Treacher deck does not have Shield Snooper.");
+            game.getModInfo().publish("Treachery deck does not have Shield Snooper.");
         }
         discordGame.pushGame();
     }
