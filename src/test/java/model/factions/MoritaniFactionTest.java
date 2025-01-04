@@ -397,7 +397,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @BeforeEach
         void setUp() {
             faction.placeTerrorToken(arrakeen, "Sabotage");
-            faction.moveTerrorToken(carthag, "Sabotage", arrakeen);
+            faction.moveTerrorToken(carthag, "Sabotage");
         }
 
         @Test

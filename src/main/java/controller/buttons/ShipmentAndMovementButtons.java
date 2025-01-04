@@ -289,8 +289,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         faction.executeMovement(game);
         game.completeCurrentFactionMovement();
         if (game.allFactionsHaveMoved()) {
-                RunCommands.advance(discordGame, game);
-                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
+            RunCommands.advance(discordGame, game);
+            discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
             return;
         }
         discordGame.queueMessage("Shipment and movement complete.");

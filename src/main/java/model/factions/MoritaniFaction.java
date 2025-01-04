@@ -191,9 +191,11 @@ public class MoritaniFaction extends Faction {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void moveTerrorToken(Territory toTerritory, String terror, Territory fromTerritory) {
+    public void moveTerrorToken(Territory toTerritory, String terror) {
+        Territory fromTerritory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
         fromTerritory.removeTerrorToken(terror);
         toTerritory.addTerrorToken(terror);
+        game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName());
         ledger.publish(terror + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
