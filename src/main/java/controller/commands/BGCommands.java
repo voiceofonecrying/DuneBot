@@ -5,7 +5,6 @@ import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
-import model.Force;
 import model.Game;
 import model.Territory;
 import model.factions.BGFaction;
@@ -65,26 +64,7 @@ public class BGCommands {
 
     public static void flip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Territory territory = game.getTerritories().get(discordGame.required(bgTerritories).getAsString());
-        flip(discordGame, game, territory);
-    }
-
-    public static void flip(DiscordGame discordGame, Game game, Territory territory) throws ChannelNotFoundException, IOException {
-        int strength = 0;
-        String found = "";
-        for (Force force : territory.getForces()) {
-            if (force.getName().equals("BG") || force.getName().equals("Advisor")) {
-                strength += force.getStrength();
-                found = force.getName();
-            }
-        }
-        territory.getForces().removeIf(force -> force.getName().equals("BG") || force.getName().equals("Advisor"));
-        if (found.equals("Advisor")) territory.addForces("BG", strength);
-        else if (found.equals("BG")) territory.addForces("Advisor", strength);
-        else {
-            discordGame.getModInfo().queueMessage("No Bene Gesserit were found in that territory.");
-            return;
-        }
+        ((BGFaction) game.getFaction("BG")).flipForces(territory);
         discordGame.pushGame();
-        game.setUpdated(UpdateType.MAP);
     }
 }

@@ -193,6 +193,24 @@ class BGFactionTest extends FactionTestTemplate {
         assertEquals(0, carthag.getForceStrength("Advisor"));
     }
 
+    @Test
+    public void testHasIntrudedTerritoriesDecisions() {
+        Territory sietchTabr = game.getTerritory("Sietch Tabr");
+        sietchTabr.addForces("BG", 1);
+        faction.bgFlipMessageAndButtons(game, "Sietch Tabr");
+        Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
+        habbanyaSietch.addForces("BG", 1);
+        faction.bgFlipMessageAndButtons(game, "Habbanya Sietch");
+        assertTrue(faction.hasIntrudedTerritoriesDecisions());
+        assertTrue(faction.getIntrudeTerritoriesString().equals("Sietch Tabr, Habbanya Sietch") || faction.getIntrudeTerritoriesString().equals("Habbanya Sietch, Sietch Tabr"));
+        faction.flipForces(sietchTabr);
+        assertTrue(faction.hasIntrudedTerritoriesDecisions());
+        assertEquals("Habbanya Sietch", faction.getIntrudeTerritoriesString());
+        faction.dontFlipFighters(game, habbanyaSietch.getTerritoryName());
+        assertFalse(faction.hasIntrudedTerritoriesDecisions());
+        assertTrue(faction.getIntrudeTerritoriesString().isEmpty());
+    }
+
     @Nested
     @DisplayName("#homeworld")
     class Homeworld extends FactionTestTemplate.Homeworld {

@@ -1433,6 +1433,8 @@ public class Game {
     }
 
     public boolean allFactionsHaveMoved() {
+        if (hasFaction("BG") && ((BGFaction) getFaction("BG")).hasIntrudedTerritoriesDecisions())
+            return false;
         return turnOrder.isEmpty();
     }
 
@@ -1734,6 +1736,7 @@ public class Game {
                             )
                     ).collect(Collectors.joining("\n"));
             turnSummary.publish("The following battles will take place this turn:\n" + battleMessages);
+            modInfo.publish("Use /run battle to initiate the first battle " + getModOrRoleMention());
         } else {
             turnSummary.publish("There are no battles this turn.");
         }

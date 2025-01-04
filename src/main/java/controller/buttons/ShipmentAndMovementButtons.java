@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.channels.TurnSummary;
+import controller.commands.RunCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -262,7 +263,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void passMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void passMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         TurnSummary turnSummary = discordGame.getTurnSummary();
         if (event.getComponentId().contains("-enter-discovery-token")) {
@@ -273,10 +274,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             turnSummary.queueMessage(faction.getEmoji() + " does not move.");
             game.completeCurrentFactionMovement();
             if (game.allFactionsHaveMoved()) {
-//                RunCommands.advance(discordGame, game);
-//                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
-                discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
-                discordGame.pushGame();
+                RunCommands.advance(discordGame, game);
+                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
                 return;
             }
         }
@@ -285,15 +284,13 @@ public class ShipmentAndMovementButtons implements Pressable {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
     }
 
-    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.executeMovement(game);
         game.completeCurrentFactionMovement();
         if (game.allFactionsHaveMoved()) {
-//                RunCommands.advance(discordGame, game);
-//                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
-            discordGame.getModInfo().queueMessage("Everyone has taken their turn, please run advance. " + game.getModOrRoleMention());
-            discordGame.pushGame();
+                RunCommands.advance(discordGame, game);
+                discordGame.getModInfo().queueMessage("Everyone has taken their turn. Game is auto-advancing to battle phase.");
             return;
         }
         discordGame.queueMessage("Shipment and movement complete.");
