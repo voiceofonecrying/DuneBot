@@ -21,6 +21,8 @@ public class MoritaniCommands {
         List<CommandData> commandData = new ArrayList<>();
 
         commandData.add(Commands.slash("moritani", "Commands related to the Moritani Faction.").addSubcommands(
+                new SubcommandData("place-terror-token", "Place a Moritani Terror Token on the map").addOptions(moritaniTerrorTokenInSupply, territory),
+                new SubcommandData("move-terror-token", "Move a Moritani Terror Token to a different territory").addOptions(moritaniTerrorTokenOnMap, territory),
                 new SubcommandData("remove-terror-token-from-map", "Remove a Moritani Terror Token from the map").addOptions(moritaniTerrorTokenOnMap, toPlayer),
                 new SubcommandData("trigger-terror-token", "Trigger a Moritani Terror Token").addOptions(faction, moritaniTerrorTokenOnMap),
                 new SubcommandData("robbery-draw", "Draw a card with Robbery Terror Token"),
@@ -34,11 +36,29 @@ public class MoritaniCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
+            case "place-terror-token" -> placeTerrorToken(discordGame, game);
+            case "move-terror-token" -> moveTerrorToken(discordGame, game);
             case "remove-terror-token-from-map" -> removeTerrorTokenFromMap(discordGame, game);
             case "trigger-terror-token" -> triggerTerrorToken(discordGame, game);
             case "robbery-draw" -> robberyDraw(discordGame, game);
             case "robbery-discard" -> robberyDiscard(discordGame, game);
         }
+    }
+
+    public static void placeTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String terrorTokenName = discordGame.required(moritaniTerrorTokenInSupply).getAsString();
+        String territoryName = discordGame.required(territory).getAsString();
+        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+        moritani.placeTerrorToken(game.getTerritory(territoryName), terrorTokenName);
+        discordGame.pushGame();
+    }
+
+    public static void moveTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
+        String toTerritoryName = discordGame.required(territory).getAsString();
+        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+        moritani.moveTerrorToken(game.getTerritory(toTerritoryName), terrorTokenName);
+        discordGame.pushGame();
     }
 
     public static void removeTerrorTokenFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

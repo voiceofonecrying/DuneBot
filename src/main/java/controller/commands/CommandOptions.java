@@ -247,6 +247,10 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "ecaz-ambassador-on-map", "Ecaz Embassador Token on the Map", true)
                     .setAutoComplete(true);
 
+    public static final OptionData moritaniTerrorTokenInSupply =
+            new OptionData(OptionType.STRING, "moritani-terror-token-in-supply", "Moritani Terror Token in Moritani supply", true)
+                    .setAutoComplete(true);
+
     public static final OptionData moritaniTerrorTokenOnMap =
             new OptionData(OptionType.STRING, "moritani-terror-token-on-map", "Moritani Terror Token on the Map", true)
                     .setAutoComplete(true);
@@ -300,6 +304,7 @@ public class CommandOptions {
             case "returning" -> choices = nonHarkLeaders(game, searchValue);
             case "game-state" -> choices = getGameStates(discordGame, searchValue);
             case "ecaz-ambassador-on-map" -> choices = getEcazAmbassadorsOnMap(discordGame, searchValue);
+            case "moritani-terror-token-in-supply" -> choices = getMoritaniTerrorTokensInSupply(discordGame, searchValue);
             case "moritani-terror-token-on-map" -> choices = getMoritaniTerrorTokensOnMap(discordGame, searchValue);
         }
 
@@ -770,6 +775,14 @@ public class CommandOptions {
                         t.getEcazAmbassador() + " in " + t.getTerritoryName(),
                         t.getEcazAmbassador()
                 ))
+                .filter(t -> t.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .toList();
+    }
+
+    private static List<Command.Choice> getMoritaniTerrorTokensInSupply(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
+        return moritani.getTerrorTokens().stream().map(tt -> new Command.Choice(tt, tt))
                 .filter(t -> t.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .toList();
     }

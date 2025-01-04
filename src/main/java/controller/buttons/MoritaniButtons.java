@@ -169,7 +169,7 @@ public class MoritaniButtons implements Pressable {
         Territory fromTerritory = game.getTerritory(event.getComponentId().split("-")[5]);
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("The " + terror + " token has been moved to " + toTerritory.getTerritoryName());
-        moritaniFaction.moveTerrorToken(toTerritory, terror, fromTerritory);
+        moritaniFaction.moveTerrorToken(toTerritory, terror);
         discordGame.getTurnSummary().queueMessage("The " + Emojis.MORITANI + " terror token in " + fromTerritory.getTerritoryName() + " has been moved to " + toTerritory.getTerritoryName());
         discordGame.pushGame();
     }
