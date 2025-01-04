@@ -190,6 +190,50 @@ class GameTest extends DuneTest {
         }
 
         @Nested
+        @DisplayName("#allFactionsHaveMoved")
+        class AllFactionsHaveMoved {
+            @BeforeEach
+            void setUp() {
+                game.startShipmentPhase();
+                game.guildWaitLast();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                bg.placeForceFromReserves(game, sietchTabr, 1, false);
+                game.completeCurrentFactionMovement();
+            }
+
+            @Test
+            void testGuildPassesAllHaveMovedIsTrue() {
+                game.completeCurrentFactionMovement();
+                assertTrue(game.allFactionsHaveMoved());
+            }
+
+            @Test
+            void testGuildIntrudesOnBGAndBGFlips() {
+                // Really should replace these first three lines with a single function
+                guild.placeForceFromReserves(game, sietchTabr, 1, false);
+                bg.bgFlipMessageAndButtons(game, sietchTabr.getTerritoryName());
+                game.completeCurrentFactionMovement();
+                assertFalse(game.allFactionsHaveMoved());
+                bg.flipForces(sietchTabr);
+                assertTrue(game.allFactionsHaveMoved());
+            }
+
+            @Test
+            void testGuildIntrudesOnBGAndBGDoesNotFlip() {
+                // Really should replace these first three lines with a single function
+                guild.placeForceFromReserves(game, sietchTabr, 1, false);
+                bg.bgFlipMessageAndButtons(game, sietchTabr.getTerritoryName());
+                game.completeCurrentFactionMovement();
+                assertFalse(game.allFactionsHaveMoved());
+                bg.dontFlipFighters(game, sietchTabr.getTerritoryName());
+                assertTrue(game.allFactionsHaveMoved());
+            }
+        }
+
+        @Nested
         @DisplayName("#guildDefer")
         class GuildDefer {
             @BeforeEach

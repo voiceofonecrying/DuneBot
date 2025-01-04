@@ -11,13 +11,16 @@ import model.Territory;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class BGFaction extends Faction {
     private String predictionFactionName;
     private int predictionRound;
     private boolean denyingAllyVoice;
+    private Set<String> intrudedTerritories;
 
     public BGFaction(String player, String userName) throws IOException {
         super("BG", player, userName);
@@ -29,6 +32,7 @@ public class BGFaction extends Faction {
         this.lowThreshold = 10;
         this.occupiedIncome = 1;
         this.homeworld = "Wallach IX";
+        this.intrudedTerritories = new HashSet<>();
     }
 
     @Override
@@ -127,6 +131,10 @@ public class BGFaction extends Faction {
         String from, to;
 
         if (territory.hasForce("BG")) {
+            // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
+            if (intrudedTerritories == null)
+                intrudedTerritories = new HashSet<>();
+            intrudedTerritories.remove(territory.getTerritoryName());
             from = "BG";
             to = "Advisor";
         } else if (territory.hasForce("Advisor")) {
@@ -139,6 +147,16 @@ public class BGFaction extends Faction {
         int count = territory.getForceStrength(from);
         territory.removeForce(from);
         territory.addForces(to, count);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void dontFlipFighters(Game game, String territoryName) {
+        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
+        if (intrudedTerritories == null)
+            intrudedTerritories = new HashSet<>();
+        intrudedTerritories.remove(territoryName);
+        game.getTurnSummary().publish(emoji + " don't flip in " + territoryName);
+        chat.reply("You will not flip.");
     }
 
     public void presentAdvisorChoices(Game game, Faction targetFaction, Territory targetTerritory) {
@@ -198,11 +216,29 @@ public class BGFaction extends Faction {
     public void bgFlipMessageAndButtons(Game game, String territoryName) {
         if (territoryName.equals("Polar Sink"))
             return;
+        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
+        if (intrudedTerritories == null)
+            intrudedTerritories = new HashSet<>();
+        intrudedTerritories.add(territoryName);
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("bg-flip-" + territoryName, "Flip"));
         choices.add(new DuneChoice("secondary", "bg-dont-flip-" + territoryName, "Don't Flip"));
         game.getTurnSummary().publish(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName);
         chat.publish("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
+    }
+
+    public boolean hasIntrudedTerritoriesDecisions() {
+        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
+        if (intrudedTerritories == null)
+            intrudedTerritories = new HashSet<>();
+        return !intrudedTerritories.isEmpty();
+    }
+
+    public String getIntrudeTerritoriesString() {
+        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
+        if (intrudedTerritories == null)
+            intrudedTerritories = new HashSet<>();
+        return String.join(", ", intrudedTerritories);
     }
 
     public boolean isDenyingAllyVoice() {
