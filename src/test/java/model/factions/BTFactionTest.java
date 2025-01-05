@@ -389,6 +389,11 @@ class BTFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testFDsReportedToLedger() {
+            assertEquals(3, ledger.getMessages().stream().filter(m -> m.contains(" is your new Face Dancer!")).count());
+        }
+
+        @Test
         public void testDrawFDsWhenNotAllRevealed() throws InvalidGameStateException {
             assertThrows(InvalidGameStateException.class, () -> faction.drawFaceDancers());
             faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
@@ -424,6 +429,21 @@ class BTFactionTest extends FactionTestTemplate {
             faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
             assertEquals(3, faction.getTraitorHand().size());
             assertEquals( Emojis.BT + " revealed all of their Face Dancers and drew a new set of 3.", turnSummary.getMessages().get(4));
+        }
+
+        @Test
+        public void testNexusCardCunning() throws InvalidGameStateException {
+            faction.setNexusCard(new NexusCard("BT"));
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
+            faction.revealFaceDancer(faction.getTraitorHand().getFirst().getName(), game);
+            assertEquals(1, faction.getTraitorHand().size());
+            assertEquals(2, faction.getRevealedFaceDancers().size());
+            ledger.clear();
+            faction.nexusCardCunning();
+            assertNull(faction.getNexusCard());
+            assertEquals(3, faction.getTraitorHand().size());
+            assertEquals(0, faction.getRevealedFaceDancers().size());
+            assertEquals(2, ledger.getMessages().stream().filter(m -> m.contains(" is your new Face Dancer!")).count());
         }
     }
 

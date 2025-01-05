@@ -898,7 +898,7 @@ public class Battle {
             } else {
                 resolution += faction.getEmoji() + " loses " + faction.forcesString(regularLeftToKill, starredLeftToKill) + " to the tanks\n";
                 if (faction instanceof IxFaction && starredLeftToKill > 0 && regularTotalForIx - regularLeftToKill > 0)
-                    resolution += faction.getEmoji() + " may send " + cyborgReplacements + " " + Emojis.IX_SUBOID + " to the tanks instead of " + cyborgReplacements + " " + Emojis.IX_CYBORG;
+                    resolution += faction.getEmoji() + " may send " + cyborgReplacements + " " + Emojis.IX_SUBOID + " to the tanks instead of " + cyborgReplacements + " " + Emojis.IX_CYBORG + "\n";
             }
         }
         return resolution;
