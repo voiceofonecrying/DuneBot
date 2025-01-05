@@ -49,6 +49,11 @@ public class BTFaction extends Faction {
         this.maxRevival = 20;
     }
 
+    public void drawFaceDancer() {
+        game.drawCard("traitor deck", "BT");
+        ledger.publish(traitorHand.getLast().getEmojiNameAndStrengthString() + " is your new Face Dancer!");
+    }
+
     public void drawFaceDancers() throws InvalidGameStateException {
         if (!getTraitorHand().isEmpty())
             throw new InvalidGameStateException("New Face Dancers cannot be drawn until all have been revealed.");
@@ -60,9 +65,23 @@ public class BTFaction extends Faction {
             game.getTurnSummary().publish(Emojis.BT + " have drawn their Face Dancers.");
         revealedFaceDancers = null;
         Collections.shuffle(game.getTraitorDeck());
-        game.drawCard("traitor deck", "BT");
-        game.drawCard("traitor deck", "BT");
-        game.drawCard("traitor deck", "BT");
+        drawFaceDancer();
+        drawFaceDancer();
+        drawFaceDancer();
+    }
+
+    public void nexusCardCunning() {
+        if (revealedFaceDancers != null) {
+            Collections.shuffle(game.getTraitorDeck());
+            for (int i = 0; i < revealedFaceDancers.size(); i++)
+                drawFaceDancer();
+            revealedFaceDancers.forEach(fd -> game.getTraitorDeck().add(fd));
+            revealedFaceDancers = null;
+        }
+        game.discardNexusCard(this);
+        game.getTurnSummary().publish(Emojis.BT + " replaced their revealed Face Dancers using their Nexus card Cunning effect.");
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     /**

@@ -24,7 +24,8 @@ public class BTCommands {
         commandData.add(Commands.slash("bt", "Commands related to the Bene Tleilaxu.").addSubcommands(
                 new SubcommandData("swap-face-dancer", "Swaps a BT Face Dancer.").addOptions(btFaceDancer),
                 new SubcommandData("reveal-face-dancer", "Reveals a BT Face Dancer.").addOptions(btFaceDancer),
-                new SubcommandData("set-revival-limit", "Set the revival limit for a faction.").addOptions(faction, amount)
+                new SubcommandData("set-revival-limit", "Set the revival limit for a faction.").addOptions(faction, amount),
+                new SubcommandData("nexus-card-cunning", "Replace revealed Face Dancers.")
         ));
         return commandData;
     }
@@ -37,6 +38,7 @@ public class BTCommands {
             case "swap-face-dancer" -> swapBTFaceDancer(discordGame, game);
             case "reveal-face-dancer" -> revealBTFaceDancer(discordGame, game);
             case "set-revival-limit" -> setRevivalLimit(event, discordGame, game);
+            case "nexus-card-cunning" -> nexusCardCunning(discordGame, game);
             default -> throw new IllegalArgumentException("Invalid command name: " + name);
         }
     }
@@ -69,5 +71,11 @@ public class BTCommands {
             throw new IllegalArgumentException("BT revival limit is always 20.");
         int revivalLimit = discordGame.required(amount).getAsInt();
         setRevivalLimit(event.getMessageChannel(), discordGame, game, factionName, revivalLimit);
+    }
+
+    public static void nexusCardCunning(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        BTFaction bt = (BTFaction) game.getFaction("BT");
+        bt.nexusCardCunning();
+        discordGame.pushGame();
     }
 }
