@@ -430,7 +430,11 @@ public class SetupCommands {
         }
         Collections.shuffle(game.getTreacheryDeck());
 
-        return StepStatus.CONTINUE;
+        if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
+            game.getModInfo().publish("Expansion 1 " + Emojis.TREACHERY + " cards have been added.\nUse /remove-double-powered-treachery if you need to remove Poison Blade and Shield Snooper. " + game.getModOrRoleMention());
+            return StepStatus.STOP;
+        } else
+            return StepStatus.CONTINUE;
     }
 
     public static StepStatus factionPositions(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
