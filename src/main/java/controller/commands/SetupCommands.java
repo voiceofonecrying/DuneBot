@@ -57,7 +57,8 @@ public class SetupCommands {
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand"),
                         new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
-                        new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition)
+                        new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition),
+                        new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck.")
                 )
         );
 
@@ -82,6 +83,7 @@ public class SetupCommands {
             case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
+            case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(discordGame, game);
         }
     }
 
@@ -431,7 +433,7 @@ public class SetupCommands {
         Collections.shuffle(game.getTreacheryDeck());
 
         if (game.hasGameOption(GameOption.EXPANSION_TREACHERY_CARDS)) {
-            game.getModInfo().publish("Expansion 1 " + Emojis.TREACHERY + " cards have been added.\nUse /remove-double-powered-treachery if you need to remove Poison Blade and Shield Snooper. " + game.getModOrRoleMention());
+            game.getModInfo().publish("Expansion 1 " + Emojis.TREACHERY + " cards have been added.\nUse /setup remove-double-powered-treachery if you need to remove Poison Blade and Shield Snooper. " + game.getModOrRoleMention());
             return StepStatus.STOP;
         } else
             return StepStatus.CONTINUE;
@@ -732,6 +734,20 @@ public class SetupCommands {
                         updatedLeader.getName(), leaderSkillCard.name()
                 )
         );
+        discordGame.pushGame();
+    }
+
+    public static void removeDoublePoweredBattleCards(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        try {
+            game.removeTreacheryCard("Poison Blade");
+        } catch (Exception e) {
+            game.getModInfo().publish("Treachery deck does not have Poison Blade.");
+        }
+        try {
+            game.removeTreacheryCard("Shield Snooper");
+        } catch (Exception e) {
+            game.getModInfo().publish("Treachery deck does not have Shield Snooper.");
+        }
         discordGame.pushGame();
     }
 }
