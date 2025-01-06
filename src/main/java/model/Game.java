@@ -1640,6 +1640,10 @@ public class Game {
     }
 
     public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount) {
+        reviveForces(faction, isPaid, regularAmount, starredAmount, false);
+    }
+
+    public void reviveForces(Faction faction, boolean isPaid, int regularAmount, int starredAmount, boolean isEmperorAllyPower) {
         tleilaxuTanks.removeForces(faction.getName(), regularAmount);
         faction.addReserves(regularAmount);
         tleilaxuTanks.removeForces(faction.getName() + "*", starredAmount);
@@ -1647,6 +1651,8 @@ public class Game {
         faction.checkForHighThreshold();
 
         String costString = " for free.";
+        if (isEmperorAllyPower)
+            costString = " as " + Emojis.EMPEROR + " ally.";
         if (isPaid) {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
             faction.subtractSpice(revivalCost, "revivals");
