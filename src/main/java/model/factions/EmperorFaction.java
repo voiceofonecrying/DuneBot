@@ -307,17 +307,17 @@ public class EmperorFaction extends Faction {
             int numCyborgsInTanks = game.getTleilaxuTanks().getForceStrength("Ix*");
             int numCyborgsToRevive = Math.min(numForces, numCyborgsInTanks);
             int numSuboidsToRevive = numForces - numCyborgsToRevive;
-            game.reviveForces(allyFaction, false, numSuboidsToRevive, numCyborgsToRevive);
+            game.reviveForces(allyFaction, false, numSuboidsToRevive, numCyborgsToRevive, true);
             cost = allyFaction.revivalCost(numSuboidsToRevive, numCyborgsToRevive);
             revivalString = " to revive " + numSuboidsToRevive + " " + Emojis.IX_SUBOID + " " + numCyborgsToRevive + Emojis.IX_CYBORG;
         } else {
-            allyFaction.reviveForces(false, numForces);
+            game.reviveForces(allyFaction, false, numForces, 0, true);
             cost = allyFaction.revivalCost(numForces, 0);
             revivalString = " to revive " + numForces + " " + allyFaction.getEmoji();
         }
         subtractSpice(cost, allyFaction.getEmoji() + " revivals");
         String costString = cost + " " + Emojis.SPICE;
-        if (game.hasFaction("BT") && !(allyFaction instanceof BTFaction)) {
+        if (game.hasFaction("BT")) {
             Faction btFaction = game.getFaction("BT");
             costString += " to " + Emojis.BT;
             btFaction.addSpice(cost, allyFaction.getEmoji() + " revivals, " + Emojis.EMPEROR + " alliance power");
