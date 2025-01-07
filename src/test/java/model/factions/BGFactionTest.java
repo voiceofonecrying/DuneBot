@@ -315,6 +315,17 @@ class BGFactionTest extends FactionTestTemplate {
             }
 
             @Test
+            public void testBGCanAdviseEcazAllyTerritoryWithGF9Rules() throws IOException {
+                carthag.removeForce("Emperor");
+                EcazFaction ecaz = new EcazFaction("p", "u");
+                ecaz.setLedger(new TestTopic());
+                game.addFaction(ecaz);
+                game.createAlliance(faction, ecaz);
+                carthag.addForces("Ecaz", 1);
+                assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
+            }
+
+            @Test
             public void testBGCanAdviseAllyTerrititoryWithAllyCoexistence() {
                 game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
                 assertDoesNotThrow(() -> faction.advise(game, carthag, 1));

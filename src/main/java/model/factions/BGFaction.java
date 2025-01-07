@@ -190,7 +190,7 @@ public class BGFaction extends Faction {
     public void advise(Game game, Territory territory, int amount) throws InvalidGameStateException {
         boolean isPolarSink = territory.getTerritoryName().equals("Polar Sink");
         if (!isPolarSink) {
-            if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && ally != null && territory.getActiveFactions(game).contains(game.getFaction(ally)))
+            if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && ally != null && !ally.equals("Ecaz") && territory.getActiveFactions(game).contains(game.getFaction(ally)))
                 throw new InvalidGameStateException("BG cannot co-exist with their ally.");
             if (territory.hasForce("BG"))
                 throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
