@@ -289,7 +289,11 @@ public class BattlePlan {
         specialNotDialed = specialStrength - specialStrengthUsed;
 
         int swappableSpecials = specialDialed;
-        int starRegularRatio = specialsNegated ? 1 : 2;
+        int starRegularRatio = 2;
+        if (faction instanceof EmperorFaction)
+            starRegularRatio = 3;
+        if (specialsNegated)
+            starRegularRatio = 1;
         if (faction instanceof IxFaction) {
             swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
             if (swappableSpecials > 0 && regularStrength - regularDialed >= 1) {
