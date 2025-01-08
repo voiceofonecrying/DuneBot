@@ -1492,6 +1492,22 @@ public class BattlePlanTest extends DuneTest {
             BattlePlan bp = new BattlePlan(game, battle, richese, true, richese.getLeader("Lady Helena").orElseThrow(), null, false, null, null, 2, false, 2);
             assertEquals(2, bp.getRegularDialed());
         }
+
+        @Test
+        void testEmperorCanChangeForcesLost() throws InvalidGameStateException {
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            carthag.addForces("Emperor", 4);
+            carthag.addForces("Emperor*", 2);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan empPlan = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 4, true, 2);
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " in Carthag if you win.", emperorChat.getMessages().getLast());
+            assertEquals(2, emperorChat.getChoices().getLast().size());
+            assertEquals("1 + 2* (Current)", emperorChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("4 + 1*", emperorChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(1, empPlan.getRegularDialed());
+            assertEquals(2, empPlan.getSpecialDialed());
+        }
     }
 
     @Nested
