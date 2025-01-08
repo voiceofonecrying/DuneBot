@@ -273,16 +273,33 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testCanReviveExtraAllyForces() throws IOException {
+        public void testCanReviveExtraAllyForces() throws IOException, InvalidGameStateException {
             Faction bg = new BGFaction("bg", "bg");
             bg.setLedger(new TestTopic());
             game.addFaction(bg);
             game.createAlliance(faction, bg);
+            faction.removeForces("Kaitain", 2, false, true);
+            faction.presentPaidRevivalChoices(1);
             bg.removeForces("Wallach IX", 2, false, true);
             faction.reviveForces(true, 0);
             assertEquals(Emojis.EMPEROR + " does not purchase additional revivals.", turnSummary.getMessages().getLast());
             assertEquals("Would you like to purchase additional revivals for " + Emojis.BG + "? " + faction.getPlayer(), chat.getMessages().getLast());
             assertEquals(4, chat.getChoices().getLast().size());
+            assertTrue(faction.isPaidRevivalTBD());
+        }
+
+        @Test
+        public void testAllyHasNoRevivableForces() throws IOException, InvalidGameStateException {
+            Faction bg = new BGFaction("bg", "bg");
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            game.createAlliance(faction, bg);
+            faction.removeForces("Kaitain", 2, false, true);
+            faction.presentPaidRevivalChoices(1);
+            faction.reviveForces(true, 0);
+            assertEquals(Emojis.EMPEROR + " does not purchase additional revivals.", turnSummary.getMessages().getLast());
+            assertEquals("Your ally " + Emojis.BG + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
+            assertFalse(faction.isPaidRevivalTBD());
         }
     }
 

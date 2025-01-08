@@ -263,6 +263,7 @@ public class EmperorFaction extends Faction {
      */
     @Override
     public void reviveForces(boolean isPaid, int numForces) {
+        paidRevivalTBD = false;
         if (numForces == 0)
             game.getTurnSummary().publish(emoji + " does not purchase additional revivals.");
         else if (isStarNotRevived() && game.getTleilaxuTanks().getForceStrength("Emperor*") > 0) {
