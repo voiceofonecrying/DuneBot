@@ -1996,6 +1996,65 @@ class BattleTest extends DuneTest {
         }
 
         @Nested
+        @DisplayName("#weaponDiscard")
+        class WeaponDiscard {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                atreides.addTreacheryCard(snooper);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, snooper);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotDiscardWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(richese.getTreacheryHand().contains(chaumas));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.RICHESE + " discards Chaumas"));
+            }
+
+            @Test
+            void testPublishDoesNotDiscardWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(richese.getTreacheryHand().contains(chaumas));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.RICHESE + " discards Chaumas"));
+            }
+
+            @Test
+            void testResolveDiscardsWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(richese.getTreacheryHand().contains(chaumas));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.RICHESE + " discards Chaumas.")));
+            }
+
+            @Test
+            void testLoserCallsTraitorDoesNotDiscard() throws InvalidGameStateException {
+                turnSummary.clear();
+                richese.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.getAggressorBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, richese, true, 0, "Gara Kulon");
+                battle.printBattleResolution(game, false, true);
+                assertTrue(richese.getTreacheryHand().contains(chaumas));
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.RICHESE + " discards Chaumas.")));
+            }
+
+            @Test
+            void testBothCallTraitorWeaponIsDiscarded() throws InvalidGameStateException {
+                richese.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.getAggressorBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, richese, true, 0, "Gara Kulon");
+                atreides.addTraitorCard(new TraitorCard("Cheap Hero", "Any", 0));
+                battle.getDefenderBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, atreides, true, 0, "Gara Kulon");
+                battle.printBattleResolution(game, false, true);
+                assertFalse(richese.getTreacheryHand().contains(chaumas));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.RICHESE + " discards Chaumas.")));
+            }
+        }
+
+        @Nested
         @DisplayName("#resolutionWithNoField")
         class ResolutionWithNoField {
             @BeforeEach
@@ -2836,6 +2895,33 @@ class BattleTest extends DuneTest {
 
             @Test
             void testResolveWithdrawsForces() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals(0, kaitain.getForceStrength("Emperor"));
+                assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " in Kaitain were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus were sent to the tanks.")));
+            }
+
+            @Test
+            void testResolveAndCallTraitor() throws InvalidGameStateException {
+                battle.getAggressorBattlePlan().setCanCallTraitor(true);
+                emperor.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.willCallTraitor(game, emperor, true, 0, "Cielago North");
+                battle.printBattleResolution(game, false, true);
+                assertEquals(2, kaitain.getForceStrength("Emperor"));
+                assertEquals(2, salusaSecundus.getForceStrength("Emperor*"));
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " in Kaitain were sent to the tanks.")));
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus were sent to the tanks.")));
+            }
+
+            @Test
+            void testResolveAndBothCallTraitor() throws InvalidGameStateException {
+                battle.getAggressorBattlePlan().setCanCallTraitor(true);
+                emperor.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.willCallTraitor(game, emperor, true, 0, "Cielago North");
+                battle.getDefenderBattlePlan().setCanCallTraitor(true);
+                atreides.addTraitorCard(new TraitorCard("Burseg", "Atreides", 2));
+                battle.willCallTraitor(game, atreides, true, 0, "Cielago North");
                 battle.printBattleResolution(game, false, true);
                 assertEquals(0, kaitain.getForceStrength("Emperor"));
                 assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));

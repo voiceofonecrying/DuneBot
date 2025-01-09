@@ -829,14 +829,15 @@ public class Battle {
                 resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, 0, executeResolution);
             }
         }
-        resolution += handleReinforcements(game, faction, callsTraitor, battlePlan, executeResolution);
+        boolean successfulTraitor = callsTraitor && !bothCallTraitor(game);
+        resolution += handleReinforcements(game, faction, successfulTraitor, battlePlan, executeResolution);
 
-        resolution += handleCheapHeroDiscard(faction, callsTraitor, battlePlan, executeResolution);
-        resolution += handleWeaponDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
-        resolution += handleDefenseDiscard(faction, callsTraitor, isLoser, battlePlan, executeResolution);
-        resolution += handleJuiceofSaphoDiscard(faction, callsTraitor, battlePlan, executeResolution);
+        resolution += handleCheapHeroDiscard(faction, successfulTraitor, battlePlan, executeResolution);
+        resolution += handleWeaponDiscard(faction, isLoser, battlePlan, executeResolution);
+        resolution += handleDefenseDiscard(faction, isLoser, battlePlan, executeResolution);
+        resolution += handleJuiceofSaphoDiscard(faction, successfulTraitor, battlePlan, executeResolution);
 
-        resolution += handleSpicePayments(game, faction, callsTraitor, battlePlan, executeResolution);
+        resolution += handleSpicePayments(game, faction, successfulTraitor, battlePlan, executeResolution);
 
         resolution += handleRihaniDecipherer(game, faction, isLoser, battlePlan, executeResolution);
 
@@ -920,11 +921,11 @@ public class Battle {
         return resolution;
     }
 
-    private String handleReinforcements(Game game, Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleReinforcements(Game game, Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
         TreacheryCard weapon = battlePlan.getWeapon();
         TreacheryCard defense = battlePlan.getDefense();
-        if (!callsTraitor && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements"))) {
+        if (!successfulTraitor && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements"))) {
             if (executeResolution) {
                 if (battlePlan.getNumForcesInReserve() < 3)
                     game.getModInfo().publish("Reinforcements requires 3 forces in reserves. Sending all reserves to the tanks. " + game.getModOrRoleMention());
@@ -958,9 +959,9 @@ public class Battle {
         return resolution;
     }
 
-    private String handleCheapHeroDiscard(Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleCheapHeroDiscard(Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
-        if (!callsTraitor && battlePlan.getCheapHero() != null) {
+        if (!successfulTraitor && battlePlan.getCheapHero() != null) {
             if (executeResolution)
                 faction.discard(battlePlan.getCheapHero().name());
             else
@@ -969,9 +970,9 @@ public class Battle {
         return resolution;
     }
 
-    private String handleWeaponDiscard(Faction faction, boolean callsTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleWeaponDiscard(Faction faction, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
-        if (!callsTraitor && battlePlan.weaponMustBeDiscarded(isLoser)) {
+        if (battlePlan.weaponMustBeDiscarded(isLoser)) {
             if (executeResolution)
                 faction.discard(battlePlan.getWeapon().name());
             else
@@ -980,9 +981,9 @@ public class Battle {
         return resolution;
     }
 
-    private String handleDefenseDiscard(Faction faction, boolean callsTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleDefenseDiscard(Faction faction, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
-        if (!callsTraitor && battlePlan.defenseMustBeDiscarded(isLoser)) {
+        if (battlePlan.defenseMustBeDiscarded(isLoser)) {
             if (executeResolution)
                 faction.discard(battlePlan.getDefense().name());
             else
@@ -991,9 +992,9 @@ public class Battle {
         return resolution;
     }
 
-    private String handleJuiceofSaphoDiscard(Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleJuiceofSaphoDiscard(Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
-        if (!callsTraitor && battlePlan.isJuiceOfSapho()) {
+        if (!successfulTraitor && battlePlan.isJuiceOfSapho()) {
             if (executeResolution && faction.hasTreacheryCard("Juice of Sapho"))
                 faction.discard("Juice of Sapho");
             else
@@ -1002,10 +1003,10 @@ public class Battle {
         return resolution;
     }
 
-    private String handleSpicePayments(Game game, Faction faction, boolean callsTraitor, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleSpicePayments(Game game, Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
         DuneTopic turnSummary = game.getTurnSummary();
-        if (!callsTraitor && battlePlan.getSpice() > 0) {
+        if (!successfulTraitor && battlePlan.getSpice() > 0) {
             int spiceFromAlly = 0;
             if (faction.hasAlly())
                 spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
@@ -1046,7 +1047,7 @@ public class Battle {
                 }
             }
         }
-        if (!callsTraitor && battlePlan.getSpiceBankerSupport() > 0) {
+        if (!successfulTraitor && battlePlan.getSpiceBankerSupport() > 0) {
             if (executeResolution) {
                 faction.subtractSpice(battlePlan.getSpiceBankerSupport(), "combat spice");
                 turnSummary.publish(faction.getEmoji() + " loses " + battlePlan.getSpiceBankerSupport() + " " + Emojis.SPICE + " spent on Spice Banker\n");
