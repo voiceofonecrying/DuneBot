@@ -102,7 +102,7 @@ public class EventListener extends ListenerAdapter {
         Set<String> mentionedPlayers = new HashSet<>();
 
         while (mentionMatcher.find()) {
-            String emojiName = mentionMatcher.group(1);
+            String emojiName = Emojis.standardiseEmojiName(mentionMatcher.group(1));
 
             if (emojiName.equals(Emojis.MOD_EMPEROR)) {
                 mentionedPlayers.add(game.getModOrRoleMention());
