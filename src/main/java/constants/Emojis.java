@@ -161,4 +161,35 @@ public final class Emojis {
         }
         return " tech token ";
     }
+
+    /**
+     * Standardizes an emoji name by mapping abbreviated names to their corresponding faction constants.
+     * If the provided emoji name does not match any of the predefined mappings, the original
+     * emoji name is returned unchanged.
+     *
+     * @param emojiName the name of the emoji to standardize, typically in an abbreviated format
+     * @return the standardized emoji name corresponding to a specific faction or the original name if no match is found
+     */
+    public static String standardiseEmojiName(String emojiName) {
+        switch (emojiName) {
+            case "atr" -> {
+                return ATREIDES;
+            }
+            case "hark" -> {
+                return HARKONNEN;
+            }
+            case "emp" -> {
+                return EMPEROR;
+            }
+            case "frem" -> {
+                return FREMEN;
+            }
+            case "rich" -> {
+                return RICHESE;
+            }
+            default -> {
+                return emojiName;
+            }
+        }
+    }
 }
