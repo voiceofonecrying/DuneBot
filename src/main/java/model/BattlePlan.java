@@ -101,6 +101,10 @@ public class BattlePlan {
     public void presentEarlyTraitorChoices(Game game, Faction faction, Faction opponent, boolean isHarkonnenAllyPower) {
         if (faction instanceof BTFaction)
             return;
+        if (game.getHomeworlds().containsValue(wholeTerritoryName) && !((HomeworldTerritory) game.getTerritory(wholeTerritoryName)).getNativeName().equals(faction.getName())) {
+            faction.getChat().publish("You cannot call Traitor on " + wholeTerritoryName + ".");
+            return;
+        }
         List<String> eligibleTraitors = faction.getTraitorHand().stream().filter(t -> t.canBeCalledAgainst(opponent) && game.getLeaderTanks().stream().noneMatch(l -> l.getName().equals(t.getName()))).map(TraitorCard::getName).collect(Collectors.toList());
         if (!isHarkonnenAllyPower && faction.getAlly().equals("Harkonnen"))
             eligibleTraitors.add("one of " + Emojis.HARKONNEN + "'s traitors");

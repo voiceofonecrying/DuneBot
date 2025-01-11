@@ -1653,6 +1653,40 @@ public class BattlePlanTest extends DuneTest {
         }
     }
 
+    @Nested
+    @DisplayName("#noTraitorOnAnothersHomeworld")
+    class NoTraitorOnAnothersHomeworld {
+        Territory caladan;
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(emperor);
+            caladan = game.getTerritory("Caladan");
+            caladan.addForces("Emperor", 1);
+            battle = new Battle(game, List.of(caladan), List.of(atreides, emperor));
+            atreides.addTraitorCard(new TraitorCard("Burseg", "Emperor", 3));
+            emperor.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+        }
+
+        @Test
+        void testAtreidesCanCallTraitor() throws InvalidGameStateException {
+            BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 0, false, 0);
+            assertTrue(atreidesChat.getMessages().getLast().contains("Will you call Traitor"));
+            assertTrue(battlePlan.isCanCallTraitor());
+        }
+
+        @Test
+        void testEmperorCannotCallTraitor() throws InvalidGameStateException {
+            BattlePlan battlePlan = new BattlePlan(game, battle, emperor, false, burseg, null, false, null, null, 0, false, 0);
+            assertFalse(emperorChat.getMessages().getLast().contains("Will you call Traitor"));
+            assertFalse(battlePlan.isCanCallTraitor());
+            assertEquals("You cannot call Traitor on Caladan.", emperorChat.getMessages().getLast());
+        }
+    }
+
     @AfterEach
     void tearDown() {
     }
