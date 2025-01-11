@@ -172,19 +172,19 @@ public final class Emojis {
      */
     public static String standardiseEmojiName(String emojiName) {
         switch (emojiName) {
-            case "atr" -> {
+            case ":atr:" -> {
                 return ATREIDES;
             }
-            case "hark" -> {
+            case ":hark:" -> {
                 return HARKONNEN;
             }
-            case "emp" -> {
+            case ":emp:" -> {
                 return EMPEROR;
             }
-            case "frem" -> {
+            case ":frem:" -> {
                 return FREMEN;
             }
-            case "rich" -> {
+            case ":rich:" -> {
                 return RICHESE;
             }
             default -> {

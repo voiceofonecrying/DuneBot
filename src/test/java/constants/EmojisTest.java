@@ -14,7 +14,7 @@ class EmojisTest {
     @Test
     void testStandardiseEmojiNameAtreides() {
         // Test case: shorthand "atr"
-        String emojiName = "atr";
+        String emojiName = ":atr:";
         String result = Emojis.standardiseEmojiName(emojiName);
         assertEquals(":atreides:", result, "Expected shorthand 'atr' to standardize to ':atreides:'");
     }
@@ -22,7 +22,7 @@ class EmojisTest {
     @Test
     void testStandardiseEmojiNameHarkonnen() {
         // Test case: shorthand "hark"
-        String emojiName = "hark";
+        String emojiName = ":hark:";
         String result = Emojis.standardiseEmojiName(emojiName);
         assertEquals(":harkonnen:", result, "Expected shorthand 'hark' to standardize to ':harkonnen:'");
     }
@@ -30,7 +30,7 @@ class EmojisTest {
     @Test
     void testStandardiseEmojiNameEmperor() {
         // Test case: shorthand "emp"
-        String emojiName = "emp";
+        String emojiName = ":emp:";
         String result = Emojis.standardiseEmojiName(emojiName);
         assertEquals(":emperor:", result, "Expected shorthand 'emp' to standardize to ':emperor:'");
     }
@@ -38,7 +38,7 @@ class EmojisTest {
     @Test
     void testStandardiseEmojiNameFremen() {
         // Test case: shorthand "frem"
-        String emojiName = "frem";
+        String emojiName = ":frem:";
         String result = Emojis.standardiseEmojiName(emojiName);
         assertEquals(":fremen:", result, "Expected shorthand 'frem' to standardize to ':fremen:'");
     }
@@ -46,7 +46,7 @@ class EmojisTest {
     @Test
     void testStandardiseEmojiNameRichese() {
         // Test case: shorthand "rich"
-        String emojiName = "rich";
+        String emojiName = ":rich:";
         String result = Emojis.standardiseEmojiName(emojiName);
         assertEquals(":rich:", result, "Expected shorthand 'rich' to standardize to ':rich:'");
     }
