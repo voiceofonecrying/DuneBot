@@ -1137,6 +1137,16 @@ public class BattlePlanTest extends DuneTest {
     }
 
     @Test
+    void testSpiceBankerInBattle() throws InvalidGameStateException {
+        duncanIdaho.setPulledBehindShield(true);
+        LeaderSkillCard spiceBanker = new LeaderSkillCard("Spice Banker");
+        duncanIdaho.setSkillCard(spiceBanker);
+        BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 0, false, 0);
+        battlePlan.setSpiceBankerSupport(3);
+        assertEquals(10, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Test
     void testSwordmasterOfGinazInFrontProjectileWeapon() throws InvalidGameStateException {
         LeaderSkillCard swordmasterOfGinaz = new LeaderSkillCard("Swordmaster of Ginaz");
         duncanIdaho.setSkillCard(swordmasterOfGinaz);
