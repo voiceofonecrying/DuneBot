@@ -495,7 +495,7 @@ public class BattlePlan {
     }
 
     public int getDoubleBattleStrength() {
-        int bonuses = homeworldDialAdvantage + spiceBankerSupport;
+        int bonuses = homeworldDialAdvantage;
         if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             bonuses += 2;
         if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
