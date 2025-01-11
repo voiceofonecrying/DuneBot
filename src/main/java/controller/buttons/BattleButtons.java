@@ -238,7 +238,7 @@ public class BattleButtons implements Pressable {
         discordGame.queueDeleteMessage();
         Battle battle = game.getBattles().getCurrentBattle();
         String leader = battle.getHarkonnenCapturedLeader();
-        battle.returnHarkonnenCapturedLeader();
+        battle.returnHarkonnenCapturedLeader(game);
         discordGame.queueMessage("You chose not to capture " + leader);
         discordGame.pushGame();
     }
