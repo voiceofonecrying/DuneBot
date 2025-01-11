@@ -2000,8 +2000,9 @@ public class Battle {
         return harkonnenCapturedLeader;
     }
 
-    public void returnHarkonnenCapturedLeader() {
+    public void returnHarkonnenCapturedLeader(Game game) {
         harkonnenCapturedLeader = null;
+        game.getTurnSummary().publish(Emojis.HARKONNEN + " chooses not to capture a leader.");
     }
 
     public boolean isHarkonnenCaptureMustBeResolved(Game game) {
