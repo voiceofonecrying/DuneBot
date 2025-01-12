@@ -130,7 +130,7 @@ public class IxFaction extends Faction {
                 paidRevivalMessage = getNoRevivableForcesMessage();
             }
         } else {
-            paidRevivalMessage = emoji + " has revived their maximum";
+            paidRevivalMessage = getRevivedMaximumMessage();
         }
         return paidRevivalTBD;
     }

@@ -1319,13 +1319,17 @@ public class Faction {
                 paidRevivalMessage = getNoRevivableForcesMessage();
             }
         } else {
-            paidRevivalMessage = emoji + " has revived their maximum";
+            paidRevivalMessage = getRevivedMaximumMessage();
         }
         return paidRevivalTBD;
     }
 
     public String getNoRevivableForcesMessage() {
         return emoji + " has no forces in the tanks";
+    }
+
+    public String getRevivedMaximumMessage() {
+        return emoji + " has revived their maximum";
     }
 
     public String getPaidRevivalMessage() {
