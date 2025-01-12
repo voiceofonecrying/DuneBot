@@ -289,6 +289,24 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testCanReviveExtraFremenAllyForces() throws IOException, InvalidGameStateException {
+            Faction fremen = new FremenFaction("fr", "fr");
+            fremen.setLedger(new TestTopic());
+            game.addFaction(fremen);
+            game.createAlliance(faction, fremen);
+            faction.removeForces("Kaitain", 5, false, true);
+            faction.removeForces("Salusa Secundus", 3, true, true);
+            fremen.removeForces("Southern Hemisphere", 5, false, true);
+            fremen.removeForces("Southern Hemisphere", 2, false, true);
+            game.startRevival();
+            game.getRevival().performPreSteps(game);
+            game.getRevival().startRevivingForces(game);
+            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+            assertEquals(4, chat.getChoices().getLast().size());
+            assertTrue(faction.isPaidRevivalTBD());
+        }
+
+        @Test
         public void testAllyHasNoRevivableForces() throws IOException, InvalidGameStateException {
             Faction bg = new BGFaction("bg", "bg");
             bg.setLedger(new TestTopic());

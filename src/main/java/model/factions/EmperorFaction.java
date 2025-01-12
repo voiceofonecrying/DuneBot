@@ -255,6 +255,12 @@ public class EmperorFaction extends Faction {
             return emoji + " has no forces in the tanks";
     }
 
+    @Override
+    public String getRevivedMaximumMessage() {
+        presentAllyRevivalChoices();
+        return super.getRevivedMaximumMessage();
+    }
+
     /**
      * Just revive the leader. Calling function handles payment and messaging.
      *
