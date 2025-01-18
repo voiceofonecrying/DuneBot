@@ -337,6 +337,7 @@ public class ShowCommands {
             }
         }
 
+        table = resize(table, 1024, 1024);
         ByteArrayOutputStream boardOutputStream = new ByteArrayOutputStream();
         ImageIO.write(table, "png", boardOutputStream);
 
