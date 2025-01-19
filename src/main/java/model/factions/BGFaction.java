@@ -168,7 +168,7 @@ public class BGFaction extends Faction {
             List<DuneChoice> choices = new LinkedList<>();
             String territoryName = targetTerritory.getTerritoryName();
             DuneChoice adviseChoice = new DuneChoice("bg-advise-" + territoryName, "Advise");
-            adviseChoice.setDisabled(!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && targetFaction.getName().equals(ally) && targetTerritory.hasActiveFaction(targetFaction));
+            adviseChoice.setDisabled(!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && targetFaction.getName().equals(ally) && !targetFaction.getName().equals("Ecaz") && targetTerritory.hasActiveFaction(targetFaction));
             choices.add(adviseChoice);
             choices.add(new DuneChoice("secondary", "bg-advise-Polar Sink", "Advise to Polar Sink"));
             if (game.hasGameOption(GameOption.HOMEWORLDS))

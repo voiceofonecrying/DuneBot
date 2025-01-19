@@ -315,6 +315,20 @@ class BGFactionTest extends FactionTestTemplate {
             }
 
             @Test
+            public void testAdviseButtonEnabledWithEcazAllyInTerritoryWithGF9Rules() throws IOException {
+                carthag.removeForce("Emperor");
+                EcazFaction ecaz = new EcazFaction("p", "u");
+                ecaz.setLedger(new TestTopic());
+                game.addFaction(ecaz);
+                game.createAlliance(faction, ecaz);
+                carthag.addForces("Ecaz", 1);
+                faction.presentAdvisorChoices(game, ecaz, carthag);
+                DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
+                assertEquals("Advise", adviseChoice.getLabel());
+                assertFalse(adviseChoice.isDisabled());
+            }
+
+            @Test
             public void testBGCanAdviseEcazAllyTerritoryWithGF9Rules() throws IOException {
                 carthag.removeForce("Emperor");
                 EcazFaction ecaz = new EcazFaction("p", "u");
