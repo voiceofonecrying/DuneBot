@@ -396,10 +396,10 @@ public class ReportsCommands {
         }
 //        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
-        StringBuilder playerStatsString = new StringBuilder("__Top 20 Players With Wins Over Expected Based On Factions In Games [BETA]__");
-        playerStatsString.append("\n*Players must have played in a game that ended in 2024*");
+        StringBuilder playerStatsString = new StringBuilder("__Top 20 Players With Wins Over Expected Based On Factions In Games__");
+        playerStatsString.append("\n*Players must have played in a game that ended in the past year*");
         for (PlayerPerformance pp : allPlayerPerformance) {
-            if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.parse("2024-01-01")))
+            if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.now().minusYears(1)))
                 continue;
             String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
             String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
