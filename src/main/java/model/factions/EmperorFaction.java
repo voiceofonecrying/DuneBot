@@ -291,7 +291,7 @@ public class EmperorFaction extends Faction {
                 List<DuneChoice> choices = new ArrayList<>();
                 IntStream.rangeClosed(0, 3).forEachOrdered(i -> {
                     DuneChoice choice = new DuneChoice("revival-emp-ally-" + i, "" + i);
-                    choice.setDisabled(spice < 2 * i || i > revivableForces);
+                    choice.setDisabled(spice < allyFaction.revivalCost(i, 0) || i > revivableForces);
                     choices.add(choice);
                 });
                 chat.publish("Would you like to purchase additional revivals for " + allyFaction.getEmoji() + "? " + player, choices);
