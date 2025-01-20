@@ -85,69 +85,100 @@ class EmperorFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#presentAllyRevivalChoices")
     class PresentAllyRevivalChoices {
-        Faction fremen;
+        @Nested
+        @DisplayName("#fremenAsAlly")
+        class BTAsAlly {
+            Faction bt;
 
-        @BeforeEach
-        public void setUp() throws IOException {
-            fremen = new FremenFaction("fr", "fr");
-            fremen.setLedger(new TestTopic());
-            game.addFaction(fremen);
-            game.createAlliance(faction, fremen);
-            turnSummary.clear();
+            @BeforeEach
+            public void setUp() throws IOException {
+                bt = new BTFaction("bt", "bt");
+                bt.setLedger(new TestTopic());
+                game.addFaction(bt);
+                game.createAlliance(faction, bt);
+                turnSummary.clear();
+            }
+
+            @Test
+            public void testThreeBTForceInTanksCostOneSpiceEachToRevive() {
+                faction.subtractSpice(7, "test setup");
+                assertEquals(3, faction.getSpice());
+                bt.removeForces("Tleilax", 5, false, true);
+                bt.reviveForces(false, 2);
+                faction.presentAllyRevivalChoices();
+                assertEquals("Would you like to purchase additional revivals for " + Emojis.BT + "? " + faction.getPlayer(), chat.getMessages().getLast());
+                assertEquals(4, chat.getChoices().getLast().size());
+                assertFalse(chat.getChoices().getLast().getLast().isDisabled());
+            }
         }
 
-        @Test
-        public void testNoAllyForcesInTanks() {
-            faction.presentAllyRevivalChoices();
-            assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
-            assertEquals(0, turnSummary.getChoices().size());
-        }
+        @Nested
+        @DisplayName("#fremenAsAlly")
+        class FremenAsAlly {
+            Faction fremen;
 
-        @Test
-        public void testOnlyFedaykinInTanks() {
-            fremen.removeForces("Southern Hemisphere", 2, true, true);
-            faction.presentAllyRevivalChoices();
-            assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
-        }
+            @BeforeEach
+            public void setUp() throws IOException {
+                fremen = new FremenFaction("fr", "fr");
+                fremen.setLedger(new TestTopic());
+                game.addFaction(fremen);
+                game.createAlliance(faction, fremen);
+                turnSummary.clear();
+            }
 
-        @Test
-        public void testOneFremenForceTwoFedaykinInTanks() {
-            fremen.removeForces("Southern Hemisphere", 2, true, true);
-            fremen.removeForces("Southern Hemisphere", 1, false, true);
-            faction.presentAllyRevivalChoices();
-            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
-            assertEquals(4, chat.getChoices().getLast().size());
-            assertTrue(chat.getChoices().getLast().get(2).isDisabled());
-        }
+            @Test
+            public void testNoAllyForcesInTanks() {
+                faction.presentAllyRevivalChoices();
+                assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
+                assertEquals(0, turnSummary.getChoices().size());
+            }
 
-        @Test
-        public void testTwoFremenForceTwoFedaykinInTanks() {
-            fremen.removeForces("Southern Hemisphere", 2, true, true);
-            fremen.removeForces("Southern Hemisphere", 2, false, true);
-            faction.presentAllyRevivalChoices();
-            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
-            assertEquals(4, chat.getChoices().getLast().size());
-            assertFalse(chat.getChoices().getLast().get(2).isDisabled());
-            assertTrue(chat.getChoices().getLast().getLast().isDisabled());
-        }
+            @Test
+            public void testOnlyFedaykinInTanks() {
+                fremen.removeForces("Southern Hemisphere", 2, true, true);
+                faction.presentAllyRevivalChoices();
+                assertEquals("Your ally " + Emojis.FREMEN + " has no revivable forces for you to pay for.", chat.getMessages().getLast());
+            }
 
-        @Test
-        public void testThreeFremenForceTwoFedaykinInTanks() {
-            fremen.removeForces("Southern Hemisphere", 2, true, true);
-            fremen.removeForces("Southern Hemisphere", 3, false, true);
-            faction.presentAllyRevivalChoices();
-            assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
-            assertEquals(4, chat.getChoices().getLast().size());
-            assertFalse(chat.getChoices().getLast().getLast().isDisabled());
-        }
+            @Test
+            public void testOneFremenForceTwoFedaykinInTanks() {
+                fremen.removeForces("Southern Hemisphere", 2, true, true);
+                fremen.removeForces("Southern Hemisphere", 1, false, true);
+                faction.presentAllyRevivalChoices();
+                assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+                assertEquals(4, chat.getChoices().getLast().size());
+                assertTrue(chat.getChoices().getLast().get(2).isDisabled());
+            }
 
-        @Test
-        public void testEmperorDoesNotHaveEnoughSpiceToReviveAll() {
-            faction.subtractSpice(8, "test");
-            fremen.removeForces("Southern Hemisphere", 3, false, true);
-            faction.presentAllyRevivalChoices();
-            assertFalse(chat.getChoices().getLast().get(1).isDisabled());
-            assertTrue(chat.getChoices().getLast().get(2).isDisabled());
+            @Test
+            public void testTwoFremenForceTwoFedaykinInTanks() {
+                fremen.removeForces("Southern Hemisphere", 2, true, true);
+                fremen.removeForces("Southern Hemisphere", 2, false, true);
+                faction.presentAllyRevivalChoices();
+                assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+                assertEquals(4, chat.getChoices().getLast().size());
+                assertFalse(chat.getChoices().getLast().get(2).isDisabled());
+                assertTrue(chat.getChoices().getLast().getLast().isDisabled());
+            }
+
+            @Test
+            public void testThreeFremenForceTwoFedaykinInTanks() {
+                fremen.removeForces("Southern Hemisphere", 2, true, true);
+                fremen.removeForces("Southern Hemisphere", 3, false, true);
+                faction.presentAllyRevivalChoices();
+                assertEquals("Would you like to purchase additional revivals for " + Emojis.FREMEN + "? " + faction.getPlayer(), chat.getMessages().getLast());
+                assertEquals(4, chat.getChoices().getLast().size());
+                assertFalse(chat.getChoices().getLast().getLast().isDisabled());
+            }
+
+            @Test
+            public void testEmperorDoesNotHaveEnoughSpiceToReviveAll() {
+                faction.subtractSpice(8, "test");
+                fremen.removeForces("Southern Hemisphere", 3, false, true);
+                faction.presentAllyRevivalChoices();
+                assertFalse(chat.getChoices().getLast().get(1).isDisabled());
+                assertTrue(chat.getChoices().getLast().get(2).isDisabled());
+            }
         }
     }
 
