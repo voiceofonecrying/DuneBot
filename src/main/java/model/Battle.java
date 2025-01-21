@@ -833,8 +833,8 @@ public class Battle {
         resolution += handleReinforcements(game, faction, successfulTraitor, battlePlan, executeResolution);
 
         resolution += handleCheapHeroDiscard(faction, successfulTraitor, battlePlan, executeResolution);
-        resolution += handleWeaponDiscard(faction, isLoser, battlePlan, executeResolution);
-        resolution += handleDefenseDiscard(faction, isLoser, battlePlan, executeResolution);
+        resolution += handleWeaponDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution);
+        resolution += handleDefenseDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution);
         resolution += handleJuiceofSaphoDiscard(faction, successfulTraitor, battlePlan, executeResolution);
 
         resolution += handleSpicePayments(game, faction, successfulTraitor, battlePlan, executeResolution);
@@ -961,33 +961,48 @@ public class Battle {
 
     private String handleCheapHeroDiscard(Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
-        if (!successfulTraitor && battlePlan.getCheapHero() != null) {
-            if (executeResolution)
-                faction.discard(battlePlan.getCheapHero().name());
-            else
-                resolution += faction.getEmoji() + " discards " + battlePlan.getCheapHero().name() + "\n";
+        if (battlePlan.getCheapHero() != null) {
+            if (successfulTraitor) {
+                if (!executeResolution)
+                    resolution += faction.getEmoji() + " may discard " + battlePlan.getCheapHero().name() + "\n";
+            } else {
+                if (executeResolution)
+                    faction.discard(battlePlan.getCheapHero().name());
+                else
+                    resolution += faction.getEmoji() + " discards " + battlePlan.getCheapHero().name() + "\n";
+            }
         }
         return resolution;
     }
 
-    private String handleWeaponDiscard(Faction faction, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleWeaponDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
         if (battlePlan.weaponMustBeDiscarded(isLoser)) {
-            if (executeResolution)
-                faction.discard(battlePlan.getWeapon().name());
-            else
-                resolution += faction.getEmoji() + " discards " + battlePlan.getWeapon().name() + "\n";
+            if (successfulTraitor) {
+                if (!executeResolution)
+                    resolution += faction.getEmoji() + " may discard " + battlePlan.getWeapon().name() + "\n";
+            } else {
+                if (executeResolution)
+                    faction.discard(battlePlan.getWeapon().name());
+                else
+                    resolution += faction.getEmoji() + " discards " + battlePlan.getWeapon().name() + "\n";
+            }
         }
         return resolution;
     }
 
-    private String handleDefenseDiscard(Faction faction, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleDefenseDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
         String resolution = "";
         if (battlePlan.defenseMustBeDiscarded(isLoser)) {
-            if (executeResolution)
-                faction.discard(battlePlan.getDefense().name());
-            else
-                resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+            if (successfulTraitor) {
+                if (!executeResolution)
+                    resolution += faction.getEmoji() + " may discard " + battlePlan.getDefense().name() + "\n";
+            } else {
+                if (executeResolution)
+                    faction.discard(battlePlan.getDefense().name());
+                else
+                    resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+            }
         }
         return resolution;
     }
