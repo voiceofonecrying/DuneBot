@@ -2055,6 +2055,68 @@ class BattleTest extends DuneTest {
         }
 
         @Nested
+        @DisplayName("#worthlessWeaponDiscard")
+        class WorthlessWeaponDiscard {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                richese.addTreacheryCard(chaumas);
+                atreides.addTreacheryCard(snooper);
+                atreides.addTreacheryCard(baliset);
+                battle.setBattlePlan(game, richese, null, cheapHero, false, 0, false, 0, chaumas, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, baliset, snooper);
+                turnSummary.clear();
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewDoesNotDiscardWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(atreides.getTreacheryHand().contains(baliset));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " discards Baliset"));
+            }
+
+            @Test
+            void testPublishDoesNotDiscardWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(atreides.getTreacheryHand().contains(baliset));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " discards Baliset"));
+            }
+
+            @Test
+            void testResolveDiscardsWeapon() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(atreides.getTreacheryHand().contains(baliset));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " discards Baliset.")));
+            }
+
+            @Test
+            void testCallsTraitorDoesNotDiscard() throws InvalidGameStateException {
+                turnSummary.clear();
+                atreides.addTraitorCard(new TraitorCard("Cheap Hero", "Any", 0));
+                battle.getDefenderBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, atreides, true, 0, "Gara Kulon");
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getLast().contains(Emojis.ATREIDES + " may discard Baliset"));
+                battle.printBattleResolution(game, false, true);
+                assertTrue(atreides.getTreacheryHand().contains(baliset));
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " discards Baliset.")));
+            }
+
+            @Test
+            void testBothCallTraitorWeaponIsDiscarded() throws InvalidGameStateException {
+                richese.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.getAggressorBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, richese, true, 0, "Gara Kulon");
+                atreides.addTraitorCard(new TraitorCard("Cheap Hero", "Any", 0));
+                battle.getDefenderBattlePlan().setCanCallTraitor(true);
+                battle.willCallTraitor(game, atreides, true, 0, "Gara Kulon");
+                battle.printBattleResolution(game, false, true);
+                assertFalse(atreides.getTreacheryHand().contains(baliset));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " discards Baliset.")));
+            }
+        }
+
+        @Nested
         @DisplayName("#resolutionWithNoField")
         class ResolutionWithNoField {
             @BeforeEach
