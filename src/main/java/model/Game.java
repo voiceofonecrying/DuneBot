@@ -965,7 +965,7 @@ public class Game {
 
         for (Territory newDiscovery : territories.values().stream().filter(Territory::isJustDiscovered).toList()) {
             for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-                List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm);
+                List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, false);
                 List<Territory> aggTerritoryWithDiscovery = null;
                 for (List<Territory> aggTerritory : aggregateTerritoryList) {
                     for (Territory t : aggTerritory) {
@@ -1861,7 +1861,7 @@ public class Game {
         if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
 
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm);
+            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, false);
             for (List<Territory> territorySectors : aggregateTerritoryList) {
                 String discoveryTerritoryName = "";
                 String discoveryTokenName = "";

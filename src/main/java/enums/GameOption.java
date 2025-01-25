@@ -21,4 +21,5 @@ public enum GameOption {
     SPICE_PUBLIC,
     IX_ONLY_1_CARD_PER_FACTION,
     THUMPER_ON_DECK_B,
+    BATTLE_UNDER_STORM,
 }

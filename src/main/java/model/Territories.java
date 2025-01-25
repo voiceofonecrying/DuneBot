@@ -43,10 +43,11 @@ public class Territories extends HashMap<String, Territory> {
         else return values().stream().filter(t -> t.getTerritoryName().indexOf(aggregateTerritoryName) == 0).toList();
     }
 
-    public List<List<Territory>> getAggregateTerritoryList(String aggregateTerritoryName, int storm) {
+    public List<List<Territory>> getAggregateTerritoryList(String aggregateTerritoryName, int storm, boolean includeSectorsUnderStorm) {
         List<Territory> territorySectors = getTerritorySectors(aggregateTerritoryName);
         List<Territory> sectorsBeforeStorm;
         List<Territory> sectorsAfterStorm;
+        List<Territory> sectorsUnderStorm = new ArrayList<>();
         if (storm != 1 && (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian"))) {
             sectorsBeforeStorm = territorySectors.stream().filter(t -> t.getSector() != storm).toList();
             sectorsAfterStorm = new ArrayList<>();
@@ -57,9 +58,12 @@ public class Territories extends HashMap<String, Territory> {
             sectorsBeforeStorm = territorySectors.stream().filter(t -> t.getSector() < storm).toList();
             sectorsAfterStorm = territorySectors.stream().filter(t -> t.getSector() > storm).toList();
         }
+        if (includeSectorsUnderStorm)
+            sectorsUnderStorm = territorySectors.stream().filter(t -> t.getSector() == storm).toList();
         List<List<Territory>> returnList = new ArrayList<>();
         if (!sectorsBeforeStorm.isEmpty()) returnList.add(sectorsBeforeStorm);
         if (!sectorsAfterStorm.isEmpty()) returnList.add(sectorsAfterStorm);
+        if (!sectorsUnderStorm.isEmpty()) returnList.add(sectorsUnderStorm);
         return returnList;
     }
 
