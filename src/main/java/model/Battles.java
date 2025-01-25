@@ -1,5 +1,6 @@
 package model;
 
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.AtreidesFaction;
 import model.factions.BGFaction;
@@ -28,7 +29,7 @@ public class Battles {
         int dukeVidalCount = 0;
         Territories territories = game.getTerritories();
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> territorySectorsForBattle = territories.getAggregateTerritoryList(aggregateTerritoryName, game.getStorm());
+            List<List<Territory>> territorySectorsForBattle = territories.getAggregateTerritoryList(aggregateTerritoryName, game.getStorm(), game.hasGameOption(GameOption.BATTLE_UNDER_STORM));
             Set<String> factionNames;
             for (List<Territory> territorySectors : territorySectorsForBattle) {
                 factionNames = territories.getFighterNamesInAggTerritory(territorySectors);

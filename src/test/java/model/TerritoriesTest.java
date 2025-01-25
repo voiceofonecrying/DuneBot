@@ -48,21 +48,21 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getAggregateTerritoryListWindPassNorthNoStorm() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Wind Pass North", 10);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Wind Pass North", 10, false);
         assertEquals(1, territorySectorsList.size());
         assertEquals(2, territorySectorsList.getFirst().size());
     }
 
     @Test
     void getAggregateTerritoryListWindPassNoStorm() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Wind Pass", 10);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Wind Pass", 10, false);
         assertEquals(1, territorySectorsList.size());
         assertEquals(4, territorySectorsList.getFirst().size());
     }
 
     @Test
     void getAggregateTerritoryListMeridianNoStorm() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Meridian", 9);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Meridian", 9, false);
         assertEquals(1, territorySectorsList.size());
         assertEquals(2, territorySectorsList.getFirst().size());
         assertTrue(territorySectorsList.getFirst().contains(meridian_westSector));
@@ -73,7 +73,7 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getAggregateTerritoryListCielagoNoStorm() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 10);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 10, false);
         assertEquals(1, territorySectorsList.size());
         assertEquals(3, territorySectorsList.getFirst().size());
         assertTrue(territorySectorsList.getFirst().contains(cielagoNorth_westSector));
@@ -83,7 +83,7 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getAggregateTerritoryListCielagoStormEast() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 2);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 2, false);
         assertEquals(1, territorySectorsList.size());
         assertEquals(2, territorySectorsList.getFirst().size());
         assertTrue(territorySectorsList.getFirst().contains(cielagoNorth_westSector));
@@ -93,7 +93,7 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getAggregateTerritoryListCielagoStormCenter() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 1);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("Cielago North", 1, false);
         assertEquals(2, territorySectorsList.size());
         assertEquals(1, territorySectorsList.get(0).size());
         assertEquals(1, territorySectorsList.get(1).size());
@@ -105,7 +105,7 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getAggregateTerritoryListFWEStormNorth() {
-        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("False Wall East", 7);
+        List<List<Territory>> territorySectorsList = territories.getAggregateTerritoryList("False Wall East", 7, false);
         assertEquals(2, territorySectorsList.size());
         assertEquals(3, territorySectorsList.get(0).size());
         assertEquals(1, territorySectorsList.get(1).size());
@@ -119,7 +119,7 @@ public class TerritoriesTest extends DuneTest {
     void fighterNamesInAggTerritoryTwoFighters() {
         cielagoNorth_westSector.addForces("Fremen", 1);
         cielagoNorth_eastSector.addForces("Atreides", 1);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(2, fighterNames.size());
     }
@@ -128,7 +128,7 @@ public class TerritoriesTest extends DuneTest {
     void fighterNamesInAggTerritoryFighterAndAdvisor() {
         cielagoNorth_westSector.addForces("Fremen", 1);
         cielagoNorth_eastSector.addForces("Advisor", 1);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -136,7 +136,7 @@ public class TerritoriesTest extends DuneTest {
     @Test
     void fighterNamesInAggTerritoryFighterAlone() {
         cielagoNorth_westSector.addForces("Fremen", 1);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -145,7 +145,7 @@ public class TerritoriesTest extends DuneTest {
     void fighterNamesInAggTerritoryFighterAloneWithSpecial() {
         cielagoNorth_westSector.addForces("Fremen", 1);
         cielagoNorth_eastSector.addForces("Fremen*", 1);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(1, fighterNames.size());
     }
@@ -155,7 +155,7 @@ public class TerritoriesTest extends DuneTest {
         cielagoNorth_westSector.addForces("Fremen", 1);
         cielagoNorth_eastSector.addForces("BG", 1);
         cielagoNorth_middleSector.setRicheseNoField(3);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Cielago North", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(3, fighterNames.size());
     }
@@ -165,7 +165,7 @@ public class TerritoriesTest extends DuneTest {
         polarSink.addForces("Fremen", 1);
         polarSink.addForces("BG", 1);
         polarSink.setRicheseNoField(3);
-        List<Territory> territorySectors = territories.getAggregateTerritoryList("Polar Sink", 10).getFirst();
+        List<Territory> territorySectors = territories.getAggregateTerritoryList("Polar Sink", 10, false).getFirst();
         Set<String> fighterNames = territories.getFighterNamesInAggTerritory(territorySectors);
         assertEquals(0, fighterNames.size());
     }
@@ -174,7 +174,7 @@ public class TerritoriesTest extends DuneTest {
     void fighterNamesInAggTerritoryFightersSeparatedByStorm() {
         cielagoNorth_westSector.addForces("Fremen", 3);
         cielagoNorth_eastSector.addForces("BG", 1);
-        List<Territory> territorySectorsBefore = territories.getAggregateTerritoryList("Cielago North", 1).getFirst();
+        List<Territory> territorySectorsBefore = territories.getAggregateTerritoryList("Cielago North", 1, false).getFirst();
         assertEquals(1, territories.getFighterNamesInAggTerritory(territorySectorsBefore).size());
     }
 
@@ -182,7 +182,16 @@ public class TerritoriesTest extends DuneTest {
     void fighterNamesInAggTerritoryFightersSeparatedByStorm2() {
         cielagoNorth_westSector.addForces("Fremen", 3);
         cielagoNorth_eastSector.addForces("BG", 1);
-        List<Territory> territorySectorsAfter = territories.getAggregateTerritoryList("Cielago North", 1).get(1);
+        List<Territory> territorySectorsAfter = territories.getAggregateTerritoryList("Cielago North", 1, false).get(1);
         assertEquals(1, territories.getFighterNamesInAggTerritory(territorySectorsAfter).size());
+    }
+
+    @Test
+    void fighterNamesInAggTerritoryUnderTheStorm() {
+        cielagoNorth_middleSector.addForces("Fremen", 3);
+        cielagoNorth_middleSector.addForces("BG", 1);
+        List<List<Territory>> territorySectorsUnder = territories.getAggregateTerritoryList("Cielago North", 1, true);
+        assertEquals(3, territorySectorsUnder.size());
+        assertEquals(2, territories.getFighterNamesInAggTerritory(territorySectorsUnder.getLast()).size());
     }
 }

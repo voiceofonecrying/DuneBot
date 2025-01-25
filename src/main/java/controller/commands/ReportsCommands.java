@@ -568,7 +568,7 @@ public class ReportsCommands {
     public static String fastestGames(Guild guild, GRList gameResults, List<Member> members) {
         List<GameResult> longestGames = gameResults.gameResults.stream().sorted(ReportsCommands::fasterGame).toList();
         StringBuilder longestGamesString = new StringBuilder("__Fastest games__");
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < 20; i++) {
             GameResult a = longestGames.get(i);
             String daysPerTurn = new DecimalFormat("#0.0").format(Integer.parseInt(a.getGameDuration()) / (float) a.getTurn());
             longestGamesString.append("\n").append(daysPerTurn).append(" days per turn, ");
