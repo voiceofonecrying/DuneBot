@@ -862,9 +862,10 @@ public class Battle {
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
                 if (executeResolution) {
                     Territory territoryWithAtreidesForce = getTerritorySectors(game).stream().filter(s -> s.getForceStrength("Atreides") > 0).findAny().orElseThrow();
-                    atreides.placeForceFromReserves(game, territoryWithAtreidesForce, 1, false);
-                    atreides.getChat().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. " + atreides.getPlayer());
-                    game.getTurnSummary().publish("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold. " + Emojis.ATREIDES + " may choose to return it to reserves.");
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("atreides-ht-placement-yes-" + game.getTurn() + "-" + territoryWithAtreidesForce.getTerritoryName(), "Yes"));
+                    choices.add(new DuneChoice("atreides-ht-placement-no-" + game.getTurn() + "-" + territoryWithAtreidesForce.getTerritoryName(), "No"));
+                    atreides.getChat().publish("Would you like to place 1 " + Emojis.ATREIDES_TROOP + " from reserves in " + territoryWithAtreidesForce.getTerritoryName() + " with Caladan High Threshold? " + atreides.getPlayer(), choices);
                 } else {
                     resolution += Emojis.ATREIDES + " may add 1 " + Emojis.ATREIDES_TROOP + " from reserves to " + wholeTerritoryName + " with Caladan High Threshold\n";
                 }

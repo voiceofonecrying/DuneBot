@@ -3867,12 +3867,13 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testResolveGivesChoices() throws InvalidGameStateException {
+            void testResolveGivesChoicesDoesNotPlaceForce() throws InvalidGameStateException {
                 assertEquals(10, game.getTerritory("Caladan").getForceStrength("Atreides"));
                 battle.printBattleResolution(game, false, true);
-                assertEquals("1 " + Emojis.ATREIDES_TROOP + " from reserves has been placed in Carthag with Caladan High Threshold.\nPlease let the mod know if you would rather have that " + Emojis.ATREIDES_TROOP + " in reserves. at", atreidesChat.getMessages().getFirst());
-                assertEquals(9, game.getTerritory("Caladan").getForceStrength("Atreides"));
-                assertEquals(2, carthag.getForceStrength("Atreides"));
+                assertEquals("Would you like to place 1 " + Emojis.ATREIDES_TROOP + " from reserves in Carthag with Caladan High Threshold? at", atreidesChat.getMessages().getFirst());
+                assertEquals(2, atreidesChat.getChoices().getFirst().size());
+                assertEquals(10, game.getTerritory("Caladan").getForceStrength("Atreides"));
+                assertEquals(1, carthag.getForceStrength("Atreides"));
             }
         }
 

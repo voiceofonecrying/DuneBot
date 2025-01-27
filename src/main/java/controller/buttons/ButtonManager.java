@@ -91,7 +91,9 @@ public class ButtonManager extends ListenerAdapter {
         try {
             DiscordGame discordGame = new DiscordGame(event);
             Game game = discordGame.getGame();
-            if (event.getComponentId().startsWith("bg"))
+            if (event.getComponentId().startsWith("atreides"))
+                AtreidesButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("bg"))
                 BGButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("bt"))
                 BTButtons.press(event, game, discordGame);
