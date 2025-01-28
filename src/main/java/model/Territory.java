@@ -150,11 +150,6 @@ public class Territory {
         return factionNames.size();
     }
 
-    public void removeForce(String name) {
-        int forceStrength = getForceStrength(name);
-        removeForces(name, forceStrength);
-    }
-
     public List<String> getActiveFactionNames() {
         Set<String> factions = forces.stream()
                 .filter(force -> !(force.getName().equals("Advisor")))

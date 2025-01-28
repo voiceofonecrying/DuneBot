@@ -258,7 +258,7 @@ class BattleTest extends DuneTest {
             carthag.addForces("Emperor*", 2);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             assertFalse(battle.isResolved(game));
-            carthag.removeForce("Harkonnen");
+            carthag.removeForces("Harkonnen", 10);
             assertTrue(battle.isResolved(game));
         }
 
@@ -270,7 +270,7 @@ class BattleTest extends DuneTest {
             garaKulon.addForces("Ecaz", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
             assertFalse(battle.isResolved(game));
-            garaKulon.removeForce("Harkonnen");
+            garaKulon.removeForces("Harkonnen", 10);
             assertTrue(battle.isResolved(game));
         }
 

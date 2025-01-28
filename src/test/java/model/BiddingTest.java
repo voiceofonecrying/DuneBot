@@ -172,7 +172,7 @@ class BiddingTest extends DuneTest {
 
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory caladan = game.getTerritory("Caladan");
-            caladan.removeForce("Atreides");
+            caladan.removeForces("Atreides", 10);
             caladan.addForces("Harkonnen", 5);
             assertTrue(atreides.isHomeworldOccupied());
 
@@ -222,7 +222,7 @@ class BiddingTest extends DuneTest {
 
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory caladan = game.getTerritory("Caladan");
-            caladan.removeForce("Atreides");
+            caladan.removeForces("Atreides", 10);
             caladan.addForces("Harkonnen", 5);
             assertTrue(atreides.isHomeworldOccupied());
 
@@ -1283,7 +1283,7 @@ class BiddingTest extends DuneTest {
 
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory geidiPrime = game.getTerritory(harkonnen.getHomeworld());
-            geidiPrime.removeForce("Harkonnen");
+            geidiPrime.removeForces("Harkonnen", 10);
             geidiPrime.addForces("BG", 1);
             assertTrue(harkonnen.isHomeworldOccupied());
             bidding = game.startBidding();

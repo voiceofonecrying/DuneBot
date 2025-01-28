@@ -316,7 +316,7 @@ class BGFactionTest extends FactionTestTemplate {
 
             @Test
             public void testAdviseButtonEnabledWithEcazAllyInTerritoryWithGF9Rules() throws IOException {
-                carthag.removeForce("Emperor");
+                carthag.removeForces("Emperor", 1);
                 EcazFaction ecaz = new EcazFaction("p", "u");
                 ecaz.setLedger(new TestTopic());
                 game.addFaction(ecaz);
@@ -330,7 +330,7 @@ class BGFactionTest extends FactionTestTemplate {
 
             @Test
             public void testBGCanAdviseEcazAllyTerritoryWithGF9Rules() throws IOException {
-                carthag.removeForce("Emperor");
+                carthag.removeForces("Emperor", 1);
                 EcazFaction ecaz = new EcazFaction("p", "u");
                 ecaz.setLedger(new TestTopic());
                 game.addFaction(ecaz);

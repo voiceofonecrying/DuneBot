@@ -508,7 +508,7 @@ class GameTest extends DuneTest {
         void testEndBattlePhase() {
             game.startBattlePhase();
             assertThrows(InvalidGameStateException.class, () -> game.endBattlePhase());
-            garaKulon.removeForce("Harkonnen");
+            garaKulon.removeForces("Harkonnen", 10);
             assertDoesNotThrow(() -> game.endBattlePhase());
         }
     }
@@ -587,7 +587,7 @@ class GameTest extends DuneTest {
 
         @Test
         void testNoFactionInPositionToUseAtomics() {
-            game.getTerritory("Imperial Basin (Center Sector)").removeForce("Ecaz");
+            game.getTerritory("Imperial Basin (Center Sector)").removeForces("Ecaz", 6);
             assertThrows(InvalidGameStateException.class, () -> game.destroyShieldWall());
         }
     }
@@ -845,8 +845,8 @@ class GameTest extends DuneTest {
         void ixInGameNotInHMS() {
             game.addFaction(ix);
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-            hms.removeForce("Ix");
-            hms.removeForce("Ix*");
+            hms.removeForces("Ix", 3);
+            hms.removeForces("Ix*", 3);
             assertEquals(0, hms.getTotalForceCount(ix));
             assertFalse(game.ixCanMoveHMS());
         }
@@ -908,7 +908,7 @@ class GameTest extends DuneTest {
             salusaSecudus.removeForces("Emperor*", 5);
             assertEquals("Fremen", salusaSecudus.getOccupierName());
             assertEquals("Salusa Secundus is now occupied by " + Emojis.FREMEN, turnSummary.getMessages().getFirst());
-            salusaSecudus.removeForce("Fremen*");
+            salusaSecudus.removeForces("Fremen*", 1);
             assertEquals("Fremen", salusaSecudus.getOccupierName());
             game.advanceTurn();
             assertNull(salusaSecudus.getOccupierName());
