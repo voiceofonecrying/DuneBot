@@ -29,11 +29,11 @@ public class HomeworldTerritoryTest extends DuneTest {
     class HomeworldOccupy {
         @Test
         void resetWhenEmptyEndsOccupy() {
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
-            caladan.removeForces("Harkonnen", 1);
+            caladan.removeForces(game, "Harkonnen", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
             caladan.resetOccupation();
@@ -55,7 +55,7 @@ public class HomeworldTerritoryTest extends DuneTest {
 
         @Test
         void testNonNativeIntoEmptyCausesOccupy() {
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
@@ -63,24 +63,24 @@ public class HomeworldTerritoryTest extends DuneTest {
 
         @Test
         void test2ndNonNativeDoesNotEndOccupyUntilTheyDefeat1st() {
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
             caladan.addForces("Emperor", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
-            caladan.removeForces("Harkonnen", 1);
+            caladan.removeForces(game, "Harkonnen", 1);
             assertEquals("Emperor", caladan.getOccupierName());
         }
 
         @Test
         void testNativeDefeatingNonNativeEndsOccupy() {
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             caladan.addForces("Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());
-            caladan.removeForces("Harkonnen", 1);
+            caladan.removeForces(game, "Harkonnen", 1);
             assertNull(caladan.getOccupierName());
             assertEquals("Caladan is no longer occupied.", turnSummary.getMessages().get(1));
         }
@@ -88,7 +88,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         @Test
         void testNonNativeDefeatingNativeCausesOccupy() {
             caladan.addForces("Harkonnen", 1);
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
         }
@@ -98,16 +98,16 @@ public class HomeworldTerritoryTest extends DuneTest {
             caladan.addForces("Harkonnen", 1);
             caladan.addForces("Emperor", 1);
             assertNull(caladan.getOccupierName());
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             assertNull(caladan.getOccupierName());
-            caladan.removeForces("Harkonnen", 1);
+            caladan.removeForces(game, "Harkonnen", 1);
             assertEquals("Emperor", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testNativeRevivalDoesNotEndOccupy() {
-            caladan.removeForces("Atreides", 10);
+            caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             caladan.addForces("Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());

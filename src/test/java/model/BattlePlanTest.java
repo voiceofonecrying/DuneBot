@@ -1433,7 +1433,7 @@ public class BattlePlanTest extends DuneTest {
             game.addFaction(richese);
             Territory richeseHomeworld = game.getTerritory("Richese");
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
-            richeseHomeworld.removeForces("Richese", 18);
+            richeseHomeworld.removeForces(game, "Richese", 18);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));
@@ -1489,7 +1489,7 @@ public class BattlePlanTest extends DuneTest {
             game.addFaction(richese);
             Territory richeseHomeworld = game.getTerritory("Richese");
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
-            richeseHomeworld.removeForces("Richese", 18);
+            richeseHomeworld.removeForces(game, "Richese", 18);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             carthag.setRicheseNoField(3);
             Battle battle = new Battle(game, List.of(carthag), List.of(richese, harkonnen));

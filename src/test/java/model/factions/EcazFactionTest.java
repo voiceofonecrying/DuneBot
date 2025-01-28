@@ -48,7 +48,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(3, faction.getFreeRevival());
@@ -60,7 +60,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -88,7 +88,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(6, faction.getFreeRevival());
@@ -102,7 +102,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());

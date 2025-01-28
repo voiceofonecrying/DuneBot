@@ -197,7 +197,7 @@ public class Territory {
         setForceStrength(forceName, forceStrength + amount);
     }
 
-    public void removeForces(String forceName, int amount) {
+    public void removeForces(Game game, String forceName, int amount) {
         if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative strength value from a force.");
         int forceStrength = getForceStrength(forceName);
         if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in " + territoryName + ".");
@@ -290,7 +290,7 @@ public class Territory {
         for (Force force : new ArrayList<>(forces)) {
             String name = force.getFactionName();
             int strength = force.getStrength();
-            removeForces(name, strength);
+            removeForces(game, name, strength);
             game.getTleilaxuTanks().addForces(name, strength);
 
             message.append(MessageFormat.format(
@@ -329,7 +329,7 @@ public class Territory {
     }
 
     public String stormRemoveTroops(String forceName, String factionName, int strength, Game game) {
-        removeForces(forceName, strength);
+        removeForces(game, forceName, strength);
         game.getTleilaxuTanks().addForces(forceName, strength);
 
         return MessageFormat.format(

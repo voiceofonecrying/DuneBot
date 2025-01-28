@@ -447,7 +447,7 @@ public class Faction {
     }
 
     public void removeReserves(int amount) {
-        game.getTerritory(homeworld).removeForces(name, amount);
+        game.getTerritory(homeworld).removeForces(game, name, amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -459,7 +459,7 @@ public class Faction {
 
     public void removeSpecialReserves(int amount) {
         Territory territory = game.getTerritory(homeworld);
-        territory.removeForces(name + "*", amount);
+        territory.removeForces(game, name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -857,7 +857,7 @@ public class Faction {
      * @param isSpecial     Whether the force is special or not.
      */
     public void removeForces(String territoryName, String forceName, int amount, boolean toTanks, boolean isSpecial) {
-        game.getTerritory(territoryName).removeForces(forceName, amount);
+        game.getTerritory(territoryName).removeForces(game, forceName, amount);
         if (toTanks) {
             game.getTleilaxuTanks().addForces(forceName, amount);
         } else {

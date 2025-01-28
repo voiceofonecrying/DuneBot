@@ -454,8 +454,8 @@ abstract class FactionTestTemplate {
         public void testNoReturnToHighThresholdWhileOccupied() {
             game.addGameOption(GameOption.HOMEWORLDS);
             int strength = territory.getForceStrength(getFaction().getName());
-            territory.removeForces(getFaction().getName(), territory.getForceStrength(getFaction().getName()));
-            territory.removeForces(getFaction().getName() + "*", territory.getForceStrength(getFaction().getName() + "*"));
+            territory.removeForces(game, getFaction().getName(), territory.getForceStrength(getFaction().getName()));
+            territory.removeForces(game, getFaction().getName() + "*", territory.getForceStrength(getFaction().getName() + "*"));
             getFaction().checkForLowThreshold();
             assertFalse(getFaction().isHighThreshold());
             String occupierName = getFaction().getName().equals("Harkonnen") ? "Emperor" : "Harkonnen";

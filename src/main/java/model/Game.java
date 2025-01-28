@@ -1465,7 +1465,7 @@ public class Game {
                 forceName = "Advisor";
                 if (to.hasForce("Advisor")) targetForceName = "Advisor";
             }
-            from.removeForces(forceName, amountValue);
+            from.removeForces(this, forceName, amountValue);
             to.addForces(targetForceName, amountValue);
 
             message.append(
@@ -1476,7 +1476,7 @@ public class Game {
         }
 
         if (starredAmountValue > 0) {
-            from.removeForces(targetFaction.getName() + "*", starredAmountValue);
+            from.removeForces(this, targetFaction.getName() + "*", starredAmountValue);
             to.addForces(targetFaction.getName() + "*", starredAmountValue);
 
             message.append(

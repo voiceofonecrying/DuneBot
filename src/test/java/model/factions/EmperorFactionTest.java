@@ -203,7 +203,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(2, faction.getFreeRevival());
@@ -215,7 +215,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -243,7 +243,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -257,7 +257,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
@@ -477,7 +477,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         Territory kaitain = game.getTerritory("Kaitain");
         Territory salusaSecundus = game.getTerritory("Salusa Secundus");
         int forcesToRemove = kaitain.getForceStrength(faction.getName()) - 1;
-        kaitain.removeForces(faction.getName(), forcesToRemove);
+        kaitain.removeForces(game, faction.getName(), forcesToRemove);
         salusaSecundus.addForces(faction.getName(), 1);
         assertDoesNotThrow(() -> faction.removeReserves(2));
     }
@@ -487,7 +487,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         Territory salusaSecundus = game.getTerritory("Salusa Secundus");
         Territory kaitain = game.getTerritory("Kaitain");
         int forcesToRemove = salusaSecundus.getForceStrength(faction.getName() + "*") - 1;
-        salusaSecundus.removeForces(faction.getName() + "*", forcesToRemove);
+        salusaSecundus.removeForces(game, faction.getName() + "*", forcesToRemove);
         kaitain.addForces(faction.getName() + "*", 1);
         assertDoesNotThrow(() -> faction.removeSpecialReserves(2));
     }
@@ -555,7 +555,7 @@ class EmperorFactionTest extends FactionTestTemplate {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);
-            territory.removeForces(faction.getName() + "*", 5);
+            territory.removeForces(game, faction.getName() + "*", 5);
             assertFalse(faction.isSecundusHighThreshold());
             territory.addForces("Harkonnen", 1);
             territory.addForces(faction.getName() + "*", 3);
@@ -568,14 +568,14 @@ class EmperorFactionTest extends FactionTestTemplate {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);
-            territory.removeForces(faction.getName() + "*", 5);
+            territory.removeForces(game, faction.getName() + "*", 5);
             assertFalse(faction.isSecundusHighThreshold());
             territory.addForces("Harkonnen", 1);
             territory.addForces(faction.getName() + "*", 3);
             assertFalse(faction.isSecundusHighThreshold());
             assertTrue(faction.isSecundusOccupied());
-            territory.removeForces(faction.getName() + "*", 1);
-            territory.removeForces("Harkonnen", 1);
+            territory.removeForces(game, faction.getName() + "*", 1);
+            territory.removeForces(game, "Harkonnen", 1);
             assertFalse(faction.isSecundusHighThreshold());
             assertFalse(faction.isSecundusOccupied());
         }
@@ -585,13 +585,13 @@ class EmperorFactionTest extends FactionTestTemplate {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);
-            territory.removeForces(faction.getName() + "*", 5);
+            territory.removeForces(game, faction.getName() + "*", 5);
             assertFalse(faction.isSecundusHighThreshold());
             territory.addForces("Harkonnen", 1);
             territory.addForces(faction.getName() + "*", 3);
             assertFalse(faction.isSecundusHighThreshold());
             assertTrue(faction.isSecundusOccupied());
-            territory.removeForces("Harkonnen", 1);
+            territory.removeForces(game, "Harkonnen", 1);
             assertTrue(faction.isSecundusHighThreshold());
             assertFalse(faction.isSecundusOccupied());
         }
