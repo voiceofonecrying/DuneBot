@@ -494,6 +494,10 @@ public class Game {
         this.mod = mod;
     }
 
+    public String getModRoleMention() {
+        return modRoleMention;
+    }
+
     public void setModRoleMention(String modRoleMention) {
         this.modRoleMention = modRoleMention;
     }
@@ -1763,8 +1767,6 @@ public class Game {
         }
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
-        if (!hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))
-            territories.values().forEach(t -> t.flipAdvisorsIfAlone(this));
 
         for (Faction faction : factions) {
             faction.setHasMiningEquipment(false);
