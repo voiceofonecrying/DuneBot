@@ -494,6 +494,10 @@ public class Game {
         this.mod = mod;
     }
 
+    public String getModRoleMention() {
+        return modRoleMention;
+    }
+
     public void setModRoleMention(String modRoleMention) {
         this.modRoleMention = modRoleMention;
     }
