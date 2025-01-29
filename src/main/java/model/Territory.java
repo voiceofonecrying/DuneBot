@@ -202,6 +202,8 @@ public class Territory {
         int forceStrength = getForceStrength(forceName);
         if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in " + territoryName + ".");
         setForceStrength(forceName, forceStrength - amount);
+        if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) || game.getPhaseForTracker() < 7)
+            flipAdvisorsIfAlone(game);
     }
 
     public void addSpice(Game game, Integer spice) {

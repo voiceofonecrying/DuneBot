@@ -1455,8 +1455,7 @@ public class Game {
         if (to.factionMayNotEnter(this, targetFaction, false))
             throw new IllegalArgumentException("You cannot move into this territory.");
 
-        StringBuilder message = new StringBuilder();
-        message.append(targetFaction.getEmoji()).append(": ");
+        turnSummary.publish(targetFaction.getEmoji() + ": " + targetFaction.forcesString(amountValue, starredAmountValue) + " moved from " + from.getTerritoryName() + " to " + to.getTerritoryName() + ".");
 
         if (amountValue > 0) {
             String forceName = targetFaction.getName();
@@ -1467,33 +1466,13 @@ public class Game {
             }
             from.removeForces(this, forceName, amountValue);
             to.addForces(targetForceName, amountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            amountValue, Emojis.getForceEmoji(forceName)
-                    )
-            );
         }
-
         if (starredAmountValue > 0) {
             from.removeForces(this, targetFaction.getName() + "*", starredAmountValue);
             to.addForces(targetFaction.getName() + "*", starredAmountValue);
-
-            message.append(
-                    MessageFormat.format("{0} {1} ",
-                            starredAmountValue, Emojis.getForceEmoji(targetFaction.getName() + "*")
-                    )
-            );
         }
-
-        message.append(
-                MessageFormat.format("moved from {0} to {1}.",
-                        from.getTerritoryName(), to.getTerritoryName()
-                )
-        );
         targetFaction.checkForHighThreshold();
         targetFaction.checkForLowThreshold();
-        turnSummary.publish(message.toString());
 
         if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction)) {
             ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
