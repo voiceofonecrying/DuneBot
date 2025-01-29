@@ -46,7 +46,7 @@ class BattleTest extends DuneTest {
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
             richese.placeForceFromReserves(game, garaKulon, 5, false);
             assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
-            richeseHomeworld.removeForces("Richese", 13);
+            richeseHomeworld.removeForces(game, "Richese", 13);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
             garaKulon.addForces("BG", 1);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(richese, bg));
@@ -258,7 +258,7 @@ class BattleTest extends DuneTest {
             carthag.addForces("Emperor*", 2);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             assertFalse(battle.isResolved(game));
-            carthag.removeForce("Harkonnen");
+            carthag.removeForces(game, "Harkonnen", 10);
             assertTrue(battle.isResolved(game));
         }
 
@@ -270,7 +270,7 @@ class BattleTest extends DuneTest {
             garaKulon.addForces("Ecaz", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
             assertFalse(battle.isResolved(game));
-            garaKulon.removeForce("Harkonnen");
+            garaKulon.removeForces(game, "Harkonnen", 10);
             assertTrue(battle.isResolved(game));
         }
 
@@ -2648,10 +2648,10 @@ class BattleTest extends DuneTest {
             kaitain = game.getTerritory(emperor.getHomeworld());
             salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
             cielagoNorth_eastSector.addForces("Atreides", 5);
-            kaitain.removeForces("Emperor", 5);
+            kaitain.removeForces(game, "Emperor", 5);
             cielagoNorth_eastSector.addForces("Emperor", 3);
             cielagoNorth_westSector.addForces("Emperor", 2);
-            salusaSecundus.removeForces("Emperor*", 4);
+            salusaSecundus.removeForces(game, "Emperor*", 4);
             cielagoNorth_eastSector.addForces("Emperor*", 2);
             cielagoNorth_westSector.addForces("Emperor*", 2);
             battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(emperor, atreides));
@@ -2928,7 +2928,7 @@ class BattleTest extends DuneTest {
         class ResolutionWithReinforcements {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
-                kaitain.removeForces("Emperor", 8);
+                kaitain.removeForces(game, "Emperor", 8);
                 salusaSecundus.addForces("Emperor*", 1);
                 emperor.addTreacheryCard(reinforcements);
                 emperor.addTreacheryCard(cheapHero);
@@ -3014,12 +3014,12 @@ class BattleTest extends DuneTest {
             salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
             ecazHomeworld = game.getTerritory(ecaz.getHomeworld());
             cielagoNorth_eastSector.addForces("Atreides", 5);
-            ecazHomeworld.removeForces("Ecaz", 5);
+            ecazHomeworld.removeForces(game, "Ecaz", 5);
             cielagoNorth_eastSector.addForces("Ecaz", 5);
-            kaitain.removeForces("Emperor", 5);
+            kaitain.removeForces(game, "Emperor", 5);
             cielagoNorth_eastSector.addForces("Emperor", 3);
             cielagoNorth_westSector.addForces("Emperor", 2);
-            salusaSecundus.removeForces("Emperor*", 4);
+            salusaSecundus.removeForces(game, "Emperor*", 4);
             cielagoNorth_eastSector.addForces("Emperor*", 2);
             cielagoNorth_westSector.addForces("Emperor*", 2);
             battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(ecaz, atreides, emperor));
@@ -3342,12 +3342,12 @@ class BattleTest extends DuneTest {
             ecazHomeworld = game.getTerritory(ecaz.getHomeworld());
             salusaSecundus = game.getTerritory(emperor.getSecondHomeworld());
             cielagoNorth_eastSector.addForces("Atreides", 5);
-            ecazHomeworld.removeForces("Ecaz", 6);
+            ecazHomeworld.removeForces(game, "Ecaz", 6);
             cielagoNorth_eastSector.addForces("Ecaz", 5);
-            kaitain.removeForces("Emperor", 5);
+            kaitain.removeForces(game, "Emperor", 5);
             cielagoNorth_eastSector.addForces("Emperor", 3);
             cielagoNorth_westSector.addForces("Emperor", 2);
-            salusaSecundus.removeForces("Emperor*", 4);
+            salusaSecundus.removeForces(game, "Emperor*", 4);
             cielagoNorth_eastSector.addForces("Emperor*", 2);
             cielagoNorth_westSector.addForces("Emperor*", 2);
             battle = new Battle(game, List.of(cielagoNorth_eastSector, cielagoNorth_westSector), List.of(emperor, atreides, ecaz));
@@ -3644,8 +3644,8 @@ class BattleTest extends DuneTest {
         class SuboidsInTwoSectorsReplaced {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
-                ixHomeworld.removeForces("Ix", 3);
-                ixHomeworld.removeForces("Ix*", 4);
+                ixHomeworld.removeForces(game, "Ix", 3);
+                ixHomeworld.removeForces(game, "Ix*", 4);
                 cielagoNorth_eastSector.addForces("Ix", 2);
                 cielagoNorth_eastSector.addForces("Ix*", 2);
                 cielagoNorth_eastSector.addForces("BT", 1);
@@ -3689,8 +3689,8 @@ class BattleTest extends DuneTest {
         class NoSuboidsSurvived {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
-                ixHomeworld.removeForces("Ix", 3);
-                ixHomeworld.removeForces("Ix*", 4);
+                ixHomeworld.removeForces(game, "Ix", 3);
+                ixHomeworld.removeForces(game, "Ix*", 4);
                 cielagoNorth_eastSector.addForces("Ix", 2);
                 cielagoNorth_eastSector.addForces("Ix*", 2);
                 cielagoNorth_eastSector.addForces("BT", 1);
@@ -3733,7 +3733,7 @@ class BattleTest extends DuneTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 ix.addTreacheryCard(chaumas);
-                ixHomeworld.removeForces("Ix", 3);
+                ixHomeworld.removeForces(game, "Ix", 3);
                 cielagoNorth_eastSector.addForces("Ix", 2);
                 cielagoNorth_eastSector.addForces("BT", 1);
                 cielagoNorth_westSector.addForces("Ix", 1);

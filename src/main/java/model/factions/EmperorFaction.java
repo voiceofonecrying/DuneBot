@@ -160,7 +160,7 @@ public class EmperorFaction extends Faction {
     }
 
     private void removeSpecialForcesFromKaitain(int amount) {
-        game.getTerritory(homeworld).removeForces(name + "*", amount);
+        game.getTerritory(homeworld).removeForces(game, name + "*", amount);
     }
 
     private int getSpecialStrengthOnSalusaSecundus() {
@@ -172,11 +172,11 @@ public class EmperorFaction extends Faction {
     }
 
     private void removeRegularForcesFromSalusaSecundus(int amount) {
-        game.getTerritory(secondHomeworld).removeForces(name, amount);
+        game.getTerritory(secondHomeworld).removeForces(game, name, amount);
     }
 
     private void removeSpecialForcesFromSalusaSecundus(int amount) {
-        game.getTerritory(secondHomeworld).removeForces(name + "*", amount);
+        game.getTerritory(secondHomeworld).removeForces(game, name + "*", amount);
     }
 
     @Override

@@ -82,9 +82,9 @@ public class HomeworldTerritory extends Territory {
     }
 
     @Override
-    public void removeForces(String forceName, int amount) {
+    public void removeForces(Game game, String forceName, int amount) {
         boolean wasOccupied = occupierName != null;
-        super.removeForces(forceName, amount);
+        super.removeForces(game, forceName, amount);
         Set<String> factionNames = new HashSet<>();
         forces.forEach(force -> factionNames.add(force.getFactionName()));
         if (hasRicheseNoField()) factionNames.add("Richese");

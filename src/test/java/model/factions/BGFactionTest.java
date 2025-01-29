@@ -52,7 +52,7 @@ class BGFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(2, faction.getFreeRevival());
@@ -64,7 +64,7 @@ class BGFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -92,7 +92,7 @@ class BGFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());
@@ -106,7 +106,7 @@ class BGFactionTest extends FactionTestTemplate {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
-        homeworld.removeForces(faction.getName(), forcesToRemove);
+        homeworld.removeForces(game, faction.getName(), forcesToRemove);
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
@@ -316,7 +316,7 @@ class BGFactionTest extends FactionTestTemplate {
 
             @Test
             public void testAdviseButtonEnabledWithEcazAllyInTerritoryWithGF9Rules() throws IOException {
-                carthag.removeForce("Emperor");
+                carthag.removeForces(game, "Emperor", 1);
                 EcazFaction ecaz = new EcazFaction("p", "u");
                 ecaz.setLedger(new TestTopic());
                 game.addFaction(ecaz);
@@ -330,7 +330,7 @@ class BGFactionTest extends FactionTestTemplate {
 
             @Test
             public void testBGCanAdviseEcazAllyTerritoryWithGF9Rules() throws IOException {
-                carthag.removeForce("Emperor");
+                carthag.removeForces(game, "Emperor", 1);
                 EcazFaction ecaz = new EcazFaction("p", "u");
                 ecaz.setLedger(new TestTopic());
                 game.addFaction(ecaz);

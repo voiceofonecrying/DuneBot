@@ -145,7 +145,7 @@ public class BGFaction extends Faction {
         }
 
         int count = territory.getForceStrength(from);
-        territory.removeForce(from);
+        territory.removeForces(game, from, count);
         territory.addForces(to, count);
         game.setUpdated(UpdateType.MAP);
     }
@@ -199,12 +199,12 @@ public class BGFaction extends Faction {
         if (territory.hasForce("Advisor")) {
             int advisors = territory.getForceStrength("Advisor");
             territory.addForces("BG", advisors);
-            territory.removeForce("Advisor");
+            territory.removeForces(game, "Advisor", advisors);
         }
         placeForceFromReserves(game, territory, amount, false);
         if (!isPolarSink) {
             int fighters = territory.getForceStrength("BG");
-            territory.getForces().removeIf(force -> force.getName().equals("BG"));
+            territory.removeForces(game, "BG", fighters);
             territory.addForces("Advisor", fighters);
         }
 

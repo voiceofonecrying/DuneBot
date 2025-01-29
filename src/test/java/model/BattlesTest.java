@@ -69,7 +69,7 @@ public class BattlesTest extends DuneTest {
 
         game.startBattlePhase();
         battles = game.getBattles();
-        cielagoNorth_westSector.removeForce("BG");
+        cielagoNorth_westSector.removeForces(game, "BG", 6);
         assertTrue(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertFalse(battles.aggressorMustChooseOpponent());
@@ -114,7 +114,7 @@ public class BattlesTest extends DuneTest {
 
         game.startBattlePhase();
         battles = game.getBattles();
-        sietchTabr.removeForce("BG");
+        sietchTabr.removeForces(game, "BG", 1);
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertFalse(battles.aggressorMustChooseOpponent());
@@ -181,7 +181,7 @@ public class BattlesTest extends DuneTest {
 
         game.startBattlePhase();
         battles = game.getBattles();
-        cielagoNorth_eastSector.removeForce("Atreides");
+        cielagoNorth_eastSector.removeForces(game, "Atreides", 4);
         assertFalse(battles.noBattlesRemaining(game));
         assertFalse(battles.aggressorMustChooseBattle());
         assertFalse(battles.aggressorMustChooseOpponent());
@@ -330,7 +330,7 @@ public class BattlesTest extends DuneTest {
                         "Carthag: 10 " + Emojis.HARKONNEN_TROOP + " vs 2 " + Emojis.BG_FIGHTER,
                 turnSummary.messages.get(2));
 
-        carthag.removeForce("BG");
+        carthag.removeForces(game, "BG", 2);
         assertEquals(0, carthag.getForceStrength("BG"));
 
         battles.nextBattle(game);
