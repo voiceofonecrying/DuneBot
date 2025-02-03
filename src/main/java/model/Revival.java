@@ -151,7 +151,7 @@ public class Revival {
         DuneTopic turnSummary = game.getTurnSummary();
         turnSummary.publish("**Turn " + game.getTurn() + " Revival Phase**");
         game.setPhaseForWhispers("Turn " + game.getTurn() + " Revival Phase\n");
-        List<Faction> factions = game.getFactions();
+        List<Faction> factions = game.getFactionsInStormOrder();
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
         int factionsWithRevivals = 0;
