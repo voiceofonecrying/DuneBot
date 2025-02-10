@@ -783,34 +783,23 @@ public class Faction {
         return paymentMessage;
     }
 
-    public String bribe(Game game, Faction recipientFaction, int amountValue, String reasonString) throws InvalidGameStateException {
+    public void bribe(Game game, Faction recipientFaction, int amountValue, String reasonString) throws InvalidGameStateException {
+        String message = MessageFormat.format("{0} bribes {1}",
+                emoji, recipientFaction.getEmoji());
+        if (!reasonString.isBlank())
+            message += " " + reasonString;
+        game.addNewBribe(message);
         if (amountValue != 0) {
             if (spice < amountValue)
                 throw new InvalidGameStateException("Faction does not have enough spice to pay the bribe!");
 
             subtractSpice(amountValue, "bribe to " + recipientFaction.getEmoji());
-            game.getTurnSummary().publish(
-                    MessageFormat.format(
-                            "{0} places {1} {2} in front of {3} shield.",
-                            emoji, amountValue, Emojis.SPICE, recipientFaction.getEmoji()
-                    )
-            );
-
             recipientFaction.addFrontOfShieldSpice(amountValue);
+            message += "\n" + emoji + " places " + amountValue + " " + Emojis.SPICE + " in front of " + recipientFaction.getEmoji() + " shield.";
         } else {
-            game.getTurnSummary().publish(
-                    MessageFormat.format(
-                            "{0} bribes {2}. {1} TBD or NA.",
-                            emoji, Emojis.SPICE, recipientFaction.getEmoji()
-                    )
-            );
+            message += "\nBribe " + Emojis.SPICE + " NA or TBD.";
         }
-
-        String message = MessageFormat.format("{0} {1}",
-                emoji, recipientFaction.getEmoji());
-        if (!reasonString.isBlank())
-            message += "\n" + reasonString;
-        return message;
+        game.getTurnSummary().publish(message);
     }
 
     public boolean isSpecialKaramaPowerUsed() {

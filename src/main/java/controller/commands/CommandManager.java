@@ -943,8 +943,7 @@ public class CommandManager extends ListenerAdapter {
         OptionMapping om = discordGame.optional(reason);
         String reasonString = om == null ? "" : om.getAsString();
 
-        String message = fromFaction.bribe(game, recipientFaction, amountValue, reasonString);
-        discordGame.queueMessage("bribes", message);
+        fromFaction.bribe(game, recipientFaction, amountValue, reasonString);
         discordGame.pushGame();
     }
 

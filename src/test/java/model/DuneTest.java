@@ -15,6 +15,7 @@ public class DuneTest {
     TestTopic turnSummary;
     TestTopic modInfo;
     TestTopic gameActions;
+    TestTopic bribes;
 
     AtreidesFaction atreides;
     TestTopic atreidesChat;
@@ -127,6 +128,8 @@ public class DuneTest {
         game.setModInfo(modInfo);
         gameActions = new TestTopic();
         game.setGameActions(gameActions);
+        bribes = new TestTopic();
+        game.setBribes(bribes);
 
         atreides = new AtreidesFaction("at", "at");
         atreidesChat = new TestTopic();
@@ -270,6 +273,7 @@ public class DuneTest {
         assertEquals(turnSummary, game.getTurnSummary());
         assertEquals(modInfo, game.getModInfo());
         assertEquals(gameActions, game.getGameActions());
+        assertEquals(bribes, game.getBribes());
 
         assertEquals(atreidesChat, atreides.getChat());
         assertEquals(atreidesLedger, atreides.getLedger());
