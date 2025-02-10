@@ -271,6 +271,10 @@ public class DiscordGame {
         return new BiddingPhase(this);
     }
 
+    public Bribes getBribes() throws ChannelNotFoundException {
+        return new Bribes(this);
+    }
+
     public FactionChat getFactionChat(Faction faction) throws ChannelNotFoundException {
         return new FactionChat(this, faction);
     }
@@ -417,6 +421,7 @@ public class DiscordGame {
         game.setModInfo(getModInfo());
         game.setModLedger(getModLedger());
         game.setBiddingPhase(getBiddingPhase());
+        game.setBribes(getBribes());
         return game;
     }
 

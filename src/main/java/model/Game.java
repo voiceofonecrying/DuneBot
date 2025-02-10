@@ -38,6 +38,7 @@ public class Game {
     private Revival revival;
     private Battles battles;
     private MentatPause mentatPause;
+    private List<String> bribesThisTurn;
     private final Deque<String> turnOrder;
     private final List<Faction> factions;
     private final Territories territories;
@@ -94,6 +95,8 @@ public class Game {
     private DuneTopic modLedger;
     @Exclude
     private DuneTopic biddingPhase;
+    @Exclude
+    private DuneTopic bribes;
 
     public Game() throws IOException {
         super();
@@ -679,6 +682,7 @@ public class Game {
         subPhase = 1;
         factions.forEach(Faction::clearWhisperCounts);
         factions.forEach(Faction::resetOccupation);
+        bribesThisTurn = null;
         setUpdated(UpdateType.MAP);
     }
 
@@ -901,6 +905,14 @@ public class Game {
 
     public void setBiddingPhase(DuneTopic biddingPhase) {
         this.biddingPhase = biddingPhase;
+    }
+
+    public DuneTopic getBribes() {
+        return bribes;
+    }
+
+    public void setBribes(DuneTopic bribes) {
+        this.bribes = bribes;
     }
 
     public List<Faction> getFactionsWithTreacheryCard(String cardName) {
@@ -1687,6 +1699,13 @@ public class Game {
         }
     }
 
+    public void addNewBribe(String bribeFactionsAndReason) {
+        if (bribesThisTurn == null)
+            bribesThisTurn = new ArrayList<>();
+        bribesThisTurn.add(bribeFactionsAndReason);
+        bribes.publish(bribeFactionsAndReason);
+    }
+
     public Battles startBattlePhase() {
         getFactions().forEach(f -> f.resetAllySpiceSupportAfterShipping(this));
         if (hasGameOption(GameOption.TECH_TOKENS)) TechToken.collectSpice(this, TechToken.HEIGHLINERS);
@@ -1869,6 +1888,11 @@ public class Game {
         if (altSpiceProductionTriggered) {
             TechToken.addSpice(this, TechToken.SPICE_PRODUCTION);
             TechToken.collectSpice(this, TechToken.SPICE_PRODUCTION);
+        }
+
+        if (bribesThisTurn != null) {
+            modInfo.publish("Check if any bribes need to be paid before Mentat Pause. " + getModOrRoleMention());
+            modInfo.publish("The following bribes were made this turn:\n" + String.join("\n", bribesThisTurn));
         }
 
         setUpdated(UpdateType.MAP);
