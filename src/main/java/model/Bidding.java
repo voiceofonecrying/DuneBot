@@ -1161,15 +1161,9 @@ public class Bidding {
             return false;
         }
 
-        if (game.hasFaction("Emperor") && game.hasGameOption(GameOption.HOMEWORLDS) && game.getFaction("Emperor").isHighThreshold()) {
-            Faction emperor = game.getFaction("Emperor");
-            List<DuneChoice> choices = new ArrayList<>();
-            for (TreacheryCard card : emperor.getTreacheryHand()) {
-                choices.add(new DuneChoice("emperor-discard-" + card.name(), card.name()));
-            }
-            choices.add(new DuneChoice("secondary", "emperor-finished-discarding", "Done"));
-            emperor.getChat().publish("Use these buttons to discard " + Emojis.TREACHERY + " from hand at the cost of 2 " + Emojis.SPICE + " per card.", choices);
-        }
+        if (game.hasFaction("Emperor"))
+            ((EmperorFaction) game.getFaction("Emperor")).presentKaitainHighThresholdChoices();
+
         game.endBidding();
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
         return true;

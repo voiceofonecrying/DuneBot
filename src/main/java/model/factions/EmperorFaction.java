@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class EmperorFaction extends Faction {
@@ -211,9 +212,26 @@ public class EmperorFaction extends Faction {
         return getSpecialStrengthOnSalusaSecundus() + getSpecialStrengthOnKaitain();
     }
 
+    public void presentKaitainHighThresholdChoices() {
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            if (isHighThreshold) {
+                List<DuneChoice> choices = treacheryHand.stream().map(card -> new DuneChoice("emperor-discard-" + card.name(), card.name())).collect(Collectors.toList());
+                if (choices.isEmpty()) {
+                    chat.publish("You have no " + Emojis.TREACHERY + " cards for Kaitain High Threshold.");
+                } else {
+                    choices.add(new DuneChoice("secondary", "emperor-finished-discarding", "Done"));
+                    chat.publish("Would you like to pay 2 " + Emojis.SPICE + " to discard a " + Emojis.TREACHERY + " card with Kaitain High Threshold? " + player, choices);
+                }
+            } else
+                chat.publish("You are at Low Threshold and cannot use Kaitain High Threshold ability.");
+        }
+    }
+
     public void kaitainHighDiscard(String cardName) {
-        discard(cardName, "and paid 2 " + Emojis.SPICE + " with Kaitain High Threshold ability");
-        subtractSpice(2, " paid to discard");
+        discard(cardName, "and pays 2 " + Emojis.SPICE + " with Kaitain High Threshold ability");
+        subtractSpice(2, " paid to discard " + cardName);
+        chat.reply("You discarded " + cardName + ".");
+        presentKaitainHighThresholdChoices();
     }
 
     @Override

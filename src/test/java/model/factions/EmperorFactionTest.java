@@ -37,6 +37,41 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#presentKaitainHighThresholdChoices")
+    class PresentKaitainHighThresholdChoices {
+        @BeforeEach
+        public void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+        }
+
+        @Test
+        public void testLowThreshold() {
+            faction.removeForces("Kaitain", 15, false, true);
+            faction.checkForHighThreshold();
+            faction.checkForLowThreshold();
+            faction.presentKaitainHighThresholdChoices();
+            assertEquals("You are at Low Threshold and cannot use Kaitain High Threshold ability.", chat.getMessages().getFirst());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+
+        @Test
+        public void testNoCardsHighThreshold() {
+            faction.presentKaitainHighThresholdChoices();
+            assertEquals("You have no " + Emojis.TREACHERY + " cards for Kaitain High Threshold.", chat.getMessages().getFirst());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+
+        @Test
+        public void testHasCardsHighThreshold() {
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.addTreacheryCard(new TreacheryCard("Karama"));
+            faction.presentKaitainHighThresholdChoices();
+            assertEquals("Would you like to pay 2 " + Emojis.SPICE + " to discard a " + Emojis.TREACHERY + " card with Kaitain High Threshold? player", chat.getMessages().getFirst());
+            assertEquals(3, chat.getChoices().getFirst().size());
+        }
+    }
+
+    @Nested
     @DisplayName("#revival")
     class Revival extends FactionTestTemplate.Revival {
         @Test
@@ -445,7 +480,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
         assertEquals(8, faction.getSpice());
         assertFalse(faction.hasTreacheryCard("Kulon"));
-        assertEquals(Emojis.EMPEROR + " discards Kulon and paid 2 " + Emojis.SPICE + " with Kaitain High Threshold ability.",
+        assertEquals(Emojis.EMPEROR + " discards Kulon and pays 2 " + Emojis.SPICE + " with Kaitain High Threshold ability.",
                 turnSummary.getMessages().getFirst()
         );
     }
