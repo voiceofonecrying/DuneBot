@@ -32,8 +32,8 @@ public class GameResult {
     private List<Set<String>> winningPlayers;
     private String predictedFaction;
     private String predictedPlayer;
-    private String startingForum;
-    private String endingForum;
+    private String startingForum = "Discord";
+    private String endingForum = "Discord";
 
     public String getGameName() {
         return gameName;
