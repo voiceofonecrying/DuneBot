@@ -2,7 +2,6 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -26,17 +25,10 @@ public class RicheseCommands {
         commandData.add(
                 Commands.slash("richese", "Commands related to the Richese Faction.").addSubcommands(
                         new SubcommandData(
-                                "no-fields-to-front-of-shield",
-                                "Move the Richese No-Fields token to the Front of Shield."
-                        ).addOptions(richeseNoFields),
-                        new SubcommandData(
                                 "place-no-fields-token",
                                 "Place a No-Fields token on the map."
                         ).addOptions(richeseNoFields, CommandOptions.territory),
-                        new SubcommandData(
-                                "remove-no-field",
-                                "Remove the No-Field token from the board"
-                        ),
+                        new SubcommandData("reveal-no-field", "Replace the No Field with Richese forces and move it to front of shield"),
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
                                 .addOptions(richeseCard, richeseBidType),
                         new SubcommandData("black-market-bid", "Start bidding on a black market card")
@@ -57,26 +49,13 @@ public class RicheseCommands {
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
         switch (name) {
-            case "no-fields-to-front-of-shield" -> moveNoFieldsToFrontOfShield(discordGame, game);
             case "card-bid" -> cardBid(discordGame, game);
             case "black-market-bid" -> blackMarketBid(discordGame, game);
             case "remove-card" -> removeRicheseCard(discordGame, game);
             case "karama-buy" -> karamaBuy(discordGame, game);
             case "karama-block-cache-card" -> karamaBlockCacheCard(discordGame, game);
             case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
-            case "remove-no-field" -> removeNoFieldToken(discordGame, game);
-        }
-    }
-
-    public static void moveNoFieldsToFrontOfShield(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        int noFieldValue = discordGame.required(richeseNoFields).getAsInt();
-
-        if (game.hasFaction("Richese")) {
-            RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
-
-            faction.setFrontOfShieldNoField(noFieldValue);
-
-            discordGame.pushGame();
+            case "reveal-no-field" -> revealNoField(discordGame, game);
         }
     }
 
@@ -155,14 +134,8 @@ public class RicheseCommands {
         discordGame.pushGame();
     }
 
-    public static void removeNoFieldToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Optional<Territory> territory = game.getTerritories().values().stream()
-                .filter(Territory::hasRicheseNoField)
-                .findFirst();
-
-        territory.ifPresent(value -> value.setRicheseNoField(null));
-        game.setUpdated(UpdateType.MAP);
-
+    public static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
         discordGame.pushGame();
     }
 
