@@ -374,8 +374,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         if (guildAmbassador) {
             discordGame.queueMessage("Shipment with Guild ambassador complete.");
         } else if (btHTPlacement) {
-            discordGame.queueMessage("Placement of free revivals complete.");
-            ((BTFaction) game.getFaction("BT")).setBtHTActive(false);
+            BTFaction bt = (BTFaction) game.getFaction("BT");
+            discordGame.queueMessage("Placement of " + bt.getNumFreeRevivals() + " free revivals complete.");
+            bt.setBtHTActive(false);
         } else {
             discordGame.queueMessage("Shipment complete.");
             queueMovementButtons(game, faction, discordGame);
@@ -481,6 +482,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean shaiHuludPlacement = event.getComponentId().contains("-place-shai-hulud");
         boolean greatMakerPlacement = event.getComponentId().contains("-place-great-maker");
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
+        boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
         boolean enterDiscoveryToken = event.getComponentId().contains("-enter-discovery-token");
         String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = ButtonManager.getButtonPresser(event, game);
@@ -490,6 +492,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                         .replace("place-shai-hulud-", "")
                         .replace("place-great-maker-", "")
                         .replace("guild-ambassador-", "")
+                        .replace("bt-ht-", "")
                         .replace("enter-discovery-token-", "")
                         .replace("-", " ")
                 )
@@ -501,6 +504,19 @@ public class ShipmentAndMovementButtons implements Pressable {
             game.placeShaiHulud(territoryName, wormName, false);
             ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
             discordGame.queueMessage("You placed " + wormName + " in " + territoryName);
+            discordGame.pushGame();
+            return;
+        } else if (btHTPlacement) {
+            faction.getShipment().setTerritoryName(territory.getTerritoryName());
+            BTFaction bt = (BTFaction) game.getFaction("BT");
+            faction.getShipment().setForce(bt.getNumFreeRevivals());
+            MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
+                    .addContent("Currently sending your free revivals to " + territory.getTerritoryName() + "."
+                    ).addActionRow(
+                            Button.success("execute-shipment-bt-ht", "Confirm"),
+                            Button.danger("reset-shipment-bt-ht", "Start over")
+                    );
+            discordGame.queueMessage(messageCreateBuilder);
             discordGame.pushGame();
             return;
         }

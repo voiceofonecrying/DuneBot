@@ -160,6 +160,10 @@ public class BTFaction extends Faction {
         return numFreeRevivals;
     }
 
+    public int getNumFreeRevivals() {
+        return numFreeRevivals;
+    }
+
     @Override
     public int baseRevivalCost(int regular, int starred) {
         return regular + starred;
