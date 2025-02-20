@@ -54,10 +54,10 @@ public class RevivalButtons implements Pressable {
         } else {
             game.reviveForces(faction, true, 0, revival);
             discordGame.queueMessage("You will revive " + revival + " " + Emojis.IX_CYBORG + ".");
-            discordGame.pushGame();
         }
         game.getRevival().setCyborgRevivalComplete(true);
         faction.presentPaidRevivalChoices(freeRevived + revival);
+        discordGame.pushGame();
     }
 
     private static void playRecruits(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException, IOException {
