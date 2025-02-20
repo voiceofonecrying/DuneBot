@@ -77,11 +77,13 @@ public class MoritaniFaction extends Faction {
             case "Atomics" -> {
                 this.handLimit = 3;
                 location.setAftermathToken(true);
-                for (Force force : location.getForces()) {
+                for (Force force : location.getForces().stream().toList()) {
                     if (force.getName().contains("*"))
-                        game.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true);
+                        game.removeForcesAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), 0, force.getStrength(), true, false);
+                    else if (force.getName().equals("Advisor"))
+                        game.removeAdvisorsAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), true);
                     else
-                        game.removeForces(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true);
+                        game.removeForcesAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, false);
                 }
             }
             case "Extortion" -> {
