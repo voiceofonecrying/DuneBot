@@ -1342,8 +1342,8 @@ public class Faction {
     /**
      * Execute shipping as described in the faction's shipment object
      *
-     * @param game            The game instance
-     * @param karama          True if faction is playing karama for Guild shipping rate
+     * @param game    The game instance
+     * @param karama  True if faction is playing karama for Guild shipping rate
      * @param free    True if unpaid due to Guild ambassador, BT High Treshold
      */
     public void executeShipment(Game game, boolean karama, boolean free) throws InvalidGameStateException {
