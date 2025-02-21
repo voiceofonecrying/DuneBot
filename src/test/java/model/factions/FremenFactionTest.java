@@ -147,6 +147,18 @@ class FremenFactionTest extends FactionTestTemplate {
         assertEquals(7, faction.getFreeRevival());
     }
 
+    @Nested
+    @DisplayName("#executeShipment")
+    class ExecuteShipment extends FactionTestTemplate.ExecuteShipment {
+        @Override
+        @Test
+        void testPaidShipment() throws InvalidGameStateException {
+            int spice = faction.getSpice();
+            faction.executeShipment(game, false, false);
+            assertEquals(spice, faction.getSpice());
+        }
+    }
+
     @Test
     public void testInitialHasMiningEquipment() {
         assertFalse(faction.hasMiningEquipment());
