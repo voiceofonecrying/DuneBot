@@ -680,6 +680,36 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#executeShipment")
+    class ExecuteShipment {
+        Faction faction;
+        Shipment shipment;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            shipment = faction.getShipment();
+            shipment.clear();
+            shipment.setForce(1);
+            shipment.setTerritoryName("Sietch Tabr");
+        }
+
+        @Test
+        void testPaidShipment() throws InvalidGameStateException {
+            int spice = faction.getSpice();
+            faction.executeShipment(game, false, false);
+            assertEquals(spice - 1, faction.getSpice());
+        }
+
+        @Test
+        void testGuildAmbassadorAndBTHighThreshold() {
+            int spice = faction.getSpice();
+            faction.subtractSpice(spice, "Test");
+            assertDoesNotThrow(() -> faction.executeShipment(game, false, true));
+        }
+    }
+
+    @Nested
     @DisplayName("#removeForces")
     class RemoveForces {
         Faction faction;

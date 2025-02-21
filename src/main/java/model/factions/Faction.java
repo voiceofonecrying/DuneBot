@@ -1344,13 +1344,13 @@ public class Faction {
      *
      * @param game            The game instance
      * @param karama          True if faction is playing karama for Guild shipping rate
-     * @param guildAmbassador True if Ecaz or ally is placing forces with Guild ambassador
+     * @param free    True if unpaid due to Guild ambassador, BT High Treshold
      */
-    public void executeShipment(Game game, boolean karama, boolean guildAmbassador) throws InvalidGameStateException {
+    public void executeShipment(Game game, boolean karama, boolean free) throws InvalidGameStateException {
         int totalForces = shipment.getForce() + shipment.getSpecialForce();
         String territoryName = shipment.getTerritoryName();
         Territory territory = game.getTerritory(territoryName);
-        int spiceNeeded = game.shipmentCost(this, totalForces, territory, karama || guildAmbassador, !shipment.getCrossShipFrom().isEmpty());
+        int spiceNeeded = free ? 0 : game.shipmentCost(this, totalForces, territory, karama, !shipment.getCrossShipFrom().isEmpty());
         int spiceFromAlly = hasAlly() ? game.getFaction(ally).getShippingSupport() : 0;
         if (spiceNeeded > spice + spiceFromAlly)
             throw new InvalidGameStateException("You cannot afford this shipment.");
@@ -1381,11 +1381,11 @@ public class Faction {
                 placeForces(territory, force, specialForce, true, true, true, game, false, true);
                 game.getTurnSummary().publish(emoji + " cross shipped from " + crossShipFrom + " to " + territoryName);
             } else if (force > 0 || specialForce > 0)
-                placeForces(territory, force, specialForce, !guildAmbassador, true, true, game, karama, false);
+                placeForces(territory, force, specialForce, !free, true, true, game, karama, false);
         }
         game.setUpdated(UpdateType.MAP);
         shipment.clear();
-        if (guildAmbassador)
+        if (free)
             shipment.setShipped(false);
         else
             resetAllySpiceSupportAfterShipping(game);
