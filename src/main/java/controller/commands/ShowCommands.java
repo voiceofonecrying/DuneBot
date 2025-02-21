@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -365,6 +366,18 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("charity-accept", "Accept CHOAM charity")).build());
             else
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
+        }
+
+        if (faction instanceof RicheseFaction) {
+            Territory territory = game.getTerritories().values().stream()
+                    .filter(Territory::hasRicheseNoField)
+                    .findFirst().orElse(null);
+            if (territory != null) {
+                int noField = territory.getRicheseNoField();
+                Button button = Button.success("richese-reveal-no-field", "Reveal " + noField + " No-Field in " + territory.getTerritoryName());
+                button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.NO_FIELD)));
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(List.of(button)).build());
+            }
         }
 
         StringSelectMenu.Builder playCardMenu = StringSelectMenu.create("play-card-menu-" + faction.getName()).setPlaceholder("Play a card.").setRequiredRange(1,1).setDefaultValues("0");

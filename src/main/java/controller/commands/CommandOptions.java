@@ -109,6 +109,7 @@ public class CommandOptions {
             .addChoice("Faction Info", "factions");
     public static final OptionData isShipment = new OptionData(OptionType.BOOLEAN, "is-shipment", "Is this placement a shipment?", true);
     public static final OptionData canTrigger = new OptionData(OptionType.BOOLEAN, "can-trigger", "Can this placement trigger Ambassadors and Terror Tokens?", true);
+    public static final OptionData ecazAllyNoField = new OptionData(OptionType.BOOLEAN, "is-ecaz-ally", "True if Ecaz ally shipped the No-Field", false);
     public static final OptionData toTanks = new OptionData(OptionType.BOOLEAN, "to-tanks", "Remove these forces to the tanks (true) or to reserves (false)?", true);
     public static final OptionData killedInBattle = new OptionData(OptionType.BOOLEAN, "killed-in-battle", "For Atreides KH counter", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);

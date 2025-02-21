@@ -7,6 +7,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.Game;
+import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
@@ -14,7 +15,8 @@ import java.io.IOException;
 public class RicheseButtons implements Pressable {
 
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        if (event.getComponentId().startsWith("richeserunblackmarket-")) runBlackMarket(event, discordGame, game);
+        if (event.getComponentId().equals("richese-reveal-no-field")) revealNoField(discordGame, game);
+        else if (event.getComponentId().startsWith("richeserunblackmarket-")) runBlackMarket(event, discordGame, game);
         else if (event.getComponentId().startsWith("richeseblackmarketmethod-"))
             blackMarketMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richeseblackmarket-")) confirmBlackMarket(event, discordGame, game);
@@ -24,6 +26,12 @@ public class RicheseButtons implements Pressable {
             cacheCardMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richesecachecardconfirm-"))
             confirmCacheCard(event, discordGame, game);
+    }
+
+    private static void revealNoField(DiscordGame discordGame, Game game) {
+        ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
+        discordGame.queueMessage("You have revealed your No-Field.");
+        discordGame.queueDeleteMessage();
     }
 
     private static void runBlackMarket(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
