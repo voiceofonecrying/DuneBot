@@ -1077,7 +1077,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void removeAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void removeAlliance(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction targetFaction = game.getFaction(discordGame.required(faction).getAsString());
 
         game.removeAlliance(targetFaction);

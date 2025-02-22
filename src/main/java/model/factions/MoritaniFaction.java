@@ -59,7 +59,7 @@ public class MoritaniFaction extends Faction {
 
     public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) {
         DuneTopic turnSummary = game.getTurnSummary();
-        turnSummary.publish("The " + terror + " token has been triggered!");
+        turnSummary.publish("The " + terror + " Terror Token has been triggered!");
 
         switch (terror) {
             case "Assassination" -> {
@@ -75,7 +75,6 @@ public class MoritaniFaction extends Faction {
                     assassinateLeader(triggeringFaction, leaders.getFirst());
             }
             case "Atomics" -> {
-                this.handLimit = 3;
                 location.setAftermathToken(true);
                 for (Force force : location.getForces().stream().toList()) {
                     if (force.getName().contains("*"))
@@ -85,6 +84,9 @@ public class MoritaniFaction extends Faction {
                     else
                         game.removeForcesAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, false);
                 }
+                reduceHandLimitDueToAtomics(this);
+                if (ally != null)
+                    reduceHandLimitDueToAtomics(game.getFaction(ally));
             }
             case "Extortion" -> {
                 game.triggerExtortionToken();
@@ -126,6 +128,27 @@ public class MoritaniFaction extends Faction {
             territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void reduceHandLimitDueToAtomics(Faction faction) {
+        List<TreacheryCard> hand = faction.getTreacheryHand();
+        faction.setHandLimit(faction.getHandLimit() - 1);
+        int handLimit = faction.getHandLimit();
+        game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been reduced to " + handLimit + ".");
+        if (hand.size() > handLimit)
+            faction.discard(hand.get((int) (Math.random() * hand.size())).name());
+    }
+
+    public void reduceHandLmitIfNecessary(Faction faction) {
+        if (handLimit == 3)
+            reduceHandLimitDueToAtomics(faction);
+    }
+
+    public void restoreHandLimitIfNecessary(Faction faction) {
+        if (handLimit == 3) {
+            faction.setHandLimit(faction.getHandLimit() + 1);
+            game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been restored to " + faction.getHandLimit() + ".");
+        }
     }
 
     public void robberyRob(String factionName) {

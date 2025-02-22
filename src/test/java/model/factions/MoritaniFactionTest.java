@@ -378,6 +378,93 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("triggerAtomics")
+    class TriggerAtomics {
+        TestTopic turnSummary;
+        AtreidesFaction atreides;
+        HarkonnenFaction harkonnen;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            atreides = new AtreidesFaction("p", "u");
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+            harkonnen = new HarkonnenFaction("p", "u");
+            harkonnen.setLedger(new TestTopic());
+            game.addFaction(harkonnen);
+        }
+
+        @Test
+        void testAtomicsKillsForcesAndReducesHandLimit() {
+            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            assertTrue(arrakeen.isAftermathToken());
+            assertEquals("The Atomics Terror Token has been triggered!", turnSummary.getMessages().getFirst());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("10 " + Emojis.ATREIDES_TROOP + " in Arrakeen were sent to the tanks.")));
+            assertEquals(3, faction.getHandLimit());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.MORITANI + " " + Emojis.TREACHERY + " limit has been reduced to 3.")));
+        }
+
+        @Test
+        void testMoritaniHadFourCards() {
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            assertEquals(4, faction.getTreacheryHand().size());
+            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            assertEquals(3, faction.getTreacheryHand().size());
+            assertEquals( Emojis.MORITANI + " discards Shield.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testAllyHandSizeReduces() {
+            game.createAlliance(faction, harkonnen);
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            assertEquals(8, harkonnen.getTreacheryHand().size());
+            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            assertEquals(7, harkonnen.getHandLimit());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been reduced to 7.")));
+            assertEquals(7, harkonnen.getTreacheryHand().size());
+            assertEquals( Emojis.HARKONNEN + " discards Shield.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testOldAllyHandLimitRestored() {
+            game.createAlliance(faction, harkonnen);
+            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            game.createAlliance(faction, atreides);
+            assertEquals(8, harkonnen.getHandLimit());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been restored to 8.")));
+        }
+
+        @Test
+        void testNewAllyHandLimitReduced() {
+            game.createAlliance(faction, harkonnen);
+            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            game.createAlliance(faction, atreides);
+            assertEquals(3, atreides.getHandLimit());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " " + Emojis.TREACHERY + " limit has been reduced to 3.")));
+        }
+
+        @Test
+        void testNoAtomicsNoChangesToAllyHandLimits() {
+            game.createAlliance(faction, harkonnen);
+            game.createAlliance(faction, atreides);
+            assertEquals(8, harkonnen.getHandLimit());
+            assertEquals(4, atreides.getHandLimit());
+        }
+    }
+
+    @Nested
     @DisplayName("#placeTerrorToken")
     class PlaceTerrorToken {
         @BeforeEach
