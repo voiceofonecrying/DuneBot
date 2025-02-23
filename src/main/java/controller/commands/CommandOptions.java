@@ -546,6 +546,8 @@ public class CommandOptions {
                 .map(card -> new Command.Choice(card, card))
                 .toList()
         );
+        if (choices.isEmpty())
+            choices.add(new Command.Choice("None", "None"));
         return choices;
     }
 
