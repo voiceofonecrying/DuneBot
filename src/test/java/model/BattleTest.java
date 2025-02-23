@@ -1942,8 +1942,8 @@ class BattleTest extends DuneTest {
         }
 
         @Nested
-        @DisplayName("#resolutionWithNoField")
-        class ResolutionWithNoField {
+        @DisplayName("#resolutionHarkonnenCanCapture")
+        class ResolutionHarkonnenCanCapture {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
@@ -1976,6 +1976,92 @@ class BattleTest extends DuneTest {
                 assertTrue(battle.isHarkonnenCaptureMustBeResolved(game));
                 game.killLeader(atreides, battle.getHarkonnenCapturedLeader());
                 assertFalse(battle.isHarkonnenCaptureMustBeResolved(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithSurvivingCapturedLeader")
+        class ResolutionWithSurvivingCapturedLeader {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.removeLeader(ladyJessica);
+                harkonnen.addLeader(ladyJessica);
+                battle.setBattlePlan(game, harkonnen, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                turnSummary.clear();
+                modInfo.clear();
+                harkonnenChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(harkonnen.getLeaders().contains(ladyJessica));
+                assertFalse(atreides.getLeaders().contains(ladyJessica));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.HARKONNEN + " returns Lady Jessica to " + Emojis.ATREIDES));
+                assertTrue(atreidesLedger.getMessages().isEmpty());
+                assertTrue(harkonnenLedger.getMessages().isEmpty());
+            }
+
+            @Test
+            void testPublishDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(harkonnen.getLeaders().contains(ladyJessica));
+                assertFalse(atreides.getLeaders().contains(ladyJessica));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " returns Lady Jessica to " + Emojis.ATREIDES));
+                assertTrue(atreidesLedger.getMessages().isEmpty());
+                assertTrue(harkonnenLedger.getMessages().isEmpty());
+            }
+
+            @Test
+            void testResolveAsksHarkonnenAndBlocksAdvance() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(harkonnen.getLeaders().contains(ladyJessica));
+                assertTrue(atreides.getLeaders().contains(ladyJessica));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " has returned Lady Jessica to " + Emojis.ATREIDES)));
+                assertTrue(atreidesLedger.getMessages().stream().anyMatch(m -> m.equals("Lady Jessica has returned to you.")));
+                assertTrue(harkonnenLedger.getMessages().stream().anyMatch(m -> m.equals("Lady Jessica has returned to " + Emojis.ATREIDES)));
+            }
+        }
+
+        @Nested
+        @DisplayName("#resolutionWithKilledCapturedLeader")
+        class ResolutionWithKilledCapturedLeader {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.removeLeader(ladyJessica);
+                harkonnen.addLeader(ladyJessica);
+                atreides.addTreacheryCard(chaumas);
+                battle.setBattlePlan(game, harkonnen, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, chaumas, null);
+                turnSummary.clear();
+                modInfo.clear();
+                harkonnenChat.clear();
+            }
+
+            @Test
+            void testReviewDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(harkonnen.getLeaders().contains(ladyJessica));
+                assertFalse(atreides.getLeaders().contains(ladyJessica));
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.HARKONNEN + " returns Lady Jessica to " + Emojis.ATREIDES));
+            }
+
+            @Test
+            void testPublishDoesNotAskHarkonnen() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(harkonnen.getLeaders().contains(ladyJessica));
+                assertFalse(atreides.getLeaders().contains(ladyJessica));
+                assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " returns Lady Jessica to " + Emojis.ATREIDES));
+            }
+
+            @Test
+            void testResolveAsksHarkonnenAndBlocksAdvance() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertFalse(harkonnen.getLeaders().contains(ladyJessica));
+                assertFalse(atreides.getLeaders().contains(ladyJessica));
+                assertTrue(game.getLeaderTanks().contains(ladyJessica));
+                assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " has returned Lady Jessica to " + Emojis.ATREIDES)));
             }
         }
     }

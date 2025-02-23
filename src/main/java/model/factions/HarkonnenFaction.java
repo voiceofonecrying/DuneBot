@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import model.Game;
+import model.Leader;
 import model.Territory;
 import model.TraitorCard;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +52,16 @@ public class HarkonnenFaction extends Faction {
 
     public void setBonusCardBlocked(boolean bonusCardBlocked) {
         this.bonusCardBlocked = bonusCardBlocked;
+    }
+
+    public void returnCapturedLeader(String leaderName) {
+        Leader leader = getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
+        removeLeader(leader);
+        ledger.publish(leader.getName() + " has returned to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
+        Faction opponentFaction = game.getFaction(leader.getOriginalFactionName());
+        opponentFaction.addLeader(leader);
+        opponentFaction.getLedger().publish(leader.getName() + " has returned to you.");
+        game.getTurnSummary().publish(Emojis.HARKONNEN + " has returned " + leader.getName() + " to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
     }
 
     @Override

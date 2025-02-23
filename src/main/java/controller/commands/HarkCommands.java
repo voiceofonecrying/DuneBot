@@ -11,13 +11,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 
 import static controller.commands.CommandOptions.*;
@@ -55,27 +49,9 @@ public class HarkCommands {
         }
     }
 
-    private static void returnLeader(DiscordGame discordGame, Game game) throws IOException, ChannelNotFoundException {
+    private static void returnLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String returningLeader = discordGame.required(nonHarkLeader).getAsString();
-
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
-        ));
-
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
-
-        for (CSVRecord csvRecord : csvParser) {
-            if (csvRecord.get(1).equals(returningLeader)) {
-                Faction faction = game.getFaction(csvRecord.get(0));
-                faction.addLeader(game.getFaction("Harkonnen").getLeader(returningLeader).orElseThrow());
-                faction.getLedger().publish(returningLeader + " has been returned to you.");
-                break;
-            }
-        }
-        Faction harkonnen = game.getFaction("Harkonnen");
-        harkonnen.removeLeader(returningLeader);
-        harkonnen.getLedger().publish(returningLeader + " has returned to their original owner.");
-        game.getTurnSummary().publish(returningLeader + " has returned to their original owner.");
+        ((HarkonnenFaction) game.getFaction("Harkonnen")).returnCapturedLeader(returningLeader);
         discordGame.pushGame();
     }
 
