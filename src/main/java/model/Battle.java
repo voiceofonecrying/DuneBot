@@ -852,6 +852,8 @@ public class Battle {
             resolution += handleSietchTabrStrongholdCard(game, faction, isLoser, opponentBattlePlan, executeResolution);
         }
         resolution += handleTueksSietchStrongholdCard(game, faction, battlePlan, executeResolution);
+        if (faction instanceof HarkonnenFaction harkonnen && battlePlan.isLeaderAlive())
+            resolution += handleCapturedLeaderReturn(harkonnen, battlePlan, executeResolution);
 
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
         Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
@@ -1223,6 +1225,23 @@ public class Battle {
                 } else
                     resolution += faction.getEmoji() + " gains " + worthlessCardSpice + " " + Emojis.SPICE + " for Tuek's Sietch stronghold card\n";
             }
+        }
+        return resolution;
+    }
+
+    private String handleCapturedLeaderReturn(HarkonnenFaction harkonnen, BattlePlan battlePlan, boolean executeResolution) {
+        String resolution = "";
+        String leaderFaction = "Harkonnen";
+        Leader leader = battlePlan.getLeader();
+        if (leader != null) {
+            leader = harkonnen.getLeader(leader.getName()).orElseThrow();
+            leaderFaction = leader.getOriginalFactionName();
+        }
+        if (!leaderFaction.equals("Harkonnen")) {
+            if (executeResolution)
+                harkonnen.returnCapturedLeader(leader.getName());
+            else
+                resolution += Emojis.HARKONNEN + " returns " + leader.getName() + " to " + Emojis.getFactionEmoji(leaderFaction) + "\n";
         }
         return resolution;
     }
