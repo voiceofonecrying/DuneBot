@@ -142,37 +142,4 @@ public class RicheseCommands {
         richese.revealNoField(game, factionToReveal);
         discordGame.pushGame();
     }
-
-    public static void blackMarketMethod(Game game, String cardName) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "Normal", "Normal"));
-        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
-        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
-        choices.add(new DuneChoice("richeseblackmarketmethod-" + cardName + "-" + "Silent", "Silent"));
-        choices.add(new DuneChoice("secondary", "richeseblackmarketmethod-reselect", "Start over"));
-        game.getFaction("Richese").getChat().publish("How would you like to sell " + cardName.trim() + "?", choices);
-    }
-
-    public static void confirmBlackMarket(Game game, String cardName, String method) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("success", "richeseblackmarket-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
-        choices.add(new DuneChoice("secondary", "richeseblackmarket-reselect", "Start over"));
-        game.getFaction("Richese").getChat().publish("", choices);
-    }
-
-    public static void cacheCardMethod(Game game, String cardName) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
-        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
-        choices.add(new DuneChoice("richesecachecardmethod-" + cardName + "-" + "Silent", "Silent"));
-        choices.add(new DuneChoice("secondary", "richesecachecardmethod-reselect", "Start over"));
-        game.getFaction("Richese").getChat().publish("How would you like to sell " + cardName.trim() + "?", choices);
-    }
-
-    public static void confirmCacheCard(Game game, String cardName, String method) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("richesecachecardconfirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
-        choices.add(new DuneChoice("secondary", "richesecachecardconfirm-reselect", "Start over"));
-        game.getFaction("Richese").getChat().publish("", choices);
-    }
 }

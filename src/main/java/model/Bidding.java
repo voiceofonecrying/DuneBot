@@ -181,14 +181,14 @@ public class Bidding {
     public void askBlackMarket(Game game) {
         blackMarketDecisionInProgress = true;
         RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
-        String message2 = "Turn " + game.getTurn() + " - Select a " + Emojis.TREACHERY + " card to sell on the black market. " + richeseFaction.getPlayer();
+        String message2 = "Select a " + Emojis.TREACHERY + " card to sell on the black market. " + richeseFaction.getPlayer();
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
         for (TreacheryCard card : richeseFaction.getTreacheryHand()) {
             i++;
-            choices.add(new DuneChoice("richeserunblackmarket-" + card.name() + "-" + i, card.name()));
+            choices.add(new DuneChoice("richese-run-black-market-" + card.name() + "-" + i, card.name()));
         }
-        choices.add(new DuneChoice("danger", "richeserunblackmarket-skip", "No black market"));
+        choices.add(new DuneChoice("danger", "richese-run-black-market-skip", "No black market"));
         richeseFaction.getChat().publish(message2, choices);
     }
 
