@@ -40,7 +40,7 @@ public class ButtonManager extends ListenerAdapter {
                         event.getChannel().getName();
 
                 return game.getFactions().stream()
-                        .filter(f -> (f.getName().toLowerCase() + "-info").equals(channelName))
+                        .filter(f -> (f.getInfoChannelPrefix() + "-info").equals(channelName))
                         .findAny()
                         .orElseThrow();
             } else {

@@ -15,11 +15,11 @@ public class FactionWhispers extends DiscordChannel {
 
     public FactionWhispers(DiscordGame discordGame, Faction faction, Faction interlocutor) throws ChannelNotFoundException {
         super(discordGame);
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         TextChannel factionInfo = discordGame.getTextChannel(infoChannelName);
 
         thread = true;
-        String whisperThreadName = interlocutor.getName().toLowerCase() + "-whispers";
+        String whisperThreadName = interlocutor.getInfoChannelPrefix() + "-whispers";
         Optional<ThreadChannel> optThread = discordGame.getOptionalThreadChannel(infoChannelName, whisperThreadName);
         if (optThread.isPresent()) {
             this.messageChannel = optThread.get();

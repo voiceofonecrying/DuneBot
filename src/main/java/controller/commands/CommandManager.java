@@ -379,6 +379,7 @@ public class CommandManager extends ListenerAdapter {
             Game game = discordGame.getGame();
             event.replyChoices(CommandOptions.getCommandChoices(event, discordGame, game)).queue();
         } catch (ChannelNotFoundException e) {
+            System.err.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }
