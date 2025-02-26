@@ -40,6 +40,29 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#getInfoChannelPrefix")
+    class GetInfoChannelPrefix {
+        Faction faction;
+
+        @BeforeEach
+        public void setUp() {
+            faction = getFaction();
+        }
+
+        @Test
+        public void testNullPrefix() {
+            faction.setInfoChannelPrefix(null);
+            assertEquals(faction.name.toLowerCase(), faction.getInfoChannelPrefix());
+        }
+
+        @Test
+        public void testPrefix() {
+            faction.setInfoChannelPrefix("some-prefix");
+            assertEquals("some-prefix", faction.getInfoChannelPrefix());
+        }
+    }
+
+    @Nested
     @DisplayName("#revival")
     class Revival {
         Faction faction;
@@ -482,13 +505,13 @@ abstract class FactionTestTemplate {
         @Test
         void validPositive() {
             faction.addSpice(2, "test");
-            assertEquals(faction.getSpice(), 12);
+            assertEquals(12, faction.getSpice());
         }
 
         @Test
         void zero() {
             faction.addSpice(0, "test");
-            assertEquals(faction.getSpice(), 10);
+            assertEquals(10, faction.getSpice());
         }
 
         @Test
@@ -513,13 +536,13 @@ abstract class FactionTestTemplate {
         @Test
         void validPositive() {
             faction.subtractSpice(2, "test");
-            assertEquals(faction.getSpice(), 8);
+            assertEquals(8, faction.getSpice());
         }
 
         @Test
         void zero() {
             faction.subtractSpice(0, "test");
-            assertEquals(faction.getSpice(), 10);
+            assertEquals(10, faction.getSpice());
         }
 
         @Test
@@ -547,13 +570,13 @@ abstract class FactionTestTemplate {
         @Test
         void validPositive() {
             faction.addFrontOfShieldSpice(2);
-            assertEquals(faction.getFrontOfShieldSpice(), 12);
+            assertEquals(12, faction.getFrontOfShieldSpice());
         }
 
         @Test
         void zero() {
             faction.addFrontOfShieldSpice(0);
-            assertEquals(faction.getFrontOfShieldSpice(), 10);
+            assertEquals(10, faction.getFrontOfShieldSpice());
         }
 
         @Test
@@ -576,13 +599,13 @@ abstract class FactionTestTemplate {
         @Test
         void validPositive() {
             faction.subtractFrontOfShieldSpice(2);
-            assertEquals(faction.getFrontOfShieldSpice(), 8);
+            assertEquals(8, faction.getFrontOfShieldSpice());
         }
 
         @Test
         void zero() {
             faction.subtractFrontOfShieldSpice(0);
-            assertEquals(faction.getFrontOfShieldSpice(), 10);
+            assertEquals(10, faction.getFrontOfShieldSpice());
         }
 
         @Test

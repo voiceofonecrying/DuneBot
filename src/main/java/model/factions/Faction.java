@@ -51,7 +51,7 @@ public class Faction {
     private Set<UpdateType> updateTypes;
     protected String player;
     private String userName;
-    private final String infoChannelPrefix;
+    private String infoChannelPrefix;
     private boolean graphicDisplay;
     private int frontOfShieldSpice;
     protected String ally;
@@ -154,9 +154,19 @@ public class Faction {
         return this.name;
     }
 
+    /**
+     * Retrieves the prefix used for the information channel. If the prefix is not set,
+     * it defaults to the lowercase version of the name.
+     *
+     * @return the information channel prefix, or the name in lowercase if the prefix is not set
+     */
     public String getInfoChannelPrefix() {
         if (this.infoChannelPrefix == null) return this.getName().toLowerCase();
         return infoChannelPrefix;
+    }
+
+    public void setInfoChannelPrefix(String infoChannelPrefix) {
+        this.infoChannelPrefix = infoChannelPrefix;
     }
 
     public String getEmoji() {
