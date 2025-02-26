@@ -23,7 +23,7 @@ public class BiddingButtons implements Pressable {
     private static void passOnce(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().pass(game, faction);
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
 
         discordGame.queueMessage("You will pass the next bid.");
         discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass", "Pass One Time")).build());
@@ -33,7 +33,7 @@ public class BiddingButtons implements Pressable {
     private static void toggleAutoPassTurn(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().setAutoPassEntireTurn(game, faction, !faction.isAutoBidTurn());
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix()+ "-info";
         if (!faction.isAutoBidTurn()) {
             discordGame.queueMessage("You will not auto-pass on every card this round.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
@@ -51,7 +51,7 @@ public class BiddingButtons implements Pressable {
     private static void toggleAutoPass(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().setAutoPass(game, faction, !faction.isAutoBid());
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (!faction.isAutoBid()) {
             discordGame.queueMessage("You will not auto-pass on this card.");
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass", "Enable Auto-Pass")).build());

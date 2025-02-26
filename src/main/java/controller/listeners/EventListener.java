@@ -120,7 +120,7 @@ public class EventListener extends ListenerAdapter {
             String channelName = threadChannel.getName();
             game.getFactions().stream()
                     .filter(f -> channelName.endsWith("-whispers")
-                            && threadChannel.getParentChannel().getName().equals(f.getName().toLowerCase() + "-info"))
+                            && threadChannel.getParentChannel().getName().equals(f.getInfoChannelPrefix() + "-info"))
                     .map(f -> channelName.substring(0, channelName.indexOf("-")))
                     .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
                     .findFirst().ifPresent(emoji -> {

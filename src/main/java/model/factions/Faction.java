@@ -51,6 +51,7 @@ public class Faction {
     private Set<UpdateType> updateTypes;
     protected String player;
     private String userName;
+    private final String infoChannelPrefix;
     private boolean graphicDisplay;
     private int frontOfShieldSpice;
     protected String ally;
@@ -85,6 +86,7 @@ public class Faction {
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
         this.name = name;
+        this.infoChannelPrefix = name.toLowerCase();
         this.player = player;
         this.userName = userName;
         this.graphicDisplay = false;
@@ -150,6 +152,11 @@ public class Faction {
 
     public String getName() {
         return this.name;
+    }
+
+    public String getInfoChannelPrefix() {
+        if (this.infoChannelPrefix == null) return this.getName().toLowerCase();
+        return infoChannelPrefix;
     }
 
     public String getEmoji() {

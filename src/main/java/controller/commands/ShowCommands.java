@@ -101,14 +101,15 @@ public class ShowCommands {
     public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException, InvalidGameStateException {
         if (game.getMute()) return;
 
-        MessageChannel infoChannel = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
+        Faction faction = game.getFaction(factionName);
+
+        MessageChannel infoChannel = discordGame.getTextChannel(faction.getInfoChannelPrefix() + "-info");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(infoChannel).complete();
 
         List<Message> messages = messageHistory.getRetrievedHistory();
 
         messages.forEach(discordGame::queueDeleteMessage);
 
-        Faction faction = game.getFaction(factionName);
         BufferedImage table = getResourceImage(faction.getHomeworld());
         if (faction instanceof EmperorFaction emperorFaction) {
             table = getResourceImage(emperorFaction.getSecondHomeworld());
@@ -344,7 +345,7 @@ public class ShowCommands {
 
         FileUpload boardFileUpload = FileUpload.fromData(boardOutputStream.toByteArray(), "behind shield.png");
 
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
         if (!leadersInTerritories.isEmpty())
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
@@ -355,7 +356,7 @@ public class ShowCommands {
     }
 
     public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (faction.isGraphicDisplay())
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("text", "Try Text mode. It's easier to read!")).build());
         else
@@ -979,7 +980,7 @@ public class ShowCommands {
      * @throws IOException              if the image cannot be written
      */
     public static void writeFactionInfo(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        MessageChannel infoChannel = discordGame.getTextChannel(faction.getName().toLowerCase() + "-info");
+        MessageChannel infoChannel = discordGame.getTextChannel(faction.getInfoChannelPrefix() + "-info");
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(infoChannel).complete();
 
         List<Message> messages = messageHistory.getRetrievedHistory();
@@ -988,7 +989,7 @@ public class ShowCommands {
 
         String emoji = faction.getEmoji();
         List<TraitorCard> traitors = faction.getTraitorHand();
-        String infoChannelName = faction.getName().toLowerCase() + "-info";
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
         String nexusCard = faction.getNexusCard() == null ? "" : "\n__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
