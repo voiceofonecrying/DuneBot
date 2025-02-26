@@ -817,11 +817,11 @@ public class Bidding {
         List<DuneChoice> choices = new ArrayList<>();
         String message;
         for (TreacheryCard card : richeseFaction.getTreacheryCardCache()) {
-            choices.add(new DuneChoice("richesecachecard-" + card.name(), card.name()));
+            choices.add(new DuneChoice("richese-cache-card-" + card.name(), card.name()));
         }
         if (bidCardNumber < numCardsForBid - 1) {
             message = "Please select your cache card to sell or choose to sell last. " + richeseFaction.getPlayer();
-            choices.add(new DuneChoice("danger", "richesecachetime-last", "Sell cache card last"));
+            choices.add(new DuneChoice("danger", "richese-cache-sell-last", "Sell cache card last"));
         } else {
             message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
         }
