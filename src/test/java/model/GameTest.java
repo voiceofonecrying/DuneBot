@@ -157,13 +157,13 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        public void testCHOAMAlwaysCollectsAtLowThreshold() {
+        public void testCHOAMDoesNotGetPlusOneSpiceAtLowThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
             choam.removeReserves(20);
             assertEquals(2, choam.getSpice());
             assertFalse(choam.isHighThreshold());
             game.choamCharity();
-            assertEquals(13, choam.getSpice());
+            assertEquals(12, choam.getSpice());
         }
 
         @Test

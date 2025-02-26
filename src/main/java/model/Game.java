@@ -401,8 +401,7 @@ public class Game {
         }
         if (hasFaction("CHOAM")) {
             Faction choamFaction = getFaction("CHOAM");
-            int plusOne = (hasGameOption(GameOption.HOMEWORLDS) && !choamFaction.isHighThreshold()) ? 1 : 0;
-            choamFaction.addSpice(2 * factions.size() * multiplier + plusOne, "CHOAM Charity");
+            choamFaction.addSpice(2 * factions.size() * multiplier, "CHOAM Charity");
             turnSummary.publish(
                     choamFaction.getEmoji() + " has paid " + choamGiven +
                             " " + Emojis.SPICE + " to factions in need."
