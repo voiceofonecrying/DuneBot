@@ -351,6 +351,8 @@ public class ShowCommands {
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
         if (faction instanceof MoritaniFaction moritani)
             discordGame.queueMessage(infoChannelName, moritani.getTerrorTokenMessage(true));
+        else if (faction instanceof RicheseFaction richese)
+            writeRicheseCardCache(discordGame, infoChannelName, richese);
 
         sendInfoButtons(game, discordGame, faction);
     }
@@ -1061,8 +1063,33 @@ public class ShowCommands {
 
             treacheryCardMessageBuilder.addContent(treacheryString.toString());
             discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
+
+            if (faction instanceof RicheseFaction richese)
+                writeRicheseCardCache(discordGame, infoChannelName, richese);
         }
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
+    }
+
+    private static void writeRicheseCardCache(DiscordGame discordGame, String infoChannelName, RicheseFaction richese) throws ChannelNotFoundException {
+        List<TreacheryCard> treacheryCards = richese.getTreacheryCardCache();
+        if (!treacheryCards.isEmpty()) {
+            MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
+            StringBuilder treacheryString = new StringBuilder();
+            treacheryString.append("\n__" + Emojis.RICHESE + " Card Cache:__\n");
+            for (TreacheryCard treachery : treacheryCards) {
+                treacheryString.append(Emojis.TREACHERY)
+                        .append(" ")
+                        .append(treachery.name())
+                        .append("\n");
+
+                Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treachery.name());
+                if (image.isPresent())
+                    treacheryCardMessageBuilder = treacheryCardMessageBuilder.addFiles(image.get());
+            }
+
+            treacheryCardMessageBuilder.addContent(treacheryString.toString());
+            discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
+        }
     }
 
     public static void refreshFrontOfShieldInfo(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
