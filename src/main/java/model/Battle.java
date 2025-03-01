@@ -6,7 +6,6 @@ import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 import java.text.MessageFormat;
 import java.util.*;

@@ -698,7 +698,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    private void discardNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
         game.discardNexusCard(faction);
         discordGame.pushGame();

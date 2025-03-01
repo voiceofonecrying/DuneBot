@@ -396,7 +396,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testBGGrantsTheVoice() throws InvalidGameStateException {
+        void testBGGrantsTheVoice() {
             arrakeen.addForces("Emperor", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -406,7 +406,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testBGDeniesTheVoice() throws InvalidGameStateException {
+        void testBGDeniesTheVoice() {
             arrakeen.addForces("Emperor", 1);
             bg.setDenyingAllyVoice(true);
             battles = game.startBattlePhase();
@@ -417,7 +417,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testAtreidesGrantsPrescience() throws InvalidGameStateException {
+        void testAtreidesGrantsPrescience() {
             carthag.addForces("Fremen", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -427,7 +427,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testAtreidesDeniesPrescience() throws InvalidGameStateException {
+        void testAtreidesDeniesPrescience() {
             carthag.addForces("Fremen", 1);
             atreides.setDenyingAllyBattlePrescience(true);
             battles = game.startBattlePhase();
@@ -438,7 +438,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testNoVoiceOrPrescienceForNonAlly() throws InvalidGameStateException {
+        void testNoVoiceOrPrescienceForNonAlly() {
             sietchTabr.addForces("Ix", 1);
             sietchTabr.addForces("Harkonnen", 1);
             battles = game.startBattlePhase();
