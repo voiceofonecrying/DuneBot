@@ -204,6 +204,12 @@ public class BattlePlan {
         boolean specialsNegated = isFremen && battle.isFedaykinNegated() || isEmperor && battle.isSardaukarNegated() || isIx && battle.isCyborgsNegated();
         int specialStrength = battle.getForces().stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = battle.getForces().stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
+        int emperorCunningStrength = 0;
+        if (faction instanceof EmperorFaction && battle.isEmperorCunning()) {
+            emperorCunningStrength = Math.min(5, regularStrength);
+            specialStrength += emperorCunningStrength;
+            regularStrength -= emperorCunningStrength;
+        }
         int noFieldNotUsed = 0;
         int numReserves = faction.getReservesStrength();
         int noFieldValue = battle.getForces().stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
@@ -287,8 +293,9 @@ public class BattlePlan {
             spiceUsed = Math.max(0, spiceUsed - 2);
             spice -= 2;
         }
-        regularDialed = regularStrengthUsed;
-        specialDialed = specialStrengthUsed;
+        int emperorCunningUsed = Math.min(specialStrengthUsed, emperorCunningStrength);
+        regularDialed = regularStrengthUsed + emperorCunningUsed;
+        specialDialed = specialStrengthUsed - emperorCunningUsed;
         regularNotDialed = regularStrength - regularStrengthUsed;
         specialNotDialed = specialStrength - specialStrengthUsed;
 

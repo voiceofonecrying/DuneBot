@@ -1461,6 +1461,45 @@ public class BattlePlanTest extends DuneTest {
             assertEquals(1, bp.getNumForcesNotDialed());
             assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
         }
+
+        @Test
+        void testEmperorNexusCunning() throws InvalidGameStateException {
+            emperor.setNexusCard(new NexusCard("Emperor"));
+            carthag.addForces("Emperor", 7);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 12, false, 7);
+            assertEquals(7, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(0, bp.getNumForcesNotDialed());
+            assertEquals(30, bp.getDoubleBattleStrength());
+        }
+
+        @Test
+        void testEmperorNexusCunningLessThan5Forces() throws InvalidGameStateException {
+            emperor.setNexusCard(new NexusCard("Emperor"));
+            carthag.addForces("Emperor", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+            assertEquals(10, bp.getDoubleBattleStrength());
+        }
+
+        @Test
+        void testEmperorNexusCunningKaramadSardaukar() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 7);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            battle.negateSpecialForces(game, emperor);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 7, false, 7);
+            assertEquals(7, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(0, bp.getNumForcesNotDialed());
+            assertEquals(20, bp.getDoubleBattleStrength());
+        }
     }
 
     @Nested

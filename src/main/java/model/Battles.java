@@ -194,26 +194,31 @@ public class Battles {
         message += aggressor.getPlayer() + " " + opponent.getPlayer();
         game.getGameActions().publish(message);
 
-        List<DuneChoice> emperorCunningChoices = new ArrayList<>();
-        emperorCunningChoices.add(new DuneChoice("battle-emperor-nexus-cunning-yes", "Yes"));
-        emperorCunningChoices.add(new DuneChoice("battle-emperor-nexus-cunning-no", "No"));
+        presentEmperorCunningChoices(aggressor);
+        presentEmperorCunningChoices(opponent);
 
         List<DuneChoice> ixCunningChoices = new ArrayList<>();
         ixCunningChoices.add(new DuneChoice("battle-ix-nexus-cunning-yes", "Yes"));
         ixCunningChoices.add(new DuneChoice("battle-ix-nexus-cunning-no", "No"));
 
         if (aggressor.getNexusCard() != null) {
-            if (aggressor instanceof EmperorFaction && aggressor.getNexusCard().name().equals("Emperor"))
-                aggressor.getChat().publish("Would you like to play the " + Emojis.EMPEROR + " Nexus Card for this battle? " + aggressor.getPlayer(), emperorCunningChoices);
-            else if (aggressor instanceof IxFaction && aggressor.getNexusCard().name().equals("Ix"))
-                aggressor.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card for this battle? " + aggressor.getPlayer(), ixCunningChoices);
+            if (aggressor instanceof IxFaction && aggressor.getNexusCard().name().equals("Ix"))
+                aggressor.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card this turn? " + aggressor.getPlayer(), ixCunningChoices);
         }
 
         if (opponent.getNexusCard() != null) {
-            if (opponent instanceof EmperorFaction && opponent.getNexusCard().name().equals("Emperor"))
-                opponent.getChat().publish("Would you like to play the " + Emojis.EMPEROR + " Nexus Card for this battle? " + opponent.getPlayer(), emperorCunningChoices);
-            else if (opponent instanceof IxFaction && opponent.getNexusCard().name().equals("Ix"))
-                opponent.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card for this battle? " + opponent.getPlayer(), ixCunningChoices);
+            if (opponent instanceof IxFaction && opponent.getNexusCard().name().equals("Ix"))
+                opponent.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card this turn? " + opponent.getPlayer(), ixCunningChoices);
         }
+    }
+
+    private void presentEmperorCunningChoices(Faction faction) {
+        List<DuneChoice> emperorCunningChoices = new ArrayList<>();
+        emperorCunningChoices.add(new DuneChoice("battle-emperor-nexus-cunning-yes", "Yes"));
+        emperorCunningChoices.add(new DuneChoice("battle-emperor-nexus-cunning-no", "No"));
+        if (faction instanceof EmperorFaction
+                && faction.getNexusCard() != null&& faction.getNexusCard().name().equals("Emperor")
+                && currentBattle.getForces().stream().noneMatch(f -> f.getName().equals("Emperor*")))
+            faction.getChat().publish("Would you like to play the " + Emojis.EMPEROR + " Nexus Card for this battle? " + faction.getPlayer(), emperorCunningChoices);
     }
 }

@@ -6,6 +6,7 @@ import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -1733,21 +1734,29 @@ public class Battle {
         return nonCombatantForces;
     }
 
+    public boolean isEmperorCunning() {
+        return emperorCunning;
+    }
+
     public void emperorNexusCunning(Game game, boolean useNexusCard) {
         Faction emperor = game.getFaction("Emperor");
         emperorCunning = useNexusCard;
-        if (useNexusCard)
-            emperor.getChat().reply("You will play the + " Emojis.EMPEROR + " Nexus Card. ");
-        else
-            emperor.getChat().reply("You will not play the + " Emojis.EMPEROR + " Nexus Card.");
+        if (useNexusCard) {
+            emperor.getChat().reply("You played the " + Emojis.EMPEROR + " Nexus Card. Up to 5 " + Emojis.EMPEROR_TROOP + " will count as " + Emojis.EMPEROR_SARDAUKAR);
+        } else
+            emperor.getChat().reply("You will not play the " + Emojis.EMPEROR + " Nexus Card.");
+    }
+
+    public boolean isIxCunning() {
+        return ixCunning;
     }
 
     public void ixNexusCunning(Game game, boolean useNexusCard) {
         Faction emperor = game.getFaction("Ix");
         ixCunning = useNexusCard;
-        if (useNexusCard)
-            emperor.getChat().reply("You will pay to cancel the audit.");
-        else
+        if (useNexusCard) {
+            emperor.getChat().reply("You will play the " + Emojis.IX + " Nexus Card. ");
+        } else
             emperor.getChat().reply("You will not play the " + Emojis.IX + " Nexus Card.");
     }
 

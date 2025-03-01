@@ -464,9 +464,20 @@ public class BattlesTest extends DuneTest {
             }
 
             @Test
-            void testCunningWithEmperorNexusCard() {
+            void testNoCunningWithSardaukarInTheBattle() {
                 emperor.setNexusCard(new NexusCard("Emperor"));
                 carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(emperorChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testCunningWithEmperorNexusCard() {
+                emperor.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Emperor", 1);
                 battles = game.startBattlePhase();
 //                battles.nextBattle(game);
                 battles.setTerritoryByIndex(0);
