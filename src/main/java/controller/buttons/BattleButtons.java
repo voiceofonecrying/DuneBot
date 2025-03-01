@@ -38,6 +38,8 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
         else if (event.getComponentId().startsWith("battle-cancel-audit")) cancelAudit(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-emperor-nexus-cunning")) emperorNexusCunning(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-ix-nexus-cunning")) ixNexusCunning(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -281,6 +283,20 @@ public class BattleButtons implements Pressable {
             battle.cancelAudit(game, false);
             discordGame.queueMessage("You will not pay to cancel the audit.");
         }
+        discordGame.pushGame();
+    }
+
+    private static void emperorNexusCunning(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
+        String response = event.getComponentId().replace("battle-emperor-nexus-cunning-", "");
+        game.getBattles().getCurrentBattle().emperorNexusCunning(game, response.equals("yes"));
+        discordGame.pushGame();
+    }
+
+    private static void ixNexusCunning(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
+        String response = event.getComponentId().replace("battle-ix-nexus-cunning-", "");
+        game.getBattles().getCurrentBattle().ixNexusCunning(game, response.equals("yes"));
         discordGame.pushGame();
     }
 

@@ -388,7 +388,7 @@ public class BattlesTest extends DuneTest {
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
-            game.addFaction(guild);
+            game.addFaction(ix);
             game.addFaction(harkonnen);
 
             game.createAlliance(bg, emperor);
@@ -439,7 +439,7 @@ public class BattlesTest extends DuneTest {
 
         @Test
         void testNoVoiceOrPrescienceForNonAlly() throws InvalidGameStateException {
-            sietchTabr.addForces("Guild", 1);
+            sietchTabr.addForces("Ix", 1);
             sietchTabr.addForces("Harkonnen", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -447,6 +447,81 @@ public class BattlesTest extends DuneTest {
             battles.callBattleActions(game);
             assertFalse(gameActions.getMessages().getFirst().contains("Voice"));
             assertFalse(gameActions.getMessages().getFirst().contains("Prescience"));
+        }
+
+        @Nested
+        @DisplayName("#emperorCunning")
+        class EmperorCunning {
+            @Test
+            void testNoCunningWithWrongNexusCard() {
+                emperor.setNexusCard(new NexusCard("Ix"));
+                carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(emperorChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testCunningWithEmperorNexusCard() {
+                emperor.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertEquals("Would you like to play the " + Emojis.EMPEROR + " Nexus Card for this battle? em", emperorChat.getMessages().getFirst());
+            }
+
+            @Test
+            void testNonEmperorNoEmperorCunning() {
+                ix.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Ix*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(ixChat.getMessages().isEmpty());
+            }
+        }
+
+
+        @Nested
+        @DisplayName("#ixCunning")
+        class IxCunning {
+            @Test
+            void testNoCunningWithWrongNexusCard() {
+                ix.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Ix", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(ixChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testCunningWithIxNexusCard() {
+                ix.setNexusCard(new NexusCard("Ix"));
+                carthag.addForces("Ix", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertEquals("Would you like to play the " + Emojis.IX + " Nexus Card for this battle? ix", ixChat.getMessages().getFirst());
+            }
+
+            @Test
+            void testNonIxNoIxCunning() {
+                emperor.setNexusCard(new NexusCard("Ix"));
+                carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(emperorChat.getMessages().isEmpty());
+            }
         }
     }
 }

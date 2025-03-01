@@ -25,6 +25,8 @@ public class Battle {
     private boolean sardaukarNegated;
     private boolean cyborgsNegated;
     private boolean fremenMustPay;
+    private boolean emperorCunning;
+    private boolean ixCunning;
 
     public enum DecisionStatus {
         NA,
@@ -70,6 +72,8 @@ public class Battle {
         } catch (IllegalArgumentException ignored) {}
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
+        this.emperorCunning = false;
+        this.ixCunning = false;
         this.overrideDecisions = false;
         this.hmsStrongholdCardTBD = DecisionStatus.NA;
         this.spiceBankerTBD = DecisionStatus.NA;
@@ -1727,6 +1731,24 @@ public class Battle {
                 return a.getFactionName().compareTo(b.getFactionName());
         });
         return nonCombatantForces;
+    }
+
+    public void emperorNexusCunning(Game game, boolean useNexusCard) {
+        Faction emperor = game.getFaction("Emperor");
+        emperorCunning = useNexusCard;
+        if (useNexusCard)
+            emperor.getChat().reply("You will play the + " Emojis.EMPEROR + " Nexus Card. ");
+        else
+            emperor.getChat().reply("You will not play the + " Emojis.EMPEROR + " Nexus Card.");
+    }
+
+    public void ixNexusCunning(Game game, boolean useNexusCard) {
+        Faction emperor = game.getFaction("Ix");
+        ixCunning = useNexusCard;
+        if (useNexusCard)
+            emperor.getChat().reply("You will pay to cancel the audit.");
+        else
+            emperor.getChat().reply("You will not play the " + Emojis.IX + " Nexus Card.");
     }
 
     private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentBattlePlan, boolean publishToTurnSummary) {
