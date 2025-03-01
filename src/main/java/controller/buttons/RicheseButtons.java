@@ -25,9 +25,9 @@ public class RicheseButtons implements Pressable {
         else if (event.getComponentId().startsWith("richese-black-market-method-")) blackMarketMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richese-black-market-")) confirmBlackMarket(event, discordGame, game);
         else if (event.getComponentId().equals("richese-cache-sell-last")) cacheCardLast(discordGame, game);
-        else if (event.getComponentId().startsWith("richese-cache-card-")) cacheCard(event, discordGame, game);
         else if (event.getComponentId().startsWith("richese-cache-card-method-")) cacheCardMethod(event, discordGame, game);
         else if (event.getComponentId().startsWith("richese-cache-card-confirm-")) confirmCacheCard(event, discordGame, game);
+        else if (event.getComponentId().startsWith("richese-cache-card-")) cacheCard(event, discordGame, game);
     }
 
     private static void revealNoField(DiscordGame discordGame, Game game) {
