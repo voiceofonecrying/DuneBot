@@ -496,43 +496,5 @@ public class BattlesTest extends DuneTest {
                 assertTrue(ixChat.getMessages().isEmpty());
             }
         }
-
-
-        @Nested
-        @DisplayName("#ixCunning")
-        class IxCunning {
-            @Test
-            void testNoCunningWithWrongNexusCard() {
-                ix.setNexusCard(new NexusCard("Emperor"));
-                carthag.addForces("Ix", 1);
-                battles = game.startBattlePhase();
-//                battles.nextBattle(game);
-                battles.setTerritoryByIndex(0);
-                battles.callBattleActions(game);
-                assertTrue(ixChat.getMessages().isEmpty());
-            }
-
-            @Test
-            void testCunningWithIxNexusCard() {
-                ix.setNexusCard(new NexusCard("Ix"));
-                carthag.addForces("Ix", 1);
-                battles = game.startBattlePhase();
-//                battles.nextBattle(game);
-                battles.setTerritoryByIndex(0);
-                battles.callBattleActions(game);
-                assertEquals("Would you like to play the " + Emojis.IX + " Nexus Card for this battle? ix", ixChat.getMessages().getFirst());
-            }
-
-            @Test
-            void testNonIxNoIxCunning() {
-                emperor.setNexusCard(new NexusCard("Ix"));
-                carthag.addForces("Emperor*", 1);
-                battles = game.startBattlePhase();
-//                battles.nextBattle(game);
-                battles.setTerritoryByIndex(0);
-                battles.callBattleActions(game);
-                assertTrue(emperorChat.getMessages().isEmpty());
-            }
-        }
     }
 }

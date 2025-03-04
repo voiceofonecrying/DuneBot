@@ -296,7 +296,7 @@ public class BattleButtons implements Pressable {
     private static void ixNexusCunning(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueDeleteMessage();
         String response = event.getComponentId().replace("battle-ix-nexus-cunning-", "");
-        game.getBattles().getCurrentBattle().ixNexusCunning(game, response.equals("yes"));
+        game.getBattles().ixNexusCunning(game, response.equals("yes"));
         discordGame.pushGame();
     }
 
