@@ -111,6 +111,18 @@ public class TerritoryTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#stormTroops")
+    class StormTroops {
+        @Test
+        void testStormTroopsWithAdvisorPresent() {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            arrakeen.addForces("Advisor", 1);
+            assertDoesNotThrow(() -> arrakeen.stormTroops(game));
+        }
+    }
+
+    @Nested
     @DisplayName("#stormTroopsFremen")
     class StormTroopsFremen {
         String response;

@@ -200,7 +200,7 @@ public class Territory {
     public void removeForces(Game game, String forceName, int amount) {
         if (amount < 0) throw new IllegalArgumentException("You cannot remove a negative strength value from a force.");
         int forceStrength = getForceStrength(forceName);
-        if (forceStrength < amount) throw new IllegalArgumentException("Not enough forces in " + territoryName + ".");
+        if (forceStrength < amount) throw new IllegalArgumentException("Not enough " + forceName + " forces in " + territoryName + ".");
         setForceStrength(forceName, forceStrength - amount);
         if (!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) || game.getPhaseForTracker() < 7)
             flipAdvisorsIfAlone(game);
@@ -344,6 +344,7 @@ public class Territory {
 
     public String stormTroops(Game game) {
         StringBuilder message = new StringBuilder();
+        message.append(stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game));
         List<Force> nonFremenForces = forces.stream()
                 .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen"))
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
