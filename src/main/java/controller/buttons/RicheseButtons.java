@@ -30,10 +30,11 @@ public class RicheseButtons implements Pressable {
         else if (event.getComponentId().startsWith("richese-cache-card-")) cacheCard(event, discordGame, game);
     }
 
-    private static void revealNoField(DiscordGame discordGame, Game game) {
+    private static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
         discordGame.queueMessage("You have revealed your No-Field.");
         discordGame.queueDeleteMessage();
+        discordGame.pushGame();
     }
 
     private static void runBlackMarket(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
