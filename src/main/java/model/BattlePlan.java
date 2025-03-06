@@ -224,6 +224,8 @@ public class BattlePlan {
         int regularStrengthUsed = 0;
         if (arrakeenStrongholdCard)
             spice += 2;
+        if (battle.isIxCunning())
+            isIx = false;
         if (specialsNegated) {
             if (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
                 dialUsed++;
@@ -246,6 +248,8 @@ public class BattlePlan {
             }
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
                 int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
+                if (faction instanceof IxFaction && battle.isIxCunning())
+                    troopsNeeded = wholeNumberDial - dialUsed;
                 if (isIx) {
                     int specialsToUse = Math.min(troopsNeeded, specialStrength - specialStrengthUsed);
                     specialStrengthUsed += specialsToUse;
@@ -275,6 +279,8 @@ public class BattlePlan {
             }
             if ((wholeNumberDial > dialUsed) || plusHalfDial) {
                 int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
+                if (faction instanceof IxFaction && battle.isIxCunning())
+                    troopsNeeded = wholeNumberDial - dialUsed;
                 regularStrengthUsed += troopsNeeded;
             }
         }
