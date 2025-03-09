@@ -188,6 +188,8 @@ public class BattlePlan {
     }
 
     private boolean isSpiceNeeded(Game game, Battle battle, Faction faction, boolean starred) {
+        if (!starred && faction instanceof IxFaction && battle.isIxCunning())
+            return false;
         if (starred && game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
             return false;
         else return !(faction instanceof FremenFaction) || battle.isFremenMustPay();
@@ -204,12 +206,6 @@ public class BattlePlan {
         boolean specialsNegated = isFremen && battle.isFedaykinNegated() || isEmperor && battle.isSardaukarNegated() || isIx && battle.isCyborgsNegated();
         int specialStrength = battle.getForces().stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         int regularStrength = battle.getForces().stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
-        int emperorCunningStrength = 0;
-        if (faction instanceof EmperorFaction && battle.isEmperorCunning()) {
-            emperorCunningStrength = Math.min(5, regularStrength);
-            specialStrength += emperorCunningStrength;
-            regularStrength -= emperorCunningStrength;
-        }
         int noFieldNotUsed = 0;
         int numReserves = faction.getReservesStrength();
         int noFieldValue = battle.getForces().stream().filter(f -> f.getName().equals("NoField")).findFirst().map(Force::getStrength).orElse(0);
@@ -224,126 +220,124 @@ public class BattlePlan {
         int regularStrengthUsed = 0;
         if (arrakeenStrongholdCard)
             spice += 2;
-        if (battle.isIxCunning())
-            isIx = false;
+
+        int doubleStrengthSpecial = specialsNegated ? 0 : specialStrength;
+        doubleStrengthSpecial = Math.min(wholeNumberDial / 2, doubleStrengthSpecial);
+        if (isSpiceNeeded(game, battle, faction, true)) {
+            doubleStrengthSpecial = Math.min(doubleStrengthSpecial, spice);
+            spiceUsed += doubleStrengthSpecial;
+        }
+        dialUsed += 2 * doubleStrengthSpecial;
+        specialStrengthUsed += doubleStrengthSpecial;
+        specialStrength -= doubleStrengthSpecial;
+
+        int fullStrengthSpecial = specialStrength;
+        fullStrengthSpecial = Math.min(wholeNumberDial - dialUsed, fullStrengthSpecial);
         if (specialsNegated) {
-            if (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
-                specialStrengthUsed++;
-            }
-            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, battle, faction, false)) spiceUsed++;
-                regularStrengthUsed++;
-            }
-            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
-                specialStrengthUsed++;
-            }
-            while (isIx && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 1) {
-                dialUsed++;
-                specialStrengthUsed += 2;
-            }
-            if ((wholeNumberDial > dialUsed) || plusHalfDial) {
-                int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-                if (faction instanceof IxFaction && battle.isIxCunning())
-                    troopsNeeded = wholeNumberDial - dialUsed;
-                if (isIx) {
-                    int specialsToUse = Math.min(troopsNeeded, specialStrength - specialStrengthUsed);
-                    specialStrengthUsed += specialsToUse;
-                    troopsNeeded -= specialsToUse;
-                    regularStrengthUsed += troopsNeeded;
-                } else {
-                    int regularsToUse = Math.min(troopsNeeded, regularStrength - regularStrengthUsed);
-                    regularStrengthUsed += regularsToUse;
-                    troopsNeeded -= regularsToUse;
-                    specialStrengthUsed += troopsNeeded;
-                }
-            }
-        } else {
-            while ((spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 2 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed += 2;
-                if (isSpiceNeeded(game, battle, faction, true)) spiceUsed++;
-                specialStrengthUsed++;
-            }
-            while ((spice - spiceUsed == 0 && isSpiceNeeded(game, battle, faction, true)) && wholeNumberDial - dialUsed >= 1 && specialStrength - specialStrengthUsed > 0) {
-                dialUsed++;
-                specialStrengthUsed++;
-            }
-            while (!isIx && (spice - spiceUsed > 0 || !isSpiceNeeded(game, battle, faction, false)) && wholeNumberDial - dialUsed >= 1 && regularStrength - regularStrengthUsed > 0) {
-                dialUsed++;
-                if (isSpiceNeeded(game, battle, faction, false)) spiceUsed++;
-                regularStrengthUsed++;
-            }
-            if ((wholeNumberDial > dialUsed) || plusHalfDial) {
-                int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
-                if (faction instanceof IxFaction && battle.isIxCunning())
-                    troopsNeeded = wholeNumberDial - dialUsed;
-                regularStrengthUsed += troopsNeeded;
+            if (isSpiceNeeded(game, battle, faction, true)) {
+                fullStrengthSpecial = Math.min(fullStrengthSpecial, spice);
+                spiceUsed += fullStrengthSpecial;
             }
         }
-        if (regularStrengthUsed > regularStrength || specialStrengthUsed > specialStrength) {
+        dialUsed += fullStrengthSpecial;
+        specialStrengthUsed += fullStrengthSpecial;
+        specialStrength -= fullStrengthSpecial;
+
+        int halfStrengthSpecial = specialStrength;
+        halfStrengthSpecial = Math.min(wholeNumberDial - dialUsed, halfStrengthSpecial / 2) * 2;
+        dialUsed += halfStrengthSpecial / 2;
+        specialStrengthUsed += halfStrengthSpecial;
+        specialStrength -= halfStrengthSpecial;
+
+        if (faction instanceof EmperorFaction && battle.isEmperorCunning() && !specialsNegated) {
+            int cunningSardaukar = Math.min(5, regularStrength);
+            int doubleStrengthRegular = Math.min(cunningSardaukar, spice);
+            doubleStrengthRegular = Math.min((wholeNumberDial - dialUsed) / 2, doubleStrengthRegular);
+            spiceUsed += doubleStrengthRegular;
+            dialUsed += 2 * doubleStrengthRegular;
+            regularStrengthUsed += doubleStrengthRegular;
+            regularStrength -= doubleStrengthRegular;
+
+            int fullStrengthRegular = Math.min(wholeNumberDial - dialUsed, cunningSardaukar - doubleStrengthRegular);
+            dialUsed += fullStrengthRegular;
+            regularStrengthUsed += fullStrengthRegular;
+            regularStrength -= fullStrengthRegular;
+        }
+
+        int fullStrengthRegular = regularStrength;
+        if (faction instanceof IxFaction && !battle.isIxCunning())
+            fullStrengthRegular = 0;
+        fullStrengthRegular = Math.min(wholeNumberDial - dialUsed, fullStrengthRegular);
+        if (isSpiceNeeded(game, battle, faction, false)) {
+            fullStrengthRegular = Math.min(fullStrengthRegular, spice);
+            spiceUsed += fullStrengthRegular;
+        }
+        dialUsed += fullStrengthRegular;
+        regularStrengthUsed += fullStrengthRegular;
+        regularStrength -= fullStrengthRegular;
+
+        int halfStrengthRegular = regularStrength;
+        halfStrengthRegular = Math.min(wholeNumberDial - dialUsed, halfStrengthRegular / 2) * 2;
+        dialUsed += halfStrengthRegular / 2;
+        regularStrengthUsed += halfStrengthRegular;
+        regularStrength -= halfStrengthRegular;
+
+        if ((wholeNumberDial > dialUsed) || plusHalfDial) {
+            int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
+            if (faction instanceof IxFaction && battle.isIxCunning())
+                troopsNeeded = wholeNumberDial - dialUsed;
+            regularStrengthUsed += troopsNeeded;
+            regularStrength -= troopsNeeded;
+        }
+        if (regularStrength < 0 || specialStrength < 0) {
             if (noFieldNotUsed > 0)
                 throw new InvalidGameStateException(faction.getName() + " has only " + numReserves + " forces in reserves to replace the " + noFieldValue + " No-Field");
             else
                 throw new InvalidGameStateException(faction.getName() + " does not have enough troops in the territory.");
         }
-        while (faction instanceof EmperorFaction && spiceUsed < spice && specialStrengthUsed > 0 && regularStrength - regularStrengthUsed >= 2) {
-            specialStrengthUsed--;
-            regularStrengthUsed += 2;
-            spiceUsed++;
-        }
-        if (arrakeenStrongholdCard) {
-            spiceUsed = Math.max(0, spiceUsed - 2);
-            spice -= 2;
-        }
-        int emperorCunningUsed = Math.min(specialStrengthUsed, emperorCunningStrength);
-        regularDialed = regularStrengthUsed + emperorCunningUsed;
-        specialDialed = specialStrengthUsed - emperorCunningUsed;
-        regularNotDialed = regularStrength - regularStrengthUsed;
-        specialNotDialed = specialStrength - specialStrengthUsed;
+        regularDialed = regularStrengthUsed;
+        specialDialed = specialStrengthUsed;
+        regularNotDialed = regularStrength;
+        specialNotDialed = specialStrength;
 
         int swappableSpecials = specialDialed;
+        if (faction instanceof IxFaction)
+            swappableSpecials -= spiceUsed;
         int starRegularRatio = 2;
         if (faction instanceof EmperorFaction)
             starRegularRatio = 3;
-        if (specialsNegated)
+        if (specialsNegated || faction instanceof IxFaction && battle.isIxCunning())
             starRegularRatio = 1;
-        if (faction instanceof IxFaction) {
-            swappableSpecials -= spice; // Does not account for Arrakeen stronghold card
-            if (swappableSpecials > 0 && regularStrength - regularDialed >= 1) {
-                List<DuneChoice> choices = new ArrayList<>();
-                int numStarsReplaced = 0;
-                while (regularStrength - regularDialed >= numStarsReplaced) {
-                    int altRegularDialed = regularDialed + numStarsReplaced;
-                    int altSpecialDialed = specialDialed - numStarsReplaced;
-                    String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
-                    String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
-                    choices.add(new DuneChoice(id, label));
-                    numStarsReplaced++;
-                    if (altSpecialDialed == spice)
-                        break;
-                }
-                faction.getChat().publish("How would you like to take troop losses?", choices);
-                dialedForcesSettled = false;
+        if (swappableSpecials > 0 && regularNotDialed >= starRegularRatio) {
+            int totalSwappable = Math.min(swappableSpecials, regularNotDialed / starRegularRatio);
+            int startingRegularDialed = regularDialed;
+            int maxSpecials = specialDialed;
+            int minSpecials = swappableSpecials - totalSwappable;
+            int maxDesiredSpecials = (faction instanceof IxFaction) ? specialDialed : 1;
+            int specialsToSwapNow = specialDialed - maxDesiredSpecials;
+            while (specialsToSwapNow > 0 && regularNotDialed >= starRegularRatio) {
+                regularDialed += starRegularRatio;
+                regularNotDialed -= starRegularRatio;
+                specialDialed--;
+                specialNotDialed++;
+                specialsToSwapNow--;
             }
-        } else if (swappableSpecials > 0 && regularStrength - regularDialed >= starRegularRatio) {
             List<DuneChoice> choices = new ArrayList<>();
-            int numStarsReplaced = 0;
-            while (regularStrength - regularDialed >= numStarsReplaced * starRegularRatio) {
-                int altRegularDialed = regularDialed + numStarsReplaced * starRegularRatio;
-                int altSpecialDialed = specialDialed - numStarsReplaced;
-                String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + altSpecialDialed;
-                String label = altRegularDialed + " + " + altSpecialDialed + "*" + (numStarsReplaced == 0 ? " (Current)" : "");
+            int maxSwaps = maxSpecials - minSpecials;
+            int maxregular = startingRegularDialed + maxSwaps * starRegularRatio;
+            for (int i = minSpecials; i <= maxSpecials; i++) {
+                int altRegularDialed = maxregular - (i - minSpecials) * starRegularRatio;
+                String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + i;
+                String label = altRegularDialed + " + " + i + "*" + (specialDialed == i ? " (Current)" : "");
                 choices.add(new DuneChoice(id, label));
-                numStarsReplaced++;
-                if (altSpecialDialed == 0)
-                    break;
             }
             faction.getChat().publish("How would you like to take troop losses?", choices);
             dialedForcesSettled = false;
+        }
+
+        if (arrakeenStrongholdCard) {
+            spiceUsed = Math.max(0, spiceUsed - 2);
+            spice -= 2;
         }
 
         if (spice > spiceUsed)
