@@ -310,6 +310,8 @@ public class BattlePlan {
             int maxSpecials = specialDialed;
             int minSpecials = swappableSpecials - totalSwappable;
             int maxDesiredSpecials = (faction instanceof IxFaction) ? specialDialed : 1;
+            if (specialsNegated && (!(faction instanceof IxFaction) || battle.isIxCunning()))
+                maxDesiredSpecials = 0;
             int specialsToSwapNow = specialDialed - maxDesiredSpecials;
             while (specialsToSwapNow > 0 && this.regularNotDialed >= starRegularRatio) {
                 this.regularDialed += starRegularRatio;

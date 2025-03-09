@@ -1333,13 +1333,13 @@ public class BattlePlanTest extends DuneTest {
 
         @Test
         void testFremenNegateSardaukar() throws InvalidGameStateException {
-            garaKulon.addForces("Emperor", 1);
+            garaKulon.addForces("Emperor", 3);
             garaKulon.addForces("Emperor*", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(emperor, fremen));
             BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
-            assertEquals(1, bp.getRegularDialed());
-            assertEquals(2, bp.getSpecialDialed());
-            assertEquals(1, bp.getNumForcesNotDialed());
+            assertEquals(3, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
         }
 
         @Test
