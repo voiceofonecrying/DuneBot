@@ -1332,6 +1332,50 @@ public class BattlePlanTest extends DuneTest {
         }
 
         @Test
+        void testEmperorLossesNoSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 0);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(3, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesOneSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 1);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesTwoSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 2);
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesThreeSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 3);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(4, bp.getNumForcesNotDialed());
+        }
+
+        @Test
         void testFremenNegateSardaukar() throws InvalidGameStateException {
             garaKulon.addForces("Emperor", 3);
             garaKulon.addForces("Emperor*", 3);

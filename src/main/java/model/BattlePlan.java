@@ -4,6 +4,8 @@ import constants.Emojis;
 import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
+import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -188,7 +190,7 @@ public class BattlePlan {
     }
 
     private boolean isSpiceNeeded(Game game, Battle battle, Faction faction, boolean starred) {
-        if (!starred && faction instanceof IxFaction && battle.isIxCunning())
+        if (!starred && faction instanceof IxFaction)
             return false;
         if (starred && game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
             return false;
@@ -222,9 +224,11 @@ public class BattlePlan {
             spice += 2;
 
         int doubleStrengthSpecial = specialsNegated ? 0 : specialNotDialed;
+        int doubleStrengthSpecialWithSpice = 0;
         doubleStrengthSpecial = Math.min(wholeNumberDial / 2, doubleStrengthSpecial);
         if (isSpiceNeeded(game, battle, faction, true)) {
             doubleStrengthSpecial = Math.min(doubleStrengthSpecial, spice);
+            doubleStrengthSpecialWithSpice = doubleStrengthSpecial;
             spiceUsed += doubleStrengthSpecial;
         }
         dialUsed += 2 * doubleStrengthSpecial;
@@ -233,12 +237,15 @@ public class BattlePlan {
 
         int fullStrengthSpecial = specialNotDialed;
         fullStrengthSpecial = Math.min(wholeNumberDial - dialUsed, fullStrengthSpecial);
+        int fullStregnthSpecialWithSpice = 0;
         if (specialsNegated) {
             if (isSpiceNeeded(game, battle, faction, true)) {
                 fullStrengthSpecial = Math.min(fullStrengthSpecial, spice);
+                fullStregnthSpecialWithSpice = fullStrengthSpecial;
                 spiceUsed += fullStrengthSpecial;
             }
-        }
+        } else if (faction instanceof FremenFaction && !isSpiceNeeded(game, battle, faction, true))
+            fullStrengthSpecial = 0;
         dialUsed += fullStrengthSpecial;
         specialDialed += fullStrengthSpecial;
         specialNotDialed -= fullStrengthSpecial;
@@ -282,6 +289,16 @@ public class BattlePlan {
         regularDialed += halfStrengthRegular;
         regularNotDialed -= halfStrengthRegular;
 
+        if (!specialsNegated && spiceUsed < spice
+                && (faction instanceof EmperorFaction || faction instanceof FremenFaction && isSpiceNeeded(game, battle, faction, true))) {
+            regularDialed += spice - spiceUsed;
+            regularNotDialed -= spice - spiceUsed;
+            specialDialed -= spice - spiceUsed;
+            specialNotDialed += spice - spiceUsed;
+            fullStrengthSpecial -= spice - spiceUsed;
+            spiceUsed = spice;
+        }
+
         if ((wholeNumberDial > dialUsed) || plusHalfDial) {
             int troopsNeeded = (wholeNumberDial - dialUsed) * 2 + (plusHalfDial ? 1 : 0);
             if (faction instanceof IxFaction && battle.isIxCunning())
@@ -296,37 +313,79 @@ public class BattlePlan {
                 throw new InvalidGameStateException(faction.getName() + " does not have enough troops in the territory.");
         }
 
-        int swappableSpecials = specialDialed;
-        if (faction instanceof IxFaction)
-            swappableSpecials -= spiceUsed;
-        int starRegularRatio = 2;
-        if (faction instanceof EmperorFaction)
-            starRegularRatio = 3;
-        if (specialsNegated || faction instanceof IxFaction && battle.isIxCunning())
-            starRegularRatio = 1;
-        if (swappableSpecials > 0 && this.regularNotDialed >= starRegularRatio) {
-            int totalSwappable = Math.min(swappableSpecials, this.regularNotDialed / starRegularRatio);
-            int startingRegularDialed = this.regularDialed;
-            int maxSpecials = specialDialed;
-            int minSpecials = swappableSpecials - totalSwappable;
-            int maxDesiredSpecials = (faction instanceof IxFaction) ? specialDialed : 1;
-            if (specialsNegated && (!(faction instanceof IxFaction) || battle.isIxCunning()))
-                maxDesiredSpecials = 0;
-            int specialsToSwapNow = specialDialed - maxDesiredSpecials;
-            while (specialsToSwapNow > 0 && this.regularNotDialed >= starRegularRatio) {
-                this.regularDialed += starRegularRatio;
-                this.regularNotDialed -= starRegularRatio;
-                specialDialed--;
-                this.specialNotDialed++;
-                specialsToSwapNow--;
+        List<Pair<Integer, Integer>> pairsOfLossOptions = new ArrayList<>();
+        pairsOfLossOptions.add(new ImmutablePair<>(regularDialed, specialDialed));
+        int regularsSwappedIn = 0;
+        int specialsSwappedOut = 0;
+        int spicedSpecials = doubleStrengthSpecialWithSpice + fullStregnthSpecialWithSpice;
+        int unspicedSpecials = (doubleStrengthSpecial - doubleStrengthSpecialWithSpice) + (fullStrengthSpecial - fullStregnthSpecialWithSpice) + halfStrengthSpecial;
+        if (faction instanceof EmperorFaction && !isSpiceNeeded(game, battle, faction, true)) {
+            while (specialsNegated && (regularNotDialed - regularsSwappedIn) >= 2 && unspicedSpecials > 0) {
+                regularsSwappedIn += 2;
+                specialsSwappedOut++;
+                unspicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+            while (!specialsNegated && (regularNotDialed - regularsSwappedIn) >= 4 && unspicedSpecials > 0) {
+                regularsSwappedIn += 4;
+                specialsSwappedOut++;
+                unspicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+        } else if (faction instanceof IxFaction && battle.isIxCunning()) {
+            while (unspicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 1) {
+                regularsSwappedIn++;
+                unspicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - unspicedSpecials));
+            }
+            while (spicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 2) {
+                regularsSwappedIn++;
+                spicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - spicedSpecials));
+            }
+        } else {
+            while (specialsNegated && (regularNotDialed - regularsSwappedIn) >= 1 && unspicedSpecials > 0) {
+                regularsSwappedIn += 1;
+                specialsSwappedOut += 1;
+                unspicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+            while (specialsNegated && (regularNotDialed - regularsSwappedIn) >= 1 && spicedSpecials > 0) {
+                regularsSwappedIn += 1;
+                specialsSwappedOut += 1;
+                spicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+            while (!specialsNegated && (regularNotDialed - regularsSwappedIn) >= 2 && unspicedSpecials > 0) {
+                regularsSwappedIn += 2;
+                specialsSwappedOut += 1;
+                unspicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+            while (!specialsNegated && (regularNotDialed - regularsSwappedIn) >= 2 && spicedSpecials > 0) {
+                regularsSwappedIn += 3;
+                specialsSwappedOut += 1;
+                spicedSpecials--;
+                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
+            }
+        }
+        if (pairsOfLossOptions.size() > 1) {
+            pairsOfLossOptions = pairsOfLossOptions.reversed();
+            if (!(faction instanceof IxFaction) || battle.isIxCunning()) {
+                int preferredLossesPair = 0;
+                if (pairsOfLossOptions.get(1).getRight() == 1 && !specialsNegated)
+                    preferredLossesPair = 1;
+                int regularsToSwapIn = pairsOfLossOptions.get(preferredLossesPair).getLeft() - regularDialed;
+                regularDialed += regularsToSwapIn;
+                regularNotDialed -= regularsToSwapIn;
+                int specialsToSwapOut = specialDialed - pairsOfLossOptions.get(preferredLossesPair).getRight();
+                specialDialed -= specialsToSwapOut;
+                specialNotDialed += specialsToSwapOut;
             }
             List<DuneChoice> choices = new ArrayList<>();
-            int maxSwaps = maxSpecials - minSpecials;
-            int maxregular = startingRegularDialed + maxSwaps * starRegularRatio;
-            for (int i = minSpecials; i <= maxSpecials; i++) {
-                int altRegularDialed = maxregular - (i - minSpecials) * starRegularRatio;
-                String id = "battle-forces-dialed-" + faction.getName() + "-" + altRegularDialed + "-" + i;
-                String label = altRegularDialed + " + " + i + "*" + (specialDialed == i ? " (Current)" : "");
+            for (Pair<Integer, Integer> p : pairsOfLossOptions) {
+                String id = "battle-forces-dialed-" + faction.getName() + "-" + p.getLeft() + "-" + p.getRight();
+                String label = p.getLeft() + " + " + p.getRight() + "*" + (specialDialed == p.getRight() ? " (Current)" : "");
                 choices.add(new DuneChoice(id, label));
             }
             faction.getChat().publish("How would you like to take troop losses?", choices);
