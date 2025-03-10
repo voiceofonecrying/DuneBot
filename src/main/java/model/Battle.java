@@ -25,6 +25,8 @@ public class Battle {
     private boolean sardaukarNegated;
     private boolean cyborgsNegated;
     private boolean fremenMustPay;
+    private boolean emperorCunning;
+    private boolean ixCunning;
 
     public enum DecisionStatus {
         NA,
@@ -70,6 +72,12 @@ public class Battle {
         } catch (IllegalArgumentException ignored) {}
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
+        this.emperorCunning = false;
+        this.ixCunning = false;
+        try {
+            this.ixCunning = game.getBattles().isIxCunning();
+        } catch (InvalidGameStateException ignored) {
+        }
         this.overrideDecisions = false;
         this.hmsStrongholdCardTBD = DecisionStatus.NA;
         this.spiceBankerTBD = DecisionStatus.NA;
@@ -1746,6 +1754,29 @@ public class Battle {
                 return a.getFactionName().compareTo(b.getFactionName());
         });
         return nonCombatantForces;
+    }
+
+    public boolean isEmperorCunning() {
+        return emperorCunning;
+    }
+
+    public void emperorNexusCunning(Game game, boolean useNexusCard) {
+        Faction emperor = game.getFaction("Emperor");
+        emperorCunning = useNexusCard;
+        if (useNexusCard) {
+            game.discardNexusCard(emperor);
+            game.getTurnSummary().publish(Emojis.EMPEROR + " may count up to 5 " + Emojis.EMPEROR_TROOP + " as " + Emojis.EMPEROR_SARDAUKAR + " in this battle.");
+            emperor.getChat().reply("You played the " + Emojis.EMPEROR + " Nexus Card. Up to 5 " + Emojis.EMPEROR_TROOP + " will count as " + Emojis.EMPEROR_SARDAUKAR);
+        } else
+            emperor.getChat().reply("You will not play the " + Emojis.EMPEROR + " Nexus Card.");
+    }
+
+    public boolean isIxCunning() {
+        return ixCunning;
+    }
+
+    public void setIxCunning(boolean ixCunning) {
+        this.ixCunning = ixCunning;
     }
 
     private String juiceOfSaphoDecision(Faction faction, BattlePlan battlePlan, BattlePlan opponentBattlePlan, boolean publishToTurnSummary) {

@@ -1332,14 +1332,58 @@ public class BattlePlanTest extends DuneTest {
         }
 
         @Test
+        void testEmperorLossesNoSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 0);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(3, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesOneSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 1);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(2, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesTwoSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 2);
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+        }
+
+        @Test
+        void testEmperorLossesThreeSpice() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 5);
+            carthag.addForces("Emperor*", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 3);
+            assertEquals(4, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(4, bp.getNumForcesNotDialed());
+        }
+
+        @Test
         void testFremenNegateSardaukar() throws InvalidGameStateException {
-            garaKulon.addForces("Emperor", 1);
+            garaKulon.addForces("Emperor", 3);
             garaKulon.addForces("Emperor*", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(emperor, fremen));
             BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
-            assertEquals(1, bp.getRegularDialed());
-            assertEquals(2, bp.getSpecialDialed());
-            assertEquals(1, bp.getNumForcesNotDialed());
+            assertEquals(3, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
         }
 
         @Test
@@ -1461,6 +1505,77 @@ public class BattlePlanTest extends DuneTest {
             assertEquals(1, bp.getNumForcesNotDialed());
             assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
         }
+
+        @Test
+        void testEmperorNexusCunning() throws InvalidGameStateException {
+            emperor.setNexusCard(new NexusCard("Emperor"));
+            carthag.addForces("Emperor", 7);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 12, false, 7);
+            assertEquals(7, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(0, bp.getNumForcesNotDialed());
+            assertEquals(30, bp.getDoubleBattleStrength());
+        }
+
+        @Test
+        void testEmperorNexusCunningLessThan5Forces() throws InvalidGameStateException {
+            emperor.setNexusCard(new NexusCard("Emperor"));
+            carthag.addForces("Emperor", 4);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 2, false, 1);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+            assertEquals(10, bp.getDoubleBattleStrength());
+        }
+
+        @Test
+        void testEmperorNexusCunningKaramadSardaukar() throws InvalidGameStateException {
+            carthag.addForces("Emperor", 7);
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            battle.emperorNexusCunning(game, true);
+            battle.negateSpecialForces(game, emperor);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 7, false, 7);
+            assertEquals(7, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(0, bp.getNumForcesNotDialed());
+            assertEquals(20, bp.getDoubleBattleStrength());
+        }
+
+        @Test
+        void testIxNexusCunning() throws InvalidGameStateException {
+            game.addFaction(ix);
+            carthag.addForces("Ix", 3);
+            carthag.addForces("Ix*", 1);
+            Battle battle = new Battle(game, List.of(carthag), List.of(ix, harkonnen));
+            battle.setIxCunning(true);
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, cammarPilru, null, false, null, null, 2, false, 0);
+            assertEquals(1, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
+            assertEquals(6, bp.getDoubleBattleStrength());
+            assertEquals("How would you like to take troop losses?", ixChat.getMessages().getFirst());
+            assertEquals(2, ixChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testIxNexusCunningCyborgsNegated() throws InvalidGameStateException {
+            game.addFaction(ix);
+            carthag.addForces("Ix", 3);
+            carthag.addForces("Ix*", 1);
+            Battle battle = new Battle(game, List.of(carthag), List.of(ix, harkonnen));
+            battle.setIxCunning(true);
+            battle.negateSpecialForces(game, ix);
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, cammarPilru, null, false, null, null, 2, false, 0);
+            assertEquals(2, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(2, bp.getNumForcesNotDialed());
+            assertEquals(6, bp.getDoubleBattleStrength());
+            assertTrue(ixChat.getChoices().isEmpty());
+        }
     }
 
     @Nested
@@ -1511,12 +1626,12 @@ public class BattlePlanTest extends DuneTest {
             carthag.addForces("Emperor*", 2);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             BattlePlan empPlan = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 4, true, 2);
-            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " in Carthag if you win.", emperorChat.getMessages().getLast());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_SARDAUKAR + " in Carthag if you win.", emperorChat.getMessages().getLast());
             assertEquals(2, emperorChat.getChoices().getLast().size());
-            assertEquals("1 + 2* (Current)", emperorChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("4 + 1*", emperorChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(1, empPlan.getRegularDialed());
-            assertEquals(2, empPlan.getSpecialDialed());
+            assertEquals("4 + 1* (Current)", emperorChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("1 + 2*", emperorChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(4, empPlan.getRegularDialed());
+            assertEquals(1, empPlan.getSpecialDialed());
         }
     }
 

@@ -1026,10 +1026,12 @@ class BattleTest extends DuneTest {
 
             @Test
             void testFremenLosesOnly2MoreToLasgunShieldOnSouthernHemisphereDialedAway2Fedaykin1Force() throws InvalidGameStateException {
-                battle.setBattlePlan(game, fremen, chani, null, false, 5, false, 0, null, null);
+                BattlePlan bp = battle.setBattlePlan(game, fremen, chani, null, false, 5, false, 0, null, null);
+                assertEquals(3, bp.getRegularDialed());
+                assertEquals(1, bp.getSpecialDialed());
                 battle.printBattleResolution(game, false, true);
-                assertEquals(14, southernHemisphere.getForceStrength("Fremen"));
-                assertEquals(1, southernHemisphere.getForceStrength("Fremen*"));
+                assertEquals(12, southernHemisphere.getForceStrength("Fremen"));
+                assertEquals(2, southernHemisphere.getForceStrength("Fremen*"));
             }
 
             @Test
@@ -2989,22 +2991,22 @@ class BattleTest extends DuneTest {
             @Test
             void testReviewDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, false);
-                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
 
             @Test
             void testPublishDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
 
             @Test
             void testResolveKillsForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
                 assertTrue(battle.isResolved(game));
             }
         }
@@ -3384,7 +3386,7 @@ class BattleTest extends DuneTest {
             @Test
             void testReviewDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, false);
-                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
@@ -3392,7 +3394,7 @@ class BattleTest extends DuneTest {
             @Test
             void testPublishDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
@@ -3400,8 +3402,8 @@ class BattleTest extends DuneTest {
             @Test
             void testResolveKillsForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.ECAZ_TROOP + " in Cielago North (East Sector) were sent to the tanks.")));
                 assertTrue(battle.isResolved(game));
             }
@@ -3688,7 +3690,7 @@ class BattleTest extends DuneTest {
             @Test
             void testReviewDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, false);
-                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
@@ -3696,7 +3698,7 @@ class BattleTest extends DuneTest {
             @Test
             void testPublishDoesNotKillForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 2 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " loses 4 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.EMPEROR_SARDAUKAR + " to the tanks"));
                 assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " loses 3 " + Emojis.ECAZ_TROOP + " to the tanks"));
                 assertFalse(battle.isResolved(game));
             }
@@ -3704,8 +3706,8 @@ class BattleTest extends DuneTest {
             @Test
             void testResolveKillsForces() throws InvalidGameStateException {
                 battle.printBattleResolution(game, false, true);
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (East Sector) were sent to the tanks.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " in Cielago North (West Sector) were sent to the tanks.")));
                 assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("3 " + Emojis.ECAZ_TROOP + " in Cielago North (East Sector) were sent to the tanks.")));
                 assertTrue(battle.isResolved(game));
             }

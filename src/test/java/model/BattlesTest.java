@@ -388,7 +388,7 @@ public class BattlesTest extends DuneTest {
             game.addFaction(bg);
             game.addFaction(emperor);
             game.addFaction(fremen);
-            game.addFaction(guild);
+            game.addFaction(ix);
             game.addFaction(harkonnen);
 
             game.createAlliance(bg, emperor);
@@ -396,7 +396,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testBGGrantsTheVoice() throws InvalidGameStateException {
+        void testBGGrantsTheVoice() {
             arrakeen.addForces("Emperor", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -406,7 +406,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testBGDeniesTheVoice() throws InvalidGameStateException {
+        void testBGDeniesTheVoice() {
             arrakeen.addForces("Emperor", 1);
             bg.setDenyingAllyVoice(true);
             battles = game.startBattlePhase();
@@ -417,7 +417,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testAtreidesGrantsPrescience() throws InvalidGameStateException {
+        void testAtreidesGrantsPrescience() {
             carthag.addForces("Fremen", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -427,7 +427,7 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testAtreidesDeniesPrescience() throws InvalidGameStateException {
+        void testAtreidesDeniesPrescience() {
             carthag.addForces("Fremen", 1);
             atreides.setDenyingAllyBattlePrescience(true);
             battles = game.startBattlePhase();
@@ -438,8 +438,8 @@ public class BattlesTest extends DuneTest {
         }
 
         @Test
-        void testNoVoiceOrPrescienceForNonAlly() throws InvalidGameStateException {
-            sietchTabr.addForces("Guild", 1);
+        void testNoVoiceOrPrescienceForNonAlly() {
+            sietchTabr.addForces("Ix", 1);
             sietchTabr.addForces("Harkonnen", 1);
             battles = game.startBattlePhase();
 //            battles.nextBattle(game);
@@ -447,6 +447,54 @@ public class BattlesTest extends DuneTest {
             battles.callBattleActions(game);
             assertFalse(gameActions.getMessages().getFirst().contains("Voice"));
             assertFalse(gameActions.getMessages().getFirst().contains("Prescience"));
+        }
+
+        @Nested
+        @DisplayName("#emperorCunning")
+        class EmperorCunning {
+            @Test
+            void testNoCunningWithWrongNexusCard() {
+                emperor.setNexusCard(new NexusCard("Ix"));
+                carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(emperorChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testNoCunningWithSardaukarInTheBattle() {
+                emperor.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Emperor*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(emperorChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testCunningWithEmperorNexusCard() {
+                emperor.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Emperor", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertEquals("Would you like to play the " + Emojis.EMPEROR + " Nexus Card for this battle? em", emperorChat.getMessages().getFirst());
+            }
+
+            @Test
+            void testNonEmperorNoEmperorCunning() {
+                ix.setNexusCard(new NexusCard("Emperor"));
+                carthag.addForces("Ix*", 1);
+                battles = game.startBattlePhase();
+//                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                battles.callBattleActions(game);
+                assertTrue(ixChat.getMessages().isEmpty());
+            }
         }
     }
 }
