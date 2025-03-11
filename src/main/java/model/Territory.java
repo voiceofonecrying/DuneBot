@@ -344,7 +344,9 @@ public class Territory {
 
     public String stormTroops(Game game) {
         StringBuilder message = new StringBuilder();
-        message.append(stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game));
+        int advisorStrength = getForceStrength("Advisor");
+        if (advisorStrength > 0)
+            message.append(stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game));
         List<Force> nonFremenForces = forces.stream()
                 .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen"))
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
