@@ -60,11 +60,14 @@ public class BattleButtons implements Pressable {
         discordGame.queueMessage("You selected " + opponent + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
         int space = opponent.indexOf(" ");
-        if (space != -1) opponent = opponent.substring(0, space);
+        if (space != -1)
+            opponent = opponent.substring(0, space);
         battles.setOpponent(game, opponent);
         Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.hasEcazAndAlly()) BattleCommands.ecazAllyButtons(discordGame, game);
-        else battles.callBattleActions(game);
+        if (currentBattle.hasEcazAndAlly())
+            currentBattle.presentEcazAllyChoice(game);
+        else
+            battles.callBattleActions(game);
         discordGame.pushGame();
     }
 
