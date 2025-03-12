@@ -1,6 +1,5 @@
 package controller.commands;
 
-import constants.Emojis;
 import controller.DiscordGame;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -163,8 +162,10 @@ public class BattleCommands {
         battles.setTerritoryByIndex(battleIndex);
         Battle currentBattle = battles.getCurrentBattle();
         if (currentBattle.aggressorMustChooseOpponent()) opponentButtons(discordGame, game, currentBattle);
-        else if (currentBattle.hasEcazAndAlly()) ecazAllyButtons(discordGame, game);
-        else battles.callBattleActions(game);
+        else if (currentBattle.hasEcazAndAlly())
+            currentBattle.presentEcazAllyChoice(game);
+        else
+            battles.callBattleActions(game);
     }
 
     public static void opponentButtons(DiscordGame discordGame, Game game, Battle battle) throws ChannelNotFoundException {
@@ -183,15 +184,5 @@ public class BattleCommands {
         }
         aggressor.getChat().publish("Whom would you like to battle first? " + aggressor.getPlayer(), choices);
         discordGame.getTurnSummary().queueMessage(aggressor.getEmoji() + " must choose their opponent.");
-    }
-
-    public static void ecazAllyButtons(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Faction ecaz = game.getFaction("Ecaz");
-        List<DuneChoice> choices = List.of(
-                new DuneChoice("battle-choose-combatant-Ecaz", "You - Ecaz"),
-                new DuneChoice("battle-choose-combatant-" + ecaz.getAlly(), "Your ally - " + ecaz.getAlly())
-        );
-        ecaz.getChat().publish("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), choices);
-        discordGame.getTurnSummary().queueMessage(Emojis.ECAZ + " must choose who will fight for their alliance.");
     }
 }

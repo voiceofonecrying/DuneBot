@@ -192,6 +192,36 @@ class BattleTest extends DuneTest {
         }
 
         @Test
+        void testEcazCombatantChoices() {
+            game.createAlliance(ecaz, emperor);
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.presentEcazAllyChoice(game);
+            assertEquals("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? ec", ecazChat.getMessages().getFirst());
+            assertEquals(2, ecazChat.getChoices().getFirst().size());
+            assertTrue(harkonnenChat.getChoices().isEmpty());
+        }
+
+        @Test
+        void testEcazLowThresholdOpponentGetsCombatantChoices() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.getTerritory("Ecaz").removeForces(game, "Ecaz", 14);
+            assertFalse(ecaz.isHighThreshold());
+            game.createAlliance(ecaz, emperor);
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            garaKulon.addForces("Ecaz", 3);
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.presentEcazAllyChoice(game);
+            assertTrue(ecazChat.getChoices().isEmpty());
+            assertEquals(Emojis.ECAZ + " is at Low Threshold.\nWho will provide leader and " + Emojis.TREACHERY + " cards against you? ha", harkonnenChat.getMessages().getFirst());
+            assertEquals(2, harkonnenChat.getChoices().getFirst().size());
+            assertEquals(Emojis.HARKONNEN + " must choose who will fight for the " + Emojis.ECAZ + " alliance.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
         void testEcazAllyFighting() {
             game.createAlliance(ecaz, emperor);
             garaKulon.addForces("Harkonnen", 10);

@@ -156,6 +156,28 @@ public class Battle {
                 && factionNames.stream().anyMatch(f -> f.equals(ecazAllyName));
     }
 
+    public void presentEcazAllyChoice(Game game) {
+        Faction ecaz = game.getFaction("Ecaz");
+        if (ecaz.isHighThreshold()) {
+            List<DuneChoice> choices = List.of(
+                    new DuneChoice("primary", "battle-choose-combatant-Ecaz", "You", Emojis.ECAZ, false),
+                    new DuneChoice("primary", "battle-choose-combatant-" + ecaz.getAlly(), "Your ally", Emojis.getFactionEmoji(ecaz.getAlly()), false)
+            );
+            ecaz.getChat().publish("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? " + ecaz.getPlayer(), choices);
+            game.getTurnSummary().publish(Emojis.ECAZ + " must choose who will fight for their alliance.");
+        } else {
+            Faction opponent = getAggressor(game);
+            if (getAggressor(game) instanceof EcazFaction || ecaz.getAlly().equals(getAggressorName()))
+                opponent = getDefender(game);
+            List<DuneChoice> choices = List.of(
+                    new DuneChoice("primary", "battle-choose-combatant-Ecaz", "Ecaz", Emojis.ECAZ, false),
+                    new DuneChoice("primary", "battle-choose-combatant-" + ecaz.getAlly(), "Their ally", Emojis.getFactionEmoji(ecaz.getAlly()), false)
+            );
+            opponent.getChat().publish(Emojis.ECAZ + " is at Low Threshold.\nWho will provide leader and " + Emojis.TREACHERY + " cards against you? " + opponent.getPlayer(), choices);
+            game.getTurnSummary().publish(opponent.getEmoji() + " must choose who will fight for the " + Emojis.ECAZ + " alliance.");
+        }
+    }
+
     public boolean aggressorMustChooseOpponent() {
         int numFactions = factionNames.size();
         if (hasEcazAndAlly())
