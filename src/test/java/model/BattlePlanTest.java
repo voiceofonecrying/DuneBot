@@ -1290,8 +1290,30 @@ public class BattlePlanTest extends DuneTest {
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 4);
             assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+        }
+
+        @Test
+        void testEcazAllyCannotChangeForceLosses() throws InvalidGameStateException {
+            TestTopic ecazChat = new TestTopic();
+            ecaz.setChat(ecazChat);
+            emperor.setAlly("Ecaz");
+            ecaz.setAlly("Emperor");
+            redChasm.addForces("Harkonnen", 10);
+            redChasm.addForces("Emperor", 6);
+            redChasm.addForces("Emperor*", 1);
+            redChasm.addForces("Ecaz", 7);
+            Battle battle = new Battle(game, List.of(redChasm), List.of(harkonnen, emperor, ecaz));
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
+            assertFalse(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals(1, bp.getSpecialNotDialed());
         }
 
         @Test
@@ -1308,16 +1330,16 @@ public class BattlePlanTest extends DuneTest {
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
+            BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 4);
             assertTrue(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
             assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
-            bp.setForcesDialed(5, 0);
-            assertEquals(5, bp.getRegularDialed());
+            bp.setForcesDialed(6, 0);
+            assertEquals(6, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals(1, bp.getSpecialNotDialed());
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
         }
     }
 
@@ -1331,48 +1353,98 @@ public class BattlePlanTest extends DuneTest {
             fremen.setChat(new TestTopic());
         }
 
-        @Test
-        void testEmperorLossesNoSpice() throws InvalidGameStateException {
-            carthag.addForces("Emperor", 5);
-            carthag.addForces("Emperor*", 4);
-            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 0);
-            assertEquals(4, bp.getRegularDialed());
-            assertEquals(3, bp.getSpecialDialed());
-            assertEquals(2, bp.getNumForcesNotDialed());
-        }
+        @Nested
+        @DisplayName("#emperorLossesAndOptions")
+        class EmperorLossesAndOptions {
+            @BeforeEach
+            void seteUp() {
+                carthag.addForces("Emperor", 5);
+                carthag.addForces("Emperor*", 4);
+            }
 
-        @Test
-        void testEmperorLossesOneSpice() throws InvalidGameStateException {
-            carthag.addForces("Emperor", 5);
-            carthag.addForces("Emperor*", 4);
-            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 1);
-            assertEquals(4, bp.getRegularDialed());
-            assertEquals(2, bp.getSpecialDialed());
-            assertEquals(3, bp.getNumForcesNotDialed());
-        }
+            @Nested
+            @DisplayName("#emperorAlone")
+            class EmperorAlone {
+                @BeforeEach
+                void setUp() {
+                    battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+                }
 
-        @Test
-        void testEmperorLossesTwoSpice() throws InvalidGameStateException {
-            carthag.addForces("Emperor", 5);
-            carthag.addForces("Emperor*", 4);
-            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 2);
-            assertEquals(5, bp.getRegularDialed());
-            assertEquals(1, bp.getSpecialDialed());
-            assertEquals(3, bp.getNumForcesNotDialed());
-        }
+                @Test
+                void testEmperorLossesNoSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 5, false, 0);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(3, bp.getSpecialDialed());
+                    assertEquals(2, bp.getNumForcesNotDialed());
+                }
 
-        @Test
-        void testEmperorLossesThreeSpice() throws InvalidGameStateException {
-            carthag.addForces("Emperor", 5);
-            carthag.addForces("Emperor*", 4);
-            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 5, false, 3);
-            assertEquals(4, bp.getRegularDialed());
-            assertEquals(1, bp.getSpecialDialed());
-            assertEquals(4, bp.getNumForcesNotDialed());
+                @Test
+                void testEmperorLossesOneSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 5, false, 1);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(2, bp.getSpecialDialed());
+                    assertEquals(3, bp.getNumForcesNotDialed());
+                }
+
+                @Test
+                void testEmperorLossesTwoSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 5, false, 2);
+                    assertEquals(5, bp.getRegularDialed());
+                    assertEquals(1, bp.getSpecialDialed());
+                    assertEquals(3, bp.getNumForcesNotDialed());
+                }
+
+                @Test
+                void testEmperorLossesThreeSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 5, false, 3);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(1, bp.getSpecialDialed());
+                    assertEquals(4, bp.getNumForcesNotDialed());
+                }
+            }
+
+            @Nested
+            @DisplayName("#emperorAlliedWithEcaz")
+            class EmperorAlliedWithEcaz {
+                @BeforeEach
+                void setUp() {
+                    game.createAlliance(emperor, ecaz);
+                    carthag.addForces("Ecaz", 2);
+                    battle = new Battle(game, List.of(carthag), List.of(ecaz, harkonnen, emperor));
+                }
+
+                @Test
+                void testEmperorLossesAlliedWithEcazNoSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, ecaz, true, bindikkNarvi, null, false, null, null, 5, false, 0);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(3, bp.getSpecialDialed());
+                    assertEquals(2, bp.getNumForcesNotDialed());
+                }
+
+                @Test
+                void testEmperorLossesAlliedWithEcazOneSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, ecaz, true, bindikkNarvi, null, false, null, null, 5, false, 1);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(2, bp.getSpecialDialed());
+                    assertEquals(3, bp.getNumForcesNotDialed());
+                }
+
+                @Test
+                void testEmperorLossesAliedWithEcazTwoSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, ecaz, true, bindikkNarvi, null, false, null, null, 5, false, 2);
+                    assertEquals(5, bp.getRegularDialed());
+                    assertEquals(1, bp.getSpecialDialed());
+                    assertEquals(3, bp.getNumForcesNotDialed());
+                }
+
+                @Test
+                void testEmperorLossesAlliedWithEcazThreeSpice() throws InvalidGameStateException {
+                    BattlePlan bp = new BattlePlan(game, battle, ecaz, true, bindikkNarvi, null, false, null, null, 5, false, 3);
+                    assertEquals(4, bp.getRegularDialed());
+                    assertEquals(1, bp.getSpecialDialed());
+                    assertEquals(4, bp.getNumForcesNotDialed());
+                }
+            }
         }
 
         @Test
@@ -1380,7 +1452,7 @@ public class BattlePlanTest extends DuneTest {
             garaKulon.addForces("Emperor", 3);
             garaKulon.addForces("Emperor*", 3);
             Battle battle = new Battle(game, List.of(garaKulon), List.of(emperor, fremen));
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 2, false, 1);
             assertEquals(3, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals(3, bp.getNumForcesNotDialed());
@@ -1402,7 +1474,7 @@ public class BattlePlanTest extends DuneTest {
             carthag.addForces("Emperor*", 3);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             battle.negateSpecialForces(game, emperor);
-            BattlePlan bp = new BattlePlan(game, battle, emperor, true, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 2, false, 1);
             assertEquals(1, bp.getRegularDialed());
             assertEquals(2, bp.getSpecialDialed());
             assertEquals(1, bp.getNumForcesNotDialed());
@@ -1444,7 +1516,7 @@ public class BattlePlanTest extends DuneTest {
             battle.setEcazCombatant(game, "Ecaz");
             assertEquals(ecaz, battle.getDefender(game));
             battle.negateSpecialForces(game, emperor);
-            BattlePlan bp = new BattlePlan(game, battle, emperor, false, emperor.getLeader("Burseg").orElseThrow(), null, false, null, null, 2, false, 1);
+            BattlePlan bp = new BattlePlan(game, battle, emperor, false, burseg, null, false, null, null, 2, false, 1);
             assertEquals(1, bp.getRegularDialed());
             assertEquals(2, bp.getSpecialDialed());
             assertEquals(1, bp.getNumForcesNotDialed());
