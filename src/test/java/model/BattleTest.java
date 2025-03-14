@@ -258,7 +258,7 @@ class BattleTest extends DuneTest {
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
 //        BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
-            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 4, null, null));
             BattlePlan bp = battle.getDefenderBattlePlan();
             assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
 //        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));

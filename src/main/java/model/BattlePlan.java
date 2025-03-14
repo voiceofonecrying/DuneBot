@@ -203,8 +203,14 @@ public class BattlePlan {
                 || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         String factionName = (hasEcazAndAlly && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
+        if (faction instanceof EcazFaction && hasEcazAndAlly && faction.getAlly().equals("Fremen"))
+            isFremen = true;
         boolean isIx = faction instanceof IxFaction;
+        if (faction instanceof EcazFaction && hasEcazAndAlly && faction.getAlly().equals("Ix"))
+            isIx = true;
         boolean isEmperor = faction instanceof EmperorFaction;
+        if (faction instanceof EcazFaction && hasEcazAndAlly && faction.getAlly().equals("Emperor"))
+            isEmperor = true;
         boolean specialsNegated = isFremen && battle.isFedaykinNegated() || isEmperor && battle.isSardaukarNegated() || isIx && battle.isCyborgsNegated();
         specialNotDialed = battle.getForces().stream().filter(f -> f.getName().equals(factionName + "*")).findFirst().map(Force::getStrength).orElse(0);
         regularNotDialed = battle.getForces().stream().filter(f -> f.getName().equals(factionName)).findFirst().map(Force::getStrength).orElse(0);
@@ -244,7 +250,7 @@ public class BattlePlan {
                 fullStregnthSpecialWithSpice = fullStrengthSpecial;
                 spiceUsed += fullStrengthSpecial;
             }
-        } else if (faction instanceof FremenFaction && !isSpiceNeeded(game, battle, faction, true))
+        } else if (isFremen && !isSpiceNeeded(game, battle, faction, true))
             fullStrengthSpecial = 0;
         dialUsed += fullStrengthSpecial;
         specialDialed += fullStrengthSpecial;
@@ -289,14 +295,24 @@ public class BattlePlan {
         regularDialed += halfStrengthRegular;
         regularNotDialed -= halfStrengthRegular;
 
+        int spicedSpecials = doubleStrengthSpecialWithSpice + fullStregnthSpecialWithSpice;
+        int unspicedSpecials = (doubleStrengthSpecial - doubleStrengthSpecialWithSpice) + (fullStrengthSpecial - fullStregnthSpecialWithSpice) + halfStrengthSpecial;
         if (!specialsNegated && spiceUsed < spice
-                && (faction instanceof EmperorFaction || faction instanceof FremenFaction && isSpiceNeeded(game, battle, faction, true))) {
-            regularDialed += spice - spiceUsed;
-            regularNotDialed -= spice - spiceUsed;
-            specialDialed -= spice - spiceUsed;
-            specialNotDialed += spice - spiceUsed;
-            fullStrengthSpecial -= spice - spiceUsed;
-            spiceUsed = spice;
+                && (isEmperor || isFremen && isSpiceNeeded(game, battle, faction, true))) {
+            int unspicedSpecialsToSwap = Math.min(spice - spiceUsed, unspicedSpecials);
+            regularDialed += unspicedSpecialsToSwap;
+            regularNotDialed -= unspicedSpecialsToSwap;
+            specialDialed -= unspicedSpecialsToSwap;
+            specialNotDialed += unspicedSpecialsToSwap;
+            spiceUsed += unspicedSpecialsToSwap;
+            unspicedSpecials -= unspicedSpecialsToSwap;
+            int spicedSpecialsToSwap = Math.min(spice - spiceUsed, spicedSpecials);
+            regularDialed += 2 * spicedSpecialsToSwap;
+            regularNotDialed -= 2 * spicedSpecialsToSwap;
+            specialDialed -= spicedSpecialsToSwap;
+            specialNotDialed += spicedSpecialsToSwap;
+            spiceUsed += spicedSpecialsToSwap;
+            spicedSpecials -= spicedSpecialsToSwap;
         }
 
         if ((wholeNumberDial > dialUsed) || plusHalfDial) {
@@ -317,9 +333,7 @@ public class BattlePlan {
         pairsOfLossOptions.add(new ImmutablePair<>(regularDialed, specialDialed));
         int regularsSwappedIn = 0;
         int specialsSwappedOut = 0;
-        int spicedSpecials = doubleStrengthSpecialWithSpice + fullStregnthSpecialWithSpice;
-        int unspicedSpecials = (doubleStrengthSpecial - doubleStrengthSpecialWithSpice) + (fullStrengthSpecial - fullStregnthSpecialWithSpice) + halfStrengthSpecial;
-        if (faction instanceof EmperorFaction && !isSpiceNeeded(game, battle, faction, true)) {
+        if (isEmperor && !isSpiceNeeded(game, battle, faction, true)) {
             while (specialsNegated && (regularNotDialed - regularsSwappedIn) >= 2 && unspicedSpecials > 0) {
                 regularsSwappedIn += 2;
                 specialsSwappedOut++;
@@ -332,7 +346,7 @@ public class BattlePlan {
                 unspicedSpecials--;
                 pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
             }
-        } else if (faction instanceof IxFaction && battle.isIxCunning()) {
+        } else if (isIx && battle.isIxCunning()) {
             while (unspicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 1) {
                 regularsSwappedIn++;
                 unspicedSpecials--;
