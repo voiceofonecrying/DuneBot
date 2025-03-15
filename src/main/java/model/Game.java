@@ -1662,6 +1662,13 @@ public class Game {
         faction.getLedger().publish(forcesString + "returned to reserves.");
         turnSummary.publish(faction.getEmoji() + " revives " + forcesString + costString);
         faction.setUpdated(UpdateType.MAP);
+
+        if (faction instanceof IxFaction ix && hasGameOption(GameOption.HOMEWORLDS) && ix.isHighThreshold() && isPaid && !isEmperorAllyPower) {
+            int suboidsInTanks = tleilaxuTanks.getForceStrength("Ix");
+            int bonusSuboidRevivals = Math.min(suboidsInTanks, 2 * starredAmount);
+            if (bonusSuboidRevivals > 0)
+                reviveForces(faction, false, bonusSuboidRevivals, 0, false);
+        }
     }
 
     public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama, boolean crossShip) {

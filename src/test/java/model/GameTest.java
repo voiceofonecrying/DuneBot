@@ -1611,12 +1611,35 @@ class GameTest extends DuneTest {
     class ReviveForces {
         @BeforeEach
         void setUp() throws IOException {
-            game.addFaction(atreides);
-            game.addFaction(bg);
             game.addFaction(emperor);
-            game.addFaction(fremen);
-            game.addFaction(guild);
-            game.addFaction(harkonnen);
+            game.addFaction(ix);
+//            game.addFaction(fremen);
+//            game.addFaction(bt);
+        }
+
+        @Test
+        void testIxHighTresholdPaidRevival() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, true, 0, 1, false);
+            assertEquals(0, game.getTleilaxuTanks().getForceStrength("Ix"));
+        }
+
+        @Test
+        void testIxHighTresholFreeRevivalDoesNotGetBonusSuboids() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, false, 0, 1, false);
+            assertEquals(2, game.getTleilaxuTanks().getForceStrength("Ix"));
+        }
+
+        @Test
+        void testIxHighTresholdEmperorAllyRevivalDoesNotGetBonusSuboids() {
+            game.createAlliance(ix, emperor);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, true, 0, 1, true);
+            assertEquals(2, game.getTleilaxuTanks().getForceStrength("Ix"));
         }
 
         @Test
