@@ -108,12 +108,19 @@ public class Battles {
         Faction aggressor = currentBattle.getAggressor(game);
         if (opponent.equals(aggressor.getName()))
             throw new InvalidGameStateException("Cannot set aggressor's opponent to be the aggressor");
+        aggressor.getChat().reply("You selected " + opponent + ".");
+        game.getTurnSummary().publish(getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
         currentBattle = new Battle(game, currentBattle.getTerritorySectors(game),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
                 ).toList()
         );
+
+        if (currentBattle.hasEcazAndAlly())
+            currentBattle.presentEcazAllyChoice(game);
+        else
+            callBattleActions(game);
     }
 
     public Battle getCurrentBattle() {
