@@ -55,30 +55,15 @@ public class BattleButtons implements Pressable {
 
     private static void chooseOpponent(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
-        Battles battles = game.getBattles();
         String opponent = event.getComponentId().split("-")[3];
-        discordGame.queueMessage("You selected " + opponent + ".");
-        discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
-        int space = opponent.indexOf(" ");
-        if (space != -1)
-            opponent = opponent.substring(0, space);
-        battles.setOpponent(game, opponent);
-        Battle currentBattle = battles.getCurrentBattle();
-        if (currentBattle.hasEcazAndAlly())
-            currentBattle.presentEcazAllyChoice(game);
-        else
-            battles.callBattleActions(game);
+        game.getBattles().setOpponent(game, opponent);
         discordGame.pushGame();
     }
 
     private static void ecazChooseCombatant(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
-        Battles battles = game.getBattles();
         String battleFaction = event.getComponentId().split("-")[3];
-        discordGame.queueMessage("You selected " + battleFaction + ".");
-        discordGame.getTurnSummary().queueMessage(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
-        battles.getCurrentBattle().setEcazCombatant(game, battleFaction);
-        battles.callBattleActions(game);
+        game.getBattles().ecazChooseCombatant(game, battleFaction);
         discordGame.pushGame();
     }
 

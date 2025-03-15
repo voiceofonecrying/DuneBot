@@ -108,12 +108,33 @@ public class Battles {
         Faction aggressor = currentBattle.getAggressor(game);
         if (opponent.equals(aggressor.getName()))
             throw new InvalidGameStateException("Cannot set aggressor's opponent to be the aggressor");
+        aggressor.getChat().reply("You selected " + opponent + ".");
+        game.getTurnSummary().publish(getAggressor(game).getEmoji() + " will battle against " + opponent + ".");
         currentBattle = new Battle(game, currentBattle.getTerritorySectors(game),
                 currentBattle.getFactions(game).stream().filter(
                         f -> f.getName().equals(opponent) || (f instanceof EcazFaction && f.getAlly().equals(opponent))
                                 || f == aggressor || (f instanceof EcazFaction && aggressor.getName().equals(f.getAlly()))
                 ).toList()
         );
+
+        if (currentBattle.hasEcazAndAlly())
+            currentBattle.presentEcazAllyChoice(game);
+        else
+            callBattleActions(game);
+    }
+
+    public void ecazChooseCombatant(Game game, String battleFaction) {
+        game.getTurnSummary().publish(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
+        Faction ecaz = game.getFaction("Ecaz");
+        Faction faction = ecaz;
+        if (!faction.isHighThreshold()) {
+            faction = currentBattle.getAggressor(game);
+            if (currentBattle.getAggressor(game) instanceof EcazFaction || ecaz.getAlly().equals(faction.getName()))
+                faction = currentBattle.getDefender(game);
+        }
+        faction.getChat().reply("You selected " + battleFaction + ".");
+        currentBattle.setEcazCombatant(game, battleFaction);
+        callBattleActions(game);
     }
 
     public Battle getCurrentBattle() {
