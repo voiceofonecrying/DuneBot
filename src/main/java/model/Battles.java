@@ -123,6 +123,20 @@ public class Battles {
             callBattleActions(game);
     }
 
+    public void ecazChooseCombatant(Game game, String battleFaction) {
+        game.getTurnSummary().publish(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
+        Faction ecaz = game.getFaction("Ecaz");
+        Faction faction = ecaz;
+        if (!faction.isHighThreshold()) {
+            faction = currentBattle.getAggressor(game);
+            if (currentBattle.getAggressor(game) instanceof EcazFaction || ecaz.getAlly().equals(faction.getName()))
+                faction = currentBattle.getDefender(game);
+        }
+        faction.getChat().reply("You selected " + battleFaction + ".");
+        currentBattle.setEcazCombatant(game, battleFaction);
+        callBattleActions(game);
+    }
+
     public Battle getCurrentBattle() {
         return currentBattle;
     }
