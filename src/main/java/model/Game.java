@@ -1501,6 +1501,25 @@ public class Game {
         setUpdated(UpdateType.MAP);
     }
 
+    public void endShipmentMovement() {
+        List<String> messages = new ArrayList<>();
+        messages.add("Shipment and Movement has been forced to end. " + getModOrRoleMention());
+        if (!turnOrder.isEmpty()) {
+            messages.add(Emojis.getFactionEmoji(turnOrder.peekFirst()) + " was queued to ship/move.");
+            turnOrder.clear();
+        }
+        if (hasFaction("BG")) {
+            BGFaction bg = (BGFaction) getFaction("BG");
+            if (bg.hasIntrudedTerritoriesDecisions()) {
+                messages.add(Emojis.BG + " had flip decisions in " + bg.getIntrudedTerritoriesString());
+                bg.clearIntrudedTerritories();
+            }
+        }
+        if (messages.size() == 1)
+            messages.add("There were no Shipment and Movement actions remaining.");
+        modInfo.publish(String.join("\n", messages));
+    }
+
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, boolean special, boolean isToTanks) {
         removeForces(territoryName, targetFaction, (special ? 0 : amountValue), (special ? amountValue : 0), isToTanks);
     }

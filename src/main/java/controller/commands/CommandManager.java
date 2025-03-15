@@ -259,6 +259,7 @@ public class CommandManager extends ListenerAdapter {
                 case "set-hand-limit" -> setHandLimit(discordGame, game);
                 case "place-forces" -> placeForcesEventHandler(discordGame, game);
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
+                case "end-shipment-movement" -> endShipmentMovement(discordGame, game);
                 case "remove-forces" -> removeForcesEventHandler(discordGame, game);
                 case "homeworld-occupy" -> homeworldOccupy(discordGame, game);
                 case "display-state" -> displayGameState(event, discordGame, game);
@@ -398,6 +399,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("set-hand-limit", "Change the hand limit for a faction.").addOptions(faction, amount));
         commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
+        commandData.add(Commands.slash("end-shipment-movement", "Force end of Shipment/Movement and advance"));
         commandData.add(Commands.slash("remove-forces", "Remove forces from the board.").addOptions(faction, amount, starredAmount, toTanks, killedInBattle, fromTerritory));
         commandData.add(Commands.slash("homeworld-occupy", "Set the occupying faction in a homeworld.").addOptions(homeworld, faction));
         commandData.add(Commands.slash("add-card-to-bidding-market", "Add one more card from the deck to the bidding market."));
@@ -857,6 +859,11 @@ public class CommandManager extends ListenerAdapter {
 
         game.moveForces(targetFaction, from, to, amountValue, starredAmountValue, true);
         discordGame.pushGame();
+    }
+
+    public void endShipmentMovement(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        game.endShipmentMovement();
+        RunCommands.advance(discordGame, game);
     }
 
     public void removeForcesEventHandler(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

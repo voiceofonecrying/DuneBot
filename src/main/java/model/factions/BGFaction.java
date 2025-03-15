@@ -234,11 +234,15 @@ public class BGFaction extends Faction {
         return !intrudedTerritories.isEmpty();
     }
 
-    public String getIntrudeTerritoriesString() {
+    public String getIntrudedTerritoriesString() {
         // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
         if (intrudedTerritories == null)
             intrudedTerritories = new HashSet<>();
         return String.join(", ", intrudedTerritories);
+    }
+
+    public void clearIntrudedTerritories() {
+        intrudedTerritories.clear();
     }
 
     public boolean isDenyingAllyVoice() {
