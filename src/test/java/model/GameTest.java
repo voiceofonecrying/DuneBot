@@ -1626,6 +1626,13 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testIxPaidRevivalNonHomeworldGameDoesNotGetBonusSuboids() {
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, true, 0, 1, false);
+            assertEquals(2, game.getTleilaxuTanks().getForceStrength("Ix"));
+        }
+
+        @Test
         void testIxHighTresholFreeRevivalDoesNotGetBonusSuboids() {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Ix", ix, 2, 1, true);
