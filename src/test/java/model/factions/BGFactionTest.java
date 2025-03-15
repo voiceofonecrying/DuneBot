@@ -202,13 +202,13 @@ class BGFactionTest extends FactionTestTemplate {
         habbanyaSietch.addForces("BG", 1);
         faction.bgFlipMessageAndButtons(game, "Habbanya Sietch");
         assertTrue(faction.hasIntrudedTerritoriesDecisions());
-        assertTrue(faction.getIntrudeTerritoriesString().equals("Sietch Tabr, Habbanya Sietch") || faction.getIntrudeTerritoriesString().equals("Habbanya Sietch, Sietch Tabr"));
+        assertTrue(faction.getIntrudedTerritoriesString().equals("Sietch Tabr, Habbanya Sietch") || faction.getIntrudedTerritoriesString().equals("Habbanya Sietch, Sietch Tabr"));
         faction.flipForces(sietchTabr);
         assertTrue(faction.hasIntrudedTerritoriesDecisions());
-        assertEquals("Habbanya Sietch", faction.getIntrudeTerritoriesString());
+        assertEquals("Habbanya Sietch", faction.getIntrudedTerritoriesString());
         faction.dontFlipFighters(game, habbanyaSietch.getTerritoryName());
         assertFalse(faction.hasIntrudedTerritoriesDecisions());
-        assertTrue(faction.getIntrudeTerritoriesString().isEmpty());
+        assertTrue(faction.getIntrudedTerritoriesString().isEmpty());
     }
 
     @Nested
