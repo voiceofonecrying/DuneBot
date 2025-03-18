@@ -82,6 +82,7 @@ public class Faction {
     protected DuneTopic chat;
     @Exclude
     protected DuneTopic allianceThread;
+    public boolean refreshedForBiddingButtonLayout;
 
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
@@ -689,16 +690,20 @@ public class Faction {
         this.autoBid = autoBid;
     }
 
-    public void setAutoBidTurn(boolean autoBidTurn) {
-        this.autoBidTurn = autoBidTurn;
-    }
-
     public boolean isAutoBidTurn() {
         return autoBidTurn;
     }
 
+    public void setAutoBidTurn(boolean autoBidTurn) {
+        this.autoBidTurn = autoBidTurn;
+    }
+
     public boolean isOutbidAlly() {
         return outbidAlly;
+    }
+
+    public void setOutbidAlly(boolean outbidAlly) {
+        this.outbidAlly = outbidAlly;
     }
 
     protected boolean doesNotHaveKarama() {
