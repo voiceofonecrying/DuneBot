@@ -405,6 +405,11 @@ public class ShowCommands {
         }
 
         if (faction.hasAlly()) {
+//            MessageCreateBuilder builder = new MessageCreateBuilder();
+//            EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+//            embedBuilder.setTitle("**Alliance Actions**");
+//            builder.addEmbeds(embedBuilder.build());
+//            discordGame.queueMessage(infoChannelName, builder);
             String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
             switch (faction) {
                 // Also BT, Fremen, Guild, Richese
@@ -470,19 +475,10 @@ public class ShowCommands {
         }
 
         if (game.isInBiddingPhase()) {
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-pass", "Pass One Time")).build());
-            if (!faction.isAutoBid()) {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-auto-pass", "Enable Auto-Pass")).build());
-            } else {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-auto-pass", "Disable Auto-Pass")).build());
-            }
+            sendBiddingButtons(discordGame, faction, infoChannelName);
+
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
                 playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
-            }
-            if (!faction.isAutoBidTurn()) {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("bidding-turn-pass", "Enable Auto-Pass (Whole Round)")).build());
-            } else {
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("bidding-turn-pass", "Disable Auto-Pass (Whole Round)")).build());
             }
             StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
             int maxPossibleBid = faction.getSpice();
@@ -499,6 +495,30 @@ public class ShowCommands {
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(menu.build()).build());
         }
         if (!playCardMenu.getOptions().isEmpty()) discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(playCardMenu.build()).build());
+    }
+
+    public static void sendBiddingButtons(DiscordGame discordGame, Faction faction, String infoChannelName) throws ChannelNotFoundException {
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+        embedBuilder.setTitle("**Bidding Actions**");
+        builder.addEmbeds(embedBuilder.build());
+
+        List<Button> buttons = new ArrayList<>();
+        buttons.add(Button.primary("bidding-pass", "Pass One Time"));
+        if (faction.isAutoBid())
+            buttons.add(Button.secondary("bidding-auto-pass", "Disable Auto-Pass"));
+        else
+            buttons.add(Button.primary("bidding-auto-pass", "Enable Auto-Pass"));
+        if (faction.isAutoBidTurn())
+            buttons.add(Button.secondary("bidding-turn-pass", "Disable Auto-Pass (Whole Round)"));
+        else
+            buttons.add(Button.primary("bidding-turn-pass", "Enable Auto-Pass (Whole Round)"));
+        if (faction.isOutbidAlly())
+            buttons.add(Button.success("bidding-toggle-outbid-ally", "Don't Outbid Ally"));
+        else
+            buttons.add(Button.danger("bidding-toggle-outbid-ally", "Allow Outbidding Ally"));
+        builder.addActionRow(buttons);
+        discordGame.queueMessage(infoChannelName, builder.build());
     }
 
     private static FileUpload drawGameBoard(Game game) throws IOException {

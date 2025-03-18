@@ -5,6 +5,7 @@ import caches.GameCache;
 import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
 import controller.channels.*;
+import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
@@ -36,15 +37,10 @@ import net.dv8tion.jda.api.requests.restaction.WebhookMessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -370,45 +366,13 @@ public class DiscordGame {
             }
         }
 
-        // Migration to ensure all Leader objects have originalFactionName set
-        List<Leader> leadersFromCSV = new ArrayList<>();
-        for (Faction f: game.getFactions()) {
-            for (Leader l : f.getLeaders()) {
-                if (l.getOriginalFactionName() == null || l.getOriginalFactionName().isEmpty()) {
-                    if (leadersFromCSV.isEmpty()) {
-                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
-                        ));
-                        try {
-                            for (CSVRecord csvRecord : CSVParser.parse(bufferedReader, CSVFormat.EXCEL))
-                                leadersFromCSV.add(new Leader(csvRecord.get(1), 0, csvRecord.get(0), null, false));
-                        } catch (IOException e) {
-                            break;
-                        }
-                    }
-                    if (l.getName().equals("Kwisatz Haderach"))
-                        l.setOriginalFactionName("Atreides");
-                    else
-                        for (Leader l2 : leadersFromCSV) {
-                            if (l.getName().equals(l2.getName()))
-                                l.setOriginalFactionName(l2.getOriginalFactionName());
-                        }
-                }
-            }
-        }
-        for (Leader l : game.getLeaderTanks()) {
-            if (l.getOriginalFactionName() == null || l.getOriginalFactionName().isEmpty()) {
-                if (l.getName().equals("Kwisatz Haderach"))
-                    l.setOriginalFactionName("Atreides");
-                else
-                    for (Leader l2 : leadersFromCSV) {
-                        if (l.getName().equals(l2.getName()))
-                            l.setOriginalFactionName(l2.getOriginalFactionName());
-                    }
-            }
-        }
-
         for (Faction f : game.getFactions()) {
+            // Temporary "migration" to ensure all -info channels get refreshed before presenting new bidding button layout.
+            if (!f.refreshedForBiddingButtonLayout) {
+                f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+                f.refreshedForBiddingButtonLayout = true;
+            }
+            // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
             if (f instanceof AtreidesFaction atreides && atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
