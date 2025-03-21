@@ -475,33 +475,42 @@ public class ShowCommands {
         }
 
         if (game.isInBiddingPhase()) {
-            sendBiddingButtons(discordGame, faction, infoChannelName);
+            sendBiddingActions(discordGame, game, faction);
 
             if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
                 playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
             }
-            StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
-            int maxPossibleBid = faction.getSpice();
-            if (faction.hasAlly()) {
-                maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
-            }
-            for (int i=game.getBidding().getCurrentBid() + 1; i<=Math.min(maxPossibleBid, 24 + game.getBidding().getCurrentBid()); i++) {
-                String optionString = String.valueOf(i);
-                if (faction.hasAlly() && i == game.getFaction(faction.getAlly()).getSpiceForAlly()) {
-                    optionString += " (Ally support limit)";
-                }
-                menu.addOption(optionString, String.valueOf(i));
-            }
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(menu.build()).build());
         }
         if (!playCardMenu.getOptions().isEmpty()) discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(playCardMenu.build()).build());
     }
 
-    public static void sendBiddingButtons(DiscordGame discordGame, Faction faction, String infoChannelName) throws ChannelNotFoundException {
+    public static void sendBiddingActions(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
         MessageCreateBuilder builder = new MessageCreateBuilder();
         EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
         embedBuilder.setTitle("**Bidding Actions**");
+        if (faction.getMaxBid() > 0)
+            embedBuilder.appendDescription("Your current max bid is " + faction.getMaxBid() + (faction.isUseExactBid() ? ", Exact Bid" : ", Incremental"));
+        else if (faction.getMaxBid() == -1)
+            embedBuilder.appendDescription("You will pass.");
+        else if (faction.isAutoBid() || faction.isAutoBidTurn())
+            embedBuilder.appendDescription("You will auto-pass.");
+        else
+            embedBuilder.appendDescription("You have not set a bid or pass.");
+        embedBuilder.appendDescription("\n\nTo bid, select a single number from the list.\nAlso select +1 for an Incremental bid.\nPass One Time logs a single pass for you.\nAuto-Pass will be reset with the next card.\nAuto-Pass (Whole Round) will be reset next turn.\nOutbid Ally policy will persist until you change it.\n\nYou don't have to wait to be tagged to bid or pass.\nPlease use Auto-Passing whenever possible.");
         builder.addEmbeds(embedBuilder.build());
+
+        StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
+        int maxPossibleBid = faction.getSpice();
+        if (faction.hasAlly())
+            maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
+        for (int i=game.getBidding().getCurrentBid() + 1; i<=Math.min(maxPossibleBid, 24 + game.getBidding().getCurrentBid()); i++) {
+            String optionString = String.valueOf(i);
+            if (faction.hasAlly() && i == game.getFaction(faction.getAlly()).getSpiceForAlly()) {
+                optionString += " (Ally support limit)";
+            }
+            menu.addOption(optionString, String.valueOf(i));
+        }
+        builder.addActionRow(menu.build());
 
         List<Button> buttons = new ArrayList<>();
         buttons.add(Button.primary("bidding-pass", "Pass One Time"));
@@ -518,6 +527,8 @@ public class ShowCommands {
         else
             buttons.add(Button.danger("bidding-toggle-outbid-ally", "Allow Outbidding Ally"));
         builder.addActionRow(buttons);
+
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         discordGame.queueMessage(infoChannelName, builder.build());
     }
 

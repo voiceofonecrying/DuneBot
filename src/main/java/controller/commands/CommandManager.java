@@ -60,18 +60,18 @@ public class CommandManager extends ListenerAdapter {
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         if (event.getComponentId().startsWith("bidding-menu-")) {
-            event.reply("Your bid has been submitted.").queue();
             int bid = 0;
             boolean useExact = true;
             if (event.getInteraction().getSelectedOptions().size() == 2) {
                 if (!event.getInteraction().getSelectedOptions().get(0).getValue().equals("auto-increment")) {
                     CommandCompletionGuard.decrementCommandCount();
-                    event.getMessageChannel().sendMessage("You cannot select two bids.").queue();
+                    event.reply("You cannot select two bids.").queue();
                     return;
                 }
                 bid = Integer.parseInt(event.getInteraction().getSelectedOptions().get(1).getValue());
                 useExact = false;
             } else bid = Integer.parseInt(event.getInteraction().getSelectedOptions().getFirst().getValue());
+            event.reply("Your bid has been submitted.").queue();
             try {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();

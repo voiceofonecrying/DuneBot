@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class PlayerCommands {
     }
 
 
-    public static String runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    public static String runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
 
         if (game.getFactions().stream().noneMatch(f -> f.getPlayer().substring(2).replace(">", "").equals(event.getUser().toString().split("=")[1].replace(")", "")))) {
             return "";
@@ -90,24 +91,30 @@ public class PlayerCommands {
         return "You have canceled your battle plan.";
     }
 
-    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        return game.getBidding().pass(game, faction);
+        String response = game.getBidding().pass(game, faction);
+        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        return response;
     }
 
-    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        return game.getBidding().setAutoPass(game, faction, enabled);
+        String response = game.getBidding().setAutoPass(game, faction, enabled);
+        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        return response;
     }
 
-    private static String setAutoPassEntireTurn(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static String setAutoPassEntireTurn(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
-        return game.getBidding().setAutoPassEntireTurn(game, faction, enabled);
+        String response = game.getBidding().setAutoPassEntireTurn(game, faction, enabled);
+        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        return response;
     }
 
-    public static String bid(GenericInteractionCreateEvent event, DiscordGame discordGame, Game game, boolean useExact, int bidAmount) throws ChannelNotFoundException, InvalidGameStateException {
+    public static String bid(GenericInteractionCreateEvent event, DiscordGame discordGame, Game game, boolean useExact, int bidAmount) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         Boolean newOutbidAllySetting = null;
         if (discordGame.optional(outbidAlly) != null)
@@ -115,7 +122,9 @@ public class PlayerCommands {
         Boolean enableAutoPass = null;
         if (discordGame.optional(autoPassAfterMax) != null)
             enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
-        return game.getBidding().bid(game, faction, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
+        String response = game.getBidding().bid(game, faction, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
+        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        return response;
     }
 
     private static String whisper(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {

@@ -82,7 +82,7 @@ public class Faction {
     protected DuneTopic chat;
     @Exclude
     protected DuneTopic allianceThread;
-    public boolean refreshedForBiddingButtonLayout;
+    public boolean refreshedForBiddingActionsEmbed;
 
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
