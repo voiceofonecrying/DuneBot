@@ -23,17 +23,14 @@ public class BiddingButtons implements Pressable {
     private static void passOnce(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().pass(game, faction);
-        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
-
         discordGame.queueMessage("You will pass the next bid.");
-        ShowCommands.sendBiddingButtons(discordGame, faction, infoChannelName);
+        ShowCommands.sendBiddingActions(discordGame, game, faction);
         discordGame.pushGame();
     }
 
     private static void toggleAutoPassTurn(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().setAutoPassEntireTurn(game, faction, !faction.isAutoBidTurn());
-        String infoChannelName = faction.getInfoChannelPrefix()+ "-info";
         if (!faction.isAutoBidTurn()) {
             discordGame.queueMessage("You will not auto-pass on every card this round.");
         } else {
@@ -43,14 +40,13 @@ public class BiddingButtons implements Pressable {
             else
                 discordGame.queueMessage("You will auto-pass on every card this round.");
         }
-        ShowCommands.sendBiddingButtons(discordGame, faction, infoChannelName);
+        ShowCommands.sendBiddingActions(discordGame, game, faction);
         discordGame.pushGame();
     }
 
     private static void toggleAutoPass(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().setAutoPass(game, faction, !faction.isAutoBid());
-        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (!faction.isAutoBid()) {
             discordGame.queueMessage("You will not auto-pass on this card.");
         } else {
@@ -60,20 +56,19 @@ public class BiddingButtons implements Pressable {
             else
                 discordGame.queueMessage("You will auto-pass on this card.");
         }
-        ShowCommands.sendBiddingButtons(discordGame, faction, infoChannelName);
+        ShowCommands.sendBiddingActions(discordGame, game, faction);
         discordGame.pushGame();
     }
 
-    private static void toggleOutbidAlly(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void toggleOutbidAlly(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.setOutbidAlly(!faction.isOutbidAlly());
-        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (!faction.isOutbidAlly()) {
             discordGame.queueMessage("You will not outbid your ally.");
         } else {
             discordGame.queueMessage("You will have the chance to outbid your ally.");
         }
-        ShowCommands.sendBiddingButtons(discordGame, faction, infoChannelName);
+        ShowCommands.sendBiddingActions(discordGame, game, faction);
         discordGame.pushGame();
     }
 }

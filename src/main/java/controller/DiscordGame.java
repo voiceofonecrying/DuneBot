@@ -368,9 +368,9 @@ public class DiscordGame {
 
         for (Faction f : game.getFactions()) {
             // Temporary "migration" to ensure all -info channels get refreshed before presenting new bidding button layout.
-            if (!f.refreshedForBiddingButtonLayout) {
+            if (!f.refreshedForBiddingActionsEmbed) {
                 f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-                f.refreshedForBiddingButtonLayout = true;
+                f.refreshedForBiddingActionsEmbed = true;
             }
             // End Temporary
             f.setLedger(getFactionLedger(f));
