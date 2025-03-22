@@ -11,6 +11,7 @@ import model.factions.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -364,13 +365,7 @@ public class ShowCommands {
         else
             discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("graphic", "Try Graphic mode. It's cool and beautiful!")).build());
 
-        if (!(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
-            if (faction.isDecliningCharity())
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.success("charity-accept", "Accept CHOAM charity")).build());
-            else
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.danger("charity-decline", "Decline CHOAM charity to hide if you are poor")).build());
-        }
-
+        sendCharityAction(discordGame, faction, false);
         if (faction instanceof RicheseFaction) {
             Territory territory = game.getTerritories().values().stream()
                     .filter(Territory::hasRicheseNoField)
@@ -404,40 +399,51 @@ public class ShowCommands {
             playCardMenu.addOption("Play Amal to halve all players' spice totals", "Amal");
         }
 
-        if (faction.hasAlly()) {
-//            MessageCreateBuilder builder = new MessageCreateBuilder();
-//            EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
-//            embedBuilder.setTitle("**Alliance Actions**");
-//            builder.addEmbeds(embedBuilder.build());
-//            discordGame.queueMessage(infoChannelName, builder);
-            String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
-            switch (faction) {
-                // Also BT, Fremen, Guild, Richese
-                // Future - Moritani, Ix, Ecaz
-                case AtreidesFaction atreides -> {
-                    String message = "You are currently " + (atreides.isGrantingAllyTreacheryPrescience() ? "granting " : "denying ") + Emojis.TREACHERY + " Prescience to " + allyEmoji;
-                    if (atreides.isGrantingAllyTreacheryPrescience())
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("atreides-ally-treachery-prescience-no", "Deny Bidding Prescience"))).build());
-                    else
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("atreides-ally-treachery-prescience-yes", "Grant Bidding Prescience"))).build());
-                    message = "You are currently " + (atreides.isDenyingAllyBattlePrescience() ? "denying " : "granting ") + "Battle Prescience to " + allyEmoji;
-                    if (atreides.isDenyingAllyBattlePrescience())
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("atreides-ally-battle-prescience-yes", "Grant Battle Prescience"))).build());
-                    else
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("atreides-ally-battle-prescience-n0", "Deny Battle Prescience"))).build());
-                }
-                case BGFaction bg -> {
-                    String message = "You are currently " + (bg.isDenyingAllyVoice() ? "denying " : "granting ") + "The Voice to " + allyEmoji;
-                    if (bg.isDenyingAllyVoice())
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.success("bg-ally-voice-yes", "Grant The Voice"))).build());
-                    else
-                        discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(List.of(Button.danger("bg-ally-voice-no", "Deny The Voice"))).build());
-                }
-                default -> {
-                }
+        sendAllySpiceSupportButtons(discordGame, game, faction, false);
+        sendAllianceActions(discordGame, game, faction, false);
+        if (game.isInBiddingPhase()) {
+            sendBiddingActions(discordGame, game, faction, false);
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
+                playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
             }
+        }
+        sendCardInterruptActions(discordGame, game, faction, playCardMenu);
+    }
+
+    public static void sendCharityAction(DiscordGame discordGame, Faction faction, boolean isReply) throws ChannelNotFoundException {
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+        embedBuilder.setTitle("**Charity Option**");
+        embedBuilder.appendDescription("You may decline CHOAM charity to hide the fact you are low on spice.");
+        builder.addEmbeds(embedBuilder.build());
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
+        if (!(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
+            if (faction.isDecliningCharity()) {
+                builder = builder.addActionRow(Button.success("faction-charity-accept", "Accept CHOAM charity"));
+                if (isReply)
+                    discordGame.queueMessage(builder);
+                else
+                    discordGame.queueMessage(infoChannelName, builder.build());
+            } else {
+                builder = builder.addActionRow(Button.danger("faction-charity-decline", "Decline CHOAM charity"));
+                if (isReply)
+                    discordGame.queueMessage(builder);
+                else
+                    discordGame.queueMessage(infoChannelName, builder.build());
+            }
+        }
+    }
+
+    public static void sendAllySpiceSupportButtons(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException {
+        if (faction.hasAlly()) {
+            MessageCreateBuilder builder = new MessageCreateBuilder();
+            EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+            embedBuilder.setTitle(discordGame.tagEmojis("**Set Ally " + Emojis.SPICE + " Support**"));
+            String infoChannelName = faction.getInfoChannelPrefix() + "-info";
+            String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
+            List<String> descriptionMessages = new ArrayList<>();
             if (faction.getSpice() > 0 && !faction.isAllySpiceFinishedForTurn()) {
-                String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.\nSet ally " + Emojis.SPICE + " support:";
+                String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.";
                 List<Button> buttons = new ArrayList<>();
                 buttons.add(Button.primary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
 //                if (faction.getSpice() >= 4)
@@ -449,42 +455,90 @@ public class ShowCommands {
                 switch (faction) {
                     case GuildFaction guild -> {
                         if (guild.isAllySpiceForShipping()) {
-                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding AND shipping.\nSet ally " + Emojis.SPICE + " support:";
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding AND shipping.";
+                            if (faction.getSpiceForAlly() > 0)
+                                message += "\nShipping " + Emojis.SPICE + " will go to the bank, not to you.";
                             buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
                         } else {
-                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding ONLY.";
                             buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
                         }
                     }
                     case ChoamFaction choam -> {
                         if (choam.isAllySpiceForBattle()) {
-                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, AND battles.\nSet ally " + Emojis.SPICE + " support:";
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding, shipping, AND battles.";
+                            if (faction.getSpiceForAlly() > 0)
+                                message += "\nCombat " + Emojis.SPICE + " will go to the bank, not to you.";
                             buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
                         } else {
-                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding and shipping ONLY.\nSet ally " + Emojis.SPICE + " support:";
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping ONLY";
                             buttons.add(Button.danger("ally-support-battles", "Support battles"));
                         }
                     }
                     case EmperorFaction ignored ->
-                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to your ally for bidding, shipping, and battles.\nSet ally " + Emojis.SPICE + " support:";
+                            message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding, shipping, and battles";
                     default -> {
                     }
                 }
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addContent(message).addActionRow(buttons).build());
+                descriptionMessages.add(discordGame.tagEmojis(message));
+                embedBuilder.appendDescription(String.join("\n", descriptionMessages));
+                builder.addEmbeds(embedBuilder.build());
+                builder.addActionRow(buttons);
+                if (isReply)
+                    discordGame.queueMessage(builder);
+                else
+                    discordGame.queueMessage(infoChannelName, builder.build());
             }
         }
-
-        if (game.isInBiddingPhase()) {
-            sendBiddingActions(discordGame, game, faction);
-
-            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
-                playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
-            }
-        }
-        if (!playCardMenu.getOptions().isEmpty()) discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(playCardMenu.build()).build());
     }
 
-    public static void sendBiddingActions(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void sendAllianceActions(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException {
+        if (faction.hasAlly()) {
+            MessageCreateBuilder builder = new MessageCreateBuilder();
+            EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+            embedBuilder.setTitle("**Alliance Actions**");
+            String infoChannelName = faction.getInfoChannelPrefix() + "-info";
+            String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
+            List<String> descriptionMessages = new ArrayList<>();
+            switch (faction) {
+                // Also BT, Fremen, Guild, Richese
+                // Future - Moritani, Ix, Ecaz
+                case AtreidesFaction atreides -> {
+                    List<Button> buttons = new ArrayList<>();
+                    descriptionMessages.add("You are currently " + (atreides.isGrantingAllyTreacheryPrescience() ? "granting " : "denying ") + Emojis.TREACHERY + " Prescience to " + allyEmoji);
+                    if (atreides.isGrantingAllyTreacheryPrescience())
+                        buttons.add(Button.danger("atreides-ally-treachery-prescience-no", "Deny Bidding Prescience"));
+                    else
+                        buttons.add(Button.success("atreides-ally-treachery-prescience-yes", "Grant Bidding Prescience"));
+                    descriptionMessages.add("You are currently " + (atreides.isDenyingAllyBattlePrescience() ? "denying " : "granting ") + "Battle Prescience to " + allyEmoji);
+                    if (atreides.isDenyingAllyBattlePrescience())
+                        buttons.add(Button.success("atreides-ally-battle-prescience-yes", "Grant Battle Prescience"));
+                    else
+                        buttons.add(Button.danger("atreides-ally-battle-prescience-no", "Deny Battle Prescience"));
+                    builder.addActionRow(buttons);
+                }
+                case BGFaction bg -> {
+                    descriptionMessages.add("You are currently " + (bg.isDenyingAllyVoice() ? "denying " : "granting ") + "The Voice to " + allyEmoji);
+                    if (bg.isDenyingAllyVoice())
+                        builder.addActionRow(List.of(Button.success("bg-ally-voice-yes", "Grant The Voice")));
+                    else
+                        builder.addActionRow(List.of(Button.danger("bg-ally-voice-no", "Deny The Voice")));
+                }
+                default -> {
+                }
+            }
+            if (faction instanceof AtreidesFaction || faction instanceof BGFaction) {
+                embedBuilder.appendDescription(discordGame.tagEmojis(String.join("\n", descriptionMessages)));
+                builder.addEmbeds(embedBuilder.build());
+                if (isReply)
+                    discordGame.queueMessage(builder);
+                else
+                    discordGame.queueMessage(infoChannelName, builder.build());
+            }
+        }
+    }
+
+    public static void sendBiddingActions(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException, InvalidGameStateException {
         MessageCreateBuilder builder = new MessageCreateBuilder();
         EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
         embedBuilder.setTitle("**Bidding Actions**");
@@ -499,7 +553,7 @@ public class ShowCommands {
         embedBuilder.appendDescription("\n\nTo bid, select a single number from the list.\nAlso select +1 for an Incremental bid.\nPass One Time logs a single pass for you.\nAuto-Pass will be reset with the next card.\nAuto-Pass (Whole Round) will be reset next turn.\nOutbid Ally policy will persist until you change it.\n\nYou don't have to wait to be tagged to bid or pass.\nPlease use Auto-Passing whenever possible.");
         builder.addEmbeds(embedBuilder.build());
 
-        StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Place your bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
+        StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Select your max bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
         int maxPossibleBid = faction.getSpice();
         if (faction.hasAlly())
             maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
@@ -529,7 +583,36 @@ public class ShowCommands {
         builder.addActionRow(buttons);
 
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
-        discordGame.queueMessage(infoChannelName, builder.build());
+        if (isReply)
+            discordGame.queueMessage(builder);
+        else
+            discordGame.queueMessage(infoChannelName, builder.build());
+    }
+
+    public static void updateBiddingActions(DiscordGame discordGame, Game game, Faction faction) throws InvalidGameStateException, ChannelNotFoundException {
+        String infoChannelName = faction.getInfoChannelPrefix() + "-info";
+        TextChannel channel = discordGame.getTextChannel(infoChannelName);
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
+        List<Message> messagesToDelete = messages.stream().filter(message -> message.getEmbeds().stream().anyMatch(e -> e.getTitle().equals("**Bidding Actions**"))).toList();
+        for (Message message : messagesToDelete) {
+            try {
+                message.delete().complete();
+            } catch (Exception ignore) {}
+        }
+        sendBiddingActions(discordGame, game, faction, false);
+    }
+
+    public static void sendCardInterruptActions(DiscordGame discordGame, Game game, Faction faction, StringSelectMenu.Builder playCardMenu) throws ChannelNotFoundException {
+        if (!playCardMenu.getOptions().isEmpty()) {
+            MessageCreateBuilder builder = new MessageCreateBuilder();
+            EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
+            embedBuilder.setTitle("**Treachery Card Actions**");
+            embedBuilder.appendDescription("You may play a Treachery Card for a bot-supported action.");
+            builder.addEmbeds(embedBuilder.build());
+            String infoChannelName = faction.getInfoChannelPrefix() + "-info";
+            builder.addActionRow(playCardMenu.build());
+            discordGame.queueMessage(infoChannelName, builder.build());
+        }
     }
 
     private static FileUpload drawGameBoard(Game game) throws IOException {

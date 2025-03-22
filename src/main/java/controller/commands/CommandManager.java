@@ -5,6 +5,7 @@ import controller.Alliance;
 import controller.CommandCompletionGuard;
 import controller.DiscordGame;
 import controller.Queue;
+import controller.buttons.ButtonManager;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -75,7 +76,7 @@ public class CommandManager extends ListenerAdapter {
             try {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
-                Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+                Faction faction = ButtonManager.getButtonPresser(event, game);
                 PlayerCommands.bid(event, discordGame, game, useExact, bid);
                 discordGame.pushGame();
                 showFactionInfo(faction.getName(), discordGame);

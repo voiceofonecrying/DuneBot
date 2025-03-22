@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -22,13 +23,8 @@ public class AtreidesButtons implements Pressable {
     private static void allyBattlePrescience(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         AtreidesFaction atreides = (AtreidesFaction) ButtonManager.getButtonPresser(event, game);
         String action = event.getComponentId().replace("atreides-ally-battle-prescience-", "");
-        if (action.equals("yes")) {
-            atreides.setDenyingAllyBattlePrescience(false);
-            discordGame.queueMessage("You will allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        } else {
-            atreides.setDenyingAllyBattlePrescience(true);
-            discordGame.queueMessage("You will not allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        }
+        atreides.setDenyingAllyBattlePrescience(action.equals("no"));
+        ShowCommands.sendAllianceActions(discordGame, game, atreides, true);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -36,13 +32,8 @@ public class AtreidesButtons implements Pressable {
     private static void allyTreacheryCardPrescience(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         AtreidesFaction atreides = (AtreidesFaction) ButtonManager.getButtonPresser(event, game);
         String action = event.getComponentId().replace("atreides-ally-treachery-prescience-", "");
-        if (action.equals("yes")) {
-            atreides.setGrantingAllyTreacheryPrescience(true);
-            discordGame.queueMessage("You will allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        } else {
-            atreides.setGrantingAllyTreacheryPrescience(false);
-            discordGame.queueMessage("You will not allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        }
+        atreides.setGrantingAllyTreacheryPrescience(action.equals("yes"));
+        ShowCommands.sendAllianceActions(discordGame, game, atreides, true);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

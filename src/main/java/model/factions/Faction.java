@@ -82,7 +82,7 @@ public class Faction {
     protected DuneTopic chat;
     @Exclude
     protected DuneTopic allianceThread;
-    public boolean refreshedForBiddingActionsEmbed;
+    public boolean refreshedForAllActionsUX;
 
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
@@ -928,7 +928,6 @@ public class Faction {
 
     public void setSpiceForAlly(int spiceForAlly) {
         this.spiceForAlly = spiceForAlly;
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public String getSpiceSupportPhasesString() {

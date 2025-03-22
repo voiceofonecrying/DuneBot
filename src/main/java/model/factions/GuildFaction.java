@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import enums.UpdateType;
 import model.Game;
 import model.Territory;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +38,6 @@ public class GuildFaction extends Faction {
 
     public void setAllySpiceForShipping(boolean allySpiceForShipping) {
         this.allySpiceForShipping = allySpiceForShipping;
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     @Override

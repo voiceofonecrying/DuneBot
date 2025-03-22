@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.commands.RunCommands;
+import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
@@ -62,13 +63,8 @@ public class BGButtons implements Pressable {
     private static void allyVoice(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         BGFaction bg = (BGFaction) ButtonManager.getButtonPresser(event, game);
         String action = event.getComponentId().replace("bg-ally-voice-", "");
-        if (action.equals("yes")) {
-            bg.setDenyingAllyVoice(false);
-            discordGame.queueMessage("You will allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        } else {
-            bg.setDenyingAllyVoice(true);
-            discordGame.queueMessage("You will not allow " + Emojis.TREACHERY + " Prescience to be published to your ally thread.");
-        }
+        bg.setDenyingAllyVoice(action.equals("no"));
+        ShowCommands.sendAllianceActions(discordGame, game, bg, true);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

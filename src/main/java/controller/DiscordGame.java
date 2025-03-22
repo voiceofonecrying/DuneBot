@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -368,9 +369,9 @@ public class DiscordGame {
 
         for (Faction f : game.getFactions()) {
             // Temporary "migration" to ensure all -info channels get refreshed before presenting new bidding button layout.
-            if (!f.refreshedForBiddingActionsEmbed) {
+            if (!f.refreshedForAllActionsUX) {
                 f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-                f.refreshedForBiddingActionsEmbed = true;
+                f.refreshedForAllActionsUX = true;
             }
             // End Temporary
             f.setLedger(getFactionLedger(f));
@@ -620,6 +621,8 @@ public class DiscordGame {
     public void queueDeleteMessage() {
         if (event instanceof ButtonInteractionEvent) {
             discordRequests.add(new DiscordRequest(((ButtonInteractionEvent) event).getMessage().delete()));
+        } else if (event instanceof StringSelectInteractionEvent) {
+            discordRequests.add(new DiscordRequest(((StringSelectInteractionEvent) event).getMessage().delete()));
         } else {
             throw new IllegalArgumentException("Unknown event type");
         }
@@ -644,6 +647,8 @@ public class DiscordGame {
             return ((SlashCommandInteractionEvent) event).getHook();
         else if (event instanceof ButtonInteractionEvent)
             return ((ButtonInteractionEvent) event).getHook();
+        else if (event instanceof StringSelectInteractionEvent)
+            return ((StringSelectInteractionEvent) event).getHook();
         else
             throw new IllegalArgumentException("Unknown event type");
     }

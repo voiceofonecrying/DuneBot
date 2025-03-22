@@ -91,26 +91,26 @@ public class PlayerCommands {
         return "You have canceled your battle plan.";
     }
 
-    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static String pass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().pass(game, faction);
-        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        ShowCommands.updateBiddingActions(discordGame, game, faction);
         return response;
     }
 
-    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static String setAutoPass(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().setAutoPass(game, faction, enabled);
-        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        ShowCommands.updateBiddingActions(discordGame, game, faction);
         return response;
     }
 
-    private static String setAutoPassEntireTurn(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static String setAutoPassEntireTurn(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         boolean enabled = discordGame.required(autoPass).getAsBoolean();
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().setAutoPassEntireTurn(game, faction, enabled);
-        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        ShowCommands.updateBiddingActions(discordGame, game, faction);
         return response;
     }
 
@@ -123,7 +123,7 @@ public class PlayerCommands {
         if (discordGame.optional(autoPassAfterMax) != null)
             enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
         String response = game.getBidding().bid(game, faction, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
-        ShowCommands.showFactionInfo(faction.getName(), discordGame);
+        ShowCommands.updateBiddingActions(discordGame, game, faction);
         return response;
     }
 

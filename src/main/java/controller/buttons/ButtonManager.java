@@ -1,6 +1,5 @@
 package controller.buttons;
 
-import constants.Emojis;
 import controller.CommandCompletionGuard;
 import controller.Queue;
 import controller.commands.ShowCommands;
@@ -13,6 +12,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ public class ButtonManager extends ListenerAdapter {
         allowModButtonPress = true;
     }
 
-    public static Faction getButtonPresser(ButtonInteractionEvent event, Game game) {
+    public static Faction getButtonPresser(GenericComponentInteractionCreateEvent event, Game game) {
         try {
             if (allowModButtonPress) {
                 String channelName = event.getChannel() instanceof ThreadChannel ?
@@ -142,15 +142,13 @@ public class ButtonManager extends ListenerAdapter {
                     }
                     case "charity-accept" -> {
                         getButtonPresser(event, game).setDecliningCharity(false);
-                        discordGame.queueMessage("You will receive CHOAM charity if you have less than 2 " + Emojis.SPICE + ".");
                         discordGame.pushGame();
-                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                        ShowCommands.sendCharityAction(discordGame, getButtonPresser(event, game), true);
                     }
                     case "charity-decline" -> {
                         getButtonPresser(event, game).setDecliningCharity(true);
-                        discordGame.queueMessage("You will not receive CHOAM charity even if you have less than 2 " + Emojis.SPICE + ".");
                         discordGame.pushGame();
-                        ShowCommands.writeFactionInfo(discordGame, getButtonPresser(event, game));
+                        ShowCommands.sendCharityAction(discordGame, getButtonPresser(event, game), true);
                     }
                     case "extortion-pay" -> {
                         MentatPause mentatPause = game.getMentatPause();

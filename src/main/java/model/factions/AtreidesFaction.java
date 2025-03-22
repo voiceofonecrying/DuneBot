@@ -107,7 +107,6 @@ public class AtreidesFaction extends Faction {
     public void setDenyingAllyBattlePrescience(boolean denyingAllyBattlePrescience) {
         this.denyingAllyBattlePrescience = denyingAllyBattlePrescience;
         ledger.publish("You are " + (denyingAllyBattlePrescience ? "denying " : "granting ") + "Battle Prescience to " + Emojis.getFactionEmoji(ally));
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public boolean isGrantingAllyTreacheryPrescience() {
@@ -117,6 +116,5 @@ public class AtreidesFaction extends Faction {
     public void setGrantingAllyTreacheryPrescience(boolean grantingAllyTreacheryPrescience) {
         this.grantingAllyTreacheryPrescience = grantingAllyTreacheryPrescience;
         ledger.publish("You are " + (grantingAllyTreacheryPrescience ? "granting " : "denying ") + Emojis.TREACHERY + " Prescience to " + Emojis.getFactionEmoji(ally));
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 }
