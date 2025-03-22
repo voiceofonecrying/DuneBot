@@ -252,6 +252,5 @@ public class BGFaction extends Faction {
     public void setDenyingAllyVoice(boolean denyingAllyVoice) {
         this.denyingAllyVoice = denyingAllyVoice;
         ledger.publish("You are " + (denyingAllyVoice ? "denying " : "granting ") + "The Voice to " + Emojis.getFactionEmoji(ally));
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 }

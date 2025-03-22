@@ -24,7 +24,7 @@ public class BiddingButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getBidding().pass(game, faction);
         discordGame.queueMessage("You will pass the next bid.");
-        ShowCommands.sendBiddingActions(discordGame, game, faction);
+        ShowCommands.sendBiddingActions(discordGame, game, faction, true);
         discordGame.pushGame();
     }
 
@@ -40,7 +40,7 @@ public class BiddingButtons implements Pressable {
             else
                 discordGame.queueMessage("You will auto-pass on every card this round.");
         }
-        ShowCommands.sendBiddingActions(discordGame, game, faction);
+        ShowCommands.sendBiddingActions(discordGame, game, faction, true);
         discordGame.pushGame();
     }
 
@@ -56,7 +56,7 @@ public class BiddingButtons implements Pressable {
             else
                 discordGame.queueMessage("You will auto-pass on this card.");
         }
-        ShowCommands.sendBiddingActions(discordGame, game, faction);
+        ShowCommands.sendBiddingActions(discordGame, game, faction, true);
         discordGame.pushGame();
     }
 
@@ -68,7 +68,7 @@ public class BiddingButtons implements Pressable {
         } else {
             discordGame.queueMessage("You will have the chance to outbid your ally.");
         }
-        ShowCommands.sendBiddingActions(discordGame, game, faction);
+        ShowCommands.sendBiddingActions(discordGame, game, faction, true);
         discordGame.pushGame();
     }
 }

@@ -2,7 +2,6 @@ package model.factions;
 
 import constants.Emojis;
 import enums.ChoamInflationType;
-import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
@@ -163,7 +162,6 @@ public class ChoamFaction extends Faction {
 
     public void setAllySpiceForBattle(boolean allySpiceForBattle) {
         this.allySpiceForBattle = allySpiceForBattle;
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     @Override
