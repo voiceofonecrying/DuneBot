@@ -61,7 +61,7 @@ public class CommandManager extends ListenerAdapter {
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         if (event.getComponentId().startsWith("bidding-menu-")) {
-            int bid = 0;
+            int bid;
             boolean useExact = true;
             if (event.getInteraction().getSelectedOptions().size() == 2) {
                 if (!event.getInteraction().getSelectedOptions().get(0).getValue().equals("auto-increment")) {
@@ -72,16 +72,15 @@ public class CommandManager extends ListenerAdapter {
                 bid = Integer.parseInt(event.getInteraction().getSelectedOptions().get(1).getValue());
                 useExact = false;
             } else bid = Integer.parseInt(event.getInteraction().getSelectedOptions().getFirst().getValue());
-            event.reply("Your bid has been submitted.").queue();
             try {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
                 Faction faction = ButtonManager.getButtonPresser(event, game);
-                PlayerCommands.bid(event, discordGame, game, useExact, bid);
+                game.getBidding().bid(game, faction, useExact, bid, null, null);
                 discordGame.pushGame();
-                showFactionInfo(faction.getName(), discordGame);
+                ShowCommands.updateBiddingActions(discordGame, game, faction);
                 discordGame.sendAllMessages();
-            } catch (ChannelNotFoundException | InvalidGameStateException | IOException e) {
+            } catch (ChannelNotFoundException | InvalidGameStateException e) {
                 throw new RuntimeException(e);
             }
         } else if (event.getComponentId().startsWith("play-card-menu-")) {
@@ -90,7 +89,7 @@ public class CommandManager extends ListenerAdapter {
             try {
                 DiscordGame discordGame = new DiscordGame(event);
                 Game game = discordGame.getGame();
-                Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
+                Faction faction = ButtonManager.getButtonPresser(event, game);
                 switch (interaction) {
                     case "Karama-buy": {
                         faction.discard("Karama");
@@ -130,7 +129,7 @@ public class CommandManager extends ListenerAdapter {
                         game.reviveForces(faction, false, revive, starred);
                         break;
                     }
-            }
+                }
                 if (interaction.startsWith("Tleilaxu Ghola-leader-")) {
                     faction.discard("Tleilaxu Ghola");
                     faction.reviveLeader(interaction.split("-")[2], 0);
