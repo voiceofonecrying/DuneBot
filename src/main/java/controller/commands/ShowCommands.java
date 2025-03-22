@@ -407,7 +407,7 @@ public class ShowCommands {
                 playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
             }
         }
-        sendCardInterruptActions(discordGame, game, faction, playCardMenu);
+        sendCardInterruptActions(discordGame, faction, playCardMenu);
     }
 
     public static void sendCharityAction(DiscordGame discordGame, Faction faction, boolean isReply) throws ChannelNotFoundException {
@@ -417,7 +417,7 @@ public class ShowCommands {
         embedBuilder.appendDescription("You may decline CHOAM charity to hide the fact you are low on spice.");
         builder.addEmbeds(embedBuilder.build());
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
-        if (!(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
+        if (faction.getSpice() < 2 && !(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
             if (faction.isDecliningCharity()) {
                 builder = builder.addActionRow(Button.success("faction-charity-accept", "Accept CHOAM charity"));
                 if (isReply)
@@ -553,7 +553,7 @@ public class ShowCommands {
         embedBuilder.appendDescription("\n\nTo bid, select a single number from the list.\nAlso select +1 for an Incremental bid.\nPass One Time logs a single pass for you.\nAuto-Pass will be reset with the next card.\nAuto-Pass (Whole Round) will be reset next turn.\nOutbid Ally policy will persist until you change it.\n\nYou don't have to wait to be tagged to bid or pass.\nPlease use Auto-Passing whenever possible.");
         builder.addEmbeds(embedBuilder.build());
 
-        StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Select your max bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your bid limit instead of exact", "auto-increment");
+        StringSelectMenu.Builder menu = StringSelectMenu.create("bidding-menu-" + faction.getName()).setPlaceholder("Select your max bid").setRequiredRange(1,2).setDefaultValues("0").addOption("Bid +1 up to your max bid instead of exactly the max", "auto-increment");
         int maxPossibleBid = faction.getSpice();
         if (faction.hasAlly())
             maxPossibleBid += game.getFaction(faction.getAlly()).getSpiceForAlly();
@@ -593,7 +593,7 @@ public class ShowCommands {
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         TextChannel channel = discordGame.getTextChannel(infoChannelName);
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        List<Message> messagesToDelete = messages.stream().filter(message -> message.getEmbeds().stream().anyMatch(e -> e.getTitle().equals("**Bidding Actions**"))).toList();
+        List<Message> messagesToDelete = messages.stream().filter(message -> message.getEmbeds().stream().anyMatch(e -> e.getTitle() != null && e.getTitle().equals("**Bidding Actions**"))).toList();
         for (Message message : messagesToDelete) {
             try {
                 message.delete().complete();
@@ -602,7 +602,7 @@ public class ShowCommands {
         sendBiddingActions(discordGame, game, faction, false);
     }
 
-    public static void sendCardInterruptActions(DiscordGame discordGame, Game game, Faction faction, StringSelectMenu.Builder playCardMenu) throws ChannelNotFoundException {
+    public static void sendCardInterruptActions(DiscordGame discordGame, Faction faction, StringSelectMenu.Builder playCardMenu) throws ChannelNotFoundException {
         if (!playCardMenu.getOptions().isEmpty()) {
             MessageCreateBuilder builder = new MessageCreateBuilder();
             EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
