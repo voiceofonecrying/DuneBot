@@ -2,16 +2,20 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.commands.RunCommands;
+import controller.commands.SetupCommands;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.Game;
 import model.Territory;
 import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static controller.commands.BGCommands.advise;
 
@@ -26,6 +30,8 @@ public class BGButtons implements Pressable {
         else if (event.getComponentId().startsWith("bg-dont-flip-")) dontFlip(event, game, discordGame);
         else if (event.getComponentId().startsWith("bg-ht")) advise(discordGame, game, game.getTerritory("Polar Sink"), 2);
         else if (event.getComponentId().startsWith("bg-ally-voice-")) allyVoice(event, game, discordGame);
+        else if (event.getComponentId().startsWith("bg-prediction-faction-")) predictionFaction(event, game, discordGame);
+        else if (event.getComponentId().startsWith("bg-prediction-turn-")) predictionTurn(event, game, discordGame);
     }
 
     private static void bgFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
@@ -65,6 +71,26 @@ public class BGButtons implements Pressable {
         String action = event.getComponentId().replace("bg-ally-voice-", "");
         bg.setDenyingAllyVoice(action.equals("no"));
         ShowCommands.sendAllianceActions(discordGame, game, bg, true);
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
+
+    private static void predictionFaction(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        BGFaction bg = (BGFaction) ButtonManager.getButtonPresser(event, game);
+        String factionName = event.getComponentId().replace("bg-prediction-faction-", "");
+        bg.setPredictionFactionName(factionName);
+        List<DuneChoice> choices = IntStream.rangeClosed(1, 10).mapToObj(i -> new DuneChoice("bg-prediction-turn-" + i, String.valueOf(i))).toList();
+        bg.getChat().reply("Which turn do you predict " + Emojis.getFactionEmoji(bg.getPredictionFactionName()) + " to win? " + bg.getPlayer(), choices);
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
+
+    private static void predictionTurn(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        BGFaction bg = (BGFaction) ButtonManager.getButtonPresser(event, game);
+        int turn = Integer.parseInt(event.getComponentId().replace("bg-prediction-turn-", ""));
+        bg.setPredictionRound(turn);
+        discordGame.queueMessage("You selected " + Emojis.getFactionEmoji(bg.getPredictionFactionName()) + " on turn " + turn);
+        SetupCommands.advance(event.getGuild(), discordGame, game);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

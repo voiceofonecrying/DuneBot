@@ -452,7 +452,8 @@ public class SetupCommands {
 
     public static StepStatus bgPredictionStep(Game game) {
         Faction bg = game.getFaction("BG");
-        bg.getChat().publish(bg.getPlayer() + " Please make your secret prediction.");
+        List<DuneChoice> choices = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> new DuneChoice("primary", "bg-prediction-faction-" + f.getName(), null, f.getEmoji(), false)).toList();
+        bg.getChat().publish("Which faction to you predict to win? " + bg.getPlayer(), choices);
         return StepStatus.STOP;
     }
 
