@@ -92,6 +92,5 @@ public class BGButtons implements Pressable {
         discordGame.queueMessage("You selected " + Emojis.getFactionEmoji(bg.getPredictionFactionName()) + " on turn " + turn);
         SetupCommands.advance(event.getGuild(), discordGame, game);
         discordGame.queueDeleteMessage();
-        discordGame.pushGame();
     }
 }
