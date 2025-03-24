@@ -461,42 +461,21 @@ public class SetupCommands {
 
     public static StepStatus fremenForcesStep(Game game) {
         Faction fremen = game.getFaction("Fremen");
-        game.getGameActions().publish(
-                MessageFormat.format(
-                        "{0} Please provide the placement of your 10 starting {1} and {2} forces including sector. {3}",
-                        fremen.getEmoji(),
-                        Emojis.FREMEN_TROOP,
-                        Emojis.FREMEN_FEDAYKIN,
-                        fremen.getPlayer()
-                )
-        );
-
+        game.getGameActions().publish(fremen.getEmoji() + " will place their starting 10 " + Emojis.FREMEN_TROOP + " and " + Emojis.FREMEN_FEDAYKIN);
+        ((FremenFaction) fremen).presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 
     public static StepStatus bgForceStep(Game game) {
         Faction bg = game.getFaction("BG");
-        game.getGameActions().publish(
-                MessageFormat.format(
-                        "{0} will place their starting {1} or {2}",
-                        bg.getEmoji(),
-                        Emojis.BG_ADVISOR,
-                        Emojis.BG_FIGHTER
-                )
-        );
+        game.getGameActions().publish(bg.getEmoji() + " will place their starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER);
         ((BGFaction) bg).presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 
     public static StepStatus moritaniForceStep(Game game) {
         Faction moritani = game.getFaction("Moritani");
-        game.getGameActions().publish(
-                MessageFormat.format(
-                        "{0} will place their starting 6 {1}",
-                        moritani.getEmoji(),
-                        Emojis.MORITANI_TROOP
-                )
-        );
+        game.getGameActions().publish(moritani.getEmoji() + " will place their starting 6 " + Emojis.MORITANI_TROOP);
         ((MoritaniFaction) moritani).presentStartingForcesChoices();
         return StepStatus.STOP;
     }
