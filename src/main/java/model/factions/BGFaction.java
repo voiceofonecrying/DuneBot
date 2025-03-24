@@ -78,9 +78,10 @@ public class BGFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void presentInitialForceChoices() {
+    @Override
+    public void presentStartingForcesChoices() {
         shipment.clear();
-        String buttonSuffix = "-bg-initial-force";
+        String buttonSuffix = "-starting-forces";
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
         choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
@@ -89,8 +90,9 @@ public class BGFaction extends Faction {
         chat.publish("Where would you like to place your starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER + "? " + player, choices);
     }
 
-    public void presentInitialForceExecutionChoices() {
-        String buttonSuffix = "-bg-initial-force";
+    @Override
+    public void presentStartingForcesExecutionChoices() {
+        String buttonSuffix = "-starting-forces";
         shipment.setForce(1);
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
@@ -98,6 +100,18 @@ public class BGFaction extends Faction {
         Territory territory = game.getTerritory(shipment.getTerritoryName());
         String forceEmoji = (territory.getForces().isEmpty() || shipment.getTerritoryName().equals("Polar Sink")) ? Emojis.BG_FIGHTER : Emojis.BG_ADVISOR;
         chat.reply("Placing **1 " + forceEmoji + "** in " + shipment.getTerritoryName(), choices);
+    }
+
+    @Override
+    public boolean placeChosenStartingForces() throws InvalidGameStateException {
+        chat.reply("Initial force placement complete.");
+        String territoryName = shipment.getTerritoryName();
+        Territory territory = game.getTerritory(territoryName);
+        if (territory.getForces().isEmpty())
+            executeShipment(game, false, true);
+        else
+            advise(game, territory, 1);
+        return true;
     }
 
     @Override

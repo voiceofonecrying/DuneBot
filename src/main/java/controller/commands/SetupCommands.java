@@ -484,7 +484,7 @@ public class SetupCommands {
                         Emojis.BG_FIGHTER
                 )
         );
-        ((BGFaction) bg).presentInitialForceChoices();
+        ((BGFaction) bg).presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 
@@ -497,7 +497,7 @@ public class SetupCommands {
                         Emojis.MORITANI_TROOP
                 )
         );
-        ((MoritaniFaction) moritani).presentInitialForceChoices();
+        ((MoritaniFaction) moritani).presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 

@@ -1271,6 +1271,23 @@ public class Faction {
         game.getTurnSummary().publish(emoji + " has drawn 2 Traitor cards for " + reason + ".");
     }
 
+    public void presentStartingForcesChoices() throws InvalidGameStateException {
+        throw new InvalidGameStateException(name + " does not need to place starting forces now.");
+    }
+
+    public void presentStartingForcesExecutionChoices() throws InvalidGameStateException {
+        throw new InvalidGameStateException(name + " does not need to place starting forces now.");
+    }
+
+    /**
+     * Places starting forces in the specified territory.
+     *
+     * @return true if placement is complete, false if more forces need to be placed.
+     */
+    public boolean placeChosenStartingForces() throws InvalidGameStateException {
+        throw new InvalidGameStateException(name + " does not need to place starting forces now.");
+    }
+
     public int countFreeStarredRevival() {
         return 0;
     }
