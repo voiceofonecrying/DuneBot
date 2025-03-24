@@ -478,14 +478,13 @@ public class SetupCommands {
         Faction bg = game.getFaction("BG");
         game.getGameActions().publish(
                 MessageFormat.format(
-                        "{0} Please provide the placement of your starting {1} or {2}. {3}",
+                        "{0} will place their starting {1} or {2}",
                         bg.getEmoji(),
                         Emojis.BG_ADVISOR,
-                        Emojis.BG_FIGHTER,
-                        bg.getPlayer()
+                        Emojis.BG_FIGHTER
                 )
         );
-
+        ((BGFaction) bg).presentInitialForceChoices();
         return StepStatus.STOP;
     }
 

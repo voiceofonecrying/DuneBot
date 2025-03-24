@@ -78,6 +78,27 @@ public class BGFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public void presentInitialForceChoices() {
+        shipment.clear();
+        String buttonSuffix = "-bg-initial-force";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        chat.publish("Where would you like to place your starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER + "? " + player, choices);
+    }
+
+    public void presentInitialForceExecutionChoices() {
+        shipment.setForce(1);
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("execute-shipment-bg-initial-force", "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment-bg-initial-force", "Start over"));
+        Territory territory = game.getTerritory(shipment.getTerritoryName());
+        String forceEmoji = (territory.getForces().isEmpty() || shipment.getTerritoryName().equals("Polar Sink")) ? Emojis.BG_FIGHTER : Emojis.BG_ADVISOR;
+        chat.reply("Placing **1 " + forceEmoji + "** in " + shipment.getTerritoryName(), choices);
+    }
+
     @Override
     public int homeworldDialAdvantage(Game game, Territory territory) {
         String territoryName = territory.getTerritoryName();
