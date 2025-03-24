@@ -46,10 +46,6 @@ public class FremenFaction extends Faction {
         return startingForcesPlaced;
     }
 
-    public void setStartingForcesPlaced(int startingForcesPlaced) {
-        this.startingForcesPlaced = startingForcesPlaced;
-    }
-
     @Override
     public void presentStartingForcesChoices() {
         shipment.clear();

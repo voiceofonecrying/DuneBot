@@ -108,6 +108,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 String id = button.getId();
                 if (id != null && (id.startsWith("pass-shipment") ||
                         id.startsWith("reset-shipment") ||
+                        id.startsWith("reset-shipping-forces") ||
                         id.startsWith("add-force") ||
                         id.startsWith("add-special-force") ||
                         id.startsWith("planetologist-add-force") ||
@@ -666,7 +667,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 message = isStartingForces ? "" : "You have no troops in reserves to ship. ";
                 if (faction.getShipment().getForce() != 0 || faction.getShipment().getSpecialForce() != 0 || faction.getShipment().getNoField() != 0)
                     message += currentlyShipping;
-                discordGame.queueMessage(message);
+                faction.getChat().reply(message, List.of(new DuneChoice("secondary", "reset-shipping-forces" + buttonSuffix, "Reset forces")));
             }
 
             if (faction instanceof RicheseFaction || faction.getAlly().equals("Richese")) {
@@ -702,8 +703,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (!guildAmbassador && !isStartingForces && faction.getShipment().hasShipped())
                 execute.setDisabled(true);
             choices.add(execute);
-            choices.add(new DuneChoice("danger", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
-            choices.add(new DuneChoice("danger", "reset-shipment" + buttonSuffix, "Start over"));
+            choices.add(new DuneChoice("secondary", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
+            choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
             if (!guildAmbassador && !enterDiscoveryToken && faction.hasTreacheryCard("Karama")) {
                 DuneChoice choice = new DuneChoice("secondary", "karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)");
                 choice.setDisabled(disableConfirmButton);
