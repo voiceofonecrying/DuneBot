@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
 import model.Territory;
@@ -14,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class FremenFaction extends Faction {
+    int startingForcesPlaced;
     List<String> wormRides;
     boolean wormRideActive;
     int wormsToPlace;
@@ -38,6 +40,36 @@ public class FremenFaction extends Faction {
         southernHemisphere.addForces(name, 17);
         southernHemisphere.addForces(name + "*", 3);
         game.getHomeworlds().put(name, homeworld);
+    }
+
+    public int getStartingForcesPlaced() {
+        return startingForcesPlaced;
+    }
+
+    @Override
+    public void presentStartingForcesChoices() {
+        shipment.clear();
+        String buttonSuffix = "-starting-forces";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("ship" + buttonSuffix + "-Sietch Tabr", "Sietch Tabr"));
+        choices.add(new DuneChoice("ship" + buttonSuffix + "-False Wall South", "False Wall South"));
+        choices.add(new DuneChoice("ship" + buttonSuffix + "-False Wall West", "False Wall West"));
+        chat.reply("You have " + (10 - startingForcesPlaced) + " total " + Emojis.FREMEN_TROOP + " " + Emojis.FREMEN_FEDAYKIN + " remaining to place.\nWhere would you like to place next? " + player, choices);
+    }
+
+    @Override
+    public boolean placeChosenStartingForces() throws InvalidGameStateException {
+        startingForcesPlaced += shipment.getForce() + shipment.getSpecialForce();
+        if (startingForcesPlaced > 10)
+            throw new InvalidGameStateException("Fremen cannot place " + startingForcesPlaced + " starting forces.");
+        executeShipment(game, false, true);
+        if (startingForcesPlaced == 10) {
+            chat.reply("Initial force placement complete.");
+            return true;
+        } else {
+            presentStartingForcesChoices();
+            return false;
+        }
     }
 
     @Override

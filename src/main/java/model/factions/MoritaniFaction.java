@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import model.*;
 import model.topics.DuneTopic;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +47,35 @@ public class MoritaniFaction extends Faction {
         grumman.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
         game.createDukeVidal();
+    }
+
+    @Override
+    public void presentStartingForcesChoices() {
+        shipment.clear();
+        String buttonSuffix = "-starting-forces";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        chat.publish("Where would you like to place your starting 6 " + Emojis.MORITANI_TROOP + "? " + player, choices);
+    }
+
+    @Override
+    public void presentStartingForcesExecutionChoices() {
+        String buttonSuffix = "-starting-forces";
+        shipment.setForce(6);
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        chat.reply("Placing **6 " + Emojis.MORITANI_TROOP + "** in " + shipment.getTerritoryName(), choices);
+    }
+
+    @Override
+    public boolean placeChosenStartingForces() throws InvalidGameStateException {
+        chat.reply("Initial force placement complete.");
+        executeShipment(game, false, true);
+        return true;
     }
 
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {

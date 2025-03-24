@@ -3,6 +3,7 @@ package controller.buttons;
 import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.RunCommands;
+import controller.commands.SetupCommands;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -107,6 +108,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 String id = button.getId();
                 if (id != null && (id.startsWith("pass-shipment") ||
                         id.startsWith("reset-shipment") ||
+                        id.startsWith("reset-shipping-forces") ||
                         id.startsWith("add-force") ||
                         id.startsWith("add-special-force") ||
                         id.startsWith("planetologist-add-force") ||
@@ -132,7 +134,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
     }
 
-    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void karamaExecuteShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.discard("Karama", "to ship at " + Emojis.GUILD + " rates");
         executeShipment(event, game, discordGame, true);
@@ -349,7 +351,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         String labelSuffix = "-" + territoryName;
         Button button = Button.primary("move" + labelSuffix, territoryName);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(territoryName)).toList();
-        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, false)));
+        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, false, false)));
     }
 
     public static Set<String> getAdjacentTerritoryNames(String territory, int spacesAway, Game game) {
@@ -366,26 +368,34 @@ public class ShipmentAndMovementButtons implements Pressable {
         return adjacentTerritories;
     }
 
-    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void executeShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean karama) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
         boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
-        faction.executeShipment(game, karama, guildAmbassador || btHTPlacement);
-        if (guildAmbassador) {
-            discordGame.queueMessage("Shipment with Guild ambassador complete.");
-        } else if (btHTPlacement) {
-            BTFaction bt = (BTFaction) game.getFaction("BT");
-            discordGame.queueMessage("Placement of " + bt.getNumFreeRevivals() + " free revivals complete.");
-            bt.setBtHTActive(false);
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
+        if (startingForces) {
+            if (faction.placeChosenStartingForces())
+                SetupCommands.advance(event.getGuild(), discordGame, game);
+            else
+                discordGame.pushGame();
         } else {
-            discordGame.queueMessage("Shipment complete.");
-            queueMovementButtons(game, faction, discordGame);
+            faction.executeShipment(game, karama, guildAmbassador || btHTPlacement);
+            if (guildAmbassador) {
+                discordGame.queueMessage("Shipment with Guild ambassador complete.");
+            } else if (btHTPlacement) {
+                BTFaction bt = (BTFaction) game.getFaction("BT");
+                discordGame.queueMessage("Placement of " + bt.getNumFreeRevivals() + " free revivals complete.");
+                bt.setBtHTActive(false);
+            } else {
+                discordGame.queueMessage("Shipment complete.");
+                queueMovementButtons(game, faction, discordGame);
+            }
+            discordGame.pushGame();
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
-        discordGame.pushGame();
     }
 
-    private static void resetShipmentMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
+    private static void resetShipmentMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment) {
             boolean fremenRide = event.getComponentId().contains("-fremen-ride");
@@ -393,6 +403,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             boolean greatMakerPlacement = event.getComponentId().contains("-place-great-maker");
             boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
             boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
+            boolean startingForces = event.getComponentId().contains("-starting-forces");
             if (fremenRide) {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
@@ -408,6 +419,10 @@ public class ShipmentAndMovementButtons implements Pressable {
                 faction.getMovement().clear();
                 faction.getMovement().setMoved(false);
                 ((FremenFaction) faction).presentWormPlacementChoices(fromTerritory, shaiHuludPlacement ? "Shai-Hulud" : "Great Maker");
+            } else if (startingForces) {
+                faction.getShipment().clear();
+                discordGame.queueMessage("Starting over");
+                faction.presentStartingForcesChoices();
             } else {
                 faction.getShipment().clear();
                 faction.getShipment().setShipped(false);
@@ -434,12 +449,13 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
         boolean enterDiscoveryToken = event.getComponentId().contains("-enter-discovery-token");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment && !fremenRide) {
             faction.getShipment().setForce(0);
             faction.getShipment().setSpecialForce(0);
             faction.getShipment().setNoField(-1);
-            queueForcesButtons(event, game, discordGame, faction, true, false, guildAmbassador, false, false);
+            queueForcesButtons(event, game, discordGame, faction, true, false, guildAmbassador, false, false, startingForces);
         } else {
             faction.getMovement().setForce(0);
             faction.getMovement().setSpecialForce(0);
@@ -456,33 +472,36 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
         boolean enterDiscoveryToken = event.getComponentId().contains("-enter-discovery-token");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment)
-            faction.getShipment().setForce((faction.getShipment().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-shipment-", "").replace("guild-ambassador-", ""))));
+            faction.getShipment().setForce((faction.getShipment().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-shipment-", "").replace("guild-ambassador-", "").replace("starting-forces-", ""))));
         else
             faction.getMovement().setForce((faction.getMovement().getForce() + Integer.parseInt(event.getComponentId().replace("add-force-movement-", "").replace("fremen-ride-", "").replace("enter-discovery-token-", ""))));
-        queueForcesButtons(event, game, discordGame, faction, isShipment, false, guildAmbassador, fremenRide, enterDiscoveryToken);
+        queueForcesButtons(event, game, discordGame, faction, isShipment, false, guildAmbassador, fremenRide, enterDiscoveryToken, startingForces);
         discordGame.pushGame();
     }
 
     private static void addSpecialForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean enterDiscoveryToken = event.getComponentId().contains("-enter-discovery-token");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         if (isShipment)
-            faction.getShipment().setSpecialForce((faction.getShipment().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-shipment-", ""))));
+            faction.getShipment().setSpecialForce((faction.getShipment().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-shipment-", "").replace("starting-forces-", ""))));
         else
             faction.getMovement().setSpecialForce((faction.getMovement().getSpecialForce() + Integer.parseInt(event.getComponentId().replace("add-special-force-movement-", "").replace("fremen-ride-", "").replace("enter-discovery-token-", ""))));
-        queueForcesButtons(event, game, discordGame, faction, isShipment, false, false, fremenRide, enterDiscoveryToken);
+        queueForcesButtons(event, game, discordGame, faction, isShipment, false, false, fremenRide, enterDiscoveryToken, startingForces);
         discordGame.pushGame();
     }
 
-    private static void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
+    private static void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException, InvalidGameStateException {
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean shaiHuludPlacement = event.getComponentId().contains("-place-shai-hulud");
         boolean greatMakerPlacement = event.getComponentId().contains("-place-great-maker");
         boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
         boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         boolean enterDiscoveryToken = event.getComponentId().contains("-enter-discovery-token");
         String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = ButtonManager.getButtonPresser(event, game);
@@ -493,6 +512,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                         .replace("place-great-maker-", "")
                         .replace("guild-ambassador-", "")
                         .replace("bt-ht-", "")
+                        .replace("starting-forces-", "")
                         .replace("enter-discovery-token-", "")
                         .replace("-", " ")
                 )
@@ -519,8 +539,15 @@ public class ShipmentAndMovementButtons implements Pressable {
             discordGame.queueMessage(messageCreateBuilder);
             discordGame.pushGame();
             return;
-        }
-        else if (isShipment && !fremenRide) faction.getShipment().setTerritoryName(territory.getTerritoryName());
+        } else if (startingForces) {
+            faction.getShipment().setTerritoryName(territory.getTerritoryName());
+            if (faction instanceof FremenFaction)
+                queueForcesButtons(event, game, discordGame, faction, true, false, false, false, false, true);
+            else
+                faction.presentStartingForcesExecutionChoices();
+            discordGame.pushGame();
+            return;
+        } else if (isShipment && !fremenRide) faction.getShipment().setTerritoryName(territory.getTerritoryName());
         else faction.getMovement().setMovingTo(territory.getTerritoryName());
 
         queueForcesButtons(event, game, discordGame, faction, isShipment, false, guildAmbassador, fremenRide, enterDiscoveryToken);
@@ -555,6 +582,10 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     private static void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction, boolean isShipment, boolean hasNoField, boolean guildAmbassador, boolean fremenRide, boolean enterDiscoveryToken) {
+        queueForcesButtons(event, game, discordGame, faction, isShipment, hasNoField, guildAmbassador, fremenRide, enterDiscoveryToken, false);
+    }
+
+    private static void queueForcesButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, Faction faction, boolean isShipment, boolean hasNoField, boolean guildAmbassador, boolean fremenRide, boolean enterDiscoveryToken, boolean isStartingForces) {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
 
         TreeSet<Button> forcesButtons = new TreeSet<>(getButtonComparator());
@@ -566,6 +597,11 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonLimitForces = game.getTerritory(faction.getMovement().getMovingFrom()).getForceStrength("Advisor");
         int buttonLimitSpecialForces = isShipment && !fremenRide ? faction.getSpecialReservesStrength() - faction.getShipment().getSpecialForce() :
                 game.getTerritory(faction.getMovement().getMovingFrom()).getForceStrength(faction.getName() + "*") - faction.getMovement().getSpecialForce();
+        if (isStartingForces && faction instanceof FremenFaction fremen) {
+            int forcesInShipment = fremen.getShipment().getForce() + fremen.getShipment().getSpecialForce();
+            buttonLimitForces = Math.min(10 - fremen.getStartingForcesPlaced() - forcesInShipment, buttonLimitForces);
+            buttonLimitSpecialForces = Math.min(10 - fremen.getStartingForcesPlaced() - forcesInShipment, buttonLimitSpecialForces);
+        }
 
         if (faction.getShipment().isToReserves()) {
             if (event.getComponentId().startsWith("ship-to-reserves-")) {
@@ -590,6 +626,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonSuffix += "-guild-ambassador";
         if (enterDiscoveryToken)
             buttonSuffix += "-enter-discovery-token";
+        if (isStartingForces)
+            buttonSuffix = "-starting-forces";
         shipOrMove += buttonSuffix + "-";
         for (int i = 0; i < buttonLimitForces; i++) {
             forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " troop"));
@@ -615,17 +653,21 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")))
                 spice = Math.ceilDiv(spice, 2);
             String noFieldMessage = faction.getShipment().getNoField() >= 0 ? "\n" + faction.getShipment().getNoField() + " " + Emojis.NO_FIELD + "\n": "";
-            String currentlyShipping = "Currently shipping:\n**" + faction.forcesStringWithZeroes(faction.getShipment().getForce(), faction.getShipment().getSpecialForce()) + noFieldMessage + "** to " + territory +
-                    (guildAmbassador ? "" : " for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.");
-            String message = "Use buttons below to add forces to your shipment. " + currentlyShipping;
+            String currentlyShipping = "Currently ";
+            currentlyShipping += isStartingForces ? "placing" : "shipping";
+            currentlyShipping += ":\n**" + faction.forcesStringWithZeroes(faction.getShipment().getForce(), faction.getShipment().getSpecialForce()) + noFieldMessage + "** to " + territory +
+                    (guildAmbassador || isStartingForces ? "" : " for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.");
+            String message = "Use buttons below to add forces to your ";
+            message += isStartingForces ? "placement. " : "shipment. ";
+            message += currentlyShipping;
 
             if (!forcesButtons.isEmpty()) {
                 arrangeButtonsAndSend(message, forcesButtons, discordGame);
             } else {
-                message = "You have no troops in reserves to ship. ";
+                message = isStartingForces ? "" : "You have no troops in reserves to ship. ";
                 if (faction.getShipment().getForce() != 0 || faction.getShipment().getSpecialForce() != 0 || faction.getShipment().getNoField() != 0)
                     message += currentlyShipping;
-                discordGame.queueMessage(message);
+                faction.getChat().reply(message, List.of(new DuneChoice("secondary", "reset-shipping-forces" + buttonSuffix, "Reset forces")));
             }
 
             if (faction instanceof RicheseFaction || faction.getAlly().equals("Richese")) {
@@ -650,14 +692,19 @@ public class ShipmentAndMovementButtons implements Pressable {
             Shipment shipment = faction.getShipment();
             if (shipment.getForce() > 0 || shipment.getSpecialForce() > 0 || hasNoField)
                 disableConfirmButton = false;
-            DuneChoice execute = new DuneChoice("execute-shipment" + (guildAmbassador ? "-guild-ambassador" : ""), "Confirm Shipment");
+            String executeSuffix = "";
+            if (guildAmbassador)
+                executeSuffix = "-guild-ambassador";
+            else if (isStartingForces)
+                executeSuffix = "-starting-forces";
+            DuneChoice execute = new DuneChoice("execute-shipment" + executeSuffix, "Confirm Shipment");
             execute.setDisabled(disableConfirmButton);
 
-            if (!guildAmbassador && faction.getShipment().hasShipped())
+            if (!guildAmbassador && !isStartingForces && faction.getShipment().hasShipped())
                 execute.setDisabled(true);
             choices.add(execute);
-            choices.add(new DuneChoice("danger", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
-            choices.add(new DuneChoice("danger", "reset-shipment" + buttonSuffix, "Start over"));
+            choices.add(new DuneChoice("secondary", "reset-shipping-forces" + buttonSuffix, "Reset forces"));
+            choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
             if (!guildAmbassador && !enterDiscoveryToken && faction.hasTreacheryCard("Karama")) {
                 DuneChoice choice = new DuneChoice("secondary", "karama-execute-shipment", "Confirm Shipment (Use Karama for Guild rates)");
                 choice.setDisabled(disableConfirmButton);
@@ -739,7 +786,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException {
+    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isShipment) throws ChannelNotFoundException, InvalidGameStateException {
         String buttonSuffix = "";
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         if (fremenRide)
@@ -756,6 +803,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
         if (btHTPlacement)
             buttonSuffix = "-bt-ht";
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
+        if (startingForces)
+            buttonSuffix = "-starting-forces";
         String shipmentOrMovement = isShipment ? "ship-" : "move-";
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String aggregateTerritoryName = event.getComponentId().replace(shipmentOrMovement, "")
@@ -764,6 +814,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 .replace("place-great-maker-", "")
                 .replace("guild-ambassador-", "")
                 .replace("bt-ht-", "")
+                .replace("starting-forces-", "")
                 .replace("-", " ");
         List<Territory> territory = new ArrayList<>(game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(aggregateTerritoryName)).toList());
         territory.sort(Comparator.comparingInt(Territory::getSector));
@@ -785,7 +836,14 @@ public class ShipmentAndMovementButtons implements Pressable {
             else faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
             if (btHTPlacement)
                 ((BTFaction) game.getFaction("BT")).presentHTExecutionChoices();
-            else
+            else if (startingForces) {
+                if (faction instanceof FremenFaction)
+                    queueForcesButtons(event, game, discordGame, faction, isShipment, false, false, false, false, true);
+                else
+                    faction.presentStartingForcesExecutionChoices();
+                discordGame.pushGame();
+                return;
+            } else
                 queueForcesButtons(event, game, discordGame, faction, isShipment, false, guildAmbassador, fremenRide, false);
             deleteShipMoveButtonsInChannel(event.getMessageChannel());
             discordGame.pushGame();
@@ -815,51 +873,62 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void queueOtherShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("other", "");
         boolean wormPlacement = event.getComponentId().contains("-place-shai-hulud") || event.getComponentId().contains("-place-great-maker");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         Button passButton = Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId()));
         if (wormPlacement)
             passButton = Button.secondary("pass-shipment" + buttonSuffix, "Keep it in " + faction.getMovement().getMovingFrom());
         MessageCreateBuilder message = new MessageCreateBuilder()
                 .setContent("Which territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Polar Sink"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago Depression"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Meridian"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago East"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Harg Pass"))
+                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Polar Sink", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago Depression", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Meridian", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago East", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Harg Pass", startingForces))
                 .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Gara Kulon"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Hole In The Rock"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Basin"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Imperial Basin"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Arsunt"))
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Gara Kulon", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Hole In The Rock", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Basin", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Imperial Basin", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Arsunt", startingForces))
                 .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Tsimpo"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Bight Of The Cliff"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Greater Flat"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago West"))
-                .addActionRow(
-                        Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                        passButton);
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Tsimpo", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Bight Of The Cliff", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "The Greater Flat", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago West", startingForces));
+        if (startingForces)
+            message = message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
+        else
+            message = message.addActionRow(
+                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
+                    passButton);
         discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
     }
 
     private static void queueRockShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("rock", "");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         MessageCreateBuilder message = new MessageCreateBuilder()
                 .setContent("Which rock territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "False Wall South"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Pasty Mesa"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "False Wall East"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Shield Wall"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Rim Wall West"))
-                .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Plastic Basin"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "False Wall West"),
-                        Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                        Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
+                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "False Wall South", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Pasty Mesa", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "False Wall East", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Shield Wall", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Rim Wall West", startingForces));
+        if (startingForces)
+            message = message.addActionRow(
+                    shipToTerritoryButton(game, faction, buttonSuffix, "Plastic Basin", startingForces),
+                    shipToTerritoryButton(game, faction, buttonSuffix, "False Wall West", startingForces),
+                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
+        else
+            message = message.addActionRow(
+                    shipToTerritoryButton(game, faction, buttonSuffix, "Plastic Basin", startingForces),
+                    shipToTerritoryButton(game, faction, buttonSuffix, "False Wall West", startingForces),
+                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
+                    Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
 
         discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
@@ -868,32 +937,36 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void queueSpiceBlowShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("spice-blow", "");
         boolean wormPlacement = event.getComponentId().contains("-place-shai-hulud") || event.getComponentId().contains("-place-great-maker");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         Button passButton = Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId()));
         if (wormPlacement)
             passButton = Button.secondary("pass-shipment" + buttonSuffix, "Keep it in " + faction.getMovement().getMovingFrom());
         MessageCreateBuilder message = new MessageCreateBuilder()
                 .setContent("Which spice blow territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Ridge Flat"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago South"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Broken Land"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "South Mesa"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Sihaya Ridge"))
+                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Ridge Flat", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago South", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Broken Land", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "South Mesa", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Sihaya Ridge", startingForces))
                 .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Hagga Basin"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Red Chasm"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Minor Erg"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago North"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Funeral Plain"))
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Hagga Basin", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Red Chasm", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "The Minor Erg", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago North", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Funeral Plain", startingForces))
                 .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Great Flat"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Erg"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Old Gap"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Rock Outcroppings"),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass North"))
-                .addActionRow(
-                        Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                        passButton);
+                        shipToTerritoryButton(game, faction, buttonSuffix, "The Great Flat", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Erg", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Old Gap", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Rock Outcroppings", startingForces),
+                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass North", startingForces));
+        if (startingForces)
+            message = message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
+        else
+            message = message.addActionRow(
+                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
+                    passButton);
 
         discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
@@ -906,9 +979,9 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         for (Faction f : game.getFactions()) {
             if (faction.getName().equals(f.getName())) continue;
-            buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, f.getHomeworld()));
+            buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, f.getHomeworld(), false));
             if (f instanceof EmperorFaction emperorFaction)
-                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, emperorFaction.getSecondHomeworld()));
+                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, emperorFaction.getSecondHomeworld(), false));
         }
         buttons.add(Button.secondary("reset-shipment", "Start over"));
 
@@ -930,7 +1003,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<Button> buttons = new ArrayList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (territory.isDiscovered()) {
-                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, territory.getDiscoveryToken()));
+                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, territory.getDiscoveryToken(), false));
             }
         }
         buttons.add(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
@@ -962,11 +1035,12 @@ public class ShipmentAndMovementButtons implements Pressable {
         String buttonSuffix = event.getComponentId().replace("stronghold", "");
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
+        boolean startingForces = event.getComponentId().contains("-starting-forces");
         MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
         List<Button> strongholds = new ArrayList<>();
         for (Territory t : game.getTerritories().values()) {
             if (validStronghold(game, t, faction, fremenRide || btHTPlacement)) {
-                Button button = shipToTerritoryButton(game, faction, buttonSuffix, t.getTerritoryName());
+                Button button = shipToTerritoryButton(game, faction, buttonSuffix, t.getTerritoryName(), startingForces);
                 strongholds.add(button);
             }
         }
@@ -978,18 +1052,21 @@ public class ShipmentAndMovementButtons implements Pressable {
             message.addActionRow(strongholds);
         }
 
-        message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
+        if (startingForces)
+            message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
+        else
+            message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
+                    Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
 
         discordGame.queueMessage(message);
         discordGame.queueDeleteMessage();
     }
 
-    private static Button shipToTerritoryButton(Game game, Faction faction, String buttonSuffix, String territoryName) {
+    private static Button shipToTerritoryButton(Game game, Faction faction, String buttonSuffix, String territoryName, boolean isInitialPlacement) {
         String labelSuffix = "-" + territoryName;
         Button button = Button.primary("ship" + buttonSuffix + labelSuffix, territoryName);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(territoryName)).toList();
-        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"))));
+        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
     }
 
     private static String passButtonLabel(String componentId) {
