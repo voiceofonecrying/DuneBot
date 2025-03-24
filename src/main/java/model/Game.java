@@ -1467,7 +1467,7 @@ public class Game {
     }
 
     public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {
-        if (to.factionMayNotEnter(this, targetFaction, false))
+        if (to.factionMayNotEnter(this, targetFaction, false, false))
             throw new IllegalArgumentException("You cannot move into this territory.");
 
         turnSummary.publish(targetFaction.getEmoji() + ": " + targetFaction.forcesString(amountValue, starredAmountValue) + " moved from " + from.getTerritoryName() + " to " + to.getTerritoryName() + ".");

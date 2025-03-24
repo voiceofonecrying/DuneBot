@@ -443,8 +443,10 @@ public class Territory {
         }
     }
 
-    public boolean factionMayNotEnter(Game game, Faction faction, boolean isShipment) {
-        if (isShipment) {
+    public boolean factionMayNotEnter(Game game, Faction faction, boolean isShipment, boolean isInitialPlacement) {
+        if (isInitialPlacement) {
+            return faction instanceof MoritaniFaction && !forces.isEmpty();
+        } else if (isShipment) {
             if (territoryName.equals("Hidden Mobile Stronghold") && !faction.getName().equals("Ix"))
                 return true;
             if (aftermathToken)

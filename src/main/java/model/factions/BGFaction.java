@@ -90,10 +90,11 @@ public class BGFaction extends Faction {
     }
 
     public void presentInitialForceExecutionChoices() {
+        String buttonSuffix = "-bg-initial-force";
         shipment.setForce(1);
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("execute-shipment-bg-initial-force", "Confirm placement"));
-        choices.add(new DuneChoice("secondary", "reset-shipment-bg-initial-force", "Start over"));
+        choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         Territory territory = game.getTerritory(shipment.getTerritoryName());
         String forceEmoji = (territory.getForces().isEmpty() || shipment.getTerritoryName().equals("Polar Sink")) ? Emojis.BG_FIGHTER : Emojis.BG_ADVISOR;
         chat.reply("Placing **1 " + forceEmoji + "** in " + shipment.getTerritoryName(), choices);

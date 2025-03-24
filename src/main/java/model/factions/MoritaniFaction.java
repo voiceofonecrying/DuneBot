@@ -48,6 +48,26 @@ public class MoritaniFaction extends Faction {
         game.createDukeVidal();
     }
 
+    public void presentInitialForceChoices() {
+        shipment.clear();
+        String buttonSuffix = "-bg-initial-force";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        chat.publish("Where would you like to place your starting 6 " + Emojis.MORITANI_TROOP + "? " + player, choices);
+    }
+
+    public void presentInitialForceExecutionChoices() {
+        String buttonSuffix = "-bg-initial-force";
+        shipment.setForce(6);
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        chat.reply("Placing **6 " + Emojis.MORITANI_TROOP + "** in " + shipment.getTerritoryName(), choices);
+    }
+
     public void assassinateLeader(Faction triggeringFaction, Leader leader) {
         if (game.getLeaderTanks().contains(leader))
             throw new IllegalArgumentException("Moritani cannot assassintate a leader in the tanks.");

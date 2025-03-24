@@ -492,13 +492,12 @@ public class SetupCommands {
         Faction moritani = game.getFaction("Moritani");
         game.getGameActions().publish(
                 MessageFormat.format(
-                        "{0} Please provide the placement of your starting {1}. {2}",
+                        "{0} will place their starting 6 {1}",
                         moritani.getEmoji(),
-                        Emojis.MORITANI_TROOP,
-                        moritani.getPlayer()
+                        Emojis.MORITANI_TROOP
                 )
         );
-
+        ((MoritaniFaction) moritani).presentInitialForceChoices();
         return StepStatus.STOP;
     }
 

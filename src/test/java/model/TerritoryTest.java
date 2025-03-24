@@ -363,65 +363,65 @@ public class TerritoryTest extends DuneTest {
         @Test
 //        void testFactionMayNotShipIntoTerritoryWithAlly() {
         void testFactionMayShipIntoTerritoryWithAlly() {
-            assertFalse(arrakeen.factionMayNotEnter(game, richese, true));
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, true, false));
             game.createAlliance(atreides, richese);
-//            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
-            assertFalse(arrakeen.factionMayNotEnter(game, richese, true));
+//            assertTrue(arrakeen.factionMayNotEnter(game, richese, true, false));
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, true, false));
         }
 
         @Test
         void testFactionMayNotMoveIntoTerritoryWithAlly() {
-            assertFalse(arrakeen.factionMayNotEnter(game, richese, false));
+            assertFalse(arrakeen.factionMayNotEnter(game, richese, false, false));
             game.createAlliance(atreides, richese);
-            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, false, false));
         }
 
         @Test
         void testFactionMayNotShipIntoStrongholdWithTwoFactionsPresent() {
             arrakeen.addForces("BG", 1);
-            assertTrue(arrakeen.factionMayNotEnter(game, richese, true));
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, true, false));
         }
 
         @Test
         void testFactionMayNotMoveIntoStrongholdWithTwoFactionsPresent() {
             arrakeen.addForces("BG", 1);
-            assertTrue(arrakeen.factionMayNotEnter(game, richese, false));
+            assertTrue(arrakeen.factionMayNotEnter(game, richese, false, false));
         }
 
         @Test
         void testFactionMayNotShipIntoStrongholdWithTwoFactionsPresentWithNoField() {
             arrakeen.setRicheseNoField(0);
-            assertTrue(arrakeen.factionMayNotEnter(game, bg, true));
+            assertTrue(arrakeen.factionMayNotEnter(game, bg, true, false));
         }
 
         @Test
         void testFactionMayNotMoveIntoStrongholdWithTwoFactionsPresentWithNoField() {
             arrakeen.setRicheseNoField(0);
-            assertTrue(arrakeen.factionMayNotEnter(game, bg, false));
+            assertTrue(arrakeen.factionMayNotEnter(game, bg, false, false));
         }
 
         @Test
         void testEcazMayShipIntoTerritoryWithEcazAlly() {
             carthag.addForces("BG", 1);
-            assertFalse(carthag.factionMayNotEnter(game, ecaz, true));
+            assertFalse(carthag.factionMayNotEnter(game, ecaz, true, false));
         }
 
         @Test
         void testEcazMayMoveIntoTerritoryWithEcazAlly() {
             carthag.addForces("BG", 1);
-            assertFalse(carthag.factionMayNotEnter(game, ecaz, false));
+            assertFalse(carthag.factionMayNotEnter(game, ecaz, false, false));
         }
 
         @Test
         void testEcazAllyMayShipIntoTerritoryWithEcaz() {
             carthag.addForces("Ecaz", 1);
-            assertFalse(carthag.factionMayNotEnter(game, bg, true));
+            assertFalse(carthag.factionMayNotEnter(game, bg, true, false));
         }
 
         @Test
         void testEcazAllyMayMoveIntoTerritoryWithEcaz() {
             carthag.addForces("Ecaz", 1);
-            assertFalse(carthag.factionMayNotEnter(game, bg, false));
+            assertFalse(carthag.factionMayNotEnter(game, bg, false, false));
         }
 
 
@@ -429,40 +429,40 @@ public class TerritoryTest extends DuneTest {
         void testThirdFactionMayShipIntoTerritoryWithEcazAlly() {
             sietchTabr.addForces("Ecaz", 1);
             sietchTabr.addForces("BG", 1);
-            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, true));
+            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, true, false));
         }
         @Test
         void testThirdFactionMayMoveIntoTerritoryWithEcazAlly() {
             sietchTabr.addForces("Ecaz", 1);
             sietchTabr.addForces("BG", 1);
-            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, false));
+            assertFalse(sietchTabr.factionMayNotEnter(game, atreides, false, false));
         }
 
         @Test
         void testIxMayShipIntoHMS() {
-            assertFalse(hms.factionMayNotEnter(game, ix, true));
+            assertFalse(hms.factionMayNotEnter(game, ix, true, false));
         }
 
         @Test
         void testNonIxMayNotShipIntoHMS() {
-            assertTrue(hms.factionMayNotEnter(game, atreides, true));
+            assertTrue(hms.factionMayNotEnter(game, atreides, true, false));
         }
 
         @Test
         void testNonIxMayMoveIntoHMS() {
-            assertFalse(hms.factionMayNotEnter(game, atreides, false));
+            assertFalse(hms.factionMayNotEnter(game, atreides, false, false));
         }
 
         @Test
         void testFactionMayNotShipIntoAftermath() {
             arrakeen.setAftermathToken(true);
-            assertTrue(arrakeen.factionMayNotEnter(game, atreides, true));
+            assertTrue(arrakeen.factionMayNotEnter(game, atreides, true, false));
         }
 
         @Test
         void testFactionMayMoveIntoAftermath() {
             arrakeen.setAftermathToken(true);
-            assertFalse(arrakeen.factionMayNotEnter(game, atreides, false));
+            assertFalse(arrakeen.factionMayNotEnter(game, atreides, false, false));
         }
     }
 
