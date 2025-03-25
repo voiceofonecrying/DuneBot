@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.interactions.components.ActionComponent;
 import java.io.IOException;
 import java.util.List;
 
-public class TraitorButtons {
+public class TraitorButtons implements Pressable {
     // Buttons handled by this class must begin with "traitor"
     // And any button that begins with "traitor" must be handled by this class
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {

@@ -55,7 +55,7 @@ public class SetupCommands {
                         new SubcommandData("new-leader-skills", "Give the player two new leader skills to choose from.").addOptions(faction),
                         new SubcommandData("leader-skill", "Add leader skill to faction")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
-                        new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand"),
+                        new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand and advance"),
                         new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
                         new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition),
                         new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck.")
@@ -80,7 +80,7 @@ public class SetupCommands {
             case "advance" -> advance(event.getGuild(), discordGame, game);
             case "new-leader-skills" -> newLeaderSkills(discordGame, game);
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
-            case "harkonnen-mulligan" -> harkonnenMulligan(discordGame, game);
+            case "harkonnen-mulligan" -> harkonnenMulligan(event, discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
             case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(discordGame, game);
@@ -579,7 +579,10 @@ public class SetupCommands {
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
             game.getModInfo().publish("Harkonnen can mulligan");
-            faction.getChat().publish(faction.getPlayer() + " please decide if you will mulligan your Traitor cards.");
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("harkonnen-mulligan-yes", "Yes, draw 4 new traitors"));
+            choices.add(new DuneChoice("harkonnen-mulligan-no", "No, keep my current traitors"));
+            faction.getChat().publish("You have drawn " + numHarkonnenTraitors + " of your own leaders as Traitors.\nDo you want to mulligan your Traitor cards and draw a new set? " + faction.getPlayer(), choices);
             return StepStatus.STOP;
         } else {
             game.getModInfo().publish("Harkonnen cannot mulligan");
@@ -597,22 +600,10 @@ public class SetupCommands {
         return StepStatus.CONTINUE;
     }
 
-    public static void harkonnenMulligan(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        if (!game.hasFaction("Harkonnen"))
-            return;
-
-        Faction harkonnen = game.getFaction("Harkonnen");
-
-        game.getTraitorDeck().addAll(harkonnen.getTraitorHand());
-        harkonnen.getTraitorHand().clear();
-
-        Collections.shuffle(game.getTraitorDeck());
-
-        for (int j = 0; j < 4; j++) {
-            game.drawCard("traitor deck", "Harkonnen");
-        }
-
-        discordGame.pushGame();
+    public static void harkonnenMulligan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        HarkonnenFaction harkonnen = (HarkonnenFaction) game.getFaction("Harkonnen");
+        harkonnen.mulliganTraitorHand();
+        SetupCommands.advance(event.getGuild(), discordGame, game);
     }
 
     public static StepStatus traitorSelectionStep(Game game) {

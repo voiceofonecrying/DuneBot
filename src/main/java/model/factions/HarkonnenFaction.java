@@ -8,6 +8,8 @@ import model.TraitorCard;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.stream.IntStream;
 
 public class HarkonnenFaction extends Faction {
     private Boolean hasTriggeredHT;
@@ -35,6 +37,14 @@ public class HarkonnenFaction extends Faction {
         Territory giediPrime = game.getTerritories().addHomeworld(game, homeworld, name);
         giediPrime.addForces(name, 10);
         game.getHomeworlds().put(name, homeworld);
+    }
+
+    public void mulliganTraitorHand() {
+        game.getTraitorDeck().addAll(traitorHand);
+        traitorHand.clear();
+        Collections.shuffle(game.getTraitorDeck());
+        IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", "Harkonnen"));
+        game.getTurnSummary().publish(emoji + " mulliganed their Traitor Hand.");
     }
 
     public boolean hasTriggeredHT() {
