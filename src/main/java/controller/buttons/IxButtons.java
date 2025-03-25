@@ -196,7 +196,6 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
         IxCommands.confirmStartingCard(game, event.getComponentId().split("-")[4]);
     }
@@ -208,7 +207,6 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("Choose a different card.");
         discordGame.queueDeleteMessage();
         IxCommands.initialCardButtons(game);
     }
@@ -220,7 +218,7 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("You will keep " + event.getComponentId().split("-")[3].trim() + ".");
+        discordGame.queueMessage("You kept " + event.getComponentId().split("-")[3].trim() + ".");
         discordGame.queueDeleteMessage();
         IxCommands.ixHandSelection(game, event.getComponentId().split("-")[3]);
         SetupCommands.advance(event.getGuild(), discordGame, game);
