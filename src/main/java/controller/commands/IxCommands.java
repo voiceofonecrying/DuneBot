@@ -197,7 +197,7 @@ public class IxCommands {
         game.getFaction("Ix").getChat().publish("Confirm your selection of " + cardName.trim() + ".", choices);
     }
 
-    public static void ixHandSelection(DiscordGame discordGame, Game game, String ixCardName) throws ChannelNotFoundException {
+    public static void ixHandSelection(Game game, String ixCardName) throws ChannelNotFoundException {
         IxFaction faction = (IxFaction) game.getFaction("Ix");
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
@@ -221,7 +221,5 @@ public class IxCommands {
         faction.getTreacheryHand().clear();
         faction.setHandLimit(4);
         faction.addTreacheryCard(card);
-
-        discordGame.pushGame();
     }
 }
