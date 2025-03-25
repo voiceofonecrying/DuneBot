@@ -83,7 +83,7 @@ public class SetupCommands {
             case "harkonnen-mulligan" -> harkonnenMulligan(event, discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
-            case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(discordGame, game);
+            case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(event, discordGame, game);
         }
     }
 
@@ -627,8 +627,9 @@ public class SetupCommands {
     public static StepStatus stormSelectionStep(Game game) {
         Faction faction1 = game.getFactions().getFirst();
         Faction faction2 = game.getFactions().getLast();
-        faction1.getChat().publish(faction1.getPlayer() + " Please submit your dial for initial storm position (0-20).");
-        faction2.getChat().publish(faction2.getPlayer() + " Please submit your dial for initial storm position (0-20).");
+        List<DuneChoice> choices = IntStream.range(0, 21).mapToObj(i -> new DuneChoice("faction-storm-dial-" + i, String.valueOf(i))).toList();
+        faction1.getChat().publish("Please submit your dial for initial storm position (0-20). " + faction1.getPlayer(), choices);
+        faction2.getChat().publish("Please submit your dial for initial storm position (0-20). " + faction2.getPlayer(), choices);
         game.setStormMovement(new Random().nextInt(6) + 1);
         game.getTurnSummary().publish("Turn Marker is set to turn 1. The game is beginning! Initial storm is being calculated...");
 
@@ -689,7 +690,7 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void removeDoublePoweredBattleCards(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void removeDoublePoweredBattleCards(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         try {
             game.removeTreacheryCard("Poison Blade");
         } catch (Exception e) {
@@ -700,6 +701,6 @@ public class SetupCommands {
         } catch (Exception e) {
             game.getModInfo().publish("Treachery deck does not have Shield Snooper.");
         }
-        discordGame.pushGame();
+        SetupCommands.advance(event.getGuild(), discordGame, game);
     }
 }

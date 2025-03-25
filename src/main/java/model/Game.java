@@ -76,6 +76,8 @@ public class Game {
     private boolean setupStarted;
     private boolean setupFinished;
     private int storm;
+    private Integer dial1;
+    private Integer dial2;
     private int stormMovement;
     private final ArrayList<Integer> stormDeck;
     private boolean onHold;
@@ -630,6 +632,23 @@ public class Game {
 
     public void setStorm(int storm) {
         this.storm = ((storm - 1) % 18) + 1;
+        dial1 = null;
+        dial2 = null;
+    }
+
+    public boolean setStormDial(Faction faction, int dial) {
+        Faction beforeFaction = factions.getLast();
+        Faction afterFaction = factions.getFirst();
+        if (beforeFaction.getName().equals(faction.getName()))
+            dial1 = dial;
+        else if (afterFaction.getName().equals(faction.getName()))
+            dial2 = dial;
+        if (dial1 != null && dial2 != null) {
+            turnSummary.publish(beforeFaction.getEmoji() + " dials " + dial1 + ", " + afterFaction.getEmoji() + " dials " + dial2);
+            setStorm(dial1 + dial2);
+            return true;
+        }
+        return false;
     }
 
     public TleilaxuTanks getTleilaxuTanks() {
