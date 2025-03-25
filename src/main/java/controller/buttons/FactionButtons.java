@@ -3,6 +3,7 @@ package controller.buttons;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.FactionWhispers;
+import controller.commands.SetupCommands;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -22,6 +23,7 @@ public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
         else if (event.getComponentId().startsWith("whisper-")) whisper(event, game, discordGame);
+        else if (event.getComponentId().startsWith("faction-storm-dial-")) stormDial(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
     }
 
@@ -97,6 +99,16 @@ public class FactionButtons {
             discordGame.queueMessage("Message was not sent as a whisper.");
             discordGame.queueDeleteMessage();
         }
+    }
+
+    private static void stormDial(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        int dial = Integer.parseInt(event.getComponentId().replace("faction-storm-dial-", ""));
+        discordGame.queueMessage("You dialed " + dial + ".");
+        if (game.setStormDial(faction, dial))
+            SetupCommands.advance(event.getGuild(), discordGame, game);
+        else
+            discordGame.pushGame();
     }
 
     private static void charity(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
