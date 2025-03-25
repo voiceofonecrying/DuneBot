@@ -171,7 +171,7 @@ public class IxCommands {
             i++;
             choices.add(new DuneChoice("ix-starting-card-" + i + "-" + card.name(), card.name()));
         }
-        ixFaction.getChat().publish("", choices);
+        ixFaction.getChat().reply("", choices);
     }
 
     public static void sendBackLocationButtons(Game game, String cardName) {
@@ -194,10 +194,10 @@ public class IxCommands {
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("ix-confirm-start-" + cardName, "Confirm " + cardName));
         choices.add(new DuneChoice("secondary", "ix-confirm-start-reset", "Choose a different card"));
-        game.getFaction("Ix").getChat().publish("Confirm your selection of " + cardName.trim() + ".", choices);
+        game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + ".", choices);
     }
 
-    public static void ixHandSelection(DiscordGame discordGame, Game game, String ixCardName) throws ChannelNotFoundException {
+    public static void ixHandSelection(Game game, String ixCardName) {
         IxFaction faction = (IxFaction) game.getFaction("Ix");
         List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
         Collections.shuffle(hand);
@@ -221,7 +221,5 @@ public class IxCommands {
         faction.getTreacheryHand().clear();
         faction.setHandLimit(4);
         faction.addTreacheryCard(card);
-
-        discordGame.pushGame();
     }
 }

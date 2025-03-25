@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.commands.IxCommands;
+import controller.commands.SetupCommands;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -195,7 +196,6 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("You selected " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
         IxCommands.confirmStartingCard(game, event.getComponentId().split("-")[4]);
     }
@@ -207,21 +207,21 @@ public class IxButtons implements Pressable {
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("Choose a different card.");
         discordGame.queueDeleteMessage();
         IxCommands.initialCardButtons(game);
     }
 
-    private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
         if (game.isSetupFinished()) {
             throw new InvalidGameStateException("Setup phase is completed.");
         } else if (ixFaction.getTreacheryHand().size() <= 4) {
             throw new InvalidGameStateException("You have already selected your card.");
         }
-        discordGame.queueMessage("You will keep " + event.getComponentId().split("-")[3].trim() + ".");
+        discordGame.queueMessage("You kept " + event.getComponentId().split("-")[3].trim() + ".");
         discordGame.queueDeleteMessage();
-        IxCommands.ixHandSelection(discordGame, game, event.getComponentId().split("-")[3]);
+        IxCommands.ixHandSelection(game, event.getComponentId().split("-")[3]);
+        SetupCommands.advance(event.getGuild(), discordGame, game);
     }
 
     private static void cardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {

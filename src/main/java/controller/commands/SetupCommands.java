@@ -75,7 +75,7 @@ public class SetupCommands {
             case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
-            case "ix-hand-selection" -> ixHandSelection(discordGame, game);
+            case "ix-hand-selection" -> ixHandSelection(event, discordGame, game);
             case "traitor" -> selectTraitor(discordGame, game);
             case "advance" -> advance(event.getGuild(), discordGame, game);
             case "new-leader-skills" -> newLeaderSkills(discordGame, game);
@@ -357,29 +357,10 @@ public class SetupCommands {
         discordGame.pushGame();
     }
 
-    public static void ixHandSelection(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String ixCardName = discordGame.required(ixCard).getAsString();
-        Faction faction = game.getFaction("Ix");
-        List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
-        Collections.shuffle(hand);
-        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
-
-        LinkedList<TreacheryCard> ixRejects = new LinkedList<>();
-        for (TreacheryCard treacheryCard : hand) {
-            if (treacheryCard.equals(card)) continue;
-            ixRejects.add(treacheryCard);
-        }
-        Collections.shuffle(ixRejects);
-        for (TreacheryCard treacheryCard : ixRejects) {
-            game.getTreacheryDeck().add(treacheryCard);
-        }
-        faction.getTreacheryHand().clear();
-        faction.setHandLimit(4);
-        faction.addTreacheryCard(card);
-
-        discordGame.pushGame();
+        IxCommands.ixHandSelection(game, ixCardName);
+        advance(event.getGuild(), discordGame, game);
     }
 
     public static void selectTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -489,7 +470,7 @@ public class SetupCommands {
             if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
                 game.drawTreacheryCard(ixFaction.getName(), false, false);
             }
-            game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs. Then /setup advance.");
+            game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs.");
             IxCommands.initialCard(game);
             return StepStatus.STOP;
         } catch (IllegalArgumentException e) {
