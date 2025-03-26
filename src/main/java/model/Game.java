@@ -373,8 +373,9 @@ public class Game {
         Faction choamFaction = null;
         if (hasFaction("CHOAM")) {
             choamFaction = getFaction("CHOAM");
-            choamFaction.addSpice(2 * factions.size() * multiplier, "CHOAM Charity");
-            turnSummary.publish(Emojis.CHOAM + " receives " + (factions.size() * 2 * multiplier) + " " + Emojis.SPICE + " in dividends from their many investments.");
+            int choamSpiceReceived = 2 * factions.size() * multiplier;
+            choamFaction.addSpice(choamSpiceReceived, "CHOAM Charity");
+            turnSummary.publish(Emojis.CHOAM + " receives " + choamSpiceReceived + " " + Emojis.SPICE + " in dividends from their many investments.");
         }
         for (Faction faction : factions) {
             if (faction instanceof ChoamFaction || faction.isDecliningCharity()) continue;
