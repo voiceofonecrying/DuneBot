@@ -395,6 +395,29 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testPaymentToLowThresholdGuild() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            guild.removeReserves(11);
+            assertFalse(guild.isHighThreshold());
+            assertEquals(" for 9 " + Emojis.SPICE + ", 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
+                    emperor.payForShipment(game, 9, habbanyaSietch, false, false));
+            assertEquals(1, emperor.getSpice());
+            assertEquals(10, guild.getSpice());
+        }
+
+        @Test
+        void testPaymentToGuildJunctionOccupied() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            guild.removeReserves(15);
+            emperor.placeForces(game.getTerritory("Junction"), 1, 0, false, false, false, game, false, false);
+            assertTrue(guild.isHomeworldOccupied());
+            assertEquals(" for 9 " + Emojis.SPICE + ", 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD + ", 4 " + Emojis.SPICE + " paid to " + Emojis.EMPEROR,
+                    emperor.payForShipment(game, 9, habbanyaSietch, false, false));
+            assertEquals(5, emperor.getSpice());
+            assertEquals(10, guild.getSpice());
+        }
+
+        @Test
         void testPaymentToFremenAsAlly() throws InvalidGameStateException {
             game.createAlliance(fremen, emperor);
             fremen.setSpiceForAlly(3);
