@@ -796,11 +796,19 @@ public class Faction {
         String noFieldString = noField ? Emojis.NO_FIELD + " " : "";
         subtractSpice(spice - support, noFieldString + "shipment to " + territory.getTerritoryName());
         if (!karamaShipment && !(this instanceof GuildFaction) && game.hasFaction("Guild")) {
-            if (guildSupport != 0)
-                paymentMessage += ", " + (spice - guildSupport) + " " + Emojis.SPICE;
+            Faction guild = game.getFaction("Guild");
+            int spicePaidToGuild = spice - guildSupport;
+            if (!guild.isHighThreshold())
+                spicePaidToGuild = Math.ceilDiv(spicePaidToGuild, 2);
+            if (spicePaidToGuild != spice)
+                paymentMessage += ", " + spicePaidToGuild + " " + Emojis.SPICE;
             paymentMessage += " paid to " + Emojis.GUILD;
-            Faction guildFaction = game.getFaction("Guild");
-            guildFaction.addSpice(spice - guildSupport, emoji + " shipment");
+            guild.addSpice(spicePaidToGuild, emoji + " shipment");
+            if (guild.isHomeworldOccupied()) {
+                Faction occupier = game.getFaction(((HomeworldTerritory) game.getTerritory("Junction")).getOccupierName());
+                occupier.addSpice(spice - spicePaidToGuild, emoji + " shipment");
+                paymentMessage += ", " + (spice - spicePaidToGuild) + " " + Emojis.SPICE + " paid to " + occupier.getEmoji();
+            }
         }
         return paymentMessage;
     }
