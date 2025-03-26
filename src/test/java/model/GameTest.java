@@ -162,8 +162,10 @@ class GameTest extends DuneTest {
             choam.removeReserves(20);
             assertEquals(2, choam.getSpice());
             assertFalse(choam.isHighThreshold());
+            turnSummary.clear();
             game.choamCharity();
             assertEquals(12, choam.getSpice());
+            assertEquals(Emojis.CHOAM + " receives 12 " + Emojis.SPICE + " in dividends from their many investments.", turnSummary.getMessages().get(1));
         }
 
         @Test

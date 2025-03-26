@@ -370,44 +370,28 @@ public class Game {
         }
 
         int choamGiven = 0;
+        Faction choamFaction = null;
         if (hasFaction("CHOAM")) {
-            int plusOne = (hasGameOption(GameOption.HOMEWORLDS) && !getFaction("CHOAM").isHighThreshold()) ? 1 : 0;
-            turnSummary.publish(
-                    getFaction("CHOAM").getEmoji() + " receives " +
-                            ((factions.size() * 2 * multiplier) + plusOne) +
-                            " " + Emojis.SPICE + " in dividends from their many investments."
-            );
+            choamFaction = getFaction("CHOAM");
+            choamFaction.addSpice(2 * factions.size() * multiplier, "CHOAM Charity");
+            turnSummary.publish(Emojis.CHOAM + " receives " + (factions.size() * 2 * multiplier) + " " + Emojis.SPICE + " in dividends from their many investments.");
         }
         for (Faction faction : factions) {
             if (faction instanceof ChoamFaction || faction.isDecliningCharity()) continue;
-            int spice = faction.getSpice();
-            if (faction instanceof BGFaction) {
-                int charity = multiplier * 2;
-                choamGiven += charity;
-                if (hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                turnSummary.publish(faction.getEmoji() + " have received " +
-                        2 * multiplier + " " + Emojis.SPICE + " in CHOAM Charity.");
-                faction.addSpice(charity, "CHOAM Charity");
-            } else if (spice < 2) {
+            int spice = faction instanceof BGFaction ? 0 : faction.getSpice();
+            if (spice < 2) {
                 int charity = multiplier * (2 - spice);
                 choamGiven += charity;
-                if (hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()) charity++;
-                turnSummary.publish(
-                        faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE +
-                                " in CHOAM Charity."
-                );
-                if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
+                if (hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold())
+                    charity++;
+                turnSummary.publish(faction.getEmoji() + " have received " + charity + " " + Emojis.SPICE + " in CHOAM Charity.");
+                if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION) && !(faction instanceof BGFaction))
                     TechToken.addSpice(this, TechToken.SPICE_PRODUCTION);
                 faction.addSpice(charity, "CHOAM Charity");
             }
         }
-        if (hasFaction("CHOAM")) {
-            Faction choamFaction = getFaction("CHOAM");
-            choamFaction.addSpice(2 * factions.size() * multiplier, "CHOAM Charity");
-            turnSummary.publish(
-                    choamFaction.getEmoji() + " has paid " + choamGiven +
-                            " " + Emojis.SPICE + " to factions in need."
-            );
+        if (choamFaction != null) {
+            turnSummary.publish(Emojis.CHOAM + " has paid " + choamGiven + " " + Emojis.SPICE + " to factions in need.");
             choamFaction.subtractSpice(choamGiven, "CHOAM Charity given");
         }
         if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
