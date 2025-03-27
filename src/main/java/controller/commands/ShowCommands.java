@@ -172,17 +172,17 @@ public class ShowCommands {
             table = overlay(table, ornithopterImage, new Point(1200 + offset, 200), 1);
         }
 
-        offset = 0;
-
-        StringBuilder leadersInTerritories = new StringBuilder();
         //Place leaders
+        StringBuilder leadersInTerritories = new StringBuilder();
+        int numLeaders = faction.getLeaders().size();
+        offset = (numLeaders - 1) * 450;
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage = getResourceImage(leader.getName());
             if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
             else leaderImage = resize(leaderImage, 500, 301);
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
-            offset += 450;
+            offset -= 450;
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
