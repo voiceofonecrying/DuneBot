@@ -635,7 +635,7 @@ public class Game {
             dial2 = dial;
         if (dial1 != null && dial2 != null) {
             turnSummary.publish(beforeFaction.getEmoji() + " dials " + dial1 + ", " + afterFaction.getEmoji() + " dials " + dial2);
-            setStorm(dial1 + dial2);
+            setInitialStorm(dial1, dial2);
             return true;
         }
         return false;
