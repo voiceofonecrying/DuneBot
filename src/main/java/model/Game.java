@@ -378,7 +378,12 @@ public class Game {
             turnSummary.publish(Emojis.CHOAM + " receives " + choamSpiceReceived + " " + Emojis.SPICE + " in dividends from their many investments.");
         }
         for (Faction faction : factions) {
-            if (faction instanceof ChoamFaction || faction.isDecliningCharity()) continue;
+            if (faction instanceof ChoamFaction)
+                continue;
+            if (faction.isDecliningCharity()) {
+                faction.getLedger().publish("Charity was declined.");
+                continue;
+            }
             int spice = faction instanceof BGFaction ? 0 : faction.getSpice();
             if (spice < 2) {
                 int charity = multiplier * (2 - spice);
