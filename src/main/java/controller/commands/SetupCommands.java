@@ -359,7 +359,7 @@ public class SetupCommands {
 
     public static void ixHandSelection(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String ixCardName = discordGame.required(ixCard).getAsString();
-        IxCommands.ixHandSelection(game, ixCardName);
+        game.getIxFaction().startingCard(ixCardName);
         advance(event.getGuild(), discordGame, game);
     }
 

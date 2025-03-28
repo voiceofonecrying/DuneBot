@@ -9,7 +9,6 @@ import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.*;
 import model.factions.Faction;
-import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -201,15 +200,9 @@ public class IxButtons implements Pressable {
     }
 
     private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        if (game.isSetupFinished()) {
-            throw new InvalidGameStateException("Setup phase is completed.");
-        } else if (ixFaction.getTreacheryHand().size() <= 4) {
-            throw new InvalidGameStateException("You have already selected your card.");
-        }
-        discordGame.queueMessage("You kept " + event.getComponentId().split("-")[3].trim() + ".");
+        String cardName = event.getComponentId().split("-")[3];
+        game.getIxFaction().startingCard(cardName);
         discordGame.queueDeleteMessage();
-        IxCommands.ixHandSelection(game, event.getComponentId().split("-")[3]);
         SetupCommands.advance(event.getGuild(), discordGame, game);
     }
 

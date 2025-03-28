@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -123,6 +124,32 @@ public class IxFaction extends Faction {
         choices.add(new DuneChoice("ix-confirm-start-" + cardName, "Confirm " + cardName));
         choices.add(new DuneChoice("secondary", "ix-confirm-start-reset", "Choose a different card"));
         chat.reply("Confirm your selection of " + cardName.trim() + ".", choices);
+    }
+
+    public void startingCard(String ixCardName) throws InvalidGameStateException {
+        if (game.isSetupFinished())
+            throw new InvalidGameStateException("Setup phase is completed.");
+        else if (treacheryHand.size() <= 4)
+            throw new InvalidGameStateException("You have already selected your card.");
+        TreacheryCard card = treacheryHand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
+
+        LinkedList<TreacheryCard> ixRejects = new LinkedList<>();
+        boolean cardToKeepFound = false;
+        for (TreacheryCard treacheryCard : treacheryHand) {
+            if (!cardToKeepFound && treacheryCard.equals(card)) {
+                cardToKeepFound = true;
+                continue;
+            }
+            ixRejects.add(treacheryCard);
+        }
+        Collections.shuffle(ixRejects);
+        ixRejects.forEach(treacheryCard -> game.getTreacheryDeck().add(treacheryCard));
+        this.treacheryHand.clear();
+        setHandLimit(4);
+        addTreacheryCard(card);
+        chat.reply("You kept " + ixCardName);
     }
 
     /**
