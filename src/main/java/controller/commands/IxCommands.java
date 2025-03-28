@@ -19,34 +19,14 @@ import static controller.commands.CommandOptions.*;
 public class IxCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(
-                Commands.slash("ix", "Commands related to the Ix Faction.").addSubcommands(
-                        new SubcommandData(
-                                "put-card-back",
-                                "Send one treachery card to the top or bottom of the deck."
-                        ).addOptions(CommandOptions.putBackCard, CommandOptions.topOrBottom),
-                        new SubcommandData(
-                                "block-bidding-advantage",
-                                "Prevent Ix from seeing the cards up for bid."
-                        ),
-                        new SubcommandData(
-                                "technology",
-                                "Swap a card in hand for the next card up for bid."
-                        ).addOptions(CommandOptions.ixCard),
-                        new SubcommandData(
-                                "ally-card-swap",
-                                "Ix ally can swap card just won for top card from treachery deck."
-                        ),
-                        new SubcommandData(
-                                "place-hms",
-                                "Place or move the HMS into a territory."
-                        ).addOptions(CommandOptions.hmsTerritory),
-                        new SubcommandData(
-                                "reposition-hms",
-                                "Rotate presentation of HMS by 90 degrees"
-                        ).addOptions(CommandOptions.clockDirection)
-                )
-        );
+        commandData.add(Commands.slash("ix", "Commands related to the Ix Faction.").addSubcommands(
+                new SubcommandData("put-card-back", "Send one treachery card to the top or bottom of the deck.").addOptions(CommandOptions.putBackCard, CommandOptions.topOrBottom),
+                new SubcommandData("block-bidding-advantage", "Prevent Ix from seeing the cards up for bid."),
+                new SubcommandData("technology", "Swap a card in hand for the next card up for bid.").addOptions(CommandOptions.ixCard),
+                new SubcommandData("ally-card-swap", "Ix ally can swap card just won for top card from treachery deck."),
+                new SubcommandData("place-hms", "Place or move the HMS into a territory.").addOptions(CommandOptions.hmsTerritory),
+                new SubcommandData("reposition-hms", "Rotate presentation of HMS by 90 degrees").addOptions(CommandOptions.clockDirection)
+        ));
 
         return commandData;
     }
@@ -68,13 +48,7 @@ public class IxCommands {
     public static void sendCardBackToDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(putBackCard).getAsString();
         String location = discordGame.required(topOrBottom).getAsString();
-        sendCardBackToDeck(discordGame, game, cardName, location, false);
-    }
-
-    public static void sendCardBackToDeck(DiscordGame discordGame, Game game, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
-        String message = "You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.";
-        game.getFaction("Ix").getChat().reply(message);
+        game.getIxFaction().sendCardBack(cardName, location, false);
         discordGame.pushGame();
     }
 
@@ -110,19 +84,4 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static void sendBackLocationButtons(Game game, String cardName) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
-        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
-        choices.add(new DuneChoice("secondary", "ix-reset-card-selection", "Choose a different card"));
-        game.getFaction("Ix").getChat().reply("Where do you want to send the " + cardName + "?", choices);
-    }
-
-    public static void confirmCardToSendBack(Game game, String cardName, String location) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
-        choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
-        choices.add(new DuneChoice("secondary", "ix-confirm-reject-reset", "Start over"));
-        game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
-    }
 }
