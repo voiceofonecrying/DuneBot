@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -84,6 +85,44 @@ public class IxFaction extends Faction {
             game.getTurnSummary().publish(Emojis.IX + " moved the HMS to " + territoryName);
         }
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void presentStartingCardsListAndChoices() throws InvalidGameStateException {
+        setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
+        for (Faction ignored : game.getFactions())
+            game.drawTreacheryCard(name, false, false);
+        if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION))
+            game.drawTreacheryCard(name, false, false);
+        game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs.");
+
+        String message = "Select one of the following " + Emojis.TREACHERY + " cards as your starting card. " + player;
+        List<String> cardNameAndType = treacheryHand.stream().map(card -> "**" + card.name() + "** _" + card.type() + "_").toList();
+        message += "\n\t" + String.join("\n\t", cardNameAndType);
+        chat.publish(message);
+        presentStartingCardChoices();
+    }
+
+    public void presentStartingCardChoices() throws InvalidGameStateException {
+        if (game.isSetupFinished())
+            throw new InvalidGameStateException("Setup phase is completed.");
+        else if (treacheryHand.size() <= 4)
+            throw new InvalidGameStateException("You have already selected your card.");
+        List<DuneChoice> choices = new ArrayList<>();
+        int i = 0; // Integer value used to distinguish button IDs when card names are the same, e.g. Shield and Shield
+        for (TreacheryCard card : treacheryHand)
+            choices.add(new DuneChoice("ix-starting-card-" + i++ + "-" + card.name(), card.name()));
+        chat.reply("", choices);
+    }
+
+    public void presentConfirmStartingCardChoices(String cardName) throws InvalidGameStateException {
+        if (game.isSetupFinished())
+            throw new InvalidGameStateException("Setup phase is completed.");
+        else if (treacheryHand.size() <= 4)
+            throw new InvalidGameStateException("You have already selected your card.");
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("ix-confirm-start-" + cardName, "Confirm " + cardName));
+        choices.add(new DuneChoice("secondary", "ix-confirm-start-reset", "Choose a different card"));
+        chat.reply("Confirm your selection of " + cardName.trim() + ".", choices);
     }
 
     /**

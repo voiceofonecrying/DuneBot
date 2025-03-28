@@ -190,25 +190,14 @@ public class IxButtons implements Pressable {
     }
 
     private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        if (game.isSetupFinished()) {
-            throw new InvalidGameStateException("Setup phase is completed.");
-        } else if (ixFaction.getTreacheryHand().size() <= 4) {
-            throw new InvalidGameStateException("You have already selected your card.");
-        }
+        String cardName = event.getComponentId().split("-")[4];
+        game.getIxFaction().presentConfirmStartingCardChoices(cardName);
         discordGame.queueDeleteMessage();
-        IxCommands.confirmStartingCard(game, event.getComponentId().split("-")[4]);
     }
 
     private static void resetStartingCardSelection(DiscordGame discordGame, Game game) throws InvalidGameStateException {
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        if (game.isSetupFinished()) {
-            throw new InvalidGameStateException("Setup phase is completed.");
-        } else if (ixFaction.getTreacheryHand().size() <= 4) {
-            throw new InvalidGameStateException("You have already selected your card.");
-        }
+        game.getIxFaction().presentStartingCardChoices();
         discordGame.queueDeleteMessage();
-        IxCommands.initialCardButtons(game);
     }
 
     private static void confirmStartingCard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {

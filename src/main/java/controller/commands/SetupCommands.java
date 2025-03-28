@@ -461,22 +461,16 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static StepStatus ixCardSelectionStep(Game game) {
+    public static StepStatus ixCardSelectionStep(Game game) throws InvalidGameStateException {
+        IxFaction ixFaction;
         try {
-            IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-            ixFaction.setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
-            for (Faction ignored : game.getFactions())
-                game.drawTreacheryCard(ixFaction.getName(), false, false);
-            if (game.hasFaction("Harkonnen") && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION)) {
-                game.drawTreacheryCard(ixFaction.getName(), false, false);
-            }
-            game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs.");
-            IxCommands.initialCard(game);
-            return StepStatus.STOP;
+            ixFaction = game.getIxFaction();
         } catch (IllegalArgumentException e) {
-            game.getModInfo().publish(Emojis.IX + " is not in the game. Skipping card selection and assigning :treachery: cards.");
+            game.getModInfo().publish(Emojis.IX + " is not in the game. Skipping card selection and assigning " + Emojis.TREACHERY + " cards.");
             return StepStatus.CONTINUE;
         }
+        ixFaction.presentStartingCardsListAndChoices();
+        return StepStatus.STOP;
     }
 
     public static StepStatus treacheryCardsStep(Game game) {

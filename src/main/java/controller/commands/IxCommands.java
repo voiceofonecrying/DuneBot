@@ -1,6 +1,5 @@
 package controller.commands;
 
-import constants.Emojis;
 import controller.DiscordGame;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -13,7 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.*;
 
 import static controller.commands.CommandOptions.*;
@@ -112,37 +110,6 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static void initialCard(Game game) {
-        StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        message.append(
-                MessageFormat.format(
-                        "Select one of the following {0} cards as your starting card. {1}",
-                        Emojis.TREACHERY, ixFaction.getPlayer()
-                )
-        );
-        for (TreacheryCard card : ixFaction.getTreacheryHand()) {
-            message.append(
-                    MessageFormat.format(
-                            "\n\t**{0}** _{1}_",
-                            card.name(), card.type()
-                    ));
-        }
-        ixFaction.getChat().publish(message.toString());
-        initialCardButtons(game);
-    }
-
-    public static void initialCardButtons(Game game) {
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
-        List<DuneChoice> choices = new ArrayList<>();
-        int i = 0;
-        for (TreacheryCard card : ixFaction.getTreacheryHand()) {
-            i++;
-            choices.add(new DuneChoice("ix-starting-card-" + i + "-" + card.name(), card.name()));
-        }
-        ixFaction.getChat().reply("", choices);
-    }
-
     public static void sendBackLocationButtons(Game game, String cardName) {
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
@@ -157,13 +124,6 @@ public class IxCommands {
         choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
         choices.add(new DuneChoice("secondary", "ix-confirm-reject-reset", "Start over"));
         game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
-    }
-
-    public static void confirmStartingCard(Game game, String cardName) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("ix-confirm-start-" + cardName, "Confirm " + cardName));
-        choices.add(new DuneChoice("secondary", "ix-confirm-start-reset", "Choose a different card"));
-        game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + ".", choices);
     }
 
     public static void ixHandSelection(Game game, String ixCardName) {
