@@ -637,7 +637,10 @@ public class SetupCommands {
     }
 
     public static StepStatus ixHMSPlacementStep(Game game) {
-        game.getModInfo().publish("Use /ix place-hms to set the initial placement of the HMS then /setup advance.");
+        IxFaction ix = (IxFaction) game.getFaction("Ix");
+        game.getGameActions().publish(ix.getEmoji() + " will place their starting 10 " + Emojis.FREMEN_TROOP + " and " + Emojis.FREMEN_FEDAYKIN);
+        ix.presentHMSPlacementChoices();
+        game.getModInfo().publish("If " + Emojis.IX + " is unable to place the HMS, you can use /ix place-hms to place it and then /setup advance.");
 
         return StepStatus.STOP;
     }

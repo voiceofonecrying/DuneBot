@@ -115,8 +115,8 @@ public class IxCommands {
         targetTerritory.addForces("Hidden Mobile Stronghold", 1);
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
-        discordGame.pushGame();
         game.setUpdated(UpdateType.MAP);
+        discordGame.pushGame();
         return targetTerritory;
     }
 
