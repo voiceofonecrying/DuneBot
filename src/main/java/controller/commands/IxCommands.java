@@ -42,11 +42,7 @@ public class IxCommands {
                         ),
                         new SubcommandData(
                                 "place-hms",
-                                "Place the HMS in a territory."
-                        ).addOptions(CommandOptions.hmsTerritory),
-                        new SubcommandData(
-                                "move-hms",
-                                "Move Hidden Mobile Stronghold to another territory"
+                                "Place or move the HMS into a territory."
                         ).addOptions(CommandOptions.hmsTerritory),
                         new SubcommandData(
                                 "reposition-hms",
@@ -68,7 +64,6 @@ public class IxCommands {
             case "technology" -> technology(discordGame, game);
             case "ally-card-swap" -> allyCardSwap(discordGame, game);
             case "place-hms" -> placeHMS(discordGame, game);
-            case "move-hms" -> moveHMS(discordGame, game);
             case "reposition-hms" -> rotateHMSGraphic(discordGame, game);
         }
     }
@@ -110,27 +105,10 @@ public class IxCommands {
         discordGame.pushGame();
     }
 
-    public static Territory placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Territory targetTerritory = game.getTerritories().get(discordGame.required(hmsTerritory).getAsString());
-        targetTerritory.addForces("Hidden Mobile Stronghold", 1);
-        game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
-        game.setIxHMSActionRequired(false);
+    public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String territoryName = discordGame.required(hmsTerritory).getAsString();
+        ((IxFaction) game.getFaction("Ix")).placeHMS(territoryName);
         discordGame.pushGame();
-        game.setUpdated(UpdateType.MAP);
-        return targetTerritory;
-    }
-
-    public static void moveHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElse(null);
-        for (Territory territory : game.getTerritories().values()) {
-            territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
-            game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territory);
-        }
-        Territory targetTerritory = placeHMS(discordGame, game);
-        if (territoryWithHMS == targetTerritory)
-            discordGame.getTurnSummary().queueMessage(Emojis.IX + " does not move the HMS.");
-        else
-            discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
     }
 
     public static void rotateHMSGraphic(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

@@ -1,15 +1,14 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
-import model.DuneChoice;
-import model.Game;
-import model.Territory;
-import model.TleilaxuTanks;
+import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class IxFaction extends Faction {
@@ -39,6 +38,52 @@ public class IxFaction extends Faction {
     @Override
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
         return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+    }
+
+    public void presentHMSPlacementChoices() {
+        shipment.clear();
+        String buttonSuffix = "-hms-placement";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        chat.reply("Where would you like to place the HMS? " + player, choices);
+    }
+
+    public void presentHMSPlacementExecutionChoices() {
+        String buttonSuffix = "-hms-placement";
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        chat.reply("Placing the HMS in " + shipment.getTerritoryName(), choices);
+    }
+
+    public void placeHMS() {
+        placeHMS(shipment.getTerritoryName());
+    }
+
+    public void placeHMS(String territoryName) {
+        Territories territories = game.getTerritories();
+        Territory territoryWithHMS = territories.values().stream().filter(t -> t.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElse(null);
+        if (territoryWithHMS != null) {
+            territoryWithHMS.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
+            game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territoryWithHMS);
+        }
+        Territory targetTerritory = territories.get(territoryName);
+        targetTerritory.addForces("Hidden Mobile Stronghold", 1);
+        game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
+        game.setIxHMSActionRequired(false);
+        if (territoryWithHMS == null) {
+            chat.reply("You placed the HMS in " + territoryName);
+            game.getTurnSummary().publish(Emojis.IX + " placed the HMS in " + territoryName);
+        } else if (territoryWithHMS == targetTerritory) {
+            chat.reply("You left the HMS in " + territoryName);
+            game.getTurnSummary().publish(Emojis.IX + " left the HMS in " + territoryName);
+        } else {
+            chat.reply("You moved the HMS to " + territoryName);
+            game.getTurnSummary().publish(Emojis.IX + " moved the HMS to " + territoryName);
+        }
+        game.setUpdated(UpdateType.MAP);
     }
 
     /**
