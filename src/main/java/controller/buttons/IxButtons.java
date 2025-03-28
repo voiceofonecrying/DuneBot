@@ -231,7 +231,6 @@ public class IxButtons implements Pressable {
         } else if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
-        discordGame.queueMessage("You selected " + event.getComponentId().split("-")[6].trim() + ".");
         discordGame.queueDeleteMessage();
         IxCommands.sendBackLocationButtons(game, event.getComponentId().split("-")[6]);
     }
@@ -243,7 +242,6 @@ public class IxButtons implements Pressable {
         } else if (!game.getBidding().isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
-        discordGame.queueMessage("You selected to send it to the " + event.getComponentId().split("-")[4].trim() + ".");
         discordGame.queueDeleteMessage();
         IxCommands.confirmCardToSendBack(game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4]);
     }
@@ -253,7 +251,6 @@ public class IxButtons implements Pressable {
         if (!bidding.isIxRejectOutstanding()) {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
-        discordGame.queueMessage("Starting over.");
         discordGame.queueDeleteMessage();
         bidding.presentCardToRejectChoices(game);
     }
@@ -263,7 +260,7 @@ public class IxButtons implements Pressable {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
         discordGame.queueDeleteMessage();
-        IxCommands.sendCardBackToDeck(event, discordGame, game, event.getComponentId().split("-")[4], event.getComponentId().split("-")[5], true);
+        IxCommands.sendCardBackToDeck(discordGame, game, event.getComponentId().split("-")[4], event.getComponentId().split("-")[5], true);
     }
 
     private static void sendCardBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -271,6 +268,6 @@ public class IxButtons implements Pressable {
             throw new InvalidGameStateException("You have already sent a card back.");
         }
         discordGame.queueDeleteMessage();
-        IxCommands.sendCardBackToDeck(event, discordGame, game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4], false);
+        IxCommands.sendCardBackToDeck(discordGame, game, event.getComponentId().split("-")[3], event.getComponentId().split("-")[4], false);
     }
 }

@@ -174,7 +174,7 @@ public class Bidding {
             i++;
             choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
         }
-        game.getFaction("Ix").getChat().publish("", choices);
+        game.getFaction("Ix").getChat().reply("", choices);
         ixRejectDecisionInProgress = true;
     }
 
