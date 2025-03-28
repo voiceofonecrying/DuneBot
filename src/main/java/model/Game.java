@@ -548,6 +548,10 @@ public class Game {
         return findFaction(name).orElseThrow(() -> new IllegalArgumentException("No faction with name " + name));
     }
 
+    public IxFaction getIxFaction() {
+        return (IxFaction) getFaction("Ix");
+    }
+
     public Boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
