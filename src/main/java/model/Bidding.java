@@ -167,13 +167,12 @@ public class Bidding {
     }
 
     public void presentCardToRejectChoices(Game game) throws InvalidGameStateException {
-        Bidding bidding = game.getBidding();
+        if (!ixRejectOutstanding)
+            throw new InvalidGameStateException("You have already sent a card back.");
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
-        for (TreacheryCard card : bidding.getMarket()) {
-            i++;
-            choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i + "-" + card.name(), card.name()));
-        }
+        for (TreacheryCard card : market)
+            choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i++ + "-" + card.name(), card.name()));
         game.getFaction("Ix").getChat().reply("", choices);
         ixRejectDecisionInProgress = true;
     }
@@ -375,9 +374,9 @@ public class Bidding {
                     "{0} {1} cards have been shown to {2}",
                     market.size(), Emojis.TREACHERY, Emojis.IX
             );
+            ixRejectOutstanding = true;
             presentCardToRejectMessage(game);
             marketShownToIx = true;
-            ixRejectOutstanding = true;
             turnSummary.publish(message);
         } else {
             updateBidOrder(game);
