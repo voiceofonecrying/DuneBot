@@ -125,30 +125,4 @@ public class IxCommands {
         choices.add(new DuneChoice("secondary", "ix-confirm-reject-reset", "Start over"));
         game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
     }
-
-    public static void ixHandSelection(Game game, String ixCardName) {
-        IxFaction faction = (IxFaction) game.getFaction("Ix");
-        List<TreacheryCard> hand = game.getFaction("Ix").getTreacheryHand();
-        Collections.shuffle(hand);
-        TreacheryCard card = hand.stream().filter(treacheryCard -> treacheryCard.name().equals(ixCardName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
-
-        LinkedList<TreacheryCard> ixRejects = new LinkedList<>();
-        boolean cardToKeepFound = false;
-        for (TreacheryCard treacheryCard : hand) {
-            if (!cardToKeepFound && treacheryCard.equals(card)) {
-                cardToKeepFound = true;
-                continue;
-            }
-            ixRejects.add(treacheryCard);
-        }
-        Collections.shuffle(ixRejects);
-        for (TreacheryCard treacheryCard : ixRejects) {
-            game.getTreacheryDeck().add(treacheryCard);
-        }
-        faction.getTreacheryHand().clear();
-        faction.setHandLimit(4);
-        faction.addTreacheryCard(card);
-    }
 }
