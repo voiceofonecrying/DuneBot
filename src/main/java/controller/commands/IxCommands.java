@@ -8,7 +8,6 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -68,25 +67,17 @@ public class IxCommands {
         }
     }
 
-    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, boolean fromButton, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
-        String message = "You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.";
-        if (fromButton)
-            event.getHook().sendMessage(message).queue();
-        else {
-            game.getFaction("Ix").getChat().publish(message);
-        }
-        discordGame.pushGame();
-    }
-
     public static void sendCardBackToDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(putBackCard).getAsString();
         String location = discordGame.required(topOrBottom).getAsString();
-        sendCardBackToDeck(null, discordGame, game, false, cardName, location, false);
+        sendCardBackToDeck(discordGame, game, cardName, location, false);
     }
 
-    public static void sendCardBackToDeck(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
-        sendCardBackToDeck(event, discordGame, game, true, cardName, location, requestTechnology);
+    public static void sendCardBackToDeck(DiscordGame discordGame, Game game, String cardName, String location, boolean requestTechnology) throws ChannelNotFoundException, InvalidGameStateException {
+        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
+        String message = "You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.";
+        game.getFaction("Ix").getChat().reply(message);
+        discordGame.pushGame();
     }
 
     public static void blockBiddingAdvantage(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -157,7 +148,7 @@ public class IxCommands {
         choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
         choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
         choices.add(new DuneChoice("secondary", "ix-reset-card-selection", "Choose a different card"));
-        game.getFaction("Ix").getChat().publish("Where do you want to send the " + cardName + "?", choices);
+        game.getFaction("Ix").getChat().reply("Where do you want to send the " + cardName + "?", choices);
     }
 
     public static void confirmCardToSendBack(Game game, String cardName, String location) {
@@ -165,7 +156,7 @@ public class IxCommands {
         choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
         choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
         choices.add(new DuneChoice("secondary", "ix-confirm-reject-reset", "Start over"));
-        game.getFaction("Ix").getChat().publish("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
+        game.getFaction("Ix").getChat().reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
     }
 
     public static void confirmStartingCard(Game game, String cardName) {
