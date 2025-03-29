@@ -331,6 +331,7 @@ public class Game {
 
     public void rotateHMS90degrees() {
         hmsRotation = (hmsRotation + 90) % 360;
+        setUpdated(UpdateType.MAP);
     }
 
     public int getHmsRotation() {

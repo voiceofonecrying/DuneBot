@@ -1,11 +1,9 @@
 package controller.commands;
 
 import controller.DiscordGame;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
-import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -27,7 +25,6 @@ public class IxCommands {
                 new SubcommandData("place-hms", "Place or move the HMS into a territory.").addOptions(CommandOptions.hmsTerritory),
                 new SubcommandData("reposition-hms", "Rotate presentation of HMS by 90 degrees").addOptions(CommandOptions.clockDirection)
         ));
-
         return commandData;
     }
 
@@ -70,7 +67,7 @@ public class IxCommands {
 
     public static void placeHMS(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String territoryName = discordGame.required(hmsTerritory).getAsString();
-        ((IxFaction) game.getFaction("Ix")).placeHMS(territoryName);
+        game.getIxFaction().placeHMS(territoryName);
         discordGame.pushGame();
     }
 
@@ -80,8 +77,6 @@ public class IxCommands {
             game.rotateHMS90degrees();
         }
         game.rotateHMS90degrees();
-        game.setUpdated(UpdateType.MAP);
         discordGame.pushGame();
     }
-
 }
