@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import constants.Emojis;
-import controller.commands.RicheseCommands;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -86,10 +85,10 @@ public class RicheseButtons implements Pressable {
         } else {
             String method = event.getComponentId().split("-")[4];
             discordGame.queueMessage("Selling " + cardName + " by " + method + " auction.");
-            RicheseCommands.blackMarketBid(discordGame, game, cardName, method);
-            if (method.equals("Silent")) {
+            game.getBidding().blackMarketAuction(game, cardName, method);
+            if (method.equals("Silent"))
                 discordGame.getModInfo().queueMessage("Players should use the bot to enter their bids for the silent auction.");
-            }
+            discordGame.pushGame();
         }
     }
 
@@ -144,10 +143,10 @@ public class RicheseButtons implements Pressable {
         } else {
             String method = event.getComponentId().split("-")[5];
             discordGame.queueMessage("Selling " + cardName + " by " + method + " auction.");
-            RicheseCommands.cardBid(discordGame, game, cardName, method);
-            if (method.equals("Silent")) {
+            game.getBidding().richeseCardAuction(game, cardName, method);
+            if (method.equals("Silent"))
                 discordGame.getModInfo().queueMessage("Players should use the bot to enter their bids for the silent auction.");
-            }
+            discordGame.pushGame();
         }
     }
 }
