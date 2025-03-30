@@ -246,7 +246,7 @@ public class BattlePlan {
         int fullStregnthSpecialWithSpice = 0;
         if (specialsNegated) {
             if (isSpiceNeeded(game, battle, faction, true)) {
-                fullStrengthSpecial = Math.min(fullStrengthSpecial, spice);
+                fullStrengthSpecial = Math.min(fullStrengthSpecial, spice - spiceUsed);
                 fullStregnthSpecialWithSpice = fullStrengthSpecial;
                 spiceUsed += fullStrengthSpecial;
             }
@@ -264,7 +264,7 @@ public class BattlePlan {
 
         if (faction instanceof EmperorFaction && battle.isEmperorCunning() && !specialsNegated) {
             int cunningSardaukar = Math.min(5, regularNotDialed);
-            int doubleStrengthRegular = Math.min(cunningSardaukar, spice);
+            int doubleStrengthRegular = Math.min(cunningSardaukar, spice - spiceUsed);
             doubleStrengthRegular = Math.min((wholeNumberDial - dialUsed) / 2, doubleStrengthRegular);
             spiceUsed += doubleStrengthRegular;
             dialUsed += 2 * doubleStrengthRegular;
@@ -282,7 +282,7 @@ public class BattlePlan {
             fullStrengthRegular = 0;
         fullStrengthRegular = Math.min(wholeNumberDial - dialUsed, fullStrengthRegular);
         if (isSpiceNeeded(game, battle, faction, false)) {
-            fullStrengthRegular = Math.min(fullStrengthRegular, spice);
+            fullStrengthRegular = Math.min(fullStrengthRegular, spice - spiceUsed);
             spiceUsed += fullStrengthRegular;
         }
         dialUsed += fullStrengthRegular;
