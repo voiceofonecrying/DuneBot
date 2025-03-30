@@ -59,26 +59,18 @@ public class RicheseCommands {
         }
     }
 
-    public static void cardBid(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().richeseCardAuction(game, cardName, bidType);
-        discordGame.pushGame();
-    }
-
     public static void cardBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(richeseCard).getAsString();
         String bidType = discordGame.required(richeseBidType).getAsString();
-        cardBid(discordGame, game, cardName, bidType);
-    }
-
-    public static void blackMarketBid(DiscordGame discordGame, Game game, String cardName, String bidType) throws ChannelNotFoundException, InvalidGameStateException {
-        game.getBidding().blackMarketAuction(game, cardName, bidType);
+        game.getBidding().richeseCardAuction(game, cardName, bidType);
         discordGame.pushGame();
     }
 
     public static void blackMarketBid(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(richeseBlackMarketCard).getAsString();
         String bidType = discordGame.required(richeseBlackMarketBidType).getAsString();
-        blackMarketBid(discordGame, game, cardName, bidType);
+        game.getBidding().blackMarketAuction(game, cardName, bidType);
+        discordGame.pushGame();
     }
 
     public static void removeRicheseCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

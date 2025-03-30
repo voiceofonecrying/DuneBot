@@ -545,12 +545,34 @@ public class Game {
         return Math.floorMod(rawTurnIndex - stormSection, factions.size());
     }
 
+    /**
+     * Get the named faction object
+     *
+     * @return the Faction object if the faction is in the game
+     * @throws IllegalArgumentException if the faction is not in the game
+     */
     public Faction getFaction(String name) {
         return findFaction(name).orElseThrow(() -> new IllegalArgumentException("No faction with name " + name));
     }
 
+    /**
+     * Get the Ix faction object
+     *
+     * @return the IxFaction object if Ix is in the game
+     * @throws IllegalArgumentException if Ix is not in the game
+     */
     public IxFaction getIxFaction() {
         return (IxFaction) getFaction("Ix");
+    }
+
+    /**
+     * Get the Richese faction object
+     *
+     * @return the RicheseFaction object if Richese is in the game
+     * @throws IllegalArgumentException if Richese is not in the game
+     */
+    public RicheseFaction getRicheseFaction() {
+        return (RicheseFaction) getFaction("Richese");
     }
 
     public Boolean hasFaction(String name) {

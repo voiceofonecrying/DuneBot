@@ -149,7 +149,7 @@ public class Bidding {
 
     private void presentCardToRejectMessage(Game game) throws InvalidGameStateException {
         StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = (IxFaction) game.getFaction("Ix");
+        IxFaction ixFaction = game.getIxFaction();
         message.append(
                 MessageFormat.format(
                         "Turn {0} - Select one of the following {1} cards to send back to the deck. {2}",
@@ -812,19 +812,15 @@ public class Bidding {
             return false;
         }
         cacheCardDecisionInProgress = true;
-        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
-        List<DuneChoice> choices = new ArrayList<>();
-        String message;
-        for (TreacheryCard card : richeseFaction.getTreacheryCardCache()) {
-            choices.add(new DuneChoice("richese-cache-card-" + card.name(), card.name()));
-        }
+        RicheseFaction richeseFaction = game.getRicheseFaction();
+        List<DuneChoice> choices = richeseFaction.getTreacheryCardCache().stream().map(card -> new DuneChoice("richese-cache-card-" + card.name(), card.name())).collect(Collectors.toList());
+        String message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
         if (bidCardNumber < numCardsForBid - 1) {
             message = "Please select your cache card to sell or choose to sell last. " + richeseFaction.getPlayer();
             choices.add(new DuneChoice("danger", "richese-cache-sell-last", "Sell cache card last"));
-        } else {
-            message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
         }
-        if (!richeseFaction.isHomeworldOccupied()) richeseFaction.getChat().publish(message, choices);
+        if (!richeseFaction.isHomeworldOccupied())
+            richeseFaction.getChat().publish(message, choices);
         else {
             richeseFaction.getOccupier().getChat().publish(message, choices);
             richeseFaction.getOccupier().getChat().publish("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
