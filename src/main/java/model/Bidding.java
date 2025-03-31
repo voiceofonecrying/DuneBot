@@ -24,6 +24,7 @@ public class Bidding {
     private boolean blackMarketCard;
     private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
+    private boolean richeseCacheCardOccupierChoice;
     private boolean ixTechnologyUsed;
     private int ixTechnologyCardNumber;
     private boolean marketPopulated;
@@ -60,6 +61,7 @@ public class Bidding {
         this.blackMarketCard = false;
         this.silentAuction = false;
         this.richeseCacheCardOutstanding = false;
+        this.richeseCacheCardOccupierChoice = false;
         this.ixTechnologyUsed = false;
         this.ixTechnologyCardNumber = 0;
         this.market = new LinkedList<>();
@@ -285,6 +287,7 @@ public class Bidding {
         RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
         cacheCardDecisionInProgress = false;
         richeseCacheCard = true;
+        faction.getChat().reply("Selling " + cardName + " by " + bidType + " auction.");
         setBidCard(game,
                 faction.removeTreacheryCardFromCache(
                         faction.getTreacheryCardFromCache(cardName)
@@ -293,6 +296,20 @@ public class Bidding {
         bidCardNumber++;
         runRicheseBid(game, bidType, false);
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
+        if (bidType.equals("Silent"))
+            game.getModInfo().publish("Players should use the bot to enter their bids for the silent auction.");
+    }
+
+    public void richeseCardFirstByOccupier(Game game) {
+        game.getFaction("Richese").getChat().reply("You will sell first.");
+        richeseCacheCardOccupierChoice = true;
+        presentCacheCardChoices(game);
+    }
+
+    public void richeseCardLast(Game game) {
+        game.getFaction("Richese").getChat().reply("You will sell last.");
+        game.getModInfo().publish(Emojis.RICHESE + " will be given buttons when it is time for the last card.");
+        cacheCardDecisionInProgress = false;
     }
 
     public void removeRicheseCacheCardFromGame(Game game) throws InvalidGameStateException {
@@ -813,19 +830,53 @@ public class Bidding {
         }
         cacheCardDecisionInProgress = true;
         RicheseFaction richeseFaction = game.getRicheseFaction();
+        Faction factionToGetMessage = richeseFaction;
         List<DuneChoice> choices = richeseFaction.getTreacheryCardCache().stream().map(card -> new DuneChoice("richese-cache-card-" + card.name(), card.name())).collect(Collectors.toList());
-        String message = "Please select your cache card to sell. You must sell now. " + richeseFaction.getPlayer();
-        if (bidCardNumber < numCardsForBid - 1) {
+        String message;
+        if (richeseCacheCardOccupierChoice) {
+            factionToGetMessage = richeseFaction.getOccupier();
+            message = "Please select the " + Emojis.RICHESE + " cache card to be sold. " + factionToGetMessage.getPlayer();
+        } else if (richeseFaction.isHomeworldOccupied()) {
+            message = "Would you like to sell your cache card first or last? " + richeseFaction.getPlayer();
+            message += "\n" + richeseFaction.getOccupier().getEmoji() + " occupies your homeworld and will choose the card.";
+            choices.clear();
+            choices.add(new DuneChoice("richese-cache-sell-first-occupier", "Sell cache card first"));
+            choices.add(new DuneChoice("richese-cache-sell-last", "Sell cache card last"));
+            richeseCacheCardOccupierChoice = true;
+        } else if (bidCardNumber < numCardsForBid - 1) {
             message = "Please select your cache card to sell or choose to sell last. " + richeseFaction.getPlayer();
             choices.add(new DuneChoice("danger", "richese-cache-sell-last", "Sell cache card last"));
+        } else {
+            message = "Please select your cache card to be sold. You must sell now. " + richeseFaction.getPlayer();
         }
-        if (!richeseFaction.isHomeworldOccupied())
-            richeseFaction.getChat().publish(message, choices);
-        else {
-            richeseFaction.getOccupier().getChat().publish(message, choices);
-            richeseFaction.getOccupier().getChat().publish("(You are getting these buttons because you occupy " + Emojis.RICHESE + " homeworld)");
-        }
+        factionToGetMessage.getChat().reply(message, choices);
         return true;
+    }
+
+    public void presentCacheCardMethodChoices(Game game, String cardName) {
+        RicheseFaction richese = game.getRicheseFaction();
+        if (richese.isHomeworldOccupied())
+            richese.getOccupier().getChat().reply("You selected " + cardName + ". " + Emojis.RICHESE + " chooses the bidding method.");
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
+        choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
+        choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "Silent", "Silent"));
+        if (!game.getRicheseFaction().isHomeworldOccupied())
+            choices.add(new DuneChoice("secondary", "richese-cache-card-method-reselect", "Start over"));
+        richese.getChat().reply("How would you like to sell " + cardName + "?", choices);
+    }
+
+    public void presentCacheCardConfirmChoices(Game game, String cardName, String method) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("success", "richese-cache-card-confirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction"));
+        String startOverLabel = "Start over";
+        String startOverID = "richese-cache-card-confirm-reselect";
+        if (game.getRicheseFaction().isHomeworldOccupied()) {
+            startOverLabel = "Reselect bid type";
+            startOverID = "richese-cache-card-" + cardName;
+        }
+        choices.add(new DuneChoice("secondary", startOverID, startOverLabel));
+        game.getRicheseFaction().getChat().reply("", choices);
     }
 
     public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue, boolean harkBonusBlocked) throws InvalidGameStateException {

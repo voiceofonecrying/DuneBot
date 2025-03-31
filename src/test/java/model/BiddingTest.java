@@ -1465,6 +1465,138 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#richeseCacheCardNotOccupied")
+    class RicheseCacheCardNotOccupied {
+        Bidding bidding;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(richese);
+            game.addFaction(choam);
+            game.advanceTurn();
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+        }
+
+        @Test
+        void testRicheseGetsCardChoices() {
+            assertEquals("Please select your cache card to sell or choose to sell last. ri", richeseChat.getMessages().getFirst());
+            assertEquals(11, richeseChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testRicheseGetsMethodChoices() {
+            richeseChat.clear();
+            bidding.presentCacheCardMethodChoices(game, "Ornithopter");
+            assertEquals("How would you like to sell Ornithopter?", richeseChat.getMessages().getFirst());
+            assertEquals(4, richeseChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testRicheseGetsConfirmChoices() {
+            richeseChat.clear();
+            bidding.presentCacheCardConfirmChoices(game, "Ornithopter", "Silent");
+            assertEquals("", richeseChat.getMessages().getFirst());
+            assertEquals(2, richeseChat.getChoices().getLast().size());
+            assertEquals("Start over", richeseChat.getChoices().getLast().getLast().getLabel());
+        }
+
+        @Test
+        void testRicheseGetsConfirmationMessage() throws InvalidGameStateException {
+            richeseChat.clear();
+            bidding.richeseCardAuction(game, "Ornithopter", "Silent");
+            assertEquals("Selling Ornithopter by Silent auction.", richeseChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testRicheseSellsLast() {
+            richeseChat.clear();
+            bidding.richeseCardLast(game);
+            assertEquals("You will sell last.", richeseChat.getMessages().getFirst());
+        }
+    }
+
+    @Nested
+    @DisplayName("#richeseCacheCardOccupied")
+    class RicheseCacheCardOccupied {
+        Bidding bidding;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(richese);
+            game.addFaction(choam);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            HomeworldTerritory richeseHomeworld = (HomeworldTerritory) game.getTerritory("Richese");
+            richeseHomeworld.removeForces(game, "Richese", 20);
+            richeseHomeworld.addForces("CHOAM", 1);
+            assertTrue(richese.isHomeworldOccupied());
+            game.advanceTurn();
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+        }
+
+        @Test
+        void testRicheseGetsCardtimingChoices() {
+            assertEquals("Would you like to sell your cache card first or last? ri\n" + Emojis.CHOAM + " occupies your homeworld and will choose the card.", richeseChat.getMessages().getFirst());
+            assertEquals(2, richeseChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testOccupierGetsCardChoicesWhenRicheseSellsFirst() {
+            richeseChat.clear();
+            bidding.richeseCardFirstByOccupier(game);
+            assertEquals("You will sell first.", richeseChat.getMessages().getFirst());
+            assertEquals("Please select the " + Emojis.RICHESE + " cache card to be sold. ch", choamChat.getMessages().getFirst());
+            assertEquals(10, choamChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testRicheseGetsMethodChoices() {
+            richeseChat.clear();
+            choamChat.clear();
+            bidding.presentCacheCardMethodChoices(game, "Ornithopter");
+            assertEquals("You selected Ornithopter. " + Emojis.RICHESE + " chooses the bidding method.", choamChat.getMessages().getFirst());
+            assertTrue(choamChat.getChoices().isEmpty());
+            assertEquals("How would you like to sell Ornithopter?", richeseChat.getMessages().getFirst());
+            assertEquals(3, richeseChat.getChoices().getFirst().size());
+        }
+
+        @Test
+        void testRicheseGetsConfirmChoices() {
+            richeseChat.clear();
+            choamChat.clear();
+            bidding.presentCacheCardConfirmChoices(game, "Ornithopter", "Silent");
+            assertTrue(choamChat.getMessages().isEmpty());
+            assertEquals("", richeseChat.getMessages().getFirst());
+            assertEquals(2, richeseChat.getChoices().getLast().size());
+            assertEquals("Reselect bid type", richeseChat.getChoices().getLast().getLast().getLabel());
+        }
+
+        @Test
+        void testRicheseGetsConfirmationMessage() throws InvalidGameStateException {
+            richeseChat.clear();
+            choamChat.clear();
+            bidding.richeseCardAuction(game, "Ornithopter", "Silent");
+            assertEquals(2, richeseChat.getMessages().size());
+            assertEquals("Selling Ornithopter by Silent auction.", richeseChat.getMessages().getFirst());
+            assertEquals("ri Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.", richeseChat.getMessages().getLast());
+            assertEquals("ch Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.", choamChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testRicheseSellsLast() throws InvalidGameStateException {
+            bidding.richeseCardLast(game);
+            bidding.auctionNextCard(game, false);
+            bidding.bid(game, richese, true, 1, false, false);
+            richeseChat.clear();
+            choamChat.clear();
+            bidding.awardTopBidder(game);
+            assertTrue(richeseChat.getMessages().isEmpty());
+            assertEquals("Please select the " + Emojis.RICHESE + " cache card to be sold. ch", choamChat.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#ixBiddingAdvantage")
     class IxBiddingAdvantage {
         @BeforeEach
