@@ -1780,20 +1780,7 @@ public class Game {
 
         turnSummary.publish("**Turn " + turn + " Battle Phase**");
         phaseForWhispers = "Turn " + turn + " Battle Phase\n";
-        List<Battle> battleTerritories = battles.getBattles(this);
-        if (!battleTerritories.isEmpty()) {
-            String battleMessages = battleTerritories.stream()
-                    .map((battle) ->
-                            MessageFormat.format("{0} in {1}",
-                                    battle.getFactionsMessage(this),
-                                    battle.getWholeTerritoryName()
-                            )
-                    ).collect(Collectors.joining("\n"));
-            turnSummary.publish("The following battles will take place this turn:\n" + battleMessages);
-            modInfo.publish("Use /run battle to initiate the first battle " + getModOrRoleMention());
-        } else {
-            turnSummary.publish("There are no battles this turn.");
-        }
+        battles.publishListOfBattles(this);
         setUpdated(UpdateType.MAP);
         setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
         return battles;

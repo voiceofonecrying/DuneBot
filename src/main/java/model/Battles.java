@@ -7,6 +7,7 @@ import model.factions.*;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Battles {
     private List<Battle> battles;
@@ -14,14 +15,59 @@ public class Battles {
     private boolean moritaniCanTakeVidal;
     private boolean ixCunning;
     private List<String> factionsInBattleOrder;
+    private String factionNameWithSapho;
+    private boolean juiceOfSaphoTBD;
 
     public Battles() {
     }
 
     public void startBattlePhase(Game game) {
+        factionsInBattleOrder = new ArrayList<>(game.getFactionsInStormOrder().stream().map(Faction::getName).toList());
         getBattles(game);
         if (battles.stream().anyMatch(b -> b.getForces().stream().anyMatch(f -> f.getName().equals("Ix"))))
             presentIxCunningChoices(game);
+        List<Faction> saphoList = game.getFactionsWithTreacheryCard("Juice of Sapho");
+        if (!saphoList.isEmpty()) {
+            Faction factionWithSapho = saphoList.getFirst();
+            if (battles.stream().anyMatch(b -> b.getForces().stream().anyMatch(f -> f.getFactionName().equals(factionWithSapho.getName())))) {
+                List<DuneChoice> choices = new ArrayList<>();
+                choices.add(new DuneChoice("battle-battles-juice-of-sapho-yes", "Yes"));
+                choices.add(new DuneChoice("battle-battles-juice-of-sapho-no", "No"));
+                factionWithSapho.getChat().publish("Will you play Juice of Sapho to be first in Battle phase? " + factionWithSapho.getPlayer(), choices);
+                factionNameWithSapho = factionWithSapho.getName();
+                juiceOfSaphoTBD = true;
+            }
+        }
+    }
+
+    public void publishListOfBattles(Game game) {
+        List<Battle> battleTerritories = getBattles(game);
+        if (!battleTerritories.isEmpty()) {
+            String battleMessages = battleTerritories.stream()
+                    .map((battle) -> battle.getFactionsMessage(game) + " in " + battle.getWholeTerritoryName())
+                    .collect(Collectors.joining("\n"));
+            game.getTurnSummary().publish("The following battles will take place this turn:\n" + battleMessages);
+            game.getModInfo().publish("Use /run battle to initiate the first battle " + game.getModOrRoleMention());
+        } else {
+            game.getTurnSummary().publish("There are no battles this turn.");
+        }
+    }
+
+    public void playJuiceOfSapho(Game game, Faction faction, boolean playIt) {
+        juiceOfSaphoTBD = false;
+        factionNameWithSapho = null;
+        if (playIt) {
+            List<String> temp = factionsInBattleOrder;
+            temp.remove(faction.getName());
+            factionsInBattleOrder = new ArrayList<>();
+            factionsInBattleOrder.add(faction.getName());
+            factionsInBattleOrder.addAll(temp);
+            faction.discard("Juice of Sapho");
+            faction.getChat().reply("You will play Juice of Sapho for the entire Battle phase.");
+            game.getTurnSummary().publish(faction.getEmoji() + " plays Juice of Sapho to be first in the Battle phase.");
+            publishListOfBattles(game);
+        } else
+            faction.getChat().reply("You will not play Juice of Sapho for the entire Battle phase.");
     }
 
     public boolean isIxCunning() {
@@ -44,7 +90,6 @@ public class Battles {
 
     public List<Battle> getBattles(Game game) {
         battles = new ArrayList<>();
-        factionsInBattleOrder = new ArrayList<>(game.getFactionsInStormOrder().stream().map(Faction::getName).toList());
         moritaniCanTakeVidal = false;
         int dukeVidalCount = 0;
         Territories territories = game.getTerritories();
@@ -149,6 +194,8 @@ public class Battles {
     }
 
     public void nextBattle(Game game) throws InvalidGameStateException {
+        if (juiceOfSaphoTBD)
+            throw new InvalidGameStateException(factionNameWithSapho + " must decide whether to play Juice of Sapho");
         if (currentBattle != null && !currentBattle.isResolved(game)) {
             if (currentBattle.isDiplomatMustBeResolved())
                 throw new InvalidGameStateException("Diplomat must be resolved before running the next battle.");
