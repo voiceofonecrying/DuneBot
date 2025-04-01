@@ -239,6 +239,7 @@ public class CommandManager extends ListenerAdapter {
                 case "setup" -> SetupCommands.runCommand(event, discordGame, game);
                 case "run" -> RunCommands.runCommand(event, discordGame, game);
                 case "battle" -> BattleCommands.runCommand(event, discordGame, game);
+                case "storm" -> StormCommands.runCommand(event, discordGame, game);
                 case "richese" -> RicheseCommands.runCommand(event, discordGame, game);
                 case "bt" -> BTCommands.runCommand(event, discordGame, game);
                 case "ecaz" -> EcazCommands.runCommand(event, discordGame, game);
@@ -269,8 +270,6 @@ public class CommandManager extends ListenerAdapter {
                 case "award-top-bidder" -> awardTopBidder(discordGame, game);
                 case "kill-leader" -> killLeader(discordGame, game);
                 case "revive-leader" -> reviveLeader(discordGame, game);
-                case "set-storm" -> setStorm(discordGame, game);
-                case "set-storm-movement" -> setStormMovement(discordGame, game);
                 case "bribe" -> bribe(discordGame, game);
                 case "mute" -> mute(discordGame, game);
                 case "assign-tech-token" -> assignTechToken(discordGame, game);
@@ -407,8 +406,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("award-top-bidder", "Designate that a card has been won by the top bidder during bidding phase and pay spice recipient.").addOptions(harkonnenKaramad));
         commandData.add(Commands.slash("revive-forces", "Revive forces for a faction.").addOptions(faction, revived, starredAmount, paid));
         commandData.add(Commands.slash("display-state", "Displays some element of the game in mod-info.").addOptions(data));
-        commandData.add(Commands.slash("set-storm", "Sets the storm to an initial sector.").addOptions(dialOne, dialTwo));
-        commandData.add(Commands.slash("set-storm-movement", "Override the storm movement").addOptions(sectors));
         commandData.add(Commands.slash("kill-leader", "Send a leader to the tanks.").addOptions(factionOrTanks, leader, faceDown));
         commandData.add(Commands.slash("revive-leader", "Revive a leader from the tanks.").addOptions(faction, reviveLeader, revivalCost));
         commandData.add(Commands.slash("mute", "Toggle mute for all bot messages."));
@@ -445,6 +442,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(ShowCommands.getCommands());
         commandData.addAll(SetupCommands.getCommands());
         commandData.addAll(RunCommands.getCommands());
+        commandData.addAll(StormCommands.getCommands());
         commandData.addAll(BattleCommands.getCommands());
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
@@ -912,21 +910,6 @@ public class CommandManager extends ListenerAdapter {
             }
         }
         moritani.setNewAssassinationTargetNeeded(true);
-        discordGame.pushGame();
-    }
-
-    public void setStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
-        int stormDialOne = discordGame.required(dialOne).getAsInt();
-        int stormDialTwo = discordGame.required(dialTwo).getAsInt();
-        game.setInitialStorm(stormDialOne, stormDialTwo);
-        discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
-    }
-
-    public void setStormMovement(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        int stormMovement = discordGame.required(sectors).getAsInt();
-        game.setStormMovement(stormMovement);
-
         discordGame.pushGame();
     }
 

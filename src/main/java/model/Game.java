@@ -769,6 +769,12 @@ public class Game {
         this.stormMovement = stormMovement;
     }
 
+    public void placeStorm(int sector) {
+        storm = sector;
+        turnSummary.publish("The storm has been placed over sector " + storm);
+        setUpdated(UpdateType.MAP);
+    }
+
     public boolean hasStrongholdSkills() {
         return hasGameOption(GameOption.STRONGHOLD_SKILLS);
     }
