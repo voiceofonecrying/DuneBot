@@ -19,8 +19,8 @@ public class Battles {
 
     public void startBattlePhase(Game game) {
         getBattles(game);
-//        if (battles.stream().anyMatch(b -> b.getForces().stream().anyMatch(f -> f.getName().equals("Ix"))))
-//            presentIxCunningChoices(game);
+        if (battles.stream().anyMatch(b -> b.getForces().stream().anyMatch(f -> f.getName().equals("Ix"))))
+            presentIxCunningChoices(game);
     }
 
     public boolean isIxCunning() {
@@ -34,7 +34,8 @@ public class Battles {
             game.discardNexusCard(ix);
             game.getTurnSummary().publish(Emojis.IX_SUBOID + " will count as full strength this turn and will not require " + Emojis.SPICE);
             battles.forEach(b -> b.setIxCunning(true));
-            currentBattle.setIxCunning(true);
+            if (currentBattle != null)
+                currentBattle.setIxCunning(true);
             ix.getChat().reply("You played the " + Emojis.IX + " Nexus Card. Your " + Emojis.IX_SUBOID + " will count as full strength and will not require " + Emojis.SPICE);
         } else
             ix.getChat().reply("You will not play the " + Emojis.IX + " Nexus Card.");
@@ -255,7 +256,7 @@ public class Battles {
         ixCunningChoices.add(new DuneChoice("battle-ix-nexus-cunning-no", "No"));
 
         if (faction.getNexusCard() != null) {
-            if (faction instanceof IxFaction && faction.getNexusCard().name().equals("Ix"))
+            if (faction instanceof IxFaction && faction.getNexusCard().name().equals("Ixians"))
                 faction.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card this turn? " + faction.getPlayer(), ixCunningChoices);
         }
     }
