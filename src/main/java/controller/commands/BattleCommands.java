@@ -21,7 +21,7 @@ import static controller.commands.CommandOptions.*;
 public class BattleCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("battle", "Commands for the players of the game.").addSubcommands(
+        commandData.add(Commands.slash("battle", "Commands for managing battles.").addSubcommands(
                 new SubcommandData("review-resolution", "Print battle results to mod-info for review."),//.addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho, aggressorTraitor, defenderTraitor, forceResolution),
                 new SubcommandData("publish-resolution", "Publish battle results to turn summary."),//.addOptions(deactivatePoisonTooth, addPortableSnooper, stoneBurnerDoesNotKill, useJuiceOfSapho, aggressorTraitor, defenderTraitor, forceResolution),
                 new SubcommandData("place-leader-in-territory", "Place a leader in a territory where they had battled.").addOptions(faction, factionLeader, territory),
