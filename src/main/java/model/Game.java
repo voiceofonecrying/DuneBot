@@ -533,19 +533,6 @@ public class Game {
     }
 
     /**
-     * Returns the faction's turn index (0-5), accounting for the storm.
-     *
-     * @param name The faction's name.
-     * @return The faction's turn index.
-     */
-    public int getFactionTurnIndex(String name) {
-        int rawTurnIndex = factions.indexOf(getFaction(name));
-        int stormSection = Math.ceilDiv(getStorm(), 3);
-
-        return Math.floorMod(rawTurnIndex - stormSection, factions.size());
-    }
-
-    /**
      * Get the named faction object
      *
      * @return the Faction object if the faction is in the game
@@ -1253,16 +1240,14 @@ public class Game {
 
         turnSummary.publish("**Turn " + turn + " Shipment and Movement Phase**");
         setPhaseForWhispers("Turn " + turn + " Shipment and Movement Phase\n");
-        turnOrder.clear();
         for (Faction faction : factions) {
-            turnOrder.add(faction.getName());
             faction.getShipment().clear();
             faction.getMovement().clear();
             faction.getShipment().setShipped(false);
             faction.getMovement().setMoved(false);
         }
-        while (getFactionTurnIndex(turnOrder.getFirst()) != 0)
-            turnOrder.addFirst(turnOrder.pollLast());turnOrder.removeIf(name -> name.equals("Guild"));
+        turnOrder.clear();
+        turnOrder.addAll(getFactionsInStormOrder().stream().map(Faction::getName).toList());
         boolean hasGuild = hasFaction("Guild");
         if (hasGuild) {
             turnOrder.remove("Guild");

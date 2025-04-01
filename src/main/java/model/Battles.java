@@ -13,6 +13,7 @@ public class Battles {
     private Battle currentBattle;
     private boolean moritaniCanTakeVidal;
     private boolean ixCunning;
+    private List<String> factionsInBattleOrder;
 
     public Battles() {
     }
@@ -43,6 +44,7 @@ public class Battles {
 
     public List<Battle> getBattles(Game game) {
         battles = new ArrayList<>();
+        factionsInBattleOrder = new ArrayList<>(game.getFactionsInStormOrder().stream().map(Faction::getName).toList());
         moritaniCanTakeVidal = false;
         int dukeVidalCount = 0;
         Territories territories = game.getTerritories();
@@ -54,7 +56,7 @@ public class Battles {
                 if (game.hasFaction("Moritani") && territorySectors.getFirst().isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani")
                         && !factionNames.contains("Ecaz")) dukeVidalCount++;
                 List<Faction> factions = factionNames.stream()
-                        .sorted(Comparator.comparingInt(game::getFactionTurnIndex))
+                        .sorted(Comparator.comparingInt(this::getFactionBattleTurnIndex))
                         .map(game::getFaction)
                         .toList();
 
@@ -69,8 +71,12 @@ public class Battles {
         }
         if (dukeVidalCount >= 2) moritaniCanTakeVidal = true;
         battles.sort(Comparator
-                .comparingInt(o -> game.getFactionTurnIndex(o.getFactions(game).getFirst().getName())));
+                .comparingInt(o -> getFactionBattleTurnIndex(o.getFactions(game).getFirst().getName())));
         return battles;
+    }
+
+    public int getFactionBattleTurnIndex(String factionName) {
+        return factionsInBattleOrder.indexOf(factionName);
     }
 
     public Faction getAggressor(Game game) {
