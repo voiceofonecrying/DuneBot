@@ -533,19 +533,6 @@ public class Game {
     }
 
     /**
-     * Returns the faction's turn index (0-5), accounting for the storm.
-     *
-     * @param name The faction's name.
-     * @return The faction's turn index.
-     */
-    public int getFactionTurnIndex(String name) {
-        int rawTurnIndex = factions.indexOf(getFaction(name));
-        int stormSection = Math.ceilDiv(getStorm(), 3);
-
-        return Math.floorMod(rawTurnIndex - stormSection, factions.size());
-    }
-
-    /**
      * Get the named faction object
      *
      * @return the Faction object if the faction is in the game
@@ -1253,16 +1240,14 @@ public class Game {
 
         turnSummary.publish("**Turn " + turn + " Shipment and Movement Phase**");
         setPhaseForWhispers("Turn " + turn + " Shipment and Movement Phase\n");
-        turnOrder.clear();
         for (Faction faction : factions) {
-            turnOrder.add(faction.getName());
             faction.getShipment().clear();
             faction.getMovement().clear();
             faction.getShipment().setShipped(false);
             faction.getMovement().setMoved(false);
         }
-        while (getFactionTurnIndex(turnOrder.getFirst()) != 0)
-            turnOrder.addFirst(turnOrder.pollLast());turnOrder.removeIf(name -> name.equals("Guild"));
+        turnOrder.clear();
+        turnOrder.addAll(getFactionsInStormOrder().stream().map(Faction::getName).toList());
         boolean hasGuild = hasFaction("Guild");
         if (hasGuild) {
             turnOrder.remove("Guild");
@@ -1795,20 +1780,7 @@ public class Game {
 
         turnSummary.publish("**Turn " + turn + " Battle Phase**");
         phaseForWhispers = "Turn " + turn + " Battle Phase\n";
-        List<Battle> battleTerritories = battles.getBattles(this);
-        if (!battleTerritories.isEmpty()) {
-            String battleMessages = battleTerritories.stream()
-                    .map((battle) ->
-                            MessageFormat.format("{0} in {1}",
-                                    battle.getFactionsMessage(this),
-                                    battle.getWholeTerritoryName()
-                            )
-                    ).collect(Collectors.joining("\n"));
-            turnSummary.publish("The following battles will take place this turn:\n" + battleMessages);
-            modInfo.publish("Use /run battle to initiate the first battle " + getModOrRoleMention());
-        } else {
-            turnSummary.publish("There are no battles this turn.");
-        }
+        battles.publishListOfBattles(this);
         setUpdated(UpdateType.MAP);
         setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
         return battles;

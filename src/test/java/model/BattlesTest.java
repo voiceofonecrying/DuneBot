@@ -340,6 +340,62 @@ public class BattlesTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#juiceOfSaphoEntireBattlePhase")
+    class JuiceOfSaphoEntireBattlePhase {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+
+            game.setStorm(14);
+//        tueksSietch.addForces("Guild", 5);
+            tueksSietch.addForces("Harkonnen", 2);
+            carthag.addForces("BG", 2);
+//        carthag.addForces("Harkonnen", 10);
+            cielagoNorth_eastSector.addForces("BG", 6);
+            cielagoNorth_eastSector.addForces("Fremen*", 1);
+            cielagoNorth_eastSector.addForces("Emperor*", 3);
+        }
+
+        @Test
+        void testJuiceOfSaphoHasBattles() throws InvalidGameStateException {
+            bg.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+            game.startBattlePhase();
+            battles = game.getBattles();
+            assertEquals("Will you play Juice of Sapho to be first in Battle phase? bg", bgChat.getMessages().getFirst());
+            assertEquals(2, bgChat.getChoices().getFirst().size());
+            try {
+                battles.nextBattle(game);
+                fail();
+            } catch (InvalidGameStateException e) {
+                assertEquals("BG must decide whether to play Juice of Sapho", e.getMessage());
+            }
+            turnSummary.clear();
+            battles.playJuiceOfSapho(game, bg, true);
+            assertFalse(bg.hasTreacheryCard("Juice of Sapho"));
+            assertDoesNotThrow(() -> battles.nextBattle(game));
+
+            assertTrue(turnSummary.getMessages().get(2).startsWith("The following battles will take place this turn:\n" + Emojis.BG));
+            assertEquals(Emojis.BG + " must choose where they will fight:\n" +
+                            "Carthag: 2 " + Emojis.BG_FIGHTER + " vs 10 " + Emojis.HARKONNEN_TROOP + "\n" +
+                            "Cielago North: 6 " + Emojis.BG_FIGHTER + " vs 3 " + Emojis.EMPEROR_SARDAUKAR + " vs 1 " + Emojis.FREMEN_FEDAYKIN,
+                    turnSummary.messages.getLast());
+        }
+
+        @Test
+        void testJuiceOfSaphoHasBNoattles() throws InvalidGameStateException {
+            atreides.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+            game.startBattlePhase();
+            battles = game.getBattles();
+            assertDoesNotThrow(() -> battles.nextBattle(game));
+        }
+    }
+
+    @Nested
     @DisplayName("#DiplomatMustBeResolved")
     class DiplomatMustBeResolved {
         @BeforeEach
