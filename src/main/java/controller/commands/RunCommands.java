@@ -100,9 +100,16 @@ public class RunCommands {
             IxButtons.hmsSubPhase(discordGame, game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
-            if (game.isIxHMSActionRequired()) throw new InvalidGameStateException("Ix must choose to move the HMS before advancing.");
-            startStormPhase(discordGame, game);
-            game.advanceSubPhase();
+            if (game.isIxHMSActionRequired())
+                throw new InvalidGameStateException("Ix must choose to move the HMS before advancing.");
+            game.startStormPhase();
+            if (game.getTurn() == 1) {
+                endStormPhase(discordGame, game);
+                game.advancePhase();
+                game.startSpiceBlowPhase();
+                game.advanceSubPhase();
+            } else
+                game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 3) {
             endStormPhase(discordGame, game);
             game.advancePhase();
@@ -174,22 +181,11 @@ public class RunCommands {
         discordGame.getTurnSummary().queueMessage(game.getQuotes().get(phase).removeFirst());
     }
 
-    public static void startStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.startStormPhase();
-
-        if (game.getTerritories().get("Ecological Testing Station") != null && game.getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
-            Faction faction = game.getTerritory("Ecological Testing Station").getActiveFactions(game).getFirst();
-            faction.getChat().publish("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
-                    List.of(new DuneChoice("storm-1", "-1"), new DuneChoice("secondary", "storm0", "0"), new DuneChoice("storm1", "+1")));
-        }
-        if (game.getTurn() == 1) {
-            discordGame.getModInfo().queueMessage("Run advance to complete turn 1 storm phase.");
-        }
-    }
-
     public static void endStormPhase(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         Map<String, Territory> territories = game.getTerritories();
-        if (game.getTurn() != 1) {
+        if (game.getTurn() == 1) {
+            game.endStormPhaseTurn1();
+        } else {
             TurnSummary turnSummary = discordGame.getTurnSummary();
             turnSummary.queueMessage("The storm moves " + game.getStormMovement() + " sectors this turn.");
 
