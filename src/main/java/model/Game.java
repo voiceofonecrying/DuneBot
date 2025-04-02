@@ -636,8 +636,6 @@ public class Game {
 
     public void setStorm(int storm) {
         this.storm = ((storm - 1) % 18) + 1;
-        dial1 = null;
-        dial2 = null;
     }
 
     public boolean setStormDial(Faction faction, int dial) {
@@ -773,6 +771,7 @@ public class Game {
         storm = sector;
         turnSummary.publish("The storm has been placed over sector " + storm);
         setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
     }
 
     public boolean hasStrongholdSkills() {
@@ -966,7 +965,9 @@ public class Game {
 
     public void setInitialStorm(int stormDialOne, int stormDialTwo) {
         advanceStorm(stormDialOne + stormDialTwo);
-        turnSummary.publish("The storm has been initialized to sector " + storm + " (" + stormDialOne + " + " + stormDialTwo + ")");
+        dial1 = stormDialOne;
+        dial2 = stormDialTwo;
+        publishInitialStormMessage();
         if (hasGameOption(GameOption.TECH_TOKENS)) {
             List<TechToken> techTokens = new LinkedList<>();
             Map<String, TechToken> defaultAssignments = Map.of(
@@ -989,6 +990,14 @@ public class Game {
             }
         }
         setUpdated(UpdateType.MAP);
+        setUpdated(UpdateType.MAP_ALSO_IN_TURN_SUMMARY);
+    }
+
+    public void publishInitialStormMessage() {
+        String message = "The storm has been initialized to sector " + storm;
+        if (dial1 != null && dial2 != null)
+            message += ": " + factions.getLast().getEmoji() + " " + dial1 + " + " + factions.getFirst().getEmoji() + " " + dial2 + ".";
+        turnSummary.publish(message);
     }
 
     public boolean ixCanMoveHMS() {
@@ -1058,6 +1067,18 @@ public class Game {
                 turnSummary.publish("(Check if storm position prevents use of Family Atomics.)");
             }
         }
+
+        if (territories.get("Ecological Testing Station") != null && getTerritory("Ecological Testing Station").countActiveFactions() == 1) {
+            Faction faction = getTerritory("Ecological Testing Station").getActiveFactions(this).getFirst();
+            faction.getChat().publish("What have the ecologists at the testing station discovered about the storm movement? " + faction.getPlayer(),
+                    List.of(new DuneChoice("storm-1", "-1"), new DuneChoice("secondary", "storm0", "0"), new DuneChoice("storm1", "+1")));
+        }
+    }
+
+    public void endStormPhaseTurn1() {
+        publishInitialStormMessage();
+        dial1 = null;
+        dial2 = null;
     }
 
     public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException, IOException {

@@ -38,12 +38,11 @@ public class StormCommands {
         }
     }
 
-    public static void setInitialStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void setInitialStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int stormDialOne = discordGame.required(dialOne).getAsInt();
         int stormDialTwo = discordGame.required(dialTwo).getAsInt();
         game.setInitialStorm(stormDialOne, stormDialTwo);
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
     }
 
     public static void setStormMovement(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
@@ -52,10 +51,9 @@ public class StormCommands {
         discordGame.pushGame();
     }
 
-    public static void placeStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void placeStorm(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         int stormSector = discordGame.required(sector).getAsInt();
         game.placeStorm(stormSector);
         discordGame.pushGame();
-        ShowCommands.showBoard(discordGame, game);
     }
 }
