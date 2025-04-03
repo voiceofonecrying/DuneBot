@@ -1414,8 +1414,7 @@ public class Faction {
             if (territory.factionMustMoveOut(game, this))
                 movement.setMustMoveOutOf(territoryName);
             if (noField >= 0) {
-                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
-                richese.shipNoField(this, territory, noField, karama, !crossShipFrom.isEmpty(), force);
+                game.getRicheseFaction().shipNoField(this, territory, noField, karama, !crossShipFrom.isEmpty(), force);
                 if (force > 0)
                     placeForces(territory, force, 0, true, true, false, game, karama, false);
                 if (game.hasFaction("Ecaz"))

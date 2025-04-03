@@ -199,7 +199,7 @@ public class RunCommands {
                                         !t.isRock()
                         ).toList();
                 if (territoriesInStorm.stream().anyMatch(Territory::hasRicheseNoField)) {
-                    RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                    RicheseFaction richese = game.getRicheseFaction();
                     richese.revealNoField(game);
                 }
 

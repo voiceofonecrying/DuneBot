@@ -572,7 +572,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void richeseNoFieldShip(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean isAlly) throws ChannelNotFoundException {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
-        Faction faction = game.getFaction("Richese");
+        Faction faction = game.getRicheseFaction();
         String componentId = "richese-no-field-ship-";
         if (isAlly) {
             faction = game.getFaction(faction.getAlly());
@@ -687,7 +687,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             }
 
             if (faction instanceof RicheseFaction || faction.getAlly().equals("Richese")) {
-                RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+                RicheseFaction richese = game.getRicheseFaction();
                 String buttonPrefix = (faction instanceof RicheseFaction) ? "richese-no-field-ship-" : "richese-ally-no-field-ship-";
                 List<DuneChoice> choices = new ArrayList<>();
                 List<Integer> noFields = new LinkedList<>();
@@ -796,7 +796,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     private static void richeseNoFieldMove(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction richese = game.getRicheseFaction();
         richese.getMovement().setMovingNoField(true);
         queueForcesButtons(event, game, discordGame, richese, false, false, false, false, false);
         discordGame.pushGame();

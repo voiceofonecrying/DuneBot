@@ -1446,7 +1446,7 @@ public class Battle {
 
         RicheseFaction richeseFaction = null;
         if (game.hasFaction("Richese"))
-            richeseFaction = (RicheseFaction) game.getFaction("Richese");
+            richeseFaction = game.getRicheseFaction();
         Integer noFieldValue = getForces().stream().filter(f -> f.getName().equals("NoField")).map(Force::getStrength).findFirst().orElse(null);
         if (noFieldValue != null) {
             resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
@@ -1697,7 +1697,7 @@ public class Battle {
             String ambassador = allTerritorySectors.stream().map(Territory::getEcazAmbassador).filter(Objects::nonNull).findFirst().orElse(null);
             if (executeResolution) {
                 if (noFieldTerritory != null)
-                    ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
+                    game.getRicheseFaction().revealNoField(game);
                 for (Territory t : allTerritorySectors) {
                     for (Force f : nonCombatantForcesInSector(game, t)) {
                         int regular = f.getName().equals(f.getFactionName()) ? f.getStrength() : 0;

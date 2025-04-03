@@ -697,9 +697,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> richeseCard(Game game, String searchValue) {
         if (game.hasFaction("Richese")) {
-            RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
-            List<TreacheryCard> cards = faction.getTreacheryCardCache();
-
+            List<TreacheryCard> cards = game.getRicheseFaction().getTreacheryCardCache();
             return cards.stream().map(TreacheryCard::name)
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice(card, card))
@@ -711,9 +709,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> richeseBlackMarketCard(Game game, String searchValue) {
         if (game.hasFaction("Richese")) {
-            Faction faction = game.getFaction("Richese");
-            List<TreacheryCard> cards = faction.getTreacheryHand();
-
+            List<TreacheryCard> cards = game.getRicheseFaction().getTreacheryHand();
             return cards.stream().map(TreacheryCard::name)
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice(card, card))
