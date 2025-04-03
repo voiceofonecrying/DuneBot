@@ -6,7 +6,6 @@ import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.DuneChoice;
 import model.Game;
-import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
@@ -30,7 +29,7 @@ public class RicheseButtons implements Pressable {
     }
 
     private static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        ((RicheseFaction) game.getFaction("Richese")).revealNoField(game);
+        game.getRicheseFaction().revealNoField(game);
         discordGame.queueMessage("You have revealed your No-Field.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
@@ -54,7 +53,7 @@ public class RicheseButtons implements Pressable {
         choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
         choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "Silent", "Silent"));
         choices.add(new DuneChoice("secondary", "richese-black-market-method-reselect", "Start over"));
-        game.getFaction("Richese").getChat().reply("How would you like to sell " + cardName + "?", choices);
+        game.getRicheseFaction().getChat().reply("How would you like to sell " + cardName + "?", choices);
     }
 
     private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
@@ -73,7 +72,7 @@ public class RicheseButtons implements Pressable {
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("success", "richese-black-market-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
         choices.add(new DuneChoice("secondary", "richese-black-market-reselect", "Start over"));
-        game.getFaction("Richese").getChat().reply("", choices);
+        game.getRicheseFaction().getChat().reply("", choices);
     }
 
     private static void confirmBlackMarket(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

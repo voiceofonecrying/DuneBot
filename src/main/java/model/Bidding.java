@@ -84,7 +84,7 @@ public class Bidding {
 
         RicheseFaction richeseFaction;
         try {
-            richeseFaction = (RicheseFaction) game.getFaction("Richese");
+            richeseFaction = game.getRicheseFaction();
             if (richeseFaction.getTreacheryHand().isEmpty()) {
                 game.getModInfo().publish(Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
             } else {
@@ -181,7 +181,7 @@ public class Bidding {
 
     public void askBlackMarket(Game game) {
         blackMarketDecisionInProgress = true;
-        RicheseFaction richeseFaction = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction richeseFaction = game.getRicheseFaction();
         String message2 = "Select a " + Emojis.TREACHERY + " card to sell on the black market. " + richeseFaction.getPlayer();
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
@@ -258,7 +258,7 @@ public class Bidding {
                 factionsInBidDirection = factions;
             }
 
-            int richeseIndex = factionsInBidDirection.indexOf(game.getFaction("Richese"));
+            int richeseIndex = factionsInBidDirection.indexOf(game.getRicheseFaction());
             bidOrderFactions.addAll(factionsInBidDirection.subList(richeseIndex + 1, factions.size()));
             bidOrderFactions.addAll(factionsInBidDirection.subList(0, richeseIndex + 1));
             List<String> bidOrder = bidOrderFactions.stream().map(Faction::getName).collect(Collectors.toList());
@@ -284,7 +284,7 @@ public class Bidding {
             }
         }
 
-        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction faction = game.getRicheseFaction();
         cacheCardDecisionInProgress = false;
         richeseCacheCard = true;
         faction.getChat().reply("Selling " + cardName + " by " + bidType + " auction.");
@@ -301,13 +301,13 @@ public class Bidding {
     }
 
     public void richeseCardFirstByOccupier(Game game) {
-        game.getFaction("Richese").getChat().reply("You will sell first.");
+        game.getRicheseFaction().getChat().reply("You will sell first.");
         richeseCacheCardOccupierChoice = true;
         presentCacheCardChoices(game);
     }
 
     public void richeseCardLast(Game game) {
-        game.getFaction("Richese").getChat().reply("You will sell last.");
+        game.getRicheseFaction().getChat().reply("You will sell last.");
         game.getModInfo().publish(Emojis.RICHESE + " will be given buttons when it is time for the last card.");
         cacheCardDecisionInProgress = false;
     }
@@ -332,7 +332,7 @@ public class Bidding {
         }
 
         blackMarketDecisionInProgress = false;
-        Faction faction = game.getFaction("Richese");
+        Faction faction = game.getRicheseFaction();
         List<TreacheryCard> cards = faction.getTreacheryHand();
 
         TreacheryCard card = cards.stream()
@@ -861,22 +861,23 @@ public class Bidding {
         choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
         choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
         choices.add(new DuneChoice("richese-cache-card-method-" + cardName + "-" + "Silent", "Silent"));
-        if (!game.getRicheseFaction().isHomeworldOccupied())
+        if (!richese.isHomeworldOccupied())
             choices.add(new DuneChoice("secondary", "richese-cache-card-method-reselect", "Start over"));
         richese.getChat().reply("How would you like to sell " + cardName + "?", choices);
     }
 
     public void presentCacheCardConfirmChoices(Game game, String cardName, String method) {
+        RicheseFaction richese = game.getRicheseFaction();
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("success", "richese-cache-card-confirm-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction"));
         String startOverLabel = "Start over";
         String startOverID = "richese-cache-card-confirm-reselect";
-        if (game.getRicheseFaction().isHomeworldOccupied()) {
+        if (richese.isHomeworldOccupied()) {
             startOverLabel = "Reselect bid type";
             startOverID = "richese-cache-card-" + cardName;
         }
         choices.add(new DuneChoice("secondary", startOverID, startOverLabel));
-        game.getRicheseFaction().getChat().reply("", choices);
+        richese.getChat().reply("", choices);
     }
 
     public void assignAndPayForCard(Game game, String winnerName, String paidToFactionName, int spentValue, boolean harkBonusBlocked) throws InvalidGameStateException {

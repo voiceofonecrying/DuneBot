@@ -79,7 +79,7 @@ public class RicheseCommands {
     }
 
     public static void karamaBuy(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        RicheseFaction faction = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction faction = game.getRicheseFaction();
         if (faction.isSpecialKaramaPowerUsed()) {
             throw new InvalidGameStateException(Emojis.RICHESE + " has already used their special Karama power.");
         } else if (faction.getSpice() < 3) {
@@ -116,7 +116,7 @@ public class RicheseCommands {
         String territoryName = discordGame.required(territory).getAsString();
 
         Territory territory = game.getTerritories().get(territoryName);
-        RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction richese = game.getRicheseFaction();
         richese.shipNoField(richese, territory, noField, false, false, 0);
         if (game.hasFaction("Ecaz"))
             ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, richese);
@@ -127,7 +127,7 @@ public class RicheseCommands {
     }
 
     public static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        RicheseFaction richese = (RicheseFaction) game.getFaction("Richese");
+        RicheseFaction richese = game.getRicheseFaction();
         Faction factionToReveal = richese;
         if (discordGame.optional(ecazAllyNoField) != null && discordGame.required(ecazAllyNoField).getAsBoolean())
             factionToReveal = game.getFaction(richese.getAlly());
