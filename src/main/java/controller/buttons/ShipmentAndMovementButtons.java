@@ -1068,7 +1068,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
         List<Button> strongholds = new ArrayList<>();
         for (Territory t : game.getTerritories().values()) {
-            if (validStronghold(game, t, faction, fremenRide || btHTPlacement)) {
+            if (t.isValidStrongholdForStrongholdShippingButtons(faction, fremenRide || btHTPlacement)) {
                 Button button = shipToTerritoryButton(game, faction, buttonSuffix, t.getTerritoryName(), startingForces);
                 strongholds.add(button);
             }

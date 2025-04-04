@@ -29,6 +29,7 @@ public class IxFaction extends Faction {
     @Override
     public void joinGame(@NotNull Game game) {
         super.joinGame(game);
+        game.getTerritories().addHMS();
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix", 3);
         game.getTerritories().get("Hidden Mobile Stronghold").addForces("Ix*", 3);
         Territory ix = game.getTerritories().addHomeworld(game, homeworld, name);

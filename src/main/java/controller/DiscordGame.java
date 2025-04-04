@@ -380,6 +380,18 @@ public class DiscordGame {
                 f.setAllianceThread(getAllianceThread(f, f.getAlly()));
         }
 
+        //Temporary migration to remove HMS from games that do not have Ix
+        if (!game.hasFaction("Ix")) {
+            for (Territory territory : game.getTerritories().values()) {
+                if (territory.hasForce("Hidden Mobile Stronghold")) {
+                    Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+                    game.removeTerritoryFromAnotherTerritory(hms, territory);
+                    territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
+                }
+            }
+            game.getTerritories().remove("Hidden Mobile Stronghold");
+        }
+
         game.setTurnSummary(getTurnSummary(game));
         game.setWhispers(getWhispers(game));
         game.setGameActions(getGameActions());

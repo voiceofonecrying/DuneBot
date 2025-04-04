@@ -1741,6 +1741,7 @@ class GameTest extends DuneTest {
 
         @BeforeEach
         void setUp() {
+            game.addFaction(ix);
             hms = game.getTerritory("Hidden Mobile Stronghold");
             shieldWallNorth = game.getTerritory(shieldWallNorthName);
         }
@@ -1771,6 +1772,7 @@ class GameTest extends DuneTest {
 
         @BeforeEach
         void setUp() {
+            game.addFaction(ix);
             hms = game.getTerritory("Hidden Mobile Stronghold");
             shieldWallNorth = game.getTerritory(shieldWallNorthName);
         }

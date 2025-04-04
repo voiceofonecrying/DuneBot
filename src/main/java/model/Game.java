@@ -1001,8 +1001,8 @@ public class Game {
     }
 
     public boolean ixCanMoveHMS() {
-        if (hasFaction("Ix")) {
-            Territory hms = getTerritory("Hidden Mobile Stronghold");
+        Territory hms = territories.get("Hidden Mobile Stronghold");
+        if (hms != null) {
             int cyborgsInHMS = hms.getForceStrength("Ix*");
             int suboidsInHMS = hms.getForceStrength("Ix");
             return (cyborgsInHMS + suboidsInHMS > 0);

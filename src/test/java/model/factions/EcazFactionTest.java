@@ -150,6 +150,26 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("sendAmbassadorLocationMessage")
+    class SendAmbassadorLocationMessage {
+        @Test
+        void testNoHMS() {
+            faction.sendAmbassadorLocationMessage(1);
+            assertEquals(6, chat.getChoices().getFirst().size());
+            assertTrue(chat.getChoices().getFirst().stream().noneMatch(c -> c.getLabel().contains("Hidden Mobile Stronghold")));
+        }
+
+        @Test
+        void testHMSIxInGame() throws IOException {
+            IxFaction ix = new IxFaction("ix", "ix");
+            game.addFaction(ix);
+            faction.sendAmbassadorLocationMessage(1);
+            assertEquals(7, chat.getChoices().getFirst().size());
+            assertTrue(chat.getChoices().getFirst().stream().anyMatch(c -> c.getLabel().contains("Hidden Mobile Stronghold")));
+        }
+    }
+
+    @Nested
     @DisplayName("#checkForAmbassadorTrigger")
     class CheckForAmbassadorTrigger {
         AtreidesFaction atreides;
