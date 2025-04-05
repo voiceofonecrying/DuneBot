@@ -232,7 +232,6 @@ public class EcazFaction extends Faction {
         List<DuneChoice> choices = new LinkedList<>();
         for (Territory territory : game.getTerritories().values()) {
             if (!territory.isStronghold()) continue;
-            if (territory.getTerritoryName().equals("Hidden Mobile Stronghold") && !game.hasFaction("Ix")) continue;
             DuneChoice stronghold = new DuneChoice("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
             if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector())
                 stronghold.setDisabled(true);

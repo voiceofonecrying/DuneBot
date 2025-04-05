@@ -348,12 +348,15 @@ public class TerritoryTest extends DuneTest {
     @Nested
     @DisplayName("#factionMayNotEnter")
     class FactionMayNotEnter {
+        Territory hms;
+
         @BeforeEach
         void setUp() {
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(bg);
             game.addFaction(ix);
+            hms = game.getTerritory("Hidden Mobile Stronghold");
             game.addFaction(ecaz);
             game.addFaction(richese);
 

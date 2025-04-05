@@ -86,7 +86,6 @@ public class DuneTest {
     Territory sietchTabr;
     Territory habbanyaSietch;
     Territory tueksSietch;
-    Territory hms;
     Territory polarSink;
     Territory funeralPlain;
     Territory garaKulon;
@@ -224,7 +223,6 @@ public class DuneTest {
         sietchTabr = game.getTerritory("Sietch Tabr");
         habbanyaSietch = game.getTerritory("Habbanya Sietch");
         tueksSietch = game.getTerritory("Tuek's Sietch");
-        hms = game.getTerritory("Hidden Mobile Stronghold");
         polarSink = game.getTerritory("Polar Sink");
         funeralPlain = game.getTerritory("Funeral Plain");
         garaKulon = game.getTerritory("Gara Kulon");

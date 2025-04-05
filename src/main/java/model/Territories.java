@@ -20,6 +20,12 @@ public class Territories extends HashMap<String, Territory> {
         return discoveryToken;
     }
 
+    public void addHMS() {
+        String name = "Hidden Mobile Stronghold";
+        Territory hms = new Territory(name, -1, false, true, false, false);
+        put(name, hms);
+    }
+
     /**
      * Returns the territory sector with the given name.
      *

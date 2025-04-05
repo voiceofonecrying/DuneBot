@@ -443,6 +443,15 @@ public class Territory {
         }
     }
 
+    public boolean isValidStrongholdForShipmentFremenRideAndBTHT(Faction faction, boolean nonIxMayEnter) {
+        if (!isStronghold)
+            return false;
+        else if (territoryName.equals("Hidden Mobile Stronghold"))
+            return faction instanceof IxFaction || nonIxMayEnter;
+        else
+            return true;
+    }
+
     public boolean factionMayNotEnter(Game game, Faction faction, boolean isShipment, boolean isInitialPlacement) {
         if (isInitialPlacement) {
             return faction instanceof MoritaniFaction && !forces.isEmpty();

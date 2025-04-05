@@ -1461,6 +1461,7 @@ public class BattlePlanTest extends DuneTest {
         @Test
         void testSuboidsAlwaysCountHalf() throws InvalidGameStateException {
             game.addFaction(ix);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             Battle battle = new Battle(game, List.of(hms), List.of(ix, emperor));
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
             assertEquals(2, bp.getRegularDialed());
@@ -1656,6 +1657,7 @@ public class BattlePlanTest extends DuneTest {
         @Test
         void testSuboidsAlwaysCountHalf() throws InvalidGameStateException {
             game.addFaction(ix);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
             Battle battle = new Battle(game, List.of(hms), List.of(ix, emperor));
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 7, false, 4);
             assertEquals(2, bp.getRegularDialed());

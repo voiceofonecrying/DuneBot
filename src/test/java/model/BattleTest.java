@@ -4134,12 +4134,14 @@ class BattleTest extends DuneTest {
         StrongholdCard sietchTabrCard;
         StrongholdCard tueksSietchCard;
         StrongholdCard hmsCard;
+        Territory hms;
 
         @BeforeEach
         void setUp() {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             game.addFaction(atreides);
             game.addFaction(ix);
+            hms = game.getTerritory("Hidden Mobile Stronghold");
             sietchTabrCard = new StrongholdCard("Sietch Tabr");
             tueksSietchCard = new StrongholdCard("Tuek's Sietch");
             hmsCard = new StrongholdCard("Hidden Mobile Stronghold");

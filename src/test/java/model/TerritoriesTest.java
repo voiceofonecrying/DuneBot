@@ -2,6 +2,8 @@ package model;
 
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -31,7 +33,13 @@ public class TerritoriesTest extends DuneTest {
 
     @Test
     void getDistinctAggregateTerritoryNames() {
-        assertEquals(43, territories.getDistinctAggregateTerritoryNames().size());
+        assertEquals(42, territories.getDistinctAggregateTerritoryNames().size());
+    }
+
+    @Test
+    void getDistinctAggregateTerritoryNamesWithIx() {
+        game.addFaction(ix);
+        assertEquals(44, territories.getDistinctAggregateTerritoryNames().size());
     }
 
     @Test
@@ -193,5 +201,20 @@ public class TerritoriesTest extends DuneTest {
         List<List<Territory>> territorySectorsUnder = territories.getAggregateTerritoryList("Cielago North", 1, true);
         assertEquals(3, territorySectorsUnder.size());
         assertEquals(2, territories.getFighterNamesInAggTerritory(territorySectorsUnder.getLast()).size());
+    }
+
+    @Nested
+    @DisplayName("#validStrongholdForStrongholdShippingButtonsAndHMS")
+    class ValidStrongholdForStrongholdShippingButtonsAndHMS {
+        @Test
+        void testNoHMS() {
+            assertEquals(5, territories.values().stream().filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(bt, true)).count());
+        }
+
+        @Test
+        void testHMSIxInGame() {
+            game.addFaction(ix);
+            assertEquals(6, territories.values().stream().filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(bt, true)).count());
+        }
     }
 }
