@@ -61,6 +61,8 @@ public class ReportsCommands {
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
                 new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
                 new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
+                new SubcommandData("played-o6-multiple-times", "Who has played all O6 factions multiple times?"),
+                new SubcommandData("played-expansion-multiple-times", "Who has played all six expansion factions multiple times?"),
                 new SubcommandData("played-all-twelve", "Who has played all twelve factions?"),
                 new SubcommandData("won-as-all-original-six", "Who has won with all original six factions?"),
                 new SubcommandData("won-as-all-expansion", "Who has won with all six expansion factions?"),
@@ -87,6 +89,8 @@ public class ReportsCommands {
             case "player-record" -> responseMessage = playerRecord(event);
             case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), grList, members);
             case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), grList, members);
+            case "played-original-six-multiple-times" -> responseMessage = playedAllOriginalSixMultipleTimes(event.getGuild(), grList, members);
+            case "played-expansion-six-multiple-times" -> responseMessage = playedAllExpansionMultipleTimes(event.getGuild(), grList, members);
             case "played-all-twelve" -> responseMessage = playedAllTwelve(event.getGuild(), grList, members);
             case "won-as-all-original-six" -> responseMessage = wonAsAllOriginalSix(event.getGuild(), grList, members);
             case "won-as-all-expansion" -> responseMessage = wonAsAllExpansion(event.getGuild(), grList, members);
@@ -1080,6 +1084,9 @@ public class ReportsCommands {
         playerStatsChannel.sendMessage("__High Faction Plays__\n" + highFactionGames(guild, grList, members, false)).queue();
 //        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("__**NEW!** Played Original 6 Multiple Times__\n" + playedAllOriginalSixMultipleTimes(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("__**NEW!** Played Expansion 6 Multiple Times__\n" + playedAllExpansionMultipleTimes(guild, grList, members)).queue();
+        playerStatsChannel.sendMessage("(You can check your own counts with **/my-record** and your friend's counts with **/reports player-record**)").queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(
@@ -1473,6 +1480,16 @@ public class ReportsCommands {
         return playedFactions(guild, grList, factions, members, false);
     }
 
+    public static String playedAllOriginalSixMultipleTimes(Guild guild, GRList grList, List<Member> members) {
+        List<String> factions = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen");
+        return playedFactionsMultipleTimes(guild, grList, factions, members);
+    }
+
+    public static String playedAllExpansionMultipleTimes(Guild guild, GRList grList, List<Member> members) {
+        List<String> factions = List.of("bt", "choam", "ecaz", "ix", "moritani", "richese");
+        return playedFactionsMultipleTimes(guild, grList, factions, members);
+    }
+
     public static String playedAllTwelve(Guild guild, GRList grList, List<Member> members) {
         return playedFactions(guild, grList, factionNames, members, false);
     }
@@ -1502,6 +1519,60 @@ public class ReportsCommands {
         if (playedAll.isEmpty() && missingOne.isEmpty())
             return "No players have played all " + listSize + " factions.";
         return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
+    }
+
+    private static class PlayerFactionCounts {
+        String playerName;
+        int minPlays;
+        List<String> nonMaxFactionEmojis;
+    }
+
+    public static String playedFactionsMultipleTimes(Guild guild, GRList gameResults, List<String> factions, List<Member> members) {
+        StringBuilder playedAll = new StringBuilder();
+        List<PlayerFactionCounts> pfcs = new ArrayList<>();
+        for (String playerName : getAllPlayers(gameResults)) {
+            List<Pair<String, Integer>> playsPerFaction = new ArrayList<>();
+            for (String factionName : factions) {
+                int numPlays = gameResults.gameResults.stream().filter(gr -> gr.isFactionPlayer(factionName, playerName)).toList().size();
+                playsPerFaction.add(new ImmutablePair<>(factionName, numPlays));
+            }
+            PlayerFactionCounts pfc = new PlayerFactionCounts();
+            pfc.playerName = playerName;
+            pfc.minPlays = playsPerFaction.stream().map(Pair::getRight).reduce(Integer::min).orElseThrow();
+            pfc.nonMaxFactionEmojis = playsPerFaction.stream().filter(p -> p.getRight() == pfc.minPlays).map(p -> Emojis.getFactionEmoji(p.getLeft())).toList();
+            pfcs.add(pfc);
+        }
+        pfcs.sort((p1, p2) -> {
+            if (p1.minPlays == p2.minPlays) {
+                int missed1 = 0;
+                int missed2 = 0;
+                if (p1.nonMaxFactionEmojis != null)
+                    missed1 = p1.nonMaxFactionEmojis.size();
+                if (p2.nonMaxFactionEmojis != null) {
+                    missed2 = p2.nonMaxFactionEmojis.size();
+                }
+                return Integer.compare(missed1, missed2);
+            }
+            return (Integer.compare(p2.minPlays, p1.minPlays));
+        });
+        for (PlayerFactionCounts pfc : pfcs) {
+            if (pfc.minPlays == 1 && pfc.nonMaxFactionEmojis.size() > 1)
+                break;
+            String playerTag = getPlayerString(guild, pfc.playerName, members);
+
+            playedAll.append(playerTag);
+            if (pfc.minPlays == 0)
+                playedAll.append(" has played ").append(factions.size() - 1).append(", needs only ").append(pfc.nonMaxFactionEmojis.getFirst());
+            else {
+                playedAll.append(" has played all ").append(factions.size());
+                if (pfc.minPlays > 1)
+                    playedAll.append(" at least ").append(pfc.minPlays).append(" times each");
+                if (pfc.nonMaxFactionEmojis.size() == 1)
+                    playedAll.append(", needs only ").append(pfc.nonMaxFactionEmojis.getFirst()).append(" for ").append(pfc.minPlays + 1).append(" times each");
+            }
+            playedAll.append("\n");
+        }
+        return tagEmojis(guild, playedAll.toString());
     }
 
     public static String wonAsAllOriginalSix(Guild guild, GRList grList, List<Member> members) {
