@@ -256,7 +256,7 @@ public class BattlePlan {
         specialDialed += fullStrengthSpecial;
         specialNotDialed -= fullStrengthSpecial;
 
-        int halfStrengthSpecial = specialNotDialed;
+        int halfStrengthSpecial = specialsNegated ? specialNotDialed : 0;
         halfStrengthSpecial = Math.min(wholeNumberDial - dialUsed, halfStrengthSpecial / 2) * 2;
         dialUsed += halfStrengthSpecial / 2;
         specialDialed += halfStrengthSpecial;
