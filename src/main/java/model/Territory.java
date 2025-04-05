@@ -443,7 +443,7 @@ public class Territory {
         }
     }
 
-    public boolean isValidStrongholdForStrongholdShippingButtons(Faction faction, boolean nonIxMayEnter) {
+    public boolean isValidStrongholdForShipmentFremenRideAndBTHT(Faction faction, boolean nonIxMayEnter) {
         if (!isStronghold)
             return false;
         else if (territoryName.equals("Hidden Mobile Stronghold"))

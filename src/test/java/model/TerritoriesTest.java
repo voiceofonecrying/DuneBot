@@ -208,13 +208,13 @@ public class TerritoriesTest extends DuneTest {
     class ValidStrongholdForStrongholdShippingButtonsAndHMS {
         @Test
         void testNoHMS() {
-            assertEquals(5, territories.values().stream().filter(t -> t.isValidStrongholdForStrongholdShippingButtons(bt, true)).count());
+            assertEquals(5, territories.values().stream().filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(bt, true)).count());
         }
 
         @Test
         void testHMSIxInGame() {
             game.addFaction(ix);
-            assertEquals(6, territories.values().stream().filter(t -> t.isValidStrongholdForStrongholdShippingButtons(bt, true)).count());
+            assertEquals(6, territories.values().stream().filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(bt, true)).count());
         }
     }
 }
