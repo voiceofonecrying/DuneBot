@@ -245,8 +245,7 @@ public class BGFaction extends Faction {
         }
 
         game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
-        if (game.hasFaction("Moritani"))
-            ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, this, amount);
+        game.checkForTerrorTrigger(territory, this, amount);
     }
 
     public void bgFlipMessageAndButtons(Game game, String territoryName) {

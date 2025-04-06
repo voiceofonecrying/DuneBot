@@ -1556,10 +1556,7 @@ public class Game {
             turnSummary.publish(faction.getEmoji() + " use Planetologist to move another group to " + movingTo);
             moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, false);
         }
-        if (hasFaction("Ecaz"))
-            ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, faction);
-        if (hasFaction("Moritani"))
-            ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, faction, force + specialForce + secondForce + secondSpecialForce + (noFieldWasMoved ? 1 : 0));
+        checkForTriggers(to, faction, force + specialForce + secondForce + secondSpecialForce + (noFieldWasMoved ? 1 : 0));
     }
 
     public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {
@@ -1588,13 +1585,24 @@ public class Game {
         if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction)) {
             ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
         }
-        if (canTrigger) {
-            if (hasFaction("Ecaz"))
-                ((EcazFaction) getFaction("Ecaz")).checkForAmbassadorTrigger(to, targetFaction);
-            if (hasFaction("Moritani"))
-                ((MoritaniFaction) getFaction("Moritani")).checkForTerrorTrigger(to, targetFaction, amountValue + starredAmountValue);
-        }
+        if (canTrigger)
+            checkForTriggers(to, targetFaction, amountValue + starredAmountValue);
         setUpdated(UpdateType.MAP);
+    }
+
+    public void checkForTriggers(Territory territory, Faction faction, int numForces) {
+        checkForAmbassadorTrigger(territory, faction);
+        checkForTerrorTrigger(territory, faction, numForces);
+    }
+
+    public void checkForAmbassadorTrigger(Territory territory, Faction faction) {
+        if (hasEcazFaction())
+            getEcazFaction().checkForAmbassadorTrigger(territory, faction);
+    }
+
+    public void checkForTerrorTrigger(Territory territory, Faction faction, int numForces) {
+        if (hasMoritaniFaction())
+            getMoritaniFaction().checkForTerrorTrigger(territory, faction, numForces);
     }
 
     public void endShipmentMovement() {

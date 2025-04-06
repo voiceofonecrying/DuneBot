@@ -104,10 +104,7 @@ public class RicheseFaction extends Faction {
 
         if (accompanyingForce > 0)
             placeForces(territory, accompanyingForce, 0, true, true, false, game, karama, false);
-        if (game.hasEcazFaction())
-            game.getEcazFaction().checkForAmbassadorTrigger(territory, faction);
-        if (game.hasMoritaniFaction())
-            game.getMoritaniFaction().checkForTerrorTrigger(territory, faction, accompanyingForce + 1);
+        game.checkForTriggers(territory, faction, accompanyingForce + 1);
         game.setUpdated(UpdateType.MAP);
     }
 
