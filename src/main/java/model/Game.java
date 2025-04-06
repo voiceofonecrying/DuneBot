@@ -200,12 +200,6 @@ public class Game {
     public Bidding startBidding() {
         bidding = new Bidding(this);
         setUpdated(UpdateType.MAP);
-        try {
-            RicheseFaction faction = (RicheseFaction) getFaction("Richese");
-            if (!faction.getTreacheryCardCache().isEmpty()) bidding.setRicheseCacheCardOutstanding(true);
-        } catch (IllegalArgumentException e) {
-            // Richese not in the game
-        }
         return bidding;
     }
 
@@ -543,6 +537,15 @@ public class Game {
     }
 
     /**
+     * Get the named faction object
+     *
+     * @return the Faction object if the faction is in the game, null if not in the game
+     */
+    public Faction getFactionOrNull(String name) {
+        return factions.stream().filter(f -> f.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    /**
      * Get the Ix faction object
      *
      * @return the IxFaction object if Ix is in the game
@@ -562,12 +565,25 @@ public class Game {
         return (RicheseFaction) getFaction("Richese");
     }
 
-    public boolean hasIxFaction() {
-        return hasFaction("Ix");
+    /**
+     * Get the Richese faction object
+     *
+     * @return the RicheseFaction object if Richese is in the game or null if Richese is not in the game
+     */
+    public RicheseFaction getRicheseFactionOrNull() {
+        return (RicheseFaction) getFactionOrNull("Richese");
     }
 
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
+    }
+
+    public boolean hasIxFaction() {
+        return hasFaction("Ix");
+    }
+
+    public boolean hasRicheseFaction() {
+        return hasFaction("Richese");
     }
 
     public void addFaction(Faction faction) {
@@ -1664,7 +1680,7 @@ public class Game {
 
         if (leader.getSkillCard() != null) {
             leaderSkillDeck.add(leader.getSkillCard());
-            // Need to combine with conditionals below
+            // TODO: Need to combine removal with conditionals below
 //            leader.removeSkillCard();
         }
 

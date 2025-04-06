@@ -61,7 +61,6 @@ public class Bidding {
         this.blackMarketDecisionInProgress = false;
         this.blackMarketCard = false;
         this.silentAuction = false;
-        this.richeseCacheCardOutstanding = false;
         this.richeseCacheCardOccupierChoice = false;
         this.gameHasIx = game.hasIxFaction();
         this.ixTechnologyUsed = false;
@@ -84,16 +83,16 @@ public class Bidding {
         this.previousWinner = null;
         this.ixAllySwapped = false;
 
-        RicheseFaction richeseFaction;
-        try {
-            richeseFaction = game.getRicheseFaction();
-            if (richeseFaction.getTreacheryHand().isEmpty()) {
+        RicheseFaction richese = game.getRicheseFactionOrNull();
+        if (richese != null) {
+            this.richeseCacheCardOutstanding = !richese.getTreacheryCardCache().isEmpty();
+            if (richese.getTreacheryHand().isEmpty()) {
                 game.getModInfo().publish(Emojis.RICHESE + " has no cards for black market. Automatically advancing to regular bidding.");
             } else {
                 askBlackMarket(game);
                 game.getModInfo().publish(Emojis.RICHESE + " has been given buttons for black market.");
             }
-        } catch (IllegalArgumentException ignored) {}
+        }
     }
 
     private void clearFactionBidInfo(Game game) {

@@ -1000,7 +1000,7 @@ public class CommandManager extends ListenerAdapter {
                     state += "\n\nBidding market:\n";
                     state += String.join(", ", bidding.getMarket().stream().map(TreacheryCard::name).toList());
                 } catch (InvalidGameStateException ignored) {}
-                if (game.hasFaction("Richese")) {
+                if (game.hasRicheseFaction()) {
                     state += "\n\n" + Emojis.RICHESE + " Cache:\n";
                     state += String.join(", ", game.getRicheseFaction().getTreacheryCardCache().stream().map(TreacheryCard::name).toList());
                 }
