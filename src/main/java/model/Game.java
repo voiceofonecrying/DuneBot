@@ -562,7 +562,11 @@ public class Game {
         return (RicheseFaction) getFaction("Richese");
     }
 
-    public Boolean hasFaction(String name) {
+    public boolean hasIxFaction() {
+        return hasFaction("Ix");
+    }
+
+    public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
 

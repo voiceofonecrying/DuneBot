@@ -25,6 +25,7 @@ public class Bidding {
     private boolean silentAuction;
     private boolean richeseCacheCardOutstanding;
     private boolean richeseCacheCardOccupierChoice;
+    private final boolean gameHasIx;
     private boolean ixTechnologyUsed;
     private int ixTechnologyCardNumber;
     private boolean marketPopulated;
@@ -62,6 +63,7 @@ public class Bidding {
         this.silentAuction = false;
         this.richeseCacheCardOutstanding = false;
         this.richeseCacheCardOccupierChoice = false;
+        this.gameHasIx = game.hasIxFaction();
         this.ixTechnologyUsed = false;
         this.ixTechnologyCardNumber = 0;
         this.market = new LinkedList<>();
@@ -129,7 +131,7 @@ public class Bidding {
                         numCardsForBid, Emojis.TREACHERY
                 )
         );
-        if (game.hasFaction("Ix")) {
+        if (gameHasIx) {
             message.append(
                     MessageFormat.format(
                             "\n{0} will send one of them back to the deck.",
@@ -379,7 +381,7 @@ public class Bidding {
         }
 
         DuneTopic turnSummary = game.getTurnSummary();
-        if (!marketShownToIx && game.hasFaction("Ix")) {
+        if (!marketShownToIx && gameHasIx) {
             if (treacheryDeckReshuffled) {
                 turnSummary.publish(MessageFormat.format(
                         "There were only {0} left in the {1} deck. The {1} deck has been replenished from the discard pile.",
@@ -450,8 +452,10 @@ public class Bidding {
                 .filter(f -> f.getHandLimit() > f.getTreacheryHand().size())
                 .toList().size();
         int numCardsInMarket = numCardsForBid - bidCardNumber;
-        if (richeseCacheCardOutstanding) numCardsInMarket--;
-        if (game.hasFaction("Ix")) numCardsInMarket++;
+        if (richeseCacheCardOutstanding)
+            numCardsInMarket--;
+        if (gameHasIx)
+            numCardsInMarket++;
         for (int i = 0; i < numCardsInMarket; i++)
             addCardToMarket(game, i);
         marketPopulated = true;
@@ -1175,7 +1179,7 @@ public class Bidding {
     public boolean finishBiddingPhase(Game game) throws InvalidGameStateException {
         if (bidCard == null && !market.isEmpty() && !getEligibleBidOrder(game).isEmpty()) {
             throw new InvalidGameStateException("Use /run bidding to auction the next card.");
-        } else if (!marketShownToIx && game.hasFaction("Ix")) {
+        } else if (!marketShownToIx && gameHasIx) {
             throw new InvalidGameStateException("Use /run bidding to show bidding cards to Ix");
         } else if (cacheCardDecisionInProgress) {
             throw new InvalidGameStateException("Richese must decide on their cache card.");

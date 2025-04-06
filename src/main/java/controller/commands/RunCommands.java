@@ -70,12 +70,12 @@ public class RunCommands {
 
         sendQuote(discordGame, game, phase);
 
-        boolean ixInGame = game.hasFaction("Ix");
         boolean hmsUnderStorm = game.getTerritories().values().stream().anyMatch(territory -> territory.getForces().stream().filter(force -> force.getName().equals("Hidden Mobile Stronghold")).anyMatch(force -> territory.getSector() == game.getStorm()));
         for (Territory territory : game.getTerritories().values()) {
             for (Force force : territory.getForces()) {
                 if (force.getName().equals("Hidden Mobile Stronghold")) {
-                    if (territory.getSector() == game.getStorm()) hmsUnderStorm = true;
+                    if (territory.getSector() == game.getStorm())
+                        hmsUnderStorm = true;
                 }
             }
         }
@@ -85,7 +85,7 @@ public class RunCommands {
             if (game.getTurn() == 1 || !ixCanMoveHMS || hmsUnderStorm) {
                 game.advanceSubPhase();
                 subPhase = game.getSubPhase();
-                if (ixInGame && !ixCanMoveHMS) {
+                if (game.hasIxFaction() && !ixCanMoveHMS) {
                     discordGame.getTurnSummary().queueMessage(Emojis.IX + " do not control the HMS. It cannot be moved.");
                 } else if (hmsUnderStorm) {
                     discordGame.getTurnSummary().queueMessage("The HMS is under the storm and cannot be moved.");
