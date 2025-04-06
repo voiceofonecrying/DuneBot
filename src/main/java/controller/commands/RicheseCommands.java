@@ -5,9 +5,7 @@ import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
-import model.factions.EcazFaction;
 import model.factions.Faction;
-import model.factions.MoritaniFaction;
 import model.factions.RicheseFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -118,11 +116,6 @@ public class RicheseCommands {
         Territory territory = game.getTerritories().get(territoryName);
         RicheseFaction richese = game.getRicheseFaction();
         richese.shipNoField(richese, territory, noField, false, false, 0);
-        if (game.hasFaction("Ecaz"))
-            ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, richese);
-        if (game.hasFaction("Moritani"))
-            ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(territory, richese, 1);
-
         discordGame.pushGame();
     }
 

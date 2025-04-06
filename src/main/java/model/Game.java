@@ -574,6 +574,26 @@ public class Game {
         return (RicheseFaction) getFactionOrNull("Richese");
     }
 
+    /**
+     * Get the Ecaz faction object
+     *
+     * @return the EcazFaction object if Ecaz is in the game
+     * @throws IllegalArgumentException if Ecaz is not in the game
+     */
+    public EcazFaction getEcazFaction() {
+        return (EcazFaction) getFaction("Ecaz");
+    }
+
+    /**
+     * Get the Moritani faction object
+     *
+     * @return the MoritaniFaction object if Moritani is in the game
+     * @throws IllegalArgumentException if Moritani is not in the game
+     */
+    public MoritaniFaction getMoritaniFaction() {
+        return (MoritaniFaction) getFaction("Moritani");
+    }
+
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
@@ -584,6 +604,14 @@ public class Game {
 
     public boolean hasRicheseFaction() {
         return hasFaction("Richese");
+    }
+
+    public boolean hasEcazFaction() {
+        return hasFaction("Ecaz");
+    }
+
+    public boolean hasMoritaniFaction() {
+        return hasFaction("Moritani");
     }
 
     public void addFaction(Faction faction) {

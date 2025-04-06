@@ -167,6 +167,24 @@ class RicheseFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#executeShipment")
+    class ExecuteShipment extends FactionTestTemplate.ExecuteShipment {
+        @Test
+        void testShipNoFieldWithForces() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertTrue(faction.isHighThreshold());
+            shipment.setNoField(3);
+            assertDoesNotThrow(() -> faction.executeShipment(game, false, true));
+        }
+
+        @Test
+        void testCannotShipNoFieldWithForces() {
+            shipment.setNoField(3);
+            assertThrows(InvalidGameStateException.class, () -> faction.executeShipment(game, false, true));
+        }
+    }
+
+    @Nested
     @DisplayName("#shipNoField")
     class ShipNoField {
         ChoamFaction choam;
@@ -191,7 +209,7 @@ class RicheseFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testRicheseMustBeHigHThresholdToShipForcesWithNoField() {
+        public void testRicheseMustBeHighThresholdToShipForcesWithNoField() {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.removeReserves(11);
             assertFalse(faction.isHighThreshold());
@@ -204,6 +222,15 @@ class RicheseFactionTest extends FactionTestTemplate {
             faction.setAlly(choam.getName());
             choam.setAlly(faction.getName());
             assertThrows(InvalidGameStateException.class, () -> faction.shipNoField(choam, sietchTabr, 3, false, false, 1));
+        }
+
+        @Test
+        public void testRicheseHighThresholdCanShipForcesWithNoField() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertTrue(faction.isHighThreshold());
+            faction.shipNoField(faction, sietchTabr, 3, false, false, 1);
+            assertEquals(3, sietchTabr.getRicheseNoField());
+            assertEquals(1, sietchTabr.getForceStrength("Richese"));
         }
     }
 

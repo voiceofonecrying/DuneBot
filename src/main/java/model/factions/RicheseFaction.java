@@ -101,10 +101,13 @@ public class RicheseFaction extends Faction {
             revealNoField(game, faction);
         if (game.hasGameOption(GameOption.TECH_TOKENS))
             TechToken.addSpice(game, TechToken.HEIGHLINERS);
-//            if (force > 0 || specialForce > 0)
-//                CommandManager.placeForces(territory, faction, force, specialForce, true, false, discordGame, game, karama);
-//        if game has Moritani!!!
-//        ((MoritaniFaction)game.getFaction("Moritani")).checkForTerrorTrigger(territory, faction, force + specialForce + 1);
+
+        if (accompanyingForce > 0)
+            placeForces(territory, accompanyingForce, 0, true, true, false, game, karama, false);
+        if (game.hasEcazFaction())
+            game.getEcazFaction().checkForAmbassadorTrigger(territory, faction);
+        if (game.hasMoritaniFaction())
+            game.getMoritaniFaction().checkForTerrorTrigger(territory, faction, accompanyingForce + 1);
         game.setUpdated(UpdateType.MAP);
     }
 
