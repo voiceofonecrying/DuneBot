@@ -523,4 +523,67 @@ public class TerritoryTest extends DuneTest {
             assertFalse(carthag.factionMustMoveOut(game, bg));
         }
     }
+
+    @Nested
+    @DisplayName("#onlyEcazAndAllyPresent")
+    class OnlyEcazAndAllyPresent {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(moritani);
+            game.addFaction(bg);
+            game.addFaction(richese);
+            sietchTabr.addForces("Ecaz", 2);
+        }
+
+        @Test
+        void testOnlyOneFaction() {
+            game.createAlliance(ecaz, moritani);
+            assertFalse(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testEcazHasNoAlly() {
+            sietchTabr.addForces("Moritani", 1);
+            assertFalse(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testEcazAllyPlusAThird() {
+            game.createAlliance(ecaz, moritani);
+            sietchTabr.addForces("Moritani", 1);
+            sietchTabr.addForces("BG", 1);
+            assertFalse(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testEcazAllyPlusANoField() {
+            game.createAlliance(ecaz, moritani);
+            sietchTabr.addForces("Moritani", 1);
+            sietchTabr.setRicheseNoField(3);
+            assertFalse(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testOnlyEcazAndAlly() {
+            game.createAlliance(ecaz, moritani);
+            sietchTabr.addForces("Moritani", 1);
+            assertTrue(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testOnlyEcazAndAlliedNoField() {
+            game.createAlliance(ecaz, richese);
+            sietchTabr.setRicheseNoField(3);
+            assertTrue(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+
+        @Test
+        void testOnlyEcazAllyAndAdvisor() {
+            game.createAlliance(ecaz, moritani);
+            sietchTabr.addForces("Moritani", 1);
+            sietchTabr.addForces("Advisor", 1);
+            assertTrue(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+    }
 }

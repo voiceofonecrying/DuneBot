@@ -950,7 +950,7 @@ public class ShowCommands {
             }
         }
 
-        if (game.hasFaction("Ecaz") || game.hasFaction("Moritani")) {
+        if (game.hasEcazFaction() || game.hasMoritaniFaction()) {
             Leader dukeVidal = game.getDukeVidal();
             boolean someoneHasVidal = game.getFactions().stream().anyMatch(f -> f.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
             boolean vidalIsInTheTanks = game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal"));
