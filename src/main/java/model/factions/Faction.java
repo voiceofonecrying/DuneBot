@@ -267,8 +267,8 @@ public class Faction {
         game.getTurnSummary().publish(emoji + " discards " + cardName + (reason.isEmpty() ? "" : " " + reason) + ".");
         ledger.publish(cardName + " discarded from hand.");
 
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("Ecaz") && game.getFaction("Ecaz").isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
-            game.getFaction("Ecaz").addSpice(3, "Poison weapon was discarded");
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasEcazFaction() && game.getEcazFaction().isHighThreshold() && (treacheryCard.type().contains("Weapon - Poison") || treacheryCard.name().equals("Poison Blade"))) {
+            game.getEcazFaction().addSpice(3, "Poison weapon was discarded");
             game.getTurnSummary().publish(Emojis.ECAZ + " gain 3 " + Emojis.SPICE + " for the discarded poison weapon");
         }
     }

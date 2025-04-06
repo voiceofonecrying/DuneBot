@@ -585,6 +585,15 @@ public class Game {
     }
 
     /**
+     * Get the Ecaz faction object
+     *
+     * @return the EcazFaction object if Ecaz is in the game or null if Ecaz is not in the game
+     */
+    public EcazFaction getEcazFactionOrNull() {
+        return (EcazFaction) getFactionOrNull("Ecaz");
+    }
+
+    /**
      * Get the Moritani faction object
      *
      * @return the MoritaniFaction object if Moritani is in the game
@@ -1845,7 +1854,7 @@ public class Game {
         // Get list of aggregate territory names with multiple factions
         battles = new Battles();
         battles.startBattlePhase(this);
-        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal")) && !(hasFaction("Ecaz") && getFaction("Ecaz").isHomeworldOccupied())) {
+        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal")) && !(hasEcazFaction() && getEcazFaction().isHomeworldOccupied())) {
             for (Faction faction : factions) {
                 if (faction.getLeader("Duke Vidal").isEmpty()) continue;
                 faction.removeLeader("Duke Vidal");
@@ -2047,10 +2056,10 @@ public class Game {
 
             strongholds.stream().filter(t -> t.countActiveFactions() == 1)
                     .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), t.getActiveFactions(this).getFirst())));
-            if (hasFaction("Ecaz"))
+            if (hasEcazFaction())
                 strongholds.stream().filter(t -> t.countActiveFactions() == 2)
-                        .filter(t -> t.getActiveFactions(this).getFirst().getName().equals("Ecaz") && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
-                                || t.getActiveFactions(this).get(1).getName().equals("Ecaz") && t.getActiveFactions(this).getFirst().getAlly().equals("Ecaz"))
+                        .filter(t -> t.getActiveFactions(this).getFirst() instanceof EcazFaction && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
+                                || t.getActiveFactions(this).get(1) instanceof EcazFaction && t.getActiveFactions(this).getFirst().getAlly().equals("Ecaz"))
                         .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), getFaction("Ecaz"))));
 
             for (Pair<String, Faction> controllingFaction : controllingFactions) {

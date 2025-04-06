@@ -190,9 +190,8 @@ public class Revival {
     }
 
     public boolean ecazAmbassadorPlacement(Game game) {
-        if (game.hasFaction("Ecaz")) {
-            EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
-            ecaz.sendAmbassadorLocationMessage(1);
+        if (game.hasEcazFaction()) {
+            game.getEcazFaction().sendAmbassadorLocationMessage(1);
             ecazAskedAboutAmbassadors = true;
             ecazAmbassadorsToBePlaced = true;
         }

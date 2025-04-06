@@ -76,7 +76,7 @@ public class EcazFaction extends Faction {
                         || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
                         || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
                     getVidal.setDisabled(true);
-                if (game.getFaction("Ecaz").hasAlly() || triggeringFaction.hasAlly())
+                if (hasAlly() || triggeringFaction.hasAlly())
                     offerAlliance.setDisabled(true);
                 List<DuneChoice> choices = new LinkedList<>();
                 choices.add(getVidal);

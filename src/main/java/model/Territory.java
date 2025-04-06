@@ -489,11 +489,9 @@ public class Territory {
                 && (!faction.getAlly().equals("Ecaz") || getActiveFactions(game).stream().noneMatch(f -> f instanceof EcazFaction));
     }
 
-    private boolean onlyEcazAndAllyPresent(Game game) {
+    protected boolean onlyEcazAndAllyPresent(Game game) {
         if (getActiveFactions(game).size() == 2) {
-            Faction ecaz = null;
-            if (game.hasFaction("Ecaz"))
-                ecaz = game.getFaction("Ecaz");
+            EcazFaction ecaz = game.getEcazFactionOrNull();
             return ecaz != null && ecaz.hasAlly() && hasActiveFaction(ecaz) && hasActiveFaction(game.getFaction(ecaz.getAlly()));
         }
         return false;

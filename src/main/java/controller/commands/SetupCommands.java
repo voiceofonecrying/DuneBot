@@ -202,7 +202,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasFaction("Ecaz")) {
+        if (game.hasEcazFaction()) {
             if (game.hasFaction("Harkonnen") && game.hasGameOption(GameOption.HARKONNEN_MULLIGAN)) {
                 setupSteps.add(
                         setupSteps.indexOf(SetupStep.HARKONNEN_TRAITORS),
