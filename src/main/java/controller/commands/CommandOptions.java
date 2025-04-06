@@ -677,7 +677,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> ixCardsInHand(Game game, String searchValue) {
-        Faction faction = game.getFaction("Ix");
+        IxFaction faction = game.getIxFaction();
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))
