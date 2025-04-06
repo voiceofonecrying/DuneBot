@@ -456,7 +456,7 @@ public class Territory {
         if (isInitialPlacement) {
             return faction instanceof MoritaniFaction && !forces.isEmpty();
         } else if (isShipment) {
-            if (territoryName.equals("Hidden Mobile Stronghold") && !faction.getName().equals("Ix"))
+            if (territoryName.equals("Hidden Mobile Stronghold") && !(faction instanceof IxFaction))
                 return true;
             if (aftermathToken)
                 return true;

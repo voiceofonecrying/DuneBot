@@ -875,7 +875,7 @@ public class ShowCommands {
                 }
             }
 
-            if (game.hasFaction("Richese") && territory.hasRicheseNoField() && !territory.isDiscoveryToken()) {
+            if (territory.hasRicheseNoField() && !territory.isDiscoveryToken()) {
                 BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 30, 30);
                 Point noFieldPlacement = Initializers.getPoints(territory.getTerritoryName())
                         .get(i);

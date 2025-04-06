@@ -1444,9 +1444,7 @@ public class Battle {
                 getAggressorEmojis(game), getDefenderEmojis(game), wholeTerritoryName
         );
 
-        RicheseFaction richeseFaction = null;
-        if (game.hasFaction("Richese"))
-            richeseFaction = game.getRicheseFaction();
+        RicheseFaction richeseFaction = game.getRicheseFactionOrNull();
         Integer noFieldValue = getForces().stream().filter(f -> f.getName().equals("NoField")).map(Force::getStrength).findFirst().orElse(null);
         if (noFieldValue != null) {
             resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
