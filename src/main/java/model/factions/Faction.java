@@ -1415,12 +1415,6 @@ public class Faction {
                 movement.setMustMoveOutOf(territoryName);
             if (noField >= 0) {
                 game.getRicheseFaction().shipNoField(this, territory, noField, karama, !crossShipFrom.isEmpty(), force);
-                if (force > 0)
-                    placeForces(territory, force, 0, true, true, false, game, karama, false);
-                if (game.hasFaction("Ecaz"))
-                    ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(territory, this);
-                if (game.hasFaction("Moritani"))
-                    ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(territory, this, force + specialForce + 1);
             } else if (!crossShipFrom.isEmpty()) {
                 game.removeForces(crossShipFrom, this, force, specialForce, false);
                 placeForces(territory, force, specialForce, true, true, true, game, false, true);
