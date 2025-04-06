@@ -428,12 +428,8 @@ public class Faction {
                 && game.hasGameOption(GameOption.TECH_TOKENS))
             TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
-        if (canTrigger) {
-            if (game.hasFaction("Ecaz"))
-                ((EcazFaction) game.getFaction("Ecaz")).checkForAmbassadorTrigger(targetTerritory, this);
-            if (game.hasFaction("Moritani"))
-                ((MoritaniFaction) game.getFaction("Moritani")).checkForTerrorTrigger(targetTerritory, this, amountValue + starredAmountValue);
-        }
+        if (canTrigger)
+            game.checkForTriggers(targetTerritory, this, amountValue + starredAmountValue);
     }
 
     /**
