@@ -75,7 +75,7 @@ public class Battles {
     }
 
     public void ixNexusCunning(Game game, boolean useNexusCard) {
-        Faction ix = game.getFaction("Ix");
+        IxFaction ix = game.getIxFaction();
         ixCunning = useNexusCard;
         if (useNexusCard) {
             game.discardNexusCard(ix);
@@ -303,13 +303,13 @@ public class Battles {
     }
 
     private void presentIxCunningChoices(Game game) {
-        Faction faction = game.getFaction("Ix");
+        IxFaction faction = game.getIxFaction();
         List<DuneChoice> ixCunningChoices = new ArrayList<>();
         ixCunningChoices.add(new DuneChoice("battle-ix-nexus-cunning-yes", "Yes"));
         ixCunningChoices.add(new DuneChoice("battle-ix-nexus-cunning-no", "No"));
 
         if (faction.getNexusCard() != null) {
-            if (faction instanceof IxFaction && faction.getNexusCard().name().equals("Ixians"))
+            if (faction.getNexusCard().name().equals("Ixians"))
                 faction.getChat().publish("Would you like to play the " + Emojis.IX + " Nexus Card this turn? " + faction.getPlayer(), ixCunningChoices);
         }
     }

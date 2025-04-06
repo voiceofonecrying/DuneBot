@@ -175,7 +175,7 @@ public class Bidding {
         int i = 0;
         for (TreacheryCard card : market)
             choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i++ + "-" + card.name(), card.name()));
-        game.getFaction("Ix").getChat().reply("", choices);
+        game.getIxFaction().getChat().reply("", choices);
         ixRejectDecisionInProgress = true;
     }
 
@@ -537,13 +537,13 @@ public class Bidding {
         ixRejectOutstanding = false;
         game.getTurnSummary().publish(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
         if (requestTechnology)
-            game.getFaction("Ix").getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
+            game.getIxFaction().getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
         else
             auctionNextCard(game, false);
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
-        Faction faction = game.getFaction("Ix");
+        IxFaction faction = game.getIxFaction();
         if (ixTechnologyUsed) {
             throw new InvalidGameStateException("Ix has already used technology this turn.");
         } else if (bidCard != null) {
@@ -572,7 +572,7 @@ public class Bidding {
 
     public void ixAllyCardSwap(Game game) throws InvalidGameStateException {
         TreacheryCard cardToDiscard = previousCard;
-        Faction faction = game.getFaction("Ix");
+        IxFaction faction = game.getIxFaction();
         String allyName = faction.getAlly();
         if (allyName == null) {
             throw new InvalidGameStateException(faction.getEmoji() + " does not have an ally");
