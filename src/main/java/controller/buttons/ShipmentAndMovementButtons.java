@@ -1050,15 +1050,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static boolean validStronghold(Game game, Territory t, Faction faction, boolean nonIxMayEnter) {
-        if (!t.isStronghold())
-            return false;
-        else if (t.getTerritoryName().equals("Hidden Mobile Stronghold"))
-            return faction instanceof IxFaction || nonIxMayEnter && game.hasFaction("Ix");
-        else
-            return true;
-    }
-
     private static void queueStrongholdShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String buttonSuffix = event.getComponentId().replace("stronghold", "");

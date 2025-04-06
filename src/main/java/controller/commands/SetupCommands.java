@@ -176,7 +176,7 @@ public class SetupCommands {
         }
 
 
-        if (game.hasFaction("Ix")) {
+        if (game.hasIxFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TREACHERY_CARDS),
                     SetupStep.IX_CARD_SELECTION

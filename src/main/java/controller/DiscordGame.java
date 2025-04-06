@@ -381,7 +381,7 @@ public class DiscordGame {
         }
 
         //Temporary migration to remove HMS from games that do not have Ix
-        if (!game.hasFaction("Ix")) {
+        if (!game.hasIxFaction()) {
             for (Territory territory : game.getTerritories().values()) {
                 if (territory.hasForce("Hidden Mobile Stronghold")) {
                     Territory hms = game.getTerritory("Hidden Mobile Stronghold");
