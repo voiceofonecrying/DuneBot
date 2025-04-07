@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.*;
 
@@ -392,6 +393,92 @@ public class BattlesTest extends DuneTest {
             game.startBattlePhase();
             battles = game.getBattles();
             assertDoesNotThrow(() -> battles.nextBattle(game));
+        }
+    }
+
+    @Nested
+    @DisplayName("#ecazChooseCombatant")
+    class EcazChooseCombatant {
+        Territory ecazHomeworld;
+
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(ecaz);
+            game.addFaction(moritani);
+            game.addFaction(bt);
+            game.createAlliance(ecaz, bt);
+            ecazHomeworld = game.getTerritory("Ecaz");
+        }
+
+        @Test
+        void testNonHomeworldGame() {
+            game.removeGameOption(GameOption.HOMEWORLDS);
+        }
+
+        @Test
+        void testEcazHighThreshold() {
+            assertTrue(ecaz.isHighThreshold());
+        }
+
+        @Test
+        void testEcazLowThresholdAggressorEcazBeforeAlly() throws InvalidGameStateException {
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            assertFalse(ecaz.isHighThreshold());
+            sietchTabr.addForces("BT", 1);
+            sietchTabr.addForces("Moritani", 1);
+            battles = game.startBattlePhase();
+            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.ecazChooseCombatant(game, "Ecaz");
+            assertTrue(ecazChat.getMessages().isEmpty());
+            assertEquals("You selected Ecaz.", moritaniChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testEcazLowThresholdAggressorEcazAfterAlly() throws InvalidGameStateException {
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            assertFalse(ecaz.isHighThreshold());
+            sietchTabr.addForces("BT", 1);
+            sietchTabr.addForces("Moritani", 1);
+            game.setStorm(6);
+            battles = game.startBattlePhase();
+            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.ecazChooseCombatant(game, "Ecaz");
+            assertTrue(ecazChat.getMessages().isEmpty());
+            assertEquals("You selected Ecaz.", moritaniChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testEcazLowThresholdDefenderBeforeAlly() throws InvalidGameStateException {
+            game.setDotPosition("BT", 1);
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            assertFalse(ecaz.isHighThreshold());
+            sietchTabr.addForces("BT", 1);
+            sietchTabr.addForces("Moritani", 1);
+            game.setStorm(3);
+            battles = game.startBattlePhase();
+            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.ecazChooseCombatant(game, "Ecaz");
+            assertTrue(ecazChat.getMessages().isEmpty());
+            assertEquals("You selected Ecaz.", moritaniChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testEcazLowThresholdDefenderEcazAfterAlly() throws InvalidGameStateException {
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            assertFalse(ecaz.isHighThreshold());
+            sietchTabr.addForces("BT", 1);
+            sietchTabr.addForces("Moritani", 1);
+            game.setStorm(3);
+            battles = game.startBattlePhase();
+            battles.nextBattle(game);
+            battles.setTerritoryByIndex(0);
+            battles.ecazChooseCombatant(game, "Ecaz");
+            assertTrue(ecazChat.getMessages().isEmpty());
+            assertEquals("You selected Ecaz.", moritaniChat.getMessages().getFirst());
         }
     }
 

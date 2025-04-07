@@ -585,7 +585,7 @@ public class SetupCommands {
     }
 
     private static StepStatus ecazLoyaltyStep(Game game) {
-        EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
+        EcazFaction ecaz = game.getEcazFaction();
         List<Leader> leaders = ecaz.getLeaders();
         Collections.shuffle(leaders);
         ecaz.setLoyalLeader(leaders.getFirst());
