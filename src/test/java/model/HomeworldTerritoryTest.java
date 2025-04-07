@@ -62,7 +62,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
-        void test2ndNonNativeDoesNotEndOccupyUntilTheyDefeat1st() {
+        void test2ndNonNativeDoesNotOccupyUntilTheyDefeat1st() {
             caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
@@ -70,8 +70,25 @@ public class HomeworldTerritoryTest extends DuneTest {
             caladan.addForces("Emperor", 1);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
+            turnSummary.clear();
             caladan.removeForces(game, "Harkonnen", 1);
             assertEquals("Emperor", caladan.getOccupierName());
+            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void test2ndNonNativeOccupiesIfHomeworldWasEmpty() {
+            caladan.removeForces(game, "Atreides", 10);
+            caladan.addForces("Harkonnen", 1);
+            assertEquals("Harkonnen", caladan.getOccupierName());
+            assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
+            caladan.removeForces(game, "Harkonnen", 1);
+            assertEquals("Harkonnen", caladan.getOccupierName());
+            assertEquals(1, turnSummary.getMessages().size());
+            turnSummary.clear();
+            caladan.addForces("Emperor", 1);
+            assertEquals("Emperor", caladan.getOccupierName());
+            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getFirst());
         }
 
         @Test

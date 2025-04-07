@@ -66,6 +66,7 @@ public class HomeworldTerritory extends Territory {
     @Override
     public void addForces(String forceName, int amount) {
         boolean wasOccupied = occupierName != null;
+        String formerOccupier = occupierName;
         super.addForces(forceName, amount);
         Faction nativeFaction = getNativeFaction();
         // nativeFaction will be null when initial forces are placed before Faction is added to game
@@ -73,9 +74,10 @@ public class HomeworldTerritory extends Territory {
             return;
         String factionName = Force.getFactionNameFromForceName(forceName);
         boolean nativeForces = factionName.equals(nativeName);
-        if (!wasOccupied && countFactions() == 1 && !nativeForces) {
+        if (!nativeForces && countFactions() == 1 && (!wasOccupied || !factionName.equals(formerOccupier))) {
             occupierName = factionName;
             game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
+            checkForOccupierTakingDukeVidal();
             nativeFaction.checkForLowThreshold();
         } else if (nativeForces)
             nativeFaction.checkForHighThreshold();
@@ -84,21 +86,40 @@ public class HomeworldTerritory extends Territory {
     @Override
     public void removeForces(Game game, String forceName, int amount) {
         boolean wasOccupied = occupierName != null;
+        String formerOccupier = occupierName;
         super.removeForces(game, forceName, amount);
         Set<String> factionNames = new HashSet<>();
         forces.forEach(force -> factionNames.add(force.getFactionName()));
-        if (hasRicheseNoField()) factionNames.add("Richese");
+        if (hasRicheseNoField())
+            factionNames.add("Richese");
         if (factionNames.size() == 1) {
             String name = factionNames.stream().findFirst().orElseThrow();
             occupierName = name.equals(nativeName) ? null : name;
             if (wasOccupied && occupierName == null) {
                 game.getTurnSummary().publish(getTerritoryName() + " is no longer occupied.");
                 game.getFaction(nativeName).checkForHighThreshold();
-            } else if (!wasOccupied && occupierName != null) {
+            } else if (!wasOccupied && occupierName != null || wasOccupied && !occupierName.equals(formerOccupier)) {
+                game.getFaction(nativeName).checkForLowThreshold();
                 game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
+                checkForOccupierTakingDukeVidal();
             }
         }
         game.getFaction(nativeName).checkForLowThreshold();
+    }
+
+    protected void checkForOccupierTakingDukeVidal() {
+        if (territoryName.equals("Ecaz") && game.getEcazFaction().isHomeworldOccupied()) {
+            if (game.getLeaderTanks().contains(game.getDukeVidal())) {
+                game.getTurnSummary().publish(game.getEcazFaction().getOccupier().getEmoji() + " may revive Duke Vidal from the tanks.");
+                game.getEcazFaction().getOccupier().getChat().publish("Would you like to revive Duke Vidal from the tanks as Ecaz occupier? ");
+            } else {
+                for (Faction faction1 : game.getFactions()) {
+                    faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
+                }
+                game.getEcazFaction().getOccupier().getLeaders().add(game.getDukeVidal());
+                game.getTurnSummary().publish("Duke Vidal has left to work for " + game.getEcazFaction().getOccupier().getEmoji() + " (Ecaz homeworld occupied)");
+            }
+        }
     }
 
     public void resetOccupation() {

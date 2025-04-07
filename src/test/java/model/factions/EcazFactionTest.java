@@ -408,4 +408,148 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals(2, chat.getChoices().getFirst().size());
         }
     }
+
+    @Nested
+    @DisplayName("#occupierTakesDukeVidal")
+    class OccupierTakesDukeVidal {
+        HomeworldTerritory ecazHomeworld;
+        BTFaction bt;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            ecazHomeworld = faction.getHomeworldTerritory();
+            bt = new BTFaction("bt", "bt");
+            TestTopic btChat = new TestTopic();
+            bt.setChat(btChat);
+            game.addFaction(bt);
+            game.addGameOption(GameOption.HOMEWORLDS);
+        }
+
+        @Test
+        public void testRemoveEcazForces() {
+            ecazHomeworld.addForces("BT", 1);
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertTrue(faction.isHomeworldOccupied());
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals("Duke Vidal has left to work for " + Emojis.BT + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+        }
+
+        @Test
+        public void testAddEnemyForcesToEmptyEcazHomeworld() {
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertFalse(faction.isHomeworldOccupied());
+            ecazHomeworld.addForces("BT", 1);
+            assertTrue(faction.isHomeworldOccupied());
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals("Duke Vidal has left to work for " + Emojis.BT + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+        }
+
+        @Test
+        public void testRemoveEcazForcesVidalInTanks() {
+            assertFalse(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            faction.addLeader(game.getDukeVidal());
+            game.killLeader(faction, "Duke Vidal");
+            assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+
+            ecazHomeworld.addForces("BT", 1);
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            turnSummary.clear();
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertTrue(faction.isHomeworldOccupied());
+
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals(Emojis.BT + " may revive Duke Vidal from the tanks.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testAddEnemyForcesToEmptyEcazHomeworldVidalInTanks() {
+            assertFalse(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            faction.addLeader(game.getDukeVidal());
+            game.killLeader(faction, "Duke Vidal");
+            assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            turnSummary.clear();
+
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertFalse(faction.isHomeworldOccupied());
+            ecazHomeworld.addForces("BT", 1);
+            assertTrue(faction.isHomeworldOccupied());
+
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals(Emojis.BT + " may revive Duke Vidal from the tanks.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testOccupierNotGivenVidalTwice() {
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertFalse(faction.isHomeworldOccupied());
+            ecazHomeworld.addForces("BT", 1);
+            assertTrue(faction.isHomeworldOccupied());
+            assertEquals(6, bt.getLeaders().size());
+
+            turnSummary.clear();
+            ecazHomeworld.addForces("Ecaz", 1);
+            ecazHomeworld.removeForces(game, "Ecaz", 1);
+            assertEquals(6, bt.getLeaders().size());
+            assertTrue(turnSummary.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testNewOccupierTakesVidal() throws IOException {
+            BGFaction bg = new BGFaction("bg", "bg");
+            TestTopic bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            game.addFaction(bg);
+
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertFalse(faction.isHomeworldOccupied());
+            ecazHomeworld.addForces("BT", 1);
+            assertTrue(faction.isHomeworldOccupied());
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals("Duke Vidal has left to work for " + Emojis.BT + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+
+            turnSummary.clear();
+            ecazHomeworld.addForces("BG", 1);
+            ecazHomeworld.removeForces(game, "BT", 1);
+            assertEquals("Duke Vidal has left to work for " + Emojis.BG + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bg.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+        }
+
+        @Test
+        public void testNewOccupierToEmptyEcazTakesVidal() throws IOException {
+            BGFaction bg = new BGFaction("bg", "bg");
+            TestTopic bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            game.addFaction(bg);
+
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            assertFalse(faction.isHomeworldOccupied());
+            ecazHomeworld.addForces("BT", 1);
+            assertTrue(faction.isHomeworldOccupied());
+            assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
+            assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
+            assertEquals("Duke Vidal has left to work for " + Emojis.BT + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+
+            turnSummary.clear();
+            ecazHomeworld.removeForces(game, "BT", 1);
+            ecazHomeworld.addForces("BG", 1);
+            assertEquals("Duke Vidal has left to work for " + Emojis.BG + " (Ecaz homeworld occupied)", turnSummary.getMessages().getLast());
+            assertTrue(bg.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+            assertFalse(bt.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
+        }
+    }
 }
