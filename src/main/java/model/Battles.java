@@ -177,7 +177,7 @@ public class Battles {
 
     public void ecazChooseCombatant(Game game, String battleFaction) {
         game.getTurnSummary().publish(Emojis.getFactionEmoji(battleFaction) + " will be the combatant.");
-        Faction ecaz = game.getFaction("Ecaz");
+        Faction ecaz = game.getEcazFaction();
         Faction faction = ecaz;
         if (!faction.isHighThreshold()) {
             faction = currentBattle.getAggressor(game);
