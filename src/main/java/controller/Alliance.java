@@ -19,7 +19,7 @@ public class Alliance {
         );
 
         discordGame.createPrivateThread(discordGame.getTextChannel("chat"), threadName, Arrays.asList(
-                faction1.getPlayer(), faction2.getPlayer(), game.getModRoleMention()
+                faction1.getPlayer(), faction2.getPlayer(), game.getMod()
         ));
     }
 }
