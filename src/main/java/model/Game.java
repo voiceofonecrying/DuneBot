@@ -1639,18 +1639,10 @@ public class Game {
 
     public void removeForces(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks) {
         targetFaction.removeForces(territoryName, amountValue, false, isToTanks);
-        if (specialAmount > 0) targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
+        if (specialAmount > 0)
+            targetFaction.removeForces(territoryName, specialAmount, true, isToTanks);
         targetFaction.checkForHighThreshold();
         targetFaction.checkForLowThreshold();
-        if (hasGameOption(GameOption.HOMEWORLDS) && homeworlds.containsValue(territoryName)) {
-            if (territoryName.equals("Ecaz") && getFaction("Ecaz").isHomeworldOccupied()) {
-                for (Faction faction1 : factions) {
-                    faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
-                }
-                getFaction("Ecaz").getOccupier().getLeaders().add(getDukeVidal());
-                turnSummary.publish("Duke Vidal has left to work for " + getFaction("Ecaz").getOccupier().getEmoji() + " (planet Ecaz occupied)");
-            }
-        }
         setUpdated(UpdateType.MAP);
     }
 
@@ -2060,7 +2052,7 @@ public class Game {
                 strongholds.stream().filter(t -> t.countActiveFactions() == 2)
                         .filter(t -> t.getActiveFactions(this).getFirst() instanceof EcazFaction && t.getActiveFactions(this).get(1).getAlly().equals("Ecaz")
                                 || t.getActiveFactions(this).get(1) instanceof EcazFaction && t.getActiveFactions(this).getFirst().getAlly().equals("Ecaz"))
-                        .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), getFaction("Ecaz"))));
+                        .forEach(t -> controllingFactions.add(new ImmutablePair<>(t.getTerritoryName(), getEcazFaction())));
 
             for (Pair<String, Faction> controllingFaction : controllingFactions) {
                 String strongholdName = controllingFaction.getLeft();

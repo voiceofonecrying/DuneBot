@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Territory {
-    private final String territoryName;
+    protected final String territoryName;
     private final int sector;
     private boolean isStronghold;
     private final boolean isDiscoveryToken;

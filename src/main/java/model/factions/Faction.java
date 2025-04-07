@@ -1047,17 +1047,20 @@ public class Faction {
     }
 
     public boolean isHomeworldOccupied() {
-        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
+        if (!game.hasGameOption(GameOption.HOMEWORLDS))
+            return false;
         return getHomeworldTerritory().getOccupierName() != null;
     }
 
     public Faction getOccupier() {
-        if (isHomeworldOccupied()) return getHomeworldTerritory().getOccupyingFaction();
+        if (isHomeworldOccupied())
+            return getHomeworldTerritory().getOccupyingFaction();
         return null;
     }
 
     public void checkForHighThreshold() {
-        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (!game.hasGameOption(GameOption.HOMEWORLDS))
+            return;
         if (getHomeworldTerritory().getOccupyingFaction() != null)
             isHighThreshold = false;
         else if (!isHighThreshold && getReservesStrength() + getSpecialReservesStrength() > lowThreshold) {
