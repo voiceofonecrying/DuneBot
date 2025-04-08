@@ -165,113 +165,6 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testEcazMustChooseBattleFactionFalseNoEcaz() {
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor));
-            assertFalse(battle.hasEcazAndAlly());
-        }
-
-        @Test
-        void testEcazMustChooseBattleFactionFalseWithEcaz() {
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            assertFalse(battle.hasEcazAndAlly());
-        }
-
-        @Test
-        void testEcazMustChooseBattleFactionTrue() {
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            assertTrue(battle.hasEcazAndAlly());
-        }
-
-        @Test
-        void testEcazCombatantChoices() {
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            battle.presentEcazAllyChoice(game);
-            assertEquals("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? ec", ecazChat.getMessages().getFirst());
-            assertEquals(2, ecazChat.getChoices().getFirst().size());
-            assertTrue(harkonnenChat.getChoices().isEmpty());
-        }
-
-        @Test
-        void testEcazLowThresholdOpponentGetsCombatantChoices() {
-            game.addGameOption(GameOption.HOMEWORLDS);
-            game.getTerritory("Ecaz").removeForces(game, "Ecaz", 14);
-            assertFalse(ecaz.isHighThreshold());
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            battle.presentEcazAllyChoice(game);
-            assertTrue(ecazChat.getChoices().isEmpty());
-            assertEquals(Emojis.ECAZ + " is at Low Threshold.\nWho will provide leader and " + Emojis.TREACHERY + " cards against you? ha", harkonnenChat.getMessages().getFirst());
-            assertEquals(2, harkonnenChat.getChoices().getFirst().size());
-            assertEquals(Emojis.HARKONNEN + " must choose who will fight for the " + Emojis.ECAZ + " alliance.", turnSummary.getMessages().getLast());
-        }
-
-        @Test
-        void testEcazAllyFighting() {
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(ecaz, harkonnen, emperor));
-            battle.setEcazCombatant(game, emperor.getName());
-            assertEquals(emperor, battle.getDefender(game));
-            assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
-        }
-
-        @Test
-        void testEcazFighting() {
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 5);
-            garaKulon.addForces("Ecaz", 3);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            battle.setEcazCombatant(game, "Ecaz");
-            assertEquals(ecaz, battle.getDefender(game));
-            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
-        }
-
-        @Test
-        void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
-            game.createAlliance(ecaz, emperor);
-            garaKulon.addForces("Harkonnen", 10);
-            garaKulon.addForces("Emperor", 6);
-            garaKulon.addForces("Emperor*", 1);
-            garaKulon.addForces("Ecaz", 7);
-            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
-            battle.setEcazCombatant(game, "Ecaz");
-            assertEquals(ecaz, battle.getDefender(game));
-            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
-//        BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
-            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 4, null, null));
-            BattlePlan bp = battle.getDefenderBattlePlan();
-            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
-//        assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 3, 1));
-            assertEquals(3, bp.getRegularDialed());
-            assertEquals(1, bp.getSpecialDialed());
-            battle.updateTroopsDialed(game, "Ecaz", 5, 0);
-            assertEquals(5, bp.getRegularDialed());
-            assertEquals(0, bp.getSpecialDialed());
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
-//        assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", battle.getForcesRemainingString("Ecaz", 5, 0));
-        }
-
-        @Test
         void testRicheseNoFieldNotYetRevealed() throws InvalidGameStateException {
             garaKulon.setRicheseNoField(5);
             garaKulon.addForces("Fremen", 3);
@@ -572,6 +465,104 @@ class BattleTest extends DuneTest {
             assertEquals(4, battleForces.stream().filter(f -> f.getName().equals("Emperor")).findFirst().orElseThrow().getStrength());
             assertEquals(3, battleForces.stream().filter(f -> f.getName().equals("Harkonnen")).findFirst().orElseThrow().getStrength());
             assertEquals(5, battleForces.stream().filter(f -> f.getName().equals("NoField")).findFirst().orElseThrow().getStrength());
+        }
+    }
+
+    @Nested
+    @DisplayName("#ecazChoosingCombatant")
+    class EcazChoosingCombatant {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            game.createAlliance(ecaz, emperor);
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 6);
+            garaKulon.addForces("Emperor*", 1);
+            garaKulon.addForces("Ecaz", 7);
+        }
+
+        @Test
+        void testEcazMustChooseBattleFactionFalseNoEcaz() {
+            garaKulon.addForces("Harkonnen", 10);
+            garaKulon.addForces("Emperor", 5);
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor));
+            assertFalse(battle.hasEcazAndAlly());
+        }
+
+        @Test
+        void testEcazMustChooseBattleFactionFalseWithEcaz() {
+            game.removeAlliance(ecaz);
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            assertFalse(battle.hasEcazAndAlly());
+        }
+
+        @Test
+        void testEcazMustChooseBattleFactionTrue() {
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            assertTrue(battle.hasEcazAndAlly());
+        }
+
+        @Test
+        void testEcazCombatantChoices() {
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.presentEcazAllyChoice(game);
+            assertEquals("Who will provide leader and " + Emojis.TREACHERY + " cards in your alliance's battle? ec", ecazChat.getMessages().getFirst());
+            assertEquals(2, ecazChat.getChoices().getFirst().size());
+            assertEquals("You", ecazChat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("Your ally", ecazChat.getChoices().getFirst().getLast().getLabel());
+            assertTrue(harkonnenChat.getChoices().isEmpty());
+            assertEquals(Emojis.ECAZ + " must choose who will fight for their alliance.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testEcazLowThresholdOpponentGetsCombatantChoices() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.getTerritory("Ecaz").removeForces(game, "Ecaz", 14);
+            assertFalse(ecaz.isHighThreshold());
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.presentEcazAllyChoice(game);
+            assertTrue(ecazChat.getChoices().isEmpty());
+            assertEquals(Emojis.ECAZ + " is at Low Threshold.\nWho will provide leader and " + Emojis.TREACHERY + " cards against you? ha", harkonnenChat.getMessages().getFirst());
+            assertEquals(2, harkonnenChat.getChoices().getFirst().size());
+            assertEquals("Ecaz", harkonnenChat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("Their ally", harkonnenChat.getChoices().getFirst().getLast().getLabel());
+            assertEquals(Emojis.HARKONNEN + " must choose who will fight for the " + Emojis.ECAZ + " alliance.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testEcazAllyFighting() {
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(ecaz, harkonnen, emperor));
+            battle.setEcazCombatant(game, emperor.getName());
+            assertEquals(emperor, battle.getDefender(game));
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, emperor, burseg, null, false, 5, false, 5, null, null));
+        }
+
+        @Test
+        void testEcazFighting() {
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 5, null, null));
+        }
+
+        @Test
+        void testEcazAllyChangeForceLosses() throws InvalidGameStateException {
+            Battle battle = new Battle(game, List.of(garaKulon), List.of(harkonnen, emperor, ecaz));
+            battle.setEcazCombatant(game, "Ecaz");
+            assertEquals(ecaz, battle.getDefender(game));
+            Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
+            assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 4, null, null));
+            BattlePlan bp = battle.getDefenderBattlePlan();
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals(3, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            battle.updateTroopsDialed(game, "Ecaz", 5, 0);
+            assertEquals(5, bp.getRegularDialed());
+            assertEquals(0, bp.getSpecialDialed());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
         }
     }
 
