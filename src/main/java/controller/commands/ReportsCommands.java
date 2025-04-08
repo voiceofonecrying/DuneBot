@@ -400,7 +400,7 @@ public class ReportsCommands {
         }
 //        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
-        StringBuilder playerStatsString = new StringBuilder("__Top 20 Players With Wins Over Expected Based On Factions In Games__");
+        StringBuilder playerStatsString = new StringBuilder("__Top 15 Players With Wins Over Expected Based On Factions In Games__");
         playerStatsString.append("\n*Players must have played in a game that ended in the past year*");
         for (PlayerPerformance pp : allPlayerPerformance) {
             if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.now().minusYears(1)))
@@ -1064,7 +1064,7 @@ public class ReportsCommands {
         playerStatsLines = writeTopWinsAboveExpected(guild, grList, members).split("\n");
         int expectLines = 0;
         for (String s : playerStatsLines) {
-            if (expectLines == 22)
+            if (expectLines == 17)
                 break;
             if (!playerStatsString.isEmpty())
                 playerStatsString.append("\n");
