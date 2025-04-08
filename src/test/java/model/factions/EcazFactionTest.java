@@ -418,6 +418,41 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("removeAmbassadorFromMap")
+    class RemoveAmbassadorFromMap {
+        Territory sietchTabr;
+        String ambassador;
+
+        @BeforeEach
+        void setUp() {
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            assertEquals(6, faction.getAmbassadorSupply().size());
+            ambassador = faction.getAmbassadorSupply().getFirst();
+            faction.placeAmbassador(sietchTabr, ambassador);
+            assertEquals(5, faction.getAmbassadorSupply().size());
+            assertEquals(5, faction.ambassadorPool.size());
+        }
+
+        @Test
+        void testReturnToSupply() {
+            faction.removeAmbassadorFromMap(ambassador, true);
+            assertEquals(6, faction.getAmbassadorSupply().size());
+            assertTrue(faction.getAmbassadorSupply().contains(ambassador));
+            assertEquals(5, faction.ambassadorPool.size());
+            assertFalse(faction.ambassadorPool.contains(ambassador));
+        }
+
+        @Test
+        void testReturnToPool() {
+            faction.removeAmbassadorFromMap(ambassador, false);
+            assertEquals(5, faction.getAmbassadorSupply().size());
+            assertFalse(faction.getAmbassadorSupply().contains(ambassador));
+            assertEquals(6, faction.ambassadorPool.size());
+            assertTrue(faction.ambassadorPool.contains(ambassador));
+        }
+    }
+
+    @Nested
     @DisplayName("#occupierTakesDukeVidal")
     class OccupierTakesDukeVidal {
         HomeworldTerritory ecazHomeworld;

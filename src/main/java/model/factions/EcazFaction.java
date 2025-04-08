@@ -11,8 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class EcazFaction extends Faction {
-    private final List<String> ambassadorPool;
-    private final List<String> ambassadorSupply;
+    protected final List<String> ambassadorPool;
+    protected final List<String> ambassadorSupply;
 
     private final List<String> triggeredAmbassadors;
 
@@ -307,5 +307,17 @@ public class EcazFaction extends Faction {
         ambassadorSupply.add(ambassador);
         getLedger().publish(ambassador + " ambassador token was added to the supply.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    }
+
+    public void removeAmbassadorFromMap(String ambassadorName, boolean toHand) {
+        Territory territory = game.getTerritories().values().stream()
+                .filter(t -> t.getEcazAmbassador() != null && t.getEcazAmbassador().equals(ambassadorName))
+                .findFirst().orElseThrow(() -> new IllegalArgumentException("Ambassador not found on map"));
+        territory.removeEcazAmbassador();
+        if (toHand)
+            addAmbassadorToSupply(ambassadorName);
+        else
+            addToAmbassadorPool(ambassadorName);
+        game.setUpdated(UpdateType.MAP);
     }
 }
