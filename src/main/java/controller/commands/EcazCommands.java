@@ -1,11 +1,8 @@
 package controller.commands;
 
 import controller.DiscordGame;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.Game;
-import model.Territory;
-import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -41,18 +38,7 @@ public class EcazCommands {
     private static void removeAmbassadorFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String ambassadorName = discordGame.required(ecazAmbassadorsOnMap).getAsString();
         boolean toHand = discordGame.required(CommandOptions.toPlayer).getAsBoolean();
-        EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
-
-        Territory territory = game.getTerritories().values().stream()
-                .filter(t -> t.getEcazAmbassador() != null && t.getEcazAmbassador().equals(ambassadorName))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Ambassador not found on map"));
-
-        territory.removeEcazAmbassador();
-        game.setUpdated(UpdateType.MAP);
-
-        if (toHand) ecazFaction.addAmbassadorToSupply(ambassadorName);
-        else ecazFaction.addToAmbassadorPool(ambassadorName);
-
+        game.getEcazFaction().removeAmbassadorFromMap(ambassadorName, toHand);
         discordGame.pushGame();
     }
 
