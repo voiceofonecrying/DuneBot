@@ -153,6 +153,14 @@ public class EcazFactionTest extends FactionTestTemplate {
     @DisplayName("sendAmbassadorLocationMessage")
     class SendAmbassadorLocationMessage {
         @Test
+        void testNoAmbassadorsInSupply() {
+            game.setModInfo(new TestTopic());
+            faction.getAmbassadorSupply().clear();
+            faction.sendAmbassadorLocationMessage(1);
+            assertEquals("You have no Ambassadors in supply to place.", chat.getMessages().getFirst());
+        }
+
+        @Test
         void testNoHMS() {
             faction.sendAmbassadorLocationMessage(1);
             assertEquals(6, chat.getChoices().getFirst().size());

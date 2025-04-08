@@ -229,16 +229,21 @@ public class EcazFaction extends Faction {
     }
 
     public void sendAmbassadorLocationMessage(int cost) {
-        List<DuneChoice> choices = new LinkedList<>();
-        for (Territory territory : game.getTerritories().values()) {
-            if (!territory.isStronghold()) continue;
-            DuneChoice stronghold = new DuneChoice("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
-            if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector())
-                stronghold.setDisabled(true);
-            choices.add(stronghold);
+        if (ambassadorSupply.isEmpty()) {
+            chat.publish("You have no Ambassadors in supply to place.");
+            game.getModInfo().publish(Emojis.ECAZ + " has no ambassadors to place. Please run advance. " + game.getModOrRoleMention());
+        } else {
+            List<DuneChoice> choices = new LinkedList<>();
+            for (Territory territory : game.getTerritories().values()) {
+                if (!territory.isStronghold()) continue;
+                DuneChoice stronghold = new DuneChoice("ecaz-place-ambassador-" + territory.getTerritoryName() + "-" + cost, "Place Ambassador in " + territory.getTerritoryName());
+                if (territory.getEcazAmbassador() != null || game.getStorm() == territory.getSector())
+                    stronghold.setDisabled(true);
+                choices.add(stronghold);
+            }
+            choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more ambassadors."));
+            chat.publish("Would you like to place an Ambassador for " + cost + " " + Emojis.SPICE + "? " + getPlayer(), choices);
         }
-        choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more ambassadors."));
-        chat.publish("Would you like to place an Ambassador for " + cost + " " + Emojis.SPICE + "? " + getPlayer(), choices);
     }
 
     public void sendAmbassadorMessage(String territory, int cost) {
