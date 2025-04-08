@@ -37,7 +37,7 @@ public class MoritaniView extends FactionView {
 
     private MessageEmbed.Field getAssassinationTargetField(String assassinationTarget) {
         return new MessageEmbed.Field(
-                assassinationTarget,
+                discordGame.tagEmojis(assassinationTarget),
                 "",
                 false
         );
