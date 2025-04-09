@@ -272,9 +272,9 @@ public class Battle {
         String targetFactionName = targetFaction.getName();
         Faction ecaz = game.getEcazFactionOrNull();
         boolean aggressorNegated = targetFactionName.equals(getAggressorName())
-                || ecaz != null && ecazAllyName.equals(targetFactionName) && getAggressorName().equals("Ecaz");
+                || ecaz != null && ecaz.getAlly().equals(targetFactionName) && getAggressorName().equals("Ecaz");
         boolean defenderNegated = targetFactionName.equals(getDefenderName())
-                || ecaz != null && ecazAllyName.equals(targetFactionName) && getDefenderName().equals("Ecaz");
+                || ecaz != null && ecaz.getAlly().equals(targetFactionName) && getDefenderName().equals("Ecaz");
         if (!aggressorNegated && !defenderNegated)
             throw new InvalidGameStateException(targetFactionName + " is not in the current battle.");
 
