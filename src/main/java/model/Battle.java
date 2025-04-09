@@ -651,7 +651,7 @@ public class Battle {
     public String factionBattleResults(Game game, boolean isAggressor, boolean executeResolution) throws InvalidGameStateException {
         String resolution = "";
         Faction faction = isAggressor ? getAggressor(game) : getDefender(game);
-        String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? game.getFaction("Ecaz").getAlly() : faction.getName();
+        String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? ecazAllyName : faction.getName();
         Faction troopFaction = game.getFaction(troopFactionName);
         String troopFactionEmoji = troopFaction.getEmoji();
         Faction opponentFaction = isAggressor ? getDefender(game) : getAggressor(game);
@@ -819,7 +819,8 @@ public class Battle {
             }
             resolution += killForces(game, troopFaction, regularForcesDialed, specialForcesDialed, regularForcesTotal, executeResolution);
         }
-        if (hasEcazAndAlly() && troopFactionName.equals(game.getFaction("Ecaz").getAlly())) {
+        if (hasEcazAndAlly() && troopFactionName.equals(ecazAllyName)) {
+            Faction ecaz = game.getEcazFaction();
             if (isLoser) {
                 int ecazForcesnotDialed = Math.floorDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 int ecazForcesToKill = battlePlan.getEcazTroopsForAlly() - ecazForcesWithdrawn;
@@ -836,7 +837,7 @@ public class Battle {
                         }
                     }
                 }
-                resolution += killForces(game, game.getFaction("Ecaz"), ecazForcesToKill, 0, 0, executeResolution);
+                resolution += killForces(game, ecaz, ecazForcesToKill, 0, 0, executeResolution);
             } else if (!callsTraitor) {
                 int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
@@ -846,17 +847,17 @@ public class Battle {
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
                     if (executeResolution) {
                         turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + wholeTerritoryName + ", may return it to reserves.");
-                        game.getFaction("Ecaz").withdrawForces(game, 2, 0, getTerritorySectors(game), "Suk Graduate");
+                        ecaz.withdrawForces(game, 2, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     if (ecazForces > 0) {
                         ecazForces--;
                         resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
                         if (executeResolution)
-                            game.getFaction("Ecaz").withdrawForces(game, 1, 0, getTerritorySectors(game), "Suk Graduate");
+                            ecaz.withdrawForces(game, 1, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 }
-                resolution += killForces(game, game.getFaction("Ecaz"), ecazForces, 0, 0, executeResolution);
+                resolution += killForces(game, ecaz, ecazForces, 0, 0, executeResolution);
             }
         }
         boolean successfulTraitor = callsTraitor && !bothCallTraitor(game);
@@ -1710,7 +1711,7 @@ public class Battle {
                 if (ambassador != null) {
                     Territory territoryWithAmbassador = allTerritorySectors.stream().filter(t -> t.getEcazAmbassador() != null).findFirst().orElse(null);
                     if (territoryWithAmbassador != null) {
-                        ((EcazFaction) game.getFaction("Ecaz")).getAmbassadorSupply().add(territoryWithAmbassador.getEcazAmbassador());
+                        game.getEcazFaction().getAmbassadorSupply().add(territoryWithAmbassador.getEcazAmbassador());
                         territoryWithAmbassador.removeEcazAmbassador();
                         game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
                     }
