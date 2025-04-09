@@ -567,6 +567,171 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("negateeSpecialForces")
+    class NegateSpecialForces {
+        @Nested
+        @DisplayName("#ecazNotInGame")
+        class EcazNotInGame {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(fremen);
+                game.addFaction(emperor);
+                game.addFaction(ix);
+                game.addFaction(harkonnen);
+                battles = game.startBattlePhase();
+            }
+
+            @Test
+            void testNegateFedaykin() throws InvalidGameStateException {
+                carthag.addForces("Fremen*", 1);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertFalse(currentBattle.isFedaykinNegated());
+                currentBattle.negateSpecialForces(game, fremen);
+                assertTrue(currentBattle.isFedaykinNegated());
+            }
+
+            @Test
+            void testNegateSardaukar() throws InvalidGameStateException {
+                carthag.addForces("Emperor*", 1);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertFalse(currentBattle.isSardaukarNegated());
+                currentBattle.negateSpecialForces(game, emperor);
+                assertTrue(currentBattle.isSardaukarNegated());
+            }
+
+            @Test
+            void testNegateCyborgs() throws InvalidGameStateException {
+                carthag.addForces("Ix*", 1);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertFalse(currentBattle.isCyborgsNegated());
+                currentBattle.negateSpecialForces(game, ix);
+                assertTrue(currentBattle.isCyborgsNegated());
+            }
+        }
+
+        @Nested
+        @DisplayName("#ecazInGame")
+        class EcazInGame {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(atreides);
+                game.addFaction(ecaz);
+                game.addFaction(fremen);
+                game.addFaction(emperor);
+                game.addFaction(ix);
+                game.addFaction(harkonnen);
+                battles = game.startBattlePhase();
+            }
+
+            @Test
+            void testNegateDefenderStarsWithAggressorAndEcazallied() throws InvalidGameStateException {
+                game.createAlliance(ecaz, ix);
+                sietchTabr.addForces("Emperor*", 1);
+                sietchTabr.addForces("Ix*", 1);
+                sietchTabr.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getAggressor(game));
+                assertFalse(currentBattle.isSardaukarNegated());
+                currentBattle.negateSpecialForces(game, emperor);
+                assertTrue(currentBattle.isSardaukarNegated());
+                assertFalse(currentBattle.isCyborgsNegated());
+            }
+
+            @Test
+            void testNegateFedaykinAlliedWithEcazAggressor() throws InvalidGameStateException {
+                game.createAlliance(ecaz, fremen);
+                carthag.addForces("Fremen*", 1);
+                carthag.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getAggressor(game));
+                assertFalse(currentBattle.isFedaykinNegated());
+                currentBattle.negateSpecialForces(game, fremen);
+                assertTrue(currentBattle.isFedaykinNegated());
+            }
+
+            @Test
+            void testNegateSardaukarAlliedWithEcazAggressor() throws InvalidGameStateException {
+                game.createAlliance(ecaz, emperor);
+                carthag.addForces("Emperor*", 1);
+                carthag.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getAggressor(game));
+                assertFalse(currentBattle.isSardaukarNegated());
+                currentBattle.negateSpecialForces(game, emperor);
+                assertTrue(currentBattle.isSardaukarNegated());
+            }
+
+            @Test
+            void testNegateCyborgsAlliedWithEcazAggressor() throws InvalidGameStateException {
+                game.createAlliance(ecaz, ix);
+                carthag.addForces("Ix*", 1);
+                carthag.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getAggressor(game));
+                assertFalse(currentBattle.isCyborgsNegated());
+                currentBattle.negateSpecialForces(game, ix);
+                assertTrue(currentBattle.isCyborgsNegated());
+            }
+
+            @Test
+            void testNegateFedaykinAlliedWithEcazDefender() throws InvalidGameStateException {
+                game.createAlliance(ecaz, fremen);
+                arrakeen.addForces("Fremen*", 1);
+                arrakeen.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getDefender(game));
+                assertFalse(currentBattle.isFedaykinNegated());
+                currentBattle.negateSpecialForces(game, fremen);
+                assertTrue(currentBattle.isFedaykinNegated());
+            }
+
+            @Test
+            void testNegateSardaukarAlliedWithEcazDefender() throws InvalidGameStateException {
+                game.createAlliance(ecaz, emperor);
+                arrakeen.addForces("Emperor*", 1);
+                arrakeen.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getDefender(game));
+                assertFalse(currentBattle.isSardaukarNegated());
+                currentBattle.negateSpecialForces(game, emperor);
+                assertTrue(currentBattle.isSardaukarNegated());
+            }
+
+            @Test
+            void testNegateCyborgsAlliedWithEcazDefender() throws InvalidGameStateException {
+                game.createAlliance(ecaz, ix);
+                arrakeen.addForces("Ix*", 1);
+                arrakeen.addForces("Ecaz", 2);
+                battles.nextBattle(game);
+                battles.setTerritoryByIndex(0);
+                Battle currentBattle = battles.getCurrentBattle();
+                assertEquals(ecaz, currentBattle.getDefender(game));
+                assertFalse(currentBattle.isCyborgsNegated());
+                currentBattle.negateSpecialForces(game, ix);
+                assertTrue(currentBattle.isCyborgsNegated());
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#battlePlans")
     class BattlePlans {
         Territory habbanyaSietch;
