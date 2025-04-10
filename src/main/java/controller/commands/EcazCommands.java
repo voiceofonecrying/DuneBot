@@ -2,6 +2,7 @@ package controller.commands;
 
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -25,7 +26,7 @@ public class EcazCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -37,7 +38,7 @@ public class EcazCommands {
         }
     }
 
-    private static void placeAmbassador(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void placeAmbassador(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String ambassadorName = discordGame.required(ecazAmbassadorsInSupply).getAsString();
         String strongholdName = discordGame.required(strongholdWithoutAmbassador).getAsString();
         int cost = discordGame.required(ambassadorCost).getAsInt();
