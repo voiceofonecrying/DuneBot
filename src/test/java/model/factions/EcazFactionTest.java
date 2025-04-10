@@ -154,10 +154,22 @@ public class EcazFactionTest extends FactionTestTemplate {
     class SendAmbassadorLocationMessage {
         @Test
         void testNoAmbassadorsInSupply() {
-            game.setModInfo(new TestTopic());
+            TestTopic modInfo = new TestTopic();
+            game.setModInfo(modInfo);
             faction.getAmbassadorSupply().clear();
             faction.sendAmbassadorLocationMessage(1);
             assertEquals("You have no Ambassadors in supply to place.", chat.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " has no Ambassadors to place. Please advance the game. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
+        }
+
+        @Test
+        void testInsufficientSpice() {
+            TestTopic modInfo = new TestTopic();
+            game.setModInfo(modInfo);
+            faction.subtractSpice(11, "test");
+            faction.sendAmbassadorLocationMessage(2);
+            assertEquals("You do not have 2 " + Emojis.SPICE + " to place an Ambassador.", chat.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " does not have 2 " + Emojis.SPICE + " to place an Ambassador. Please advance the game. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
         }
 
         @Test

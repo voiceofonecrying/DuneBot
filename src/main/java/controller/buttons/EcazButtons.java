@@ -8,7 +8,6 @@ import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
-import model.Territory;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -18,8 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EcazButtons implements Pressable {
-
-
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         // Buttons handled by this class must begin with "ecaz"
         // And any button that begins with "ecaz" must be handled by this class
@@ -31,12 +28,9 @@ public class EcazButtons implements Pressable {
         else if (event.getComponentId().startsWith("ecaz-richese-buy-")) richeseBuyCard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bt-leader-")) btLeader(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bt-which-revival-")) btWhichRevival(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-place-ambassador-"))
-            queueAmbassadorButtons(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-ambassador-selected-"))
-            sendAmbassador(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-trigger-ambassador-"))
-            triggerAmbassador(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-place-ambassador-")) queueAmbassadorButtons(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-ambassador-selected-")) sendAmbassador(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ecaz-trigger-ambassador-")) triggerAmbassador(event, game, discordGame);
         switch (event.getComponentId()) {
             case "ecaz-get-vidal" -> getDukeVidal(game, discordGame);
             case "ecaz-accept-offer" -> acceptAlliance(event, game, discordGame);
@@ -80,15 +74,10 @@ public class EcazButtons implements Pressable {
     }
 
     private static void queueAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
-        Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
+        discordGame.queueDeleteMessage();
+        String territoryName = event.getComponentId().split("-")[3];
         int cost = Integer.parseInt(event.getComponentId().split("-")[4]);
-        if (cost > ecazFaction.getSpice()) {
-            discordGame.queueMessage("You can't afford to send your ambassador.");
-            return;
-        }
-        ecazFaction.sendAmbassadorMessage(territory.getTerritoryName(), cost);
-        discordGame.queueMessage("You selected " + territory.getTerritoryName());
+        game.getEcazFaction().sendAmbassadorMessage(territoryName, cost);
     }
 
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
