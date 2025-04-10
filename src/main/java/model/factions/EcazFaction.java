@@ -116,6 +116,7 @@ public class EcazFaction extends Faction {
         nonEcazAmbassadorsCount += ambassadorSupply.stream().filter(a -> !a.equals("Ecaz")).count();
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
+        chat.reply("You have triggered your " + ambassador + " ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }

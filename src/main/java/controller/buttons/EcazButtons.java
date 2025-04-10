@@ -43,14 +43,8 @@ public class EcazButtons implements Pressable {
             case "ecaz-deny-offer" -> denyAlliance(discordGame, game);
             case "ecaz-don't-trigger-ambassador" -> dontTrigger(event, game, discordGame);
             case "ecaz-no-more-ambassadors" -> noMoreAmbassadors(discordGame, game);
-            case "ecaz-reset-ambassadors" -> resetAmbassadors(discordGame);
         }
 
-    }
-
-    private static void resetAmbassadors(DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction ecazFaction = (EcazFaction) discordGame.getGame().getFaction("Ecaz");
-        ecazFaction.sendAmbassadorLocationMessage(1);
     }
 
     private static void noMoreAmbassadors(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException, IOException {
@@ -69,16 +63,10 @@ public class EcazButtons implements Pressable {
     }
 
     private static void triggerAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        if (!(ButtonManager.getButtonPresser(event, game) instanceof EcazFaction)) {
-            discordGame.queueMessage("You are not " + Emojis.ECAZ);
-            return;
-        }
+        discordGame.queueDeleteMessage();
         String ambassador = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
-        EcazFaction ecaz = (EcazFaction) game.getFaction("Ecaz");
-        ecaz.triggerAmbassador(triggeringFaction, ambassador);
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You have triggered your " + ambassador + " ambassador!");
+        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador);
         discordGame.pushGame();
     }
 
@@ -95,9 +83,9 @@ public class EcazButtons implements Pressable {
         ecazFaction.subtractSpice(cost, " ambassador to " + territory.getTerritoryName());
         ecazFaction.placeAmbassador(territory, ambassador);
         game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + territory.getTerritoryName() + ".");
-        discordGame.pushGame();
         discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
         ecazFaction.sendAmbassadorLocationMessage(cost + 1);
+        discordGame.pushGame();
     }
 
     private static void queueAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
