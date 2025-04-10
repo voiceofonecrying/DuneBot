@@ -364,6 +364,8 @@ class ChoamFactionTest extends FactionTestTemplate {
 
         @Test
         public void testNoBribesMayBeMadeMessage() throws InvalidGameStateException {
+            TestTopic bribes = new TestTopic();
+            game.setBribes(bribes);
             ChoamFaction choam = (ChoamFaction) faction;
             game.advanceTurn();
             assertEquals(1, game.getTurn());
@@ -371,10 +373,13 @@ class ChoamFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.CHOAM + " set Inflation to DOUBLE for turn 2", turnSummary.getMessages().getFirst());
             faction.performMentatPauseActions(false);
             assertEquals("No bribes may be made while the " + Emojis.CHOAM + " Inflation token is Double side up.", turnSummary.getMessages().get(1));
+            assertEquals("The " + Emojis.CHOAM + " Inflation token is Double side up.\n**NO BRIBES ALLOWED!!!**", bribes.getMessages().getFirst());
         }
 
         @Test
         public void testBribesMayBeMadeAgainMessage() throws InvalidGameStateException {
+            TestTopic bribes = new TestTopic();
+            game.setBribes(bribes);
             ChoamFaction choam = (ChoamFaction) faction;
             game.advanceTurn();
             assertEquals(1, game.getTurn());
@@ -383,6 +388,7 @@ class ChoamFactionTest extends FactionTestTemplate {
             game.advanceTurn();
             faction.performMentatPauseActions(false);
             assertEquals("Bribes may be made again. The Inflation Token is no longer Double side up.", turnSummary.getMessages().get(1));
+            assertEquals("Bribes may be made again. The Inflation Token is no longer Double side up.", bribes.getMessages().getFirst());
         }
     }
 

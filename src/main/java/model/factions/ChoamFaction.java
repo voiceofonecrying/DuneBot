@@ -185,12 +185,16 @@ public class ChoamFaction extends Faction {
             chat.publish("Would you like to set Inflation? " + player, choices);
         } else {
             int doubleRound = firstInflationRound;
-            if (firstInflationType == ChoamInflationType.CANCEL) doubleRound++;
+            if (firstInflationType == ChoamInflationType.CANCEL)
+                doubleRound++;
 
-            if (doubleRound == game.getTurn() + 1)
+            if (doubleRound == game.getTurn() + 1) {
                 game.getTurnSummary().publish("No bribes may be made while the " + Emojis.CHOAM + " Inflation token is Double side up.");
-            else if (doubleRound == game.getTurn())
+                game.getBribes().publish("The " + Emojis.CHOAM + " Inflation token is Double side up.\n**NO BRIBES ALLOWED!!!**");
+            } else if (doubleRound == game.getTurn()) {
                 game.getTurnSummary().publish("Bribes may be made again. The Inflation Token is no longer Double side up.");
+                game.getBribes().publish("Bribes may be made again. The Inflation Token is no longer Double side up.");
+            }
         }
     }
 }
