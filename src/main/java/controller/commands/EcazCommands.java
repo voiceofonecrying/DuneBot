@@ -18,6 +18,7 @@ public class EcazCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("ecaz", "Commands related to the Ecaz Faction.").addSubcommands(
+                new SubcommandData("place-ambassador", "Place an Ecaz Ambassador token in a stronghold").addOptions(ecazAmbassadorsInSupply, strongholdWithoutAmbassador, ambassadorCost),
                 new SubcommandData("remove-ambassador-from-map", "Remove an Ecaz Ambassador token from the map").addOptions(ecazAmbassadorsOnMap, toPlayer),
                 new SubcommandData("assign-duke-vidal", "Assign Duke Vidal to a faction").addOptions(faction)
         ));
@@ -30,9 +31,18 @@ public class EcazCommands {
 
         game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
+            case "place-ambassador" -> placeAmbassador(discordGame, game);
             case "remove-ambassador-from-map" -> removeAmbassadorFromMap(discordGame, game);
             case "assign-duke-vidal" -> assignDukeVidal(discordGame, game);
         }
+    }
+
+    private static void placeAmbassador(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String ambassadorName = discordGame.required(ecazAmbassadorsInSupply).getAsString();
+        String strongholdName = discordGame.required(strongholdWithoutAmbassador).getAsString();
+        int cost = discordGame.required(ambassadorCost).getAsInt();
+        game.getEcazFaction().placeAmbassador(strongholdName, ambassadorName, cost);
+        discordGame.pushGame();
     }
 
     private static void removeAmbassadorFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

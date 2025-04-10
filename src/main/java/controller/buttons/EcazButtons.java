@@ -72,19 +72,10 @@ public class EcazButtons implements Pressable {
 
     private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueDeleteMessage();
-        EcazFaction ecazFaction = (EcazFaction) game.getFaction("Ecaz");
         String ambassador = event.getComponentId().split("-")[3];
-        Territory territory = game.getTerritory(event.getComponentId().split("-")[4]);
+        String strongholdName = event.getComponentId().split("-")[4];
         int cost = Integer.parseInt(event.getComponentId().split("-")[5]);
-        if (cost > ecazFaction.getSpice()) {
-            discordGame.queueMessage("You can't afford to send your ambassador.");
-            return;
-        }
-        ecazFaction.subtractSpice(cost, " ambassador to " + territory.getTerritoryName());
-        ecazFaction.placeAmbassador(territory, ambassador);
-        game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + territory.getTerritoryName() + ".");
-        discordGame.queueMessage("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
-        ecazFaction.sendAmbassadorLocationMessage(cost + 1);
+        game.getEcazFaction().placeAmbassador(strongholdName, ambassador, cost);
         discordGame.pushGame();
     }
 

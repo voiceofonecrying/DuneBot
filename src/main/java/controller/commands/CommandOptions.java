@@ -245,8 +245,14 @@ public class CommandOptions {
                     .addChoice("Clockwise", "CW")
                     .addChoice("Counterclockwise", "CCW");
 
+    public static final OptionData ecazAmbassadorsInSupply =
+            new OptionData(OptionType.STRING, "ecaz-ambassador-in-supply", "Ecaz Ambassador Token in Ecaz supply", true)
+                    .setAutoComplete(true);
+    public static final OptionData strongholdWithoutAmbassador = new OptionData(OptionType.STRING, "stronghold-without-ambassador", "The stronghold to receive the ambassador", true).setAutoComplete(true);
+    public static final OptionData ambassadorCost = new OptionData(OptionType.INTEGER, "ambassador-cost", "Cost for placing the ambassador", false);
+
     public static final OptionData ecazAmbassadorsOnMap =
-            new OptionData(OptionType.STRING, "ecaz-ambassador-on-map", "Ecaz Embassador Token on the Map", true)
+            new OptionData(OptionType.STRING, "ecaz-ambassador-on-map", "Ecaz Ambassador Token on the map", true)
                     .setAutoComplete(true);
 
     public static final OptionData moritaniTerrorTokenInSupply =
@@ -254,7 +260,7 @@ public class CommandOptions {
                     .setAutoComplete(true);
 
     public static final OptionData moritaniTerrorTokenOnMap =
-            new OptionData(OptionType.STRING, "moritani-terror-token-on-map", "Moritani Terror Token on the Map", true)
+            new OptionData(OptionType.STRING, "moritani-terror-token-on-map", "Moritani Terror Token on the map", true)
                     .setAutoComplete(true);
 
     public static final OptionData toPlayer =
@@ -305,6 +311,8 @@ public class CommandOptions {
             case "remove-game-option" -> choices = getRemoveGameOptions(game, searchValue);
             case "returning" -> choices = nonHarkLeaders(game, searchValue);
             case "game-state" -> choices = getGameStates(discordGame, searchValue);
+            case "ecaz-ambassador-in-supply" -> choices = getEcazAmbassadorsInSupply(discordGame, searchValue);
+            case "stronghold-without-ambassador" -> choices = strongholdWithoutAmbassaddor(game, searchValue);
             case "ecaz-ambassador-on-map" -> choices = getEcazAmbassadorsOnMap(discordGame, searchValue);
             case "moritani-terror-token-in-supply" -> choices = getMoritaniTerrorTokensInSupply(discordGame, searchValue);
             case "moritani-terror-token-on-map" -> choices = getMoritaniTerrorTokensOnMap(discordGame, searchValue);
@@ -765,6 +773,23 @@ public class CommandOptions {
                 .filter(e -> e.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(e -> new Command.Choice(e, e))
                 .toList();
+    }
+
+    private static List<Command.Choice> getEcazAmbassadorsInSupply(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        return game.getEcazFaction().getAmbassadorSupply().stream().map(a -> new Command.Choice(a, a))
+                .filter(a -> a.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .toList();
+    }
+
+    private static List<Command.Choice> strongholdWithoutAmbassaddor(@NotNull Game game, String searchValue) {
+        return game.getTerritories().values().stream()
+                .filter(Territory::isStronghold)
+                .filter(t -> !t.hasEcazAmbassador())
+                .map(Territory::getTerritoryName)
+                .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(territoryName -> new Command.Choice(territoryName, territoryName))
+                .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> getEcazAmbassadorsOnMap(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {

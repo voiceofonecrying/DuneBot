@@ -1298,7 +1298,7 @@ class BattleTest extends DuneTest {
             cielagoNorth_eastSector.addForces("Harkonnen", 2);
             cielagoNorth_eastSector.addForces("Advisor", 1);
             // Ambassador test really should be moved to a new test setup in a Stronghold
-            ecaz.placeAmbassador(cielagoNorth_eastSector, "Fremen");
+            ecaz.placeAmbassador(cielagoNorth_eastSector.getTerritoryName(), "Fremen", 1);
             cielagoNorth_westSector.addForces("Atreides", 2);
             cielagoNorth_westSector.addForces("Harkonnen", 1);
             cielagoNorth_westSector.addForces("Emperor", 1);
@@ -4963,7 +4963,7 @@ class BattleTest extends DuneTest {
             void setUp() {
                 game.addFaction(ecaz);
                 // Ambassador test really should be moved to a new test setup in a Stronghold
-                ecaz.placeAmbassador(cielagoNorth_westSector, "Fremen");
+                ecaz.placeAmbassador(cielagoNorth_westSector.getTerritoryName(), "Fremen", 1);
             }
 
             @Test
@@ -4978,7 +4978,7 @@ class BattleTest extends DuneTest {
             void testPublishDoesNotRemoveAmbassador() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
                 // Ambassador test really should be moved to a new test setup in a Stronghold
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
+                assertTrue(turnSummary.getMessages().getLast().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
                 assertEquals("Fremen", cielagoNorth_westSector.getEcazAmbassador());
             }
 
