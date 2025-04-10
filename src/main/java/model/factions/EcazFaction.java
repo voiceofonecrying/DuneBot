@@ -233,7 +233,10 @@ public class EcazFaction extends Faction {
     public void sendAmbassadorLocationMessage(int cost) {
         if (ambassadorSupply.isEmpty()) {
             chat.publish("You have no Ambassadors in supply to place.");
-            game.getModInfo().publish(Emojis.ECAZ + " has no ambassadors to place. Please run advance. " + game.getModOrRoleMention());
+            game.getModInfo().publish(Emojis.ECAZ + " has no Ambassadors to place. Please advance the game. " + game.getModOrRoleMention());
+        } else if (cost > spice) {
+            chat.publish("You do not have " + cost + " " + Emojis.SPICE + " to place an Ambassador.");
+            game.getModInfo().publish(Emojis.ECAZ + " does not have " + cost + " " + Emojis.SPICE + " to place an Ambassador. Please advance the game. " + game.getModOrRoleMention());
         } else {
             List<DuneChoice> choices = new LinkedList<>();
             for (Territory territory : game.getTerritories().values()) {
@@ -252,7 +255,7 @@ public class EcazFaction extends Faction {
         List<DuneChoice> choices = new LinkedList<>();
         for (String ambassador : ambassadorSupply)
             choices.add(new DuneChoice("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
-        chat.publish("Which ambassador would you like to send?", choices);
+        chat.reply("Which ambassador would you like to send to " + territory + "?", choices);
     }
 
     public void placeAmbassador(String strongholdName, String ambassador, int cost) throws InvalidGameStateException {
