@@ -254,11 +254,20 @@ public class EcazFaction extends Faction {
         chat.publish("Which ambassador would you like to send?", choices);
     }
 
-    public void placeAmbassador(Territory territory, String ambassador) {
+    public void placeAmbassador(String strongholdName, String ambassador, int cost) {
+        Territory territory = game.getTerritory(strongholdName);
+        if (cost > spice) {
+            chat.reply("You can't afford to send your ambassador.");
+            return;
+        }
+        subtractSpice(cost,  ambassador + " ambassador to " + territory.getTerritoryName());
         ambassadorSupply.removeIf(a -> a.equals(ambassador));
         territory.setEcazAmbassador(ambassador);
+        chat.reply("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
+        game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + territory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
+        sendAmbassadorLocationMessage(cost + 1);
     }
 
     public void checkForAmbassadorTrigger(Territory targetTerritory, Faction targetFaction) {

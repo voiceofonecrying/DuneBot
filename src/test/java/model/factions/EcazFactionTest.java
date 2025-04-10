@@ -420,15 +420,13 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("removeAmbassadorFromMap")
     class RemoveAmbassadorFromMap {
-        Territory sietchTabr;
         String ambassador;
 
         @BeforeEach
         void setUp() {
-            sietchTabr = game.getTerritory("Sietch Tabr");
             assertEquals(6, faction.getAmbassadorSupply().size());
             ambassador = faction.getAmbassadorSupply().getFirst();
-            faction.placeAmbassador(sietchTabr, ambassador);
+            faction.placeAmbassador("Sietch Tabr", ambassador, 1);
             assertEquals(5, faction.getAmbassadorSupply().size());
             assertEquals(5, faction.ambassadorPool.size());
         }
