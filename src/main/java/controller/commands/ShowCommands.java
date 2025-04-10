@@ -550,6 +550,7 @@ public class ShowCommands {
             embedBuilder.appendDescription("You will auto-pass.");
         else
             embedBuilder.appendDescription("You have not set a bid or pass.");
+        embedBuilder.appendDescription("\nYou will " + (faction.isOutbidAlly() ? "" : "not ") + "outbid your ally.");
         embedBuilder.appendDescription("\n\nTo bid, select a single number from the list.\nAlso select +1 for an Incremental bid.\nPass One Time logs a single pass for you.\nAuto-Pass will be reset with the next card.\nAuto-Pass (Whole Round) will be reset next turn.\nOutbid Ally policy will persist until you change it.\n\nYou don't have to wait to be tagged to bid or pass.\nPlease use Auto-Passing whenever possible.");
         builder.addEmbeds(embedBuilder.build());
 
