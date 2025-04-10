@@ -70,7 +70,7 @@ public class EcazButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void sendAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         discordGame.queueDeleteMessage();
         String ambassador = event.getComponentId().split("-")[3];
         String strongholdName = event.getComponentId().split("-")[4];

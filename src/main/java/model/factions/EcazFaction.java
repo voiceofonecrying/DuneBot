@@ -3,6 +3,7 @@ package model.factions;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import model.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -254,20 +255,22 @@ public class EcazFaction extends Faction {
         chat.publish("Which ambassador would you like to send?", choices);
     }
 
-    public void placeAmbassador(String strongholdName, String ambassador, int cost) {
-        Territory territory = game.getTerritory(strongholdName);
+    public void placeAmbassador(String strongholdName, String ambassador, int cost) throws InvalidGameStateException {
+        if (ambassadorSupply.isEmpty())
+            throw new InvalidGameStateException("Ecaz has no Ambassadors in supply.");
         if (cost > spice) {
-            chat.reply("You can't afford to send your ambassador.");
-            return;
+            chat.reply("You do not have " + cost + " " + Emojis.SPICE + " to place your Ambassador.");
+            game.getModInfo().publish(Emojis.ECAZ + " does not have " + cost + " " + Emojis.SPICE + " to place an Ambassador. Please advance the game. " + game.getModOrRoleMention());
+        } else {
+            subtractSpice(cost, ambassador + " Ambassador to " + strongholdName);
+            ambassadorSupply.removeIf(a -> a.equals(ambassador));
+            game.getTerritory(strongholdName).setEcazAmbassador(ambassador);
+            chat.reply("The " + ambassador + " Ambassador has been sent to " + strongholdName + ".");
+            game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + strongholdName + ".");
+            setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            game.setUpdated(UpdateType.MAP);
+            sendAmbassadorLocationMessage(cost + 1);
         }
-        subtractSpice(cost,  ambassador + " ambassador to " + territory.getTerritoryName());
-        ambassadorSupply.removeIf(a -> a.equals(ambassador));
-        territory.setEcazAmbassador(ambassador);
-        chat.reply("The " + ambassador + " ambassador has been sent to " + territory.getTerritoryName());
-        game.getTurnSummary().publish(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to " + territory.getTerritoryName() + ".");
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        game.setUpdated(UpdateType.MAP);
-        sendAmbassadorLocationMessage(cost + 1);
     }
 
     public void checkForAmbassadorTrigger(Territory targetTerritory, Faction targetFaction) {

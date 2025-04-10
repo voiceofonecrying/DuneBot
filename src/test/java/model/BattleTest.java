@@ -4960,7 +4960,7 @@ class BattleTest extends DuneTest {
         @DisplayName("#ambassadorRemovedByLasgunShield")
         class AmbassadorRemovedByLasgunShield {
             @BeforeEach
-            void setUp() {
+            void setUp() throws InvalidGameStateException {
                 game.addFaction(ecaz);
                 // Ambassador test really should be moved to a new test setup in a Stronghold
                 ecaz.placeAmbassador(cielagoNorth_westSector.getTerritoryName(), "Fremen", 1);

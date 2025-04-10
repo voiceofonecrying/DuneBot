@@ -178,6 +178,40 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("placeAmbassador")
+    class PlaceAmbassador {
+        @Test
+        void testNoAmbassadorsInSupply() {
+            faction.getAmbassadorSupply().clear();
+            assertThrows(InvalidGameStateException.class, () -> faction.placeAmbassador("Arrakeen", "Fremen", 1));
+        }
+
+        @Test
+        void testInsufficientSpice() throws InvalidGameStateException {
+            TestTopic modInfo = new TestTopic();
+            game.setModInfo(modInfo);
+            faction.subtractSpice(11, "test");
+            faction.placeAmbassador("Arrakeen", "Fremen", 2);
+            assertEquals("You do not have 2 " + Emojis.SPICE + " to place your Ambassador.", chat.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " does not have 2 " + Emojis.SPICE + " to place an Ambassador. Please advance the game. " + game.getModOrRoleMention(), modInfo.getMessages().getFirst());
+        }
+
+        @Test
+        void testAmbassadorPlaced() throws InvalidGameStateException {
+            String ambassador = faction.getAmbassadorSupply().getFirst();
+            String territoryName = "Arrakeen";
+            Territory arrakeen = game.getTerritory(territoryName);
+            faction.placeAmbassador(territoryName, ambassador, 1);
+            assertEquals(11, faction.getSpice());
+            assertFalse(faction.getAmbassadorSupply().contains(ambassador));
+            assertEquals(ambassador, arrakeen.getEcazAmbassador());
+            assertEquals("The " + ambassador + " Ambassador has been sent to Arrakeen.", chat.getMessages().getFirst());
+            assertEquals("-1 " + Emojis.SPICE + " " + ambassador + " Ambassador to Arrakeen = 11 " + Emojis.SPICE, ledger.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " has sent the " + ambassador + " Ambassador to Arrakeen.", turnSummary.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#checkForAmbassadorTrigger")
     class CheckForAmbassadorTrigger {
         AtreidesFaction atreides;
@@ -423,7 +457,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         String ambassador;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             assertEquals(6, faction.getAmbassadorSupply().size());
             ambassador = faction.getAmbassadorSupply().getFirst();
             faction.placeAmbassador("Sietch Tabr", ambassador, 1);
