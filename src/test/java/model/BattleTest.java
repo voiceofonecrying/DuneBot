@@ -4978,7 +4978,7 @@ class BattleTest extends DuneTest {
             void testPublishDoesNotRemoveAmbassador() throws InvalidGameStateException {
                 battle.printBattleResolution(game, true, false);
                 // Ambassador test really should be moved to a new test setup in a Stronghold
-                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
+                assertTrue(turnSummary.getMessages().getLast().contains(Emojis.ECAZ + " Fremen ambassador returned to supply"));
                 assertEquals("Fremen", cielagoNorth_westSector.getEcazAmbassador());
             }
 
