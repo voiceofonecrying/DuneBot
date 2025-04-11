@@ -403,7 +403,9 @@ public class ShowCommands {
         sendAllianceActions(discordGame, game, faction, false);
         if (game.isInBiddingPhase()) {
             sendBiddingActions(discordGame, game, faction, false);
-            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit()) {
+            Bidding bidding = game.getBidding();
+            boolean isRicheseCard = bidding.isRicheseCacheCard() || bidding.isBlackMarketCard();
+            if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Karama")) && faction.getTreacheryHand().size() != faction.getHandLimit() && !isRicheseCard) {
                 playCardMenu.addOption("Use Karama to buy this card for free.", "Karama-buy");
             }
         }

@@ -640,6 +640,10 @@ public class Bidding {
         this.cacheCardDecisionInProgress = cacheCardDecisionInProgress;
     }
 
+    public boolean isRicheseCacheCard() {
+        return richeseCacheCard;
+    }
+
     public boolean isBlackMarketDecisionInProgress() {
         return blackMarketDecisionInProgress;
     }
