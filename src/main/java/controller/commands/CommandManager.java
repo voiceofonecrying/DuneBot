@@ -95,6 +95,7 @@ public class CommandManager extends ListenerAdapter {
                         faction.discard("Karama");
                         if (event.getInteraction().getSelectedOptions().getFirst().getValue().split("-")[1].equals("buy")) {
                             game.getBidding().assignAndPayForCard(game, faction.getName(), "", 0, false);
+                            game.getModInfo().publish(faction.getEmoji() + " has played Karama to take the card. Auction the next card or advance the agem. " + game.getModOrRoleMention());
                         }
                         break;
                     }
