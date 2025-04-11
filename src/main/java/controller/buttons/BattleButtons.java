@@ -41,6 +41,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-emperor-nexus-cunning")) emperorNexusCunning(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-ix-nexus-cunning")) ixNexusCunning(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-battles-juice-of-sapho")) battlesJuiceOfSaphoDecision(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-retain-discard-")) battleRetainDiscard(event, discordGame, game);
     }
 
     private static void chooseTerritory(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
@@ -300,6 +301,14 @@ public class BattleButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         boolean playIt = event.getComponentId().equals("battle-battles-juice-of-sapho-yes");
         game.getBattles().playJuiceOfSapho(game, faction, playIt);
+        discordGame.pushGame();
+    }
+
+    private static void battleRetainDiscard(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String cardToRetain = event.getComponentId().replace("battle-retain-discard-", "");
+        game.moritaniAllyRetainDiscard(faction, cardToRetain);
         discordGame.pushGame();
     }
 }

@@ -875,6 +875,27 @@ public class Game {
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
+    public void transferTreacheryCardFromDiscard(Faction receiver, String cardName) throws InvalidGameStateException {
+        TreacheryCard card = treacheryDiscard.stream()
+                .filter(c -> c.name().equalsIgnoreCase(cardName))
+                .findFirst()
+                .orElseThrow(() -> new InvalidGameStateException("Card not found in discard pile."));
+        receiver.addTreacheryCard(card);
+        treacheryDiscard.remove(card);
+        receiver.getLedger().publish("Received " + cardName + " from discard.");
+    }
+
+    public void moritaniAllyRetainDiscard(Faction ally, String cardName) throws InvalidGameStateException {
+        if (cardName.equals("None")) {
+            ally.getChat().reply("You will not retain any discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally.");
+            turnSummary.publish(ally.getEmoji() + " does not retain any discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally.");
+        } else {
+            ally.getChat().reply("You retained " + cardName + " as " + Emojis.MORITANI + " ally.");
+            transferTreacheryCardFromDiscard(ally, cardName);
+            turnSummary.publish(ally.getEmoji() + " retains " + cardName + " as " + Emojis.MORITANI + " ally.");
+        }
+    }
+
     public void shuffleTreacheryDeck() {
         Collections.shuffle(getTreacheryDeck());
     }

@@ -5022,4 +5022,257 @@ class BattleTest extends DuneTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("resolutoinWithMoritaniAndAlly")
+    class ResolutionWithMoritaniAndAlly {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(moritani);
+            game.addFaction(emperor);
+            game.addFaction(atreides);
+            game.createAlliance(moritani, emperor);
+            emperor.addTreacheryCard(cheapHero);
+            emperor.addTreacheryCard(chaumas);
+            emperor.addTreacheryCard(shield);
+            atreides.addTreacheryCard(crysknife);
+            atreides.addTreacheryCard(shield);
+            atreides.addTreacheryCard(lasgun);
+            emperor.placeForceFromReserves(game, sietchTabr, 10, false);
+            atreides.placeForceFromReserves(game, sietchTabr, 10, false);
+            battle = new Battle(game, List.of(sietchTabr), List.of(atreides, emperor));
+            assertTrue(emperor.hasTreacheryCard("Cheap Heroine"));
+            assertTrue(emperor.hasTreacheryCard("Chaumas"));
+            assertTrue(emperor.hasTreacheryCard("Shield"));
+            assertTrue(atreides.hasTreacheryCard("Crysknife"));
+            assertTrue(atreides.hasTreacheryCard("Shield"));
+            assertTrue(atreides.hasTreacheryCard("Lasgun"));
+        }
+
+        @Nested
+        @DisplayName("#moritaniAllyLoses")
+        class MoritaniAllyLoses {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, null, null);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 0, false, 0, chaumas, shield);
+                assertTrue(battle.isAggressorWin(game));
+                emperorChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testResolveOffersChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertEquals("Would you like to retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally? em", emperorChat.getMessages().getFirst());
+                assertEquals(4, emperorChat.getChoices().getLast().size());
+            }
+        }
+
+        @Nested
+        @DisplayName("#moritaniAllyLosesPlayedNoCards")
+        class MoritaniAllyLosesPlayedNoCards {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, null, null);
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                emperorChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testResolveOffersChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("#moritaniAllyWins")
+        class MoritaniAllyWins {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, crysknife, shield);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 3, false, 0, chaumas, shield);
+                assertFalse(battle.isAggressorWin(game));
+                emperorChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testResolveDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("#moritaniAllyLasgunShield")
+        class MoritaniAllyLasgunShield {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, lasgun, null);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 0, false, 0, chaumas, shield);
+                emperorChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testResolveDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("#moritaniAllyDualTraitors")
+        class MoritaniAllyDualTraitors {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                atreides.addTraitorCard(new TraitorCard("Cheap Hero", "Any", 0));
+                emperor.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 0));
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 1, false, 0, lasgun, null);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 0, false, 0, chaumas, shield);
+                battle.willCallTraitor(game, atreides, true, 0, "Sietch Tabr");
+                battle.willCallTraitor(game, emperor, true, 0, "Sietch Tabr");
+                emperorChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertEquals(1, emperorChat.getMessages().size());
+                assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for you!", emperorChat.getMessages().getFirst());
+                assertTrue(emperorChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.EMPEROR + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testResolveDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(emperorChat.getMessages().isEmpty());
+                assertTrue(emperorChat.getChoices().isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("#notMoritaniAllyLoses")
+        class NotMoritaniAllyLoses {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, crysknife, shield);
+                battle.setBattlePlan(game, emperor, null, cheapHero, false, 3, false, 0, chaumas, shield);
+                atreidesChat.clear();
+                modInfo.clear();
+                turnSummary.clear();
+            }
+
+            @Test
+            void testReviewDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertTrue(atreidesChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testPublishDoesNotOfferChoices() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertTrue(atreidesChat.getChoices().isEmpty());
+                assertFalse(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally"));
+            }
+
+            @Test
+            void testNotMoritaniAllyLoses() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(atreidesChat.getMessages().isEmpty());
+                assertTrue(atreidesChat.getChoices().isEmpty());
+            }
+        }
+    }
 }
