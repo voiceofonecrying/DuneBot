@@ -750,16 +750,7 @@ public class CommandManager extends ListenerAdapter {
     public void transferCardFromDiscard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         Faction receiver = game.getFaction(discordGame.required(faction).getAsString());
         String cardName = discordGame.required(discardCard).getAsString();
-
-        TreacheryCard card = game.getTreacheryDiscard().stream()
-                .filter(c -> c.name().equalsIgnoreCase(cardName))
-                .findFirst()
-                .orElseThrow(() -> new InvalidGameStateException("Card not found in discard pile."));
-
-        receiver.addTreacheryCard(card);
-        game.getTreacheryDiscard().remove(card);
-        receiver.getLedger().publish("Received " + cardName + " from discard.");
-
+        game.transferTreacheryCardFromDiscard(receiver, cardName);
         discordGame.pushGame();
     }
 

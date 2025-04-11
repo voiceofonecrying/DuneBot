@@ -863,9 +863,18 @@ public class Battle {
         boolean successfulTraitor = callsTraitor && !bothCallTraitor(game);
         resolution += handleReinforcements(game, faction, successfulTraitor, battlePlan, executeResolution);
 
-        resolution += handleCheapHeroDiscard(faction, successfulTraitor, battlePlan, executeResolution);
-        resolution += handleWeaponDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution);
-        resolution += handleDefenseDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution);
+        List<String> discards = new ArrayList<>();
+        resolution += handleCheapHeroDiscard(faction, successfulTraitor, battlePlan, executeResolution, discards);
+        resolution += handleWeaponDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution, discards);
+        resolution += handleDefenseDiscard(faction, successfulTraitor, isLoser, battlePlan, executeResolution, discards);
+        if (!discards.isEmpty() && isLoser && !isLasgunShieldExplosion && !bothCallTraitor(game)) {
+            if (executeResolution) {
+                List<DuneChoice> choices = new ArrayList<>(discards.stream().map(d -> new DuneChoice("battle-retain-discard-" + d, d)).toList());
+                choices.add(new DuneChoice("secondary", "battle-retain-discard-None", "No, leave in discard"));
+                faction.getChat().publish("Would you like to retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally? " + faction.getPlayer(), choices);
+            } else
+                resolution += faction.getEmoji() + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally";
+        }
         resolution += handleJuiceofSaphoDiscard(faction, successfulTraitor, battlePlan, executeResolution);
 
         resolution += handleSpicePayments(game, faction, successfulTraitor, battlePlan, executeResolution);
@@ -993,7 +1002,7 @@ public class Battle {
         return resolution;
     }
 
-    private String handleCheapHeroDiscard(Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleCheapHeroDiscard(Faction faction, boolean successfulTraitor, BattlePlan battlePlan, boolean executeResolution, List<String> discards) {
         String resolution = "";
         if (battlePlan.getCheapHero() != null) {
             if (successfulTraitor) {
@@ -1004,12 +1013,14 @@ public class Battle {
                     faction.discard(battlePlan.getCheapHero().name());
                 else
                     resolution += faction.getEmoji() + " discards " + battlePlan.getCheapHero().name() + "\n";
+                if (faction.getAlly().equals("Moritani"))
+                    discards.add(battlePlan.getCheapHero().name());
             }
         }
         return resolution;
     }
 
-    private String handleWeaponDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleWeaponDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution, List<String> discards) {
         String resolution = "";
         if (battlePlan.weaponMustBeDiscarded(isLoser)) {
             if (successfulTraitor) {
@@ -1020,12 +1031,14 @@ public class Battle {
                     faction.discard(battlePlan.getWeapon().name());
                 else
                     resolution += faction.getEmoji() + " discards " + battlePlan.getWeapon().name() + "\n";
+                if (faction.getAlly().equals("Moritani"))
+                    discards.add(battlePlan.getCheapHero().name());
             }
         }
         return resolution;
     }
 
-    private String handleDefenseDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution) {
+    private String handleDefenseDiscard(Faction faction, boolean successfulTraitor, boolean isLoser, BattlePlan battlePlan, boolean executeResolution, List<String> discards) {
         String resolution = "";
         if (battlePlan.defenseMustBeDiscarded(isLoser)) {
             if (successfulTraitor) {
@@ -1036,6 +1049,8 @@ public class Battle {
                     faction.discard(battlePlan.getDefense().name());
                 else
                     resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
+                if (faction.getAlly().equals("Moritani"))
+                    discards.add(battlePlan.getCheapHero().name());
             }
         }
         return resolution;
