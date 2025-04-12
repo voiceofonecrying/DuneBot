@@ -744,6 +744,14 @@ public class Game {
         return dukeVidal;
     }
 
+    public void assignDukeVidalToAFaction(String factionName) {
+        releaseDukeVidal(false);
+        Faction faction = getFaction(factionName);
+        faction.addLeader(dukeVidal);
+        faction.getChat().publish("Duke Vidal has come to fight for you!");
+        turnSummary.publish("Duke Vidal now works for " + faction.getEmoji());
+    }
+
     public void releaseDukeVidal(boolean justRevivedByEcaz) {
         Faction faction = factions.stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
         if (faction != null) {

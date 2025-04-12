@@ -137,14 +137,6 @@ public class EcazFaction extends Faction {
         game.getTurnSummary().publish("Duke Vidal now works for " + emoji);
     }
 
-    public void assignDukeVidalToAFaction(String factionName) {
-        game.releaseDukeVidal(false);
-        Faction faction = game.getFaction(factionName);
-        faction.addLeader(game.getDukeVidal());
-        faction.getChat().publish("Duke Vidal has come to fight for you!");
-        game.getTurnSummary().publish("Duke Vidal now works for " + faction.getEmoji());
-    }
-
     public void presentCHOAMAmbassadorDiscardChoices() {
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
