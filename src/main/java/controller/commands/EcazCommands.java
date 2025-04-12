@@ -4,7 +4,6 @@ import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
-import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -55,12 +54,7 @@ public class EcazCommands {
 
     private static void assignDukeVidal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
-        game.releaseDukeVidal(false);
-        Faction faction = game.getFaction(factionName);
-        faction.addLeader(game.getDukeVidal());
-        faction.getChat().publish("Duke Vidal has come to fight for you!");
-        game.getTurnSummary().publish("Duke Vidal now works for " + faction.getEmoji());
-
+        game.getEcazFaction().assignDukeVidalToAFaction(factionName);
         discordGame.pushGame();
     }
 }

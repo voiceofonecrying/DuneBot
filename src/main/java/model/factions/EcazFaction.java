@@ -122,6 +122,29 @@ public class EcazFaction extends Faction {
         game.setUpdated(UpdateType.MAP);
     }
 
+    public void gainDukeVidalWithEcazAmbassador() throws InvalidGameStateException {
+        if (leaders.stream().anyMatch(l -> l.getName().equals("Duke Vidal")))
+            throw new InvalidGameStateException("Ecaz already has Duke Vidal.");
+        else if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+            throw new InvalidGameStateException("Duke Vidal is in the tanks.");
+        else if (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+            throw new InvalidGameStateException("Duke Vidal has been captured by Harkonnen.");
+        else if (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+            throw new InvalidGameStateException("Duke Vidal is a ghola for BT");
+        game.releaseDukeVidal(false);
+        addLeader(game.getDukeVidal());
+        chat.reply("Duke Vidal has come to fight for you!");
+        game.getTurnSummary().publish("Duke Vidal now works for " + emoji);
+    }
+
+    public void assignDukeVidalToAFaction(String factionName) {
+        game.releaseDukeVidal(false);
+        Faction faction = game.getFaction(factionName);
+        faction.addLeader(game.getDukeVidal());
+        faction.getChat().publish("Duke Vidal has come to fight for you!");
+        game.getTurnSummary().publish("Duke Vidal now works for " + faction.getEmoji());
+    }
+
     public void presentCHOAMAmbassadorDiscardChoices() {
         List<DuneChoice> choices = new ArrayList<>();
         int i = 0;
@@ -220,7 +243,7 @@ public class EcazFaction extends Faction {
 
     public void reviveLeaderWithBTAmbassador(String leaderName) {
         reviveLeader(leaderName);
-        chat.publish(leaderName + " was revived with your BT ambassador.");
+        chat.reply(leaderName + " was revived with your BT ambassador.");
         game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT ambassador.");
     }
 
