@@ -479,7 +479,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
             moritani.setChat(new TestTopic());
             game.addFaction(moritani);
-            faction.assignDukeVidalToAFaction(moritani.getName());
+            game.assignDukeVidalToAFaction(moritani.getName());
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             faction.gainDukeVidalWithEcazAmbassador();
@@ -493,7 +493,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
             harkonnen.setChat(new TestTopic());
             game.addFaction(harkonnen);
-            faction.assignDukeVidalToAFaction(harkonnen.getName());
+            game.assignDukeVidalToAFaction(harkonnen.getName());
             assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
@@ -504,7 +504,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             BTFaction bt = new BTFaction("bt", "bt");
             bt.setChat(new TestTopic());
             game.addFaction(bt);
-            faction.assignDukeVidalToAFaction(bt.getName());
+            game.assignDukeVidalToAFaction(bt.getName());
             assertTrue(bt.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
@@ -535,7 +535,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             moritani.setChat(new TestTopic());
             moritani.setLedger(new TestTopic());
             game.addFaction(moritani);
-            faction.assignDukeVidalToAFaction(moritani.getName());
+            game.assignDukeVidalToAFaction(moritani.getName());
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             game.killLeader(moritani, "Duke Vidal");
