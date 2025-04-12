@@ -88,18 +88,10 @@ public class EcazButtons implements Pressable {
     }
 
     private static void choamDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String cardName = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
-        if (cardName.equals("finished")) {
-            discordGame.queueMessage("You are finished discarding.");
-        } else {
-            discordGame.queueMessage("You are discarding " + cardName + " for 3 " + Emojis.SPICE);
-            faction.discard(cardName);
-            faction.addSpice(3, "discard " + cardName + " with CHOAM ambassador.");
-            faction.presentCHOAMAmbassadorDiscardChoices();
-            discordGame.pushGame();
-        }
+        game.getEcazFaction().discardWithCHOAMAmbassador(cardName);
+        discordGame.pushGame();
     }
 
     private static void fremenMoveFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
