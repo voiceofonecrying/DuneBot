@@ -1222,13 +1222,6 @@ public class ShowCommands {
         builder.addFiles(newMap);
 
         EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.BLACK);
-        List<String> discoveryTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && t.isDiscovered()).map(t ->t.getDiscoveryToken() + " is in " + t.getTerritoryName()).toList();
-        List<String> undiscoveredTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && !t.isDiscovered()).map(t -> "A " + (t.isRock() ? "Smuggler" : "Hiereg") + " token is in " + t.getTerritoryName()).collect(Collectors.toList());
-        String discoveryString = String.join("\n", discoveryTokensLocations);
-        String undiscoveredString = String.join("\n", undiscoveredTokensLocations);
-        if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
-            embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
-
         String biddingMarketSize = "";
         try {
             Bidding bidding = game.getBidding();
@@ -1238,6 +1231,18 @@ public class ShowCommands {
                         + " :wastebasket: " + game.getTreacheryDiscard().size()
                         + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
         embedBuilder.addField("Deck Sizes", deckSizes, false);
+
+        List<String> discoveryTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && t.isDiscovered()).map(t -> t.getDiscoveryToken() + " is in " + t.getTerritoryName()).toList();
+        List<String> undiscoveredTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && !t.isDiscovered()).map(t -> "A " + (t.isRock() ? "Smuggler" : "Hiereg") + " token is in " + t.getTerritoryName()).collect(Collectors.toList());
+        String discoveryString = String.join("\n", discoveryTokensLocations);
+        String undiscoveredString = String.join("\n", undiscoveredTokensLocations);
+        if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
+            embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
+
+        List<String> ambassadorLocations = game.getTerritories().values().stream().filter(Territory::hasEcazAmbassador).map(t -> Emojis.getFactionEmoji(t.getEcazAmbassador()) + " is in " + t.getTerritoryName()).toList();
+        if (!ambassadorLocations.isEmpty())
+            embedBuilder.addField(discordGame.tagEmojis(Emojis.ECAZ + " Ambassador Locations"), discordGame.tagEmojis(String.join("\n", ambassadorLocations)), false);
+
         builder.addEmbeds(embedBuilder.build());
         discordGame.queueMessage("front-of-shield", builder);
 
