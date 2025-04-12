@@ -32,7 +32,7 @@ public class Faction {
     private final List<LeaderSkillCard> leaderSkillsHand;
     private final List<StrongholdCard> strongholdCards;
     private StrongholdCard hmsStrongholdProxy;
-    private final List<Leader> leaders;
+    protected final List<Leader> leaders;
     protected String emoji;
     protected int handLimit;
     protected int spice;

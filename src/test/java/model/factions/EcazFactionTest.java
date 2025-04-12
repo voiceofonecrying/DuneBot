@@ -464,6 +464,86 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#gainDukeVidalWithEcazAmbassador")
+    class GainDukeVidalWithEcazAmbassador {
+        @Test
+        void testDukeVidalIsWithNoFaction() throws InvalidGameStateException {
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.gainDukeVidalWithEcazAmbassador();
+            assertTrue(faction.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal now works for " + Emojis.ECAZ, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testDukeVidalIsWithMoritani() throws InvalidGameStateException, IOException {
+            MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+            moritani.setChat(new TestTopic());
+            game.addFaction(moritani);
+            faction.assignDukeVidalToAFaction(moritani.getName());
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.gainDukeVidalWithEcazAmbassador();
+            assertTrue(faction.getLeader("Duke Vidal").isPresent());
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal now works for " + Emojis.ECAZ, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testDukeVidalIsWithHarkonnen() throws IOException {
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
+            harkonnen.setChat(new TestTopic());
+            game.addFaction(harkonnen);
+            faction.assignDukeVidalToAFaction(harkonnen.getName());
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+        }
+
+        @Test
+        void testDukeVidalIsWithBT() throws IOException {
+            BTFaction bt = new BTFaction("bt", "bt");
+            bt.setChat(new TestTopic());
+            game.addFaction(bt);
+            faction.assignDukeVidalToAFaction(bt.getName());
+            assertTrue(bt.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+        }
+
+        @Test
+        void testDukeVidalIsWithEcazOccupier() throws IOException, InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            AtreidesFaction atreides = new AtreidesFaction("at", "at");
+            atreides.setChat(new TestTopic());
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+            Territory ecazHomeworld = game.getTerritory("Ecaz");
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            atreides.placeForceFromReserves(game, ecazHomeworld, 2, false);
+            assertTrue(faction.isHomeworldOccupied());
+            assertTrue(atreides.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.gainDukeVidalWithEcazAmbassador();
+            assertTrue(faction.getLeader("Duke Vidal").isPresent());
+            assertFalse(atreides.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal now works for " + Emojis.ECAZ, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testDukeVidalIsInTheTanks() throws IOException {
+            MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+            moritani.setChat(new TestTopic());
+            moritani.setLedger(new TestTopic());
+            game.addFaction(moritani);
+            faction.assignDukeVidalToAFaction(moritani.getName());
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            game.killLeader(moritani, "Duke Vidal");
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+        }
+    }
+
+    @Nested
     @DisplayName("removeAmbassadorFromMap")
     class RemoveAmbassadorFromMap {
         String ambassador;

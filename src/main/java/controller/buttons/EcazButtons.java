@@ -81,10 +81,9 @@ public class EcazButtons implements Pressable {
     }
 
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         discordGame.queueMessage("Your Bene Gesserit ambassador will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         discordGame.queueDeleteMessage();
-        faction.triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
+        game.getEcazFaction().triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
         discordGame.pushGame();
     }
 
@@ -142,11 +141,9 @@ public class EcazButtons implements Pressable {
     }
 
     private static void btLeader(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String leaderName = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You chose " + leaderName);
-        faction.reviveLeaderWithBTAmbassador(leaderName);
+        game.getEcazFaction().reviveLeaderWithBTAmbassador(leaderName);
         discordGame.pushGame();
     }
 
@@ -164,7 +161,7 @@ public class EcazButtons implements Pressable {
 
     private static void denyAlliance(DiscordGame discordGame, Game game) {
         discordGame.queueMessage("You have sent the Ambassador away empty-handed.");
-        game.getFaction("Ecaz").getChat().publish("Your ambassador has returned with news that no alliance will take place.");
+        game.getEcazFaction().getChat().publish("Your ambassador has returned with news that no alliance will take place.");
         discordGame.queueDeleteMessage();
     }
 
@@ -172,9 +169,7 @@ public class EcazButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         discordGame.queueMessage("You have sent the Ambassador away with news of their new alliance!");
         discordGame.queueDeleteMessage();
-
-        Alliance.createAlliance(discordGame, game.getFaction("Ecaz"), faction);
-
+        Alliance.createAlliance(discordGame, game.getEcazFaction(), faction);
         discordGame.pushGame();
     }
 
@@ -191,12 +186,9 @@ public class EcazButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void getDukeVidal(Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction ecaz = game.getFaction("Ecaz");
-        if (ecaz.getLeader("Duke Vidal").isPresent()) return;
-        ecaz.addLeader(game.getDukeVidal());
+    private static void getDukeVidal(Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        game.getEcazFaction().gainDukeVidalWithEcazAmbassador();
         discordGame.pushGame();
-        discordGame.queueMessage("Duke Vidal has been returned to you!");
         discordGame.queueDeleteMessage();
     }
 
