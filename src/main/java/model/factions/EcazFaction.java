@@ -138,17 +138,21 @@ public class EcazFaction extends Faction {
     }
 
     public void presentCHOAMAmbassadorDiscardChoices() {
-        List<DuneChoice> choices = new ArrayList<>();
-        int i = 0;
-        for (TreacheryCard c : treacheryHand)
-            choices.add(new DuneChoice("ecaz-choam-discard-" + c.name() + "-" + i++, c.name()));
-        choices.add(new DuneChoice("secondary", "ecaz-choam-discard-None", "Done discarding"));
-        chat.publish("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", choices);
+        if (treacheryHand.isEmpty()) {
+            chat.publish("You have no " + Emojis.TREACHERY + " to discard with your " + Emojis.CHOAM + " Ambassador. Your Ambassador has been used.");
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            int i = 0;
+            for (TreacheryCard c : treacheryHand)
+                choices.add(new DuneChoice("ecaz-choam-discard-" + c.name() + "-" + i++, c.name()));
+            choices.add(new DuneChoice("secondary", "ecaz-choam-discard-None", "Done discarding"));
+            chat.publish("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", choices);
+        }
     }
 
     public void discardWithCHOAMAmbassador(String cardName) {
         if (cardName.equals("None")) {
-            chat.reply("You are finished discarding.");
+            chat.reply("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.");
         } else {
             discard(cardName);
             addSpice(3, "discard " + cardName + " with CHOAM ambassador.");

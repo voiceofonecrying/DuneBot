@@ -544,6 +544,37 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("discardWithCHOAMAmbassador")
+    class DiscardWithCHOAMAmbassador {
+        @Test
+        void testDiscardOneAndGetAskedAgain() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.discardWithCHOAMAmbassador("Kulon");
+            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
+            assertEquals(15, faction.getSpice());
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getLast());
+        }
+
+        @Test
+        void testDiscardingLastCard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardWithCHOAMAmbassador("Kulon");
+            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
+            assertEquals(15, faction.getSpice());
+            assertEquals("You have no " + Emojis.TREACHERY + " to discard with your " + Emojis.CHOAM + " Ambassador. Your Ambassador has been used.", chat.getMessages().getLast());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+
+        @Test
+        void testDiscardNone() {
+            faction.discardWithCHOAMAmbassador("None");
+            assertEquals("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.", chat.getMessages().getFirst());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("removeAmbassadorFromMap")
     class RemoveAmbassadorFromMap {
         String ambassador;
