@@ -191,9 +191,9 @@ public class Revival {
 
     public boolean ecazAmbassadorPlacement(Game game) {
         if (game.hasEcazFaction()) {
-            game.getEcazFaction().sendAmbassadorLocationMessage(1);
             ecazAskedAboutAmbassadors = true;
-            ecazAmbassadorsToBePlaced = true;
+            if (game.getEcazFaction().sendAmbassadorLocationMessage(1))
+                ecazAmbassadorsToBePlaced = true;
         }
         return ecazAmbassadorsToBePlaced;
     }
