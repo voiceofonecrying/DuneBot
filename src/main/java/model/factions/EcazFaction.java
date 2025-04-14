@@ -68,7 +68,7 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador) {
-        game.getTurnSummary().publish("The " + ambassador + " ambassador has been triggered!");
+        game.getTurnSummary().publish("The " + ambassador + " Ambassador has been triggered!");
         switch (ambassador) {
             case "Ecaz" -> {
                 DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
@@ -91,7 +91,7 @@ public class EcazFaction extends Faction {
                     chat.publish("Which Ambassador effect would you like to trigger?",
                             ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
             case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
-            case "Emperor" -> addSpice(5, Emojis.EMPEROR + " ambassador");
+            case "Emperor" -> addSpice(5, Emojis.EMPEROR + " Ambassador");
             case "Fremen" -> presentFremenAmbassadorRideFromChoices();
             case "Guild" -> presentGuildAmbassadorDestinationChoices();
             case "Harkonnen" ->
@@ -117,7 +117,7 @@ public class EcazFaction extends Faction {
         nonEcazAmbassadorsCount += ambassadorSupply.stream().filter(a -> !a.equals("Ecaz")).count();
 
         if (nonEcazAmbassadorsCount == 0) drawNewSupply();
-        chat.reply("You have triggered your " + ambassador + " ambassador!");
+        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
@@ -155,7 +155,7 @@ public class EcazFaction extends Faction {
             chat.reply("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.");
         } else {
             discard(cardName);
-            addSpice(3, "discard " + cardName + " with CHOAM ambassador.");
+            addSpice(3, "discard " + cardName + " with CHOAM Ambassador.");
             chat.reply("You discarded " + cardName + " for 3 " + Emojis.SPICE);
             presentCHOAMAmbassadorDiscardChoices();
         }
@@ -164,12 +164,12 @@ public class EcazFaction extends Faction {
     public void presentFremenAmbassadorRideFromChoices() {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
         choices.add(new DuneChoice("danger", "pass-shipment-fremen-ride", "No move"));
-        chat.publish("Where would you like to ride from with your Fremen ambassador?", choices);
+        chat.publish("Where would you like to ride from with your Fremen Ambassador?", choices);
     }
 
     public void presentGuildAmbassadorDestinationChoices() {
         if (getReservesStrength() == 0)
-            chat.publish("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild ambassador.");
+            chat.publish("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
         else {
             String buttonSuffix = "-guild-ambassador";
             List<DuneChoice> choices = new LinkedList<>();
@@ -227,7 +227,7 @@ public class EcazFaction extends Faction {
         List<Leader> ecazLeadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getName().equals("Sanya Ecaz") || l.getName().equals("Whitmore Bludd") || l.getName().equals("Ilesa Ecaz") || l.getName().equals("Rivvy Dinari") || l.getName().equals("Bindikk Narvi") || l.getName().equals("Duke Vidal")).toList();
         if (getRevivableForces() == 0) {
             if (ecazLeadersInTanks.isEmpty()) {
-                chat.publish("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT ambassador.");
+                chat.publish("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.");
                 game.getTurnSummary().publish(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.");
             } else {
                 presentLeaderChoicesWithBTAmbassador();
@@ -248,7 +248,7 @@ public class EcazFaction extends Faction {
     public void reviveForcesWithBTAmbassador() {
         int numForces = Math.min(getRevivableForces(), 4);
         game.reviveForces(this, false, numForces, 0);
-        chat.publish("You revived " + numForces + " " + Emojis.ECAZ_TROOP + " with your BT ambassador.");
+        chat.reply("You revived " + numForces + " " + Emojis.ECAZ_TROOP + " with your BT Ambassador.");
     }
 
     public void presentLeaderChoicesWithBTAmbassador() {
@@ -258,14 +258,14 @@ public class EcazFaction extends Faction {
         } else {
             List<DuneChoice> choices = new ArrayList<>();
             ecazLeadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
-            chat.publish("Which leader would you like to revive?", choices);
+            chat.reply("Which leader would you like to revive?", choices);
         }
     }
 
     public void reviveLeaderWithBTAmbassador(String leaderName) {
         reviveLeader(leaderName);
-        chat.reply(leaderName + " was revived with your BT ambassador.");
-        game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT ambassador.");
+        chat.reply(leaderName + " was revived with your BT Ambassador.");
+        game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT Ambassador.");
     }
 
     public void buyCardWithRicheseAmbassador(boolean buy) {
@@ -296,7 +296,7 @@ public class EcazFaction extends Faction {
                     stronghold.setDisabled(true);
                 choices.add(stronghold);
             }
-            choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more ambassadors."));
+            choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more Ambassadors."));
             chat.publish("Would you like to place an Ambassador for " + cost + " " + Emojis.SPICE + "? " + getPlayer(), choices);
         }
     }
@@ -305,7 +305,7 @@ public class EcazFaction extends Faction {
         List<DuneChoice> choices = new LinkedList<>();
         for (String ambassador : ambassadorSupply)
             choices.add(new DuneChoice("ecaz-ambassador-selected-" + ambassador + "-" + territory + "-" + cost, ambassador));
-        chat.reply("Which ambassador would you like to send to " + territory + "?", choices);
+        chat.reply("Which Ambassador would you like to send to " + territory + "?", choices);
     }
 
     public void placeAmbassador(String strongholdName, String ambassador, int cost) throws InvalidGameStateException {
@@ -334,8 +334,8 @@ public class EcazFaction extends Faction {
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
             choices.add(new DuneChoice("danger", "ecaz-don't-trigger-ambassador", "Don't Trigger"));
-            game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " ambassador.");
-            chat.publish("Will you trigger your " + ambassador + " ambassador against " + targetFaction.getEmoji() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
+            game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " Ambassador.");
+            chat.publish("Will you trigger your " + ambassador + " Ambassador against " + targetFaction.getEmoji() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
         }
     }
 
@@ -366,12 +366,12 @@ public class EcazFaction extends Faction {
 
     public void addToAmbassadorPool(String ambassador) {
         ambassadorPool.add(ambassador);
-        getLedger().publish(ambassador + " ambassador token was added to the pool.");
+        getLedger().publish(ambassador + " Ambassador token was added to the pool.");
     }
 
     public void addAmbassadorToSupply(String ambassador) {
         ambassadorSupply.add(ambassador);
-        getLedger().publish(ambassador + " ambassador token was added to the supply.");
+        getLedger().publish(ambassador + " Ambassador token was added to the supply.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 

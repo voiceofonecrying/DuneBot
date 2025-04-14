@@ -251,8 +251,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         void testOtherFactionTriggers() {
             faction.checkForAmbassadorTrigger(carthag, atreides);
-            assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG ambassador.", turnSummary.getMessages().getFirst());
-            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your BG ambassador against " + Emojis.ATREIDES + " in Carthag?"));
+            assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG Ambassador.", turnSummary.getMessages().getFirst());
+            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your BG Ambassador against " + Emojis.ATREIDES + " in Carthag?"));
             assertEquals(2, chat.getChoices().getFirst().size());
         }
 
@@ -318,14 +318,14 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testTriggerEmperorAdds5Spice() {
             faction.triggerAmbassador(harkonnen, "Emperor");
-            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
             assertEquals(17, faction.getSpice());
         }
 
         @Test
         public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
             faction.triggerAmbassador(harkonnen, "Fremen");
-            assertEquals("Where would you like to ride from with your Fremen ambassador?", chat.getMessages().getFirst());
+            assertEquals("Where would you like to ride from with your Fremen Ambassador?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("No move", chat.getChoices().getFirst().getLast().getLabel());
@@ -347,7 +347,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.removeForces(faction.getHomeworld(), faction, 14, 0, true);
             faction.triggerAmbassador(harkonnen, "Guild");
             assertTrue(modInfo.getMessages().isEmpty());
-            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.", chat.getMessages().getFirst());
         }
 
         @Test
@@ -414,7 +414,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testBTAmbassadorNoLeadersOrForcesInTanks() {
             faction.triggerAmbassador(harkonnen, "BT");
-            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
             assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
         }
@@ -423,7 +423,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testBTAmbassadorOnly2ForcesInTanks() {
             faction.removeForces(faction.getHomeworld(), 2, false, true);
             faction.triggerAmbassador(harkonnen, "BT");
-            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -431,7 +431,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testBTAmbassadorOnly5ForcesInTanks() {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.triggerAmbassador(harkonnen, "BT");
-            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -439,7 +439,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testBTAmbassadorOnly1LeaderInTanks() {
             game.killLeader(faction, "Whitmore Bludd");
             faction.triggerAmbassador(harkonnen, "BT");
-            assertEquals("Whitmore Bludd was revived with your BT ambassador.", chat.getMessages().getFirst());
+            assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
