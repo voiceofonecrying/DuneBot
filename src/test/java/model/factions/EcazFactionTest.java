@@ -575,6 +575,33 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#discardAndDrawWithIxAmbassador")
+    class DiscardAndDrawWithIxAmbassador {
+        @Test
+        void testEcazHasNoCards() {
+            assertThrows(IllegalArgumentException.class, () -> faction.discardAndDrawWithIxAmbassador("Kulon"));
+        }
+
+        @Test
+        void testSuccessfulDiscard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardAndDrawWithIxAmbassador("Kulon");
+            assertTrue(chat.getMessages().getFirst().startsWith("You discarded Kulon and drew "));
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertNotEquals("Kulon", faction.getTreacheryHand().getFirst().name());
+        }
+
+        @Test
+        void testNoDiscard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardAndDrawWithIxAmbassador("None");
+            assertEquals("You will not discard and draw a new card with your Ix Ambassador.", chat.getMessages().getFirst());
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertEquals("Kulon", faction.getTreacheryHand().getFirst().name());
+        }
+    }
+
+    @Nested
     @DisplayName("removeAmbassadorFromMap")
     class RemoveAmbassadorFromMap {
         String ambassador;

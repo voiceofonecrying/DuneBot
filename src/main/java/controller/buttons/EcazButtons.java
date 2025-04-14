@@ -95,27 +95,19 @@ public class EcazButtons implements Pressable {
     }
 
     private static void fremenMoveFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String territoryName = event.getComponentId().split("-")[4];
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will move from " + territoryName + ".");
-        faction.getMovement().setMovingFrom(territoryName);
+        game.getEcazFaction().getMovement().setMovingFrom(territoryName);
         ShipmentAndMovementButtons.queueShippingButtons(event, game, discordGame, true);
         discordGame.pushGame();
     }
 
     private static void ixDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String cardName = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
-        if (cardName.equals("finished")) {
-            discordGame.queueMessage("You will not discard and draw a new card.");
-        } else {
-            faction.discard(cardName);
-            game.drawTreacheryCard("Ecaz", true, true);
-            discordGame.queueMessage("You discarded " + cardName + " and drew " + faction.getTreacheryHand().getLast().name());
-            discordGame.pushGame();
-        }
+        game.getEcazFaction().discardAndDrawWithIxAmbassador(cardName);
+        discordGame.pushGame();
     }
 
     private static void richeseBuyCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
