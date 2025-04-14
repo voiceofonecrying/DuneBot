@@ -111,17 +111,10 @@ public class EcazButtons implements Pressable {
     }
 
     private static void richeseBuyCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
         String response = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
-        if (response.equals("no")) {
-            discordGame.queueMessage("You will not buy a card.");
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
-        } else {
-            faction.buyCardWithRicheseAmbassador();
-            discordGame.queueMessage("You bought " + faction.getTreacheryHand().getLast().name() + ".");
-            discordGame.pushGame();
-        }
+        game.getEcazFaction().buyCardWithRicheseAmbassador(response.equals("yes"));
+        discordGame.pushGame();
     }
 
     private static void btLeader(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
