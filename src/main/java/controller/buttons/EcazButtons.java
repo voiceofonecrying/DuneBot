@@ -125,14 +125,13 @@ public class EcazButtons implements Pressable {
     }
 
     private static void btWhichRevival(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = (EcazFaction) game.getFaction("Ecaz");
+        EcazFaction faction = game.getEcazFaction();
         String revivalType = event.getComponentId().split("-")[4];
         discordGame.queueDeleteMessage();
         if (revivalType.equals("leader"))
             faction.presentLeaderChoicesWithBTAmbassador();
         else
             faction.reviveForcesWithBTAmbassador();
-        discordGame.queueMessage("You chose to revive " + (revivalType.equals("leader") ? "a Leader" : Emojis.ECAZ_TROOP));
         discordGame.pushGame();
     }
 
