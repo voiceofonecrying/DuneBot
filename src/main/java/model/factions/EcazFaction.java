@@ -280,13 +280,15 @@ public class EcazFaction extends Faction {
         }
     }
 
-    public void sendAmbassadorLocationMessage(int cost) {
+    public boolean sendAmbassadorLocationMessage(int cost) {
         if (ambassadorSupply.isEmpty()) {
             chat.publish("You have no Ambassadors in supply to place.");
             game.getModInfo().publish(Emojis.ECAZ + " has no Ambassadors to place. Please advance the game. " + game.getModOrRoleMention());
+            return false;
         } else if (cost > spice) {
             chat.publish("You do not have " + cost + " " + Emojis.SPICE + " to place an Ambassador.");
             game.getModInfo().publish(Emojis.ECAZ + " does not have " + cost + " " + Emojis.SPICE + " to place an Ambassador. Please advance the game. " + game.getModOrRoleMention());
+            return false;
         } else {
             List<DuneChoice> choices = new LinkedList<>();
             for (Territory territory : game.getTerritories().values()) {
@@ -298,6 +300,7 @@ public class EcazFaction extends Faction {
             }
             choices.add(new DuneChoice("secondary", "ecaz-no-more-ambassadors", "No more Ambassadors."));
             chat.publish("Would you like to place an Ambassador for " + cost + " " + Emojis.SPICE + "? " + getPlayer(), choices);
+            return true;
         }
     }
 
