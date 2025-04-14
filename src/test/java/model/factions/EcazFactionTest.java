@@ -152,6 +152,11 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("sendAmbassadorLocationMessage")
     class SendAmbassadorLocationMessage {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.startRevival();
+        }
+
         @Test
         void testNoAmbassadorsInSupply() throws InvalidGameStateException {
             TestTopic modInfo = new TestTopic();
