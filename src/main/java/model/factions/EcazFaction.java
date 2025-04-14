@@ -210,11 +210,11 @@ public class EcazFaction extends Faction {
 
     public void presentRicheseAmbassadorChoices() {
         if (treacheryHand.size() == handLimit) {
-            chat.publish("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese ambassador.");
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
+            chat.publish("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.");
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese Ambassador.");
         } else if (spice < 3) {
-            chat.publish("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese ambassador.");
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese ambassador.");
+            chat.publish("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.");
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese Ambassador.");
         } else {
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("ecaz-richese-buy-yes", "Yes"));
@@ -268,10 +268,16 @@ public class EcazFaction extends Faction {
         game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT ambassador.");
     }
 
-    public void buyCardWithRicheseAmbassador() {
-        subtractSpice(3, "buy " + Emojis.TREACHERY + " with Richese ambassador.");
-        game.drawTreacheryCard("Ecaz", true, false);
-        game.getTurnSummary().publish(Emojis.ECAZ + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with their Richese ambassador.");
+    public void buyCardWithRicheseAmbassador(boolean buy) {
+        if (buy) {
+            subtractSpice(3, "buy " + Emojis.TREACHERY + " with Richese Ambassador.");
+            game.drawTreacheryCard("Ecaz", true, false);
+            game.getTurnSummary().publish(Emojis.ECAZ + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with their Richese Ambassador.");
+            chat.reply("You bought " + getTreacheryHand().getLast().name() + " with your Richese Ambassador.");
+        } else {
+            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a " + Emojis.TREACHERY + " with their Richese Ambassador.");
+            chat.reply("You will not buy a " + Emojis.TREACHERY + " with your Richese Ambassador.");
+        }
     }
 
     public void sendAmbassadorLocationMessage(int cost) {

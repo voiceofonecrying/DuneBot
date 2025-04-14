@@ -400,14 +400,14 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.addSpice(2, "Test");
             faction.discard("Cheap Hero");
             faction.triggerAmbassador(harkonnen, "Richese");
-            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese ambassador.", chat.getMessages().getFirst());
+            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
         @Test
         public void testRicheseAmbassadorWhenHandIsFull() {
             faction.triggerAmbassador(harkonnen, "Richese");
-            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese ambassador.", chat.getMessages().getFirst());
+            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -598,6 +598,42 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("You will not discard and draw a new card with your Ix Ambassador.", chat.getMessages().getFirst());
             assertEquals(1, faction.getTreacheryHand().size());
             assertEquals("Kulon", faction.getTreacheryHand().getFirst().name());
+        }
+    }
+
+    @Nested
+    @DisplayName("#buyCardWithRicheseAmbassador")
+    class BuyCardWithRicheseAmbassador {
+        @Test
+        void testBuyCard() {
+            faction.buyCardWithRicheseAmbassador(true);
+            assertTrue(chat.getMessages().getFirst().contains("with your Richese Ambassador."));
+            assertEquals(Emojis.ECAZ + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with their Richese Ambassador." , turnSummary.getMessages().getLast());
+            assertEquals(1, faction.getTreacheryHand().size());
+        }
+
+        @Test
+        void testDontBuyCard() {
+            faction.buyCardWithRicheseAmbassador(false);
+            assertEquals("You will not buy a " + Emojis. TREACHERY + " with your Richese Ambassador.", chat.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " does not buy a " + Emojis.TREACHERY + " with their Richese Ambassador." , turnSummary.getMessages().getLast());
+            assertEquals(0, faction.getTreacheryHand().size());
+        }
+
+        @Test
+        void testNotEnoughSpice() {
+            faction.subtractSpice(10, "test");
+            assertEquals(2, faction.getSpice());
+            assertThrows(IllegalStateException.class, () -> faction.buyCardWithRicheseAmbassador(true));
+        }
+
+        @Test
+        void testHandIsFull() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.addTreacheryCard(new TreacheryCard("Snooper"));
+            assertThrows(IllegalStateException.class, () -> faction.buyCardWithRicheseAmbassador(true));
         }
     }
 
