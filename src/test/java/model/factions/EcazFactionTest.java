@@ -152,8 +152,13 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("sendAmbassadorLocationMessage")
     class SendAmbassadorLocationMessage {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.startRevival();
+        }
+
         @Test
-        void testNoAmbassadorsInSupply() {
+        void testNoAmbassadorsInSupply() throws InvalidGameStateException {
             TestTopic modInfo = new TestTopic();
             game.setModInfo(modInfo);
             faction.getAmbassadorSupply().clear();
@@ -163,7 +168,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testInsufficientSpice() {
+        void testInsufficientSpice() throws InvalidGameStateException {
             TestTopic modInfo = new TestTopic();
             game.setModInfo(modInfo);
             faction.subtractSpice(11, "test");
@@ -173,14 +178,14 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testNoHMS() {
+        void testNoHMS() throws InvalidGameStateException {
             faction.sendAmbassadorLocationMessage(1);
             assertEquals(6, chat.getChoices().getFirst().size());
             assertTrue(chat.getChoices().getFirst().stream().noneMatch(c -> c.getLabel().contains("Hidden Mobile Stronghold")));
         }
 
         @Test
-        void testHMSIxInGame() throws IOException {
+        void testHMSIxInGame() throws IOException, InvalidGameStateException {
             IxFaction ix = new IxFaction("ix", "ix");
             game.addFaction(ix);
             faction.sendAmbassadorLocationMessage(1);

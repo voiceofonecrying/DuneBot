@@ -189,11 +189,11 @@ public class Revival {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public boolean ecazAmbassadorPlacement(Game game) {
+    public boolean ecazAmbassadorPlacement(Game game) throws InvalidGameStateException {
         if (game.hasEcazFaction()) {
             ecazAskedAboutAmbassadors = true;
-            if (game.getEcazFaction().sendAmbassadorLocationMessage(1))
-                ecazAmbassadorsToBePlaced = true;
+            ecazAmbassadorsToBePlaced = true;
+            game.getEcazFaction().sendAmbassadorLocationMessage(1);
         }
         return ecazAmbassadorsToBePlaced;
     }
