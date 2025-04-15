@@ -123,23 +123,23 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testStormTroopsInEmptyTerritory() {
-            assertEquals("", sietchTabr.stormTroops(game));
+            sietchTabr.stormTroops(game);
+            assertTrue(turnSummary.getMessages().isEmpty());
         }
 
         @Test
         void testStormTroopsWithNoField() {
             game.addFaction(richese);
             sietchTabr.setRicheseNoField(5);
-            String message = sietchTabr.stormTroops(game);
+            sietchTabr.stormTroops(game);
             assertEquals("The 5 " + Emojis.NO_FIELD + " in Sietch Tabr reveals 5 " + Emojis.RICHESE_TROOP, turnSummary.getMessages().getFirst());
-            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Sietch Tabr.\n", message);
+            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Sietch Tabr.", turnSummary.getMessages().getLast());
         }
     }
 
     @Nested
     @DisplayName("#stormTroopsFremen")
     class StormTroopsFremen {
-        String response;
         final int numFremen = 4;
         final int numFedaykin = 2;
 
@@ -151,7 +151,7 @@ public class TerritoryTest extends DuneTest {
             sihayaRidge.addForces("Fremen*", numFedaykin);
             assertEquals(numFremen, sihayaRidge.getForceStrength("Fremen"));
             assertEquals(numFedaykin, sihayaRidge.getForceStrength("Fremen*"));
-            response = sihayaRidge.stormTroopsFremen(game);
+            sihayaRidge.stormTroopsFremen(game);
         }
 
         @Test
@@ -166,14 +166,13 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testTroopLossMessage()  {
-            assertEquals(MessageFormat.format("{0} lose 3 {1} to the storm in Sihaya Ridge.\n", Emojis.FREMEN, Emojis.FREMEN_TROOP), response);
+            assertEquals(MessageFormat.format("{0} lose 3 {1} to the storm in Sihaya Ridge.", Emojis.FREMEN, Emojis.FREMEN_TROOP), turnSummary.getMessages().getLast());
         }
     }
 
     @Nested
     @DisplayName("#stormRemoveTroops")
     class StormRemoveTroops {
-        String response;
         final int numForces = 4;
 
         @BeforeEach
@@ -182,8 +181,10 @@ public class TerritoryTest extends DuneTest {
             sihayaRidge.setSpice(6);
             sihayaRidge.addForces("Atreides", numForces);
             assertEquals(numForces, sihayaRidge.getForceStrength("Atreides"));
-            response = sihayaRidge.stormRemoveTroops("Atreides", "Atreides", numForces, game);
-            assertEquals("", sihayaRidge.stormTroopsFremen(game));
+            sihayaRidge.stormRemoveTroops("Atreides", "Atreides", numForces, game);
+            assertEquals(1, turnSummary.getMessages().size());
+            sihayaRidge.stormTroopsFremen(game);
+            assertEquals(1, turnSummary.getMessages().size());
         }
 
         @Test
@@ -193,7 +194,7 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testTroopLossMessage()  {
-            assertEquals(MessageFormat.format("{0} lose {1} {2} to the storm in Sihaya Ridge.\n", Emojis.ATREIDES, numForces, Emojis.ATREIDES_TROOP), response);
+            assertEquals(MessageFormat.format("{0} lose {1} {2} to the storm in Sihaya Ridge.", Emojis.ATREIDES, numForces, Emojis.ATREIDES_TROOP), turnSummary.getMessages().getLast());
         }
     }
 
@@ -203,15 +204,16 @@ public class TerritoryTest extends DuneTest {
         @Test
         void testSpiceIsRemoved() {
             sihayaRidge.setSpice(6);
-            String response = sihayaRidge.stormRemoveSpice();
+            sihayaRidge.stormRemoveSpice(game);
 
             assertEquals(0, sihayaRidge.getSpice());
-            assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm.\n", Emojis.SPICE), response);
+            assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm.", Emojis.SPICE), turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testNoSpiceInTerritory() {
-            assertEquals("", sihayaRidge.stormRemoveSpice());
+            sihayaRidge.stormRemoveSpice(game);
+            assertTrue(turnSummary.getMessages().isEmpty());
         }
     }
 
@@ -222,16 +224,17 @@ public class TerritoryTest extends DuneTest {
         void testAmbassadorIsReturnedToSupply() {
             game.addFaction(ecaz);
             sietchTabr.setEcazAmbassador("BG");
-            String response = sietchTabr.stormRemoveAmbassador(game);
+            sietchTabr.stormRemoveAmbassador(game);
 
             assertFalse(sietchTabr.hasEcazAmbassador());
             assertTrue(ecaz.getAmbassadorSupply().contains("BG"));
-            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Sietch Tabr and returned to supply.\n", response);
+            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Sietch Tabr and returned to supply.", turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testNoAmbassadorInTerritory() {
-            assertEquals("", sietchTabr.stormRemoveAmbassador(game));
+            sietchTabr.stormRemoveAmbassador(game);
+            assertTrue(turnSummary.getMessages().isEmpty());
         }
     }
 

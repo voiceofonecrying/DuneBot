@@ -1166,7 +1166,8 @@ class GameTest extends DuneTest {
             fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
             fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
             game.endStormPhase();
-            assertEquals(Emojis.FREMEN + " lose 2 " + Emojis.FREMEN_TROOP + " to the storm in Cielago North (East Sector).\n" + Emojis.FREMEN + " lose 1 " + Emojis.FREMEN_FEDAYKIN + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.FREMEN + " lose 2 " + Emojis.FREMEN_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.FREMEN + " lose 1 " + Emojis.FREMEN_FEDAYKIN + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -1175,7 +1176,8 @@ class GameTest extends DuneTest {
             emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
             emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
             game.endStormPhase();
-            assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_TROOP + " to the storm in Cielago North (East Sector).\n" + Emojis.EMPEROR + " lose 3 " + Emojis.EMPEROR_SARDAUKAR + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.EMPEROR + " lose 3 " + Emojis.EMPEROR_SARDAUKAR + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -1184,14 +1186,14 @@ class GameTest extends DuneTest {
             cielagoNorth_eastSector.setRicheseNoField(5);
             game.endStormPhase();
             assertEquals("The 5 " + Emojis.NO_FIELD + " in Cielago North (East Sector) reveals 5 " + Emojis.RICHESE_TROOP, turnSummary.getMessages().get(1));
-            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
         }
 
         @Test
         void testSpiceBlownAway() throws IOException {
             cielagoNorth_eastSector.setSpice(6);
             game.endStormPhase();
-            assertEquals("6 " + Emojis.SPICE + " in Cielago North (East Sector) was blown away by the storm.\n", turnSummary.getMessages().getLast());
+            assertEquals("6 " + Emojis.SPICE + " in Cielago North (East Sector) was blown away by the storm.", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -1199,7 +1201,7 @@ class GameTest extends DuneTest {
             game.addFaction(ecaz);
             cielagoNorth_eastSector.setEcazAmbassador("BG");
             game.endStormPhase();
-            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Cielago North (East Sector) and returned to supply.\n", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Cielago North (East Sector) and returned to supply.", turnSummary.getMessages().getLast());
         }
 
         @Test
