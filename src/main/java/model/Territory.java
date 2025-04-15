@@ -305,11 +305,10 @@ public class Territory {
         return message.toString();
     }
     
-    public String stormTroopsFremen(Game game) {
+    public void stormTroopsFremen(Game game) {
         List<Force> fremenForces = forces.stream()
                 .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
                 .toList();
-        StringBuilder message = new StringBuilder();
 
         int totalTroops = fremenForces.stream().mapToInt(Force::getStrength).sum();
         int totalLostTroops = Math.ceilDiv(totalTroops, 2);
@@ -322,61 +321,51 @@ public class Territory {
         int lostFedaykin = Math.min(fedaykin.getStrength(), totalLostTroops);
 
         if (lostRegularForces > 0)
-            message.append(stormRemoveTroops("Fremen", "Fremen", lostRegularForces, game));
-
+            stormRemoveTroops("Fremen", "Fremen", lostRegularForces, game);
         if (lostFedaykin > 0)
-            message.append(stormRemoveTroops("Fremen*", "Fremen", lostFedaykin, game));
-
-        return message.toString();
+            stormRemoveTroops("Fremen*", "Fremen", lostFedaykin, game);
     }
 
-    public String stormRemoveTroops(String forceName, String factionName, int strength, Game game) {
+    public void stormRemoveTroops(String forceName, String factionName, int strength, Game game) {
         removeForces(game, forceName, strength);
         game.getTleilaxuTanks().addForces(forceName, strength);
-
-        return MessageFormat.format(
-                "{0} lose {1} {2} to the storm in {3}.\n",
+        game.getTurnSummary().publish(MessageFormat.format(
+                "{0} lose {1} {2} to the storm in {3}.",
                 Emojis.getFactionEmoji(factionName),
                 strength, Emojis.getForceEmoji(forceName),
                 territoryName
-        );
+        ));
     }
 
-    public String stormTroops(Game game) {
+    public void stormTroops(Game game) {
         if (richeseNoField != null)
             game.getRicheseFaction().revealNoField(game);
-        StringBuilder message = new StringBuilder();
         int advisorStrength = getForceStrength("Advisor");
         if (advisorStrength > 0)
-            message.append(stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game));
+            stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game);
         List<Force> nonFremenForces = forces.stream()
                 .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen"))
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                 .toList();
 
-        message.append(stormTroopsFremen(game));
+        stormTroopsFremen(game);
         for (Force force : nonFremenForces) {
-            message.append(stormRemoveTroops(force.getName(), force.getFactionName(), force.getStrength(), game));
+            stormRemoveTroops(force.getName(), force.getFactionName(), force.getStrength(), game);
         }
-        return message.toString();
     }
 
-    public String stormRemoveSpice() {
-        String message = "";
+    public void stormRemoveSpice(Game game) {
         if (spice != 0)
-            message = spice + " " + Emojis.SPICE + " in " + territoryName + " was blown away by the storm.\n";
+            game.getTurnSummary().publish(spice + " " + Emojis.SPICE + " in " + territoryName + " was blown away by the storm.");
         spice = 0;
-        return message;
     }
 
-    public String stormRemoveAmbassador(Game game) {
-        String message = "";
+    public void stormRemoveAmbassador(Game game) {
         if (ecazAmbassador != null) {
-            message = Emojis.ECAZ + " " + ecazAmbassador + " Ambassador was removed from " + territoryName + " and returned to supply.\n";
+            game.getTurnSummary().publish(Emojis.ECAZ + " " + ecazAmbassador + " Ambassador was removed from " + territoryName + " and returned to supply.");
             game.getEcazFaction().addAmbassadorToSupply(ecazAmbassador);
             ecazAmbassador = null;
         }
-        return message;
     }
 
     public String lasgunShieldDestroysSpice() {
