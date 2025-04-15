@@ -220,7 +220,7 @@ public class Territory {
     }
 
     public boolean hasRicheseNoField() {
-        return getRicheseNoField() != null;
+        return richeseNoField != null;
     }
 
     public String getEcazAmbassador() {
@@ -343,6 +343,8 @@ public class Territory {
     }
 
     public String stormTroops(Game game) {
+        if (richeseNoField != null)
+            game.getRicheseFaction().revealNoField(game);
         StringBuilder message = new StringBuilder();
         int advisorStrength = getForceStrength("Advisor");
         if (advisorStrength > 0)

@@ -1138,6 +1138,29 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testStormTurn1() {
+            game.setTurn(1);
+            game.setStorm(0);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            game.setStormDial(atreides, 3);
+            game.setStormDial(harkonnen, 5);
+            assertEquals("The storm has been initialized to sector 8: " + Emojis.HARKONNEN + " 5 + " + Emojis.ATREIDES + " 3.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testStormTurn2() throws IOException {
+            game.setTurn(2);
+            game.endStormPhase();
+            assertEquals(2, game.getStorm());
+            assertEquals("The storm moves 4 sectors this turn.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
         void testFremenLoseHalfForces() throws IOException {
             game.addFaction(fremen);
             fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);

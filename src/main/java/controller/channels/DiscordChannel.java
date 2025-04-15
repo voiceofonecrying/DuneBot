@@ -2,6 +2,7 @@ package controller.channels;
 
 import controller.DiscordGame;
 import controller.commands.ShowCommands;
+import enums.UpdateType;
 import model.DuneChoice;
 import model.Game;
 import model.topics.DuneTopic;
@@ -57,6 +58,7 @@ public class DiscordChannel implements DuneTopic {
 
     public void showMap(Game game) throws IOException {
         queueMessage(ShowCommands.drawGameBoard(game));
+        game.setUpdated(UpdateType.MAP);
     }
 
     private List<Button> convertChoicesToButtons(List<DuneChoice> choices) {
