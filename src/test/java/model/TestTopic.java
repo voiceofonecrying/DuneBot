@@ -47,4 +47,8 @@ public class TestTopic implements DuneTopic {
     public void reply(String message, List<DuneChoice> messageChoices) {
         publish(message, messageChoices);
     }
+
+    @Override
+    public void showMap(Game game) {
+    }
 }

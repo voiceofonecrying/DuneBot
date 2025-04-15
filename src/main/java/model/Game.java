@@ -687,10 +687,6 @@ public class Game {
         return storm;
     }
 
-    public ArrayList<Integer> getStormDeck() {
-        return stormDeck;
-    }
-
     public void setStorm(int storm) {
         this.storm = ((storm - 1) % 18) + 1;
     }
@@ -1161,10 +1157,32 @@ public class Game {
         }
     }
 
-    public void endStormPhaseTurn1() {
-        publishInitialStormMessage();
-        dial1 = null;
-        dial2 = null;
+    public void endStormPhase() throws IOException {
+        if (turn == 1) {
+            publishInitialStormMessage();
+            dial1 = null;
+            dial2 = null;
+        } else {
+            turnSummary.publish("The storm moves " + stormMovement + " sectors this turn.");
+            StringBuilder message = new StringBuilder();
+            for (int i = 0; i < stormMovement; i++) {
+                advanceStorm(1);
+                List<Territory> territoriesInStorm = territories.values().stream().filter(t -> t.getSector() == storm && !t.isRock()).toList();
+
+                if (territoriesInStorm.stream().anyMatch(Territory::hasRicheseNoField))
+                    getRicheseFaction().revealNoField(this);
+                territoriesInStorm.stream().map(territory -> territory.stormTroops(this)).forEach(message::append);
+                territoriesInStorm.stream().map(Territory::stormRemoveSpice).forEach(message::append);
+                territoriesInStorm.stream().map(t -> t.stormRemoveAmbassador(this)).forEach(message::append);
+            }
+            if (!message.isEmpty())
+                turnSummary.publish(message.toString());
+            setUpdated(UpdateType.MAP);
+        }
+        turnSummary.showMap(this);
+        stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
+        if (hasFaction("Fremen"))
+            getFaction("Fremen").getChat().publish("The storm will move " + stormMovement + " sectors next turn.");
     }
 
     public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException, IOException {

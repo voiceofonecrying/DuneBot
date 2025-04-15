@@ -120,6 +120,11 @@ public class TerritoryTest extends DuneTest {
             arrakeen.addForces("Advisor", 1);
             assertDoesNotThrow(() -> arrakeen.stormTroops(game));
         }
+
+        @Test
+        void testStormTroopsInEmptyTerritory() {
+            assertEquals("", sietchTabr.stormTroops(game));
+        }
     }
 
     @Nested
@@ -193,6 +198,31 @@ public class TerritoryTest extends DuneTest {
 
             assertEquals(0, sihayaRidge.getSpice());
             assertEquals(MessageFormat.format("6 {0} in Sihaya Ridge was blown away by the storm.\n", Emojis.SPICE), response);
+        }
+
+        @Test
+        void testNoSpiceInTerritory() {
+            assertEquals("", sihayaRidge.stormRemoveSpice());
+        }
+    }
+
+    @Nested
+    @DisplayName("#stormRemoveAmbassador")
+    class StormRemoveAmbassador {
+        @Test
+        void testAmbassadorIsReturnedToSupply() {
+            game.addFaction(ecaz);
+            sietchTabr.setEcazAmbassador("BG");
+            String response = sietchTabr.stormRemoveAmbassador(game);
+
+            assertFalse(sietchTabr.hasEcazAmbassador());
+            assertTrue(ecaz.getAmbassadorSupply().contains("BG"));
+            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Sietch Tabr and returned to supply.\n", response);
+        }
+
+        @Test
+        void testNoAmbassadorInTerritory() {
+            assertEquals("", sietchTabr.stormRemoveAmbassador(game));
         }
     }
 

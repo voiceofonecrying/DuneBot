@@ -1128,6 +1128,72 @@ class GameTest extends DuneTest {
         }
     }
 
+    @Nested
+    @DisplayName("#endStormPhase")
+    class EndStormPhase {
+        @BeforeEach
+        void setUp() {
+            game.setStorm(16);
+            game.setStormMovement(4);
+        }
+
+        @Test
+        void testFremenLoseHalfForces() throws IOException {
+            game.addFaction(fremen);
+            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
+            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            game.endStormPhase();
+            assertEquals(Emojis.FREMEN + " lose 2 " + Emojis.FREMEN_TROOP + " to the storm in Cielago North (East Sector).\n" + Emojis.FREMEN + " lose 1 " + Emojis.FREMEN_FEDAYKIN + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testOtherFactionLosesAllForces() throws IOException {
+            game.addFaction(emperor);
+            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
+            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            game.endStormPhase();
+            assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_TROOP + " to the storm in Cielago North (East Sector).\n" + Emojis.EMPEROR + " lose 3 " + Emojis.EMPEROR_SARDAUKAR + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testRicheseNoFieldRevealedAndForcesLost() throws IOException {
+            game.addFaction(richese);
+            cielagoNorth_eastSector.setRicheseNoField(5);
+            game.endStormPhase();
+            assertEquals("The 5 " + Emojis.NO_FIELD + " in Cielago North (East Sector) reveals 5 " + Emojis.RICHESE_TROOP, turnSummary.getMessages().get(1));
+            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Cielago North (East Sector).\n", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testSpiceBlownAway() throws IOException {
+            cielagoNorth_eastSector.setSpice(6);
+            game.endStormPhase();
+            assertEquals("6 " + Emojis.SPICE + " in Cielago North (East Sector) was blown away by the storm.\n", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testAmbassadorsReturnedToSupply() throws IOException {
+            game.addFaction(ecaz);
+            cielagoNorth_eastSector.setEcazAmbassador("BG");
+            game.endStormPhase();
+            assertEquals(Emojis.ECAZ + " BG Ambassador was removed from Cielago North (East Sector) and returned to supply.\n", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testTerrorTokensRemainOnMap() throws IOException {
+            cielagoNorth_eastSector.addTerrorToken("Sabotage");
+            game.endStormPhase();
+            assertTrue(cielagoNorth_eastSector.hasTerrorToken("Sabotage"));
+        }
+
+        @Test
+        void testDiscoveryTokensRemainOnMap() throws IOException {
+            meridian_westSector.setDiscoveryToken("Cistern");
+            meridian_westSector.setDiscovered(false);
+            game.endStormPhase();
+            assertEquals("Cistern", meridian_westSector.getDiscoveryToken());
+        }
+    }
 
     @Nested
     @DisplayName("#drawSpiceBlow")
