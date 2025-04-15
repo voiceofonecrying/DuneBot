@@ -39,6 +39,18 @@ public class Territories extends HashMap<String, Territory> {
         }
         return territory;
     }
+    public void moveStorm(Game game) {
+        StringBuilder message = new StringBuilder();
+        for (int i = 0; i < game.getStormMovement(); i++) {
+            game.advanceStorm(1);
+            List<Territory> territoriesInStorm = values().stream().filter(t -> t.getSector() == game.getStorm() && !t.isRock()).toList();
+            territoriesInStorm.stream().map(territory -> territory.stormTroops(game)).forEach(message::append);
+            territoriesInStorm.stream().map(Territory::stormRemoveSpice).forEach(message::append);
+            territoriesInStorm.stream().map(t -> t.stormRemoveAmbassador(game)).forEach(message::append);
+        }
+        if (!message.isEmpty())
+            game.getTurnSummary().publish(message.toString());
+    }
 
     public Set<String> getDistinctAggregateTerritoryNames() {
         return values().stream().map(Territory::getAggregateTerritoryName).collect(Collectors.toSet());

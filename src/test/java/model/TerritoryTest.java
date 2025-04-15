@@ -125,6 +125,15 @@ public class TerritoryTest extends DuneTest {
         void testStormTroopsInEmptyTerritory() {
             assertEquals("", sietchTabr.stormTroops(game));
         }
+
+        @Test
+        void testStormTroopsWithNoField() {
+            game.addFaction(richese);
+            sietchTabr.setRicheseNoField(5);
+            String message = sietchTabr.stormTroops(game);
+            assertEquals("The 5 " + Emojis.NO_FIELD + " in Sietch Tabr reveals 5 " + Emojis.RICHESE_TROOP, turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.RICHESE + " lose 5 " + Emojis.RICHESE_TROOP + " to the storm in Sietch Tabr.\n", message);
+        }
     }
 
     @Nested

@@ -1164,20 +1164,7 @@ public class Game {
             dial2 = null;
         } else {
             turnSummary.publish("The storm moves " + stormMovement + " sectors this turn.");
-            StringBuilder message = new StringBuilder();
-            for (int i = 0; i < stormMovement; i++) {
-                advanceStorm(1);
-                List<Territory> territoriesInStorm = territories.values().stream().filter(t -> t.getSector() == storm && !t.isRock()).toList();
-
-                if (territoriesInStorm.stream().anyMatch(Territory::hasRicheseNoField))
-                    getRicheseFaction().revealNoField(this);
-                territoriesInStorm.stream().map(territory -> territory.stormTroops(this)).forEach(message::append);
-                territoriesInStorm.stream().map(Territory::stormRemoveSpice).forEach(message::append);
-                territoriesInStorm.stream().map(t -> t.stormRemoveAmbassador(this)).forEach(message::append);
-            }
-            if (!message.isEmpty())
-                turnSummary.publish(message.toString());
-            setUpdated(UpdateType.MAP);
+            territories.moveStorm(this);
         }
         turnSummary.showMap(this);
         stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
