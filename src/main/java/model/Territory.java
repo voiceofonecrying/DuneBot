@@ -360,11 +360,20 @@ public class Territory {
     }
 
     public String stormRemoveSpice() {
-        String message = MessageFormat.format(
-                "{0} {1} in {2} was blown away by the storm.\n",
-                spice, Emojis.SPICE, territoryName
-        );
+        String message = "";
+        if (spice != 0)
+            message = spice + " " + Emojis.SPICE + " in " + territoryName + " was blown away by the storm.\n";
         spice = 0;
+        return message;
+    }
+
+    public String stormRemoveAmbassador(Game game) {
+        String message = "";
+        if (ecazAmbassador != null) {
+            message = Emojis.ECAZ + " " + ecazAmbassador + " Ambassador was removed from " + territoryName + " and returned to supply.\n";
+            game.getEcazFaction().addAmbassadorToSupply(ecazAmbassador);
+            ecazAmbassador = null;
+        }
         return message;
     }
 

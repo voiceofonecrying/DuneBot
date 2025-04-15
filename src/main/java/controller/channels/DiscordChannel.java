@@ -1,7 +1,9 @@
 package controller.channels;
 
 import controller.DiscordGame;
+import controller.commands.ShowCommands;
 import model.DuneChoice;
+import model.Game;
 import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -10,6 +12,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +53,10 @@ public class DiscordChannel implements DuneTopic {
             queueReplyMessage(message, convertChoicesToButtons(choices));
         else
             publish(message, choices);
+    }
+
+    public void showMap(Game game) throws IOException {
+        queueMessage(ShowCommands.drawGameBoard(game));
     }
 
     private List<Button> convertChoicesToButtons(List<DuneChoice> choices) {

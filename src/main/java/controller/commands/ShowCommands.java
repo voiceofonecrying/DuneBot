@@ -618,7 +618,7 @@ public class ShowCommands {
         }
     }
 
-    private static FileUpload drawGameBoard(Game game) throws IOException {
+    public static FileUpload drawGameBoard(Game game) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
         ));
