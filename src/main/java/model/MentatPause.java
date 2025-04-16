@@ -54,8 +54,7 @@ public class MentatPause {
             if (wouldPayExtortion.contains(f.getName())) {
                 game.getTurnSummary().publish(f.getEmoji() + " pays 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
                 f.subtractSpice(3, Emojis.MORITANI + " Extortion");
-                Faction moritani = game.getFaction("Moritani");
-                moritani.addSpice(3, f.getEmoji() + " paid Extortion");
+                game.getMoritaniFaction().addSpice(3, f.getEmoji() + " paid Extortion");
                 extortionActive = false;
                 break;
             } else if (!declinedExtortion.contains(f.getName())) {
@@ -65,10 +64,11 @@ public class MentatPause {
     }
 
     public void factionDeclinesExtortion(Game game, Faction faction) {
-        if (faction instanceof MoritaniFaction) return;
+        if (faction instanceof MoritaniFaction)
+            return;
         declinedExtortion.add(faction.getName());
         if (declinedExtortion.size() == game.getFactions().size() - 1) {
-            ((MoritaniFaction)game.getFaction("Moritani")).getTerrorTokens().add("Extortion");
+            game.getMoritaniFaction().getTerrorTokens().add("Extortion");
             game.getTurnSummary().publish("No faction paid Extortion. The token returns to " + Emojis.MORITANI);
             extortionActive = false;
         } else {

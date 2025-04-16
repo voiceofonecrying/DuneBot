@@ -48,16 +48,14 @@ public class MoritaniCommands {
     public static void placeTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenInSupply).getAsString();
         String territoryName = discordGame.required(territory).getAsString();
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        moritani.placeTerrorToken(game.getTerritory(territoryName), terrorTokenName);
+        game.getMoritaniFaction().placeTerrorToken(game.getTerritory(territoryName), terrorTokenName);
         discordGame.pushGame();
     }
 
     public static void moveTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
         String toTerritoryName = discordGame.required(territory).getAsString();
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        moritani.moveTerrorToken(game.getTerritory(toTerritoryName), terrorTokenName);
+        game.getMoritaniFaction().moveTerrorToken(game.getTerritory(toTerritoryName), terrorTokenName);
         discordGame.pushGame();
     }
 
@@ -92,14 +90,13 @@ public class MoritaniCommands {
     }
 
     public static void robberyDraw(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        ((MoritaniFaction) game.getFaction("Moritani")).robberyDraw();
+        game.getMoritaniFaction().robberyDraw();
         discordGame.pushGame();
     }
 
     public static void robberyDiscard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String cardToDiscard = discordGame.required(card).getAsString();
-
-        ((MoritaniFaction) game.getFaction("Moritani")).robberyDiscard(cardToDiscard);
+        game.getMoritaniFaction().robberyDiscard(cardToDiscard);
         discordGame.pushGame();
     }
 }

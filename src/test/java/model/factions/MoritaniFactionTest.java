@@ -215,7 +215,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         void testOtherFactionTriggers() {
             faction.checkForTerrorTrigger(carthag, atreides, 3);
             assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
-            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your Terror Token in Carthag?"));
+            assertEquals("Will you trigger your Terror Token in Carthag? player", chat.getMessages().getFirst());
             assertEquals(3, chat.getChoices().getFirst().size());
         }
 
