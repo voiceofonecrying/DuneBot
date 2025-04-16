@@ -334,6 +334,7 @@ public class Bidding {
 
         blackMarketDecisionInProgress = false;
         Faction faction = game.getRicheseFaction();
+        faction.getChat().reply("Selling " + cardName + " by " + bidType + " auction.");
         List<TreacheryCard> cards = faction.getTreacheryHand();
 
         TreacheryCard card = cards.stream()
@@ -364,6 +365,8 @@ public class Bidding {
         }
         sendAtreidesCardPrescience(game, card, false);
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
+        if (bidType.equals("Silent"))
+            game.getModInfo().publish("Players should use the bot to enter their bids for the silent auction.");
     }
 
     public void auctionNextCard(Game game, boolean prescienceBlocked) throws InvalidGameStateException {
