@@ -603,6 +603,15 @@ public class Game {
         return (MoritaniFaction) getFaction("Moritani");
     }
 
+    /**
+     * Get the Moritani faction object
+     *
+     * @return the MoritaniFaction object if Moritani is in the game or null if Moritani is not in the game
+     */
+    public MoritaniFaction getMoritaniFactionOrNull() {
+        return (MoritaniFaction) getFactionOrNull("Moritani");
+    }
+
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
@@ -1928,13 +1937,12 @@ public class Game {
 
     public void startSpiceHarvest() throws InvalidGameStateException {
         endBattlePhase();
-        if (hasFaction("Moritani")) {
-            MoritaniFaction moritani = (MoritaniFaction) getFaction("Moritani");
-            if (moritani.getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal")))
-                turnSummary.publish("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
-            if (hasGameOption(GameOption.HOMEWORLDS) && moritani.isHighThreshold())
-                moritani.sendTerrorTokenHighThresholdMessage();
-        }
+        MoritaniFaction moritani = getMoritaniFactionOrNull();
+        if (moritani != null && moritani.getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal")))
+            turnSummary.publish("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
+        if (moritani != null && hasGameOption(GameOption.HOMEWORLDS) && moritani.isHighThreshold())
+            moritani.sendTerrorTokenHighThresholdMessage();
+
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
         if (!hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))

@@ -2057,8 +2057,8 @@ class GameTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("#spiceBlowPhase")
-    class SpiceBlowPhase {
+    @DisplayName("#spiceHarvestPhase")
+    class SpiceHarvestPhase {
         String advisorFlipMessage = Emojis.BG_ADVISOR + " are alone in Habbanya Sietch and have flipped to " + Emojis.BG_FIGHTER;
 
         @BeforeEach
@@ -2079,6 +2079,36 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
             game.startSpiceHarvest();
             assertFalse(turnSummary.getMessages().contains(advisorFlipMessage));
+        }
+
+        @Test
+        void testMoritaniLosesDukeVidal() throws InvalidGameStateException {
+            game.addFaction(moritani);
+            moritani.getDukeVidal();
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            turnSummary.clear();
+            game.startSpiceHarvest();
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testMoritaniHighThreshold() throws InvalidGameStateException {
+            game.addFaction(moritani);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            moritani.placeTerrorToken(sietchTabr, "Assassination");
+            game.startSpiceHarvest();
+            assertEquals("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. mo", moritaniChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testMoritaniLowThreshold() throws InvalidGameStateException {
+            game.addFaction(moritani);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            moritani.placeForceFromReserves(game, habbanyaSietch, 13, false);
+            moritani.placeTerrorToken(sietchTabr, "Assassination");
+            game.startSpiceHarvest();
+            assertTrue(moritaniChat.getMessages().isEmpty());
         }
     }
 

@@ -150,7 +150,7 @@ public class SetupCommands {
             ));
         }
 
-        if (game.hasFaction("Moritani")) {
+        if (game.hasMoritaniFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TRAITORS) + 1,
                     SetupStep.MORITANI_FORCE
