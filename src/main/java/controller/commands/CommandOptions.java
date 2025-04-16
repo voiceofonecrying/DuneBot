@@ -439,7 +439,7 @@ public class CommandOptions {
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction;
         if (event.getSubcommandName() != null && event.getSubcommandName().equals("robbery-discard"))
-            faction = game.getFaction("Moritani");
+            faction = game.getMoritaniFaction();
         else if (event.getSubcommandName() != null && event.getSubcommandName().equals("swap-card-with-ally"))
             faction = game.getFaction("CHOAM");
         else
@@ -806,8 +806,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> getMoritaniTerrorTokensInSupply(DiscordGame discordGame, String searchValue) throws ChannelNotFoundException {
         Game game = discordGame.getGame();
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        return moritani.getTerrorTokens().stream().map(tt -> new Command.Choice(tt, tt))
+        return game.getMoritaniFaction().getTerrorTokens().stream().map(tt -> new Command.Choice(tt, tt))
                 .filter(t -> t.getName().toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .toList();
     }

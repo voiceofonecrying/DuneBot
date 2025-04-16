@@ -455,9 +455,9 @@ public class SetupCommands {
     }
 
     public static StepStatus moritaniForceStep(Game game) {
-        Faction moritani = game.getFaction("Moritani");
+        MoritaniFaction moritani = game.getMoritaniFaction();
         game.getGameActions().publish(moritani.getEmoji() + " will place their starting 6 " + Emojis.MORITANI_TROOP);
-        ((MoritaniFaction) moritani).presentStartingForcesChoices();
+        moritani.presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 

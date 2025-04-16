@@ -204,6 +204,9 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void allDecline() {
+            moritani.placeTerrorToken(habbanyaSietch, "Extortion");
+            moritaniLedger.clear();
+            assertFalse(moritani.getTerrorTokens().contains("Extortion"));
             mentatPause.startPhase(game);
             turnSummary.clear();
             game.getMentatPause().factionDeclinesExtortion(game, fremen);
@@ -212,6 +215,7 @@ public class MentatPauseTest extends DuneTest {
             game.getMentatPause().factionDeclinesExtortion(game, bt);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
             assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.getFirst());
+            assertTrue(moritani.getTerrorTokens().contains("Extortion"));
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
         }
@@ -231,6 +235,9 @@ public class MentatPauseTest extends DuneTest {
 
         @Test
         void allDeclineFremenHas0Spice() {
+            moritani.placeTerrorToken(habbanyaSietch, "Extortion");
+            moritaniLedger.clear();
+            assertFalse(moritani.getTerrorTokens().contains("Extortion"));
             fremen.subtractSpice(3, "Test");
             mentatPause.startPhase(game);
             turnSummary.clear();
@@ -239,6 +246,7 @@ public class MentatPauseTest extends DuneTest {
             game.getMentatPause().factionDeclinesExtortion(game, bt);
             game.getMentatPause().factionDeclinesExtortion(game, guild);
             assertEquals("No faction paid Extortion. The token returns to " + Emojis.MORITANI, turnSummary.messages.getFirst());
+            assertTrue(moritani.getTerrorTokens().contains("Extortion"));
             assertEquals(12, moritani.getSpice());
             assertTrue(moritaniLedger.messages.isEmpty());
         }
