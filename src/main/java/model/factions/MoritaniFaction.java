@@ -257,8 +257,8 @@ public class MoritaniFaction extends Faction {
     }
 
     public void getDukeVidal() {
-        if (getLeader("Duke Vidal").isPresent()) return;
-        addLeader(game.getDukeVidal());
+        if (getLeader("Duke Vidal").isEmpty())
+            addLeader(game.getDukeVidal());
     }
 
     public List<String> getTerrorTokens() {

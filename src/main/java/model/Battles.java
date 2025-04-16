@@ -98,8 +98,8 @@ public class Battles {
             Set<String> factionNames;
             for (List<Territory> territorySectors : territorySectorsForBattle) {
                 factionNames = territories.getFighterNamesInAggTerritory(territorySectors);
-                if (game.hasFaction("Moritani") && territorySectors.getFirst().isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani")
-                        && !factionNames.contains("Ecaz")) dukeVidalCount++;
+                if (game.hasMoritaniFaction() && territorySectors.getFirst().isStronghold() && factionNames.size() > 1 && factionNames.contains("Moritani") && !factionNames.contains("Ecaz"))
+                    dukeVidalCount++;
                 List<Faction> factions = factionNames.stream()
                         .sorted(Comparator.comparingInt(this::getFactionBattleTurnIndex))
                         .map(game::getFaction)
