@@ -4,10 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
-import model.Game;
-import model.TechToken;
-import model.Territory;
-import model.TreacheryCard;
+import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -53,6 +50,23 @@ public class RicheseFaction extends Faction {
         Territory richese = game.getTerritories().addHomeworld(game, homeworld, name);
         richese.addForces(name, 20);
         game.getHomeworlds().put(name, homeworld);
+    }
+
+    public void presentBlackMarketMethodChoices(String cardName) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "Normal", "Normal"));
+        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
+        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
+        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "Silent", "Silent"));
+        choices.add(new DuneChoice("secondary", "richese-black-market-method-reselect", "Start over"));
+        chat.reply("How would you like to sell " + cardName + "?", choices);
+    }
+
+    public void presentConfirmBlackMarketChoices(String cardName, String method) {
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("success", "richese-black-market-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
+        choices.add(new DuneChoice("secondary", "richese-black-market-reselect", "Start over"));
+        chat.reply("", choices);
     }
 
     public boolean hasFrontOfShieldNoField() {

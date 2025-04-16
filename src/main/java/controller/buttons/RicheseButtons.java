@@ -4,13 +4,10 @@ import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
-import model.DuneChoice;
 import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RicheseButtons implements Pressable {
 
@@ -42,18 +39,8 @@ public class RicheseButtons implements Pressable {
             game.getBidding().setBlackMarketDecisionInProgress(false);
             RunCommands.advance(discordGame, game);
         } else
-            blackMarketMethod(game, cardName);
+            game.getRicheseFaction().presentBlackMarketMethodChoices(cardName);
         discordGame.queueDeleteMessage();
-    }
-
-    public static void blackMarketMethod(Game game, String cardName) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "Normal", "Normal"));
-        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "OnceAroundCCW", "OnceAroundCCW"));
-        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "OnceAroundCW", "OnceAroundCW"));
-        choices.add(new DuneChoice("richese-black-market-method-" + cardName + "-" + "Silent", "Silent"));
-        choices.add(new DuneChoice("secondary", "richese-black-market-method-reselect", "Start over"));
-        game.getRicheseFaction().getChat().reply("How would you like to sell " + cardName + "?", choices);
     }
 
     private static void blackMarketMethod(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
@@ -63,16 +50,9 @@ public class RicheseButtons implements Pressable {
             game.getBidding().askBlackMarket(game);
         } else {
             String method = event.getComponentId().split("-")[5];
-            confirmBlackMarket(game, cardName, method);
+            game.getRicheseFaction().presentConfirmBlackMarketChoices(cardName, method);
         }
         discordGame.queueDeleteMessage();
-    }
-
-    public static void confirmBlackMarket(Game game, String cardName, String method) {
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("success", "richese-black-market-" + cardName + "-" + method, "Confirm " + cardName + " by " + method + " auction."));
-        choices.add(new DuneChoice("secondary", "richese-black-market-reselect", "Start over"));
-        game.getRicheseFaction().getChat().reply("", choices);
     }
 
     private static void confirmBlackMarket(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -83,10 +63,7 @@ public class RicheseButtons implements Pressable {
             game.getBidding().askBlackMarket(game);
         } else {
             String method = event.getComponentId().split("-")[4];
-            discordGame.queueMessage("Selling " + cardName + " by " + method + " auction.");
             game.getBidding().blackMarketAuction(game, cardName, method);
-            if (method.equals("Silent"))
-                discordGame.getModInfo().queueMessage("Players should use the bot to enter their bids for the silent auction.");
             discordGame.pushGame();
         }
     }
