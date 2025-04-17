@@ -88,7 +88,7 @@ public class TerritoriesTest extends DuneTest {
 
         @Test
         void testTerrorTokensRemainOnMap() {
-            cielagoNorth_eastSector.addTerrorToken("Sabotage");
+            cielagoNorth_eastSector.addTerrorToken(game, "Sabotage");
             territories.moveStorm(game);
             assertTrue(cielagoNorth_eastSector.hasTerrorToken("Sabotage"));
         }

@@ -265,7 +265,7 @@ class BGFactionTest extends FactionTestTemplate {
             moritani.setChat(new TestTopic());
             game.addFaction(moritani);
             Territory carthag = game.getTerritory("Carthag");
-            carthag.addTerrorToken("Robbery");
+            carthag.addTerrorToken(game, "Robbery");
             faction.advise(game, carthag, 1);
             assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.BG, turnSummary.getMessages().getLast());
         }

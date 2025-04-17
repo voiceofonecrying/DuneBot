@@ -234,22 +234,23 @@ public class MoritaniFaction extends Faction {
         List<DuneChoice> choices = new LinkedList<>();
         for (String terror : terrorTokens)
             choices.add(new DuneChoice("moritani-terror-selected-" + terror + "-" + territory, terror));
-        chat.publish("Which terror token would you like to place?", choices);
+        chat.reply("Which terror token would you like to place?", choices);
     }
 
-    public void placeTerrorToken(Territory territory, String terror) {
-        terrorTokens.removeIf(a -> a.equals(terror));
-        territory.addTerrorToken(terror);
-        game.getTurnSummary().publish("A " + Emojis.MORITANI + " Terror Token has been placed in " + territory.getTerritoryName());
-        ledger.publish(terror + " Terror Token was placed in " + territory.getTerritoryName() + ".");
+    public void placeTerrorToken(Territory territory, String terrorTokenName) {
+        if (!terrorTokens.remove(terrorTokenName))
+            throw new IllegalArgumentException("Moritani does not have the " + terrorTokenName + " Terror Token.");
+        territory.addTerrorToken(game, terrorTokenName);
+        game.getTurnSummary().publish("A " + Emojis.MORITANI + " Terror Token has been placed in " + territory.getTerritoryName() + ".");
+        chat.reply(terrorTokenName + " Terror Token was placed in " + territory.getTerritoryName() + ".");
+        ledger.publish(terrorTokenName + " Terror Token was placed in " + territory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        game.setUpdated(UpdateType.MAP);
     }
 
     public void moveTerrorToken(Territory toTerritory, String terror) {
         Territory fromTerritory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
         fromTerritory.removeTerrorToken(game, terror, false);
-        toTerritory.addTerrorToken(terror);
+        toTerritory.addTerrorToken(game, terror);
         game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName());
         ledger.publish(terror + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -273,8 +274,8 @@ public class MoritaniFaction extends Faction {
     }
 
     public void addTerrorToken(String name) {
-        getTerrorTokens().add(name);
-        getLedger().publish(name + " Terror token was added to your hand.");
+        terrorTokens.add(name);
+        ledger.publish(name + " Terror Token was added to your hand.");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 

@@ -630,6 +630,13 @@ public class TerritoryTest extends DuneTest {
         }
     }
 
+    @Test
+    void testAddTerrorToken() {
+        sietchTabr.addTerrorToken(game, "Robbery");
+        assertTrue(sietchTabr.hasTerrorToken("Robbery"));
+        assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+    }
+
     @Nested
     @DisplayName("#removeTerrorToken")
     class RemoveTerrorToken {
