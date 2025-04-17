@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -626,6 +627,42 @@ public class TerritoryTest extends DuneTest {
             sietchTabr.addForces("Moritani", 1);
             sietchTabr.addForces("Advisor", 1);
             assertTrue(sietchTabr.onlyEcazAndAllyPresent(game));
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeTerrorToken")
+    class RemoveTerrorToken {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(moritani);
+            moritani.placeTerrorToken(sietchTabr, "Robbery");
+            assertTrue(sietchTabr.hasTerrorToken());
+            moritani.getUpdateTypes().clear();
+            game.getUpdateTypes().clear();
+        }
+
+        @Test
+        void testTerrorTokenRemoved() {
+            sietchTabr.removeTerrorToken(game, "Robbery", false);
+            assertFalse(sietchTabr.hasTerrorToken());
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+            assertFalse(moritani.getTerrorTokens().contains("Robbery"));
+            assertFalse(moritani.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+        }
+
+        @Test
+        void testTerrorTokenRemovedAndReturnedToSupply() {
+            sietchTabr.removeTerrorToken(game, "Robbery", true);
+            assertFalse(sietchTabr.hasTerrorToken());
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+            assertTrue(moritani.getTerrorTokens().contains("Robbery"));
+            assertTrue(moritani.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+        }
+
+        @Test
+        void testTerrorTokenNotFound() {
+            assertThrows(IllegalArgumentException.class, () -> sietchTabr.removeTerrorToken(game, "Sabotage", false));
         }
     }
 }

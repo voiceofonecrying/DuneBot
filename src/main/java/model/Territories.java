@@ -102,4 +102,10 @@ public class Territories extends HashMap<String, Territory> {
         if (addRichese) factionNames.add("Richese");
         return factionNames;
     }
+
+    public void removeTerrorTokenFromMap(Game game, String terrorTokenName, boolean returnToMoritani) {
+        Territory territory = values().stream().filter(t -> t.hasTerrorToken(terrorTokenName)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Terror Token not found on map"));
+        territory.removeTerrorToken(game, terrorTokenName, returnToMoritani);
+    }
 }

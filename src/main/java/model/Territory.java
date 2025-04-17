@@ -258,8 +258,12 @@ public class Territory {
                 .findFirst().orElse(false);
     }
 
-    public void removeTerrorToken(String name) {
-        getTerrorTokens().remove(name);
+    public void removeTerrorToken(Game game, String terrorTokenName, boolean returnToMoritani) {
+        if (!getTerrorTokens().remove(terrorTokenName))
+            throw new IllegalArgumentException(territoryName + " does not have the " + terrorTokenName + " Terror Token.");
+        if (returnToMoritani)
+            game.getMoritaniFaction().addTerrorToken(terrorTokenName);
+        game.setUpdated(UpdateType.MAP);
     }
 
     public boolean isAftermathToken() {

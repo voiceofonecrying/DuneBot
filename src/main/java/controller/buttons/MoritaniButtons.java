@@ -2,7 +2,6 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.Alliance;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
@@ -63,15 +62,7 @@ public class MoritaniButtons implements Pressable {
     private static void removeTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String terror = event.getComponentId().split("-")[4];
         Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-
-        moritani.addSpice(4, "terror token returned to supply");
-
-        moritani.getTerrorTokens().add(terror);
-        territory.getTerrorTokens().removeIf(t -> t.equals(terror));
-        game.setUpdated(UpdateType.MAP);
-        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " has removed a Terror Token from " + territory.getTerritoryName() + " for 4 " + Emojis.SPICE);
-        discordGame.queueMessage("You removed " + terror + " from " + territory.getTerritoryName() + ".");
+        game.getMoritaniFaction().removeTerrorTokenWithHighThreshold(territory, terror);
         discordGame.pushGame();
     }
 

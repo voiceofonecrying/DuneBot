@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -490,6 +491,36 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testMovementPublishedToLedger() {
             assertEquals("Sabotage Terror Token was moved to Carthag from Arrakeen.", ledger.getMessages().getLast());
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeTerrorTokenWithHighThreshold")
+    class RemoveTerrorTokenWithHighThreshold {
+        Territory sietchTabr;
+        @BeforeEach
+        void setUp() {
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            faction.placeTerrorToken(sietchTabr, "Robbery");
+            assertTrue(sietchTabr.hasTerrorToken());
+            faction.getUpdateTypes().clear();
+            game.getUpdateTypes().clear();
+        }
+
+        @Test
+        void testTerrorTokenRemovedWitHighThreshold() {
+            faction.removeTerrorTokenWithHighThreshold(sietchTabr, "Robbery");
+            assertFalse(sietchTabr.hasTerrorToken());
+            assertEquals(Emojis.MORITANI + " has removed a Terror Token from Sietch Tabr for 4 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+            assertTrue(faction.getTerrorTokens().contains("Robbery"));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertEquals(16, faction.getSpice());
+        }
+
+        @Test
+        void testTerrorTokenNotFound() {
+            assertThrows(IllegalArgumentException.class, () -> faction.removeTerrorTokenWithHighThreshold(sietchTabr, "Sabotage"));
         }
     }
 
