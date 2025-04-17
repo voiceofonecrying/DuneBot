@@ -1,7 +1,6 @@
 package controller.commands;
 
 import controller.DiscordGame;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import model.Game;
 import model.Territory;
@@ -62,17 +61,7 @@ public class MoritaniCommands {
     public static void removeTerrorTokenFromMap(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
         boolean toHand = discordGame.required(CommandOptions.toPlayer).getAsBoolean();
-        MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
-
-        Territory territory = game.getTerritories().values().stream()
-                .filter(t -> t.hasTerrorToken(terrorTokenName))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Terror Token not found on map"));
-
-        territory.removeTerrorToken(terrorTokenName);
-        game.setUpdated(UpdateType.MAP);
-
-        if (toHand) moritaniFaction.addTerrorToken(terrorTokenName);
-
+        game.getTerritories().removeTerrorTokenFromMap(game, terrorTokenName, toHand);
         discordGame.pushGame();
     }
 

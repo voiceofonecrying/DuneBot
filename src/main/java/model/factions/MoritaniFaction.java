@@ -248,12 +248,19 @@ public class MoritaniFaction extends Faction {
 
     public void moveTerrorToken(Territory toTerritory, String terror) {
         Territory fromTerritory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
-        fromTerritory.removeTerrorToken(terror);
+        fromTerritory.removeTerrorToken(game, terror, false);
         toTerritory.addTerrorToken(terror);
         game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName());
         ledger.publish(terror + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void removeTerrorTokenWithHighThreshold(Territory territory, String terrorTokenName) {
+        territory.removeTerrorToken(game, terrorTokenName, true);
+        addSpice(4, terrorTokenName + " Terror Token returned to supply");
+        game.getTurnSummary().publish(Emojis.MORITANI + " has removed a Terror Token from " + territory.getTerritoryName() + " for 4 " + Emojis.SPICE);
+        chat.reply("You removed " + terrorTokenName + " from " + territory.getTerritoryName() + ".");
     }
 
     public void getDukeVidal() {
