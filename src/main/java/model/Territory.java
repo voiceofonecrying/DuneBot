@@ -243,10 +243,6 @@ public class Territory {
         return terrorTokens;
     }
 
-    public void addTerrorToken(String terrorToken) {
-        this.terrorTokens.add(terrorToken);
-    }
-
     public boolean hasTerrorToken() {
         return !getTerrorTokens().isEmpty();
     }
@@ -258,8 +254,13 @@ public class Territory {
                 .findFirst().orElse(false);
     }
 
+    public void addTerrorToken(Game game, String terrorToken) {
+        terrorTokens.add(terrorToken);
+        game.setUpdated(UpdateType.MAP);
+    }
+
     public void removeTerrorToken(Game game, String terrorTokenName, boolean returnToMoritani) {
-        if (!getTerrorTokens().remove(terrorTokenName))
+        if (!terrorTokens.remove(terrorTokenName))
             throw new IllegalArgumentException(territoryName + " does not have the " + terrorTokenName + " Terror Token.");
         if (returnToMoritani)
             game.getMoritaniFaction().addTerrorToken(terrorTokenName);

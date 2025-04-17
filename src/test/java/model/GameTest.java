@@ -476,7 +476,7 @@ class GameTest extends DuneTest {
             game.addFaction(moritani);
             game.removeForces("Grumman", moritani, 13, 0, true);
             assertFalse(moritani.isHighThreshold());
-            game.getTerritory("Carthag").addTerrorToken("Robbery");
+            game.getTerritory("Carthag").addTerrorToken(game, "Robbery");
 
             game.addFaction(ecaz);
             game.getTerritory("Arrakeen").addForces("Ecaz", 2);
@@ -1206,7 +1206,7 @@ class GameTest extends DuneTest {
 
         @Test
         void testTerrorTokensRemainOnMap() throws IOException {
-            cielagoNorth_eastSector.addTerrorToken("Sabotage");
+            cielagoNorth_eastSector.addTerrorToken(game, "Sabotage");
             game.endStormPhase();
             assertTrue(cielagoNorth_eastSector.hasTerrorToken("Sabotage"));
         }
@@ -2098,7 +2098,7 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             moritani.placeTerrorToken(sietchTabr, "Assassination");
             game.startSpiceHarvest();
-            assertEquals("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. mo", moritaniChat.getMessages().getFirst());
+            assertEquals("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. mo", moritaniChat.getMessages().getLast());
         }
 
         @Test
@@ -2107,6 +2107,7 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             moritani.placeForceFromReserves(game, habbanyaSietch, 13, false);
             moritani.placeTerrorToken(sietchTabr, "Assassination");
+            moritaniChat.clear();
             game.startSpiceHarvest();
             assertTrue(moritaniChat.getMessages().isEmpty());
         }

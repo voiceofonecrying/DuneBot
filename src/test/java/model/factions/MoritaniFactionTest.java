@@ -202,7 +202,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
-            carthag.addTerrorToken("Sabotage");
+            carthag.addTerrorToken(game, "Sabotage");
         }
 
         @Test
@@ -470,12 +470,24 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     class PlaceTerrorToken {
         @BeforeEach
         void setUp() {
-            faction.placeTerrorToken(arrakeen, "Sabotage");
+            faction.placeTerrorToken(carthag, "Robbery");
         }
 
         @Test
-        void testPlacementPublishedToLedger() {
-            assertEquals("Sabotage Terror Token was placed in Arrakeen.", ledger.getMessages().getFirst());
+        void testTerrorTokenIsPlaced() {
+            faction.placeTerrorToken(arrakeen, "Sabotage");
+            assertFalse(faction.getTerrorTokens().contains("Sabotage"));
+            assertTrue(arrakeen.hasTerrorToken("Sabotage"));
+            assertEquals("A " + Emojis.MORITANI + " Terror Token has been placed in Arrakeen.", turnSummary.getMessages().getLast());
+            assertEquals("Sabotage Terror Token was placed in Arrakeen.", chat.getMessages().getLast());
+            assertEquals("Sabotage Terror Token was placed in Arrakeen.", ledger.getMessages().getLast());
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testMoritaniDoesNotHaveTerrorToken() {
+            assertThrows(IllegalArgumentException.class, () -> faction.placeTerrorToken(arrakeen, "Robbery"));
         }
     }
 

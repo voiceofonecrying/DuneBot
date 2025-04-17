@@ -122,6 +122,7 @@ public class MentatPauseTest extends DuneTest {
             moritani.placeTerrorToken(carthag, "Atomics");
             Territory arrakeen = game.getTerritory("Arrakeen");
             moritani.placeTerrorToken(arrakeen, "Sabotage");
+            moritaniChat.clear();
             mentatPause.startPhase(game);
             assertEquals(1, moritaniChat.getMessages().size());
             assertEquals("Use these buttons to place a Terror Token from your supply. mo", moritaniChat.getMessages().getFirst());
@@ -144,6 +145,7 @@ public class MentatPauseTest extends DuneTest {
             Territory carthag = game.getTerritory("Carthag");
             moritani.placeTerrorToken(carthag, "Atomics");
             moritani.getTerrorTokens().removeAll(moritani.getTerrorTokens());
+            moritaniChat.clear();
             mentatPause.startPhase(game);
             assertTrue(moritani.getTerrorTokens().isEmpty());
             assertEquals(1, moritaniChat.getMessages().size());
