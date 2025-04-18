@@ -2174,6 +2174,7 @@ public class Battle {
         }
 
         int auditAmount = choamPlan.isLeaderAlive() ? 2 : 1;
+        auditAmount = Math.min(auditAmount, cardsForAudit.size());
         if (cancel) {
             auditedFaction.subtractSpice(auditAmount, "cancel audit");
             choam.addSpice(auditAmount, auditedFaction.getEmoji() + " canceled audit");
