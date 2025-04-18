@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
@@ -630,18 +631,51 @@ public class TerritoryTest extends DuneTest {
         }
     }
 
-    @Test
-    void testAddTerrorToken() {
-        sietchTabr.addTerrorToken(game, "Robbery");
-        assertTrue(sietchTabr.hasTerrorToken("Robbery"));
-        assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+    @Nested
+    @DisplayName("#addTerrorToken")
+    class AddTerrorToken {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(moritani);
+        }
+
+        @Test
+        void testAddTerrorToken() throws InvalidGameStateException {
+            sietchTabr.addTerrorToken(game, "Robbery");
+            assertTrue(sietchTabr.hasTerrorToken("Robbery"));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testSecondTerrorTokenNotAllowed() throws InvalidGameStateException {
+            sietchTabr.addTerrorToken(game, "Robbery");
+            assertThrows(InvalidGameStateException.class, () -> sietchTabr.addTerrorToken(game, "Sabotage"));
+        }
+
+        @Test
+        void testSecondTerrorTokenAllowedWithMoritaniHighThreshold() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            sietchTabr.addTerrorToken(game, "Robbery");
+            assertDoesNotThrow(() -> sietchTabr.addTerrorToken(game, "Sabotage"));
+            assertTrue(sietchTabr.hasTerrorToken("Robbery"));
+            assertTrue(sietchTabr.hasTerrorToken("Sabotage"));
+        }
+
+        @Test
+        void testSecondTerrorTokenNotAllowedWithMoritaniLowThreshold() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.getMoritaniFaction().placeForceFromReserves(game, sietchTabr, 13, false);
+            sietchTabr.addTerrorToken(game, "Robbery");
+            assertThrows(InvalidGameStateException.class, () -> sietchTabr.addTerrorToken(game, "Sabotage"));
+        }
+
     }
 
     @Nested
     @DisplayName("#removeTerrorToken")
     class RemoveTerrorToken {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addFaction(moritani);
             moritani.placeTerrorToken(sietchTabr, "Robbery");
             assertTrue(sietchTabr.hasTerrorToken());

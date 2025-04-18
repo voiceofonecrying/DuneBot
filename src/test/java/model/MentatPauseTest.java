@@ -117,7 +117,7 @@ public class MentatPauseTest extends DuneTest {
         }
 
         @Test
-        void moritaniAskedAboutPlacingAndMovingTerrorToken() {
+        void moritaniAskedAboutPlacingAndMovingTerrorToken() throws InvalidGameStateException {
             Territory carthag = game.getTerritory("Carthag");
             moritani.placeTerrorToken(carthag, "Atomics");
             Territory arrakeen = game.getTerritory("Arrakeen");
@@ -141,7 +141,7 @@ public class MentatPauseTest extends DuneTest {
         }
 
         @Test
-        void moritaniAskedAboutMovingTerrorTokenEvenIfNoneInSupply() {
+        void moritaniAskedAboutMovingTerrorTokenEvenIfNoneInSupply() throws InvalidGameStateException {
             Territory carthag = game.getTerritory("Carthag");
             moritani.placeTerrorToken(carthag, "Atomics");
             moritani.getTerrorTokens().removeAll(moritani.getTerrorTokens());
@@ -205,7 +205,7 @@ public class MentatPauseTest extends DuneTest {
         }
 
         @Test
-        void allDecline() {
+        void allDecline() throws InvalidGameStateException {
             moritani.placeTerrorToken(habbanyaSietch, "Extortion");
             moritaniLedger.clear();
             assertFalse(moritani.getTerrorTokens().contains("Extortion"));
@@ -236,7 +236,7 @@ public class MentatPauseTest extends DuneTest {
         }
 
         @Test
-        void allDeclineFremenHas0Spice() {
+        void allDeclineFremenHas0Spice() throws InvalidGameStateException {
             moritani.placeTerrorToken(habbanyaSietch, "Extortion");
             moritaniLedger.clear();
             assertFalse(moritani.getTerrorTokens().contains("Extortion"));

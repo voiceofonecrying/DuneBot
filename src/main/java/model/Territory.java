@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
+import exceptions.InvalidGameStateException;
 import model.factions.*;
 
 import java.text.MessageFormat;
@@ -254,7 +255,9 @@ public class Territory {
                 .findFirst().orElse(false);
     }
 
-    public void addTerrorToken(Game game, String terrorToken) {
+    public void addTerrorToken(Game game, String terrorToken) throws InvalidGameStateException {
+        if (!terrorTokens.isEmpty() && !(game.hasGameOption(GameOption.HOMEWORLDS) && game.getMoritaniFaction().isHighThreshold()))
+            throw new InvalidGameStateException(territoryName + " already has a Terror Token.");
         terrorTokens.add(terrorToken);
         game.setUpdated(UpdateType.MAP);
     }

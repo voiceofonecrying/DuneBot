@@ -198,7 +198,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         TestTopic turnSummary;
 
         @BeforeEach
-        void setUp() throws IOException {
+        void setUp() throws IOException, InvalidGameStateException {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
@@ -469,20 +469,47 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @DisplayName("#placeTerrorToken")
     class PlaceTerrorToken {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             faction.placeTerrorToken(carthag, "Robbery");
         }
 
         @Test
-        void testTerrorTokenIsPlaced() {
+        void testTerrorTokenIsPlaced() throws InvalidGameStateException {
             faction.placeTerrorToken(arrakeen, "Sabotage");
             assertFalse(faction.getTerrorTokens().contains("Sabotage"));
             assertTrue(arrakeen.hasTerrorToken("Sabotage"));
-            assertEquals("A " + Emojis.MORITANI + " Terror Token has been placed in Arrakeen.", turnSummary.getMessages().getLast());
+            assertEquals("A " + Emojis.MORITANI + " Terror Token was placed in Arrakeen.", turnSummary.getMessages().getLast());
             assertEquals("Sabotage Terror Token was placed in Arrakeen.", chat.getMessages().getLast());
             assertEquals("Sabotage Terror Token was placed in Arrakeen.", ledger.getMessages().getLast());
             assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testSecondTerrorTokenNotAllowed() {
+            assertThrows(InvalidGameStateException.class, () -> faction.placeTerrorToken(carthag, "Sabotage"));
+        }
+
+        @Test
+        void testSecondTerrorTokenIsPlacedWithHighThreshold() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            turnSummary.clear();
+            faction.placeTerrorToken(carthag, "Sabotage");
+            assertFalse(faction.getTerrorTokens().contains("Sabotage"));
+            assertTrue(carthag.hasTerrorToken("Sabotage"));
+            assertEquals("A " + Emojis.MORITANI + " Terror Token was placed in Carthag with Grumman High Treshold ability.", turnSummary.getMessages().getFirst());
+            assertEquals("Sabotage Terror Token was placed in Carthag.", chat.getMessages().getLast());
+            assertEquals("Sabotage Terror Token was placed in Carthag.", ledger.getMessages().getLast());
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testSecondTerrorTokenNotAllowedAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForceFromReserves(game, carthag, 13, false);
+            assertFalse(faction.isHighThreshold());
+            assertThrows(InvalidGameStateException.class, () -> faction.placeTerrorToken(carthag, "Sabotage"));
         }
 
         @Test
@@ -495,13 +522,13 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @DisplayName("#moveTerrorToken")
     class MoveTerrorToken {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             faction.placeTerrorToken(arrakeen, "Sabotage");
             faction.getUpdateTypes().clear();
         }
 
         @Test
-        void testTerrorTokenMoved() {
+        void testTerrorTokenMoved() throws InvalidGameStateException {
             faction.moveTerrorToken(carthag, "Sabotage");
             assertTrue(carthag.hasTerrorToken("Sabotage"));
             assertFalse(arrakeen.hasTerrorToken());
@@ -522,7 +549,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     @DisplayName("#removeTerrorTokenWithHighThreshold")
     class RemoveTerrorTokenWithHighThreshold {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             faction.placeTerrorToken(arrakeen, "Robbery");
             assertTrue(arrakeen.hasTerrorToken());
             faction.getUpdateTypes().clear();
