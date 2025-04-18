@@ -4526,13 +4526,36 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
+            void testOpponentPaysToCancelTwoCardsToAudit() throws InvalidGameStateException {
+                atreides.addTreacheryCard(lasgun);
+                atreides.addTreacheryCard(shield);
                 battle.printBattleResolution(game, false, true);
                 battle.cancelAudit(game, true);
                 assertFalse(battle.isAuditorMustBeResolved());
                 assertEquals(8, atreides.getSpice());
                 assertEquals(4, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 2 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            void testOpponentPaysToCancelOneCardToAudit() throws InvalidGameStateException {
+                atreides.addTreacheryCard(lasgun);
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, true);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(9, atreides.getSpice());
+                assertEquals(3, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 1 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            void testOpponentPaysToCancelNoCardsToAudit() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, true);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 0 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
             }
 
             @Test
@@ -4630,13 +4653,24 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testOpponentPaysToCancelAudit() throws InvalidGameStateException {
+            void testOpponentPaysToCancelOneCardToAudit() throws InvalidGameStateException {
+                atreides.addTreacheryCard(lasgun);
                 battle.printBattleResolution(game, false, true);
                 battle.cancelAudit(game, true);
                 assertFalse(battle.isAuditorMustBeResolved());
                 assertEquals(11, atreides.getSpice());
                 assertEquals(3, choam.getSpice());
                 assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 1 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            void testOpponentPaysToCancelNoCardsToAudit() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                battle.cancelAudit(game, true);
+                assertFalse(battle.isAuditorMustBeResolved());
+                assertEquals(12, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+                assertEquals(Emojis.ATREIDES + " paid " + Emojis.CHOAM + " 0 " + Emojis.SPICE + " to cancel the audit.", turnSummary.getMessages().getLast());
             }
 
             @Test
