@@ -290,6 +290,26 @@ public class TerritoriesTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#getTerritoryWithTerrorToken")
+    class GetTerritoryWithTerrorToken {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(moritani);
+            moritani.placeTerrorToken(sietchTabr, "Robbery");
+        }
+
+        @Test
+        void testTerrorTokenOnMap() {
+            assertEquals(sietchTabr, territories.getTerritoryWithTerrorToken("Robbery"));
+        }
+
+        @Test
+        void testTerrorTokenNotFound() {
+            assertThrows(IllegalArgumentException.class, () -> territories.getTerritoryWithTerrorToken("Sabotage"));
+        }
+    }
+
+    @Nested
     @DisplayName("#removeTerrorTokenFromMap")
     class RemoveTerrorTokenFromMap {
         @BeforeEach

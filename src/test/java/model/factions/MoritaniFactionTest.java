@@ -497,33 +497,43 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @BeforeEach
         void setUp() {
             faction.placeTerrorToken(arrakeen, "Sabotage");
-            faction.moveTerrorToken(carthag, "Sabotage");
+            faction.getUpdateTypes().clear();
         }
 
         @Test
-        void testMovementPublishedToLedger() {
+        void testTerrorTokenMoved() {
+            faction.moveTerrorToken(carthag, "Sabotage");
+            assertTrue(carthag.hasTerrorToken("Sabotage"));
+            assertFalse(arrakeen.hasTerrorToken());
+            assertEquals("The " + Emojis.MORITANI + " Terror Token in Arrakeen was moved to Carthag.", turnSummary.getMessages().getLast());
+            assertEquals("Sabotage Terror Token was moved to Carthag from Arrakeen.", chat.getMessages().getLast());
             assertEquals("Sabotage Terror Token was moved to Carthag from Arrakeen.", ledger.getMessages().getLast());
+            assertFalse(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testTerrorTokenNotFoundInTerritory() {
+            assertThrows(IllegalArgumentException.class, () -> faction.moveTerrorToken(carthag, "Robbery"));
         }
     }
 
     @Nested
     @DisplayName("#removeTerrorTokenWithHighThreshold")
     class RemoveTerrorTokenWithHighThreshold {
-        Territory sietchTabr;
         @BeforeEach
         void setUp() {
-            sietchTabr = game.getTerritory("Sietch Tabr");
-            faction.placeTerrorToken(sietchTabr, "Robbery");
-            assertTrue(sietchTabr.hasTerrorToken());
+            faction.placeTerrorToken(arrakeen, "Robbery");
+            assertTrue(arrakeen.hasTerrorToken());
             faction.getUpdateTypes().clear();
             game.getUpdateTypes().clear();
         }
 
         @Test
         void testTerrorTokenRemovedWitHighThreshold() {
-            faction.removeTerrorTokenWithHighThreshold(sietchTabr, "Robbery");
-            assertFalse(sietchTabr.hasTerrorToken());
-            assertEquals(Emojis.MORITANI + " has removed a Terror Token from Sietch Tabr for 4 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            faction.removeTerrorTokenWithHighThreshold(arrakeen, "Robbery");
+            assertFalse(arrakeen.hasTerrorToken());
+            assertEquals(Emojis.MORITANI + " has removed a Terror Token from Arrakeen for 4 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
             assertTrue(faction.getTerrorTokens().contains("Robbery"));
             assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
@@ -531,8 +541,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testTerrorTokenNotFound() {
-            assertThrows(IllegalArgumentException.class, () -> faction.removeTerrorTokenWithHighThreshold(sietchTabr, "Sabotage"));
+        void testTerrorTokenNotFoundInTerritory() {
+            assertThrows(IllegalArgumentException.class, () -> faction.removeTerrorTokenWithHighThreshold(arrakeen, "Sabotage"));
         }
     }
 
