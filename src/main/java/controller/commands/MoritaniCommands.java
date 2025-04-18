@@ -2,6 +2,7 @@ package controller.commands;
 
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 import model.factions.MoritaniFaction;
@@ -30,7 +31,7 @@ public class MoritaniCommands {
         return commandData;
     }
 
-    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void runCommand(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
@@ -44,14 +45,14 @@ public class MoritaniCommands {
         }
     }
 
-    public static void placeTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void placeTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenInSupply).getAsString();
         String territoryName = discordGame.required(territory).getAsString();
         game.getMoritaniFaction().placeTerrorToken(game.getTerritory(territoryName), terrorTokenName);
         discordGame.pushGame();
     }
 
-    public static void moveTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void moveTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
         String toTerritoryName = discordGame.required(territory).getAsString();
         game.getMoritaniFaction().moveTerrorToken(game.getTerritory(toTerritoryName), terrorTokenName);

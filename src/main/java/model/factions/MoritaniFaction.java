@@ -82,7 +82,7 @@ public class MoritaniFaction extends Faction {
         if (game.getLeaderTanks().contains(leader))
             throw new IllegalArgumentException("Moritani cannot assassintate a leader in the tanks.");
         int spiceGained = leader.getAssassinationValue();
-        game.getTurnSummary().publish(Emojis.MORITANI + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
+        game.getTurnSummary().publish(emoji + " collect " + spiceGained + " " + Emojis.SPICE + " by assassinating " + leader. getName() + "!");
         game.killLeader(triggeringFaction, leader.getName());
         addSpice(spiceGained, "assassination of " + leader.getName());
     }
@@ -121,7 +121,7 @@ public class MoritaniFaction extends Faction {
             case "Extortion" -> {
                 game.triggerExtortionToken();
                 addFrontOfShieldSpice(5);
-                turnSummary.publish("During Mentat Pause, any faction in storm order may pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
+                turnSummary.publish("During Mentat Pause, any faction in storm order may pay " + emoji + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game.");
             }
             case "Robbery" -> {
                 List<DuneChoice> choices = new LinkedList<>();
@@ -134,7 +134,7 @@ public class MoritaniFaction extends Faction {
                 Collections.shuffle(triggeringFaction.getTreacheryHand());
                 String cardName = triggeringFaction.getTreacheryHand().getFirst().name();
                 triggeringFaction.discard(cardName);
-                turnSummary.publish(Emojis.MORITANI + " took " + cardName + " from " + triggeringFaction.getEmoji() + " with Sabotage and discarded it.");
+                turnSummary.publish(emoji + " took " + cardName + " from " + triggeringFaction.getEmoji() + " with Sabotage and discarded it.");
                 List<DuneChoice> treacheryCards = new LinkedList<>();
                 for (TreacheryCard card : getTreacheryHand()) {
                     treacheryCards.add(new DuneChoice("moritani-sabotage-give-card-" + triggeringFaction.getName() + "-" + card.name(), card.name()));
@@ -187,7 +187,7 @@ public class MoritaniFaction extends Faction {
         if (spiceToSteal == 0) {
             ledger.publish(faction.getEmoji() + " had no " + Emojis.SPICE + " to steal");
         } else {
-            faction.subtractSpice(spiceToSteal, "stolen by " + Emojis.MORITANI + " Robbery");
+            faction.subtractSpice(spiceToSteal, "stolen by " + emoji + " Robbery");
             addSpice(spiceToSteal, "stolen from " + faction.getEmoji() + " with Robbery");
         }
         game.getTurnSummary().publish(emoji + " stole " + spiceToSteal + " " + Emojis.SPICE + " from " + faction.getEmoji() + " with Robbery");
@@ -221,7 +221,7 @@ public class MoritaniFaction extends Faction {
             }
             chat.publish("You have drawn " + cardName + ", but your hand was full. What would you like to discard?", choices);
         }
-        game.getTurnSummary().publish(Emojis.MORITANI + " has drawn a " + Emojis.TREACHERY + " card with Robbery.");
+        game.getTurnSummary().publish(emoji + " has drawn a " + Emojis.TREACHERY + " card with Robbery.");
     }
 
     public void robberyDiscard(String cardName) {
@@ -237,30 +237,32 @@ public class MoritaniFaction extends Faction {
         chat.reply("Which terror token would you like to place?", choices);
     }
 
-    public void placeTerrorToken(Territory territory, String terrorTokenName) {
+    public void placeTerrorToken(Territory territory, String terrorTokenName) throws InvalidGameStateException {
         if (!terrorTokens.remove(terrorTokenName))
             throw new IllegalArgumentException("Moritani does not have the " + terrorTokenName + " Terror Token.");
+        boolean highTreshold = territory.hasTerrorToken();
         territory.addTerrorToken(game, terrorTokenName);
-        game.getTurnSummary().publish("A " + Emojis.MORITANI + " Terror Token has been placed in " + territory.getTerritoryName() + ".");
+        String message = "A " + emoji + " Terror Token was placed in " + territory.getTerritoryName();
+        message += highTreshold ? " with Grumman High Treshold ability." : ".";
+        game.getTurnSummary().publish(message);
         chat.reply(terrorTokenName + " Terror Token was placed in " + territory.getTerritoryName() + ".");
         ledger.publish(terrorTokenName + " Terror Token was placed in " + territory.getTerritoryName() + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void moveTerrorToken(Territory toTerritory, String terrorTokenName) {
+    public void moveTerrorToken(Territory toTerritory, String terrorTokenName) throws InvalidGameStateException {
         Territory fromTerritory = game.getTerritories().getTerritoryWithTerrorToken(terrorTokenName);
         game.getTerritories().removeTerrorTokenFromMap(game, terrorTokenName, false);
         toTerritory.addTerrorToken(game, terrorTokenName);
-        game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName() + ".");
+        game.getTurnSummary().publish("The " + emoji + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName() + ".");
         chat.reply(terrorTokenName + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         ledger.publish(terrorTokenName + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
-        game.setUpdated(UpdateType.MAP);
     }
 
     public void removeTerrorTokenWithHighThreshold(Territory territory, String terrorTokenName) {
         territory.removeTerrorToken(game, terrorTokenName, true);
         addSpice(4, terrorTokenName + " Terror Token returned to supply");
-        game.getTurnSummary().publish(Emojis.MORITANI + " has removed a Terror Token from " + territory.getTerritoryName() + " for 4 " + Emojis.SPICE);
+        game.getTurnSummary().publish(emoji + " has removed a Terror Token from " + territory.getTerritoryName() + " for 4 " + Emojis.SPICE);
         chat.reply("You removed " + terrorTokenName + " from " + territory.getTerritoryName() + ".");
     }
 
@@ -325,7 +327,7 @@ public class MoritaniFaction extends Faction {
         } else if (!territoriesWithTerrorTokens.isEmpty()) {
             presentTerrorTokenMoveChoices();
         } else {
-            game.getTurnSummary().publish(Emojis.MORITANI + " does not have Terror Tokens to place or move.");
+            game.getTurnSummary().publish(emoji + " does not have Terror Tokens to place or move.");
         }
     }
 
@@ -354,7 +356,7 @@ public class MoritaniFaction extends Faction {
         if (!targetTerritory.getTerrorTokens().isEmpty() && !(targetFaction instanceof MoritaniFaction)
                 && !getAlly().equals(targetFaction.getName())) {
             if (!isHighThreshold && numForces < 3) {
-                game.getTurnSummary().publish(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time");
+                game.getTurnSummary().publish(emoji + " are at low threshold and may not trigger their Terror Token at this time");
             } else {
                 List<DuneChoice> choices = new ArrayList<>();
                 for (String terror : targetTerritory.getTerrorTokens()) {
@@ -362,7 +364,7 @@ public class MoritaniFaction extends Faction {
                     choices.add(new DuneChoice("danger", "moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
                 }
                 choices.add(new DuneChoice("danger", "moritani-don't-trigger-terror", "Don't Trigger"));
-                game.getTurnSummary().publish(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
+                game.getTurnSummary().publish(emoji + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
                 chat.publish("Will you trigger your Terror Token in " + targetTerritory.getTerritoryName() + "? " + player, choices);
             }
         }
@@ -404,7 +406,7 @@ public class MoritaniFaction extends Faction {
         sendTerrorTokenLocationMessage();
         if (newAssassinationTargetNeeded) {
             traitorHand.add(game.getTraitorDeck().pollFirst());
-            game.getTurnSummary().publish(Emojis.MORITANI + " has drawn a new traitor.");
+            game.getTurnSummary().publish(emoji + " has drawn a new traitor.");
             setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         }
         newAssassinationTargetNeeded = false;

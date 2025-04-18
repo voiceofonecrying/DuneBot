@@ -471,7 +471,7 @@ class GameTest extends DuneTest {
     @DisplayName("#planetologistIsSingleMovement")
     class PlanetologistIsSingleMovement {
         @BeforeEach
-        void setUp() throws IOException {
+        void setUp() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(moritani);
             game.removeForces("Grumman", moritani, 13, 0, true);
@@ -1205,7 +1205,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testTerrorTokensRemainOnMap() throws IOException {
+        void testTerrorTokensRemainOnMap() throws IOException, InvalidGameStateException {
             cielagoNorth_eastSector.addTerrorToken(game, "Sabotage");
             game.endStormPhase();
             assertTrue(cielagoNorth_eastSector.hasTerrorToken("Sabotage"));

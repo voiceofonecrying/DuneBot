@@ -87,7 +87,7 @@ public class TerritoriesTest extends DuneTest {
         }
 
         @Test
-        void testTerrorTokensRemainOnMap() {
+        void testTerrorTokensRemainOnMap() throws InvalidGameStateException {
             cielagoNorth_eastSector.addTerrorToken(game, "Sabotage");
             territories.moveStorm(game);
             assertTrue(cielagoNorth_eastSector.hasTerrorToken("Sabotage"));
@@ -293,7 +293,7 @@ public class TerritoriesTest extends DuneTest {
     @DisplayName("#getTerritoryWithTerrorToken")
     class GetTerritoryWithTerrorToken {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addFaction(moritani);
             moritani.placeTerrorToken(sietchTabr, "Robbery");
         }
@@ -313,7 +313,7 @@ public class TerritoriesTest extends DuneTest {
     @DisplayName("#removeTerrorTokenFromMap")
     class RemoveTerrorTokenFromMap {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addFaction(moritani);
             moritani.placeTerrorToken(sietchTabr, "Robbery");
             assertTrue(sietchTabr.hasTerrorToken());
