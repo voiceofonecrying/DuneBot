@@ -247,13 +247,13 @@ public class MoritaniFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void moveTerrorToken(Territory toTerritory, String terror) {
-        Territory fromTerritory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
-        fromTerritory.removeTerrorToken(game, terror, false);
-        toTerritory.addTerrorToken(game, terror);
-        game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName());
-        ledger.publish(terror + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+    public void moveTerrorToken(Territory toTerritory, String terrorTokenName) {
+        Territory fromTerritory = game.getTerritories().getTerritoryWithTerrorToken(terrorTokenName);
+        game.getTerritories().removeTerrorTokenFromMap(game, terrorTokenName, false);
+        toTerritory.addTerrorToken(game, terrorTokenName);
+        game.getTurnSummary().publish("The " + Emojis.MORITANI + " Terror Token in " + fromTerritory.getTerritoryName() + " was moved to " + toTerritory.getTerritoryName() + ".");
+        chat.reply(terrorTokenName + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
+        ledger.publish(terrorTokenName + " Terror Token was moved to " + toTerritory.getTerritoryName() + " from " + fromTerritory.getTerritoryName() + ".");
         game.setUpdated(UpdateType.MAP);
     }
 
@@ -333,7 +333,7 @@ public class MoritaniFaction extends Faction {
         List<DuneChoice> choices = new LinkedList<>();
         game.getTerritories().values().forEach(territory -> territory.getTerrorTokens().stream().map(terrorToken -> new DuneChoice("moritani-move-terror-" + terrorToken + "-" + territory.getTerritoryName(), terrorToken + " from " + territory.getTerritoryName())).forEach(choices::add));
         choices.add(new DuneChoice("secondary", "moritani-no-move", "No move"));
-        chat.publish("Which Terror Token would you like to move to a new stronghold? " + player, choices);
+        chat.reply("Which Terror Token would you like to move to a new stronghold? " + player, choices);
     }
 
     public void presentTerrorTokenMoveDestinations(String token, Territory fromTerritory) {
@@ -347,7 +347,7 @@ public class MoritaniFaction extends Faction {
             choices.add(stronghold);
         }
         choices.add(new DuneChoice("secondary", "moritani-no-move", "No move"));
-        chat.publish("Where would you like to move " + token + " to? " + player, choices);
+        chat.reply("Where would you like to move " + token + " to? " + player, choices);
     }
 
     public void checkForTerrorTrigger(Territory targetTerritory, Faction targetFaction, int numForces) {
