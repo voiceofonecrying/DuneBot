@@ -134,14 +134,11 @@ public class MoritaniButtons implements Pressable {
     }
 
     private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        if (!(ButtonManager.getButtonPresser(event, game) instanceof MoritaniFaction)) return;
         String terror = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
         discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You have triggered your " + terror + " token in " + territory.getTerritoryName());
-        moritani.triggerTerrorToken(triggeringFaction, territory, terror);
+        game.getMoritaniFaction().triggerTerrorToken(triggeringFaction, territory, terror);
         discordGame.pushGame();
     }
 

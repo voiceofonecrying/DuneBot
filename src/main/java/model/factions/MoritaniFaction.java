@@ -89,7 +89,9 @@ public class MoritaniFaction extends Faction {
 
     public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) {
         DuneTopic turnSummary = game.getTurnSummary();
-        turnSummary.publish("The " + terror + " Terror Token has been triggered!");
+        game.getTerritories().getTerritoryWithTerrorToken(terror).removeTerrorToken(game, terror, false);
+        turnSummary.publish(emoji + " have triggered their " + terror + " Terror Token in " + location.getTerritoryName() + " against " + triggeringFaction.getEmoji() + "!");
+        chat.reply("You have triggered your " + terror + " Terror Token in " + location.getTerritoryName() + " against " + triggeringFaction.getEmoji() + ".");
 
         switch (terror) {
             case "Assassination" -> {
@@ -152,10 +154,6 @@ public class MoritaniFaction extends Faction {
                 }
                 chat.publish("How many forces do you want to send on your sneak attack?", choices);
             }
-        }
-
-        for (Territory territory : game.getTerritories().values()) {
-            territory.getTerrorTokens().removeIf(t -> t.equals(terror));
         }
         game.setUpdated(UpdateType.MAP);
     }

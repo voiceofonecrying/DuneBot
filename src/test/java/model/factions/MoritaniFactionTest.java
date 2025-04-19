@@ -379,29 +379,58 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#triggerTerrorToken")
+    class TriggerTerrorToken {
+        AtreidesFaction atreides;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException, IOException {
+            atreides = new AtreidesFaction("p", "u");
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+            faction.placeTerrorToken(carthag, "Robbery");
+            chat.clear();
+        }
+
+        @Test
+        void testTerrorTokenTriggered() {
+            faction.triggerTerrorToken(atreides, carthag, "Robbery");
+            assertEquals(Emojis.MORITANI + " have triggered their Robbery Terror Token in Carthag against " + Emojis.ATREIDES + "!", turnSummary.getMessages().getLast());
+            assertFalse(carthag.hasTerrorToken());
+            assertFalse(faction.getTerrorTokens().contains("Robbery"));
+            assertEquals("You have triggered your Robbery Terror Token in Carthag against " + Emojis.ATREIDES + ".", chat.getMessages().getFirst());
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testTerrorTokenNotPresent() {
+            assertThrows(IllegalArgumentException.class, () -> faction.triggerTerrorToken(atreides, carthag, "Sabotage"));
+        }
+    }
+
+    @Nested
     @DisplayName("triggerAtomics")
     class TriggerAtomics {
-        TestTopic turnSummary;
         AtreidesFaction atreides;
         HarkonnenFaction harkonnen;
 
         @BeforeEach
-        void setUp() throws IOException {
-            turnSummary = new TestTopic();
-            game.setTurnSummary(turnSummary);
+        void setUp() throws IOException, InvalidGameStateException {
             atreides = new AtreidesFaction("p", "u");
             atreides.setLedger(new TestTopic());
             game.addFaction(atreides);
             harkonnen = new HarkonnenFaction("p", "u");
             harkonnen.setLedger(new TestTopic());
             game.addFaction(harkonnen);
+            faction.placeTerrorToken(arrakeen, "Atomics");
+            turnSummary.clear();
         }
 
         @Test
         void testAtomicsKillsForcesAndReducesHandLimit() {
             faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
             assertTrue(arrakeen.isAftermathToken());
-            assertEquals("The Atomics Terror Token has been triggered!", turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.MORITANI + " have triggered their Atomics Terror Token in Arrakeen against " + Emojis.HARKONNEN + "!", turnSummary.getMessages().getFirst());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("10 " + Emojis.ATREIDES_TROOP + " in Arrakeen were sent to the tanks.")));
             assertEquals(3, faction.getHandLimit());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.MORITANI + " " + Emojis.TREACHERY + " limit has been reduced to 3.")));
