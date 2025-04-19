@@ -5,7 +5,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
-import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -69,13 +68,8 @@ public class MoritaniCommands {
     public static void triggerTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
         String triggeringFaction = discordGame.required(CommandOptions.faction).getAsString();
-        MoritaniFaction moritaniFaction = (MoritaniFaction) game.getFaction("Moritani");
-
-        Territory territory = game.getTerritories().values().stream()
-                .filter(t -> t.hasTerrorToken(terrorTokenName))
-                .findFirst().orElseThrow(() -> new IllegalArgumentException("Terror Token not found on map"));
-        moritaniFaction.triggerTerrorToken(game.getFaction(triggeringFaction), territory, terrorTokenName);
-        moritaniFaction.getChat().publish("You have triggered your " + terrorTokenName + " token in " + territory.getTerritoryName());
+        Territory territory = game.getTerritories().getTerritoryWithTerrorToken(terrorTokenName);
+        game.getMoritaniFaction().triggerTerrorToken(game.getFaction(triggeringFaction), territory, terrorTokenName);
         discordGame.pushGame();
     }
 
