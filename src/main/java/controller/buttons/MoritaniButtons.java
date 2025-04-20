@@ -10,7 +10,6 @@ import model.Game;
 import model.Territory;
 import model.factions.Faction;
 import model.factions.MoritaniFaction;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
@@ -51,8 +50,6 @@ public class MoritaniButtons implements Pressable {
             sneakAttack(event, game, discordGame);
         switch (event.getComponentId()) {
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
-            case "moritani-pay-extortion" -> payExtortion(event, game, discordGame);
-            case "moritani-pass-extortion" -> passExtortion(event, game, discordGame);
             case "moritani-robbery-draw" -> robberyDraw(event, game, discordGame);
             case "moritani-don't-place-terror", "moritani-no-move" -> dontPlaceOrMoveTerrorToken(discordGame);
             case "moritani-move-option" -> queueMoveButtons(game, discordGame);
@@ -70,28 +67,6 @@ public class MoritaniButtons implements Pressable {
         discordGame.queueDeleteMessage();
         discordGame.queueMessage("You will leave your Terror Tokens as they were.");
         discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " leaves their Terror Tokens as they were.");
-    }
-
-    private static void passExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        String emojiName = faction.getEmoji().replace("<:", "").replaceAll(":.*>", "");
-        long id = Long.parseLong(faction.getEmoji().replaceAll("<:.*:", "").replace(">", ""));
-        event.getMessage().addReaction(Emoji.fromCustom(emojiName, id, false)).queue();
-        discordGame.queueMessageToEphemeral("You choose not to pay Extortion.");
-        if (event.getMessageChannel().retrieveMessageById(event.getMessageIdLong()).complete().getReactions().size() >= 5) {
-            ((MoritaniFaction) game.getFaction("Moritani")).getTerrorTokens().add("Extortion");
-            discordGame.queueMessage("Nobody wanted to pay the " + Emojis.SPICE + ", Extortion has been returned to " + Emojis.MORITANI);
-            discordGame.queueDeleteMessage();
-        }
-        discordGame.pushGame();
-    }
-
-    private static void payExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage(faction.getEmoji() + " has paid 3 " + Emojis.SPICE + " to remove Extortion from the game.");
-        faction.subtractSpice(3, "remove Extortion from the game.");
-        discordGame.pushGame();
     }
 
     private static void robberyRob(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

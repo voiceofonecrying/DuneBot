@@ -1476,8 +1476,8 @@ public class Faction {
     protected void presentExtortionChoices() {
         if (spice >= 3) {
             List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("extortion-pay", "Yes"));
-            choices.add(new DuneChoice("extortion-dont-pay", "No"));
+            choices.add(new DuneChoice("faction-pay-extortion", "Yes"));
+            choices.add(new DuneChoice("faction-decline-extortion", "No"));
             chat.publish("Will you pay " + Emojis.MORITANI + " 3 " + Emojis.SPICE + " to remove the Extortion token from the game? " + player, choices);
         } else {
             chat.publish("You do not have enough spice to pay Extortion.");
@@ -1501,5 +1501,28 @@ public class Faction {
 
         if (extortionTokenTriggered)
             presentExtortionChoices();
+    }
+
+    public void payExtortion() {
+        MentatPause mentatPause = game.getMentatPause();
+        if (mentatPause == null || mentatPause.isExtortionInactive())
+            chat.reply("Extortion has already been resolved. You were willing to pay.");
+        else if (spice >= 3) {
+            game.getMentatPause().factionWouldPayExtortion(game, this);
+            chat.reply("You are willing to pay Extortion.");
+        } else {
+            game.getMentatPause().factionDeclinesExtortion(game, this);
+            chat.reply("You are willing to pay Extortion but do not have enough spice.");
+        }
+    }
+
+    public void declineExtortion() {
+        MentatPause mentatPause = game.getMentatPause();
+        if (mentatPause == null || mentatPause.isExtortionInactive())
+            chat.reply("Extortion has already been resolved. You were not willing to pay.");
+        else {
+            game.getMentatPause().factionDeclinesExtortion(game, this);
+            chat.reply("You will not pay Extortion.");
+        }
     }
 }
