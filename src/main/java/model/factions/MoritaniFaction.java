@@ -410,6 +410,11 @@ public class MoritaniFaction extends Faction {
     }
 
     @Override
+    public void denyTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
+        throw new InvalidGameStateException("Moritani cannot deny alliance with themselves.");
+    }
+
+    @Override
     protected void presentExtortionChoices() {
         // Moritani does not get buttons for removing Extortion from the game
     }

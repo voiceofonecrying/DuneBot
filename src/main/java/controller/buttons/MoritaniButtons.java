@@ -154,28 +154,28 @@ public class MoritaniButtons implements Pressable {
         game.getMoritaniFaction().presentTerrorTokenMoveDestinations(token, territory);
     }
 
-    private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.queueMessage("You have sent the emissary away empty-handed. Time to prepare for the worst.");
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        moritani.getChat().publish("Your ambassador has returned with news that no alliance will take place.");
-        discordGame.queueDeleteMessage();
-        Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
+    private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        String territoryName = event.getComponentId().split("-")[3];
         String terror = event.getComponentId().split("-")[4];
-        moritani.triggerTerrorToken(ButtonManager.getButtonPresser(event, game), territory, terror);
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.denyTerrorAlliance(territoryName, terror);
+        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
     private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        discordGame.queueMessage("You have sent the emissary away with news of their new alliance!");
-        discordGame.queueDeleteMessage();
+        String territoryName = event.getComponentId().split("-")[3];
+        Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         String terror = event.getComponentId().split("-")[4];
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.getChat().reply("You have sent the emissary away with news of their new alliance!");
         MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
 
-        Alliance.createAlliance(discordGame, moritani, faction);
 
         moritani.getTerrorTokens().add(terror);
-        game.getTerritory(event.getComponentId().split("-")[3]).getTerrorTokens().removeIf(t -> t.equals(terror));
+        territory.getTerrorTokens().removeIf(t -> t.equals(terror));
+        Alliance.createAlliance(discordGame, moritani, faction);
+        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 

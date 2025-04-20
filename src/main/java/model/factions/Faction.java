@@ -1473,6 +1473,17 @@ public class Faction {
         }
     }
 
+    public void acceptTerrorAlliance(String territoryName, String terror) {
+    }
+
+    public void denyTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
+        Territory territory = game.getTerritory(territoryName);
+        chat.reply("You have sent the emissary away empty-handed. Time to prepare for the worst.");
+        MoritaniFaction moritani = game.getMoritaniFaction();
+        moritani.getChat().publish("Your ambassador has returned with news that no alliance will take place.");
+        moritani.triggerTerrorToken(this, territory, terror);
+    }
+
     protected void presentExtortionChoices() {
         if (spice >= 3) {
             List<DuneChoice> choices = new ArrayList<>();

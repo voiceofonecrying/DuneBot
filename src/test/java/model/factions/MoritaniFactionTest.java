@@ -658,6 +658,16 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#moritaniTerrorAlliance")
+    class MoritaniTerrorAlliance extends FactionTestTemplate.MoritaniTerrorAlliance {
+        @Test
+        @Override
+        public void testDenyTerrorAllliance() {
+            assertThrows(InvalidGameStateException.class, () -> faction.denyTerrorAlliance("Arrakeen", "Robbery"));
+        }
+    }
+
+    @Nested
     @DisplayName("#performMentatPauseActions")
     class PerformMentatPauseActions extends FactionTestTemplate.PerformMentatPauseActions {
         @BeforeEach
