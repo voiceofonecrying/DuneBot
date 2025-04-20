@@ -25,6 +25,8 @@ public class FactionButtons {
         else if (event.getComponentId().startsWith("whisper-")) whisper(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-storm-dial-")) stormDial(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
+        else if (event.getComponentId().equals("faction-pay-extortion")) payExtortion(event, game, discordGame);
+        else if (event.getComponentId().equals("faction-decline-extortion")) declineExtortion(event, game, discordGame);
     }
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -116,6 +118,18 @@ public class FactionButtons {
         String action = event.getComponentId().replace("faction-charity-", "");
         faction.setDecliningCharity(action.equals("decline"));
         ShowCommands.sendCharityAction(discordGame, faction, true);
+        discordGame.pushGame();
+    }
+
+    private static void payExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.payExtortion();
+        discordGame.pushGame();
+    }
+
+    private static void declineExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.declineExtortion();
         discordGame.pushGame();
     }
 }
