@@ -1938,10 +1938,11 @@ public class Game {
     public void startSpiceHarvest() throws InvalidGameStateException {
         endBattlePhase();
         MoritaniFaction moritani = getMoritaniFactionOrNull();
-        if (moritani != null && moritani.getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal")))
-            turnSummary.publish("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
-        if (moritani != null && hasGameOption(GameOption.HOMEWORLDS) && moritani.isHighThreshold())
-            moritani.sendTerrorTokenHighThresholdMessage();
+        if (moritani != null) {
+            if (moritani.getLeaders().removeIf(leader -> leader.getName().equals("Duke Vidal")))
+                turnSummary.publish("Duke Vidal has left the " + Emojis.MORITANI + " services... for now.");
+            moritani.startSpiceCollectionPhase();
+        }
 
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
@@ -2061,7 +2062,10 @@ public class Game {
         return mentatPause;
     }
 
-    public void startMentatPause() {
+    public void startMentatPause() throws InvalidGameStateException {
+        MoritaniFaction moritani = getMoritaniFactionOrNull();
+        if (moritani != null && moritani.isHtRemovalTBD())
+            throw new InvalidGameStateException("Moritani must decide if they will remove a Terror Token before the game can advance.");
         if (mentatPause == null)
             mentatPause = new MentatPause();
         mentatPause.startPhase(this);

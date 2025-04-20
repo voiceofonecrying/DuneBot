@@ -60,9 +60,9 @@ public class MoritaniButtons implements Pressable {
     }
 
     private static void removeTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String territoryName = event.getComponentId().split("-")[3];
         String terror = event.getComponentId().split("-")[4];
-        Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
-        game.getMoritaniFaction().removeTerrorTokenWithHighThreshold(territory, terror);
+        game.getMoritaniFaction().removeTerrorTokenWithHighThreshold(territoryName, terror);
         discordGame.pushGame();
     }
 

@@ -110,7 +110,7 @@ public class MentatPauseTest extends DuneTest {
         void moritaniAskedAboutPlacingTerrorToken() {
             mentatPause.startPhase(game);
             assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals("Use these buttons to place a Terror Token from your supply. mo", moritaniChat.getMessages().getFirst());
+            assertEquals("Where would you like to place a Terror Token? mo", moritaniChat.getMessages().getFirst());
             assertEquals(7, moritaniChat.getChoices().getFirst().size());
             assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
             assertTrue(moritaniChat.getChoices().getFirst().get(5).isDisabled());
@@ -125,7 +125,7 @@ public class MentatPauseTest extends DuneTest {
             moritaniChat.clear();
             mentatPause.startPhase(game);
             assertEquals(1, moritaniChat.getMessages().size());
-            assertEquals("Use these buttons to place a Terror Token from your supply. mo", moritaniChat.getMessages().getFirst());
+            assertEquals("Where would you like to place a Terror Token? mo", moritaniChat.getMessages().getFirst());
             assertEquals(7, moritaniChat.getChoices().getFirst().size());
             assertEquals("Move a Terror Token", moritaniChat.getChoices().getFirst().get(5).getLabel());
             assertFalse(moritaniChat.getChoices().getFirst().get(5).isDisabled());
