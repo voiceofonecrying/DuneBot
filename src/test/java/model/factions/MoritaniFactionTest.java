@@ -495,6 +495,55 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#highTresholdTerrorTokenPlacement")
+    class HighTresholdTerrorTokenPlacement {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            faction.placeTerrorToken(arrakeen, "Sabotage");
+            faction.placeTerrorToken(carthag, "Robbery");
+        }
+
+        @Test
+        void testNonHomeworlds() {
+            faction.sendTerrorTokenLocationMessage();
+            assertEquals("Where would you like to place a Terror Token? player", chat.getMessages().getLast());
+            DuneChoice arrakeenChoice = chat.getChoices().getLast().stream().filter(dc -> dc.getLabel().equals("Arrakeen")).findFirst().orElseThrow();
+            assertTrue(arrakeenChoice.isDisabled());
+        }
+
+        @Test
+        void testHomeworldsHighThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.sendTerrorTokenLocationMessage();
+            assertEquals("Where would you like to place a Terror Token? player\nYou are at High Threshold and may place in a stronghold that has one.\n- Sabotage is in Arrakeen\n- Robbery is in Carthag", chat.getMessages().getLast());
+            DuneChoice arrakeenChoice = chat.getChoices().getLast().stream().filter(dc -> dc.getLabel().equals("Arrakeen")).findFirst().orElseThrow();
+            assertFalse(arrakeenChoice.isDisabled());
+        }
+
+        @Test
+        void testHomeworldsLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForceFromReserves(game, carthag, 13, false);
+            faction.sendTerrorTokenLocationMessage();
+            assertEquals("Where would you like to place a Terror Token? player", chat.getMessages().getLast());
+            DuneChoice arrakeenChoice = chat.getChoices().getLast().stream().filter(dc -> dc.getLabel().equals("Arrakeen")).findFirst().orElseThrow();
+            assertTrue(arrakeenChoice.isDisabled());
+        }
+
+        @Test
+        void testRemovedTerrorTokenWithHT() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertFalse(faction.isRemovedTerrorTokenWithHT());
+            faction.removeTerrorTokenWithHighThreshold("Carthag", "Robbery");
+            assertTrue(faction.isRemovedTerrorTokenWithHT());
+            faction.sendTerrorTokenLocationMessage();
+            assertEquals("Where would you like to place a Terror Token? player", chat.getMessages().getLast());
+            DuneChoice arrakeenChoice = chat.getChoices().getLast().stream().filter(dc -> dc.getLabel().equals("Arrakeen")).findFirst().orElseThrow();
+            assertTrue(arrakeenChoice.isDisabled());
+        }
+    }
+
+    @Nested
     @DisplayName("#placeTerrorToken")
     class PlaceTerrorToken {
         @BeforeEach
@@ -587,7 +636,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         @Test
         void testTerrorTokenRemovedWitHighThreshold() {
-            faction.removeTerrorTokenWithHighThreshold(arrakeen, "Robbery");
+            faction.removeTerrorTokenWithHighThreshold("Arrakeen", "Robbery");
             assertFalse(arrakeen.hasTerrorToken());
             assertEquals(Emojis.MORITANI + " has removed a Terror Token from Arrakeen for 4 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
@@ -598,7 +647,13 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         @Test
         void testTerrorTokenNotFoundInTerritory() {
-            assertThrows(IllegalArgumentException.class, () -> faction.removeTerrorTokenWithHighThreshold(arrakeen, "Sabotage"));
+            assertThrows(IllegalArgumentException.class, () -> faction.removeTerrorTokenWithHighThreshold("Arrakeen", "Sabotage"));
+        }
+
+        @Test
+        void testDontRemoveTerrorToken() {
+            faction.removeTerrorTokenWithHighThreshold("", "None");
+            assertEquals("You will not remove a Terror Token.", chat.getMessages().getLast());
         }
     }
 
@@ -632,7 +687,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testTerrorTokenMessage() {
             faction.performMentatPauseActions(false);
-            assertEquals("Use these buttons to place a Terror Token from your supply. " + faction.getPlayer(), chat.getMessages().getFirst());
+            assertEquals("Where would you like to place a Terror Token? " + faction.getPlayer(), chat.getMessages().getFirst());
             assertEquals(7, chat.getChoices().getFirst().size());
         }
 

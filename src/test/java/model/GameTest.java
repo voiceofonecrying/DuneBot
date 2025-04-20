@@ -2098,7 +2098,7 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             moritani.placeTerrorToken(sietchTabr, "Assassination");
             game.startSpiceHarvest();
-            assertEquals("You are at High Threshold and can place a Terror Token in a stronghold that has one or remove one to gain 4 " + Emojis.SPICE + " during Spice Collection phase. mo", moritaniChat.getMessages().getLast());
+            assertEquals("You are at High Threshold and can remove a Terror Token to gain 4 " + Emojis.SPICE + ". mo", moritaniChat.getMessages().getLast());
         }
 
         @Test
