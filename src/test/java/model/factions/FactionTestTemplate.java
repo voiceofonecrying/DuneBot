@@ -940,6 +940,46 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#moritaniTerrorAlliance")
+    class MoritaniTerrorAlliance {
+        Faction faction;
+        MoritaniFaction moritani;
+        TestTopic moritaniChat;
+        Territory arrakeen;
+
+        @BeforeEach
+        public void setUp() throws InvalidGameStateException, IOException {
+            faction = getFaction();
+            moritani = new MoritaniFaction("mo", "mo");
+            game.addFaction(moritani);
+            moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            moritani.setLedger(new TestTopic());
+            arrakeen = game.getTerritory("Arrakeen");
+            game.getMoritaniFaction().placeTerrorToken(arrakeen, "Robbery");
+        }
+
+        @Test
+        public void testAcceptTerrorAlliance() throws InvalidGameStateException {
+            faction.acceptTerrorAlliance("Arrakeen", "Robbery");
+            assertFalse(arrakeen.hasTerrorToken());
+            assertTrue(moritani.getTerrorTokens().contains("Robbery"));
+            assertEquals("You have sent the emissary away with news of their new alliance!", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testDenyTerrorAlliance() throws InvalidGameStateException {
+            faction.denyTerrorAlliance("Arrakeen", "Robbery");
+            assertFalse(arrakeen.hasTerrorToken());
+            assertFalse(moritani.getTerrorTokens().contains("Robbery"));
+            assertEquals("You have sent the emissary away empty-handed. Time to prepare for the worst.", chat.getMessages().getLast());
+            assertEquals("Your terrorist in Arrakeen can rob the " + faction.getEmoji() + "! What would you like to do?", moritaniChat.getMessages().getLast());
+            assertTrue(moritani.getAlly().isEmpty());
+            assertTrue(faction.getAlly().isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("#performMentatPauseActions")
     class PerformMentatPauseActions {
         Faction faction;
