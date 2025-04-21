@@ -65,7 +65,7 @@ public class MoritaniCommands {
         discordGame.pushGame();
     }
 
-    public static void triggerTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void triggerTerrorToken(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String terrorTokenName = discordGame.required(moritaniTerrorTokenOnMap).getAsString();
         String triggeringFaction = discordGame.required(CommandOptions.faction).getAsString();
         Territory territory = game.getTerritories().getTerritoryWithTerrorToken(terrorTokenName);

@@ -89,7 +89,9 @@ public class MoritaniFaction extends Faction {
         addSpice(spiceGained, "assassination of " + leader.getName());
     }
 
-    public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) {
+    public void triggerTerrorToken(Faction triggeringFaction, Territory location, String terror) throws InvalidGameStateException {
+        if (ally != null && ally.equals(triggeringFaction.getName()))
+            throw new InvalidGameStateException("You cannot trigger against your ally.");
         DuneTopic turnSummary = game.getTurnSummary();
         game.getTerritories().getTerritoryWithTerrorToken(terror).removeTerrorToken(game, terror, false);
         turnSummary.publish(emoji + " have triggered their " + terror + " Terror Token in " + location.getTerritoryName() + " against " + triggeringFaction.getEmoji() + "!");
@@ -372,14 +374,17 @@ public class MoritaniFaction extends Faction {
             if (!isHighThreshold && numForces < 3) {
                 game.getTurnSummary().publish(emoji + " are at low threshold and may not trigger their Terror Token at this time");
             } else {
-                List<DuneChoice> choices = new ArrayList<>();
                 for (String terror : targetTerritory.getTerrorTokens()) {
-                    choices.add(new DuneChoice("moritani-trigger-terror-" + terror + "-" + targetFaction.getName(), "Trigger " + terror));
-                    choices.add(new DuneChoice("danger", "moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance (will trigger " + terror + ")"));
+                    List<DuneChoice> choices = new ArrayList<>();
+                    choices.add(new DuneChoice("moritani-trigger-terror-" + terror + "-" + targetFaction.getName(), "Trigger"));
+                    choices.add(new DuneChoice("moritani-offer-alliance-" + targetFaction.getName() + "-" + targetTerritory.getTerritoryName() + "-" + terror, "Offer alliance"));
+                    choices.add(new DuneChoice("secondary", "moritani-don't-trigger-terror", "Don't Trigger"));
+                    chat.publish("Will you trigger your " + terror + " Terror Token in " + targetTerritory.getTerritoryName() + " against " + targetFaction.getEmoji() + "? " + player, choices);
                 }
-                choices.add(new DuneChoice("danger", "moritani-don't-trigger-terror", "Don't Trigger"));
-                game.getTurnSummary().publish(emoji + " has an opportunity to trigger their Terror Token against " + targetFaction.getEmoji());
-                chat.publish("Will you trigger your Terror Token in " + targetTerritory.getTerritoryName() + "? " + player, choices);
+                String message = emoji + " has an opportunity to trigger their Terror Token";
+                message += targetTerritory.getTerrorTokens().size() > 1 ? "s" : "";
+                message += " in " + targetTerritory.getTerritoryName() + " against " + targetFaction.getEmoji();
+                game.getTurnSummary().publish(message);
             }
         }
     }
@@ -409,7 +414,9 @@ public class MoritaniFaction extends Faction {
             return response + placedTokens;
     }
 
-    public void presentTerrorAllianceChoices(String factionName, String territory, String terror) {
+    public void presentTerrorAllianceChoices(String factionName, String territory, String terror) throws InvalidGameStateException {
+        if (ally != null && ally.equals(factionName))
+            throw new InvalidGameStateException("You cannot trigger against your ally.");
         Faction faction = game.getFaction(factionName);
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("moritani-accept-offer-" + territory + "-" + terror, "Yes"));
@@ -425,7 +432,7 @@ public class MoritaniFaction extends Faction {
     }
 
     @Override
-    public void acceptTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
+    public void acceptTerrorAlliance(Faction moritani, String territoryName, String terror) throws InvalidGameStateException {
         throw new InvalidGameStateException("Moritani cannot accept alliance with themselves.");
     }
 

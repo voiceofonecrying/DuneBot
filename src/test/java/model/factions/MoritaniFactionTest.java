@@ -202,6 +202,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
             carthag.addTerrorToken(game, "Sabotage");
         }
 
@@ -215,8 +217,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testOtherFactionTriggers() {
             faction.checkForTerrorTrigger(carthag, atreides, 3);
-            assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
-            assertEquals("Will you trigger your Terror Token in Carthag? player", chat.getMessages().getFirst());
+            assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token in Carthag against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
+            assertEquals("Will you trigger your Sabotage Terror Token in Carthag against " + Emojis.ATREIDES + "? player", chat.getMessages().getFirst());
             assertEquals(3, chat.getChoices().getFirst().size());
         }
 
@@ -239,6 +241,31 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             faction.checkForTerrorTrigger(carthag, atreides, 2);
             assertEquals(Emojis.MORITANI + " are at low threshold and may not trigger their Terror Token at this time", turnSummary.getMessages().get(1));
             assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        void testTwoTokensCanBeTriggered() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            carthag.addTerrorToken(game, "Robbery");
+            faction.checkForTerrorTrigger(carthag, atreides, 3);
+            assertEquals(1, turnSummary.getMessages().size());
+            assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Tokens in Carthag against " + Emojis.ATREIDES, turnSummary.getMessages().getFirst());
+            assertEquals(2, chat.getMessages().size());
+            assertEquals("Will you trigger your Sabotage Terror Token in Carthag against " + Emojis.ATREIDES + "? player", chat.getMessages().getFirst());
+            assertEquals("Will you trigger your Robbery Terror Token in Carthag against " + Emojis.ATREIDES + "? player", chat.getMessages().get(1));
+            assertEquals(3, chat.getChoices().getFirst().size());
+            assertEquals(3, chat.getChoices().get(1).size());
+        }
+
+        @Test
+        void testTwoTokensAllianceFormedNextCannotTrigger() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            carthag.addTerrorToken(game, "Robbery");
+            faction.checkForTerrorTrigger(carthag, atreides, 3);
+            atreides.setChat(new TestTopic());
+            atreides.acceptTerrorAlliance(faction, "Carthag", "Robbery");
+            assertThrows(InvalidGameStateException.class, () -> faction.triggerTerrorToken(atreides, carthag, "Sabotage"));
+            assertThrows(InvalidGameStateException.class, () -> faction.presentTerrorAllianceChoices("Atreides", "Carthag", "Sabotage"));
         }
     }
 
@@ -393,7 +420,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testTerrorTokenTriggered() {
+        void testTerrorTokenTriggered() throws InvalidGameStateException {
             faction.triggerTerrorToken(atreides, carthag, "Robbery");
             assertEquals(Emojis.MORITANI + " have triggered their Robbery Terror Token in Carthag against " + Emojis.ATREIDES + "!", turnSummary.getMessages().getLast());
             assertFalse(carthag.hasTerrorToken());
@@ -427,7 +454,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testAtomicsKillsForcesAndReducesHandLimit() {
+        void testAtomicsKillsForcesAndReducesHandLimit() throws InvalidGameStateException {
             faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
             assertTrue(arrakeen.isAftermathToken());
             assertEquals(Emojis.MORITANI + " have triggered their Atomics Terror Token in Arrakeen against " + Emojis.HARKONNEN + "!", turnSummary.getMessages().getFirst());
@@ -437,7 +464,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testMoritaniHadFourCards() {
+        void testMoritaniHadFourCards() throws InvalidGameStateException {
             faction.addTreacheryCard(new TreacheryCard("Shield"));
             faction.addTreacheryCard(new TreacheryCard("Shield"));
             faction.addTreacheryCard(new TreacheryCard("Shield"));
@@ -449,7 +476,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testAllyHandSizeReduces() {
+        void testAllyHandSizeReduces() throws InvalidGameStateException {
             game.createAlliance(faction, harkonnen);
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
@@ -460,7 +487,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
             assertEquals(8, harkonnen.getTreacheryHand().size());
-            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            faction.triggerTerrorToken(atreides, arrakeen, "Atomics");
             assertEquals(7, harkonnen.getHandLimit());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been reduced to 7.")));
             assertEquals(7, harkonnen.getTreacheryHand().size());
@@ -468,18 +495,18 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testOldAllyHandLimitRestored() {
+        void testOldAllyHandLimitRestored() throws InvalidGameStateException {
             game.createAlliance(faction, harkonnen);
-            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            faction.triggerTerrorToken(atreides, arrakeen, "Atomics");
             game.createAlliance(faction, atreides);
             assertEquals(8, harkonnen.getHandLimit());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been restored to 8.")));
         }
 
         @Test
-        void testNewAllyHandLimitReduced() {
+        void testNewAllyHandLimitReduced() throws InvalidGameStateException {
             game.createAlliance(faction, harkonnen);
-            faction.triggerTerrorToken(harkonnen, arrakeen, "Atomics");
+            faction.triggerTerrorToken(atreides, arrakeen, "Atomics");
             game.createAlliance(faction, atreides);
             assertEquals(3, atreides.getHandLimit());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " " + Emojis.TREACHERY + " limit has been reduced to 3.")));
@@ -658,7 +685,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testPresentTerrorAllianceChoices() throws IOException {
+    public void testPresentTerrorAllianceChoices() throws IOException, InvalidGameStateException {
         AtreidesFaction atreides = new AtreidesFaction("p", "u");
         TestTopic atreidesChat = new TestTopic();
         atreides.setChat(atreidesChat);
@@ -677,7 +704,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         @Override
         public void testAcceptTerrorAlliance() {
-            assertThrows(InvalidGameStateException.class, () -> faction.acceptTerrorAlliance("Arrakeen", "Robbery"));
+            assertThrows(InvalidGameStateException.class, () -> faction.acceptTerrorAlliance(faction, "Arrakeen", "Robbery"));
         }
 
         @Test

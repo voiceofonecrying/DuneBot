@@ -961,7 +961,7 @@ abstract class FactionTestTemplate {
 
         @Test
         public void testAcceptTerrorAlliance() throws InvalidGameStateException {
-            faction.acceptTerrorAlliance("Arrakeen", "Robbery");
+            faction.acceptTerrorAlliance(moritani, "Arrakeen", "Robbery");
             assertFalse(arrakeen.hasTerrorToken());
             assertTrue(moritani.getTerrorTokens().contains("Robbery"));
             assertEquals("You have sent the emissary away with news of their new alliance!", chat.getMessages().getLast());
