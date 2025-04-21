@@ -5,7 +5,6 @@ import controller.Alliance;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
-import model.DuneChoice;
 import model.Game;
 import model.Territory;
 import model.factions.Faction;
@@ -13,8 +12,6 @@ import model.factions.MoritaniFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MoritaniButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
@@ -154,37 +151,30 @@ public class MoritaniButtons implements Pressable {
     }
 
     private static void denyAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String territoryName = event.getComponentId().split("-")[3];
         String terror = event.getComponentId().split("-")[4];
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.denyTerrorAlliance(territoryName, terror);
-        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
     private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String territoryName = event.getComponentId().split("-")[3];
         String terror = event.getComponentId().split("-")[4];
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.acceptTerrorAlliance(territoryName, terror);
         Alliance.createAlliance(discordGame, game.getMoritaniFaction(), faction);
-        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
-    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
+        discordGame.queueDeleteMessage();
         String factionName = event.getComponentId().split("-")[3];
-        Faction faction = game.getFaction(factionName);
         String territory = event.getComponentId().split("-")[4];
         String terror = event.getComponentId().split("-")[5];
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("moritani-accept-offer-" + territory + "-" + terror, "Yes"));
-        choices.add(new DuneChoice("danger", "moritani-deny-offer-" + territory + "-" + terror, "No"));
-        String emoji = faction.getEmoji();
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You have offered an alliance to " + emoji + " in exchange for safety from your terror token!");
-        discordGame.getTurnSummary().queueMessage(Emojis.MORITANI + " are offering an alliance to " + emoji + " in exchange for safety from their terror token!");
-        faction.getChat().publish("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept?", choices);
+        game.getMoritaniFaction().presentTerrorAllianceChoices(factionName, territory, terror);
     }
 
     private static void giveCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

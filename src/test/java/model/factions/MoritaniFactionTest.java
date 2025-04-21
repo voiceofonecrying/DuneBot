@@ -657,6 +657,20 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Test
+    public void testPresentTerrorAllianceChoices() throws IOException {
+        AtreidesFaction atreides = new AtreidesFaction("p", "u");
+        TestTopic atreidesChat = new TestTopic();
+        atreides.setChat(atreidesChat);
+        game.addFaction(atreides);
+        faction.presentTerrorAllianceChoices("Atreides", "Arrakeen", "Robbery");
+        assertEquals("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept? p", atreidesChat.getMessages().getLast());
+        assertEquals("moritani-accept-offer-Arrakeen-Robbery", atreidesChat.getChoices().getFirst().getFirst().getId());
+        assertEquals("moritani-deny-offer-Arrakeen-Robbery", atreidesChat.getChoices().getFirst().getLast().getId());
+        assertEquals(Emojis.MORITANI + " are offering an alliance to " + Emojis.ATREIDES + " in exchange for safety from their Terror Token!", turnSummary.getMessages().getLast());
+        assertEquals("You have offered an alliance to " + Emojis.ATREIDES + " in exchange for safety from your Terror Token!", chat.getMessages().getLast());
+    }
+
     @Nested
     @DisplayName("#moritaniTerrorAlliance")
     class MoritaniTerrorAlliance extends FactionTestTemplate.MoritaniTerrorAlliance {

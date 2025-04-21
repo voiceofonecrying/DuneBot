@@ -409,6 +409,16 @@ public class MoritaniFaction extends Faction {
             return response + placedTokens;
     }
 
+    public void presentTerrorAllianceChoices(String factionName, String territory, String terror) {
+        Faction faction = game.getFaction(factionName);
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("moritani-accept-offer-" + territory + "-" + terror, "Yes"));
+        choices.add(new DuneChoice("danger", "moritani-deny-offer-" + territory + "-" + terror, "No"));
+        faction.getChat().publish("An emissary of " + Emojis.MORITANI + " has offered an alliance with you!  Or else.  Do you accept? " + faction.getPlayer(), choices);
+        game.getTurnSummary().publish(Emojis.MORITANI + " are offering an alliance to " + faction.getEmoji() + " in exchange for safety from their Terror Token!");
+        chat.reply("You have offered an alliance to " + faction.getEmoji() + " in exchange for safety from your Terror Token!");
+    }
+
     @Override
     public void denyTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
         throw new InvalidGameStateException("Moritani cannot deny alliance with themselves.");
