@@ -104,7 +104,7 @@ public class MoritaniButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void triggerTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String terror = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerrorTokens().contains(terror)).findFirst().orElseThrow();
@@ -164,12 +164,12 @@ public class MoritaniButtons implements Pressable {
         String territoryName = event.getComponentId().split("-")[3];
         String terror = event.getComponentId().split("-")[4];
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.acceptTerrorAlliance(territoryName, terror);
+        faction.acceptTerrorAlliance(game.getMoritaniFaction(), territoryName, terror);
         Alliance.createAlliance(discordGame, game.getMoritaniFaction(), faction);
         discordGame.pushGame();
     }
 
-    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
+    private static void offerAlliance(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         discordGame.queueDeleteMessage();
         String factionName = event.getComponentId().split("-")[3];
         String territory = event.getComponentId().split("-")[4];
