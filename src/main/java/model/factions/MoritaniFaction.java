@@ -415,6 +415,11 @@ public class MoritaniFaction extends Faction {
     }
 
     @Override
+    public void acceptTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
+        throw new InvalidGameStateException("Moritani cannot accept alliance with themselves.");
+    }
+
+    @Override
     protected void presentExtortionChoices() {
         // Moritani does not get buttons for removing Extortion from the game
     }

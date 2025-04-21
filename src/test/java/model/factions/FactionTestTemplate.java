@@ -960,9 +960,19 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        public void testDenyTerrorAllliance() throws InvalidGameStateException {
+        public void testAcceptTerrorAlliance() throws InvalidGameStateException {
+            faction.acceptTerrorAlliance("Arrakeen", "Robbery");
+            assertFalse(arrakeen.hasTerrorToken());
+            assertTrue(moritani.getTerrorTokens().contains("Robbery"));
+            assertEquals("You have sent the emissary away with news of their new alliance!", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testDenyTerrorAlliance() throws InvalidGameStateException {
             faction.denyTerrorAlliance("Arrakeen", "Robbery");
             assertFalse(arrakeen.hasTerrorToken());
+            assertFalse(moritani.getTerrorTokens().contains("Robbery"));
+            assertEquals("You have sent the emissary away empty-handed. Time to prepare for the worst.", chat.getMessages().getLast());
             assertEquals("Your terrorist in Arrakeen can rob the " + faction.getEmoji() + "! What would you like to do?", moritaniChat.getMessages().getLast());
             assertTrue(moritani.getAlly().isEmpty());
             assertTrue(faction.getAlly().isEmpty());

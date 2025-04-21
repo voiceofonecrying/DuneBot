@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MoritaniButtons implements Pressable {
-
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         // Buttons handled by this class must begin with "moritani"
         // And any button that begins with "moritani" must be handled by this class
@@ -163,18 +162,12 @@ public class MoritaniButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void acceptAlliance(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String territoryName = event.getComponentId().split("-")[3];
-        Territory territory = game.getTerritory(event.getComponentId().split("-")[3]);
         String terror = event.getComponentId().split("-")[4];
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getChat().reply("You have sent the emissary away with news of their new alliance!");
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-
-
-        moritani.getTerrorTokens().add(terror);
-        territory.getTerrorTokens().removeIf(t -> t.equals(terror));
-        Alliance.createAlliance(discordGame, moritani, faction);
+        faction.acceptTerrorAlliance(territoryName, terror);
+        Alliance.createAlliance(discordGame, game.getMoritaniFaction(), faction);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

@@ -662,7 +662,13 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     class MoritaniTerrorAlliance extends FactionTestTemplate.MoritaniTerrorAlliance {
         @Test
         @Override
-        public void testDenyTerrorAllliance() {
+        public void testAcceptTerrorAlliance() {
+            assertThrows(InvalidGameStateException.class, () -> faction.acceptTerrorAlliance("Arrakeen", "Robbery"));
+        }
+
+        @Test
+        @Override
+        public void testDenyTerrorAlliance() {
             assertThrows(InvalidGameStateException.class, () -> faction.denyTerrorAlliance("Arrakeen", "Robbery"));
         }
     }

@@ -1473,7 +1473,11 @@ public class Faction {
         }
     }
 
-    public void acceptTerrorAlliance(String territoryName, String terror) {
+    public void acceptTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
+        chat.reply("You have sent the emissary away with news of their new alliance!");
+        game.getTerritory(territoryName).removeTerrorToken(game, terror, true);
+        // Alliances are created in controller.Alliance. When that moves to model, it can be done here and tested.
+        // controller = Discord side, model = Dune logic side
     }
 
     public void denyTerrorAlliance(String territoryName, String terror) throws InvalidGameStateException {
