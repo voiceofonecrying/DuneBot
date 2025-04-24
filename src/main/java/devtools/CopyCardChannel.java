@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import utils.CardImages;
 
 import java.util.List;
 import java.util.Optional;
@@ -60,18 +61,13 @@ public class CopyCardChannel {
 
     private static TextChannel getChannel(JDA jda, String guildId, String channelName) throws ChannelNotFoundException {
         Guild guild = jda.getGuildById(guildId);
-        if (guild == null) throw new ChannelNotFoundException("Guild not found");
-        List<Category> categories = guild.getCategoriesByName("Game Resources", true);
-        if (categories.isEmpty()) throw new ChannelNotFoundException("Category Game Resources not found");
-        Category category = categories.getFirst();
+        if (guild == null)
+            throw new ChannelNotFoundException("Guild not found");
+        Category category = CardImages.getGameResourcesCategory(guild);
         List<TextChannel> channels = category.getTextChannels();
-        Optional<TextChannel> channel = channels.stream().filter(c -> c.getName().equalsIgnoreCase(channelName))
-                .findFirst();
-
-        if (channel.isEmpty()) {
-            throw new ChannelNotFoundException("The channel was not found");
-        }
-
+        Optional<TextChannel> channel = channels.stream().filter(c -> c.getName().equalsIgnoreCase(channelName)).findFirst();
+        if (channel.isEmpty())
+            throw new ChannelNotFoundException("Channel " + channelName + " was not found");
         return channel.get();
     }
 }

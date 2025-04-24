@@ -143,9 +143,7 @@ public class CardImages {
         if (cardChannelMessages.containsKey(channelName)) {
             return cardChannelMessages.get(channelName);
         } else {
-            if (guild.getCategoriesByName("Game Resources", true).isEmpty()) return new ArrayList<>();
-            Category gameResources = guild.getCategoriesByName("Game Resources", true).getFirst();
-
+            Category gameResources = getGameResourcesCategory(guild);
             Optional<TextChannel> channel = gameResources.getTextChannels().stream()
                     .filter(c -> c.getName().equalsIgnoreCase(channelName))
                     .findFirst();
@@ -163,6 +161,20 @@ public class CardImages {
             cardChannelMessages.put(channelName, messages);
             return messages;
         }
+    }
+
+    public static Category getGameResourcesCategory(Guild guild) {
+        // Try Game Resources category ID from Dune: Play by Discord server first
+        Category category = guild.getCategoryById("1148231504762257529");
+        if (category == null)
+            // Next try category ID from Tom's test server
+            category = guild.getCategoryById("1186296357376491631");
+        if (category == null)
+            // Then look for a category that has "Game Resources" in the name
+            category = Objects.requireNonNull(guild).getCategories().stream().filter(c -> c.getName().contains("Game Resources")).findFirst().orElse(null);
+        if (category == null)
+            throw new NoSuchElementException("Category Game Resources not found");
+        return category;
     }
 
     private static Optional<Message.Attachment> getCardImageAttachment(Guild guild, String channelName, Pattern pattern ) {
