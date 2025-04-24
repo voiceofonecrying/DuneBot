@@ -235,13 +235,12 @@ public class ReportsCommands {
         List<Category> categories = Objects.requireNonNull(guild).getCategories();
         for (Category category : categories) {
             String categoryName = category.getName();
-            if (categoryName.equalsIgnoreCase("staging area")) {
+            if (category.getId().equals("991769571231023214") || category.getId().equals("1142814716394213376") || categoryName.contains("Staging Area"))
                 addWaitingListPlayers(playerGamesMap, category);
-            } else if (categoryName.equalsIgnoreCase("dune statistics")) {
+            else if (category.getId().equals("1148142189931679765") || category.getId().equals("1164949164313022484") || categoryName.contains("Dune Statistics"))
                 addRecentlyFinishedPlayers(guild, members, gatherGameResults(guild), playerGamesMap, monthsAgo);
-            } else {
+            else
                 addGamePlayers(playerGamesMap, category, categoryName);
-            }
         }
         List<PlayerGame> waitingPlayerGames = new ArrayList<>();
         List<PlayerGame> finishedPlayerGames = new ArrayList<>();
@@ -1850,9 +1849,16 @@ public class ReportsCommands {
 
     public static Category getStatsCategory(Guild guild) {
         List<Category> categories = Objects.requireNonNull(guild).getCategories();
-        Category category = categories.stream().filter(c -> c.getName().equalsIgnoreCase("dune statistics")).findFirst().orElse(null);
+        // Try Dune Statistics category ID from Dune: Play by Discord server first
+        Category category = guild.getCategoryById("1148142189931679765");
         if (category == null)
-            throw new IllegalStateException("The DUNE STATISTICS category was not found.");
+            // Next try category ID from Tom's test server
+            category = guild.getCategoryById("1164949164313022484");
+        if (category == null)
+            // Then look for a category that has "Dune Statistics" in the name
+            category = categories.stream().filter(c -> c.getName().contains("Dune Statistics")).findFirst().orElse(null);
+        if (category == null)
+            throw new IllegalStateException("The Dune Statistics category was not found.");
         return category;
     }
 
