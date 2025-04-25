@@ -348,9 +348,7 @@ public class ReportsCommands {
     }
 
     public static String inactiveGameRoles(SlashCommandInteractionEvent event) {
-        StringBuilder response = new StringBuilder();
         List<String> roleNames = new ArrayList<>(Objects.requireNonNull(event.getGuild()).getRoles().stream().map(Role::getName).toList());
-        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
         roleNames.remove("Mod Emperor");
         roleNames.remove("Mentat");
         roleNames.remove("Moderators");
@@ -365,8 +363,10 @@ public class ReportsCommands {
         roleNames.remove("Games Archive");
         roleNames.remove("EasyPoll");
         roleNames.remove("Observer");
+        roleNames.remove("Scraper");
+        roleNames.remove("Dice Roller");
         roleNames.remove("@everyone");
-        for (Category category : categories) {
+        for (Category category : Objects.requireNonNull(event.getGuild()).getCategories()) {
             try {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
@@ -376,8 +376,10 @@ public class ReportsCommands {
                 // category is not a Dune game
             }
         }
-        response.append("__Inactive roles__\n").append(String.join("\n", roleNames));
-        return response.toString();
+        if (roleNames.isEmpty())
+            return "There are no inactive roles.";
+        else
+            return "__Inactive roles__\n" + String.join("\n", roleNames);
     }
 
     private static class GameResults {
