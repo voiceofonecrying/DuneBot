@@ -59,6 +59,7 @@ public class ReportsCommands {
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions, optionalAllFactions),
                 new SubcommandData("active-game-roles", "Show player and mod roles in active games."),
+                new SubcommandData("inactive-game-roles", "Show player and mod roles that are not in use."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
                 new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
                 new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
@@ -88,6 +89,7 @@ public class ReportsCommands {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
             case "active-game-roles" -> responseMessage = activeGameRoles(event);
+            case "inactive-game-roles" -> responseMessage = inactiveGameRoles(event);
             case "player-record" -> responseMessage = playerRecord(event);
             case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), grList, members);
             case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), grList, members);
@@ -342,6 +344,39 @@ public class ReportsCommands {
                 // category is not a Dune game
             }
         }
+        return response.toString();
+    }
+
+    public static String inactiveGameRoles(SlashCommandInteractionEvent event) {
+        StringBuilder response = new StringBuilder();
+        List<String> roleNames = new ArrayList<>(Objects.requireNonNull(event.getGuild()).getRoles().stream().map(Role::getName).toList());
+        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        roleNames.remove("Mod Emperor");
+        roleNames.remove("Mentat");
+        roleNames.remove("Moderators");
+        roleNames.remove("Bot Developer");
+        roleNames.remove("Ticket Tool");
+        roleNames.remove("Bots");
+        roleNames.remove("MEE6");
+        roleNames.remove("Dune App");
+        roleNames.remove("Easy Poll");
+        roleNames.remove("Looking For Group");
+        roleNames.remove("NoTagInStats");
+        roleNames.remove("Games Archive");
+        roleNames.remove("EasyPoll");
+        roleNames.remove("Observer");
+        roleNames.remove("@everyone");
+        for (Category category : categories) {
+            try {
+                DiscordGame discordGame = new DiscordGame(category, false);
+                Game game = discordGame.getGame();
+                roleNames.remove(game.getGameRole());
+                roleNames.remove(game.getModRole());
+            } catch (Exception e) {
+                // category is not a Dune game
+            }
+        }
+        response.append("__Inactive roles__\n").append(String.join("\n", roleNames));
         return response.toString();
     }
 
