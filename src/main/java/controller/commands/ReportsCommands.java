@@ -58,6 +58,7 @@ public class ReportsCommands {
         commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
                 new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions, optionalAllFactions),
+                new SubcommandData("active-game-roles", "Show player and mod roles in active games."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
                 new SubcommandData("played-all-original-six", "Who has played all original six factions?"),
                 new SubcommandData("played-all-expansion", "Who has played all six expansion factions?"),
@@ -86,6 +87,7 @@ public class ReportsCommands {
         switch (name) {
             case "games-per-player" -> responseMessage = gamesPerPlayer(event, members);
             case "active-games" -> responseMessage = activeGames(event);
+            case "active-game-roles" -> responseMessage = activeGameRoles(event);
             case "player-record" -> responseMessage = playerRecord(event);
             case "played-all-original-six" -> responseMessage = playedAllOriginalSix(event.getGuild(), grList, members);
             case "played-all-expansion" -> responseMessage = playedAllExpansion(event.getGuild(), grList, members);
@@ -320,6 +322,22 @@ public class ReportsCommands {
                     response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames));
                     response.append("\n\n");
                 }
+            } catch (Exception e) {
+                // category is not a Dune game
+            }
+        }
+        return response.toString();
+    }
+
+    public static String activeGameRoles(SlashCommandInteractionEvent event) {
+        StringBuilder response = new StringBuilder();
+        List<Category> categories = Objects.requireNonNull(event.getGuild()).getCategories();
+        for (Category category : categories) {
+            try {
+                DiscordGame discordGame = new DiscordGame(category, false);
+                Game game = discordGame.getGame();
+                response.append(game.getGameRole()).append(", ");
+                response.append(game.getModRole()).append("\n");
             } catch (Exception e) {
                 // category is not a Dune game
             }
