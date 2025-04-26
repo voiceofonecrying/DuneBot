@@ -199,7 +199,8 @@ public class Bidding {
             throw new InvalidGameStateException("You have already sent a card back.");
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
-        choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
+        if (!game.getIxFaction().isHomeworldOccupied() && !game.getIxFaction().getTreacheryHand().isEmpty())
+            choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
         choices.add(new DuneChoice("secondary", "ix-reject-reset", "Start over"));
         ixianBiddingAdvantageChat(game).reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
     }
@@ -207,8 +208,7 @@ public class Bidding {
     public void sendCardBack(Game game, String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
         if (!game.getBidding().isIxRejectOutstanding())
             throw new InvalidGameStateException("You have already sent a card back.");
-        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
-        ixianBiddingAdvantageChat(game).reply("You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.");
+        putBackIxCard(game, cardName, location, requestTechnology);
     }
 
     public DuneTopic ixianBiddingAdvantageChat(Game game) {
@@ -582,11 +582,26 @@ public class Bidding {
         }
         Collections.shuffle(market);
         ixRejectOutstanding = false;
+        ixianBiddingAdvantageChat(game).reply("You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.");
         game.getTurnSummary().publish(ixianBiddingAdvantageFaction(game).getEmoji() + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+        IxFaction ix = game.getIxFaction();
+        if (ix.isHomeworldOccupied() && !ix.getTreacheryHand().isEmpty()) {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("ix-request-technology-yes", "Yes"));
+            choices.add(new DuneChoice("ix-request-technology-no", "No"));
+            ix.getChat().publish("Would you like to use Technology on the first card? " + ix.getPlayer(), choices);
+        } else
+            requestTechnologyOrAuction(game, ix, requestTechnology);
+    }
+
+    public void requestTechnologyOrAuction(Game game, IxFaction ix, boolean requestTechnology) throws InvalidGameStateException {
         if (requestTechnology)
-            game.getIxFaction().getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
-        else
+            ix.getChat().reply(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
+        else {
             auctionNextCard(game, false);
+            if (ix.isHomeworldOccupied() && !ix.getTreacheryHand().isEmpty())
+                ix.getChat().reply("You will not use Technology on the first card.");
+        }
     }
 
     public void ixTechnology(Game game, String cardName) throws InvalidGameStateException {
