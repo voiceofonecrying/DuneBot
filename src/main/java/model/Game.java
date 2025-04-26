@@ -1105,7 +1105,7 @@ public class Game {
         turnSummary.publish("**Turn " + turn + " Storm Phase**");
         phaseForWhispers = "Turn " + turn + " Storm Phase\n";
         if (hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))
-            territories.values().forEach(t -> t.flipAdvisorsIfAlone(this));
+            territories.flipAdvisorsIfAlone(this);
 
         for (Territory newDiscovery : territories.values().stream().filter(Territory::isJustDiscovered).toList()) {
             for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
@@ -1407,8 +1407,8 @@ public class Game {
         if (hasFaction("BG")) {
             Faction bgFaction = getFaction("BG");
             String bgPlayer = bgFaction.getPlayer();
+            territories.flipAdvisorsIfAlone(this);
             for (Territory territory : territories.values()) {
-                territory.flipAdvisorsIfAlone(this);
                 if (territory.getTerritoryName().equals("Polar Sink")) continue;
                 if (territory.getForceStrength("Advisor") > 0) {
                     String bgAllyName = bgFaction.getAlly();
@@ -1947,7 +1947,7 @@ public class Game {
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
         if (!hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))
-            territories.values().forEach(t -> t.flipAdvisorsIfAlone(this));
+            territories.flipAdvisorsIfAlone(this);
 
         for (Faction faction : factions) {
             faction.setHasMiningEquipment(false);

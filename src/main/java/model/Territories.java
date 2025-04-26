@@ -1,5 +1,8 @@
 package model;
 
+import constants.Emojis;
+import model.factions.BGFaction;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,6 +104,22 @@ public class Territories extends HashMap<String, Territory> {
                 .collect(Collectors.toSet());
         if (addRichese) factionNames.add("Richese");
         return factionNames;
+    }
+
+    public void flipAdvisorsIfAlone(Game game) {
+        values().stream().filter(t -> t.hasForce("Advisor")).forEach(t -> flipAdvisorsIfAlone(game, t));
+    }
+
+    public void flipAdvisorsIfAlone(Game game, Territory territory) {
+        if (territory.hasForce("Advisor")) {
+            List<List<Territory>> sectorsLists = getAggregateTerritoryList(territory.getAggregateTerritoryName(), game.getStorm(), false);
+            List<Territory> connectedSectors = sectorsLists.stream().filter(sectors -> sectors.contains(territory)).findFirst().orElse(new ArrayList<>());
+            if (getFighterNamesInAggTerritory(connectedSectors).isEmpty()) {
+                BGFaction bg = (BGFaction) game.getFaction("BG");
+                bg.flipForces(territory);
+                game.getTurnSummary().publish(Emojis.BG_ADVISOR + " are alone in " + territory.getTerritoryName() + " and have flipped to " + Emojis.BG_FIGHTER);
+            }
+        }
     }
 
     public Territory getTerritoryWithTerrorToken(String terrorTokenName) {

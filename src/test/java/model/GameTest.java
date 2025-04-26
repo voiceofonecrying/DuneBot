@@ -179,6 +179,40 @@ class GameTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#startShipmentPhase")
+    class StartShipmentPhase {
+        @BeforeEach
+        void setUp() throws IOException {
+            game.addFaction(emperor);
+            game.addFaction(guild);
+            game.addFaction(richese);
+            game.addFaction(fremen);
+            game.addFaction(atreides);
+            game.addFaction(bg);
+        }
+
+        @Test
+        void testBGFlipIfAlone() {
+            game.setStorm(1);
+            sietchTabr.addForces("Advisor", 1);
+            game.startShipmentPhase();
+            assertTrue(sietchTabr.hasForce("BG"));
+            assertFalse(sietchTabr.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Sietch Tabr and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        void testBGDontFlipWithOpponentInOtherSector() {
+            game.setStorm(10);
+            cielagoNorth_eastSector.addForces("Advisor", 1);
+            cielagoNorth_middleSector.addForces("Atreides", 1);
+            game.startShipmentPhase();
+            assertFalse(cielagoNorth_eastSector.hasForce("BG"));
+            assertTrue(cielagoNorth_eastSector.hasForce("Advisor"));
+        }
+    }
+
+    @Nested
     @DisplayName("#shippingPhase")
     class ShippingPhase {
         @BeforeEach
@@ -1126,6 +1160,28 @@ class GameTest extends DuneTest {
             assertEquals("Would you like to move into Jacurutu Sietch from Meridian (East Sector)? bg", bgChat.getMessages().getFirst());
             assertEquals(2, bgChat.getChoices().getFirst().size());
         }
+
+        @Test
+        void testBGFlipIfAlone() {
+            game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
+            game.setStorm(1);
+            sietchTabr.addForces("Advisor", 1);
+            game.startStormPhase();
+            assertTrue(sietchTabr.hasForce("BG"));
+            assertFalse(sietchTabr.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Sietch Tabr and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        void testBGDontFlipWithOpponentInOtherSector() {
+            game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
+            game.setStorm(10);
+            cielagoNorth_eastSector.addForces("Advisor", 1);
+            cielagoNorth_middleSector.addForces("Harkonnen", 1);
+            game.startStormPhase();
+            assertFalse(cielagoNorth_eastSector.hasForce("BG"));
+            assertTrue(cielagoNorth_eastSector.hasForce("Advisor"));
+        }
     }
 
     @Nested
@@ -2072,6 +2128,8 @@ class GameTest extends DuneTest {
         void testAdvisorsAloneFlipWithGF9Rules() throws InvalidGameStateException {
             game.startSpiceHarvest();
             assertEquals(advisorFlipMessage, turnSummary.getMessages().getLast());
+            assertTrue(habbanyaSietch.hasForce("BG"));
+            assertFalse(habbanyaSietch.hasForce("Advisor"));
         }
 
         @Test
@@ -2079,6 +2137,19 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
             game.startSpiceHarvest();
             assertFalse(turnSummary.getMessages().contains(advisorFlipMessage));
+            assertFalse(habbanyaSietch.hasForce("BG"));
+            assertTrue(habbanyaSietch.hasForce("Advisor"));
+        }
+
+        @Test
+        void testBGDontFlipWithOpponentInOtherSector() throws InvalidGameStateException {
+            game.setStorm(10);
+            game.addFaction(harkonnen);
+            cielagoNorth_eastSector.addForces("Advisor", 1);
+            cielagoNorth_middleSector.addForces("Harkonnen", 1);
+            game.startSpiceHarvest();
+            assertFalse(cielagoNorth_eastSector.hasForce("BG"));
+            assertTrue(cielagoNorth_eastSector.hasForce("Advisor"));
         }
 
         @Test
