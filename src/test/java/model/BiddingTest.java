@@ -1698,13 +1698,24 @@ class BiddingTest extends DuneTest {
             void testOccupierOfferedConfirmationChoices() throws InvalidGameStateException {
                 bidding.presentRejectConfirmationChoices(game, card.name(), "top", 0);
                 assertTrue(ixChat.getChoices().isEmpty());
-                assertEquals(3, atreidesChat.getChoices().getLast().size());
+                assertEquals(2, atreidesChat.getChoices().getLast().size());
             }
 
             @Test
             void testTurnSummaryReportsAtreidesSentCardBack() throws InvalidGameStateException {
+                ixChat.clear();
                 bidding.putBackIxCard(game, card.name(), "top", false);
                 assertEquals(Emojis.ATREIDES + " sent a " + Emojis.TREACHERY + " to the top of the deck.", turnSummary.getMessages().getLast());
+                assertNotNull(bidding.getBidCard());
+                assertTrue(ixChat.getMessages().isEmpty());
+            }
+
+            @Test
+            void testIxAskedAboutTechnology() throws InvalidGameStateException {
+                ix.addTreacheryCard(kulon);
+                bidding.putBackIxCard(game, card.name(), "top", false);
+                assertNull(bidding.getBidCard());
+                assertEquals("Would you like to use Technology on the first card? ix", ixChat.getMessages().getLast());
             }
         }
     }
@@ -1757,9 +1768,8 @@ class BiddingTest extends DuneTest {
             bidding.putBackIxCard(game, card.name(), "Top", true);
             assertTrue(bidding.isMarketShownToIx());
             assertFalse(bidding.isIxRejectOutstanding());
-            assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.",
-                    turnSummary.getMessages().getLast());
-            assertEquals(Emojis.IX + " would like to use Technology on the first card. ", ixChat.getMessages().getFirst());
+            assertEquals(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the top of the deck.", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.IX + " would like to use Technology on the first card. ", ixChat.getMessages().getLast());
         }
     }
 

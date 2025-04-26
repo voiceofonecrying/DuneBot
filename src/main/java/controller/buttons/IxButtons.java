@@ -32,6 +32,7 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().startsWith("ix-reject-")) locationSelected(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-technology-")) sendCardBackAndRequestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
+        else if (event.getComponentId().startsWith("ix-request-technology-")) requestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
         else if (event.getComponentId().startsWith("ix-hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
         else if (event.getComponentId().startsWith("ix-hms-move-")) queueSectorButtons(event, game, discordGame);
@@ -236,6 +237,13 @@ public class IxButtons implements Pressable {
         String cardName = event.getComponentId().split("-")[3];
         String location = event.getComponentId().split("-")[4];
         game.getBidding().sendCardBack(game, cardName, location, false);
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
+
+    private static void requestTechnology(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        String yesOrNo = event.getComponentId().split("-")[3];
+        game.getBidding().requestTechnologyOrAuction(game, game.getIxFaction(), yesOrNo.equals("yes"));
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
