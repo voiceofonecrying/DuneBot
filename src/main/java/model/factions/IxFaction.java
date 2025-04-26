@@ -153,37 +153,6 @@ public class IxFaction extends Faction {
         chat.reply("You kept " + ixCardName);
     }
 
-    public void presentRejectedCardLocationChoices(String cardName, int rejectionTurn) throws InvalidGameStateException {
-        if (rejectionTurn != game.getTurn())
-            throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
-        else if (!game.getBidding().isIxRejectOutstanding())
-            throw new InvalidGameStateException("You have already sent a card back.");
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
-        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
-        choices.add(new DuneChoice("secondary", "ix-reject-reset", "Choose a different card"));
-        chat.reply("Where do you want to send " + cardName + "?", choices);
-    }
-
-    public void presentRejectConfirmationChoices(String cardName, String location, int rejectionTurn) throws InvalidGameStateException {
-        if (rejectionTurn != game.getTurn())
-            throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
-        else if (!game.getBidding().isIxRejectOutstanding())
-            throw new InvalidGameStateException("You have already sent a card back.");
-        List<DuneChoice> choices = new ArrayList<>();
-        choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
-        choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
-        choices.add(new DuneChoice("secondary", "ix-reject-reset", "Start over"));
-        chat.reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
-    }
-
-    public void sendCardBack(String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
-        if (!game.getBidding().isIxRejectOutstanding())
-            throw new InvalidGameStateException("You have already sent a card back.");
-        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
-        chat.reply("You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.");
-    }
-
     /**
      * Adds forces from a Territory to the reserves or tanks
      *
