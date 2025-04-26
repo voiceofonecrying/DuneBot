@@ -1654,6 +1654,59 @@ class BiddingTest extends DuneTest {
             assertFalse(bidding.isIxRejectOutstanding());
             assertEquals(6, bidding.getMarket().size());
         }
+
+        @Nested
+        @DisplayName("#ixOccupied")
+        class IxOccupied {
+            TreacheryCard card;
+
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.addGameOption(GameOption.HOMEWORLDS);
+                ix.placeForceFromReserves(game, arrakeen, 10, false);
+                ix.placeForceFromReserves(game, arrakeen, 4, true);
+                atreides.placeForceFromReserves(game, game.getTerritory("Ix"), 1, false);
+                assertTrue(ix.isHomeworldOccupied());
+                assertEquals(atreides, ix.getOccupier());
+                bidding = game.startBidding();
+                turnSummary.clear();
+                bidding.cardCountsInBiddingPhase(game);
+                bidding.auctionNextCard(game, false);
+                card = bidding.getMarket().getFirst();
+            }
+
+            @Test
+            void testTurnSummarySaysAtreidesWillSendCardBack() {
+                assertTrue(turnSummary.getMessages().getFirst().endsWith(Emojis.ATREIDES + " will send one of them back to the deck."));
+                assertEquals("7 " + Emojis.TREACHERY + " cards have been shown to " + Emojis.ATREIDES, turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            void testOccupierOfferedCardChoices() {
+                assertTrue(ixChat.getChoices().isEmpty());
+                assertEquals(7, atreidesChat.getChoices().getFirst().size());
+            }
+
+            @Test
+            void testOccupierOfferedLocationChoices() throws InvalidGameStateException {
+                bidding.presentRejectedCardLocationChoices(game, card.name(), 0);
+                assertTrue(ixChat.getChoices().isEmpty());
+                assertEquals(3, atreidesChat.getChoices().getLast().size());
+            }
+
+            @Test
+            void testOccupierOfferedConfirmationChoices() throws InvalidGameStateException {
+                bidding.presentRejectConfirmationChoices(game, card.name(), "top", 0);
+                assertTrue(ixChat.getChoices().isEmpty());
+                assertEquals(3, atreidesChat.getChoices().getLast().size());
+            }
+
+            @Test
+            void testTurnSummaryReportsAtreidesSentCardBack() throws InvalidGameStateException {
+                bidding.putBackIxCard(game, card.name(), "top", false);
+                assertEquals(Emojis.ATREIDES + " sent a " + Emojis.TREACHERY + " to the top of the deck.", turnSummary.getMessages().getLast());
+            }
+        }
     }
 
     @Nested
