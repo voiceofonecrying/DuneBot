@@ -207,7 +207,7 @@ public class IxButtons implements Pressable {
     private static void cardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
         String cardName = event.getComponentId().split("-")[6];
         int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[4]);
-        game.getIxFaction().presentRejectedCardLocationChoices(cardName, buttonTurn);
+        game.getBidding().presentRejectedCardLocationChoices(game, cardName, buttonTurn);
         discordGame.queueDeleteMessage();
     }
 
@@ -215,7 +215,7 @@ public class IxButtons implements Pressable {
         String cardName = event.getComponentId().split("-")[3];
         String location = event.getComponentId().split("-")[4];
         int buttonTurn = Integer.parseInt(event.getComponentId().split("-")[2]);
-        game.getIxFaction().presentRejectConfirmationChoices(cardName, location, buttonTurn);
+        game.getBidding().presentRejectConfirmationChoices(game, cardName, location, buttonTurn);
         discordGame.queueDeleteMessage();
     }
 
@@ -227,7 +227,7 @@ public class IxButtons implements Pressable {
     private static void sendCardBackAndRequestTechnology(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         String cardName = event.getComponentId().split("-")[4];
         String location = event.getComponentId().split("-")[5];
-        game.getIxFaction().sendCardBack(cardName, location, true);
+        game.getBidding().sendCardBack(game, cardName, location, true);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -235,7 +235,7 @@ public class IxButtons implements Pressable {
     private static void sendCardBack(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         String cardName = event.getComponentId().split("-")[3];
         String location = event.getComponentId().split("-")[4];
-        game.getIxFaction().sendCardBack(cardName, location, false);
+        game.getBidding().sendCardBack(game, cardName, location, false);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

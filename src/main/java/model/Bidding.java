@@ -134,7 +134,7 @@ public class Bidding {
             message.append(
                     MessageFormat.format(
                             "\n{0} will send one of them back to the deck.",
-                            Emojis.IX
+                            ixianBiddingAdvantageFaction(game).getEmoji()
                     )
             );
             game.getModInfo().publish("If anyone wants to Karama " + Emojis.IX + " bidding advantage, that must be done now.");
@@ -152,11 +152,11 @@ public class Bidding {
 
     private void presentCardToRejectMessage(Game game) throws InvalidGameStateException {
         StringBuilder message = new StringBuilder();
-        IxFaction ixFaction = game.getIxFaction();
+        Faction ixAdvantageFaction = ixianBiddingAdvantageFaction(game);
         message.append(
                 MessageFormat.format(
                         "Turn {0} - Select one of the following {1} cards to send back to the deck. {2}",
-                        game.getTurn(), Emojis.TREACHERY, ixFaction.getPlayer()
+                        game.getTurn(), Emojis.TREACHERY, ixAdvantageFaction.getPlayer()
                 )
         );
         for (TreacheryCard card : market) {
@@ -165,7 +165,7 @@ public class Bidding {
                             card.name(), card.type()
                     ));
         }
-        ixFaction.getChat().publish(message.toString());
+        ixAdvantageFaction.getChat().publish(message.toString());
         presentCardToRejectChoices(game);
     }
 
@@ -176,8 +176,49 @@ public class Bidding {
         int i = 0;
         for (TreacheryCard card : market)
             choices.add(new DuneChoice("ix-card-to-reject-" + game.getTurn() + "-" + i++ + "-" + card.name(), card.name()));
-        game.getIxFaction().getChat().reply("", choices);
+        ixianBiddingAdvantageChat(game).reply("", choices);
         ixRejectDecisionInProgress = true;
+    }
+
+    public void presentRejectedCardLocationChoices(Game game, String cardName, int rejectionTurn) throws InvalidGameStateException {
+        if (rejectionTurn != game.getTurn())
+            throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
+        else if (!game.getBidding().isIxRejectOutstanding())
+            throw new InvalidGameStateException("You have already sent a card back.");
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
+        choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-bottom", "Bottom"));
+        choices.add(new DuneChoice("secondary", "ix-reject-reset", "Choose a different card"));
+        ixianBiddingAdvantageChat(game).reply("Where do you want to send " + cardName + "?", choices);
+    }
+
+    public void presentRejectConfirmationChoices(Game game, String cardName, String location, int rejectionTurn) throws InvalidGameStateException {
+        if (rejectionTurn != game.getTurn())
+            throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
+        else if (!game.getBidding().isIxRejectOutstanding())
+            throw new InvalidGameStateException("You have already sent a card back.");
+        List<DuneChoice> choices = new ArrayList<>();
+        choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
+        choices.add(new DuneChoice("ix-confirm-reject-technology-" + cardName + "-" + location, "Confirm and use Technology on first card"));
+        choices.add(new DuneChoice("secondary", "ix-reject-reset", "Start over"));
+        ixianBiddingAdvantageChat(game).reply("Confirm your selection of " + cardName.trim() + " to " + location + ".", choices);
+    }
+
+    public void sendCardBack(Game game, String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
+        if (!game.getBidding().isIxRejectOutstanding())
+            throw new InvalidGameStateException("You have already sent a card back.");
+        game.getBidding().putBackIxCard(game, cardName, location, requestTechnology);
+        ixianBiddingAdvantageChat(game).reply("You sent " + cardName.trim() + " to the " + location.toLowerCase() + " of the deck.");
+    }
+
+    public DuneTopic ixianBiddingAdvantageChat(Game game) {
+        IxFaction ix = game.getIxFaction();
+        return ix.isHomeworldOccupied() ? ix.getOccupier().getChat() : ix.getChat();
+    }
+
+    public Faction ixianBiddingAdvantageFaction(Game game) {
+        IxFaction ix = game.getIxFaction();
+        return ix.isHomeworldOccupied() ? ix.getOccupier() : ix;
     }
 
     public void askBlackMarket(Game game) {
@@ -393,7 +434,7 @@ public class Bidding {
             }
             String message = MessageFormat.format(
                     "{0} {1} cards have been shown to {2}",
-                    market.size(), Emojis.TREACHERY, Emojis.IX
+                    market.size(), Emojis.TREACHERY, ixianBiddingAdvantageFaction(game).getEmoji()
             );
             ixRejectOutstanding = true;
             presentCardToRejectMessage(game);
@@ -541,7 +582,7 @@ public class Bidding {
         }
         Collections.shuffle(market);
         ixRejectOutstanding = false;
-        game.getTurnSummary().publish(Emojis.IX + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
+        game.getTurnSummary().publish(ixianBiddingAdvantageFaction(game).getEmoji() + " sent a " + Emojis.TREACHERY + " to the " + location.toLowerCase() + " of the deck.");
         if (requestTechnology)
             game.getIxFaction().getChat().publish(Emojis.IX + " would like to use Technology on the first card. " + game.getModOrRoleMention());
         else

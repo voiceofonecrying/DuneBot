@@ -45,7 +45,7 @@ public class IxCommands {
     public static void sendCardBackToDeck(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String cardName = discordGame.required(putBackCard).getAsString();
         String location = discordGame.required(topOrBottom).getAsString();
-        game.getIxFaction().sendCardBack(cardName, location, false);
+        game.getBidding().sendCardBack(game, cardName, location, false);
         discordGame.pushGame();
     }
 
