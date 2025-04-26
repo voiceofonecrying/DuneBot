@@ -668,7 +668,6 @@ public class TerritoryTest extends DuneTest {
             sietchTabr.addTerrorToken(game, "Robbery");
             assertThrows(InvalidGameStateException.class, () -> sietchTabr.addTerrorToken(game, "Sabotage"));
         }
-
     }
 
     @Nested
@@ -704,6 +703,42 @@ public class TerritoryTest extends DuneTest {
         @Test
         void testTerrorTokenNotFound() {
             assertThrows(IllegalArgumentException.class, () -> sietchTabr.removeTerrorToken(game, "Sabotage", false));
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeForces")
+    class RemoveForces {
+        @BeforeEach
+        void setUp() throws IOException {
+//            game.addFaction(emperor);
+//            game.addFaction(guild);
+//            game.addFaction(richese);
+//            game.addFaction(fremen);
+//            game.addFaction(atreides);
+            game.addFaction(bg);
+        }
+
+        @Test
+        void testBGFlipIfAlone() {
+            game.setStorm(1);
+            sietchTabr.addForces("Advisor", 1);
+            sietchTabr.addForces("Atreides", 1);
+            sietchTabr.removeForces(game, "Atreides", 1);
+            assertTrue(sietchTabr.hasForce("BG"));
+            assertFalse(sietchTabr.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Sietch Tabr and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testBGDontFlipWithOpponentInOtherSector() {
+            game.setStorm(10);
+            cielagoNorth_eastSector.addForces("Advisor", 1);
+            cielagoNorth_eastSector.addForces("Guild", 1);
+            cielagoNorth_middleSector.addForces("Atreides", 1);
+            cielagoNorth_eastSector.removeForces(game, "Guild", 1);
+            assertFalse(cielagoNorth_eastSector.hasForce("BG"));
+            assertTrue(cielagoNorth_eastSector.hasForce("Advisor"));
         }
     }
 }

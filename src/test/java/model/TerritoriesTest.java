@@ -275,6 +275,57 @@ public class TerritoriesTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#flipAdvisorsIfAlone")
+    class FlipAdvisorsIfAlone {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(bg);
+        }
+
+        @Test
+        void testAdvisorsAlone() {
+            carthag.addForces("Advisor", 1);
+            territories.flipAdvisorsIfAlone(game);
+            assertTrue(carthag.hasForce("BG"));
+            assertFalse(carthag.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Carthag and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testAdvisorsNotAlone() {
+            carthag.addForces("Advisor", 1);
+            carthag.addForces("Harkonnen", 1);
+            territories.flipAdvisorsIfAlone(game);
+            assertFalse(carthag.hasForce("BG"));
+            assertTrue(carthag.hasForce("Advisor"));
+            assertTrue(turnSummary.getMessages().isEmpty());
+        }
+
+        @Test
+        void testAdvisorsNotAloneMultipleSectors() {
+            Territory shieldWallNorth = game.getTerritory("Shield Wall (North Sector)");
+            Territory shieldWallSouth = game.getTerritory("Shield Wall (South Sector)");
+            shieldWallNorth.addForces("Advisor", 1);
+            shieldWallSouth.addForces("Harkonnen", 1);
+            territories.flipAdvisorsIfAlone(game);
+            assertFalse(shieldWallNorth.hasForce("BG"));
+            assertTrue(shieldWallNorth.hasForce("Advisor"));
+            assertTrue(turnSummary.getMessages().isEmpty());
+        }
+
+        @Test
+        void testAloneSeparatedByStorm() {
+            game.setStorm(1);
+            cielagoNorth_westSector.addForces("Advisor", 1);
+            cielagoNorth_eastSector.addForces("Harkonnen", 1);
+            territories.flipAdvisorsIfAlone(game);
+            assertTrue(cielagoNorth_westSector.hasForce("BG"));
+            assertFalse(cielagoNorth_westSector.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Cielago North (West Sector) and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#validStrongholdForStrongholdShippingButtonsAndHMS")
     class ValidStrongholdForStrongholdShippingButtonsAndHMS {
         @Test
