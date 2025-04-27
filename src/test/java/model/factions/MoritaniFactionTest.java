@@ -542,6 +542,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testassassinationSuccessful() throws InvalidGameStateException {
             faction.assassinateTraitor();
+            assertEquals(18, faction.getSpice());
             assertTrue(faction.getAssassinationTargets().contains(Emojis.HARKONNEN + " Feyd Rautha"));
             assertTrue(faction.getTraitorHand().isEmpty());
             assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
@@ -552,9 +553,16 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testCannotAssassinateLeaderInTanks() {
+        void testLeaderInTanksNoSpiceGained() throws InvalidGameStateException {
             game.killLeader(harkonnen, "Feyd Rautha");
-            assertThrows(InvalidGameStateException.class, () -> faction.assassinateTraitor());
+            faction.assassinateTraitor();
+            assertEquals(12, faction.getSpice());
+            assertTrue(faction.getAssassinationTargets().contains(Emojis.HARKONNEN + " Feyd Rautha"));
+            assertTrue(faction.getTraitorHand().isEmpty());
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(faction.isNewAssassinationTargetNeeded());
+            assertEquals(Emojis.MORITANI + " have assassinated Feyd Rautha who was already in the tanks.", turnSummary.getMessages().getLast());
         }
 
         @Test

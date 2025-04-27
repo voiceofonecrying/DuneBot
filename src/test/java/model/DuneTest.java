@@ -79,6 +79,7 @@ public class DuneTest {
     Leader cammarPilru;
     Leader bindikkNarvi;
     Leader ladyHelena;
+    Leader hiihResser;
     Leader dukeVidal;
 
     Territory arrakeen;
@@ -216,6 +217,7 @@ public class DuneTest {
         cammarPilru = ix.getLeader("Cammar Pilru").orElseThrow();
         bindikkNarvi = ecaz.getLeader("Bindikk Narvi").orElseThrow();
         ladyHelena = richese.getLeader("Lady Helena").orElseThrow();
+        hiihResser = moritani.getLeader("Hiih Resser").orElseThrow();
         dukeVidal = game.getDukeVidal();
 
         arrakeen = game.getTerritory("Arrakeen");

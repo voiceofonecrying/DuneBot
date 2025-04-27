@@ -567,7 +567,7 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("negateeSpecialForces")
+    @DisplayName("#negateeSpecialForces")
     class NegateSpecialForces {
         @Nested
         @DisplayName("#ecazNotInGame")
@@ -4345,7 +4345,7 @@ class BattleTest extends DuneTest {
         }
 
         @Nested
-        @DisplayName("tueksSietch")
+        @DisplayName("#tueksSietch")
         class TueksSietch {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
@@ -4381,7 +4381,7 @@ class BattleTest extends DuneTest {
         }
 
         @Nested
-        @DisplayName("hiddenMobileStronghold")
+        @DisplayName("#hiddenMobileStronghold")
         class HiddenMobileStronghold {
             @BeforeEach
             void setUp() {
@@ -5058,7 +5058,101 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("resolutoinWithMoritaniAndAlly")
+    @DisplayName("#resolutionWithAssassination")
+    class ResolutionWithAssassination {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(moritani);
+            game.addFaction(harkonnen);
+            moritani.addTraitorCard(new TraitorCard("Umman Kudu", "Harkonnen", 1));
+            harkonnen.addTraitorCard(new TraitorCard("Hiih Resser", "Moritani", 4));
+            carthag.addForces("Moritani", 7);
+            battle = new Battle(game, List.of(carthag), List.of(moritani, harkonnen));
+            battle.setBattlePlan(game, moritani, hiihResser, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+        }
+
+        @Test
+        void testCanAssassinate() throws InvalidGameStateException {
+            assertFalse(battle.isAggressorWin(game));
+            battle.printBattleResolution(game, false, true);
+            assertEquals("Would you like to assassinate Umman Kudu? mo", moritaniChat.getMessages().getLast());
+            assertEquals(2, moritaniChat.getChoices().getLast().size());
+            assertEquals("moritani-assassinate-traitor-yes", moritaniChat.getChoices().getLast().getFirst().getId());
+            assertEquals("moritani-assassinate-traitor-no", moritaniChat.getChoices().getLast().getLast().getId());
+            assertTrue(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testTraitorIsInTanks() throws InvalidGameStateException {
+            game.killLeader(harkonnen, "Umman Kudu");
+            battle.printBattleResolution(game, false, true);
+            assertEquals("Umman Kudu is in the tanks. Would you like to assassinate and draw a new Traitor in Mentat Pause? mo", moritaniChat.getMessages().getLast());
+            assertEquals(2, moritaniChat.getChoices().getLast().size());
+            assertEquals("moritani-assassinate-traitor-yes", moritaniChat.getChoices().getLast().getFirst().getId());
+            assertEquals("moritani-assassinate-traitor-no", moritaniChat.getChoices().getLast().getLast().getId());
+            assertTrue(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testMoritaniWonTheBattle() throws InvalidGameStateException {
+            battle.setBattlePlan(game, moritani, hiihResser, null, false, 3, false, 0, null, null);
+            assertTrue(battle.isAggressorWin(game));
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testMoritaniKilledTheLeader() throws InvalidGameStateException {
+            moritani.addTreacheryCard(chaumas);
+            battle.setBattlePlan(game, moritani, hiihResser, null, false, 3, false, 0, chaumas, null);
+            assertTrue(battle.isAggressorWin(game));
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testTraitorUsedInBattle() throws InvalidGameStateException {
+            battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 5, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testOpponentPlayedCheapHero() throws InvalidGameStateException {
+            harkonnen.addTreacheryCard(cheapHero);
+            battle.setBattlePlan(game, harkonnen, null, cheapHero, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testMoritaniHasNoTraitorCard() throws InvalidGameStateException {
+            moritani.assassinateTraitor();
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testOpponentCallsTraitor() throws InvalidGameStateException {
+            battle.getDefenderBattlePlan().setWillCallTraitor(true);
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+
+        @Test
+        void testAlreadyAssassinatedFaction() throws InvalidGameStateException {
+            moritani.assassinateTraitor();
+            moritani.performMentatPauseActions(false);
+            battle.printBattleResolution(game, false, true);
+            assertFalse(battle.isAssassinationMustBeResolved());
+        }
+    }
+
+    @Nested
+    @DisplayName("#resolutoinWithMoritaniAndAlly")
     class ResolutionWithMoritaniAndAlly {
         Battle battle;
 

@@ -1924,6 +1924,8 @@ public class Game {
                 throw new InvalidGameStateException("Harkonnen must decide to keep or kill " + currentBattle.getHarkonnenCapturedLeader() + ".");
             else if (currentBattle.isAuditorMustBeResolved())
                 throw new InvalidGameStateException("Auditor must be resolved.");
+            else if (currentBattle.isAssassinationMustBeResolved())
+                throw new InvalidGameStateException("Moritani must decide on assassination.");
         }
         if (!battles.noBattlesRemaining(this))
             throw new InvalidGameStateException("There are battles remaining to be resolved.");
