@@ -540,7 +540,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testassassinationSuccessful() {
+        void testassassinationSuccessful() throws InvalidGameStateException {
             faction.assassinateTraitor();
             assertTrue(faction.getAssassinationTargets().contains(Emojis.HARKONNEN + " Feyd Rautha"));
             assertTrue(faction.getTraitorHand().isEmpty());
@@ -549,6 +549,25 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertTrue(faction.isNewAssassinationTargetNeeded());
             assertFalse(harkonnen.getLeaders().contains(feydRautha));
             assertTrue(game.getLeaderTanks().contains(feydRautha));
+        }
+
+        @Test
+        void testCannotAssassinateLeaderInTanks() {
+            game.killLeader(harkonnen, "Feyd Rautha");
+            assertThrows(InvalidGameStateException.class, () -> faction.assassinateTraitor());
+        }
+
+        @Test
+        void testCannotAssassinateSameFactionTwice() {
+            faction.getAssassinationTargets().add(Emojis.HARKONNEN + " Beast Rabban");
+            game.killLeader(harkonnen, "Feyd Rautha");
+            assertThrows(InvalidGameStateException.class, () -> faction.assassinateTraitor());
+        }
+
+        @Test
+        void testCannotAssassinateTwiceOnSameTurn() throws InvalidGameStateException {
+            faction.assassinateTraitor();
+            assertThrows(InvalidGameStateException.class, () -> faction.assassinateTraitor());
         }
     }
 
@@ -780,7 +799,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testAssassinationNewLeaderNeeded() throws IOException {
+        void testAssassinationNewLeaderNeeded() throws IOException, InvalidGameStateException {
             HarkonnenFaction harkonnen;
             harkonnen = new HarkonnenFaction("p", "u");
             harkonnen.setLedger(new TestTopic());
