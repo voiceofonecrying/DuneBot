@@ -397,8 +397,19 @@ public class MoritaniFaction extends Faction {
         return newAssassinationTargetNeeded;
     }
 
-    public void setNewAssassinationTargetNeeded(boolean newAssassinationTargetNeeded) {
-        this.newAssassinationTargetNeeded = newAssassinationTargetNeeded;
+    public void assassinateTraitor() {
+        String assassinated = traitorHand.getFirst().getName();
+        assassinationTargets.add(traitorHand.getFirst().getEmojiAndNameString());
+        traitorHand.clear();
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+        for (Faction faction : game.getFactions()) {
+            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.getName().equals(assassinated)).findFirst();
+            if (optLeader.isPresent()) {
+                assassinateLeader(faction, optLeader.get());
+                break;
+            }
+        }
+        newAssassinationTargetNeeded = true;
     }
 
     public String getTerrorTokenMessage(boolean placedTokensOnly) {

@@ -287,7 +287,7 @@ public class CommandManager extends ListenerAdapter {
                 case "team-mod" -> teamMod(discordGame, game);
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
                 case "discard-nexus-card" -> discardNexusCard(discordGame, game);
-                case "moritani-assassinate-leader" -> assassinateLeader(discordGame, game);
+                case "moritani-assassinate-traitor" -> assassinateTraitor(discordGame, game);
                 case "game-result" -> ReportsCommands.gameResult(event, discordGame, game);
                 case "save-game-bot-data" -> ReportsCommands.saveGameBotData(event, discordGame, game);
             }
@@ -430,7 +430,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("team-mod", "Enable or disable team mod where all users with the game mod role get tagged").addOptions(teamModSwitch));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
-        commandData.add(Commands.slash("moritani-assassinate-leader", "Assassinate leader ability"));
+        commandData.add(Commands.slash("moritani-assassinate-traitor", "Assassinate Moritani's Traitor"));
         commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
         commandData.add(Commands.slash("save-game-bot-data", "Save the game bot data at the end of a game for future analysis"));
@@ -888,20 +888,8 @@ public class CommandManager extends ListenerAdapter {
             homeworld.setOccupierName(occupierName);
     }
 
-    private void assassinateLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        MoritaniFaction moritani = (MoritaniFaction) game.getFaction("Moritani");
-        String assassinated = moritani.getTraitorHand().getFirst().getName();
-        moritani.getAssassinationTargets().add(moritani.getTraitorHand().getFirst().getEmojiAndNameString());
-        moritani.getTraitorHand().clear();
-        moritani.setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
-        for (Faction faction : game.getFactions()) {
-            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.getName().equals(assassinated)).findFirst();
-            if (optLeader.isPresent()) {
-                moritani.assassinateLeader(faction, optLeader.get());
-                break;
-            }
-        }
-        moritani.setNewAssassinationTargetNeeded(true);
+    private void assassinateTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        game.getMoritaniFaction().assassinateTraitor();
         discordGame.pushGame();
     }
 
