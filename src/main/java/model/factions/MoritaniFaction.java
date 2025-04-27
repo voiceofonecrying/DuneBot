@@ -397,25 +397,36 @@ public class MoritaniFaction extends Faction {
         return newAssassinationTargetNeeded;
     }
 
+    public boolean canAssassinate(Faction opponent, Leader leader) {
+        if (!traitorHand.isEmpty()) {
+            TraitorCard traitor = traitorHand.getFirst();
+            return traitor.getFactionEmoji().equals(opponent.getEmoji()) && assassinationTargets.stream().noneMatch(t -> t.contains(traitor.getFactionEmoji())) && leader != null && !leader.getName().equals(traitor.getName());
+        }
+        return false;
+    }
+
     public void assassinateTraitor() throws InvalidGameStateException {
         if (traitorHand.isEmpty())
             throw new InvalidGameStateException("Moritani has already assassinated this turn.");
         TraitorCard traitor = traitorHand.getFirst();
         String assassinated = traitor.getName();
-        if (game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals(assassinated)))
-            throw new InvalidGameStateException(assassinated + " is in the tanks and cannot be assassinated.");
-        else if (assassinationTargets.stream().anyMatch(t -> t.contains(traitor.getFactionEmoji())))
+        if (assassinationTargets.stream().anyMatch(t -> t.contains(traitor.getFactionEmoji())))
             throw new InvalidGameStateException("Moritani cannot assassinate the same faction twice.");
         assassinationTargets.add(traitor.getEmojiAndNameString());
         traitorHand.clear();
         setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
-        for (Faction faction : game.getFactions()) {
-            Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.getName().equals(assassinated)).findFirst();
-            if (optLeader.isPresent()) {
-                assassinateLeader(faction, optLeader.get());
-                break;
+        if (game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals(assassinated))) {
+            game.getTurnSummary().publish(emoji + " have assassinated " + assassinated + " who was already in the tanks.");
+        } else {
+            for (Faction faction : game.getFactions()) {
+                Optional<Leader> optLeader = faction.getLeaders().stream().filter(leader1 -> leader1.getName().equals(assassinated)).findFirst();
+                if (optLeader.isPresent()) {
+                    assassinateLeader(faction, optLeader.get());
+                    break;
+                }
             }
         }
+        chat.reply("You have assassinated " + assassinated);
         newAssassinationTargetNeeded = true;
     }
 

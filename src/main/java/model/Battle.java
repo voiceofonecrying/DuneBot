@@ -51,6 +51,7 @@ public class Battle {
     private String harkonnenCapturedLeader;
     private String harkonnenLeaderVictim;
     private boolean auditorMustBeResolved;
+    private boolean assassinationMustBeResolved;
     private List<String> cardsForAudit;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
@@ -88,6 +89,7 @@ public class Battle {
         this.poisonToothTBD = DecisionStatus.NA;
         this.diplomatMustBeResolved = false;
         this.auditorMustBeResolved = false;
+        this.assassinationMustBeResolved = false;
     }
 
     public List<Force> aggregateForces(List<Territory> territorySectors, List<Faction> factions) {
@@ -1520,7 +1522,12 @@ public class Battle {
         if (!resolutionDecisions.isEmpty())
             resolution += "\n" + resolutionDecisions;
 
-        if (!executeResolution) {
+        if (executeResolution) {
+            if (isAggressorWin(game))
+                checkForAssassination(game, getDefender(game), getAggressor(game), aggressorBattlePlan);
+            else
+                checkForAssassination(game, getAggressor(game), getDefender(game), defenderBattlePlan);
+        } else {
             DuneTopic resultsChannel = publishToTurnSummary ? game.getTurnSummary() : game.getModInfo();
             resultsChannel.publish(resolution);
 
@@ -1537,6 +1544,22 @@ public class Battle {
         if (!wholeTerritoryName.equals(territoryName))
             throw new InvalidGameStateException("The current battle is not in " + territoryName);
         printBattleResolution(game, publishToTurnSummary, true);
+    }
+
+    private void checkForAssassination(Game game, Faction faction, Faction opponent, BattlePlan opponentPlan) {
+        if (faction instanceof MoritaniFaction moritani && !opponentPlan.isWillCallTraitor() && !opponentPlan.isHarkWillCallTraitor() && opponentPlan.getLeader() != null && opponentPlan.isLeaderAlive()) {
+            if (moritani.canAssassinate(opponent, opponentPlan.getLeader())) {
+                assassinationMustBeResolved = true;
+                List<DuneChoice> choices = new ArrayList<>();
+                choices.add(new DuneChoice("moritani-assassinate-traitor-yes", "Yes"));
+                choices.add(new DuneChoice("moritani-assassinate-traitor-no", "No"));
+                String victim = moritani.getTraitorHand().getFirst().getName();
+                if (game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals(victim)))
+                    moritani.getChat().publish(victim + " is in the tanks. Would you like to assassinate and draw a new Traitor in Mentat Pause? " + moritani.getPlayer(), choices);
+                else
+                    moritani.getChat().publish("Would you like to assassinate " + victim + "? " + moritani.getPlayer(), choices);
+            }
+        }
     }
 
     private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary, boolean executeResolution) {
@@ -2117,6 +2140,10 @@ public class Battle {
         return auditorMustBeResolved;
     }
 
+    public boolean isAssassinationMustBeResolved() {
+        return assassinationMustBeResolved;
+    }
+
     public void populateCardsForAudit(Game game) {
         Faction aggressor = getAggressor(game);
         Faction defender = getDefender(game);
@@ -2195,5 +2222,14 @@ public class Battle {
             }
         }
         auditorMustBeResolved = false;
+    }
+
+    public void assassinate(Game game, boolean kill) throws InvalidGameStateException {
+        MoritaniFaction moritani = game.getMoritaniFaction();
+        if (kill)
+            moritani.assassinateTraitor();
+        else
+            moritani.getChat().reply("You did not assassinate " + moritani.getTraitorHand().getFirst().getName() + ".");
+        assassinationMustBeResolved = false;
     }
 }

@@ -44,6 +44,8 @@ public class MoritaniButtons implements Pressable {
             dontGiveCard(event, game, discordGame);
         else if (event.getComponentId().startsWith("moritani-sneak-attack-"))
             sneakAttack(event, game, discordGame);
+        else if (event.getComponentId().startsWith("moritani-assassinate-traitor-"))
+            assassinateTraitor(event, game, discordGame);
         switch (event.getComponentId()) {
             case "moritani-don't-trigger-terror" -> dontTrigger(event, game, discordGame);
             case "moritani-robbery-draw" -> robberyDraw(event, game, discordGame);
@@ -207,5 +209,11 @@ public class MoritaniButtons implements Pressable {
         faction.placeForces(territory, amount, 0, false, true, true, game, false, false);
         game.getTurnSummary().publish(amount + " " + Emojis.MORITANI_TROOP + " placed in " + strongholdName + " with Sneak Attack.");
         discordGame.pushGame();
+    }
+
+    private static void assassinateTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws InvalidGameStateException {
+        String response = event.getComponentId().split("-")[3];
+        game.getBattles().getCurrentBattle().assassinate(game, response.equals("yes"));
+        discordGame.queueDeleteMessage();
     }
 }
