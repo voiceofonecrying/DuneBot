@@ -888,7 +888,7 @@ public class CommandManager extends ListenerAdapter {
             homeworld.setOccupierName(occupierName);
     }
 
-    private void assassinateTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private void assassinateTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         game.getMoritaniFaction().assassinateTraitor();
         discordGame.pushGame();
     }
