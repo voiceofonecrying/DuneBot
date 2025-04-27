@@ -522,6 +522,37 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#assassinateTraitor")
+    class AssassinateTraitor {
+        HarkonnenFaction harkonnen;
+        Leader feydRautha;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            harkonnen = new HarkonnenFaction("p", "u");
+            harkonnen.setLedger(new TestTopic());
+            game.addFaction(harkonnen);
+            feydRautha = harkonnen.getLeader("Feyd Rautha").orElseThrow();
+            faction.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+            assertFalse(faction.getAssassinationTargets().contains(Emojis.HARKONNEN + " Feyd Rautha"));
+            assertFalse(faction.isNewAssassinationTargetNeeded());
+            assertTrue(harkonnen.getLeaders().stream().anyMatch(l -> l.getName().equals("Feyd Rautha")));
+        }
+
+        @Test
+        void testassassinationSuccessful() {
+            faction.assassinateTraitor();
+            assertTrue(faction.getAssassinationTargets().contains(Emojis.HARKONNEN + " Feyd Rautha"));
+            assertTrue(faction.getTraitorHand().isEmpty());
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(faction.isNewAssassinationTargetNeeded());
+            assertFalse(harkonnen.getLeaders().contains(feydRautha));
+            assertTrue(game.getLeaderTanks().contains(feydRautha));
+        }
+    }
+
+    @Nested
     @DisplayName("#highTresholdTerrorTokenPlacement")
     class HighTresholdTerrorTokenPlacement {
         @BeforeEach
@@ -749,9 +780,15 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testAssassinationNewLeaderNeeded() {
+        void testAssassinationNewLeaderNeeded() throws IOException {
+            HarkonnenFaction harkonnen;
+            harkonnen = new HarkonnenFaction("p", "u");
+            harkonnen.setLedger(new TestTopic());
+            game.addFaction(harkonnen);
+            faction.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
             MoritaniFaction moritani = ((MoritaniFaction) faction);
-            moritani.setNewAssassinationTargetNeeded(true);
+            moritani.assassinateTraitor();
+            turnSummary.clear();
             faction.performMentatPauseActions(false);
             assertFalse(moritani.isNewAssassinationTargetNeeded());
             assertEquals(1, turnSummary.getMessages().size());
