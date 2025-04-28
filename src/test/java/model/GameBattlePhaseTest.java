@@ -180,7 +180,27 @@ public class GameBattlePhaseTest extends DuneTest {
             game.startBattlePhase();
 
             assertFalse(harkonnen.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!", harkonnenChat.messages.getFirst());
+            assertEquals("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!", harkonnenChat.messages.getFirst());
+            assertTrue(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
+        }
+
+        @Test
+        void testMoritaniTakesVidalFromBT() {
+            game.addFaction(moritani);
+            game.addFaction(bt);
+            bt.addLeader(dukeVidal);
+            assertTrue(bt.getLeader("Duke Vidal").isPresent());
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("BG", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("BG", 1);
+
+            game.startBattlePhase();
+
+            assertFalse(bt.getLeader("Duke Vidal").isPresent());
+            assertEquals("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!", btChat.messages.getFirst());
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
             assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
         }

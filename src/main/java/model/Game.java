@@ -1890,18 +1890,9 @@ public class Game {
         battles = new Battles();
         battles.startBattlePhase(this);
         if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal")) && !(hasEcazFaction() && getEcazFaction().isHomeworldOccupied())) {
-            for (Faction faction : factions) {
-                if (faction.getLeader("Duke Vidal").isEmpty()) continue;
-                faction.removeLeader("Duke Vidal");
-                if (faction instanceof EcazFaction) {
-                    faction.getChat().publish("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
-                }
-                if (faction instanceof HarkonnenFaction) {
-                    faction.getChat().publish("Duke Vidal has escaped to fight for the " + Emojis.MORITANI + "!");
-                }
-            }
-            ((MoritaniFaction) getFaction("Moritani")).getDukeVidal();
-            getFaction("Moritani").getChat().publish("Duke Vidal has come to fight for you!");
+            factions.forEach(Faction::loseDukeVidalToMoritani);
+            getMoritaniFaction().getDukeVidal();
+            getMoritaniFaction().getChat().publish("Duke Vidal has come to fight for you!");
             turnSummary.publish("Duke Vidal now works for " + Emojis.MORITANI);
         }
 
