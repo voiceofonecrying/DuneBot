@@ -692,21 +692,6 @@ public class ShowCommands {
         coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhaseForTracker()));
         board = overlay(board, phaseMarker, coordinates, 1);
 
-        //Place Tech Tokens
-        for (int i = 0; i < game.getFactions().size(); i++) {
-            Faction faction = game.getFactions().get(i);
-            if (faction.getTechTokens().isEmpty()) continue;
-            int offset = 0;
-            for (TechToken token : faction.getTechTokens()) {
-                BufferedImage tokenImage = getResourceImage(token.getName());
-                tokenImage = resize(tokenImage, 50, 50);
-                coordinates = Initializers.getDrawCoordinates("tech token " + i);
-                Point coordinatesOffset = new Point(coordinates.x + offset, coordinates.y);
-                board = overlay(board, tokenImage, coordinatesOffset, 1);
-                offset += 50;
-            }
-        }
-
         //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
@@ -950,6 +935,21 @@ public class ShowCommands {
             if (i > Initializers.getPoints("Leaders Tanks").size() - 1) {
                 offset += 70;
                 i = 0;
+            }
+        }
+
+        //Place Tech Tokens
+        for (int x = 0; x < game.getFactions().size(); x++) {
+            Faction faction = game.getFactions().get(x);
+            if (faction.getTechTokens().isEmpty()) continue;
+            int ttoffset = 0;
+            for (TechToken token : faction.getTechTokens()) {
+                BufferedImage tokenImage = getResourceImage(token.getName());
+                tokenImage = resize(tokenImage, 50, 50);
+                coordinates = Initializers.getDrawCoordinates("tech token " + x);
+                Point coordinatesOffset = new Point(coordinates.x + ttoffset, coordinates.y);
+                board = overlay(board, tokenImage, coordinatesOffset, 1);
+                ttoffset += 50;
             }
         }
 
