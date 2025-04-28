@@ -1429,6 +1429,13 @@ public class Faction {
             resetAllySpiceSupportAfterShipping(game);
     }
 
+    public void loseDukeVidalToMoritani() {
+        if (getLeader("Duke Vidal").isEmpty())
+            return;
+        removeLeader("Duke Vidal");
+        chat.publish("Duke Vidal has left to fight for the " + Emojis.MORITANI + "!");
+    }
+
     public void executeMovement(Game game) {
         String movingFrom = movement.getMovingFrom();
         String movingTo = movement.getMovingTo();
