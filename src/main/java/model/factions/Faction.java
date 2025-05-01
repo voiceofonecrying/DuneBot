@@ -801,7 +801,7 @@ public class Faction {
             paymentMessage += " paid to " + Emojis.GUILD;
             guild.addSpice(spicePaidToGuild, emoji + " shipment");
             if (guild.isHomeworldOccupied()) {
-                Faction occupier = game.getFaction(((HomeworldTerritory) game.getTerritory("Junction")).getOccupierName());
+                Faction occupier = guild.getOccupier();
                 occupier.addSpice(spice - spicePaidToGuild, emoji + " shipment");
                 paymentMessage += ", " + (spice - spicePaidToGuild) + " " + Emojis.SPICE + " paid to " + occupier.getEmoji();
             }
@@ -1408,7 +1408,7 @@ public class Faction {
             game.removeForces(territoryName, this, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             subtractSpice(spice, "shipment from " + territoryName + " back to reserves");
-            game.getTurnSummary().publish(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves. for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+            game.getTurnSummary().publish(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else {
             if (territory.factionMustMoveOut(game, this))
                 movement.setMustMoveOutOf(territoryName);

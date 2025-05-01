@@ -2021,6 +2021,7 @@ class GameTest extends DuneTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(bt);
+            game.addFaction(moritani);
         }
 
         @Test
@@ -2072,6 +2073,37 @@ class GameTest extends DuneTest {
             assertEquals("You are now allies with " + Emojis.BT + "!", fremenLedger.getMessages().get(1));
             assertEquals("You are now allies with " + Emojis.FREMEN + "!", btLedger.getMessages().getFirst());
         }
+
+        @Test
+        void testAllyingWithMoritaniAtomicsNotTriggered() {
+            game.createAlliance(moritani, fremen);
+            assertEquals(4, fremen.getHandLimit());
+        }
+
+        @Test
+        void testAllyingWithMoritaniAtomicsTriggered() throws InvalidGameStateException {
+            carthag.addTerrorToken(game, "Atomics");
+            moritani.triggerTerrorToken(bt, carthag, "Atomics");
+            game.createAlliance(moritani, fremen);
+            assertEquals(3, fremen.getHandLimit());
+            assertFalse(turnSummary.getMessages().getLast().contains("discards"));
+        }
+
+        @Test
+        void testAllyingWithMoritaniAtomicsTriggeredHandFull() throws InvalidGameStateException {
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
+            fremen.addTreacheryCard(shield);
+            assertEquals(4, fremen.getTreacheryHand().size());
+            carthag.addTerrorToken(game, "Atomics");
+            moritani.triggerTerrorToken(bt, carthag, "Atomics");
+            turnSummary.clear();
+            game.createAlliance(moritani, fremen);
+            assertEquals(3, fremen.getTreacheryHand().size());
+            assertEquals(Emojis.FREMEN + " " + Emojis.TREACHERY + " limit has been reduced to 3.", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.FREMEN + " discards Shield.", turnSummary.getMessages().getLast());
+        }
     }
 
     @Nested
@@ -2081,6 +2113,7 @@ class GameTest extends DuneTest {
         void setUp() throws IOException {
             game.addFaction(fremen);
             game.addFaction(guild);
+            game.addFaction(moritani);
         }
 
         @Test
@@ -2109,6 +2142,25 @@ class GameTest extends DuneTest {
             assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().getFirst());
 
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testLeaveMoritaniAtomicsNotTriggered() {
+            game.createAlliance(moritani, fremen);
+            assertEquals(4, fremen.getHandLimit());
+            game.removeAlliance(fremen);
+            assertEquals(4, fremen.getHandLimit());
+        }
+
+        @Test
+        void testLeaveMoritaniAtomicsTriggered() throws InvalidGameStateException {
+            carthag.addTerrorToken(game, "Atomics");
+            moritani.triggerTerrorToken(bt, carthag, "Atomics");
+            game.createAlliance(moritani, fremen);
+            assertEquals(3, fremen.getHandLimit());
+            game.removeAlliance(fremen);
+            assertEquals(4, fremen.getHandLimit());
+            assertEquals(Emojis.FREMEN + " " + Emojis.TREACHERY + " limit has been restored to 4.", turnSummary.getMessages().getLast());
         }
     }
 
