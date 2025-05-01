@@ -2022,6 +2022,7 @@ class GameTest extends DuneTest {
             game.addFaction(guild);
             game.addFaction(bt);
             game.addFaction(moritani);
+            game.addFaction(choam);
         }
 
         @Test
@@ -2104,6 +2105,22 @@ class GameTest extends DuneTest {
             assertEquals(Emojis.FREMEN + " " + Emojis.TREACHERY + " limit has been reduced to 3.", turnSummary.getMessages().get(1));
             assertEquals(Emojis.FREMEN + " discards Shield.", turnSummary.getMessages().getLast());
         }
+
+        @Test
+        void testAllyingWithTupileOccupier() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory tupile = game.getTerritory("Tupile");
+            choam.placeForceFromReserves(game, sietchTabr, 20, false);
+            assertEquals(0, tupile.getForce("CHOAM").getStrength());
+            assertFalse(choam.isHighThreshold());
+            guild.placeForceFromReserves(game, tupile, 1, false);
+            assertTrue(choam.isHomeworldOccupied());
+            assertEquals(guild, choam.getOccupier());
+            assertEquals(5, guild.getHandLimit());
+            assertEquals(4, fremen.getHandLimit());
+            game.createAlliance(guild, fremen);
+            assertEquals(5, fremen.getHandLimit());
+        }
     }
 
     @Nested
@@ -2114,6 +2131,7 @@ class GameTest extends DuneTest {
             game.addFaction(fremen);
             game.addFaction(guild);
             game.addFaction(moritani);
+            game.addFaction(choam);
         }
 
         @Test
@@ -2161,6 +2179,23 @@ class GameTest extends DuneTest {
             game.removeAlliance(fremen);
             assertEquals(4, fremen.getHandLimit());
             assertEquals(Emojis.FREMEN + " " + Emojis.TREACHERY + " limit has been restored to 4.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testLeaveTupileOccupier() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory tupile = game.getTerritory("Tupile");
+            choam.placeForceFromReserves(game, sietchTabr, 20, false);
+            assertEquals(0, tupile.getForce("CHOAM").getStrength());
+            assertFalse(choam.isHighThreshold());
+            game.createAlliance(guild, fremen);
+            guild.placeForceFromReserves(game, tupile, 1, false);
+            assertTrue(choam.isHomeworldOccupied());
+            assertEquals(guild, choam.getOccupier());
+            assertEquals(5, guild.getHandLimit());
+            assertEquals(5, fremen.getHandLimit());
+            game.removeAlliance(fremen);
+            assertEquals(4, fremen.getHandLimit());
         }
     }
 
