@@ -122,6 +122,20 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
     }
 
+    @Test
+    void testMoritaniAllyRegainsHandLimitAfterSandtrout() throws InvalidGameStateException {
+        game.addFaction(moritani);
+        game.addFaction(fremen);
+        game.createAlliance(moritani, fremen);
+        carthag.addTerrorToken(game, "Atomics");
+        moritani.triggerTerrorToken(bt, carthag, "Atomics");
+        game.setTurn(2);
+        game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+        game.getSpiceDeck().addFirst(new SpiceCard("Sandtrout", -1, 0, null, null));
+        game.drawSpiceBlow("A", false);
+        assertEquals(4, fremen.getHandLimit());
+    }
+
     @Nested
     @DisplayName("#thumperWithSandtroutActive")
     class ThumperWithSandtroutActive {

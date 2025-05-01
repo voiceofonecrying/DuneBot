@@ -327,6 +327,42 @@ class ChoamFactionTest extends FactionTestTemplate {
         assertEquals(2, faction.getChoamMultiplier(round + 1));
     }
 
+//    @Test
+//    void testOccupierAndAllyHandLimit() throws IOException, InvalidGameStateException {
+//        game.addGameOption(GameOption.HOMEWORLDS);
+//        MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+//        HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
+//        TestTopic moritaniChat = new TestTopic();
+//        moritani.setChat(moritaniChat);
+//        moritani.setLedger(new TestTopic());
+//        harkonnen.setLedger(new TestTopic());
+//        game.addFaction(harkonnen);
+//        game.addFaction(moritani);
+//        game.createAlliance(moritani, harkonnen);
+//        Territory sietchTabr = game.getTerritory("Sietch Tabr");
+//        sietchTabr.addTerrorToken(game, "Atomics");
+//        moritani.triggerTerrorToken(faction, sietchTabr, "Atomics");
+//        assertEquals(7, harkonnen.getHandLimit());
+//        assertEquals(3, moritani.getHandLimit());
+//        // Now have Harkonnen occupy Tupile
+//        Territory tupile = game.getTerritory("Tupile");
+//        faction.placeForceFromReserves(game, sietchTabr, 20, false);
+//        assertEquals(0, tupile.getForce("CHOAM").getStrength());
+//        assertFalse(faction.isHighThreshold());
+//        harkonnen.placeForceFromReserves(game, tupile, 1, false);
+//        assertTrue(faction.isHomeworldOccupied());
+//        assertEquals(harkonnen, faction.getOccupier());
+//        assertEquals(8, harkonnen.getHandLimit());
+//        assertEquals(4, moritani.getHandLimit());
+//        game.removeAlliance(harkonnen);
+//        assertEquals(9, harkonnen.getHandLimit());
+//        assertEquals(3, moritani.getHandLimit());
+//        harkonnen.removeForces("Tupile", 1, false, false);
+//        faction.placeForces(tupile, 1, 0, false, false, false, game, false, false);
+//        assertFalse(faction.isHomeworldOccupied());
+//        assertEquals(8, harkonnen.getHandLimit());
+//    }
+
     @Nested
     @DisplayName("#performMentatPauseActions")
     class PerformMentatPauseActions extends FactionTestTemplate.PerformMentatPauseActions {
