@@ -2159,6 +2159,8 @@ class GameTest extends DuneTest {
             assertEquals("Your alliance with " + Emojis.GUILD + " has been dissolved!", fremenLedger.getMessages().getFirst());
             assertEquals("Your alliance with " + Emojis.FREMEN + " has been dissolved!", guildLedger.getMessages().getFirst());
 
+            assertTrue(fremen.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(guild.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
 

@@ -202,7 +202,8 @@ public class Faction {
         this.ally = ally;
     }
 
-    public void removeAlly() {
+    public void removeAlliance() {
+        ledger.publish("Your alliance with " + Emojis.getFactionEmoji(ally) + " has been dissolved!");
         ally = null;
         spiceForAlly = 0;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);

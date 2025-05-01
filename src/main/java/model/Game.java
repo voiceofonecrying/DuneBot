@@ -2137,24 +2137,14 @@ public class Game {
 
     /**
      * Remove an alliance between two factions.
-     * @param faction The faction to remove the alliance from.
+     * @param faction The first faction to remove the alliance from.
      */
     public void removeAlliance(@NotNull Faction faction) {
         if (faction.hasAlly()) {
             Faction allyFaction = getFaction(faction.getAlly());
-            faction.removeAlly();
-            allyFaction.removeAlly();
             turnSummary.publish(faction.getEmoji() + " and " + allyFaction.getEmoji() + " are no longer allies.");
-            faction.getLedger().publish("Your alliance with " + allyFaction.getEmoji() + " has been dissolved!");
-            allyFaction.getLedger().publish("Your alliance with " + faction.getEmoji() + " has been dissolved!");
-
-            if (faction instanceof MoritaniFaction moritani)
-                moritani.restoreHandLimitIfNecessary(allyFaction);
-            else if (allyFaction instanceof MoritaniFaction moritani)
-                moritani.restoreHandLimitIfNecessary(faction);
-
-            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-            allyFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            faction.removeAlliance();
+            allyFaction.removeAlliance();
             setUpdated(UpdateType.MAP);
         }
     }

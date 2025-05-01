@@ -52,6 +52,16 @@ public class MoritaniFaction extends Faction {
     }
 
     @Override
+    public void removeAlliance() {
+        Faction allyFaction = game.getFaction(ally);
+        super.removeAlliance();
+        if (handLimit == 3) {
+            allyFaction.setHandLimit(allyFaction.getHandLimit() + 1);
+            game.getTurnSummary().publish(allyFaction.getEmoji() + " " + Emojis.TREACHERY + " limit has been restored to " + allyFaction.getHandLimit() + ".");
+        }
+    }
+
+    @Override
     public void presentStartingForcesChoices() {
         shipment.clear();
         String buttonSuffix = "-starting-forces";
@@ -174,13 +184,6 @@ public class MoritaniFaction extends Faction {
     public void reduceHandLmitIfNecessary(Faction faction) {
         if (handLimit == 3)
             reduceHandLimitDueToAtomics(faction);
-    }
-
-    public void restoreHandLimitIfNecessary(Faction faction) {
-        if (handLimit == 3) {
-            faction.setHandLimit(faction.getHandLimit() + 1);
-            game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been restored to " + faction.getHandLimit() + ".");
-        }
     }
 
     public void robberyRob(String factionName) {
