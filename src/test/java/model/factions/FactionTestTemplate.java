@@ -100,7 +100,8 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        public void testRevivalCostAlliedWithBT() {
+        public void testRevivalCostAlliedWithBT() throws IOException {
+            game.addFaction(new BTFaction("bt", "bt"));
             faction.setAlly("BT");
             assertEquals(2, faction.revivalCost(1, 1));
         }

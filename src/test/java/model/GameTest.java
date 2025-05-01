@@ -2034,6 +2034,8 @@ class GameTest extends DuneTest {
             assertEquals("You are now allies with " + Emojis.GUILD + "!", fremenLedger.getMessages().getFirst());
             assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().getFirst());
 
+            assertTrue(fremen.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(guild.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
 
@@ -2049,6 +2051,8 @@ class GameTest extends DuneTest {
             assertEquals("You are now allies with " + Emojis.FREMEN + "!", guildLedger.getMessages().getFirst());
             assertNull(fremen.getNexusCard());
 
+            assertTrue(fremen.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(guild.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
 

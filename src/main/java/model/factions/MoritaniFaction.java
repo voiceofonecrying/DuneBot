@@ -52,6 +52,13 @@ public class MoritaniFaction extends Faction {
     }
 
     @Override
+    public void setAlly(String ally) {
+        super.setAlly(ally);
+        if (handLimit == 3)
+            reduceHandLimitDueToAtomics(game.getFaction(ally));
+    }
+
+    @Override
     public void removeAlliance() {
         Faction allyFaction = game.getFaction(ally);
         super.removeAlliance();
@@ -179,11 +186,6 @@ public class MoritaniFaction extends Faction {
         game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been reduced to " + handLimit + ".");
         if (hand.size() > handLimit)
             faction.discard(hand.get((int) (Math.random() * hand.size())).name());
-    }
-
-    public void reduceHandLmitIfNecessary(Faction faction) {
-        if (handLimit == 3)
-            reduceHandLimitDueToAtomics(faction);
     }
 
     public void robberyRob(String factionName) {

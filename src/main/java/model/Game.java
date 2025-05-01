@@ -2117,21 +2117,9 @@ public class Game {
 
         removeAlliance(faction1);
         removeAlliance(faction2);
-
+        turnSummary.publish(faction1.getEmoji() + " and " + faction2.getEmoji() + " have formed an alliance.");
         faction1.setAlly(faction2.getName());
         faction2.setAlly(faction1.getName());
-
-        turnSummary.publish(faction1.getEmoji() + " and " + faction2.getEmoji() + " have formed an alliance.");
-        faction1.getLedger().publish("You are now allies with " + faction2.getEmoji() + "!");
-        faction2.getLedger().publish("You are now allies with " + faction1.getEmoji() + "!");
-
-        if (faction1 instanceof MoritaniFaction moritani)
-            moritani.reduceHandLmitIfNecessary(faction2);
-        else if (faction2 instanceof MoritaniFaction moritani)
-            moritani.reduceHandLmitIfNecessary(faction1);
-
-        faction1.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        faction2.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MAP);
     }
 

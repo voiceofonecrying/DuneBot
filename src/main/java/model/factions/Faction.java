@@ -200,6 +200,8 @@ public class Faction {
 
     public void setAlly(String ally) {
         this.ally = ally;
+        ledger.publish("You are now allies with " + Emojis.getFactionEmoji(ally) + "!");
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeAlliance() {
@@ -207,7 +209,6 @@ public class Faction {
         ally = null;
         spiceForAlly = 0;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public boolean hasAlly() {

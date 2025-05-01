@@ -241,6 +241,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
             atreides = new AtreidesFaction("p", "u");
+            atreides.setLedger(new TestTopic());
             bg = new BGFaction("p", "u");
             carthag = game.getTerritory("Carthag");
             carthag.setEcazAmbassador("BG");
