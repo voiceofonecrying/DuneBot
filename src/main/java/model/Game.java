@@ -1299,7 +1299,7 @@ public class Game {
             } else if (drawn.name().equalsIgnoreCase("Sandtrout")) {
                 shaiHuludSpotted = true;
                 message.append("Sandtrout has been spotted, and all alliances have ended!\n");
-                factions.forEach(Faction::removeAlly);
+                factions.forEach(this::removeAlliance);
                 sandtroutInPlay = true;
             } else {
                 String spiceMessage = drawn.spice() * spiceMultiplier + " " + Emojis.SPICE + " has been spotted in " + drawn.name();
