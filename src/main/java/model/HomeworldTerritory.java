@@ -32,9 +32,11 @@ public class HomeworldTerritory extends Territory {
         return occupierName;
     }
 
-    public void setOccupierName(String occupierName) {
+    public void establishOccupier(String occupierName) {
         this.occupierName = occupierName;
+        getNativeFaction().checkForLowThreshold();
         game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
+        checkForOccupierTakingDukeVidal();
     }
 
     public void clearOccupier() {
@@ -74,12 +76,9 @@ public class HomeworldTerritory extends Territory {
             return;
         String factionName = Force.getFactionNameFromForceName(forceName);
         boolean nativeForces = factionName.equals(nativeName);
-        if (!nativeForces && countFactions() == 1 && (!wasOccupied || !factionName.equals(formerOccupier))) {
-            occupierName = factionName;
-            game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
-            checkForOccupierTakingDukeVidal();
-            nativeFaction.checkForLowThreshold();
-        } else if (nativeForces)
+        if (!nativeForces && countFactions() == 1 && (!wasOccupied || !factionName.equals(formerOccupier)))
+            establishOccupier(factionName);
+        else if (nativeForces)
             nativeFaction.checkForHighThreshold();
     }
 
@@ -95,14 +94,11 @@ public class HomeworldTerritory extends Territory {
         if (factionNames.size() == 1) {
             String name = factionNames.stream().findFirst().orElseThrow();
             occupierName = name.equals(nativeName) ? null : name;
-            if (wasOccupied && occupierName == null) {
+            if (wasOccupied && name.equals(nativeName)) {
                 game.getTurnSummary().publish(getTerritoryName() + " is no longer occupied.");
                 game.getFaction(nativeName).checkForHighThreshold();
-            } else if (!wasOccupied && occupierName != null || wasOccupied && !occupierName.equals(formerOccupier)) {
-                game.getFaction(nativeName).checkForLowThreshold();
-                game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
-                checkForOccupierTakingDukeVidal();
-            }
+            } else if (!wasOccupied && occupierName != null || wasOccupied && !occupierName.equals(formerOccupier))
+                establishOccupier(name);
         }
         game.getFaction(nativeName).checkForLowThreshold();
     }
