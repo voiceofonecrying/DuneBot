@@ -264,6 +264,7 @@ public class EcazFactionTest extends FactionTestTemplate {
 
         @Test
         void testAllyDoesNotTrigger() {
+            game.addFaction(atreides);
             faction.setAlly("Atreides");
             atreides.setAlly("Ecaz");
             faction.checkForAmbassadorTrigger(carthag, atreides);

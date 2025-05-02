@@ -1,5 +1,6 @@
 package model;
 
+import constants.Emojis;
 import helpers.Exclude;
 import model.factions.Faction;
 
@@ -32,16 +33,42 @@ public class HomeworldTerritory extends Territory {
         return occupierName;
     }
 
+    public void increaseHandLimitForTupile(Faction faction) {
+        faction.setHandLimit(faction.getHandLimit() + 1);
+        game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been increased to " + faction.getHandLimit() + ".");
+    }
+
+    public void reduceHandLimitForTupile(Faction faction) {
+        faction.setHandLimit(faction.getHandLimit() - 1);
+        game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been reduced to " + faction.getHandLimit() + ".");
+    }
+
     public void establishOccupier(String occupierName) {
         this.occupierName = occupierName;
+        Faction occupier = getOccupyingFaction();
         getNativeFaction().checkForLowThreshold();
-        game.getTurnSummary().publish(territoryName + " is now occupied by " + getOccupyingFaction().getEmoji());
+        game.getTurnSummary().publish(territoryName + " is now occupied by " + occupier.getEmoji());
+
+        if (territoryName.equals("Tupile")) {
+            increaseHandLimitForTupile(occupier);
+            if (occupier.hasAlly())
+                increaseHandLimitForTupile(game.getFaction(occupier.getAlly()));
+        }
+
         checkForOccupierTakingDukeVidal();
     }
 
     public void clearOccupier() {
+        Faction occupier = getOccupyingFaction();
         this.occupierName = null;
         game.getTurnSummary().publish(territoryName + " is no longer occupied.");
+
+        if (occupier != null) {
+            reduceHandLimitForTupile(occupier);
+            if (occupier.hasAlly())
+                reduceHandLimitForTupile(game.getFaction(occupier.getAlly()));
+        }
+
         game.getFaction(nativeName).checkForHighThreshold();
     }
 
