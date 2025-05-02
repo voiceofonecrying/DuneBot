@@ -99,11 +99,11 @@ public class HomeworldTerritory extends Territory {
             factionNames.add("Richese");
         if (factionNames.size() == 1) {
             String name = factionNames.stream().findFirst().orElseThrow();
-            occupierName = name.equals(nativeName) ? null : name;
-            if (wasOccupied && name.equals(nativeName)) {
-                clearOccupier();
-            } else if (!wasOccupied && occupierName != null || wasOccupied && !occupierName.equals(formerOccupier))
+            boolean isOccupied = !name.equals(nativeName);
+            if (isOccupied && (!wasOccupied || !name.equals(formerOccupier)))
                 establishOccupier(name);
+            else if (!isOccupied && wasOccupied)
+                clearOccupier();
         }
         game.getFaction(nativeName).checkForLowThreshold();
     }
