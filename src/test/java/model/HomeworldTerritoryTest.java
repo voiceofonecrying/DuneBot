@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -137,6 +138,19 @@ public class HomeworldTerritoryTest extends DuneTest {
             caladan.addForces("Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
+        }
+
+        @Test
+        void testNativeToEmptyHomeworldEndsOccupation() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            caladan.removeForces(game, "Atreides", 10);
+            caladan.addForces("Harkonnen", 1);
+            assertEquals("Harkonnen", caladan.getOccupierName());
+            assertTrue(atreides.isHomeworldOccupied());
+            caladan.removeForces(game, "Harkonnen", 1);
+            caladan.addForces("Atreides", 1);
+            assertFalse(atreides.isHomeworldOccupied());
+            assertNull(caladan.getOccupyingFaction());
         }
 
         @Test

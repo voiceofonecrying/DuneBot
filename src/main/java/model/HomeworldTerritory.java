@@ -111,6 +111,8 @@ public class HomeworldTerritory extends Territory {
         boolean nativeForces = factionName.equals(nativeName);
         if (!nativeForces && countFactions() == 1 && (!wasOccupied || !factionName.equals(formerOccupier)))
             establishOccupier(factionName);
+        else if (nativeForces && countFactions() == 1 && wasOccupied)
+            clearOccupier();
         else if (nativeForces)
             nativeFaction.checkForHighThreshold();
     }
