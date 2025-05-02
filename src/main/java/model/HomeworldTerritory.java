@@ -41,6 +41,8 @@ public class HomeworldTerritory extends Territory {
     public void reduceHandLimitForTupile(Faction faction) {
         faction.setHandLimit(faction.getHandLimit() - 1);
         game.getTurnSummary().publish(faction.getEmoji() + " " + Emojis.TREACHERY + " limit has been reduced to " + faction.getHandLimit() + ".");
+        if (faction.getTreacheryHand().size() > faction.getHandLimit())
+            game.getTurnSummary().publish(faction.getEmoji() + " must discard a " + Emojis.TREACHERY + " card.");
     }
 
     public void establishOccupier(String occupierName) {
