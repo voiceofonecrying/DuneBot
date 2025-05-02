@@ -2117,44 +2117,22 @@ public class Game {
 
         removeAlliance(faction1);
         removeAlliance(faction2);
-
+        turnSummary.publish(faction1.getEmoji() + " and " + faction2.getEmoji() + " have formed an alliance.");
         faction1.setAlly(faction2.getName());
         faction2.setAlly(faction1.getName());
-
-        turnSummary.publish(faction1.getEmoji() + " and " + faction2.getEmoji() + " have formed an alliance.");
-        faction1.getLedger().publish("You are now allies with " + faction2.getEmoji() + "!");
-        faction2.getLedger().publish("You are now allies with " + faction1.getEmoji() + "!");
-
-        if (faction1 instanceof MoritaniFaction moritani)
-            moritani.reduceHandLmitIfNecessary(faction2);
-        else if (faction2 instanceof MoritaniFaction moritani)
-            moritani.reduceHandLmitIfNecessary(faction1);
-
-        faction1.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        faction2.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         setUpdated(UpdateType.MAP);
     }
 
     /**
      * Remove an alliance between two factions.
-     * @param faction The faction to remove the alliance from.
+     * @param faction The first faction to remove the alliance from.
      */
     public void removeAlliance(@NotNull Faction faction) {
         if (faction.hasAlly()) {
             Faction allyFaction = getFaction(faction.getAlly());
-            faction.removeAlly();
-            allyFaction.removeAlly();
             turnSummary.publish(faction.getEmoji() + " and " + allyFaction.getEmoji() + " are no longer allies.");
-            faction.getLedger().publish("Your alliance with " + allyFaction.getEmoji() + " has been dissolved!");
-            allyFaction.getLedger().publish("Your alliance with " + faction.getEmoji() + " has been dissolved!");
-
-            if (faction instanceof MoritaniFaction moritani)
-                moritani.restoreHandLimitIfNecessary(allyFaction);
-            else if (allyFaction instanceof MoritaniFaction moritani)
-                moritani.restoreHandLimitIfNecessary(faction);
-
-            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-            allyFaction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            faction.removeAlliance();
+            allyFaction.removeAlliance();
             setUpdated(UpdateType.MAP);
         }
     }

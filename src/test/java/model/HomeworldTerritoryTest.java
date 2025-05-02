@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -9,11 +10,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class HomeworldTerritoryTest extends DuneTest {
     private HomeworldTerritory caladan;
+    private HomeworldTerritory tupile;
 
     @BeforeEach
     public void setUp() throws IOException, InvalidGameStateException {
@@ -21,7 +22,9 @@ public class HomeworldTerritoryTest extends DuneTest {
         game.addFaction(atreides);
         game.addFaction(harkonnen);
         game.addFaction(emperor);
+        game.addFaction(choam);
         caladan = (HomeworldTerritory) game.getTerritory(atreides.getHomeworld());
+        tupile = (HomeworldTerritory) game.getTerritory(choam.getHomeworld());
     }
 
     @Nested
@@ -50,6 +53,12 @@ public class HomeworldTerritoryTest extends DuneTest {
         @Test
         void testNonNativeWithNativeDoesNotCauseOccupy() {
             caladan.addForces("Harkonnen", 1);
+            assertNull(caladan.getOccupierName());
+        }
+
+        @Test
+        void testNativeExitingDoesNotCauseOccupy() {
+            caladan.removeForces(game, "Atreides", 10);
             assertNull(caladan.getOccupierName());
         }
 
@@ -129,6 +138,48 @@ public class HomeworldTerritoryTest extends DuneTest {
             caladan.addForces("Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
+        }
+
+        @Test
+        void testNativeToEmptyHomeworldEndsOccupation() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            caladan.removeForces(game, "Atreides", 10);
+            caladan.addForces("Harkonnen", 1);
+            assertEquals("Harkonnen", caladan.getOccupierName());
+            assertTrue(atreides.isHomeworldOccupied());
+            caladan.removeForces(game, "Harkonnen", 1);
+            caladan.addForces("Atreides", 1);
+            assertFalse(atreides.isHomeworldOccupied());
+            assertNull(caladan.getOccupyingFaction());
+        }
+
+        @Test
+        void testOccupyingTupileIncreasesHandLimit() {
+            game.createAlliance(emperor, harkonnen);
+            tupile.removeForces(game, "CHOAM", 20);
+            turnSummary.clear();
+            tupile.addForces("Emperor*", 1);
+            assertEquals(emperor, tupile.getOccupyingFaction());
+            assertEquals(5, emperor.getHandLimit());
+            assertEquals(Emojis.EMPEROR + " " + Emojis.TREACHERY + " limit has been increased to 5.", turnSummary.getMessages().get(1));
+            assertEquals(9, harkonnen.getHandLimit());
+            assertEquals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been increased to 9.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testClearingTupileOccupationDecreasesHandLimit() {
+            game.createAlliance(emperor, harkonnen);
+            tupile.removeForces(game, "CHOAM", 20);
+            tupile.addForces("Emperor*", 1);
+            assertEquals(emperor, tupile.getOccupyingFaction());
+            tupile.addForces("CHOAM", 20);
+            turnSummary.clear();
+            tupile.removeForces(game, "Emperor*", 1);
+            assertFalse(choam.isHomeworldOccupied());
+            assertEquals(4, emperor.getHandLimit());
+            assertEquals(Emojis.EMPEROR + " " + Emojis.TREACHERY + " limit has been reduced to 4.", turnSummary.getMessages().get(1));
+            assertEquals(8, harkonnen.getHandLimit());
+            assertEquals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been reduced to 8.", turnSummary.getMessages().getLast());
         }
     }
 }

@@ -21,6 +21,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
     Territory arrakeen;
     Territory carthag;
+    FremenFaction fremen;
 
     @Override
     Faction getFaction() {
@@ -34,6 +35,8 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
         arrakeen = game.getTerritory("Arrakeen");
         carthag = game.getTerritory("Carthag");
+        fremen = new FremenFaction("fr", "fr");
+        game.addFaction(fremen);
     }
 
     @Test
@@ -47,7 +50,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalAlliedToFremen() {
+    public void testFreeRevivalAlliedToFremen() throws IOException {
         faction.setAlly("Fremen");
         assertEquals(3, faction.getFreeRevival());
     }

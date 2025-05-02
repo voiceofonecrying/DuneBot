@@ -885,7 +885,7 @@ public class CommandManager extends ListenerAdapter {
         if (homeworld.getNativeName().equals(occupierName))
             homeworld.clearOccupier();
         else
-            homeworld.setOccupierName(occupierName);
+            homeworld.establishOccupier(occupierName);
     }
 
     private void assassinateTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {

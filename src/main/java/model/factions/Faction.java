@@ -200,13 +200,25 @@ public class Faction {
 
     public void setAlly(String ally) {
         this.ally = ally;
+        ledger.publish("You are now allies with " + Emojis.getFactionEmoji(ally) + "!");
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")) {
+            HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
+            if (tupile.getOccupyingFaction() == this)
+                tupile.increaseHandLimitForTupile(game.getFaction(ally));
+        }
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void removeAlly() {
+    public void removeAlliance() {
+        ledger.publish("Your alliance with " + Emojis.getFactionEmoji(ally) + " has been dissolved!");
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")) {
+            HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
+            if (tupile.getOccupyingFaction() == this)
+                tupile.reduceHandLimitForTupile(game.getFaction(ally));
+        }
         ally = null;
         spiceForAlly = 0;
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
     }
 
     public boolean hasAlly() {
@@ -214,10 +226,6 @@ public class Faction {
     }
 
     public int getHandLimit() {
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")
-        && game.getFaction("CHOAM").isHomeworldOccupied() && !name.equals("CHOAM")
-        && (game.getTerritory("Tupile").getActiveFactionNames().contains(name)
-        || game.getTerritory("Tupile").getActiveFactionNames().contains(ally))) return handLimit + 1;
         return handLimit;
     }
 
