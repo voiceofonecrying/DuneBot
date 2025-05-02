@@ -54,6 +54,12 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
+        void testNativeExitingDoesNotCauseOccupy() {
+            caladan.removeForces(game, "Atreides", 10);
+            assertNull(caladan.getOccupierName());
+        }
+
+        @Test
         void testNonNativeIntoEmptyCausesOccupy() {
             caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);

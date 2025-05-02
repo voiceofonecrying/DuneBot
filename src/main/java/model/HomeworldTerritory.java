@@ -35,13 +35,19 @@ public class HomeworldTerritory extends Territory {
     public void establishOccupier(String occupierName) {
         this.occupierName = occupierName;
         getNativeFaction().checkForLowThreshold();
-        game.getTurnSummary().publish(getTerritoryName() + " is now occupied by " + getOccupyingFaction().getEmoji());
+        game.getTurnSummary().publish(territoryName + " is now occupied by " + getOccupyingFaction().getEmoji());
         checkForOccupierTakingDukeVidal();
     }
 
     public void clearOccupier() {
         this.occupierName = null;
-        game.getTurnSummary().publish(getTerritoryName() + " is no longer occupied.");
+        game.getTurnSummary().publish(territoryName + " is no longer occupied.");
+        game.getFaction(nativeName).checkForHighThreshold();
+    }
+
+    public void resetOccupation() {
+        if (countFactions() == 0 && occupierName != null)
+            clearOccupier();
     }
 
     public Faction getNativeFaction() {
@@ -95,8 +101,7 @@ public class HomeworldTerritory extends Territory {
             String name = factionNames.stream().findFirst().orElseThrow();
             occupierName = name.equals(nativeName) ? null : name;
             if (wasOccupied && name.equals(nativeName)) {
-                game.getTurnSummary().publish(getTerritoryName() + " is no longer occupied.");
-                game.getFaction(nativeName).checkForHighThreshold();
+                clearOccupier();
             } else if (!wasOccupied && occupierName != null || wasOccupied && !occupierName.equals(formerOccupier))
                 establishOccupier(name);
         }
@@ -115,15 +120,6 @@ public class HomeworldTerritory extends Territory {
                 game.getEcazFaction().getOccupier().getLeaders().add(game.getDukeVidal());
                 game.getTurnSummary().publish("Duke Vidal has left to work for " + game.getEcazFaction().getOccupier().getEmoji() + " (Ecaz homeworld occupied)");
             }
-        }
-    }
-
-    public void resetOccupation() {
-        boolean wasOccupied = occupierName != null;
-        if (countFactions() == 0) {
-            occupierName = null;
-            if (wasOccupied)
-                game.getTurnSummary().publish(getTerritoryName() + " is no longer occupied.");
         }
     }
 }
