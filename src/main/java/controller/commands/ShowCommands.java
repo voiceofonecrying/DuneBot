@@ -354,6 +354,8 @@ public class ShowCommands {
             discordGame.queueMessage(infoChannelName, moritani.getTerrorTokenMessage(true));
         else if (faction instanceof RicheseFaction richese)
             writeRicheseCardCache(discordGame, infoChannelName, richese);
+        else if (faction instanceof BTFaction)
+            writeFaceDownLeaders(discordGame, game, infoChannelName);
 
         sendInfoButtons(game, discordGame, faction);
     }
@@ -1183,6 +1185,8 @@ public class ShowCommands {
 
             if (faction instanceof RicheseFaction richese)
                 writeRicheseCardCache(discordGame, infoChannelName, richese);
+            else if (faction instanceof BTFaction)
+                writeFaceDownLeaders(discordGame, faction.getGame(), infoChannelName);
         }
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
     }
@@ -1206,6 +1210,18 @@ public class ShowCommands {
 
             treacheryCardMessageBuilder.addContent(treacheryString.toString());
             discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
+        }
+    }
+
+    private static void writeFaceDownLeaders(DiscordGame discordGame, Game game, String infoChannelName) throws ChannelNotFoundException {
+        List<Leader> faceDownLeaders = game.getLeaderTanks().stream().filter(Leader::isFaceDown).toList();
+        if (!faceDownLeaders.isEmpty()) {
+            List<String> leadersNamesAndEmojis = faceDownLeaders.stream().map(Leader::getEmoiNameAndValueString).toList();
+            String leadersString = "\n__Face Down Leaders:__\n" + String.join("\n", leadersNamesAndEmojis);
+
+            MessageCreateBuilder faceDownLeadersBuilder = new MessageCreateBuilder();
+            faceDownLeadersBuilder.addContent(leadersString);
+            discordGame.queueMessage(infoChannelName, faceDownLeadersBuilder.build());
         }
     }
 

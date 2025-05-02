@@ -1784,6 +1784,9 @@ public class Game {
 
         Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
         leaderTanks.add(killedLeader);
+        if (hasFaction("BT")) {
+            getFaction("BT").setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
 
         faction.getChat().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
         faction.getLedger().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
