@@ -122,10 +122,14 @@ public class RicheseFaction extends Faction {
         game.setUpdated(UpdateType.MAP);
     }
 
-    public void revealNoField(Game game, Faction factionShippedWithNoField) {
-        Territory territory = game.getTerritories().values().stream()
+    public Territory getTerritoryWithNoFieldOrNull() {
+        return game.getTerritories().values().stream()
                 .filter(Territory::hasRicheseNoField)
                 .findFirst().orElse(null);
+    }
+
+    public void revealNoField(Game game, Faction factionShippedWithNoField) {
+        Territory territory = getTerritoryWithNoFieldOrNull();
         if (territory != null) {
             int noField = territory.getRicheseNoField();
             int numReserves = factionShippedWithNoField.getReservesStrength();
