@@ -6,7 +6,6 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
-import model.factions.ChoamFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -45,23 +44,21 @@ public class ChoamCommands {
 
     public static void setInflation(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String inflationType = discordGame.required(choamInflationType).getAsString();
-
         ChoamInflationType choamInflationType = ChoamInflationType.valueOf(inflationType);
-        ChoamFaction faction = (ChoamFaction) game.getFaction("CHOAM");
-        faction.setFirstInflation(choamInflationType);
+        game.getCHOAMFaction().setFirstInflation(choamInflationType);
         discordGame.pushGame();
     }
 
     public static void clearInflation(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        ChoamFaction faction = (ChoamFaction) game.getFaction("CHOAM");
-        faction.clearInflation();
+        game.getCHOAMFaction().clearInflation();
         game.getTurnSummary().publish(Emojis.CHOAM + " inflation has been deactivated and can be set for a different turn.");
         discordGame.pushGame();
     }
 
     public static void swapCardWithAlly(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        ChoamFaction choam = (ChoamFaction) game.getFaction("CHOAM");
-        choam.swapCardWithAlly(discordGame.required(card).getAsString(), discordGame.required(allyCard).getAsString());
+        String choamCard = discordGame.required(card).getAsString();
+        String allysCard = discordGame.required(allyCard).getAsString();
+        game.getCHOAMFactionOrNull().swapCardWithAlly(choamCard, allysCard);
         discordGame.pushGame();
     }
 }
