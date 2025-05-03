@@ -1771,11 +1771,12 @@ class GameTest extends DuneTest {
             game.addFaction(emperor);
             game.addFaction(fremen);
             game.addFaction(guild);
-            game.addFaction(harkonnen);
+            game.addFaction(bt);
 
             leaders = emperor.getLeaders();
             assertEquals(5, leaders.size());
             game.killLeader(emperor, "Caid");
+            assertTrue(btChat.getMessages().isEmpty());
         }
 
         @Test
@@ -1793,10 +1794,36 @@ class GameTest extends DuneTest {
             assertEquals("Caid was sent to the tanks.", emperorLedger.getMessages().getFirst());
         }
 
+        @Test
+        void testFaceDownLeaderReportedToBT() {
+            game.killLeader(emperor, "Bashar", true);
+            assertTrue(bt.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertEquals(Emojis.EMPEROR + " Bashar (2) is face down in the tanks.", btChat.getMessages().getLast());
+        }
+
 //        @Test
 //        void testCantKillLeaderInTanks() {
 //            assertThrows(IllegalArgumentException.class, () -> game.killLeader(emperor, "Caid"));
 //        }
+    }
+
+    @Nested
+    @DisplayName("#harkonnenKillLeader")
+    class HarkonnenKillLeader {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(bt);
+            assertTrue(atreides.getLeaders().contains(duncanIdaho));
+        }
+
+        @Test
+        void testFaceDownLeaderReportedToBT() {
+            game.harkonnenKillLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertTrue(bt.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertEquals(Emojis.ATREIDES + " Duncan Idaho (2) is face down in the tanks.", btChat.getMessages().getLast());
+        }
     }
 
     @Nested
